@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0187
 title: Every conversation turn reaches claude-mem's session history through a factory-side feed built from the redacted record, so the owner's assistant and later conversations find it
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -156,3 +156,5 @@ captured exactly as a Claude Code turn is.
 
 2026-09-27: new draft from the review of the conversation drafts, which ruled claude-mem's capture of
 factory turns MVP function (the lead's decision). Only the owner marks a specification ready.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

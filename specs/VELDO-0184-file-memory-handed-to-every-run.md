@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0184
 title: The file memory directory is handed to every run whose role lists it, on either engine and any account, and its index load and every memory file read and write are in the record
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -148,3 +148,5 @@ specification ready.
 2026-09-27, review of the drafts: AC2 names Codex's memory switch (`memories.generate_memories` and
 `memories.use_memories` false), and AC1 says `autoMemoryDirectory` is in the 2.1.281 binary and applies
 from flag settings. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

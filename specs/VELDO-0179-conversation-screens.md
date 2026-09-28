@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0179
 title: The UI's conversation screens let the owner start, continue, change the role of, attach a project to and close conversations on phone and desktop and watch every turn live as a terminal
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -131,3 +131,5 @@ marks a specification ready.
 
 2026-09-27, review of the drafts: AC1 adds the role and project controls, which had only an API route;
 depends_on adds VELDO-0131, whose rules AC3 applies. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

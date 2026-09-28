@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0182
 title: The factory keeps one memory store record naming where each part of Ava's memory lives, none containing an account profile, and hands the same locations to every run on every account
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -173,3 +173,5 @@ a draft.
 2026-09-27, third round: AC1's manifest also names the owner's assistant's MCP configuration, which
 VELDO-0183 AC4 points at the store servers that serialize concurrent writers; Out of scope names AC4.
 Criterion meaning otherwise unchanged. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

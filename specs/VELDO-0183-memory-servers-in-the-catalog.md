@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0183
 title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, every store write serialized across processes, never handed a paid model API, and every memory call is in the run's record
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -84,16 +84,18 @@ acceptance_criteria:
       Save the roles without `claude-mem`, and the init row must fail on the missing server.
   - id: AC2
     text: >
-      Claim: No catalog server is ever handed a paid model API credential or switch, so ava-memory's one tool
-      that calls the Anthropic API answers with its own refusal while every other tool works. Set and
+      Claim: No catalog server is ever handed a paid model API credential or switch, and ava-memory's smart
+      add, the one tool that called the Anthropic API, works on the owner's subscription instead. Set and
       completeness: A catalog save whose server environment or credential reference names any name the
       receiver strips from an engine's environment as a paid-API switch or login (VELDO-0155, VELDO-0156,
       VELDO-0165; `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` among them) is refused by name
       (invalid_input:mcp_server:paid_api:<name>), for every catalog record, not only memory. ava-memory's
-      `memory_add_smart` needs `ANTHROPIC_API_KEY` for its extraction model (myday mem0_memory
-      memory_store.add_smart); it stays offered, since tools are never taken away, and answers its own
-      missing-key message, while `memory_search`, `memory_add` and every knowledge graph, claude-mem and
-      memory_kb tool work. Falsifier: Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and
+      `memory_add_smart` (myday mem0_memory memory_store.add_smart), which today calls the Anthropic API
+      with `ANTHROPIC_API_KEY` for its extraction model, extracts instead with Claude Code on one of the
+      owner's subscription accounts through the account pool (VELDO-0160), like every other model run, and
+      never reads a paid-API key; the suite calls it with no such key anywhere and requires its memories
+      saved and its extraction recorded as a run on an account, while `memory_search`, `memory_add` and every
+      knowledge graph, claude-mem and memory_kb tool work. Falsifier: Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and
       the paid-API row must fail on the saved revision.
     falsified_by: >
       Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and the paid-API row must fail on the
@@ -167,7 +169,9 @@ claude-mem is a Claude Code plugin with its own search server. memory_kb gets a 
 rather than a shell command so each of its calls is a named tool call in the record and its passphrase a
 keystore credential, as for every other server. Their
 calls are ordinary MCP tool calls, so the record already keeps them once they run in a turn. The owner's
-standing rule is no paid model API; mem0's smart extraction is the one memory path that needs one. A
+standing rule is no paid model API; mem0's smart extraction was the one memory path that used one, and it
+is moved onto Claude Code on the subscription (owner, Telegram 29300 to 29302), a change in myday's
+mem0_memory filed with the ChromaDB programs in the Notes. A
 draft: only the owner marks it ready.
 
 ## Out of scope
@@ -221,3 +225,5 @@ are answered inside its store server rather than by a cli.py process per call; t
 concurrent writers is withdrawn. Still a draft.
 
 2026-09-27, recheck: AC4 now claims serialization for the writers the factory controls (conversations, the assistant's MCP entries and `veldo memory kb`); the Notes list every myday program that opens a ChromaDB store directly, moved to the bridge in a myday change before the first conversation; the shipped memory_kb server does not offer setup-passphrase.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

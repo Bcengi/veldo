@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0186
 title: Factory setup installs every runtime asset and qualification record the installed modules read and pins both qualified engines, so the installed launch receiver binds Claude Code and Codex
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -132,3 +132,5 @@ an installed service. Only the owner marks a specification ready.
 this pin: this specification no longer depends on VELDO-0185, and its former AC3 (dispatch on every
 account after login, and the second setup run) moved to VELDO-0185 AC4 and AC3, where the login check
 and control_accounts are. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

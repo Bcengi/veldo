@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0188
 title: The running factory starts a Line for a project the moment the store records it, staffed from the project's team or the default team, and stops the Line of a closed project, with no reinstall and no restart
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -163,3 +163,5 @@ pipes of VELDO-0154 AC1 cover every Line the loop holds, the new ones included.
 
 2026-09-27: new draft from the review of the conversation drafts, which filed that a new project gets no
 Line without a reinstall; the lead ruled it MVP function. Only the owner marks a specification ready.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

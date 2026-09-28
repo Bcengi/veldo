@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0181
 title: A decision a conversation raises goes through the existing Telegram decision flow, only the conversation's owner drives it, and nothing a turn produces carries authority
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -132,3 +132,5 @@ marks a specification ready.
 proposal and a route document in its output is refused as authority; AC1 lists VELDO-0176 AC2's
 wait-or-move question among the decisions a conversation raises. depends_on adds VELDO-0176. Still a
 draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

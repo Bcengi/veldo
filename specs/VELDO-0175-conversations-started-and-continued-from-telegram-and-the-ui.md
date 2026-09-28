@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0175
 title: The owner starts a conversation from Telegram or the UI, continues it by replying to any of its messages or writing in its screen, steers it by typed commands, and gets every reply where he wrote
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -111,17 +111,21 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: The owner changes a conversation's role, attaches one of his projects to it or closes it from
-      Telegram by a typed command in reply to any of its messages, and a command is never a turn and is
-      taken from no one else. Set and completeness: A Telegram message that replies to one of the
+      Telegram by a command in reply to any of its messages, typed as a slash command or said in his own
+      words, and a command is never a turn and is taken from no one else. Set and completeness: A Telegram message that replies to one of the
       conversation's sent messages (AC1) and whose text starts with `/role <role>`, `/attach <project>` or
-      `/close` is that conversation's typed command: intake sends the owner's `set_conversation_role`
+      `/close`, or whose words the factory project's PM (VELDO-0152, Claude Code or Codex) reads as meaning
+      one of them (owner, Telegram 29299: "you should understand if same meaning"), is that conversation's
+      command; the PM reads only the owner's own message, never a turn's output, and a reply it reads as
+      none of them is the next turn: intake sends the owner's `set_conversation_role`
       (VELDO-0176 AC3), `attach_project` (VELDO-0177 AC3) or `close_conversation` (VELDO-0174 AC1) with the
       conversation's current version and the name exactly as he typed it, answers with one line naming
       what changed, and makes no turn. `/project <name>` is VELDO-0180 AC1's. A command from anyone but
       the owner is refused by name (missing_authority:conversation_owner), and one that replies to no
       conversation message or names no role of the default team or project in his scope is refused by name
       (invalid_input:conversation_command:<reason>), each with one line and nothing changed. The suite
-      sends each command as the owner, as another member, with no reply and with an unknown role.
+      sends each command as the owner, in slash form and in plain words ("switch this to Codex", "we are
+      done here"), as another member, with no reply and with an unknown role.
       Falsifier: Take every reply to a conversation message as its next turn, as AC1 alone does, and the
       command row must fail on a turn whose message is `/role assistant_codex` in place of the role change.
     falsified_by: >
@@ -182,3 +186,5 @@ marks a specification ready.
 2026-09-27, review of the drafts: AC4 adds the Telegram typed commands `/role`, `/attach` and `/close`,
 since the role change and the project attach had only an API route; depends_on adds VELDO-0176 and
 VELDO-0177, whose commands they send. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

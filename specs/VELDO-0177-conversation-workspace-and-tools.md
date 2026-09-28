@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0177
 title: A conversation acts in its own workspace with exactly its role's tools and servers, inside the same containment and credential rules as project runs, and can work on a fresh clone of a project it is attached to
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -157,3 +157,5 @@ marks a specification ready.
 setup saves `assistant` and `assistant_codex` into the default team VELDO-0185 saves, by the owner's
 signed commands. AC3's attach comes from the API or Telegram's `/attach`. depends_on adds VELDO-0171 and
 VELDO-0185. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

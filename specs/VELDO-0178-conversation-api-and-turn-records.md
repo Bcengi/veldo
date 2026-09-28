@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0178
 title: The authenticated API serves the owner's conversations and their turns, and every turn's execution record is kept and served live only to the conversation's owner
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -127,3 +127,5 @@ marks a specification ready.
 2026-09-27, review of the drafts: the conversion route is VELDO-0180's own, since a conversation becomes a
 project only on the owner's typed command; the commands' version is VELDO-0174 AC1's. Criteria unchanged.
 Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

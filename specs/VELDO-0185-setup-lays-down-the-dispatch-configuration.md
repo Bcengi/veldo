@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0185
 title: Factory setup saves the default team, gives the installed service its engine adapters and work configuration, enrolls the authority and launch receiver as reservation services and writes the receivers' state root, so after the owner logs in each account work runs on both engines on every account, and a second run changes nothing
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -207,3 +207,5 @@ receiver's included. depends_on adds VELDO-0155, VELDO-0156, VELDO-0162, VELDO-0
 a draft.
 
 2026-09-27, recheck: AC4 reads the subscription login from `claude auth status`: `loggedIn` true with the claude.ai subscription as its `authMethod`, both fields recorded in the 2.1.281 qualification record (an API-key login also reports loggedIn); the footprint adds the qualification records.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0174
 title: A conversation is a second kind of work beside projects, open until the owner closes it, and each of his messages in it is one turn the factory loop runs in order
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -199,3 +199,5 @@ marks a specification ready.
 the installed service runs one of each per repository and a conversation has none; the record gains its
 version, which the API's commands name; depends_on adds VELDO-0172 (the fake engines' output shape) and
 VELDO-0185 (the receiver configuration's state root). Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

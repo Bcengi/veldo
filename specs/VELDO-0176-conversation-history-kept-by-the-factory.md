@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0176
 title: The factory keeps each conversation's engine session and history, so a turn resumes it on any account of its engine, after an account limit and after a restart
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -185,3 +185,5 @@ marks a specification ready.
 whether to wait for the reset or move to his assistant role on the other engine, never switching silently;
 AC3 carries the newest whole turns that fit the target engine and names how many were left out, in place of
 stopping a history that is too long. depends_on adds VELDO-0065, VELDO-0068 and VELDO-0177. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).

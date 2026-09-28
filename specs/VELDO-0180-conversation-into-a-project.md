@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0180
 title: One typed owner command turns a conversation into a new or existing project's work, and that work starts with the conversation's context and results
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -58,10 +58,11 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: A conversation becomes a project's work only on the owner's typed command,
-      `conversations.make_project` in the API or `/project <name>` on Telegram in reply to one of its
-      messages, and the project is named from that command, never from anything a turn produced. Set and
+      `conversations.make_project` in the API, or on Telegram in reply to one of its messages `/project <name>`
+      or his own words meaning it ("make this a project called billing"), and the project is named from that command, never from anything a turn produced. Set and
       completeness: `conversations.make_project` is a POST route this specification adds to the published
-      ROUTES table (VELDO-0130, VELDO-0178), and `/project` is read as VELDO-0175 AC4 reads its commands.
+      ROUTES table (VELDO-0130, VELDO-0178), and `/project` or its plain-words form is read as VELDO-0175 AC4 reads its commands, from the owner's own
+      message only.
       The command names the conversation, its current version (VELDO-0174 AC1) and a name,
       with any text after the name as the objective in his words, else the conversation's first message. A
       name that is one of his projects' names or ids is the existing-project route; any other is a new
@@ -154,3 +155,5 @@ routes table the command joins. Filed: a new project gets no Line without a rein
 
 2026-09-27, third round: the filed note on a new project's Line now names VELDO-0188, which starts a
 Line at run time for every project the store records. Criteria unchanged. Still a draft.
+
+2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
