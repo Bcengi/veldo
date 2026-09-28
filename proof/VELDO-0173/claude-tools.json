@@ -862,15 +862,15 @@
  "tool_classification": {
   "Agent": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'delegate work to a subagent'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: delegate work to a subagent"
   },
   "AppifactRepl": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'run appifact SDK JavaScript against an artifact'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: run appifact SDK JavaScript against an artifact"
   },
   "Artifact": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'render an HTML file to a claude.ai web page'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render an HTML file to a claude.ai web page"
   },
   "ArtifactCheck": {
    "class": "outward",
@@ -878,91 +878,91 @@
   },
   "ArtifactComments": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read and reply to comment threads on a published artifact; watch it for republishes'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and reply to comment threads on a published artifact; watch it for republishes"
   },
   "ArtifactData": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint \"read and write a published artifact's shared database\""
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and write a published artifact's shared database"
   },
   "AskUserQuestion": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'prompt the user with a multiple-choice question'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: prompt the user with a multiple-choice question"
   },
   "Bash": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'execute shell commands'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: execute shell commands"
   },
   "ClaudeDesign": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'work with Claude Design (claude.ai/design) projects'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: work with Claude Design (claude.ai/design) projects"
   },
   "CronCreate": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'schedule a recurring or one-shot prompt'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: schedule a recurring or one-shot prompt"
   },
   "CronDelete": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'cancel a scheduled cron job'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: cancel a scheduled cron job"
   },
   "CronList": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list active cron jobs'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list active cron jobs"
   },
   "DesignSync": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'sync local design system components to a claude.ai/design project'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: sync local design system components to a claude.ai/design project"
   },
   "Edit": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'modify file contents in place'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: modify file contents in place"
   },
   "EndConversation": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'end the conversation \\\\u2014 only for sustained user abuse, or when the user explicitly asks to see it demonstrated'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: end the conversation \\u2014 only for sustained user abuse, or when the user explicitly asks to see it demonstrated"
   },
   "EnterPlanMode": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'switch to plan mode to design an approach before coding'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: switch to plan mode to design an approach before coding"
   },
   "EnterWorktree": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'create an isolated git worktree and switch into it'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: create an isolated git worktree and switch into it"
   },
   "ExitPlanMode": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'present plan for approval and start coding (plan mode only)'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: present plan for approval and start coding (plan mode only)"
   },
   "ExitWorktree": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'exit a worktree session and return to the original directory'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: exit a worktree session and return to the original directory"
   },
   "FetchInboxMessage": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read a relayed inbox message from a linked thread'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a relayed inbox message from a linked thread"
   },
   "Glob": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'find files by name pattern or wildcard'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: find files by name pattern or wildcard"
   },
   "Grep": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'search file contents with regex (ripgrep)'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: search file contents with regex (ripgrep)"
   },
   "LSP": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'code intelligence (definitions, references, symbols, hover)'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: code intelligence (definitions, references, symbols, hover)"
   },
   "ListAgents": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list agents you can SendMessage to'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list agents you can SendMessage to"
   },
   "ListConnectors": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint \"list the user's installed MCP connectors\""
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the user's installed MCP connectors"
   },
   "ListMcpResourcesTool": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list resources from connected MCP servers'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list resources from connected MCP servers"
   },
   "ListPlugins": {
    "class": "outward",
@@ -970,35 +970,35 @@
   },
   "ListSkills": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: subject \"the user's enabled claude.ai skills\""
+   "reason": "not on VELDO-0160's in-run list; its definition's subject: the user's enabled claude.ai skills"
   },
   "Monitor": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'watch, monitor, or keep an eye on a process/log/command or WebSocket \\\\u2014 stream each stdout line as a live notification'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: watch, monitor, or keep an eye on a process/log/command or WebSocket \\u2014 stream each stdout line as a live notification"
   },
   "NotebookEdit": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'edit Jupyter notebook cells (.ipynb)'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: edit Jupyter notebook cells (.ipynb)"
   },
   "Poll": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'wait for and receive queued harness events'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: wait for and receive queued harness events"
   },
   "PowerShell": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'execute Windows PowerShell commands'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: execute Windows PowerShell commands"
   },
   "Projects": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint \"read and write the session's attached claude.ai project\""
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read and write the session's attached claude.ai project"
   },
   "ProposeGoal": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'propose a session goal condition for the user to approve with one keypress'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: propose a session goal condition for the user to approve with one keypress"
   },
   "PushNotification": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'send a notification to the user via terminal and optionally mobile'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send a notification to the user via terminal and optionally mobile"
   },
   "REPL": {
    "class": "in_run",
@@ -1007,115 +1007,115 @@
   },
   "Read": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'read files, images, PDFs, notebooks'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: read files, images, PDFs, notebooks"
   },
   "ReadMcpResourceDirTool": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list the children of an MCP directory resource'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the children of an MCP directory resource"
   },
   "ReadMcpResourceTool": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read a specific MCP resource by URI'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a specific MCP resource by URI"
   },
   "ReadNotifications": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read queued external notifications (webhooks, triggers)'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read queued external notifications (webhooks, triggers)"
   },
   "RefreshMcpTools": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'refresh or re-sync tool lists from connected MCP servers, recover missing device or server tools'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: refresh or re-sync tool lists from connected MCP servers, recover missing device or server tools"
   },
   "RemoteTrigger": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'manage scheduled cloud agent routines; inspect their run history and logs'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: manage scheduled cloud agent routines; inspect their run history and logs"
   },
   "ReportFindings": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'report code-review findings as a structured list'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: report code-review findings as a structured list"
   },
   "ScheduleWakeup": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'self-pace the dynamic /loop: pick a delay before the next tick, or stop/end/cancel the dynamic loop with stop:true (a fixed-interval /loop is a recurring cron \\\\u2014 cancel it with ${Jk})'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: self-pace the dynamic /loop: pick a delay before the next tick, or stop/end/cancel the dynamic loop with stop:true (a fixed-interval /loop is a recurring cron \\u2014 cancel it with ${Jk})"
   },
   "SearchMcpRegistry": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'discover MCP connectors by keyword'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: discover MCP connectors by keyword"
   },
   "SearchPlugins": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: description \"Search the user's claude.ai plugin catalog by keyword to find plugins that might help complete the task.\""
+   "reason": "not on VELDO-0160's in-run list; its definition's description: Search the user's claude.ai plugin catalog by keyword to find plugins that might help complete the task."
   },
   "SearchSkills": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: description \"Search the user's claude.ai skills by keyword to find skills that might help complete the task.\""
+   "reason": "not on VELDO-0160's in-run list; its definition's description: Search the user's claude.ai skills by keyword to find skills that might help complete the task."
   },
   "SendFeedback": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'draft product or model-behavior feedback report queue'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: draft product or model-behavior feedback report queue"
   },
   "SendFile": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'send files to another Claude Code session'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send files to another Claude Code session"
   },
   "SendMessage": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'send messages to agent teammates'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send messages to agent teammates"
   },
   "SendUserFile": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'deliver files (screenshots, reports, artifacts) to the user'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: deliver files (screenshots, reports, artifacts) to the user"
   },
   "SendUserMessage": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'send a message to the user \\\\u2014 your primary visible output channel'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send a message to the user \\u2014 your primary visible output channel"
   },
   "ShareOnboardingGuide": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'upload ONBOARDING.md and get a team share link'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: upload ONBOARDING.md and get a team share link"
   },
   "ShowOnboardingRolePicker": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'show the Cowork onboarding role picker'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: show the Cowork onboarding role picker"
   },
   "Skill": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'invoke a slash-command skill'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: invoke a slash-command skill"
   },
   "SuggestConnectors": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'resolve MCP connector payloads by directoryUuid'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: resolve MCP connector payloads by directoryUuid"
   },
   "SuggestPluginInstall": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'render a plugin install card'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render a plugin install card"
   },
   "SuggestSkills": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'render addable claude.ai skills by keyword'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: render addable claude.ai skills by keyword"
   },
   "TaskCreate": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'create a task in the task list'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: create a task in the task list"
   },
   "TaskGet": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'retrieve a task by ID'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: retrieve a task by ID"
   },
   "TaskList": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list all tasks'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list all tasks"
   },
   "TaskStop": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'kill a running background task'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: kill a running background task"
   },
   "TaskUpdate": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'update a task'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: update a task"
   },
   "TodoWrite": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'manage the session task checklist'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: manage the session task checklist"
   },
   "ToolSearch": {
    "class": "in_run",
@@ -1127,87 +1127,87 @@
   },
   "WebFetch": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'fetch and extract content from a URL'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: fetch and extract content from a URL"
   },
   "WebSearch": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'search the web for current information'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: search the web for current information"
   },
   "Workflow": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'orchestrate subagents with deterministic JavaScript workflow'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: orchestrate subagents with deterministic JavaScript workflow"
   },
   "Write": {
    "class": "in_run",
-   "reason": "on VELDO-0160's in-run list; its definition: searchHint 'create or overwrite files'"
+   "reason": "on VELDO-0160's in-run list; its definition's searchHint: create or overwrite files"
   },
   "enable__mcp__claude-in-chrome": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: label 'Claude in Chrome'"
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Claude in Chrome"
   },
   "enable__mcp__remote-devices__Claude_Browser": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: label 'Browser'"
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Browser"
   },
   "enable__mcp__remote-devices__computer": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: label 'Computer use'"
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Computer use"
   },
   "memory_list": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list the memory stores and the documents in them'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list the memory stores and the documents in them"
   },
   "memory_read": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read a document from a memory store'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read a document from a memory store"
   },
   "memory_write": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'save a document to a memory store'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: save a document to a memory store"
   },
   "propose_skills": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'propose skills from recurring procedures for the user to review and save'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: propose skills from recurring procedures for the user to review and save"
   },
   "request_computer": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: label 'Your computer'"
+   "reason": "not on VELDO-0160's in-run list; its definition's label: Your computer"
   },
   "self_hosted_runner_get_pool": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read self-hosted environment aggregates and queue counts'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read self-hosted environment aggregates and queue counts"
   },
   "self_hosted_runner_list_runners": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list registered self-hosted runners for an environment'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list registered self-hosted runners for an environment"
   },
   "self_hosted_runner_list_secrets": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list self-hosted environment secrets (metadata only)'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list self-hosted environment secrets (metadata only)"
   },
   "self_hosted_runner_list_sessions": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'list queued/assigned sessions in a self-hosted environment'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: list queued/assigned sessions in a self-hosted environment"
   },
   "self_hosted_runner_read_health": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'probe local self-hosted runner /healthz endpoint'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: probe local self-hosted runner /healthz endpoint"
   },
   "self_hosted_runner_read_metrics": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'read self-hosted runner Prometheus gauges from /metrics'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: read self-hosted runner Prometheus gauges from /metrics"
   },
   "self_hosted_runner_requeue_session": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'requeue a stuck self-hosted runner session onto another runner'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: requeue a stuck self-hosted runner session onto another runner"
   },
   "self_hosted_runner_spawn_local": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'start a local self-hosted runner process for try-it-out'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: start a local self-hosted runner process for try-it-out"
   },
   "self_hosted_runner_tail_log": {
    "class": "outward",
-   "reason": "not on VELDO-0160's in-run list; its definition: searchHint 'tail self-hosted runner log file with secret redaction'"
+   "reason": "not on VELDO-0160's in-run list; its definition's searchHint: tail self-hosted runner log file with secret redaction"
   }
  },
  "tool_registry": [

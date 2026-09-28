@@ -477,7 +477,7 @@ def classify(tools, in_run, unregistered):
     """{name: {class, reason}} for every registry tool and every in-run tool this build does not register."""
     rows = {}
     for tool in tools:
-        said = ("its definition: %s %r" % (tool['hint_source'], tool['hint']) if tool.get('hint') is not None
+        said = ("its definition's %s: %s" % (tool['hint_source'], tool['hint']) if tool.get('hint') is not None
                 else 'its definition carries no literal hint')
         if tool['name'] in in_run:
             rows[tool['name']] = {'class': 'in_run', 'reason': "on VELDO-0160's in-run list; " + said}

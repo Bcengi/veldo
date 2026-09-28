@@ -1087,6 +1087,15 @@
    "requires_note": "Uses only shared ROOT and expect. Real Runner, receiver, signed store, accounts and wrapper; fake engines and a local stdio MCP server. No service manager or network."
   },
   {
+   "name": "82_veldo_0173_tool_registry",
+   "file": "82_veldo_0173_tool_registry.py",
+   "requires": [
+    "82_veldo_0173_tool_registry"
+   ],
+   "regions": "Claude Code launched with --tools naming its launch tool set (the in-run list, or a bound role revision's native tools) and --disallowedTools naming every other tool of the binary's full registry; the registry and classification in the qualified record equal a fresh extraction of the pinned bytes; records missing either, or leaving a registry tool unclassified, refused before spawn.",
+   "requires_note": "Uses only shared ROOT and expect. Real Runner, receiver, signed store, accounts and wrapper; a fake Claude Code applying the tool options to the extracted registry; the pinned 2.1.281 binary read, never executed. No service manager or network."
+  },
+  {
    "name": "82_veldo_0172_live_formats",
    "file": "82_veldo_0172_live_formats.py",
    "requires": [
