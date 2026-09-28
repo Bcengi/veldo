@@ -136,3 +136,11 @@ and control_accounts are. Still a draft.
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
 
 2026-09-28: Out of scope now names VELDO-0189 as the owner of replacing installed engine files (owner, Telegram 29307, 29313); criteria and status unchanged.
+
+
+2026-09-28: implemented on build-veldo-0186. The service census installs runtime literals with digests,
+including the runtime qualification entry point and its LangGraph record. Factory setup checks host
+engine versions and digests, pins Claude Code through the existing writer, binds both against the installed
+records and records their paths, versions and digests. Suite 86 covers installed assets, missing source,
+installed receiver bindings, unlisted versions and digest mismatches. Proof lives in proof/VELDO-0186/.
+The footprint is unchanged. Status remains ready for independent review.

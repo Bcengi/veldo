@@ -177,7 +177,8 @@ MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 # The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
 # with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
 # from what these and the architecture validator load (closure()), never listed by hand.
-ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')
+# Include the runtime qualification entry point and the records its module reads.
+ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py')
 # The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
 LOADER = 'spec_from_file_location'
 
@@ -500,6 +501,42 @@ def closure():
             raise Refused('invalid_input:closure:unresolved', 'no literal names the module loaded at %s'
                           % ', '.join(sorted(set(unresolved))), 'load the module there by a literal file name')
         return sorted(members)
+
+
+def runtime_assets(members):
+    """Read the runtime literals named by the same modules as the executable census.
+
+    Accept runtime/file literals and Path(...).with_name('runtime') / 'file' expressions.
+    The engine keeps assets beside .veldo; an adopted repository keeps them inside it.
+    """
+    def literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if (isinstance(node, ast.Call) and _callee(node) == 'with_name'
+                and len(node.args) == 1 and literal(node.args[0]) == 'runtime'):
+            return 'runtime'
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+            left, right = literal(node.left), literal(node.right)
+            if left is not None and right is not None:
+                return left + '/' + right
+        return None
+
+    names = set()
+    for member in members:
+        tree = ast.parse((HERE / member).read_bytes(), member)
+        for node in ast.walk(tree):
+            value = literal(node)
+            if (value and value.startswith('runtime/') and not any(c.isspace() for c in value)
+                    and all(part not in ('', '.', '..') for part in value.split('/'))):
+                names.add(value)
+    assets = {}
+    source = HERE if (HERE / 'runtime').is_dir() else HERE.parent
+    for name in sorted(names):
+        try:
+            assets[name] = (source / name).read_bytes()
+        except OSError:
+            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None
+    return assets
 
 
 # ---------------------------------------------------------------------------------------------
@@ -829,6 +866,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
               'PYTHON': python, 'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}
     text = unit_text(values)
     fixed = {name: (HERE / name).read_bytes() for name in closure()}
+    assets = runtime_assets(fixed)
 
     created, generated = [], False
     try:
@@ -840,6 +878,10 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             os.mkdir(directory, 0o700)
         for name, data in fixed.items():
             _write(os.path.join(bin_dir, name), data, 0o500 if name in ENTRY_POINTS else 0o400)
+        for name, data in assets.items():
+            target = os.path.join(bin_dir, name)
+            os.makedirs(os.path.dirname(target), mode=0o700, exist_ok=True)
+            _write(target, data, 0o400)
         os.chmod(bin_dir, 0o500)
         if not os.path.lexists(journal):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
@@ -873,6 +915,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                   'executable': values['EXECUTABLE'], 'python': python,
                   'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
                   'closure': {name: _digest(data) for name, data in fixed.items()},
+                  'runtime_assets': {name: _digest(data) for name, data in assets.items()},
                   'template': _digest(TEMPLATE.read_bytes()),
                   'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
                   'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
@@ -899,6 +942,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
             'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
+            'runtime_assets': config['runtime_assets'], 'runtime_assets_installed': len(assets),
             'daemon_reload_rc': reload_rc, 'started': False}
 
 

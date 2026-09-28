@@ -103,6 +103,13 @@ def _v139_suite():
             target.unlink()
         if Path(source).is_file():
             shutil.copyfile(source, target)
+    # VELDO-0186: setup now requires qualified host engine bytes and runtime records.
+    fixtures186 = load('v139_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
+    engines186 = fixtures186.install(ROOT, base, mods)
+    fake = engines186['fake']
+    compare_formats = load('v139_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    prior_path186 = os.environ.get('PATH', '')
+    os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v139_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
     git = load('v139_git', mods / 'git_process.py')
     CS = load('v139_service', mods / 'control_service.py')
@@ -842,6 +849,9 @@ def _v139_suite():
     except StopIteration:
         pass
     finally:
+        issues186, trace186 = compare_formats.conform_fake(locals(), '0139_factory_setup')
+        expect('VELDO-0172 fake/capture:0139_factory_setup', not issues186)
+        os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         with contextlib.suppress(Exception):
             if unit:
