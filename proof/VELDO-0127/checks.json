@@ -1,0 +1,12 @@
+{
+  "anchors": "0 bad anchors",
+  "behavior_suites_run": [],
+  "footprint": "changed 3, outside the footprint: none",
+  "gate_run": false,
+  "mutations_registered": [],
+  "red_record": null,
+  "schema": "veldo.inspection-checks/v1",
+  "scope": "Documentation of a blocker only; no implementation proof.",
+  "spec_id": "VELDO-0127",
+  "validate_exit": 0
+}

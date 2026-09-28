@@ -44,3 +44,7 @@ record and falsifier mutations. Do not treat this record as a waiver of any crit
 
 No behavior suite, red driver or mutation checks ran. No engine was run, no login was
 attempted, and no real credential was read. The canonical gate was not run.
+
+Documentation checks: the footprint check reports nothing outside the declared
+footprint, the anchor check reports zero bad anchors, and the repository validator
+passes. checks.json records these results separately from the missing behavior proof.
