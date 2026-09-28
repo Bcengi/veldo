@@ -21,7 +21,9 @@ package and qualified by the production writer: it prints the lines of Codex 0.1
 message with its reset minute, and its MCP tool-call item) that a script file of this suite names for its unit,
 station and attempt, waiting on a file where the script says, and exits with the scripted code. Worker launches
 go through the wrapper without a containment group (`identity: reported`). No real engine runs, nothing logs in
-and no credential exists. Each row is reported once.
+and no credential exists. Each row is reported once. The fake's lines come from VELDO-0172's shared constructors;
+its `format/fake-lines` row checks every scripted line against the binary's table, and at teardown the suite drives
+the installed fake once through VELDO-0172's conform_fake and reports its `fake/capture` row.
 
 Two installations run side by side, each with its own clone, store, accounts and service. The reset row's unit
 runs in the second, begun before every other row and closed after them, so the minute its reset waits for passes
@@ -63,7 +65,7 @@ def _v154_suite():
     }
     ROWS = ('install/assets', 'loop/runner-in-service', 'loop/journal-wake-offers', 'loop/review-offered',
             'loop/receiver-death', 'loop/rerun-another-account', 'loop/ask-before-rerun', 'loop/owner-yes-reruns',
-            'loop/owner-no-stops', 'loop/reset-timer-wake', 'loop/no-other-timer')
+            'loop/owner-no-stops', 'loop/reset-timer-wake', 'loop/no-other-timer', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -82,6 +84,12 @@ def _v154_suite():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    # VELDO-0172: the fake's lines come from the shared constructors, and this suite checks its own fake engine
+    # against the live capture at its teardown.
+    fake_formats = load('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    conform_formats = load('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    live_step = fake_formats.live_step
 
     started = time.monotonic()
     # THE BUDGET. Every wait of the suite has a bound of its own and draws on its instance's deadline, inside the
@@ -128,6 +136,7 @@ def _v154_suite():
         ACC = RES.ACC
         HELPER = load('v154_helper', mods / 'accounts.py')
         CODEX = load('v154_codex', mods / 'control_engine_codex.py')
+        L = load('v154_launch', mods / 'control_launch.py')
         HOST_ID = 'host-154'
         HOST = socket.gethostname()
         BUILDER, REVIEWER = 'builder-154', 'reviewer-154'
@@ -209,6 +218,10 @@ sys.exit(chosen['code'])
         vendored.write_text(fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
                             .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts)))
         vendored.chmod(0o755)
+
+        def fake_engine(name):
+            # VELDO-0172's read-back drives the installed executable itself.
+            return vendored.read_text()
         qualification = base / 'codex-qualification.json'
         qualification.write_text(json.dumps(CODEX.qualification(str(vendored))))
 
@@ -521,8 +534,16 @@ sys.exit(chosen['code'])
                 return None
             return None
 
+        scripted = []
+
         def script(name, station, attempts):
+            scripted.extend(step['line'] for attempt in attempts for step in attempt['script'] if 'line' in step)
             (scripts / ('%s.%s.json' % (name, station))).write_text(json.dumps(attempts))
+
+        def readback_packet(engine, steps):
+            # VELDO-0172's read-back: the fake reads its script from this suite's script file for the packet's unit.
+            (scripts / 'format-readback.build.json').write_text(json.dumps([{'script': steps, 'code': 0}]))
+            return {'unit': 'format-readback', 'station': 'build', 'dispatch_id': 'format/readback'}
 
         def gate(name):
             return str(gates / name)
@@ -530,17 +551,26 @@ sys.exit(chosen['code'])
         def release(name):
             Path(gate(name)).write_text('go')
 
-        def thread():
+        # Stream lines in the shapes Codex 0.154.0 prints, on VELDO-0172's shared constructors.
+        @live_step
+        def x_thread():
             return {'line': {'type': 'thread.started', 'thread_id': 'thread-154-' + os.urandom(4).hex()}}
 
-        def turn():
+        @live_step
+        def x_started():
             return {'line': {'type': 'turn.started'}}
 
-        def done():
+        @live_step
+        def x_done(inp, out):
             return {'line': {'type': 'turn.completed', 'usage': {
-                'input_tokens': 3, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': 4,
+                'input_tokens': inp, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': out,
                 'reasoning_output_tokens': 0}}}
+        thread, turn = x_thread, x_started
 
+        def done():
+            return x_done(3, 4)
+
+        @live_step
         def failed(message):
             return {'line': {'type': 'turn.failed', 'error': {'message': message}}}
 
@@ -555,6 +585,7 @@ sys.exit(chosen['code'])
                                               'Dec')[at.month - 1], day, suffix, at.year, clock)
             return XLIMIT['message'] + '.' + XLIMIT['retry_at'][0] + clock + '.'
 
+        @live_step
         def mcp_call(kind, status, result=None):
             item = {'id': 'item_1', 'type': 'mcp_tool_call', 'server': 'tracker', 'tool': 'add_comment',
                     'arguments': {'issue': 'CEO-1'}, 'status': status}
@@ -977,6 +1008,29 @@ sys.exit(chosen['code'])
                   and all(set(p['sources']) <= {'journal', 'run_end', 'account_reset'} and p['sources'] for p in everything)
                   and len([p for p in everything if 'account_reset' in p['sources']]) == 1)
             B.wait_until(lambda: [r['state'] for r in B.dispatches(U['L4'])] == ['exited', 'exited', 'exited'])
+
+        # VELDO-0172: every line the fake was scripted to print, its limit message and MCP call among them, is an
+        # event of the binary's own table with its item an exec item of a declared kind (named problems, no values).
+        with region('format/fake-lines'):
+            codex_table = FORMATS['codex']
+            problems = []
+            for line in scripted:
+                name = conform_formats.event_name(line)
+                schema = codex_table['events'].get(name)
+                if schema is None:
+                    problems.append(name + ':table:no-event')
+                    continue
+                problems += conform_formats.conform(line, schema, name)
+                if 'item' in line:
+                    kind = codex_table['items'].get((line['item'] or {}).get('type'))
+                    problems += conform_formats.conform(line['item'], kind, name + '.item') if kind else \
+                        [name + '.item:table:no-item']
+            printed_kinds = sorted({line.get('type') for line in scripted})
+            check('format/fake-lines', 'every one of the %d lines the fake was scripted to print is an exec event of the '
+                  'binary\'s own table, its item a declared exec item [%s, %s]' % (len(scripted), printed_kinds, problems[:4]),
+                  len(scripted) > 20 and not problems
+                  and {'thread.started', 'turn.started', 'turn.completed', 'turn.failed', 'item.started',
+                       'item.completed'} <= set(printed_kinds))
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
@@ -1005,6 +1059,8 @@ sys.exit(chosen['code'])
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()
+        # VELDO-0172: this suite's own fake/capture observation, once its services have stopped.
+        fake_capture = conform_formats.conform_fake(locals(), '0154_factory_loop')
         time.sleep(0.5)
         for directory, _dirs, _files in os.walk(str(base)):
             with contextlib.suppress(OSError):
@@ -1020,6 +1076,9 @@ sys.exit(chosen['code'])
             if not observed:
                 print('  VELDO-0154 %s detail: no check ran' % name)
         expect('VELDO-0154 ' + name, ok)
+    for line in conform_formats.describe('0154_factory_loop', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0154_factory_loop', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0154 suite seconds: %.3f (the first instance\'s rows ended at %s s, the reset came at %s s)'
           % (time.monotonic() - started, round(timing.get('rows', -1), 1), round(timing.get('reset', -1), 1)))
 

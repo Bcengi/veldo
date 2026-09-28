@@ -26,6 +26,7 @@ footprint:
   - "scripts/suites/82_veldo_0129_worker_wiring.py"
   - "scripts/suites/82_veldo_0141_execution_record.py"
   - "scripts/suites/82_veldo_0165_launch_hygiene.py"
+  - "scripts/suites/83_veldo_0154_factory_loop.py"
   - "scripts/suites/*_veldo_0172_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -240,3 +241,13 @@ each with the capture's exact field paths in the shared templates. The suite tak
 falsifier is now registered on suite 79 and reds its own `fake/capture` row on the stream; new mutation
 `formats172-census-drops-conform` removes suite 79's call and reds `fake/census`; the hygiene mutation
 reds suite 0165's own row. Criteria text unchanged. Status unchanged.
+
+2026-09-28, integration with VELDO-0154 on batch-0165-0172: the static census found a tenth fake-building
+suite, 83_veldo_0154_factory_loop, written before this design. Its fake Codex vendor binary prints the lines
+its script files name, and those lines now come from the shared constructors (`live_step` over its thread,
+turn, completion, failure and MCP call lines), so every line matches the capture. At its teardown, once its
+services have stopped, it calls `conform_fake` with its locals, driving the installed executable once with a
+script of its own read-back packet, and reports `VELDO-0172 fake/capture:0154_factory_loop`; its new
+`format/fake-lines` row checks every scripted line, the usage-limit failures and MCP tool-call items
+included, against the binary's table. VELDO-0154's rows keep their checks. The footprint adds the suite file.
+Status unchanged.
