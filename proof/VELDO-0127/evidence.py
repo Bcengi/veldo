@@ -3,6 +3,11 @@ import hashlib
 import json
 from pathlib import Path
 
+# The planted marker is this many repetitions of one distinct word (live.py writes it), so a marker that
+# loads adds at least this many first-turn tokens. Two runs of the same role already differ by a few dozen
+# tokens (their generated run paths differ), so the marker qualification allows a quarter of that floor.
+MARKER_REPETITIONS = 4000
+CONTEXT_TOLERANCE = MARKER_REPETITIONS // 4
 MODULES = ('control_agent_config.py', 'control_agent_config_handoff.py', 'control_launch.py',
            'control_engine_claude.py', 'control_engine_codex.py')
 
@@ -30,7 +35,7 @@ def problems(root, engine, record, handoff):
             bad.append('accepted revision missing')
         expected = run.get('expected') or {}
         if engine == 'claude':
-            if handoff.difference(run.get('init') or {}, expected):
+            if handoff.difference(run.get('init') or {}, expected, run.get('builtin_commands') or ()):
                 bad.append('init set differs')
             if ('PushNotification' not in expected.get('tools', [])
                     or 'PushNotification' in run.get('disallowed', [])):
@@ -54,8 +59,9 @@ def problems(root, engine, record, handoff):
         if run.get('credential_sources') != ['jira'] or run.get('marker_present') is not False:
             bad.append('credential or instruction isolation differs')
     for mode in ('always', 'deferred'):
-        pair = [r for r in runs if r['mode'] == mode]
-        if len({r.get('first_turn_context') for r in pair}) != 1:
+        pair = {r['marker']: r.get('first_turn_context') for r in runs if r['mode'] == mode}
+        if (not all(isinstance(pair.get(m), int) for m in (False, True))
+                or abs(pair[True] - pair[False]) >= CONTEXT_TOLERANCE):
             bad.append(mode + ': context grew with unlisted markers')
     if runs[0].get('expected') != runs[2].get('expected'):
         bad.append('unassigned items changed the launch set')

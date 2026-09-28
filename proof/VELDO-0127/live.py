@@ -77,6 +77,11 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
                 continue
             events.append(event)
     init = next((e for e in events if e.get('type') == 'system' and e.get('subtype') == 'init'), {})
+    # The engine's own built-in commands, as its initialize answer marks them (names only).
+    answer = next((((e.get('response') or {}).get('response') or {}) for e in events if e.get('type') == 'control_response'
+                   and isinstance(((e.get('response') or {}).get('response') or {}).get('commands'), list)), {})
+    builtin = sorted(c['name'] for c in answer.get('commands', []) if isinstance(c, dict) and c.get('builtin') is True
+                     and isinstance(c.get('name'), str))
     init = {k: init[k] for k in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins', 'model') if k in init}
     options = baseline.get('options') or []
     disallowed = next((a.split('=', 1)[1].split(',') for a in options if a.startswith(P + 'disallowedTools=')), [])
@@ -108,6 +113,7 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
         break
     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
+            'builtin_commands':builtin,
             'disallowed':disallowed, 'configuration':configuration, 'listing':listing,
             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),
@@ -122,10 +128,25 @@ def main():
     for option in ('claude', 'codex', 'claude-profile', 'codex-profile', 'claude-model', 'codex-model'):
         parser.add_argument(P + option, required=True)
     # Diagnosis only: one engine, one mode and one marker choice, printed, never written as a capture.
-    parser.add_argument(P + 'only', help='engine:mode:control|planted')
+    parser.add_argument(P + 'only', help='engine (its whole capture, written) or engine:mode:control|planted (printed only)')
+    # Judges a written capture again with the current evidence.py, without running any worker.
+    parser.add_argument(P + 'rejudge', help='engine whose written capture is judged again')
     parser.add_argument(P + 'diagnostics', help='a file under /run/user/UID/ for redacted failed-run lines')
     args = vars(parser.parse_args())
     only = tuple(args.pop('only').split(':')) if args.get('only') else None
+    rejudge = args.pop('rejudge')
+    if rejudge:
+        evidence = load('role_live_evidence', HERE / 'evidence.py')
+        handoff = load('role_live_handoff', ROOT / '.veldo' / 'control_agent_config_handoff.py')
+        path = HERE / (rejudge + '-live.json')
+        result = json.loads(path.read_text())
+        result['problems'] = evidence.problems(ROOT, rejudge, result, handoff)
+        path.write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+        print(rejudge + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
+        return
+    engines = ('claude', 'codex')
+    if only is not None and len(only) == 1:
+        engines, only = only, None
     diagnostics = args.pop('diagnostics')
     if diagnostics and not diagnostics.startswith('/run/user/' + str(os.getuid()) + '/'):
         raise SystemExit('diagnostics must be under /run/user/' + str(os.getuid()))
@@ -148,7 +169,7 @@ def main():
         args['codex_profile'] = str(base / 'codex-login')
         f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
         try:
-            for engine in ('claude', 'codex'):
+            for engine in engines:
                 if only and only[0] != engine:
                     continue
                 for mode in ('always', 'deferred'):
@@ -169,7 +190,7 @@ def main():
                     if engine == 'codex':
                         marker_paths = [f.src / 'AGENTS.md']
                     for path in marker_paths:
-                        path.write_text(('VELDO0127_UNLISTED_MARKER ' * 4000) + '\n')
+                        path.write_text(('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS) + '\n')
                     try:
                         result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
                     finally:
