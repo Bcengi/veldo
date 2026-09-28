@@ -15,8 +15,9 @@ PartOf unit stopped with it, SIGTERM on stop), so nothing is installed into or s
 systemd user manager. The Tailscale CLI setup runs is scripts/suites/support/v171_tailscale.py, which
 replays proof/VELDO-0171/tailscale-capture.json exactly and logs every invocation where setup never looks;
 the host's real Tailscale is never run. The host laid down by VELDO-0139 before this change is laid down by
-the setup module as commit 7fefdb9a shipped it (VELDO-0139 with VELDO-0140's delegation), read from the
-repository's history. Passkeys are software ES256 authenticators made with openssl, their ceremonies
+the whole .veldo of commit 7fefdb9a (VELDO-0139 with VELDO-0140's delegation), taken from the repository's
+history with `git archive`, so it holds that commit's engine and the re-run upgrades it (VELDO-0189) before
+its API steps. Passkeys are software ES256 authenticators made with openssl, their ceremonies
 assembled as WebAuthn lays them out and sent over HTTP to the API process's loopback listener with the
 tailnet name as Host and Origin. Every Bot API exchange goes to a loopback stand-in, and a socket guard
 refuses every connection beyond 127.0.0.1 in this process and in every process the stand-in manager starts.
@@ -993,7 +994,7 @@ def _v171_suite():
                   % (again.get('outcome'), again.get('reason')),
                   code2 == 0 and again.get('outcome') == 'already_set_up'
                   and all(s.get('outcome') in ('already_done', 'deferred') for s in again.get('steps') or [])
-                  and [s.get('step') for s in again.get('steps') or []][:12] == list(F.BASE_STEPS))
+                  and [s.get('step') for s in again.get('steps') or []][:13] == ['engine_upgrade'] + list(F.BASE_STEPS))
             check(RR, 'every file under the state root, install root, unit directory, host trust and workspace binding '
                   'is byte for byte the same [%s]' % (changed + added + removed)[:4], not (changed or added or removed))
             keys_after = {p.name: p.read_bytes() for p in sorted(keys_a.iterdir())}
@@ -1113,12 +1114,18 @@ def _v171_suite():
         install_b, units_b = base / 'install-b', base / 'units-b'
         manager_b = Manager(units_b)
         managers.append(manager_b)
-        shipped = _git_process.run(['git', '-C', str(ROOT), 'show', BEFORE + ':.veldo/control_factory_setup.py'],
+        # The whole engine of that commit, never its setup module alone over the current engine: the host holds
+        # the older engine, which the re-run's upgrade (VELDO-0189) replaces before its API steps.
+        shipped = _git_process.run(['git', '-C', str(ROOT), 'archive', '--format=tar', BEFORE, '.veldo'],
                                    capture_output=True)
         F0 = None
+        older = base / ('engine-' + BEFORE)
+        older.mkdir()
         if shipped.returncode == 0 and shipped.stdout:
-            (mods / 'setup_before_0171.py').write_bytes(shipped.stdout)
-            F0 = load('v171_setup_before', mods / 'setup_before_0171.py')
+            import tarfile
+            with tarfile.open(fileobj=io.BytesIO(shipped.stdout)) as archive:
+                archive.extractall(str(older), filter='data')
+            F0 = load('v171_setup_before', older / '.veldo' / 'control_factory_setup.py')
         code, laid = setup(root_b, clone_b, trust_b, install_b, units_b, manager_b, module=F0) if F0 else (None, {})
         if code != 0 or laid.get('outcome') != 'set_up':
             for name in (RS, OB, SR):
@@ -1141,6 +1148,8 @@ def _v171_suite():
                     if not k.startswith(own)}
         before, head = trees_b(), journal(store_b)
         before_config = json.loads((home_b / 'config' / 'service.json').read_text())
+        receivers_before = {path: json.loads(Path(path).read_text())
+                            for path in sorted(((before_config.get('receiver') or {}).get('configs') or {}).values())}
         calls_before = len(manager_b.calls)
         capturing[0] = True
         try:
@@ -1176,27 +1185,57 @@ def _v171_suite():
             check(RS, 'setup republished the key projection from the committed store',
                   (host_b / 'allowed_signers').read_text() == K.projection(state))
 
-        # AC4: over the VELDO-0139 host only the API steps wrote.
+        # AC4: over the host VELDO-0139 laid down with the engine of 7fefdb9a, only VELDO-0189's upgrade and the API
+        # steps wrote.
         with section(OB):
             changed, added, removed = changes(before, after)
-            config_b = home_b / 'config'
-            check(OB, 'the earlier files that changed are only the service configuration and the key projection [%s]'
-                  % changed, changed == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')]))
+            config_b, bin_b = home_b / 'config', str(home_b / 'bin')
+            outside = [p for p in changed if not p.startswith(bin_b + '/')]
+            receivers = sorted(p for p in outside if os.path.basename(p).startswith('receiver-'))
+            check(OB, 'the earlier files that changed outside the installed engine are only the service configuration, the '
+                  'key projection and the receiver configuration the upgrade adds a key to [%s]' % outside,
+                  sorted(set(outside) - set(receivers)) == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')])
+                  and receivers == sorted(receivers_before))
+            gained = {}
+            for path, held in receivers_before.items():
+                now_held = json.loads(Path(path).read_text())
+                gained[os.path.basename(path)] = sorted(set(now_held) - set(held))
+                check(OB, 'the receiver configuration %s kept every value it held and only gained keys [%s]'
+                      % (os.path.basename(path), gained[os.path.basename(path)]),
+                      all(now_held.get(k) == v for k, v in held.items()) and gained[os.path.basename(path)])
             now_config = json.loads((config_b / 'service.json').read_text())
-            check(OB, 'the service configuration gained only the api_service key it held as null [%s]'
-                  % now_config.get('api_service'), 'api_service' in before_config and before_config['api_service'] is None
-                  and {k: v for k, v in now_config.items() if k != 'api_service'}
-                  == {k: v for k, v in before_config.items() if k != 'api_service'}
+            record_a = json.loads((install_a / home_a.name / 'config' / 'service.json').read_text())
+            engine_keys = ('closure', 'template')
+            check(OB, 'the service configuration kept every other value, names the current engine, gained the keys it '
+                  'lacked and names the API configuration in the api_service key it held as null [%s]'
+                  % sorted(set(now_config) - set(before_config)),
+                  'api_service' in before_config and before_config['api_service'] is None
+                  and {k: v for k, v in now_config.items() if k in before_config and k not in engine_keys + ('api_service',)}
+                  == {k: v for k, v in before_config.items() if k not in engine_keys + ('api_service',)}
+                  and all(now_config.get(k) == record_a.get(k) for k in engine_keys)
+                  and all(now_config.get(k) == record_a.get(k) for k in set(now_config) - set(before_config))
                   and now_config.get('api_service') == str(config_b / 'api-service.json'))
             expected = sorted(str(p) for p in (host_b / 'api-service.json', keys_b / E.edge_key_id('api'),
                                                keys_b / (E.edge_key_id('api') + '.pub'), root_b / 'edge' / 'api-auth',
                                                root_b / 'edge' / 'api-auth.pub', config_b / 'api-service.json',
                                                config_b / 'api-process.json', units_b / api_unit_b,
                                                units_b / (unit_b + '.wants'), units_b / (unit_b + '.wants') / api_unit_b))
-            check(OB, 'the files it added are exactly the API steps\' [%s]' % sorted(set(added) ^ set(expected))[:4],
-                  added == expected and removed == [])
-            check(OB, 'the installed engine files are unchanged',
-                  not [p for p in changed + added + removed if p.startswith(str(home_b / 'bin'))])
+            added_outside = [p for p in added if not p.startswith(bin_b + '/')]
+            check(OB, 'the files it added outside the installed engine are exactly the API steps\' [%s]'
+                  % sorted(set(added_outside) ^ set(expected))[:4],
+                  added_outside == expected and not [p for p in removed if not p.startswith(bin_b + '/')])
+
+            def engine_of(directory):
+                return {p.name: (oct(stat.S_IMODE(p.lstat().st_mode)), hashlib.sha256(p.read_bytes()).hexdigest())
+                        for p in sorted(Path(directory).iterdir())}
+            check(OB, 'the installed engine is now the current one, name for name, byte for byte and mode for mode',
+                  engine_of(bin_b) == engine_of(install_a / home_a.name / 'bin')
+                  and oct(stat.S_IMODE(os.lstat(bin_b).st_mode)) == '0o500')
+            upgrade_b = steps_b.get('engine_upgrade') or {}
+            check(OB, 'the upgrade ran first and restarted the running service once [%s %s]'
+                  % (upgrade_b.get('outcome'), upgrade_b.get('restart')),
+                  (report_b.get('steps') or [{}])[0].get('step') == 'engine_upgrade'
+                  and upgrade_b.get('outcome') == 'done' and upgrade_b.get('restart') == 'restarted')
             check(OB, 'every earlier step is reported already done and every API step done [%s]'
                   % {k: v.get('outcome') for k, v in steps_b.items()},
                   all(steps_b.get(s, {}).get('outcome') == 'already_done' for s in F.BASE_STEPS)
@@ -1204,11 +1243,13 @@ def _v171_suite():
                           ('api_edge_key', 'api_edge_enrollment', 'api_service_configuration', 'api_service_install',
                            'api_process_configuration', 'api_unit', 'tailscale_serve')))
 
-        # AC2: this run added the API configuration, so it restarts nothing and names the one restart command;
-        # once the installation names it and the authority runs, setup starts the API unit itself.
+        # AC2: this run added the API configuration, so it restarts nothing for it and names the one restart
+        # command (the one restart is the engine upgrade's, VELDO-0189, before the API steps); once the
+        # installation names it and the authority runs, setup starts the API unit itself.
         with section(SR):
-            check(SR, 'setup started, stopped and restarted nothing [%s]' % [c[0] for c in calls_b],
-                  not any(c[0] in ('start', 'stop', 'restart') for c in calls_b)
+            check(SR, 'setup started and stopped nothing and restarted only the authority, once, for the engine '
+                  'upgrade [%s]' % [c for c in calls_b if c[0] in ('start', 'stop', 'restart')],
+                  [c for c in calls_b if c[0] in ('start', 'stop', 'restart')] == [['restart', unit_b]]
                   and steps_b.get('api_start', {}).get('outcome') == 'deferred' and not manager_b.alive(api_unit_b))
             check(SR, 'it names the one restart command [%s]' % report_b.get('next'),
                   'systemctl --user restart %s' % unit_b in str(report_b.get('next')))
