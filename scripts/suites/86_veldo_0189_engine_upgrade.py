@@ -34,6 +34,7 @@ def _v189_suite():
     import shutil
     import signal
     import socket
+    import sqlite3
     import stat
     import subprocess
     import sys
@@ -1046,6 +1047,32 @@ def _v189_suite():
                               for s in report.get('steps') or []))
             check(KP, 'a kill row ran at every point, at least begin, staged, exchanged, record and restart [%s]' % points,
                   {'begin', 'staged', 'exchanged', 'record', 'restart'} <= set(points))
+            # The service the upgrade restarted carried the store's ownership declarations to the installed engine's
+            # bytes (control_store.rebind_owners from its record), and a digest the file's bytes do not have rebinds
+            # nothing (on a copy of the store, so the running service's own is never written).
+            installed = {os.path.realpath(str(kill.home / 'bin' / n)): d for n, d in kill.record()['closure'].items()}
+            owners = read_store(kill.record()['store_path'], S.entity_owners)
+            bound = [r for r in owners if r[4] in installed]
+            stale = [(r[1], os.path.basename(r[4])) for r in bound if r[5] != installed[r[4]]]
+            check(KP, 'after the upgrades every ownership declaration naming an installed engine file names the digest the '
+                  'record holds [%d of %d declarations name one; stale %s]' % (len(bound), len(owners), stale[:3]),
+                  bound and not stale)
+            copy = base / 'owners-copy.sqlite'
+            source = sqlite3.connect('file:%s?mode=ro' % kill.record()['store_path'], uri=True)
+            target = sqlite3.connect(str(copy))
+            source.backup(target)
+            source.close()
+            target.close()
+            conn = S.open_store(str(copy))
+            try:
+                module = bound[0][4] if bound else str(kill.home / 'bin' / 'control_channel_activation.py')
+                other = 'sha256:' + hashlib.sha256(b'bytes the installed file does not have').hexdigest()
+                again = S.rebind_owners(conn, {module: other})
+                after = S.entity_owners(conn)
+            finally:
+                conn.close()
+            check(KP, 'a declaration is not rebound to a digest its file\'s bytes do not have [%s]' % again,
+                  again == [] and after == owners)
 
         # AC2: a restart that fails puts the previous engine back and the service answering on it.
         with section(FR):

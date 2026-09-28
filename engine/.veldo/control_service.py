@@ -1808,6 +1808,19 @@ def open_loop(config, service):
         return None, 'unavailable_service:loop:' + type(error).__name__
 
 
+def installed_engine(config):
+    """{resolved path: digest} of the installed engine this process runs, as its installation record's
+    closure names it (VELDO-0189), or {} when this module is not the record's executable (a checkout's
+    copy serving an installed configuration rebinds nothing)."""
+    executable, recorded = config.get('executable'), config.get('closure')
+    if (not isinstance(executable, str) or not isinstance(recorded, dict)
+            or os.path.realpath(__file__) != os.path.realpath(executable)):
+        return {}
+    bin_dir = os.path.dirname(os.path.realpath(executable))
+    return {os.path.join(bin_dir, name): value for name, value in recorded.items()
+            if isinstance(name, str) and isinstance(value, str) and os.path.basename(name) == name}
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
@@ -1816,7 +1829,15 @@ def serve(config_path):
     try:
         conn = S.open_store(config['store_path'])
         try:
+            # VELDO-0189: an upgraded engine's owning modules carry the store's ownership declarations
+            # to their installed bytes before anything attaches.
+            rebound = S.rebind_owners(conn, installed_engine(config))
             service = Service(config, conn)
+            if rebound:
+                service._log({'kind': 'ownership', 'operation': 'ownership_rebind', 'at': time.time(),
+                              'domain_uuid': service.domain, 'rebound': [
+                                  {'selector': r[0], 'value': r[1], 'module': r[2], 'previous': r[3], 'digest': r[4]}
+                                  for r in rebound]})
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))

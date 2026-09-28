@@ -47,8 +47,15 @@ SQL on the file, a copy of this module from before the rule, and deleting entity
 owned entities, and code that deliberately compiles a function under the declared file name, or
 patches the owning module's globals in the same process, passes the origin check. The declaration
 names one file and its bytes, so the owning service runs only from that copy as it was when it
-first attached: an upgraded module, or the same module attached from another checkout's copy, is
-refused ownership_conflict at attach, and Release 1 has no re-declaration path (Release 2).
+first attached: an edited module, or the same module attached from another checkout's copy, is
+refused ownership_conflict at attach. The one re-declaration path is rebind_owners, for an engine
+upgrade (VELDO-0189): the installed authority service, before anything attaches, names each file of
+its installed engine with the digest its installation record holds, and every declaration naming one
+of those files by path is rebound to that digest when the file's bytes have it now; the selector,
+value, owner and commands never change. An engine that predates the path cannot attach its owners to a
+store a later engine rebound (its own declaration names the older bytes, refused ownership_conflict),
+so a hand rollback to such an engine after the current one has served leaves its owned commands
+refused.
 Declarations and repository bindings are not part of the journal, so a store rebuilt from its
 journal carries neither (Release 2 recovery).
 A declaration is immutable: the same declaration again is a no-op, a different one for a declared
@@ -823,6 +830,38 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
         raise
     return rows
 
+
+def rebind_owners(conn, installed):
+    """Rebind, for an engine upgrade (VELDO-0189), every declaration whose module is a key of
+    `installed` ({resolved module path: sha256 digest}, the installed engine as its installation
+    record names it) and whose digest differs, to that digest, when the file's bytes have it now. A
+    file whose bytes are not the recorded ones (edited, or mid-upgrade) keeps its declaration, so its
+    service is refused ownership_conflict at attach as before. Returns the rebound declarations as
+    (selector, value, module, previous digest, digest); a store with nothing to rebind is not written."""
+    if not isinstance(installed, dict) or not all(_is_str(k) and _is_str(v) for k, v in installed.items()):
+        raise StoreRefused("malformed_command", "an ownership rebinding names each installed module file and its digest")
+    installed = {os.path.realpath(k): v for k, v in installed.items()}
+
+    def due():
+        return [(r[0], r[1], r[4], r[5], installed[r[4]]) for r in entity_owners(conn)
+                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]
+    if not due():
+        return []
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot rebind ownership (%s)" % e)
+    try:
+        rebound = due()
+        for selector, value, module, previous, digest in rebound:
+            conn.execute("UPDATE entity_owners SET module_digest=? WHERE selector=? AND value=? AND module=? AND module_digest=?",
+                         (digest, selector, value, module, previous))
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return rebound
 
 def bound_repository(conn, domain_uuid, repository_uuid):
     """The resolved path of the local repository bound to a domain's repository uuid, or None."""
