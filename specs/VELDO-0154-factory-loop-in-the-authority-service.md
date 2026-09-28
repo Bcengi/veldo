@@ -216,3 +216,5 @@ account slot needed a seam outside the drafted footprint, added here: `release_a
 unknown outcome) over the Runner's kernel observation that the orphaned worker is gone, after the Runner makes the
 stop the dead receiver owed, and `control_account_pool.py` stops counting such a slot among the account's runs;
 `scripts/check_teeth_mutations.py` is added for the finding 154 mutations. Proof in proof/VELDO-0154/.
+
+2026-09-27, integration with VELDO-0169 on main: the suite registers the claim organ as a transaction transition (the store passes it the command transaction), the form VELDO-0169 introduced; no criterion changes.

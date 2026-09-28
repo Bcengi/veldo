@@ -157,7 +157,7 @@ def _v154_suite():
         # The store the service is configured with, set up by the owner before installation.
         setup = S.open_store(str(store_path))
         connections.append(setup)
-        setup.command_registry['claim_operation'] = {'transition': CLM.transition,
+        setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                      'writes': ('entities', 'journal', 'commands', 'nonces')}
         serial = [0]
 
