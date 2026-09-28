@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187, VELDO-0188]
     order: 16059
     release: 1
     stage: 6
@@ -1353,7 +1353,7 @@ work:
     stage: 5
   - item: W143
     spec: VELDO-0183
-    title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
+    title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, every store write serialized across processes, never handed a paid model API, and every memory call is in the run's record
     feature_refs: [F7]
     depends_on: [VELDO-0141, VELDO-0144, VELDO-0158, VELDO-0177, VELDO-0182]
     order: 15183
@@ -1389,6 +1389,14 @@ work:
     feature_refs: [F7]
     depends_on: [VELDO-0141, VELDO-0155, VELDO-0174, VELDO-0176, VELDO-0182, VELDO-0183]
     order: 15187
+    release: 1
+    stage: 5
+  - item: W148
+    spec: VELDO-0188
+    title: The running factory starts a Line for a project the moment the store records it, staffed from the project's team or the default team, and stops the Line of a closed project, with no reinstall and no restart
+    feature_refs: [F7]
+    depends_on: [VELDO-0076, VELDO-0089, VELDO-0143, VELDO-0154, VELDO-0161, VELDO-0162, VELDO-0185]
+    order: 15188
     release: 1
     stage: 5
 
@@ -1763,6 +1771,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W145 | VELDO-0185 | 1 | 5; setup lays down the dispatch configuration, after VELDO-0186 |
 | W146 | VELDO-0186 | 1 | 5; setup installs engines and runtime assets |
 | W147 | VELDO-0187 | 1 | 5; conversation turns captured into claude-mem |
+| W148 | VELDO-0188 | 1 | 5; a Line for every project at run time |
 
 ## Related baseline and follow-up disposition
 
@@ -2031,3 +2040,12 @@ paths and the knowledge graph's entry point from the code; VELDO-0184 names Code
 order of W145 and W146 is reversed: VELDO-0186 is built first and VELDO-0185, which now depends on it,
 saves the default team and carries the end-to-end dispatch on every account. W44 (VELDO-0059) depends on
 VELDO-0187 too. The graph stays acyclic and stage-ordered.
+
+2026-09-27: within revision 4, a third round on the conversation drafts, with the lead's decisions; one
+new draft and no function cut. Two items the review round had filed are MVP function: W148's VELDO-0188
+has the running service start a Line for each project the store records, staffed from its team or the
+default team, and stop the Line of a closed project, so a project made from Telegram or a conversation
+takes work with no reinstall; VELDO-0183's new AC4 serializes every write to the two ChromaDB memory
+stores through one store server per store that conversations and the owner's assistant both reach, the
+knowledge graph's SQLite store already locking. W44 (VELDO-0059) depends on VELDO-0188 too. The graph
+stays acyclic and stage-ordered.

@@ -64,18 +64,20 @@ acceptance_criteria:
       the knowledge graph (the myday knowledge_graph code directory and its interpreter); memory_kb (the
       myday memory_kb code directory, the session-summary knowledge base, and its interpreter); and
       claude-mem (its installed plugin directory, whose version VELDO-0187 reads, its search server's
-      command and its data directory, all named since its code is not in our repositories). The first three servers' data paths are fixed in their code, not configurable, so the
-      manifest names code directories and setup checks the fixed data path under each: mem0_memory's
-      `data` directory (config.py DATA_DIR, holding `chromadb` and `history.db`), knowledge_graph's
-      `knowledge_graph.db` (db.py DB_PATH) and memory_kb's `data/chromadb` (kb/config.py DB_PATH). Setup
-      checks each location exists, is the owner's own and is not a link, and writes the memory record by the
-      owner's signed command; only another signed command revises it. Nothing is copied, because a copy
-      would be a second memory: the record points at the bytes the owner's assistant reads and writes
+      command and its data directory, all named since its code is not in our repositories), and beside them
+      the path of the owner's assistant's MCP configuration (myday's `.mcp.json`), whose memory entries
+      VELDO-0183 AC4 points at the store servers. The first three servers' data paths are fixed in their
+      code, not configurable, so the manifest names code directories and setup checks the fixed data path
+      under each: mem0_memory's `data` directory (config.py DATA_DIR, holding `chromadb` and `history.db`),
+      knowledge_graph's `knowledge_graph.db` (db.py DB_PATH) and memory_kb's `data/chromadb` (kb/config.py
+      DB_PATH). Setup checks each location exists, is the owner's own and is not a link, and writes the memory
+      record by the owner's signed command; only another signed command revises it. Nothing is copied, because
+      a copy would be a second memory: the record points at the bytes the owner's assistant reads and writes
       today. Each launch that hands memory reads the record's current revision and records it. The suite
       launches turns on two accounts of each engine and compares their handed locations, and sets up a
-      manifest whose knowledge_graph directory lacks `knowledge_graph.db`. Falsifier: Derive the file
-      memory location from the run's own account profile, and the same-on-every-account row must fail on
-      two different directories.
+      manifest whose knowledge_graph directory lacks `knowledge_graph.db`. Falsifier: Derive the file memory
+      location from the run's own account profile, and the same-on-every-account row must fail on two
+      different directories.
     falsified_by: >
       Derive the file memory location from the run's own account profile, and the same-on-every-account row
       must fail on two different directories.
@@ -139,7 +141,7 @@ draft: only the owner marks it ready.
 ## Out of scope
 
 Moving Ava's memory under the factory's state root (the owner may do it later by revising the record);
-several owners' memories (Release 3); how the stores serialize concurrent writers (VELDO-0183's Notes).
+several owners' memories (Release 3); how the stores serialize concurrent writers (VELDO-0183 AC4).
 
 ## What the reviewer judges
 
@@ -167,3 +169,7 @@ specification ready.
 paths in code, so the manifest names code directories and setup checks those fixed paths; AC2 keeps only
 the "contains" refusal and drops "lies inside a profile", which would refuse Ava's real file memory. Still
 a draft.
+
+2026-09-27, third round: AC1's manifest also names the owner's assistant's MCP configuration, which
+VELDO-0183 AC4 points at the store servers that serialize concurrent writers; Out of scope names AC4.
+Criterion meaning otherwise unchanged. Still a draft.

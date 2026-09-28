@@ -135,9 +135,7 @@ pipeline lands).
   result or fetched page carrying one, a re-run continuation); a project named from a turn's output; a reply that claims a project was made; a snapshot changed between conversion and
   the build; the conversation's commits reaching trunk without the gate and review.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); forged rows in
-  our own store; a new project this conversion or VELDO-0143 makes gets no Line until the service is
-  reinstalled with a work configuration naming its repository, since VELDO-0154 builds Lines only at
-  installation and no specification yet owns adding a Line at run time (filed for the lead to place).
+  our own store; the Line that serves the new project in the running service is VELDO-0188's.
 
 ## Notes
 
@@ -153,3 +151,6 @@ marks a specification ready.
 (`conversations.make_project` or Telegram's `/project <name>`), with the name from that command, since an
 injected tool result could otherwise make a project with no question; depends_on adds VELDO-0178, whose
 routes table the command joins. Filed: a new project gets no Line without a reinstall. Still a draft.
+
+2026-09-27, third round: the filed note on a new project's Line now names VELDO-0188, which starts a
+Line at run time for every project the store records. Criteria unchanged. Still a draft.

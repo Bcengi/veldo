@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0183
-title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
+title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, every store write serialized across processes, never handed a paid model API, and every memory call is in the run's record
 status: draft
 risk: critical
 owner: dmitry
@@ -24,8 +24,12 @@ footprint:
   - ".veldo/control_team*.py"
   - "engine/.veldo/control_agent_config*.py"
   - ".veldo/control_agent_config*.py"
+  - "engine/.veldo/control_service*.py"
+  - ".veldo/control_service*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
+  - "bin/veldo"
+  - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0183_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -36,9 +40,9 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record each memory server's catalog revision with the memory record revision it reads, each catalog
-    save refused for a paid-API name, and each run's memory servers as names; never memory content or a
-    credential.
+    Record each store server's start and lock with its part and socket, each memory server's catalog
+    revision with the memory record revision it reads, each catalog save refused for a paid-API name, and
+    each run's memory servers as names; never memory content or a credential.
   metrics: >
     Count memory tool calls per server and tool, catalog saves refused for a paid-API name, and runs whose
     memory servers failed to connect.
@@ -49,28 +53,32 @@ observability:
     Distinguish a catalog record that hands a server a paid-API or login name
     (invalid_input:mcp_server:paid_api:<name>) from a memory server that fails to connect at launch (the
     init event's server status, stopped by name before the first turn as VELDO-0127 AC4 stops a missing
-    server).
+    server) and from a ChromaDB store another process holds open when its store server starts
+    (conflict:memory_store_open:<part>:<pid>).
 acceptance_criteria:
   - id: AC1
     text: >
       Claim: Setup defines ava-memory, the knowledge graph, claude-mem and memory_kb as catalog MCP server
-      records launched from their own code and pointing at the one memory store, and the assistant roles
+      records serving their own code's tools over the one memory store (the two ChromaDB parts through
+      AC4's store servers), and the assistant roles
       select all four with all their tools. Set and completeness: From the memory record (VELDO-0182), setup
-      saves four VELDO-0144 catalog records by the owner's signed command: `ava-memory` (the mem0_memory
-      interpreter running mcp_server.py in its code directory, as myday's `.mcp.json` launches it);
+      saves four VELDO-0144 catalog records by the owner's signed command: `ava-memory` (AC4's bridge to the
+      mem0_memory store server, which serves the tools of mcp_server.py, the server myday's `.mcp.json`
+      launches today);
       `knowledge-graph` (the knowledge_graph interpreter running mcp_server.py in its code directory, whose
       main creates the database with init_db and serves FastMCP `knowledge-graph` over stdio; myday's
       `.mcp.json` lists only ava-memory among the memory servers, so this entry point is named from the
-      code); `claude-mem` (its search server's command from the manifest); and `memory-kb`, a stdio server
-      the factory ships (control_memory_kb), since memory_kb is a command-line tool with no server of its
-      own, whose tools are its cli.py subcommands (search, index-file, index-dir, index-telegram, stats, list,
-      delete, clear and setup-passphrase), each run as memory_kb's interpreter in its code directory and
-      answering the command's output, with memory_kb's `JARVIS_PASSPHRASE` (kb/crypto.py) as the record's
-      credential reference when the owner has saved it (VELDO-0158 delivers and redacts it). Setup adds each
-      to the `assistant` and `assistant_codex` roles of VELDO-0177 AC2 as an `always` selection of all
-      tools, as a new role revision. The init event of a turn on each engine lists the four servers
-      connected with every tool each registers. Falsifier: Save the roles without `claude-mem`, and the init
-      row must fail on the missing server.
+      code); `claude-mem` (its search server's command from the manifest); and `memory-kb` (AC4's bridge to
+      the memory_kb store server, which serves the tools of control_memory_kb, shipped by the factory since
+      memory_kb is a command-line tool with no server of its own), whose tools are its cli.py subcommands
+      (search, index-file, index-dir, index-telegram, stats, list, delete, clear and setup-passphrase), each
+      answered by the store server calling the kb package functions that subcommand calls, never by a
+      second process opening the store, with
+      memory_kb's `JARVIS_PASSPHRASE` (kb/crypto.py) as the record's credential reference when the owner has
+      saved it (VELDO-0158 delivers and redacts it). Setup adds each to the `assistant` and `assistant_codex`
+      roles of VELDO-0177 AC2 as an `always` selection of all tools, as a new role revision. The init event of
+      a turn on each engine lists the four servers connected with every tool each registers. Falsifier: Save
+      the roles without `claude-mem`, and the init row must fail on the missing server.
     falsified_by: >
       Save the roles without `claude-mem`, and the init row must fail on the missing server.
   - id: AC2
@@ -97,15 +105,47 @@ acceptance_criteria:
       (VELDO-0141 AC1) with its input and result, redacted as every line is. The suite runs fixture copies of
       the four servers over one fixture store: conversation A adds a memory, a knowledge graph fact and a
       memory_kb document; conversation B, on another account, finds all three by search; and the fixture's
-      own servers and memory_kb's command line, started as the owner's assistant starts them, find them too. Falsifier: Hand each conversation its own copy of the
-      data directory, and the cross-conversation row must fail on B's empty search.
+      own servers and memory_kb's command line, started as the owner's assistant's configuration starts
+      them, find them too. Falsifier: Hand each conversation its own copy of the data directory, and the
+      cross-conversation row must fail on B's empty search.
     falsified_by: >
       Hand each conversation its own copy of the data directory, and the cross-conversation row must fail
       on B's empty search.
+  - id: AC4
+    text: >
+      Claim: Every write to mem0_memory's and memory_kb's ChromaDB stores is serialized across processes,
+      because one store server per store is the only process that opens it and every conversation and the
+      owner's assistant reach that server over a local socket, while the knowledge graph's SQLite store
+      already serializes its writers. Set and completeness: Setup installs, by the owner's signed command, one
+      store server per ChromaDB part as a user unit beside the authority service (control_service's
+      Systemctl): the part's own interpreter running the factory's control_memory_store in the part's code
+      directory, which imports the part's own tools (mem0_memory's mcp_server `mcp`, whose tools call
+      memory_store; control_memory_kb over memory_kb's kb package), holds an exclusive lock on a lock file in
+      the part's data directory for its whole life, and serves those tools one call at a time over a Unix
+      socket under the state root that only the owner's account can open. Before it opens the store it refuses
+      by name a store another process holds open (conflict:memory_store_open:<part>:<pid>). AC1's `ava-memory`
+      and `memory-kb` records launch the factory's stdio bridge (`veldo memory bridge <part>`), which lists
+      the server's tools and forwards each call; setup writes the same bridge as the `ava-memory` and
+      `memory-kb` entries of the owner's assistant MCP configuration the memory manifest names (VELDO-0182
+      AC1), keeping the previous bytes for the rollback and leaving entries that already name the bridge
+      alone, and `veldo memory kb <subcommand>` runs memory_kb's command line through the same server. The
+      knowledge graph needs no server: db.py opens every connection in WAL mode, so SQLite's own file locks
+      admit one writer at a time and a writer that waits past Python's five second default gets "database is
+      locked" as its tool's error, never a lost or torn write; claude-mem's store is written only by its own
+      worker (VELDO-0187). The suite runs two writer processes at once, one through a conversation's catalog
+      bridge and one through the assistant's configuration entry, each adding 200 memories to each ChromaDB
+      store, and after both end requires all 400 found by id and by search from a fresh process, the store's
+      files held open by exactly one process throughout. Falsifier: Launch AC1's `ava-memory` record as
+      mcp_server.py opening the store itself, as myday's `.mcp.json` does today, and the one-opener row must
+      fail on the second process holding the store's files open.
+    falsified_by: >
+      Launch AC1's `ava-memory` record as mcp_server.py opening the store itself, as myday's `.mcp.json`
+      does today, and the one-opener row must fail on the second process holding the store's files open.
 required_evidence: [unit, integration]
 rollback: >
-  Remove the memory selections from the assistant roles by a new revision while keeping the catalog
-  records and the memory itself. No automatic rollback is authorized.
+  Restore the owner's assistant MCP configuration bytes setup kept and stop the store servers; remove the
+  memory selections from the assistant roles by a new revision while keeping the catalog records and the
+  memory itself. No automatic rollback is authorized.
 ---
 
 ## Intent
@@ -137,16 +177,21 @@ Code hooks that the everything-off baseline keeps off (VELDO-0155).
 - Normal use: a conversation searches ava-memory for a rule the owner saved, adds a knowledge graph fact,
   searches claude-mem for how a problem was solved last month and memory_kb for last week's session
   summary; the owner's assistant later finds the new fact.
-- Threat model: a paid model API key handed to a server; a server pointed at another store than the
-  record; a memory call missing from the record; a memory tool taken away from a role.
+- Threat model: two writers in separate processes, a conversation and the owner's assistant, one losing
+  the other's memories; a store opened by a second process beside its store server; the store socket
+  reachable by another account; a paid model API key handed to a server; a server pointed at another store
+  than the record; a memory call missing from the record; a memory tool taken away from a role.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); faults inside
-  the memory servers' own code, which is the owner's assistant's; concurrent writers from several
-  conversations and Ava in normal use, which the knowledge graph serializes through SQLite's own locking
-  (db.py opens every connection in WAL mode) while mem0_memory's and memory_kb's ChromaDB stores take no
-  lock across processes, so concurrent writes to those two are filed for Release 2; claude-mem's search
+  the memory servers' own code, which is the owner's assistant's; a direct open of a ChromaDB store by
+  a myday command line that starts while its store server runs (see Notes); claude-mem's search
   server answers only while claude-mem's own worker runs, which setup neither starts nor checks (filed).
 
 ## Notes
+
+myday's own command lines that open a ChromaDB store directly (mem0_memory/cli.py, memory_kb/cli.py and
+the session-end step myday's CLAUDE.md runs) are pointed at `veldo memory kb` and the bridge in myday, a
+change filed with the owner outside this repository; the store server's start refuses a store one of them
+holds open, by name.
 
 The paid-API rule is checked where a catalog record is saved, so it holds for every server a role can
 select, and the receiver's environment strip still holds for the engines.
@@ -160,3 +205,10 @@ specification ready.
 entry point from its code, since myday's `.mcp.json` lists only ava-memory; claude-mem's capture of turns
 is no longer deferred and is VELDO-0187. Filed: concurrent ChromaDB writers and claude-mem's worker. Still
 a draft.
+
+2026-09-27, third round: concurrent writers are MVP function (the lead's decision), so new AC4 serializes
+every write to the two ChromaDB stores through one store server per store that conversations and the
+owner's assistant both reach, with a two-writer falsifier, and states that the knowledge graph's SQLite
+store already locks; AC1's `ava-memory` and `memory-kb` records launch AC4's bridge, and memory_kb's tools
+are answered inside its store server rather than by a cli.py process per call; the filed note on
+concurrent writers is withdrawn. Still a draft.
