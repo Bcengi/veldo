@@ -1,0 +1,69 @@
+{
+ "all_behavior_rows_red": false,
+ "by_assertion": true,
+ "commit": "aa85e4a27a87f2cf3538d55858fb121a07db17ae",
+ "details": [
+  "VELDO-0186 runtime/modes detail: runtime fixed at mode 0500",
+  "VELDO-0186 runtime/modes detail: runtime/nested fixed at mode 0500",
+  "VELDO-0186 engines/version detail: non-versioned Claude target names the missing version: missing_evidence:engine_baseline:cli.js",
+  "VELDO-0186 metrics/pins detail: real pin inventory counts 1",
+  "VELDO-0186 metrics/pins detail: real pin inventory counts 0",
+  "VELDO-0186 metrics/pins detail: real pin inventory counts 0",
+  "VELDO-0186 metrics/binds detail: claude_code refused bind counted once: ('binding_mismatch:engine_digest', None, [])",
+  "VELDO-0186 metrics/binds detail: codex refused bind counted once: ('stale_subject:engine_digest', None, [])",
+  "VELDO-0186 metrics/binds detail: two refused engine binds counted"
+ ],
+ "failed_rows": [
+  "VELDO-0186 runtime/modes",
+  "VELDO-0186 engines/version",
+  "VELDO-0186 metrics/pins",
+  "VELDO-0186 metrics/binds"
+ ],
+ "rows": [
+  [
+   "VELDO-0186 runtime/assets",
+   true
+  ],
+  [
+   "VELDO-0186 runtime/missing",
+   true
+  ],
+  [
+   "VELDO-0186 bind/engines",
+   true
+  ],
+  [
+   "VELDO-0186 engines/unlisted",
+   true
+  ],
+  [
+   "VELDO-0186 engines/digest",
+   true
+  ],
+  [
+   "VELDO-0186 runtime/setup-missing",
+   true
+  ],
+  [
+   "VELDO-0186 runtime/modes",
+   false
+  ],
+  [
+   "VELDO-0186 engines/version",
+   false
+  ],
+  [
+   "VELDO-0186 metrics/pins",
+   false
+  ],
+  [
+   "VELDO-0186 metrics/binds",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 15.006,
+ "spec_id": "VELDO-0186",
+ "suite": "scripts/suites/86_veldo_0186_setup_assets.py",
+ "tree": "unchanged git archive of the pre-change commit"
+}

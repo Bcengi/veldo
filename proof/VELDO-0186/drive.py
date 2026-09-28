@@ -57,7 +57,12 @@ def red(commit):
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0186', commit=resolved,
                   suite='scripts/suites/' + SUITE, tree='unchanged git archive of the pre-change commit',
                   seconds=round(time.monotonic() - started, 3), **observed)
-    report['all_behavior_rows_red'] = len(report['rows']) == 5 and all(not ok for _, ok in report['rows'])
+    suite_tree = ast.parse((ROOT / 'scripts/suites' / SUITE).read_text())
+    expected = next(ast.literal_eval(node.value) for node in ast.walk(suite_tree)
+                    if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'ROWS' for t in node.targets))
+    report['all_behavior_rows_red'] = ({name for name, _ok in report['rows']} == {PREFIX + name for name in expected}
+                                       and len(report['rows']) == len(expected)
+                                       and all(not ok for _, ok in report['rows']))
     (HERE / ('red-at-' + commit + '.json')).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
     print(json.dumps({key: report[key] for key in ('commit', 'failed_rows', 'by_assertion', 'all_behavior_rows_red')}))
     return 0 if report['by_assertion'] and report['all_behavior_rows_red'] else 1

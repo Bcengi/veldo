@@ -156,7 +156,8 @@ def _v186_suite():
             check('bind/engines', engine + ' recorded binding equals installed binding',
                   summary is not None and recorded.get(engine) == summary == report.get('engines', {}).get(engine))
         check('bind/engines', 'pin count', report.get('pins_made') == 1)
-        helper = F.organ('control_factory_setup_engines')
+        helper, error = attempt(lambda: F.organ('control_factory_setup_engines'))
+        check('metrics/pins', 'production pin counter available', error is None)
         for bindings, wanted in ((recorded, 1), ({'codex': recorded.get('codex', {})}, 0), ({}, 0)):
             count, error = attempt(lambda: helper.count_pins(args[0], bindings))
             check('metrics/pins', 'real pin inventory counts ' + str(wanted), error is None and count == wanted)

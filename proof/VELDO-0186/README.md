@@ -1,41 +1,57 @@
 # VELDO-0186 proof
 
-Factory setup now carries the runtime files its installed modules name and binds qualified host
-engines. The service census retains its Python closure and derives runtime assets from full path
-literals and the Path expression used by Codex. The runtime qualification entry point is included
-so its LangGraph record is part of that census. Missing source assets refuse installation by name.
-The service configuration records each installed asset's path and SHA256 digest.
+Factory setup installs the runtime files its module census names, checks qualified host engines
+before writing state, pins Claude Code through its production writer, and records both engine
+bindings. The installed receiver uses the same state root and qualification records. No engine is
+executed and no service is started by this proof.
 
-Setup resolves the Claude and Codex commands on PATH without executing either. Claude's resolved
-versioned filename must occur in its qualification record. Codex's package version and vendor path
-must match its record. Both digests are checked before any setup write. After service installation,
-the existing Claude pin writer copies the version at mode 0555 under the state root, and both
-engines bind against the installed qualification records. Their paths, versions and digests are
-written to host/engines.json and returned by setup, together with the asset and pin counts. The
-installed receiver configuration names that same state root. No account adapters are created here;
-VELDO-0185 owns them.
-
-| Criterion | Behavior row | What the production path proves |
+| Criterion | Behavior row | Production behavior proved |
 | --- | --- | --- |
-| AC1 | `runtime/assets` | Factory CLI setup installs all three current records plus a planted future runtime literal, byte-identical with recorded digests and the correct asset count. Only the fixture manager's daemon reload is requested. |
-| AC1 | `runtime/missing` | The real service installer refuses a loaded module's missing runtime source by its exact path before creating the installation. |
-| AC2 | `bind/engines` | The installed receiver's engine protocol binds Claude using the installed receiver configuration's state root and Codex using its vendor path. The Claude copy is regular, byte-identical and 0555; both bindings equal setup's persistent and returned records. |
-| AC2 | `engines/unlisted` | Real setup refuses each engine's unlisted version with missing_evidence:engine_baseline:9.9.9, leaving its fresh state root empty. |
-| AC2 | `engines/digest` | Real setup refuses changed bytes for each engine with binding_mismatch:engine_digest, leaving its fresh state root empty. |
+| AC1 | `runtime/assets` | Factory CLI setup installs the three current records and two future literal assets, including a nested asset, with identical bytes, recorded digests and the actual asset count. |
+| AC1 | `runtime/missing` | The service installer names a missing source asset before creating an installation. |
+| AC1 | `runtime/setup-missing` | Real factory setup names the missing asset and leaves the fresh state root empty. Removing its early runtime census fails this row even though the service installer still refuses later. |
+| AC1 | `runtime/modes` | The installed runtime directory and its nested directory both have mode 0500. |
+| AC2 | `bind/engines` | Installed engine bindings match setup's returned and persistent records. Claude's copy is regular, byte-identical and 0555. The receiver configuration names the factory state root. |
+| AC2 | `engines/unlisted` | Each engine's unlisted version refuses as missing_evidence:engine_baseline:9.9.9 before state writes. |
+| AC2 | `engines/digest` | Changed source bytes for either engine refuse as binding_mismatch:engine_digest before state writes. |
+| AC2 | `engines/version` | A Claude command resolving to cli.js refuses as missing_evidence:engine_version:claude_code before state writes. |
+| AC2 observability | `metrics/pins` | The production counter reports one actual pin, zero for the real vendor binding alone, and zero for no bindings. Setup reports its real pin inventory. |
+| AC2 observability | `metrics/binds` | The installed Receiver binding path emits one binds_refused increment for each engine's changed digest, two in total, and none for a non-engine adapter. |
 
 The suite uses generated OpenSSH keys, a generated token stand-in, real Git repositories, the real
-store, enrollment, service installation and pin writers. Containment host qualification and daemon
-reload are fixture seams: no real service manager is contacted. Engine fixtures are inert executable
-bytes, never launched. They carry VELDO-0172's shared constructor and each suite using them calls
-conform_fake at teardown. They emit no stream events, so that supporting row compares zero events
-and makes no claim about engine stream formats. Codex qualification is written by its production
-writer; the Claude fixture uses the committed qualification entry with the fixture's digest.
+store, enrollment, service installation and pin writers. Containment qualification and daemon reload
+are fixture seams. Engine bytes use VELDO-0172's shared fake constructor and the suite runs its format
+check at teardown. No engine protocol is emitted, so that supporting check compares zero events.
+Codex qualification uses its production writer; Claude uses the committed qualification entry with
+the fixture digest. Each behavior row reports once. Unexpected section exceptions are distinguished
+from assertion failures by the proof driver.
 
-`drive.py` runs the current suite against an unchanged Git archive of the pre-change commit.
-`red-at-9f1a0445.json` records all five behavior rows red by assertion, with no raised test section.
-Every behavior row is reported once. The supporting format hook is outside the behavior red count.
+Setup still supports the versioned native Claude installation. Qualification's existing extraction
+code also takes its native version from the resolved filename. This repair explicitly refuses a
+non-versioned target such as an npm cli.js with missing version evidence, as the review allows;
+it does not execute a version command or add npm installation support.
 
-Finding 186 registers eight uniquely named mutations:
+The receiver emits engine_bind_refused with the engine name, refusal and binds_refused metric through
+its existing event stream. Launch._take retains those messages. The pin counter counts distinct
+regular, non-symlink files under the factory engine directory from the bindings the installer returns;
+the external Codex vendor binary contributes no pin. The source and installed configuration readers,
+engine pin and bind writers, setup summary readers, and receiver event reader were audited. AC2's
+observability requires control_launch.py and its engine copy, which were added to the footprint.
+
+Suites 73, 74 and 86 now put the fake engine PATH assignment inside their outer try and restore PATH
+first in finally, before any teardown checker can raise. Suites 73 and 74 were inspected but were not
+run in this job because the owner restricted execution to suite 86. Existing installer fixtures in
+suites 66, 71 and 83 remain in the footprint from the original implementation.
+
+The current proof driver was run against unchanged Git archives:
+
+- `red-at-9f1a0445.json`: all ten behavior rows red by assertion against the original implementation base.
+- `red-at-aa85e4a2.json`: four rows red by assertion against this repair's starting commit: runtime/modes,
+  engines/version, metrics/pins and metrics/binds. The other six remain green because that commit
+  already implements those behaviors. In particular, setup's missing-source check already existed;
+  the new row closes a mutation coverage gap. This result is intentionally not labeled all-red.
+
+Finding 186 registers thirteen uniquely named mutations:
 
 | Mutation | Named failing rows |
 | --- | --- |
@@ -47,37 +63,18 @@ Finding 186 registers eight uniquely named mutations:
 | `setup186-claude-digest-unchecked` | engines/digest |
 | `setup186-codex-digest-unchecked` | engines/digest |
 | `setup186-receiver-without-state-root` | bind/engines |
+| `setup186-skip-setup-asset-check` | runtime/setup-missing |
+| `setup186-writable-runtime` | runtime/modes |
+| `setup186-filename-as-version` | engines/version |
+| `setup186-constant-pin-count` | metrics/pins |
+| `setup186-unmeasured-bind-refusal` | metrics/binds |
 
-The Python-only mutant also prevents binding because the installed qualification records are
-absent. The digest mutants remove the preflight check: any later pin refusal is too late because
-setup has already written the state root. Mutation execution is reserved for the reviewer by the
-owner's instructions. `mutations.json` records registration and pending execution, not rejection.
+Static inspection verifies unique edit anchors, production-copy anchors and mutation names, with
+final-label targets covering every behavior row. Mutation execution is reserved for the reviewer;
+mutations.json records registration and pending execution, not rejection.
 
-The footprint includes the existing service installer fixtures in suites 66 (0047), 71 (0130 and
-0138), and 83 (0154). They copy the runtime directory into their source trees. Both factory setup
-fixtures, suites 73 (0139) and 74 (0140), use this proof's `fixtures.install` helper to supply runtime
-records and qualified inert engine bytes. Suite 74 was added to the footprint in the review repair:
-its Python-only source tree caused all eight standing-delegation rows to fail before their scenarios
-could run. It now also checks the shared fake-format constructor at teardown and restores PATH.
-The scaffold ships the setup helper. No production refusal was weakened.
-
-The review repair audited all setup and service-install calls in the suites and shared helpers.
-The setup callers are 73, 74 and 86; the other real service installers are 66, 71 (0130 and 0138),
-and 83. No additional shared helper lays down a factory. The other suites that load the service
-construct service objects without calling its installer.
-
-The mutation checker observes each `expect` call, removes any detail after a colon, and matches the
-last whitespace-separated word against each mutation target. Finding 186 previously registered
-`VELDO-0186 runtime/assets` where that reader requires `runtime/assets`; the honest run therefore
-found no matching observation even though the suite passed. All eight registrations now use the
-final labels shown above. The suite reports each full behavior row exactly once and returns
-normally; the checker's worker can then exit zero. Static inspection checked target coverage of all
-five rows, unique mutation names, and unique production edit anchors. This is not a mutation run.
-
-`verification.json` records the normal and clean-environment runs of suite 86, the affected fixture
-suites, and footprint, anchor, validation and engine-copy checks. The selftest selector's process
-exit is separately governed by `RunScope`: a passing selected run exits 2 because it is partial.
-This status does not apply to the mutation worker, which executes the suite directly and returns
-its captured assertions. The shared preamble and fixture-format hooks are included in selector
-counts. The full selftest, gate and mutation runners remain reserved for the reviewer.
-This proof is ready for independent review; it is not a gate stamp or a landing authorization.
+verification.json records the normal and clean-environment suite runs, footprint and anchor checks,
+repository validation and byte-identical engine copies. Selected selftest runs exit 2 even when all
+assertions pass because RunScope marks them partial. No gate, whole selftest or mutation runner was
+run. The History records VELDO-0189's older-install upgrade inputs. This proof makes no gate-stamp or
+independent-review claim.

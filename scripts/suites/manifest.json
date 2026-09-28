@@ -1137,7 +1137,7 @@
    "requires": [
     "86_veldo_0186_setup_assets"
    ],
-   "regions": "Runtime asset census and missing source refusal; setup pins Claude Code and records Codex, installed receiver bindings, unknown versions and digest mismatches.; setup missing-source refusal leaves an empty state root; nested runtime directories are 0500; unknown Claude version names version evidence; real pin counts exclude vendor bindings; installed receiver emits binds_refused once per failed engine bind",
+   "regions": "Runtime asset census and missing source refusal; setup pins Claude Code and records Codex, installed receiver bindings, unknown versions and digest mismatches; setup missing-source refusal leaves an empty state root; nested runtime directories are 0500; unknown Claude version names version evidence; real pin counts exclude vendor bindings; installed receiver emits binds_refused once per failed engine bind",
    "requires_note": "Only shared ROOT and expect. Real setup, service installer, keys, store, enrollment and installed engine bindings. Inert engine bytes with shared constructors, no engine executes; containment host qualification and daemon reload are fixture seams."
   }
  ]
