@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -889 +889 @@
+-        if running and not added:
++        if running:  # defect: the service is not restarted, but the API is started anyway

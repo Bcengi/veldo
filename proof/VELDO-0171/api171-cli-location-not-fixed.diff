@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -68 +68 @@
+-TAILSCALE_PATHS = ('/usr/bin/tailscale', '/usr/sbin/tailscale', '/usr/local/bin/tailscale', '/bin/tailscale',
++TAILSCALE_PATHS = ('tailscale', '/usr/bin/tailscale', '/usr/sbin/tailscale', '/usr/local/bin/tailscale', '/bin/tailscale',

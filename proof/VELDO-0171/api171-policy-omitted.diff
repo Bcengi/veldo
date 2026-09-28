@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -1095 +1095 @@
+-            self.send_header('Content-Security-Policy', CSP)
++            pass  # defect: no content security policy

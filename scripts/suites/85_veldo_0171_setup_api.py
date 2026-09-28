@@ -846,6 +846,7 @@ def _v171_suite():
             check(UN, 'it runs the installation\'s own API process on its configuration [%s]' % fields.get('ExecStart'),
                   fields.get('ExecStart') == '%s -B %s serve %s' % (python, home_a / 'bin' / 'control_client_api.py',
                                                                      home_a / 'config' / 'api-process.json')
+                  and (home_a / 'bin' / 'control_client_api.py').is_file()
                   and (home_a / 'bin' / 'control_client_api.py').read_bytes() == (mods / 'control_client_api.py').read_bytes())
             wants = units_a / (unit_a + '.wants') / api_unit_a
             check(UN, 'the authority unit wants it (the link enable writes)',
@@ -956,15 +957,18 @@ def _v171_suite():
             raw = []
             for request in (b'PUT /api/v1/auth/session HTTP/1.1\r\nHost: ' + NAME.encode() + b'\r\nContent-Length: 0\r\n\r\n',
                             b'GET /api/v1/auth/session extra HTTP/1.1\r\nHost: ' + NAME.encode() + b'\r\n\r\n'):
-                with socket.create_connection(('127.0.0.1', port), timeout=10) as sock:
-                    sock.sendall(request)
-                    sock.shutdown(socket.SHUT_WR)
+                data = b''
+                try:
+                    with socket.create_connection(('127.0.0.1', port), timeout=10) as sock:
+                        sock.sendall(request)
+                        sock.shutdown(socket.SHUT_WR)
+                        while True:
+                            chunk = sock.recv(65536)
+                            if not chunk:
+                                break
+                            data += chunk
+                except OSError:
                     data = b''
-                    while True:
-                        chunk = sock.recv(65536)
-                        if not chunk:
-                            break
-                        data += chunk
                 raw.append(data)
             check(CP, 'the responses http.server writes itself (an unsupported method, a malformed request line) carry it '
                   'too',
