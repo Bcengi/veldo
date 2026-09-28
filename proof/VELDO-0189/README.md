@@ -38,7 +38,8 @@ previous engine, removed.
 **Failure and kill.** A failure setup sees after the exchange exchanges the directories back, puts back
 every file this run replaced (their previous bytes and modes are held in memory) and refuses by name; a
 failed restart (`unavailable_service:authority:upgrade_start`) also restarts the service once on the
-previous engine. A re-run finds its state from the files alone: `bin` equal to the record with
+previous engine, after stopping it and running the current engine's own restore of the ownership
+declarations (below), so a current engine that came up and then failed leaves nothing bound to its bytes. A re-run finds its state from the files alone: `bin` equal to the record with
 `bin.upgrade` beside it is a staged engine left by an interrupted run, removed before starting again; `bin`
 equal to the current engine with the record not yet rewritten is an upgrade killed after its switch, whose
 writes are finished and whose restart is due; `bin` and the record both current with the step log showing
@@ -47,7 +48,9 @@ the exchange and no restart after it is a restart still due.
 **The step log.** `<home>/state/engine-upgrade.jsonl`, 0600, one line after each write (each line is a
 write point): `begin` (the installed and current engine digests and the files changed, added and
 removed), `removed_stage`, `staged`, `exchanged`, `unit` and `configuration` (each path), `record`,
-`restart` (its outcome), `switched_back` (its reason), `removed_previous`, `done`. It never carries a key,
+`restart` (its outcome), `switched_back` (its reason), `ownership_restore` (its outcome),
+`removed_previous`, `committed` (whether the running service dropped its record of previous bindings),
+`done`. It never carries a key,
 a token or a store row. The staged directory is one write point: it is not installed until the exchange,
 and a kill anywhere inside it leaves a staged directory the re-run removes.
 
@@ -99,6 +102,23 @@ process of their own whose systemctl calls reach that stand-in over a UNIX socke
   `unavailable_service:authority:upgrade_start`, the previous engine is back, the record restored byte for
   byte, the service restarted once more on the previous engine and answering, and the step log records
   the switch back with its reason.
+- `switch/failed-after-start` (AC2, the review of 2026-09-28): over the 8bc34e94 host and the 971186ac host,
+  each as its own setup laid it down with its authority running on its own engine (its channel available
+  first), the stand-in's restart brings the unit up on the current engine and stops it before failing.
+  Setup refuses `unavailable_service:authority:upgrade_start`; the previous engine and its record are back;
+  where the upgrade changed an owning module (8bc34e94), the current engine's one `ownership_rebind`
+  observation names those declarations and the switch back's one `ownership_restore` names exactly them;
+  the step log ends `switched_back`, `ownership_restore` restored, `restart` on the previous engine; the
+  previous engine's channel is available with no refusal, every declaration binds the bytes its file has now,
+  and no previous binding is left recorded.
+- `ownership/restore-differs`: on a scratch store, a rebinding with the previous engine kept records the
+  previous binding and is observed before its commit (a second connection still reads the previous digest
+  inside the observation); a restore whose file has neither engine's bytes is refused
+  `ownership_restore_differs` naming the file, leaving the new binding and the record; with the previous
+  bytes back the restore binds the previous digest, clears the record and is observed before its commit.
+- `ownership/committed`: right after the kill host's whole upgrade, the upgraded service's one rebinding and
+  the commit's one drop name the same bindings, the step log ends `removed_previous`, `committed`, `done`,
+  and the store holds no recorded previous binding.
 - `kept/owner-data` (AC3): before each older host's upgrade the suite sets its receiver configuration's
   adapters as the owner could; afterwards every file under the key directory, the host trust and the two
   signer files it names, the binding, the token file and every registered account's profile directory is
@@ -142,15 +162,34 @@ owner and commands never change, and a store with nothing to rebind is not writt
 edited by hand (bytes not the record's), and a service started mid-upgrade on the new files with the old
 record, keep their declarations and are refused at attach as before; the next start after the record is
 written carries them. The service logs each rebinding to its observation log (`ownership_rebind`, the
-selector, value, module and both digests). Setup still writes only what AC3 lists; the journal and entity
+selector, value, module and both digests), inside the store transaction before its commit, so a rebinding
+that lands always has its line.
+
+**Switching back after the current engine served.** While the previous engine directory is beside `bin`
+(`control_service.PREVIOUS_ENGINE`, the upgrade's `bin.upgrade`), the rebinding's transaction also replaces
+the store's record of previous bindings (`entity_owner_previous`: each rebound declaration's selector,
+value, module path, previous digest and new digest). AC2's switch back, after it exchanges the directories
+back and puts back the record and units, stops the unit and runs the current engine's own entry point from
+its directory beside `bin`, `bin.upgrade/control_service.py restore-owners <home>/config/service.json`
+(setup still never opens the store): it takes the store lock, and `control_store.restore_owners` binds
+each recorded declaration to its previous digest only when the file at its path has those bytes now, then
+clears the record, all in one transaction observed (`ownership_restore`) before its commit; a file whose
+bytes are not the previous ones is refused `ownership_restore_differs` by name, and the new bindings and
+the record stay. Then the previous engine restarts with every owned command available. The step log's
+`ownership_restore` line carries the outcome. The record never outlives the previous engine: when the
+upgrade commits (the previous engine removed after a restart that answered), setup asks the running service
+over its socket, signed by the owner, to drop it (`ownership_commit`, refused while a previous engine
+directory is still installed), and a service that starts with no previous engine beside it drops any record
+left by a kill between the removal and that request (observed `ownership_commit`). Setup still writes only what AC3 lists; the journal and entity
 rows are untouched, and the declarations are not part of the journal (control_store's stated limit).
 
 **The limit this leaves.** An engine that predates rebind_owners (8bc34e94, 971186ac) cannot attach its
-owners to a store that a later engine rebound: its own declaration names the older bytes. A hand rollback
-(the spec's rollback) to such an engine after the current one has served leaves its owned commands refused
-`ownership_conflict`; a rollback to an engine that has rebind_owners carries them back from the restored
-record. The same holds for AC2's automatic switch back in the one case where the new service attached and
-then did not answer within the wait; the rows' failed restart never starts the new service.
+owners to a store that a later engine rebound unless the restore ran first: its own declaration names the
+older bytes. AC2's automatic switch back always runs it. The spec's rollback by hand (while the previous
+engine directory is still beside `bin`) leaves the previous engine's owned commands refused
+`ownership_conflict` unless the owner also runs `<home>/bin.upgrade/control_service.py restore-owners
+<home>/config/service.json` (the directory holding the current engine after his exchange) before he starts
+the previous engine; the rollback text does not say so, and changing it is the owner's decision.
 
 ## Evidence files
 
@@ -161,4 +200,7 @@ then did not answer within the wait; the rows' failed restart never starts the n
   `--cache <directory> [--budget <seconds>]` keeps each finished run, so a drive longer than one sitting is
   finished by running it again.
 - `red-at-faa11cfc.json`: the red record at the commit before this change: every row red by assertion.
+- `red-at-33385ae4.json`: the red record of the review fix at the commit before it: the three new rows red by
+  assertion (the previous engine's channel refused `ownership_conflict` after the switch back; the store
+  keeps no record of previous bindings).
 - `mutations.json`, `*.diff`: the drive's record.

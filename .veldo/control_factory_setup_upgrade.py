@@ -27,8 +27,11 @@ file is current too. Then, when the authority unit is active, the service restar
 for it to answer an inspect over its socket; only then is the previous engine removed.
 
 WHEN IT FAILS OR IS KILLED. Any failure seen after the exchange exchanges the directories back, puts back
-every file this run replaced and refuses by name; a failed restart also restarts the service once on the
-previous engine (unavailable_service:authority:upgrade_start). A re-run that finds bin.upgrade beside an
+every file this run replaced and refuses by name; a failed restart also stops the unit, runs the current
+engine's own restore-owners from its directory beside bin (a current engine that came up rebound the store's
+ownership declarations to its bytes; the restore binds them to the previous engine's again, the store
+checking each file's bytes, and setup never opens the store) and restarts the service once on the previous
+engine (unavailable_service:authority:upgrade_start). A re-run that finds bin.upgrade beside an
 engine still equal to the record removes it and starts again; one that finds the installed files equal to
 the current engine but the record not yet rewritten finishes the writes, and restarts the service once
 when the step log shows the exchange with no restart after it.
@@ -36,8 +39,9 @@ when the step log shows the exchange with no restart after it.
 THE STEP LOG. `<home>/state/engine-upgrade.jsonl`, 0600, one line per write after it is made (each is a
 write point): the begin with the installed and current engine digests and the files changed, added and
 removed, the staged engine, the exchange, each unit and configuration write, the record, the restart and
-its outcome, a switch back with its reason, the removal of the previous engine. Never a key, a token or a
-store row. Standard library only.
+its outcome, a switch back with its reason and its ownership restore, the removal of the previous engine and
+the commit (the running service asked to drop its record of the previous ownership bindings). Never a key,
+a token or a store row. Standard library only.
 """
 import contextlib
 import ctypes

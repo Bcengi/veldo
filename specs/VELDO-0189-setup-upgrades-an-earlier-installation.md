@@ -253,3 +253,18 @@ on it. The limit this leaves, stated in control_store: an engine that predates r
 its owners to a store a later engine rebound, so the rollback by hand to such an engine after the current
 one has served leaves its owned commands refused ownership_conflict (a rollback to an engine with
 rebind_owners carries them back from the restored record).
+
+2026-09-28, review fix: the review found that a restart which brings the current engine up and then fails
+switched back to a previous engine whose owned commands were refused ownership_conflict, because the current
+engine had rebound the declarations to its bytes (AC2 and the rollback). The lead's decision, as built: while
+the previous engine directory is beside `bin`, the rebinding records each rebound declaration's previous
+digest in the same store transaction; the switch back stops the unit and, before the previous engine
+starts, runs the current engine's own `restore-owners` from its directory beside `bin` (setup never opens
+the store), which binds each recorded declaration to its previous digest only when the file at its path has
+those bytes (ownership_restore_differs by name otherwise, the new bindings kept) and clears the record; a
+committed upgrade has setup ask the running service, signed, to drop the record, and a service that starts
+with no previous engine beside it drops any left. Rebind, restore and drop are each observed
+(ownership_rebind, ownership_restore, ownership_commit) inside their transaction before the commit. New rows
+switch/failed-after-start (over both older hosts), ownership/restore-differs and ownership/committed, and four
+finding 189 mutations. The rollback by hand still needs the restore run before the previous engine starts,
+which the rollback text does not say: the owner's decision.

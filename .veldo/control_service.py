@@ -1871,14 +1871,14 @@ def restore_owners(config_path):
     config = load_config(config_path)
     lock = acquire(config['lock'], config)
     try:
-        conn = S.open_store(config['store_path'])
+        store = S.open_store(config['store_path'])
         try:
             try:
-                restored = S.restore_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_restore', rows))
+                restored = S.restore_owners(store, observe=lambda rows: observe_ownership(config, 'ownership_restore', rows))
             except S.StoreRefused as error:
                 raise Refused(error.code, error.detail)
         finally:
-            conn.close()
+            store.close()
     finally:
         os.close(lock)
     return {'restored': len(restored)}
