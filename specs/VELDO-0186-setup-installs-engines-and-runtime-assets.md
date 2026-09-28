@@ -104,7 +104,7 @@ draft: only the owner marks it ready.
 
 ## Out of scope
 
-Replacing installed engine files or pins after an update (Release 2, VELDO-0139's Notes); requalifying a
+Replacing installed engine files after an update, which is VELDO-0189's upgrade; replacing pins after an update (Release 2, VELDO-0139's Notes); requalifying a
 new engine version (VELDO-0060, VELDO-0061); the Mac's engines (VELDO-0147).
 
 ## What the reviewer judges
@@ -134,3 +134,5 @@ account after login, and the second setup run) moved to VELDO-0185 AC4 and AC3, 
 and control_accounts are. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-09-28: Out of scope now names VELDO-0189 as the owner of replacing installed engine files (owner, Telegram 29307, 29313); criteria and status unchanged.
