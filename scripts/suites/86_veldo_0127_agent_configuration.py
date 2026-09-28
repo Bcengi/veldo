@@ -77,6 +77,13 @@ if args[:3] == ['debug', 'models', P + 'bundled']:
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
+if config.get('model_catalog_json'):
+    # As the real Codex: every configuration load, `mcp list` and `mcp get` included, reads model_catalog_json
+    # and refuses to start when the file is missing or names no model.
+    catalog_path = Path(config['model_catalog_json'])
+    if not catalog_path.is_file() or not json.loads(catalog_path.read_text()).get('models'):
+        print('Error: failed to load configuration', file=sys.stderr)
+        sys.exit(1)
 if 'mcp' in args:
     # As Codex 0.154: `mcp` takes no exec option, reads CODEX_HOME's config.toml under its -c overrides, and
     # lists servers without their tools, which `mcp get` prints.
@@ -409,6 +416,11 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
                     check('handoff/codex', "Codex's own listing names exactly the generated table, not the profile's",
                           listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
+                    # The fake loads model_catalog_json for `mcp` as the real binary does: the per-run catalog must
+                    # exist before the listing runs, or the launch stops as configuration_stop:mcp_servers.
+                    check('handoff/codex', 'the per-run model catalog is written before Codex lists its MCP table',
+                          bool(listings) and record.get('refusal') is None
+                          and Path(cfg.get('model_catalog_json', '/nonexistent')).name == 'model-catalog.json')
                     check('launch/instructions', 'Codex gets both sources through developer instructions',
                           'project role instruction' in cfg.get('developer_instructions',''))
             for mode, model in [('code', 'gpt-6-astra'), ('direct', 'gpt-5.5')]:

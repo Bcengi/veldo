@@ -1394,18 +1394,24 @@ class Receiver:
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
                 self.metering.terminal.hold_prompt()
-            if extra.get('expected') and engine.PROVIDER == 'codex':
-                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
-                self.emit({'event': 'capability_listing', 'listing': [
-                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
         except (engine.Refused, HANDOFF.Refused) as error:
             # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
             raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
+        # The generated files exist before anything reads the configuration naming them: the real Codex loads its
+        # whole configuration, the per-run `model_catalog_json` included, for `mcp list` as it does for exec, and
+        # refuses to start when that file is missing (VELDO-0127).
         for name, data in sorted(extra['files'].items()):
             Path(run['config'], name).parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             with os.fdopen(os.open(os.path.join(run['config'], name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
                            'wb') as handle:
                 handle.write(data)
+        try:
+            if extra.get('expected') and engine.PROVIDER == 'codex':
+                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
+                self.emit({'event': 'capability_listing', 'listing': [
+                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
+        except (engine.Refused, HANDOFF.Refused) as error:
+            raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
         self.role_skills = HANDOFF.stage_skills(run.get('capability'), Path(run['config']))
         at = baseline_at(argv, self.binding, reported)
         argv[at:at] = list(extra['argv'])

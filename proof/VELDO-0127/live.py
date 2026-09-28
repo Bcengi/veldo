@@ -36,6 +36,18 @@ def diagnose(path, label, work, record, page):
     """A failed run's receiver messages and record lines, with any sensitive-looking line dropped."""
     if not path:
         return
+    # Codes and names only, never a value: the launch's own result and refusal, the record's state and
+    # refusal, and each receiver message's event with its refusal code. These survive the filter below.
+    record = record or {}
+    codes = ['launch: result=%s refusal=%s owned=%s' % (getattr(work, 'result', None), getattr(work, 'refusal', None),
+                                                        getattr(work, 'owned', None)),
+             'record: state=%s refusal=%s reason=%s' % (record.get('state'), record.get('refusal'), record.get('reason'))]
+    for message in getattr(work, 'messages', []) or []:
+        if isinstance(message, dict):
+            codes.append('event: %s refusal=%s keys=%s' % (message.get('event'), message.get('refusal'),
+                                                           ','.join(sorted(message))))
+    with open(path, 'a') as handle:
+        handle.write('\n'.join(codes) + '\n')
     lines = ['== ' + label, 'record: ' + json.dumps({k: record.get(k) for k in sorted(record)
                                                     if k not in ('execution_record',)}, default=str)[:4000]]
     for message in getattr(work, 'messages', []) or []:
