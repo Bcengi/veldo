@@ -18,8 +18,9 @@ of them and the signature (OpenSSH, through a signer callable the caller supplie
 digest's bytes. Plan revision is never used as a concurrency version.
 
 WHAT IT IS NOT. It imports no execution runtime (no LangGraph, no worker engine) and no other
-Veldo organ: signing and verification are callables passed in, so the store never holds key
-material. Replication is W9; the checkpoint adapter's tables are not created here. Standard
+Veldo organ at import: signing and verification are callables passed in, so the store never holds
+key material. The one organ it loads is the eligibility Gate, on the first write that hands out
+work, for the project check below. Replication is W9; the checkpoint adapter's tables are not created here. Standard
 library only.
 
 ENTITY OWNERSHIP. A service whose commands alone may write some entities (VELDO-0035's snapshots
@@ -65,6 +66,23 @@ accepting service attached. It names an operation, not code: which transition a 
 registers under that name is that connection's owner's business (VELDO-0134's accept command in
 production, a suite's own writer of deliberately invalid records on the suite's own connection).
 
+WORK OF A STOPPED PROJECT IS NEVER HANDED OUT (VELDO-0169). A transaction that writes a claim
+record handing out work (claim_handout: a new holder, a parked unit taken again, or a park
+cleared, which makes the unit claimable) is refused, whole, unless the eligibility Gate's one
+project check (control_eligibility.Gate.project_problems) finds no problem for the unit it hands
+out. The store asks it itself, inside that same transaction, after the transition's records are
+written and before the journal record is signed, so it reads exactly the state the transaction
+commits: a pause committed before the lock and a pause the transaction itself writes both
+refuse it, by the Gate's own name (project_not_active:PAUSED, :CANCELED, :COMPLETED,
+:owner_not_current, :not_a_project, missing_authority:project). The rule is here, in the commit
+path, and trusts no caller and no attribute: it binds every operation on every connection, the
+claim organ, a transition that builds a claim by hand and the generic upsert_entity alike, and
+it binds nothing to any module's bytes, so a store written by earlier code attaches unchanged.
+The unit checked is every unit the record names: its unit_id before and after the write, and
+every execution unit its id can name. The renewal of a claim already held (the same record with a
+new heartbeat), a release and a park hand nothing out and pass unchanged. The claim organ asks the
+same check first (control_claim), so a handout is refused there, earlier, by the same name.
+
 ACCEPTED REPOSITORIES. A service that reads an enrolled repository's commits BINDS each repository
 uuid of a domain to the local Git repository it reads, with bind_repositories, and the binding is
 persisted beside the declarations (the repository_bindings table, created by the first binding).
@@ -79,6 +97,7 @@ progress handler, or after COMMIT before replying). The hooks act only when
 VELDO_CONTROL_TEST_HARNESS=1 is also set, so no production path can be told to die.
 """
 import hashlib
+import importlib.util
 import json
 import os
 import signal
@@ -108,6 +127,89 @@ REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conf
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
             "ownership_conflict", "repository_binding_conflict", "foreign_transition")
 DURABILITY_GRADES = ("off_host", "protocol_only")
+
+# VELDO-0169: the record kind that hands out work, and the eligibility Gate that decides whether its
+# unit's project takes any (see the module docstring). Loaded on the first handout, never at import.
+CLAIM_KIND = "claim"
+CLAIM_PREFIX = "claim:"
+_ELIGIBILITY = []
+
+
+def claim_handout(was, now):
+    """The work a write of a claim record hands out (VELDO-0169): 'claim' (a new holder), 'resume' (a
+    parked unit taken again) or 'unpark' (a park cleared, so the unit is claimable again), and None
+    for a write that hands nothing out: the renewal of a claim already held (the same record with a
+    new heartbeat), a release, and a park. `was` and `now` are the record's data before and after
+    the write, {} where the entity is absent, of another kind, or not a mapping."""
+    if now.get("state") == "owned":
+        if was.get("state") == "owned" and ({k: v for k, v in now.items() if k != "heartbeat_at"}
+                                            == {k: v for k, v in was.items() if k != "heartbeat_at"}):
+            return None
+        return "resume" if was.get("parked_on") else "claim"
+    if was.get("parked_on") and now.get("parked_on") != was.get("parked_on"):
+        return "unpark"
+    return None
+
+
+def _claim_data(record, eid=""):
+    """A claim record's data, found as its readers find it: by a `claim:` id whatever kind the writer gave
+    it, or by the claim kind (control_claim.claim_id and the Gate read a claim by id, never by kind)."""
+    record = record or {}
+    is_claim = record.get("kind") == CLAIM_KIND or eid.startswith(CLAIM_PREFIX)
+    data = record.get("data") if is_claim else None
+    return data if isinstance(data, dict) else {}
+
+
+class _Records:
+    """This store as the Gate reads its records: control_snapshot.entity checks each row's digest with
+    digest_of, and the Gate names the store's refusal type."""
+    def __init__(self):
+        self.digest_of, self.StoreRefused = digest_of, StoreRefused
+
+
+def _project_gate(conn):
+    """The eligibility Gate over `conn`, for its project check alone, which reads the unit, its project
+    record and the owner's membership on that connection and no domain or repository coordinate."""
+    if not _ELIGIBILITY:
+        spec = importlib.util.spec_from_file_location(
+            "store_control_eligibility", os.path.join(os.path.dirname(os.path.abspath(__file__)), "control_eligibility.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _ELIGIBILITY.append(module)
+    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)
+
+
+def _handout_units(conn, eid, was, now):
+    """Every unit a claim record hands out: the unit_id it names before and after the write, and each
+    execution unit its id can name (a suffix of it after a colon), so a record whose own fields name
+    another unit than its id hands out neither unchecked. None stands for a record naming no unit."""
+    units = {d.get("unit_id") if isinstance(d.get("unit_id"), str) else None for d in (was, now) if d}
+    units.discard(None)
+    for i, c in enumerate(eid):
+        if c == ":" and eid[i + 1:] not in units and conn.execute(
+                "SELECT 1 FROM entities WHERE id=? AND kind='execution_unit'", (eid[i + 1:],)).fetchone():
+            units.add(eid[i + 1:])
+    return sorted(units) or [None]
+
+
+def handout_problem(conn, changes, before):
+    """VELDO-0169: (entity id, unit, the Gate's refusals) for the first claim record in `changes` that
+    hands out work of a unit whose project the Gate's one check refuses, read on `conn` inside the
+    command transaction after its records are written; None when every handout's project takes work."""
+    gate = None
+    for eid in sorted(changes):
+        if eid.startswith(CLAIM_PREFIX) and (changes[eid] or {}).get("kind") != CLAIM_KIND:
+            return eid, None, ["invalid_input:claim_kind"]
+        was, now = _claim_data(before.get(eid), eid), _claim_data(changes[eid], eid)
+        if claim_handout(was, now) is None:
+            continue
+        gate = gate or _project_gate(conn)
+        for unit in _handout_units(conn, eid, was, now):
+            refusals, _read = gate.project_problems(unit)
+            if refusals:
+                return eid, unit, refusals
+    return None
+
 
 # VELDO-0134: the architecture record and the one operation that writes it (see the module docstring).
 ARCHITECTURE_OPERATION = "accept_architecture"
@@ -513,6 +615,11 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
             conn.execute("INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
                          "kind=excluded.kind, version=excluded.version, digest=excluded.digest, data=excluded.data",
                          (eid, new["kind"], after_versions[eid], edigest, json.dumps(new["data"], sort_keys=True)))
+        # VELDO-0169: a claim that hands out work of a stopped project is refused, whole, by the Gate's name.
+        stopped = handout_problem(conn, changes, before)
+        if stopped is not None:
+            raise StoreRefused(stopped[2][0], "%s may not write %s: it hands out unit %s, whose project takes no new work"
+                               % (command["operation"], stopped[0], stopped[1]))
         p = command["parameters"]
         reservations = [{"id": p["reservation_id"], "ceiling": p["ceiling"], "delta": float(p["delta"])}] if command["operation"] == "reserve" else []
         effects = [{"id": p["effect_id"], "kind": p["kind"], "target": p["target"], "state": "obligated"}] if command["operation"] == "record_effect" else []

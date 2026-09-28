@@ -1802,7 +1802,7 @@ def cases():
         add(64, name, '60_veldo_0064_inbox.py', module, old, new, [row])
 
     inbox('inbox-retain-claim-while-waiting', 'control_assignment.py',
-          "            if 'release' in params:\n                changes.update(self.claims.transition(params['release'], before))\n",
+          "            if 'release' in params:\n                changes.update(self.claims.transition(self.conn, params['release'], before))\n",
           "            if 'release' in params:\n                pass  # defective: the claim stays owned while the person is asked\n",
           'inbox/waiting-resources')
     inbox('inbox-requester-keeps-waiting', 'control_assignment.py',
@@ -3006,7 +3006,7 @@ def cases():
              'unknown-never-relaunched')
     dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
              "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
-             "                                             expected_state='accepted')\n",
+             "                                             expected_state='accepted', execution_record=self._record_commitment())\n",
              "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
              "                                            expected_state='accepted')\n",
              'launch-results')
@@ -3255,6 +3255,10 @@ def cases():
          "{'cooperative': stop_grace, 'terminate': kill_grace,",
          "{'cooperative': stop_grace, 'terminate': 0,", 'stop/bounded-group-exit')
     # AC3, declared: the slot is released before the descendants have ended.
+    beat('retire41-config-oserror-unhandled', 'control_launch.py',
+         '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+         '    except (ValueError, KeyError, TypeError):\n        # No receiver ran',
+         'retirement/live-descendant')
     beat('retire-before-descendant-termination', 'control_retirement.py',
          "        kernel = C.retirement(entry['group'], record.get('process'))\n",
          "        kernel = C.retirement(None, record.get('process'))  # defect: only the worker is looked at\n",
@@ -5220,8 +5224,8 @@ def cases():
         ['actions/workflow-save'])
     api('action-contract-drops-worker-stop', MO130,
         "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
-    api('save-executes-another-command', AU130, "                'save_workflow': WF.SAVE}",
-        "                'save_workflow': AS.IN.RECORD}  # defect", ['actions/contract'])
+    api('save-executes-another-command', AU130, "'save_workflow': WF.SAVE, MC.SAVE",
+        "'save_workflow': AS.IN.RECORD, MC.SAVE", ['actions/contract'])
     # VELDO-0130 phase 3: the API through the installed authority service. The API runs a command in-process
     # again; the service accepts an API call whose request the api edge did not sign, or verifies it as any
     # member's; the signer signs a request that is not an API call; a commit at the host is never delivered.
@@ -5426,14 +5430,16 @@ def cases():
     # Codex review of 3c85f33b (P2): a signed claim through the claim receiver took a paused or canceled
     # project's unit. The receiver skips the project check; the shared check it calls reads nothing.
     project('claim-ignores-project', 'control_claim.py',
-            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:\n",
+            "        if command['operation'] == 'claim':\n",
             "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
     project('claim-project-check-empty', 'control_eligibility.py',
             "        return self._project_problems(data.get('project'), record, member), read\n",
             "        return [], read  # defect: the boundary's project check refuses nothing\n",
             ['paused-claim', 'canceled-claim'])
     # Review of ba4eb66e: the project and owner records the claim receiver's project check read are pinned
-    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed.
+    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed by
+    # the pin (since VELDO-0169 the claim organ's own check inside the write refuses it, so the row reads the
+    # store's answer to the write: stale_version only while the pin holds).
     project('claim-pins-dropped', 'control_claim.py',
             "            versions.update(read)\n",
             "            pass  # defect: the records the project check read are not pinned\n", ['paused-mid-claim'])
@@ -5985,8 +5991,8 @@ def cases():
           'resume/unknown-effect-stays-stopped')
     andon('andon-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_andon.py",\n', '', 'install/assets')
     andon('refusal-unclassed', 'control_andon.py',
-          "                                      error_class=None if accepted else taxonomy(reason)))\n",
-          "                                      error_class=None))  # defect: refusals carry no error class\n",
+          "                                      error_class=None if accepted else taxonomy(reason),\n",
+          "                                      error_class=None,  # defect: refusals carry no error class\n",
           'observability/named-refusals')
     andon('reason-text-observed', 'control_andon.py',
           "                               versions=expected, effect=effect, station=c['station'])\n",
@@ -7570,9 +7576,10 @@ def cases():
            "            and (artifact is None or artifact.get('complete') is True))\n",
            "            and True)  # defect: the completion gate ignores the artifact the exit record binds\n",
            'floor/missing-result')
+    # VELDO-0141 added the execution record to the same call, on its next line.
     claude('claude-exit-artifact-unbound', 'control_launch.py',
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)\n",
-           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time())"
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,\n",
+           "        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(),"
            "  # defect: the exit record binds no artifact\n",
            'artifact/exit-record')
     claude('claude-artifact-unreturned', 'control_launch.py',
@@ -7707,7 +7714,8 @@ def cases():
     adapter('adapter-engine-environment-ignored', 'control_launch.py',
             "            environment.update(self.binding['environment'])\n",
             "            pass  # defect: the engine's pinned settings never reach it\n",
-            'lifecycle/normal-run')
+            'lifecycle/normal-run',
+            also=(("        own.update(self.binding['environment'])\n", ""),))
     adapter('adapter-stop-unregistered', 'control_engine_codex.py',
             "        'stop': 'control_launch.Launch.stop: the cooperative stop and its bounded escalation over the containment group',\n",
             "",
@@ -7839,16 +7847,16 @@ def cases():
                 "    'options': ['--setting-sources', '', '--strict-mcp-config'],  # defect: every skill loads\n",
                 'baseline/planted-skill')
     baseline155('claude-baseline-claude-mds-unset', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},  # defect: instruction files stay on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',  # defect: instruction files stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-hooks-kept', 'control_engine_claude.py',
                 "    'settings': {'disableAllHooks': True},\n",
                 "    'settings': {},  # defect: hooks stay on\n",
                 'baseline/qualified')
     baseline155('claude-baseline-auto-memory-kept', 'control_engine_claude.py',
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},\n",
-                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1'},  # defect: auto memory stays on\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',\n",
+                "    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1',  # defect: auto memory stays on\n",
                 'baseline/planted-memory')
     baseline155('claude-paid-api-key-left', 'control_launch.py',
                 "            environment['VELDO_ACCOUNT'] = self.login['account']\n        else:\n",
@@ -7861,8 +7869,8 @@ def cases():
                 "        if False:  # defect: a run on an API key takes its first turn\n",
                 'paid-api/stop')
     baseline155('claude-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline155('claude-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -7886,7 +7894,7 @@ def cases():
                 "            if (not stat_regular(info) or info.st_uid != os.geteuid()  # defect: any mode\n",
                 'paid-api/token-file')
     baseline155('claude-token-not-delivered', 'control_launch.py',
-                "            environment[TOKEN_VARIABLE] = token\n",
+                "            own[TOKEN_VARIABLE] = token\n",
                 "            pass  # defect: the account's token never reaches the engine\n",
                 'paid-api/read-back')
     baseline155('claude-baseline-unqualified-accepted', 'control_engine_claude.py',
@@ -7978,8 +7986,8 @@ def cases():
                 "                      'cli_auth_credentials_store': 'keyring',  # defect: the login from the keyring\n",
                 'paid-api/file-login')
     baseline156('codex-strip-agent-left', 'control_launch.py',
-                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')\n",
-                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')  # defect: the agent stays\n",
+                "EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',\n",
+                "EXEC_STRIPPED = ('SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',  # defect: the agent stays\n",
                 'strip/read-back')
     baseline156('codex-runtime-receivers', 'control_launch.py',
                 "    environment['XDG_RUNTIME_DIR'] = runtime\n",
@@ -8048,6 +8056,541 @@ def cases():
                 "    command = [bound['path'], 'login', 'status', '-c',\n",
                 "    command = [bound['path'], 'login', 'status', '-c', 'forced_login_method=\"chatgpt\"', '-c',  # defect\n",
                 'paid-api/stop')
+    add(144, 'mcp144-overwrite-revision', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    rid = revision_id(domain, d['id'], revision)\n    if entity(conn, rid) is not None:\n        raise Refused('stale_version:immutable_mcp_server')",
+        "    rid = revision_id(domain, d['id'], max(1, revision - 1))",
+        ['catalog/immutable-history'], (("            rid = revision_id(self.domain, definition['id'], base + 1)\n            expected = {hid: base, rid: 0}", "            rid = revision_id(self.domain, definition['id'], max(1, base))\n            expected = {hid: base, rid: (entity(self.conn, rid) or {}).get('version', 0)}"),))
+    add(144, 'mcp144-value-on-argv', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['application', 'veldo', 'credential', name]\n        if value is not None:\n            argv += [value]",
+        ['credential/no-value-on-command-line'], ())
+    add(144, 'mcp144-value-in-record', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal)",
+        "                    data = dict(id=identity, label=safe['label'], reference=ref, set_at=time.time(), set_by=principal, value=value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-owner-check-off', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if (not AC.active_member(member, now)[0] or member.get('principal_type') != 'person'\n            or 'project_owner' not in (member.get('roles') or [])",
+        '    if (not AC.active_member(member, now)[0]',
+        ['catalog/stale-unauthorized', 'credential/authority-binding'], ())
+    add(144, 'mcp144-stdio-arguments-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, arguments=[])",
+        ['catalog/stdio'], ())
+    add(144, 'mcp144-http-headers-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "'data': dict(d, revision=revision)",
+        "'data': dict(d, revision=revision, headers={})",
+        ['catalog/http', 'catalog/atlassian'], ())
+    add(144, 'mcp144-invalid-transport-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        "    if d['transport'] == 'connector':\n        return\n    valid = identifier(d['id']) and text(d['label']) and d['transport'] in ('stdio', 'http')",
+        ['catalog/invalid'], ())
+    add(144, 'mcp144-delete-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('clear', name)",
+        '        return None',
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-replace-kept', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        self._run('store', name, value)",
+        "        if self.get('keychain', name) is None:\n            self._run('store', name, value)",
+        ['credential/replace-delete'], ())
+    add(144, 'mcp144-locked-success', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        '        if done.returncode:\n',
+        "        if done.returncode and b'locked' not in done.stderr.lower():\n",
+        ['credential/keystore-refusals'], ())
+    add(144, 'mcp144-read-back-allowed', '82_veldo_0144_mcp_catalog.py', 'control_api.py',
+        "        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')",
+        "        return 200, {'outcome': 'read_back_allowed'}",
+        ['credential/read-back'], ())
+    add(144, 'mcp144-value-binding-off', '82_veldo_0144_mcp_catalog.py', 'control_api_authority.py',
+        'or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)',
+        'or False',
+        ['credential/authority-binding'], ())
+    add(144, 'mcp144-host-command-unwired', '82_veldo_0144_mcp_catalog.py', 'control_service.py',
+        "            elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:",
+        "            elif command.get('operation') in SA.AUTH.CV.OPERATIONS:",
+        ['catalog/host-command'], ())
+    add(144, 'mcp144-credential-log-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq']))",
+        "        self.record(dict(about, outcome=outcome, seq=saved['seq'], value=value))",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stale-base-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "            rid = revision_id(self.domain, definition['id'], base + 1)",
+        "            base = (entity(self.conn, hid) or {}).get('version', 0)\n            rid = revision_id(self.domain, definition['id'], base + 1)",
+        ['catalog/stale-unauthorized'], ())
+    add(144, 'mcp144-value-in-command-digest', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "            stored = {k: v for k, v in params.items() if k != 'value'}",
+        '            stored = dict(params)',
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stderr-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    __import__('os').write(2, value.encode())\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-stdout-value', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                    self.keystore.set(ref.split(':', 1)[1], value)",
+        "                    print(value)\n                    self.keystore.set(ref.split(':', 1)[1], value)",
+        ['credential/no-value-in-records'], ())
+    add(144, 'mcp144-known-shape-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '    if credential_literal(d):',
+        '    if False:',
+        ['catalog/known-shape-refused'], ())
+    add(144, 'mcp144-entropy-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        'return isinstance(value, str) and any(rx.search(value) for rx, _ in SS.PATTERNS)',
+        'return isinstance(value, str) and bool(SS.scan_text(value))',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-environment-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "    if any('literal' in item and positioned(name, item['literal']) for name, item in d['environment'].items()):",
+        '    if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-argument-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "                if positioned(name, value):",
+        '                if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-position-ignored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if any(positioned(name, value, query=True) for name, value in parse_qsl(url.query, keep_blank_values=True)):',
+        '            if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-name-substrings-restored', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "return (any(part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie',\n"
+        "                             'authorization', 'authtoken', 'accesstoken', 'passphrase', 'privatekey') for part in tokens)",
+        "return (any(part in name.lower() for part in ('token', 'secret', 'password', 'passwd', 'pwd', 'pass', 'apikey',\n"
+        "                             'credential', 'credentials', 'auth', 'bearer', 'cookie'))",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-last-token-exemption-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if not tokens or tokens[-1] in ('file', 'path', 'dir', 'name', 'port', 'url', 'host', 'id', 'callback'):",
+        'if not tokens:',
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-bare-flag-consumes-flag', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if False:",
+        ['catalog/ordinary-config-saves'], ())
+    add(144, 'mcp144-query-extras-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and query_name in ('sig', 'signature', 'code'))",
+        'or False',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-authorization-value-dropped', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
+        'if False:',
+        ['catalog/credential-position-refused'], ())
+    add(144, 'mcp144-query-extras-token-match', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "or (query and query_name in ('sig', 'signature', 'code'))",
+        "or (query and any(part in ('sig', 'signature', 'code') for part in tokens))",
+        ['catalog/query-extra-name-saves'], ())
+    add(144, 'mcp144-loose-bearer-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if isinstance(value, str) and re.fullmatch(r'(?:Bearer \\S{16,}|Basic [A-Za-z0-9+/=]{8,})', value, re.IGNORECASE):",
+        "if isinstance(value, str) and value.lower().startswith(('bearer ', 'basic ')):",
+        ['catalog/authorization-prose-saves'], ())
+    add(144, 'mcp144-bare-flag-skips-leading-hyphen-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if value.startswith('-' * 2) or re.fullmatch(r'-[^-](?:=.*)?', value):",
+        "if value.startswith('-'):",
+        ['catalog/leading-hyphen-refused'], ())
+    add(144, 'mcp144-refusal-records-value', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "self.record(dict(about, server=None, field=getattr(error, 'field', None),",
+        "self.record(dict(about, field=getattr(error, 'field', None),",
+        ['catalog/refusal-no-value'], ())
+    add(144, 'mcp144-deleted-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        "if (not credential.get('deleted') and row[0] == 'credential:' + digest",
+        "if (row[0] == 'credential:' + digest",
+        ['catalog/deleted-reference'], ())
+    add(144, 'mcp144-foreign-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
+        '            if not recorded:',
+        '            if False:',
+        ['catalog/credential-domain'], ())
+    add(144, 'mcp144-application-attribute-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "        argv += ['application', 'veldo', 'credential', name]",
+        "        argv += ['credential', name]",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-store-label-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "            argv += ['-' * 2 + 'label=Veldo credential']",
+        '            pass',
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-lookup-newline-stripped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
+        "return done.stdout.decode('utf-8')",
+        "return done.stdout.removesuffix(b'\\n').decode('utf-8')",
+        ['credential/libsecret-protocol'], ())
+    add(144, 'mcp144-replay-value-unbound', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "                stored['value_digest'] = value_digest",
+        '                pass',
+        ['credential/replay-value'], ())
+    add(144, 'mcp144-delete-marker-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        'set_by=principal, deleted=True)',
+        'set_by=principal)',
+        ['credential/deleted-state'], ())
+    add(144, 'mcp144-recreated-counted-replacement', '82_veldo_0144_mcp_catalog.py', 'control_credential.py',
+        "outcome = 'replaced' if old and not old['data'].get('deleted') else 'written'",
+        "outcome = 'replaced' if old else 'written'",
+        ['credential/deleted-state'], ())
+
+    # VELDO-0141: every worker run's execution record, redacted before it is kept, served live by the API. Each
+    # criterion's declared falsifier first, each on its named row of suite 82, then the seams they rest on.
+    def record141(name, module, old, new, rows, also=()):
+        add(141, name, '82_veldo_0141_execution_record.py', module, old, new, list(rows), also)
+    record141('record-error-stream-discarded', 'control_launch.py',
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.PIPE,",
+              "                    worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,\n"
+              "                                              stderr=subprocess.DEVNULL,  # defect: the error stream is discarded\n"
+              "                                             ",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-served-unredacted', 'control_execution_record.py',
+              "        text, kinds = redact(raw.decode('utf-8', 'surrogateescape'), self.resolved)\n",
+              "        text, kinds = raw.decode('utf-8', 'surrogateescape'), []  # defect: kept and served before redaction\n",
+              ['api/no-secret-served'])
+    record141('route-summarized-steps', 'control_api_authority.py',
+              "                    'lines': lines, 'cursor'",
+              "                    'lines': [dict(x, payload=(json.loads(x['payload']).get('type') if x['payload'].startswith('{')\n"
+              "                                               else 'output')) for x in lines],  # defect: a summarized step list\n"
+              "                    'cursor'",
+              ['route/served-lines'])
+    record141('redaction-scanner-first', 'control_execution_record.py',
+              "    kinds = set()\n"
+              "    for form, kind in (resolved.forms(text) if resolved is not None else ()):\n"
+              "        if form in text:\n"
+              "            text = text.replace(form, marker(kind))\n"
+              "            kinds.add(kind)\n"
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              "    kinds = set()\n"
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              ['redaction/planted-value'],
+              also=[("    return text, sorted(kinds)\n",
+                     "    for form, kind in (resolved.forms(text) if resolved is not None else ()):  # defect: after the scanner\n"
+                     "        if form in text:\n"
+                     "            text = text.replace(form, marker(kind))\n"
+                     "            kinds.add(kind)\n"
+                     "    return text, sorted(kinds)\n")])
+    record141('record-stream-options-dropped', 'control_engine_claude.py',
+              "    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],\n",
+              "    'stream_options': [],  # defect: a subagent's text and the partial messages never reach the stream\n",
+              ['record/stream-options'])
+    record141('record-hint-unsent', 'control_execution_record.py',
+              "            self.hint(False)\n",
+              "            pass  # defect: the API is told nothing until the run has ended\n",
+              ['api/live'])
+    record141('record-wrapper-line-dropped', 'control_launch.py',
+              "                recorder.line('wrapper', worker.identity_line)\n",
+              "                pass  # defect: the wrapper's identity line is not kept\n",
+              ['record/claude-complete', 'record/codex-complete'])
+    record141('record-exit-uncommitted', 'control_launch.py',
+              "                             execution_record=self.committed)\n",
+              "                             execution_record=None)  # defect: the exit commits nothing of the record\n",
+              ['route/committed'])
+    record141('record-exit-unbound', 'control_dispatch.py',
+              "        record['execution_record'] = params.get('execution_record')\n",
+              "        record['execution_record'] = None  # defect: the dispatch keeps no commitment of its record\n",
+              ['route/committed'])
+    record141('route-digest-unchecked', 'control_execution_record.py',
+              "    if committed is not None:\n        if (",
+              "    if False:  # defect: a record that no longer matches its commitment is served\n        if (",
+              ['route/committed'])
+    record141('route-scope-unchecked', 'control_api_authority.py',
+              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):\n",
+              "            if False:  # defect: any current member reads any run's record\n",
+              ['api/refusals', 'api/service-call'])
+    record141('route-binding-unchecked', 'control_execution_record.py',
+              "    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:\n",
+              "    if not isinstance(header, dict) or header.get('schema') != SCHEMA:  # defect: any run's record is served\n",
+              ['route/committed'])
+    record141('route-cursor-past-end-served', 'control_execution_record.py',
+              "    if after > len(lines):\n",
+              "    if False:  # defect: a cursor past the end is served as an empty record\n",
+              ['api/refusals'])
+    record141('route-record-hint-unrouted', 'control_api.py',
+              "        if isinstance(hint, dict) and hint.get('schema') == RECORD_HINT_SCHEMA:\n",
+              "        if False:  # defect: a record hint is judged as a journal hint and refused\n",
+              ['api/live'])
+    record141('route-service-call-unlisted', 'control_api_assertion.py',
+              "         'record': ('principal', 'dispatch_id', 'after', 'limit')}",
+              "         }  # defect: the record call is not one the service carries",
+              ['api/service-call'])
+    record141('redaction-token-unresolved', 'control_launch.py',
+              "RESOLVERS = [subscription_token, keystore_credentials]\n",
+              "RESOLVERS = [keystore_credentials]  # defect: the subscription token never enters the run's set\n",
+              ['redaction/known-pattern'])
+    record141('redaction-kinds-unnamed', 'control_execution_record.py',
+              "'redacted': kinds, 'payload': text})",
+              "'redacted': [], 'payload': text})  # defect: a line never names what was replaced",
+              ['redaction/kinds-field'])
+    # The lead's path decision: a rooted path is scored by segment and a URL by component; the declared falsifier
+    # scores the whole path again. Then the segment rule itself, the query key and value, and the account fields.
+    record141('redaction-path-scored-whole', 'control_execution_record.py',
+              "        found = _ROOT.search(text, at)\n",
+              "        found = None  # defect: a path or URL is one candidate, scored whole\n",
+              ['redaction/paths-kept', 'redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-path-segment-unscored', 'control_execution_record.py',
+              "        for low, high in segments:\n",
+              "        for low, high in ():  # defect: a secret inside a path or URL is never judged\n",
+              ['redaction/path-segment', 'redaction/url-component'])
+    record141('redaction-named-digest-scored', 'control_execution_record.py',
+              "    return _high(token) and not (named and SS._is_digest(named.group(1)))\n",
+              "    return _high(token)  # defect: a clone's directory, a named digest, is replaced as random\n",
+              ['redaction/paths-kept'])
+    record141('redaction-url-query-whole', 'control_execution_record.py',
+              "        elif url and part == 'query' and char == '=' and not keyed:\n",
+              "        elif False:  # defect: a query key is judged with its value and replaced with it\n",
+              ['redaction/url-component'])
+    record141('redaction-account-fields-kept', 'control_execution_record.py',
+              "    for start, end, replacement, kind in sorted(_account_spans(text), reverse=True):\n",
+              "    for start, end, replacement, kind in []:  # defect: the account identifiers are kept\n",
+              ['redaction/account-fields'])
+    record141('record141-partials-line-by-line', 'control_execution_record.py',
+              "        if kind in ('content_block_start', 'content_block_delta') and fields:\n",
+              '        if False:  # defect: redact partial messages one line at a time\n',
+              ['redaction/partial-blocks'])
+    record141('record141-partials-tail-too-short', 'control_execution_record.py',
+              '    safe = max(0, len(text) - tail)\n',
+              '    safe = len(text)  # defect: no withheld suffix\n',
+              ['redaction/partial-blocks'])
+    record141('record141-clone-path-check-skipped', 'control_execution_record.py',
+              '    kept = [(m.start(), m.end()) for m in _RELATIVE.finditer(text) if m.group() in paths]\n',
+              '    kept = []  # defect: relative clone paths are scored as opaque values\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-handshake-id-scored', 'control_execution_record.py',
+              '    kept += [(m.start(), m.end()) for m in _INITIALIZE.finditer(text)]\n',
+              '    pass  # defect: the known handshake request id is scored\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141-stream-registers-after-fill', 'control_api.py',
+              '        with self._lock:\n            self._streams.append(stream)\n        self._fill_record(stream, answer, always=True)\n        # Catch an end hint delivered after the first page read, before registration.\n        if stream.closed is None:\n            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))\n',
+              '        self._fill_record(stream, answer, always=True)\n        with self._lock:\n            self._streams.append(stream)\n',
+              ['api/registration-race'])
+    record141('record141-existence-before-scope', 'control_api_authority.py',
+              "            contract = (dispatch or {}).get('contract') or {}\n",
+              "            if dispatch is None:\n                raise ER.Refused('missing_evidence:unknown_run', 'no such run')\n            contract = (dispatch or {}).get('contract') or {}\n",
+              ['api/scope-before-existence'])
+    record141('record141-reader-queue-unbounded', 'control_api.py',
+              '            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):\n',
+              '            if False:  # defect: a slow reader retains every frame\n',
+              ['api/slow-reader'])
+    record141('record141-encoded-forms-skipped', 'control_execution_record.py',
+              '            for form in forms:\n',
+              '            for form in (value,):  # defect: only the unencoded value\n',
+              ['redaction/encoded-values'])
+    record141('record141-unknown-record-unbound', 'control_dispatch.py',
+              "        record.update(execution_record=params.get('execution_record'))\n",
+              '        record.update(execution_record=None)  # defect: unknown ends carry no commitment\n',
+              ['route/unknown-committed'])
+    record141('record141-unknown-record-uncommitted', 'control_launch.py',
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=self.committed)\n",
+              "            self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),\n                                    expected_state='running', execution_record=None)\n",
+              ['route/unknown-committed'])
+    record141('record141-receiver-clone-unlisted', 'control_launch.py',
+              "        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))\n",
+              '        self.resolved.paths = ()  # defect: receiver never snapshots its clone\n',
+              ['redaction/clone-relative-paths'])
+    record141('record141e-config-catches-only-oserror', 'control_launch.py',
+              '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',
+              '    except OSError:\n        # No receiver ran',
+              ['config/malformed', 'config/incomplete'])
+    record_config = ("        with open(config_path) as handle:\n"
+                     "            config = json.load(handle)\n"
+                     "        if not isinstance(config, dict):\n"
+                     "            raise ValueError('receiver config must be an object')\n"
+                     "        records = ER.directory(config)\n")
+    record_spawn = ("        child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,\n"
+                    "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)\n")
+    record141('record141e-config-read-after-spawn', 'control_launch.py',
+              record_config + record_spawn, record_spawn + record_config,
+              ['config/malformed', 'config/incomplete', 'config/missing-file'])
+    record141('record141d-clone-git-discovery-restored', 'control_execution_record.py',
+              '    root = Path(root if root is not None else cwd).absolute()\n',
+              "    spec = importlib.util.spec_from_file_location('record_git', Path(__file__).with_name('git_process.py'))\n"
+              "    gp = importlib.util.module_from_spec(spec)\n"
+              "    spec.loader.exec_module(gp)\n"
+              "    found = gp.run(['git', '-C', str(cwd), 'rev-parse', '--show-toplevel'], capture_output=True, text=True)\n"
+              "    root = Path(found.stdout.strip()) if found.returncode == 0 else Path(cwd).absolute()\n",
+              ['redaction/clone-without-git'])
+    record141('record141-concurrent-fills-interleave', 'control_api.py',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        self._fill_record_locked(stream, answer, always)  # defect: overlapping fills interleave frames\n',
+              ['api/registration-race'])
+    record141('record141b-thinking-unassembled', 'control_execution_record.py',
+              "        fields = [field for field, value in delta.items() if field != 'type' and isinstance(value, str)]\n",
+              "        fields = [field for field, value in delta.items() if field not in ('type', 'thinking') and isinstance(value, str)]\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-unknown-delta-released', 'control_execution_record.py',
+              "                block['hold'] |= not known\n",
+              "                block['hold'] = False\n",
+              ['redaction/thinking-and-unknown'])
+    record141('record141b-diff-prefix-unstripped', 'control_execution_record.py',
+              "        if name.startswith(('a/', 'b/')):\n            name = name[2:]\n",
+              '        if False:\n            name = name[2:]\n',
+              ['redaction/live-paths'])
+    record141('record141b-path-snapshot-restored', 'control_execution_record.py',
+              '    return ClonePaths(root, Path(cwd).absolute())\n',
+              '    names = set()\n    for directory_, dirs, files in os.walk(root):\n        names.update(os.path.relpath(os.path.join(directory_, n), root) for n in dirs + files)\n    names |= {os.path.relpath(root / n, cwd) for n in list(names)}\n    return names\n',
+              ['redaction/live-paths'])
+    record141('record141b-count-pages-restored', 'control_execution_record.py',
+              '        if page and size + width > PAGE_BYTES:\n',
+              '        if False:\n',
+              ['api/byte-pages'])
+    record141('record141b-reader-locked-during-page', 'control_api.py',
+              '        with stream._fill_lock:\n            self._fill_record_locked(stream, answer, always)\n',
+              '        with stream._condition:\n            self._fill_record_locked(stream, answer, always)\n',
+              ['api/fast-catchup'])
+    record141('record141b-runner-commitment-omitted', 'control_launch.py',
+              '        records = self.records\n',
+              '        return None\n        records = self.records\n',
+              ['route/runner-unknown'])
+    record141('record141b-offset-base64-omitted', 'control_execution_record.py',
+              '            for offset in range(3):\n',
+              '            for offset in ():\n',
+              ['redaction/offset-encodings'])
+    record141('record141b-lower-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex())\n',
+              '            pass\n',
+              ['redaction/offset-encodings'])
+    record141('record141b-short-leaf-unscored', 'control_execution_record.py',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              '                    return index == len(parts) - 1 and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              ['redaction/live-paths'])
+    record141('record141c-leaf-candidates-unscored', 'control_execution_record.py',
+              '                    return index == len(parts) - 1 and not _high(part) and not any(\n                        _high(m.group()) for m in SS._CANDIDATE.finditer(part))\n',
+              '                    return index == len(parts) - 1 and not _high(part)\n',
+              ['redaction/clone-leaf-candidates'])
+    record141('record141c-upper-hex-omitted', 'control_execution_record.py',
+              '            forms.add(value.encode().hex().upper())\n',
+              '            pass\n',
+              ['redaction/uppercase-hex'])
+    # VELDO-0085: each retained criterion's falsifier and publication bindings.
+    def decomposition(name, module, old, new, rows, also=()):
+        add(85, 'decomposition-' + name, '82_veldo_0085_decomposition.py', module, old, new, rows, also)
+
+    decomposition('artifact-before-unit-validation', 'control_decomposition.py',
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        "        al.allocate(dict(request_id=command['command_id'], principal=principal,\n"
+        "                         repository_uuid=bl.ids['repository_uuid'], workspace=str(bl.workspace),\n"
+        "                         source=raw['source'], role=raw['role'], slug='early', content=b'early artifact'),\n"
+        "                    signer=bl.journal_signer, sign=bl.sign, authority_generation=bl.authority_generation)\n"
+        "        problem = CB.CL.unit_id_problem(raw['unit'])",
+        ['fields/invalid-id-no-artifact'])
+    decomposition('checkout-maximum', 'control_alias.py',
+        "        number = kind['next']",
+        "        number = accepted_maximum(self.paths[repository], _git_process.check_output("
+        "['git', '-C', self.paths[repository], 'rev-parse', 'HEAD']).decode().strip(), kind) + 1",
+        ['aliases/authority-counter'])
+    decomposition('omit-generated-dependency', 'control_decomposition.py',
+        "            spec_dependencies.append(bound['alias'])", "            pass",
+        ['dependencies/eligibility'])
+    decomposition('cross-item-authority', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['unit'] != name", ['binding/one-owner'])
+    decomposition('primary-revision-shared', 'control_backlog.py',
+        "bound['backlog_item'] != data['uuid'] or bound['unit'] != name",
+        "bound['backlog_item'] != data['uuid']", ['binding/one-owner'])
+    decomposition('appended-unit-ready', 'control_backlog.py',
+        "u['unit']: {'kind': UNIT_KIND, 'data': self._new_unit(data, u, revision, entry)}}",
+        "u['unit']: {'kind': UNIT_KIND, 'data': dict(self._new_unit(data, u, revision, entry), state='READY')}}",
+        ['priority/fresh-growth'])
+    decomposition('unit-dependency-lost', 'control_backlog.py',
+        "depends_on=list((u.get('document') or {}).get('dependencies', [])), admitted_revision=None,",
+        "depends_on=[], admitted_revision=None,", ['dependencies/eligibility'])
+    decomposition('stale-bytes-accepted', 'control_decomposition_binding.py',
+        "    if (visible != body or 'sha256:'", "    if (False or 'sha256:'", ['publication/stale-input'])
+    decomposition('unpublished-input', 'control_decomposition_binding.py',
+        "or obligation.get('state') != 'published':", "or False:", ['publication/stale-input'])
+    decomposition('eligibility-unbound', 'control_eligibility.py',
+        "        problems += DP.problems(self.conn, self.repository_uuid, data, self.workspace)",
+        "        problems += []", ['publication/stale-input'])
+    decomposition('admission-unbound', 'control_backlog.py',
+        "            problems += DP.problems(conn, self.ids['repository_uuid'], unit(conn, entry['unit']) or {}, self.workspace)",
+        "            problems += []", ['publication/stale-input'])
+    decomposition('private-refusal-class-only', 'control_decomposition.py',
+        "self.CB = SimpleNamespace(**backlog._unit_entry.__func__.__globals__)",
+        "self.CB = _organ('control_backlog')",
+        ['refusals/service-class'])
+    decomposition('first-specification-match', 'control_decomposition_binding.py',
+        "        if not head.get('superseded_by'):", "        if True:",
+        ['dependencies/current-specification'])
+    decomposition('prepare-dependency-unchecked', 'control_backlog.py',
+        "            if None in current_dependencies or bound['specification_dependencies'] != current_dependencies:",
+        "            if False:", ['dependencies/prepare-mismatch'])
+    decomposition('supersession-omitted', 'control_alias.py',
+        "            changes[identity] = {'kind': 'accepted_document', 'data': dict(old, superseded_by=alias)}",
+        "            pass", ['publication/concurrent-current'])
+    decomposition('supersede-prepared-unit-unchecked', 'control_alias.py',
+        "            if DP.row(conn, meta['unit']) is not None or DP.row(conn, 'admission:' + meta['unit']) is not None:",
+        "            if False:", ['supersession/prepared-unit'])
+    decomposition('supersede-other-item-unchecked', 'control_alias.py',
+        "            if prior_meta.get('backlog_item') != meta.get('backlog_item'):",
+        "            if False:", ['supersession/other-item'])
+    decomposition('supersede-role-unchecked', 'control_alias.py',
+        "            if role != old['role']:",
+        "            if False:", ['supersession/main-role'])
+    decomposition('service-not-installed', 'init_scaffold.py',
+        '    ".veldo/control_decomposition.py",\n', '', ['install/assets'])
+
+    # VELDO-0165: the prefix strip is an exec boundary, and both qualifiers require it.
+    def hygiene165(name, module, old, new, rows, also=()):
+        add(165, 'hygiene-' + name, '82_veldo_0165_launch_hygiene.py', module, old, new, rows, also)
+
+    extracted165 = set()
+    for engine165 in ('claude', 'codex'):
+        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
+        entry165 = record165['versions']['2.1.281'] if engine165 == 'claude' else record165
+        extracted165.update(entry165.get('session_environment') or [])
+    hygiene165('listed-names-only', 'control_launch.py',
+               'name.startswith(SESSION_PREFIXES)',
+               'name in ' + repr(tuple(sorted(extracted165))), ['strip/future-names'])
+    hygiene165('codex-strip-unqualified', 'control_engine_codex.py',
+               "    if record.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/codex'])
+    hygiene165('mcp-override-kept', 'control_launch.py',
+               '        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):',
+               "        if name != 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX' and (name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES)):",
+               ['mcp/prefixed-tools'])
+    hygiene165('claude-strip-unqualified', 'control_engine_claude.py',
+               "    if entry.get('baseline') != BASELINE:",
+               "    if False:", ['refuse/claude'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-names-unqualified', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
+                   ['refuse/' + engine])
+    hygiene165('own-values-lost', 'control_launch.py',
+               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
+    hygiene165('strip-not-applied', 'control_launch.py',
+               '    environment = engine_environment(environment)',
+               '    environment = environment', ['strip/claude', 'strip/codex'])
+    hygiene165('removed-names-unreported', 'control_launch.py',
+               'n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)',
+               'n in EXEC_STRIPPED', ['strip/claude', 'strip/codex'])
+    for engine, source in [('claude', 'entry'), ('codex', 'record')]:
+        hygiene165(engine + '-empty-is-missing', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
+                   "    if not " + source + ".get('session_environment'):", ['evidence/empty'])
+        hygiene165(engine + '-evidence-any-type', 'control_engine_' + engine + '.py',
+                   "    if not isinstance(" + source + ".get('session_environment'), list):",
+                   "    if " + source + ".get('session_environment') is None:", ['evidence/not-a-list'])
+    hygiene165('configured-not-restored', 'control_launch.py',
+               "        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}",
+               "        own = {}", ['strip/configured'])
+    hygiene165('unprefixed-parent-kept', 'control_launch.py',
+               "'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',",
+               "", ['strip/unprefixed'], also=(("'TRACEPARENT', ", ""),))
+    hygiene165('parent-hand-list', 'extract_environment.py',
+               "    parents, structures = parent_environment(engine, data, names)",
+               "    parents, structures = [n for n in ('CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_PID', 'CLAUDE_EFFORT', 'AI_AGENT', 'CODEX_THREAD_ID', 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED') if n in names], []",
+               ['evidence/completeness'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('extractor-drops-suffix', 'extract_environment.py',
+               '            if SHAPE.fullmatch(piece):',
+               "            if SHAPE.fullmatch(piece) and not piece.endswith(b'_ID'):", ['evidence/outside-scan'])
+    result[-1]['dir'] = 'proof/VELDO-0165'
+    hygiene165('codex-child-settings-kept', 'control_launch.py',
+               "                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')",
+               "                 )", ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('metrics-default-kept', 'control_launch.py',
+               "                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',\n", "",
+               ['strip/child-environment', 'evidence/completeness'])
+    hygiene165('claude-locale-unconfigured', 'control_engine_claude.py',
+               "                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "                    },\n",
+               ['strip/child-environment'])
+    hygiene165('codex-locale-unconfigured', 'control_engine_codex.py',
+               "    'environment': {'LANG': 'C.UTF-8', 'TERM': 'dumb'},\n", "    'environment': {},\n",
+               ['strip/child-environment'])
+    hygiene165('mcp-configured-accepted', 'control_launch.py',
+               '        if renaming:', '        if False:', ['mcp/configured-refused'])
+    hygiene165('refused-not-counted', 'control_launch.py',
+               "int(refusal.startswith('missing_evidence:engine_baseline:'))",
+               "0", ['report/refused'])
     add(129, 'worker129-runtime-architecture-bypassed', '60_veldo_0053_architecture.py', 'control_launch_work.py',
         "        self.gate.require('provider_request', unit, context=context)",
         "        pass  # defect: launch without the provider architecture decision",
@@ -8129,6 +8672,276 @@ def cases():
                ['profiles/existing'])
     windows166('new-profile-public', 'accounts.py',
                "os.chmod(cdir, 0o700)", "os.chmod(cdir, 0o755)", ['profiles/created'])
+    def formats172(name, directory, module, old, new, row, suite='82_veldo_0172_live_formats.py'):
+        # A fake engine's own defect reds the `fake/capture:<suite>` row the suite that embeds it reports
+        # (the suite is its own mutated module); the table, scrub and census defects red 0172's rows.
+        add(172, 'formats172-' + name, suite, module, old, new, [row])
+        result[-1]['dir'] = directory
+
+    formats172('binary-only', 'proof/VELDO-0062', 'extract_formats.py',
+               "    capture = json.loads(Path(capture_path).read_text())",
+               "    return table  # defect: regenerate from the binary alone\n"
+               "    capture = json.loads(Path(capture_path).read_text())", 'table/capture')
+    formats172('login-stdout', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
+               "    print('Logged in using ChatGPT', file=sys.stderr)",
+               "    print('Logged in using ChatGPT')", 'fake/capture', suite='79_veldo_0061_codex_adapter.py')
+    formats172('denylist-string', 'proof/VELDO-0172', 'scrub.py',
+               "        return value if value in rules['strings'].get(field, []) else '<string>'",
+               "        return value if '/' not in value else '<string>'", 'capture/planted')
+    formats172('keep-pid', 'proof/VELDO-0172', 'scrub.py',
+               "return value if field in rules['token_counts'] else (0.0 if isinstance(value, float) else 0)",
+               "return value", 'capture/planted')
+    formats172('required-usage', 'proof/VELDO-0062', 'extract_formats.py',
+               "            if len(present) < len(objects) and not field.get('optional'):",
+               "            if False:  # defect: trust binary requiredness", 'table/capture')
+    formats172('emitter-required', 'proof/VELDO-0062', 'extract_formats.py',
+               "            if field is not None and not field.get('optional'):",
+               "            if False:  # defect: a field its emitter writes under a condition stays required", 'table/capture')
+    formats172('hygiene-answer-drops-provider', 'scripts/suites', '82_veldo_0165_launch_hygiene.py',
+               "'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},",
+               "'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped", 'fake/capture',
+               suite='82_veldo_0165_launch_hygiene.py')
+    # The census credits suite 81 with the agent message its fake's dict display names; the fake no longer
+    # printing it (the display kept) must red that suite's own row, since the census row alone stays green.
+    formats172('credited-event-not-printed', 'scripts/suites', '81_veldo_0156_codex_baseline.py',
+               "emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'done'}})",
+               "0 and emit({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'done'}})"
+               "  # defect: a credited event is no longer printed", 'fake/capture', suite='81_veldo_0156_codex_baseline.py')
+    formats172('census-drops-conform', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
+               "        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')\n",
+               "        fake_capture = (['defect: this suite no longer checks its fakes'], [])\n", 'fake/census')
+    # VELDO-0154: the factory loop inside the authority service. Each criterion's declared falsifier first, each on
+    # its named row of suite 83, then the seams the rows rest on.
+    def loop154(name, module, old, new, rows, also=()):
+        add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
+    loop154('loop154-pipe-not-polled', 'control_service.py',
+            "                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]\n",
+            "                    ready = select.select([listener], [], [], wait)[0]  # defect: the launch pipes are not polled\n",
+            ['loop/review-offered'])
+    loop154('loop154-eof-ignored', 'control_launch.py',
+            "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
+            "            if not chunk:\n                return False  # defect: the receiver's death is not an end\n",
+            ['loop/receiver-death'])
+    loop154('loop154-ask-reruns', 'control_service.py',
+            "        if decision['decision'] == LIM.RERUN:\n            return self.rerun(record, report)\n",
+            "        if True:  # defect: every limited run is dispatched again, asking nobody\n"
+            "            return self.rerun(record, report)\n",
+            ['loop/ask-before-rerun'])
+    loop154('loop154-periodic-pass', 'control_service.py',
+            "                    if service.loop is not None and service.loop.due(time.time()):\n",
+            "                    if service.loop is not None:  # defect: every turn of the service loop starts a pass\n",
+            ['loop/no-other-timer'])
+    loop154('loop154-journal-wake-dropped', 'control_service.py',
+            "        if self.loop is not None and self.watermark() > before:\n            self.loop.wake('journal')\n",
+            "", ['loop/journal-wake-offers'])
+    loop154('loop154-account-slot-kept', 'control_account_pool.py',
+            "            active += int(not record.get('retired') and not record.get('account_released'))\n",
+            "            active += int(not record.get('retired'))\n", ['loop/receiver-death'])
+    loop154('loop154-orphan-not-stopped', 'control_launch.py',
+            "                _stop_orphan(entry['group'], entry['process'])\n",
+            "                pass  # defect: the stop the dead receiver owed is never made\n", ['loop/receiver-death'])
+    loop154('loop154-rerun-from-head', 'control_service.py',
+            "                          revision=contract['source']['commit'], holder=context.get('holder'), context=context,\n",
+            "                          revision='HEAD', holder=context.get('holder'), context=context,\n",
+            ['loop/rerun-another-account'])
+    loop154('loop154-owner-no-reruns', 'control_service.py',
+            "        if ruling == ASK_CHOICES[0]:\n",
+            "        if ruling in ASK_CHOICES:  # defect: his stop re-runs the unit too\n", ['loop/owner-no-stops'])
+    loop154('loop154-reset-timer-unset', 'control_service.py',
+            "        self.timer = min(resets) if resets else None\n",
+            "        self.timer = None  # defect: no pass is woken at the reset a waiting unit needs\n",
+            ['loop/reset-timer-wake'])
+    # VELDO-0169: every path that hands out work asks the Gate's one project check; the claim organ and the
+    # station contract writer ask it themselves inside the write transaction, and the store's commit path
+    # refuses every claim record that hands out work of a stopped project, whoever built it. Each criterion's
+    # declared falsifier first (AC1 to AC4), then the lead's decisions of the review-fix rounds, then the
+    # seams they rest on.
+    def handout(name, module, old, new, rows, also=()):
+        add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
+
+    # AC1: a second resume path that writes a claim without the check; the census fails on it.
+    handout('unlisted-resume', 'control_assignment.py',
+            '    def _check_project(self, unit, entities, observation):',
+            "    def _resume_again(self, state, entities, current, principal, now, command, params, observation):\n"
+            "        unit = self.read(params['assignment_id'])['data'].get('unit_id')\n"
+            "        backlog = entities[unit]['data']['backlog_item_uuid']\n"
+            "        params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog,\n"
+            "                                claim_id=self.claims.claim_id(self.ids['repository_uuid'], unit), holder=principal,\n"
+            "                                generation=0, capabilities=[], repository_uuid=self.ids['repository_uuid'],\n"
+            "                                parked_on=params['assignment_id'])\n"
+            "        return {unit, backlog}\n\n"
+            '    def _check_project(self, unit, entities, observation):',
+            ['census/writers'],
+            also=[("            elif op == 'resume':\n",
+                   "            elif op == 'resume_again':\n"
+                   "                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))\n"
+                   "            elif op == 'resume':\n")])
+    handout('unlisted-station-contract', 'control_andon.py',
+            '    def run(self):\n',
+            "    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):\n"
+            "        self._commit(dict(action='resume', stop_id=sid, unit_id=contract['unit'], contract=contract,\n"
+            "                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)\n\n"
+            '    def run(self):\n', ['census/writers'])
+    handout('constructor-bypassed', 'control_andon.py',
+            "                        **self.issue_station_contract(params['contract'], before))\n",
+            "                        **{cid: {'kind': CONTRACT_KIND, 'data': params['contract']}})\n", ['census/writers'])
+    # AC2 and AC3: the resume, the backlog disposition and the andon resume without the caller's check (the
+    # claim organ and the station contract writer still refuse inside the write, so the rows read what only
+    # the caller's check gives: the refusal naming the project and the versions it read, and the census).
+    handout('resume-unchecked', 'control_assignment.py',
+            "        self._check_project(unit, entities, observation)\n        params['resume']",
+            "        params['resume']", ['resume/PAUSED', 'census/writers'])
+    handout('backlog-unchecked', 'control_assignment.py',
+            "            self._check_project(unit, entities, observation)\n            plan['unpark']",
+            "            plan['unpark']", ['dispose/PAUSED', 'census/writers'])
+    handout('andon-unchecked', 'control_andon.py',
+            '            refusals, expected = self.project_gate.project_problems(unit)',
+            '            refusals, expected = [], {}', ['andon/PAUSED', 'census/writers'])
+    # AC4: the null-project claim skipped at the receiver, as before the fix.
+    handout('null-claim-unchecked', 'control_claim.py',
+            "        if command['operation'] == 'claim':",
+            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
+            ['claim/absent', 'claim/null'])
+    # Lead decision 1 (second round): the claim organ asks the check itself, inside the write transaction,
+    # before any other reason. It skips it; it reuses a check made in an earlier transaction (a check
+    # outside this write's transaction). The store's commit path refuses the same claims, so the rows read
+    # the organ's precedence: a unit the worker may not hold is refused by the project's name, not not_authorized.
+    handout('organ-check-skipped', 'control_claim.py',
+            "        if refusals:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            "        if False:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            ['organ/stopped', 'organ/race'])
+    handout('organ-check-outside-transaction', 'control_claim.py',
+            "        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])\n",
+            "        refusals, _read = transition.__dict__.setdefault(params['unit_id'], _project_gate(conn).project_problems(params['unit_id']))"
+            "  # defect: a check made in an earlier transaction decides this one\n",
+            ['organ/race'])
+    # The station contract writer, the same: it skips its check, and it issues outside a command transaction.
+    handout('contract-check-skipped', 'control_andon.py',
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if refusals:",
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if False:",
+            ['organ/stopped'])
+    handout('contract-outside-transaction', 'control_andon.py',
+            "        if not self.conn.in_transaction or not getattr(self.conn, 'command_transaction', False):\n",
+            "        if False:\n", ['organ/outside'])
+    # Lead decision of the third round: the store's commit path holds the invariant for every writer of a
+    # claim record. It skips it; it takes a resume for a write that hands nothing out; it reads the project
+    # outside the transaction (a second connection, which sees the committed state, not the one this
+    # transaction commits); it checks only the unit a record's fields name, never the one its id names.
+    handout('store-invariant-skipped', 'control_store.py',
+            "        stopped = handout_problem(conn, changes, before)\n",
+            "        stopped = None  # defect: the store hands out whatever a transition writes\n",
+            ['store/invariant', 'guard/forge', 'organ/stopped'])
+    handout('store-claim-kind-unchecked', 'control_store.py',
+            '        if eid.startswith(CLAIM_PREFIX) and (changes[eid] or {}).get("kind") != CLAIM_KIND:\n'
+            '            return eid, None, ["invalid_input:claim_kind"]\n',
+            '',
+            ['store/invariant'])
+    handout('store-invariant-ignores-resumes', 'control_store.py',
+            '        return "resume" if was.get("parked_on") else "claim"\n',
+            '        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out\n',
+            ['store/invariant', 'organ/stopped'])
+    handout('store-reads-outside-transaction', 'control_store.py',
+            "    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)\n",
+            "    return _ELIGIBILITY[0].Gate(_Records(), sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]),"
+            " domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction\n",
+            ['store/invariant'])
+    handout('store-id-unit-unchecked', 'control_store.py',
+            "    for i, c in enumerate(eid):\n",
+            "    for i, c in ():  # defect: the unit a claim's id names is never checked\n",
+            ['store/invariant'])
+    # The project and owner records the check read, pinned through the commit.
+    handout('assignment-project-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if not k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('assignment-owner-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('andon-project-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if not k.startswith('project:')},",
+            ['andon/race'])
+    handout('andon-owner-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if k.startswith('project:')},",
+            ['andon/race'])
+    # A project race is stale_version; any other race of the andon resume keeps stale_subject.
+    handout('andon-project-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_subject'\n", ['andon/race'])
+    handout('andon-subject-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_version'\n", ['andon/subject-race'])
+
+    # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
+    # criterion's declared falsifier first, then the threat model's other routes.
+    def delivery(name, module, old, new, rows, also=()):
+        add(158, 'delivery158-' + name, '85_veldo_0158_credential_delivery.py', module, old, new, rows, also)
+    # AC1: a Codex server's secret on the engine command line (the -c table's env instead of env_vars).
+    delivery('codex-value-on-argv', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env'] = dict(literals, **{n: secrets[n] for n in forwarded})\n",
+             ['delivery/command-lines'])
+    # AC2: the run launched without its server when its credential does not resolve.
+    delivery('run-without-server', 'control_launch.py',
+             "        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n",
+             "        try:\n            self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n"
+             "        except DL.Undeliverable:\n            self.credentials = []  # defect: launched without the server\n",
+             ['refusal/keystore-locked', 'refusal/keystore-unreachable', 'refusal/reference-not-found'])
+    # AC3: the keystore value resolved without being added to the run's set.
+    delivery('value-not-in-set', 'control_launch.py',
+             'RESOLVERS = [subscription_token, keystore_credentials]\n',
+             'RESOLVERS = [subscription_token]\n',
+             ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
+    # AC1: Claude Code's values put in the engine environment besides its private file.
+    delivery('claude-value-in-environment', 'control_engine_claude.py',
+             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
+             "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             ['delivery/claude-private-file'])
+    # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
+    delivery('every-server-variable', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env_vars'] = sorted(secrets)\n",
+             ['delivery/own-server-only'])
+    # AC1: the run's private directory left behind once it is reaped.
+    delivery('run-directory-kept', 'control_launch.py',
+             '            shutil.rmtree(run, ignore_errors=True)\n',
+             '            pass  # defect: the run directory and its generated configuration stay\n',
+             ['delivery/private-dir-removed'])
+    # The review fixes. A dead receiver's run directory left behind by its orphan release.
+    delivery('orphan-run-kept', 'control_launch.py',
+             "        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.\n"
+             "        self.clear_runs()\n",
+             "        pass  # defect: the orphan release leaves the run directory\n",
+             ['orphan/run-directory-removed'])
+    # A directory left from before a restart never swept: the service starts without the sweep.
+    delivery('start-unswept', 'control_service.py',
+             "        loop.start()\n",
+             "        pass  # defect: the service starts without sweeping the run directories\n",
+             ['orphan/start-sweep'])
+    # A live run's directory removed by the start sweep, without the kernel showing the run gone.
+    delivery('live-run-removed', 'control_launch.py',
+             "        return self.clear_runs()\n",
+             "        for dispatch_id in sorted(self.leftovers):\n"
+             "            shutil.rmtree(run_directory(self.runs, dispatch_id), ignore_errors=True)  # defect: never checked\n"
+             "        return sorted(self.leftovers)\n",
+             ['orphan/live-run-kept'])
+    # AC3: a Claude run's bearer token without its scheme never enters the run's set.
+    delivery('bearer-scheme-kept', 'control_credential_delivery.py',
+             "                if schemed:\n                    out.append(schemed.group(1))\n",
+             "                if schemed:\n                    pass  # defect: only the value with its scheme is in the set\n",
+             ['redaction/claude-bare-bearer'])
+    # A Codex credential replacing an inherited variable of the engine (PATH), as before the fix.
+    delivery('env-collision-inherited', 'control_launch.py',
+             "        taken = sorted(n for n in secrets if n in ENGINE_RESERVED or n in own or n in environment\n",
+             "        taken = sorted(n for n in secrets if n in own or (n in environment and n not in os.environ)\n",
+             ['refusal/env-collision'])
+    delivery('env-collision-factory-names', 'control_launch.py',
+             "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
+             "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
+             ['refusal/env-collision'])
     return result
 
 
@@ -8212,6 +9025,9 @@ def worker(case, mutant=None):
             if mutant:
                 source = source.replace('ROOT / "scripts" / "fixtures"',
                                         '__import__("pathlib").Path(' + repr(mutant) + ')')
+        elif mutant and case.get('dir') == 'scripts/suites' and case['module'] == case['suite']:
+            # The mutated module is the suite itself (a fake engine it embeds): its copy is what runs.
+            source = Path(mutant).read_text()
         elif mutant:
             anchor = 'ROOT / "' + case.get('dir', '.veldo') + '" / "' + case['module'] + '"'
             if not source.count(anchor):
@@ -8245,7 +9061,7 @@ def main():
         command = [sys.executable, __file__, '--worker', case['name']]
         if path:
             command += ['--mutant', str(path)]
-        proc = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=case.get('timeout', 120))
         if proc.returncode:
             raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
         return json.loads(proc.stdout)

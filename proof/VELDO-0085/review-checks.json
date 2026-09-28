@@ -1,0 +1,91 @@
+{
+  "base": "580b19e2abddd5d27b47b4e730394ccc806133f5",
+  "checks": [
+    {
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0085_decomposition",
+      "exit_code": 2,
+      "log": "review-suite.log",
+      "note": "Partial selection; exit 2 is required, not a full-run claim.",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0037_aliases",
+      "exit_code": 2,
+      "log": "review-aliases.log",
+      "note": "Partial selection; exit 2 is required, not a full-run claim.",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 73_veldo_0078_backlog",
+      "exit_code": 2,
+      "log": "review-backlog.log",
+      "note": "Partial selection; exit 2 is required, not a full-run claim.",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/check_teeth_mutations.py --finding 85 --jobs 2",
+      "exit_code": 0,
+      "log": "review-teeth.log",
+      "note": "",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/drive.py",
+      "exit_code": 0,
+      "log": "review-drive.log",
+      "note": "",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/check_git_boundary.py",
+      "exit_code": 0,
+      "log": "review-boundary.log",
+      "note": "",
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/selftest.py",
+      "exit_code": 0,
+      "log": "review-whole-selftest.log",
+      "note": "",
+      "passed": true
+    },
+    {
+      "command": "python3 .veldo/validate.py all",
+      "exit_code": 0,
+      "log": "review-validate.log",
+      "note": "",
+      "passed": true
+    },
+    {
+      "command": "bash scripts/check_template_sync.sh",
+      "exit_code": 0,
+      "log": "review-sync.log",
+      "passed": true
+    }
+  ],
+  "criteria_unchanged": true,
+  "engine_sync": {
+    "changed_modules_sha256": {
+      "control_alias.py": "d956035a2d69759318fa4f0d817b2522754f11bd42a180da45af7b10ba0e5353",
+      "control_backlog.py": "685ab8b19088baee175d057dd89446ce190a7aef77a02c1ed00a1766c510aec2",
+      "control_decomposition.py": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
+      "control_decomposition_binding.py": "dbdc6ffd773492da944187401d23cb4ed9c3053b1fa2463f93d3eaf63ad52d48"
+    },
+    "pairs": 233,
+    "passed": true
+  },
+  "gate_invoked": false,
+  "implementation_commit": "1873b5d58590056ede3bde67691ee275e8c34a7a",
+  "local_main_merge": "Already up to date",
+  "mutation_names_globally_unique": true,
+  "mutations_rejected": 16,
+  "pushed": false,
+  "red_records": [
+    "red-at-580b19e2.json",
+    "red-at-7df42187.json"
+  ],
+  "schema": "veldo.review-fix-proof/v1",
+  "spec_id": "VELDO-0085",
+  "whole_selftest": "selftest: 6872 passed, 0 failed"
+}

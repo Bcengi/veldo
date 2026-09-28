@@ -83,6 +83,15 @@ def _v61_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     run_id = os.urandom(4).hex()
     slice_name = 'v61%s.slice' % run_id
@@ -153,7 +162,7 @@ def _v61_suite():
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
         member('floor-service', 'service', ['result_acceptance'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         # The owner's Codex accounts, over profiles the local helper prepares.
@@ -246,7 +255,7 @@ while time.monotonic() < end:
 ''')
         fake = ('#!%s -B\n' % sys.executable) + common + '''if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
-    print('Logged in using ChatGPT')
+    print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
 markers = sys.argv[-1]
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
@@ -288,6 +297,7 @@ printed.close()
 mark(markers, tag, 'exit', {'at': time.monotonic()})
 sys.exit(payload.get('code', 0))
 ''' % str(child)
+        fake = fake_formats.embed(fake)
 
         def package(name, version='0.154.0-linux-x64', extra=b''):
             """A fake Codex vendor package: its manifest and the vendored binary at the real package path."""
@@ -391,7 +401,7 @@ sys.exit(payload.get('code', 0))
             return {'type': event, 'item': dict({'id': ident, 'type': kind}, **fields)}
 
         def completed(input_tokens, output_tokens, **more):
-            usage = dict({'input_tokens': input_tokens, 'cached_input_tokens': 0, 'output_tokens': output_tokens,
+            usage = dict({'input_tokens': input_tokens, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': output_tokens,
                           'reasoning_output_tokens': 0}, **more)
             return {'type': 'turn.completed', 'usage': usage}
 
@@ -403,7 +413,7 @@ sys.exit(payload.get('code', 0))
                     item('item.completed', 'item_0', 'command_execution', aggregated_output='README\n', exit_code=0,
                          status='completed'),
                     item('item.completed', 'item_1', 'reasoning'),
-                    item('item.completed', 'item_2', 'agent_message'),
+                    item('item.completed', 'item_2', 'agent_message', text='done'),
                     completed(input_tokens, output_tokens)]
 
         def job(script, code=0, deadline=40, resume=None, **payload):
@@ -1044,7 +1054,7 @@ sys.exit(payload.get('code', 0))
 
         # the fixtures
         with region('format/codex-fake-lines'):
-            events, kinds = FORMATS['events'], EXEC['item']['items']
+            events, kinds = FORMATS['events'], dict(EXEC['item']['items'], **FORMATS['items'])
 
             def conform(value, schema):
                 kind = schema.get('type')
@@ -1092,6 +1102,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')
         for launch in launches:
             with contextlib.suppress(Exception):
                 if launch.child is not None and launch.child.poll() is None:
@@ -1128,6 +1139,9 @@ sys.exit(payload.get('code', 0))
             if not observed:
                 print('  VELDO-0061 %s detail: no check ran' % name)
         expect('VELDO-0061 ' + name, ok)
+    for line in conform_formats.describe('0061_codex_adapter', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0061_codex_adapter', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0061 suite seconds: %.3f' % (time.monotonic() - started))
 
 

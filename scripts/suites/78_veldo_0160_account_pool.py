@@ -96,6 +96,15 @@ def _v160_suite():
         spec.loader.exec_module(module)
         return module
 
+    fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    live_step = fake_formats.live_step
+
     started = time.monotonic()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v160-', dir=fast))
@@ -155,7 +164,7 @@ def _v160_suite():
         member('runner', 'service', ['reservation_service'])
         member('launch-receiver', 'service', ['reservation_service'])
         member('owner', 'person', ['project_owner'])
-        writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+        writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
 
         events = []
@@ -253,9 +262,9 @@ def stream_input():
         message = json.loads(line)
         if message.get('type') == 'control_request' and (message.get('request') or {}).get('subtype') == 'initialize':
             answer = {'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
-                      'response': {'account': {'subscriptionType': 'Claude Max', 'apiProvider': 'firstParty'},
+                      'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
-            sys.stdout.write(json.dumps(answer) + chr(10))
+            sys.stdout.write(json.dumps(complete_event(answer)) + chr(10))
             sys.stdout.flush()
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
@@ -275,6 +284,7 @@ for step in payload.get('script') or []:
 (markers / ('%%d.done' %% os.getpid())).write_text(json.dumps({'ended': time.time()}))
 sys.exit(payload.get('code', 0))
 ''' % (sys.executable,)
+        fake = fake_formats.embed(fake)
 
         def fake_engine(name):
             # The markers directory and the engine's name are written into the fake: a pinned engine's argv
@@ -297,6 +307,8 @@ sys.exit(payload.get('code', 0))
         CLAUDE_ENGINE = getattr(L, 'ENGINES', {}).get('claude_code')
         if getattr(CLAUDE_ENGINE, 'BASELINE', None) is not None:
             claude_record['versions']['2.1.281']['baseline'] = CLAUDE_ENGINE.BASELINE
+            if hasattr(CLAUDE_ENGINE, 'session_environment'):
+                claude_record['versions']['2.1.281']['session_environment'] = CLAUDE_ENGINE.session_environment(versions / '2.1.281')
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
@@ -424,13 +436,15 @@ sys.exit(payload.get('code', 0))
                     'cache_creation': {'ephemeral_5m_input_tokens': 0, 'ephemeral_1h_input_tokens': 0},
                     'server_tool_use': {'web_search_requests': 0, 'web_fetch_requests': 0}, 'service_tier': 'standard'}
 
+        @live_step
         def c_init():
             return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
                              'cwd': '/work', 'tools': ['Read', 'Bash'],
-                             'mcp_servers': [{'name': 'tracker', 'status': 'connected'}], 'model': 'configured-model',
+                             'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],
                              'plugins': [], 'uuid': str(uuid.uuid4()), 'session_id': SESSION}}
 
+        @live_step
         def c_msg(mid, inp, out, content=None):
             return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION,
@@ -438,6 +452,7 @@ sys.exit(payload.get('code', 0))
                                          'content': content or [], 'stop_reason': None, 'stop_sequence': None,
                                          'usage': c_usage(inp, out)}}}
 
+        @live_step
         def c_api_error(text):
             # The binary's API error message: an assistant message wrapping the error, `error` its kind.
             return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
@@ -452,6 +467,7 @@ sys.exit(payload.get('code', 0))
                                          'cacheCreationInputTokens': 0, 'webSearchRequests': 0, 'costUSD': 0,
                                          'contextWindow': 200000, 'maxOutputTokens': 32000}}
 
+        @live_step
         def c_result(inp, out, turns=1, text='done', error=False, status=None):
             line = {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4, 'is_error': error,
                     'num_turns': turns, 'result': text, 'stop_reason': 'stop_sequence' if error else 'end_turn',
@@ -468,6 +484,7 @@ sys.exit(payload.get('code', 0))
                              'permission_denials': [], 'errors': list(errors), 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION}}
 
+        @live_step
         def c_rate(status, reset, kind='five_hour', utilization=None):
             info = {'status': status, 'rateLimitType': kind}
             if reset is not None:
@@ -2318,6 +2335,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0160_account_pool')
         with contextlib.suppress(Exception):
             for name in ('ac1', 'moved', 'reset', 'observe', 'added', 'usage', 'order'):
                 if name not in released:
@@ -2339,6 +2357,9 @@ sys.exit(payload.get('code', 0))
             if not observed:
                 print('  VELDO-0160 %s detail: no check ran' % name)
         expect('VELDO-0160 ' + name, ok)
+    for line in conform_formats.describe('0160_account_pool', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0160_account_pool', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0160 suite seconds: %.3f' % (time.monotonic() - started))
 
 

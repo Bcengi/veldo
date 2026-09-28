@@ -1,0 +1,5 @@
+--- a/.veldo/control_decomposition.py
++++ b/.veldo/control_decomposition.py
+@@ -44 +44 @@
+-        self.CB = SimpleNamespace(**backlog._unit_entry.__func__.__globals__)
++        self.CB = _organ('control_backlog')

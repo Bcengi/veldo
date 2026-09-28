@@ -131,6 +131,8 @@ _FILES = [
     # loaded by the authority, not by the validator, so not REQUIRED_SUBSTRATE.
     ".veldo/control_alias.py",
     ".veldo/control_document.py",
+    ".veldo/control_decomposition.py",
+    ".veldo/control_decomposition_binding.py",
     # VELDO-0029's enrollment binding, which control_document reads to bind a checkout to the
     # repository it is enrolled as.
     ".veldo/control_enrollment.py",
@@ -162,6 +164,9 @@ _FILES = [
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
     ".veldo/control_launch.py",
+    # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
+    # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_execution_record.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",
@@ -241,6 +246,13 @@ _FILES = [
     # api_credential store kind, the typed API assertion, the protected signer's "api" purpose, the
     # authority's judgment of it, and the published read models and UI action contract). Runtime assets the API, the signer and the authority load; no
     # validator imports them, so none is REQUIRED_SUBSTRATE.
+    # VELDO-0144: catalog records and the Linux runtime credential reference adapter.
+    ".veldo/control_mcp_catalog.py",
+    ".veldo/control_credential.py",
+    ".veldo/control_credential_keystore.py",
+    # VELDO-0158: each Linux run's credentials, resolved from the keystore by the launch receiver.
+    ".veldo/control_credential_delivery.py",
+    ".veldo/secretref.py",
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",
     ".veldo/control_api_authority.py",

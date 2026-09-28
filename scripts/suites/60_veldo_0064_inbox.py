@@ -190,13 +190,14 @@ def _v64_checks(base):
     for who, data in members.items():
         fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
         fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
+    fixture('project:project-a', 'project', dict(name='project-a', state='ACTIVE', owner='owner'))
     fixture('backlog', 'backlog_item', dict(state='PRIORITIZED', repository_uuid=ids['repository_uuid']))
     for unit in ('unit-1', 'unit-2'):
         fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
-                                             backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a']))
+                                             project='project-a', backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-a']))
     for unit in ('unit-3', 'unit-4', 'unit-5', 'unit-6', 'unit-7', 'unit-8'):
         fixture(unit, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
-                                             backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-b']))
+                                             project='project-a', backlog_item_uuid='backlog', requirements=[], eligible_holders=['worker-b']))
 
     receiver = claims.Receiver(conn, ids, 'authority', journal_sign)
     try:

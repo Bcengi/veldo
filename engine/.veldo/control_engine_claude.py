@@ -176,9 +176,10 @@ own configuration directory (control_launch). On 2.1.281 the setting-sources res
 profile's and the clone's MCP servers, skills, instruction files and hooks out (the binary gates each by
 its source); the other switches keep out what no source covers: the claude.ai connectors of the account's
 login, the bundled skills, the managed instruction files and the flag, plugin and session hooks
-(proof/VELDO-0155/README.md). A version is also qualified with stream JSON input (INPUT_FLAGS among its
-flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance), so nothing reaches the
-model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
+(proof/VELDO-0155/README.md). The baseline's `stream_options` (VELDO-0141) add partial messages and forwarded
+subagent text to the stream, which the execution record keeps. A version is also qualified with stream JSON
+input (INPUT_FLAGS among its flags, else `missing_evidence:engine_input_protocol:<version>` before acceptance),
+so nothing reaches the model until the receiver writes the prompt. `Guard` is the handshake and the stream check: the receiver
 writes the initialize control request first and the prompt only once the binary's answer names a
 subscription login (the first-party backend, no API key, a claude.ai subscription, whose subscriptionType
 is one of the binary's Enterprise, Team, Max and Pro labels, or the account's own subscription token); any
@@ -202,6 +203,7 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import struct
 import time
 import zoneinfo
 
@@ -1240,11 +1242,21 @@ def environment(bound, record=None):
 # file, `--disable-slash-commands` (no skill is listed until VELDO-0127), CLAUDE_CODE_DISABLE_CLAUDE_MDS
 # and CLAUDE_CODE_DISABLE_AUTO_MEMORY, and `disableAllHooks` in the generated settings. Neither bare
 # mode (it refuses subscription logins) nor safe mode (it ignores the `--mcp-config` servers) is used.
+# VELDO-0141: the stream options every run also adds, read from the same bytes (boolean, each honored only with
+# --print and stream JSON output, which the qualified flags carry): `--include-partial-messages` (partial message
+# chunks as they arrive) and `--forward-subagent-text` (a subagent's text and thinking forwarded as messages with
+# parent_tool_use_id set), so the execution record holds a subagent's work too; `--verbose` is a qualified flag.
 BASELINE = {
+    # VELDO-0165: these prefixes qualify the wrapper's session strip; names are evidence only.
+    'strip_prefixes': ['CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX'],
+    'strip_names': ['CLAUDE_AGENT_SDK_MCP_NO_PREFIX'],
     'options': ['--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands'],
+    'stream_options': ['--include-partial-messages', '--forward-subagent-text'],
     'settings_option': '--settings',
     'mcp_option': '--mcp-config',
-    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1'},
+    # VELDO-0165: the locale and terminal are configured, never the parent's (the wrapper strips both).
+    'environment': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS': '1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY': '1',
+                    'LANG': 'C.UTF-8', 'TERM': 'dumb'},
     'settings': {'disableAllHooks': True},
     'mcp_config': {'mcpServers': {}},
 }
@@ -1275,29 +1287,92 @@ def input_protocol(flags):
     return any(tuple(flags[at:at + 2]) == INPUT_FLAGS for at in range(len(flags) - 1))
 
 
+def session_environment(executable):
+    """VELDO-0165: the names this executable holds in the stripped session families, read from its bytes
+    without executing it, as an outside `strings -a -n 6` scan reads them: printable runs of six or more
+    bytes outside the ELF executable sections, each uppercase identifier cut where a prefix starts a new
+    literal (one not after an underscore), keeping the pieces that start with a prefix and do not end in
+    an underscore. Evidence only: the prefixes decide the strip."""
+    data = Path(executable).read_bytes()
+    code = []
+    if data[:6] == b'\x7fELF\x02\x01':
+        shoff = struct.unpack_from('<Q', data, 40)[0]
+        size, count = struct.unpack_from('<HH', data, 58)
+        for n in range(count):
+            kind, flags, _, offset, length = struct.unpack_from('<IQQQQ', data, shoff + n * size + 4)
+            if flags & 4 and kind != 8:
+                code.append((offset, offset + length))
+    printable, upper = b'\t' + bytes(range(0x20, 0x7f)), b'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    found, seen, first, last, keep = set(), set(), 0, 0, False
+    for hit in re.finditer(rb'CLAUDE|AI_AGENT|CODEX', data):
+        if hit.start() >= last:
+            first = last + len(data[last:hit.start()].rstrip(printable))
+            after = re.compile(rb'[^\t\x20-\x7e]').search(data, hit.end())
+            last = after.start() if after else len(data)
+            keep = last - first >= 6 and not any(a <= first < b for a, b in code)
+        start, end = hit.start(), hit.end()
+        while keep and start > first and data[start - 1] in upper:
+            start -= 1
+        if not keep or start in seen:
+            continue
+        seen.add(start)
+        while end < last and data[end] in upper:
+            end += 1
+        for piece in re.split(rb'(?<!_)(?=CLAUDE|AI_AGENT|CODEX)', data[start:end]):
+            if re.fullmatch(rb'(?:CLAUDE|AI_AGENT|CODEX)(?:[A-Z0-9_]*[A-Z0-9])?', piece):
+                found.add(piece.decode('ascii'))
+    return sorted(found)
+
+
 def qualified_baseline(bound, record=None):
     """The baseline the version's qualification record lists, which must be this module's BASELINE: a
     version not qualified with it is refused by name before anything is accepted or spawned."""
     entry = qualified(bound['version'], record)
+    if not isinstance(entry.get('session_environment'), list):
+        raise Refused('missing_evidence:engine_baseline:%s' % bound['version'])
     if entry.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound['version'],
                       'the version is not qualified with the everything-off baseline')
     return BASELINE
 
 
-def baseline(bound, run, environment=None, record=None):
-    """{argv, environment, files}: what the run adds after its qualified flags. `run` names the run's own
-    `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
-    generated `--settings` and `--mcp-config` options name."""
+def baseline(bound, run, environment=None, record=None, servers=()):
+    """{argv, environment, files, secrets, routes}: what the run adds after its qualified flags. `run` names the
+    run's own `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
+    generated `--settings` and `--mcp-config` options name. VELDO-0158: `servers` are the dispatch's selected
+    catalog servers with their credentials resolved (control_credential_delivery.resolve); each is an entry of
+    the generated MCP configuration, its credentials' values included, so every value reaches the run through
+    that private file alone (`routes`), never its command line or environment (`secrets` stays empty)."""
     base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
     if base != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
     config = Path(run['config'])
+    mcp = json.loads(json.dumps(base['mcp_config']))
+    routes = []
+    for server in servers or ():
+        mcp['mcpServers'][server['id']] = _mcp_entry(server, routes)
     files = {SETTINGS_FILE: (json.dumps(base['settings'], sort_keys=True) + '\n').encode(),
-             MCP_FILE: (json.dumps(base['mcp_config'], sort_keys=True) + '\n').encode()}
+             MCP_FILE: (json.dumps(mcp, sort_keys=True) + '\n').encode()}
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
-                                         base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:]))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files}
+                                         base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
+            + list(base['stream_options']))
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}
+
+
+def _mcp_entry(server, routes):
+    """One selected server as the binary's MCP configuration names it (stdio: command, args and env; http:
+    url and headers), each credential's value revealed into it and its route recorded."""
+    def value(field, name, item):
+        if 'literal' in item:
+            return item['literal']
+        routes.append({'credential': item['credential'], 'server': server['id'], 'field': field, 'name': name,
+                       'route': 'private_file'})
+        return item['handle'].reveal()
+    if server['transport'] == 'stdio':
+        return {'type': 'stdio', 'command': server['command'], 'args': list(server['arguments']),
+                'env': {name: value('environment', name, item) for name, item in sorted(server['environment'].items())}}
+    return {'type': 'http', 'url': server['url'],
+            'headers': {name: value('headers', name, item) for name, item in sorted(server['headers'].items())}}
 
 
 class Unresolved(Exception):

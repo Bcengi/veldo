@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Reproduce VELDO-0166 mutations, or the pre-change red record with the red option."""
+"""VELDO-0085 assertion red record and registered mutation observations.
+
+Runs the current suite over an unchanged archived pre-change tree, or drives the
+registry's mutations with baseline and no-op controls. No branch or worktree changes.
+"""
 import ast
 import contextlib
 import difflib
@@ -15,12 +19,12 @@ import time
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
-HERE = ROOT / 'proof' / 'VELDO-0166'
-HERE.mkdir(parents=True, exist_ok=True)
-SUITE = '83_veldo_0166_usage_windows.py'
-PREFIX = 'VELDO-0166 '
-FINDING = 166
-MODULES = ('control_engine_claude.py', 'control_accounts.py', 'accounts.py')
+HERE = ROOT / 'proof' / 'VELDO-0085'
+SUITE = '82_veldo_0085_decomposition.py'
+PREFIX = 'VELDO-0085 '
+FINDING = 85
+MODULES = ('control_alias.py', 'control_backlog.py', 'control_eligibility.py',
+           'control_decomposition.py', 'control_decomposition_binding.py', 'init_scaffold.py')
 
 
 def _load(name, path):
@@ -31,7 +35,7 @@ def _load(name, path):
 
 
 # Every Git call goes through the repository's one neutralized boundary.
-_git_process = _load('v166_drive_git_process', ROOT / '.veldo' / 'git_process.py')
+_git_process = _load('v85_drive_git_process', ROOT / '.veldo' / 'git_process.py')
 
 
 def _driver():
@@ -69,7 +73,7 @@ def one(paths, root):
 
 def run(paths=None, root=None):
     started = time.monotonic()
-    command = [sys.executable, '-B', __file__, '-' * 2 + 'one', json.dumps(paths or {}), str(root or ROOT)]
+    command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -81,21 +85,21 @@ def _sha(path):
 
 
 def _raised(observed):
-    return any('ran to its end' in d for d in observed['details'])
+    return any('run to its end' in d or 'raised' in d for d in observed['details'])
 
 
 def red(commit):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
-    resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '-' * 2 + 'verify', commit + '^{commit}'],
+    resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
-    with tempfile.TemporaryDirectory(prefix='v166-red-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v85-red-') as directory:
         tree = Path(directory) / 'tree'
         tree.mkdir()
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
         observed = run({}, tree)
-    report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0166', suite='scripts/suites/' + SUITE, commit=resolved,
+    report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0085', suite='scripts/suites/' + SUITE, commit=resolved,
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
@@ -105,18 +109,18 @@ def red(commit):
 
 
 def main():
-    if len(sys.argv) >= 3 and sys.argv[1] == '-' * 2 + 'red':
+    if len(sys.argv) >= 3 and sys.argv[1] == '--red':
         red(sys.argv[2])
         return
-    if len(sys.argv) >= 4 and sys.argv[1] == '-' * 2 + 'one':
+    if len(sys.argv) >= 4 and sys.argv[1] == '--one':
         print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == FINDING]
-    report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0166', 'suite': 'scripts/suites/' + SUITE,
-              'registry': 'scripts/check_teeth_mutations.py ' + '-' * 2 + 'finding %d' % FINDING, 'baseline': run(), 'noop': None,
+    report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0085', 'suite': 'scripts/suites/' + SUITE,
+              'registry': 'scripts/check_teeth_mutations.py --finding %d' % FINDING, 'baseline': run(), 'noop': None,
               'mutants': []}
-    with tempfile.TemporaryDirectory(prefix='v166-drive-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v85-drive-') as directory:
         report['noop'] = {}
         for module in sorted({c['module'] for c in cases}):
             case = next(c for c in cases if c['module'] == module)
@@ -131,7 +135,7 @@ def main():
                 n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
             observed = run({case['module']: str(prepared['mutant'])})
             report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
-                                          diff='proof/VELDO-0166/%s.diff' % case['name'],
+                                          diff='proof/VELDO-0085/%s.diff' % case['name'],
                                           source_sha256=prepared['old_digest'], mutant_sha256=prepared['new_digest'],
                                           named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),
                                           by_assertion=not _raised(observed), **observed))

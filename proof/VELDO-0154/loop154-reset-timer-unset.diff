@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1700 +1700 @@
+-        self.timer = min(resets) if resets else None
++        self.timer = None  # defect: no pass is woken at the reset a waiting unit needs

@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -588 +588 @@
+-            if (bound['backlog_item'] != data['uuid'] or bound['unit'] != name
++            if (bound['unit'] != name

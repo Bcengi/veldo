@@ -1,0 +1,5 @@
+--- a/.veldo/control_execution_record.py
++++ b/.veldo/control_execution_record.py
+@@ -163 +163 @@
+-            for offset in range(3):
++            for offset in ():

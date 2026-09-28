@@ -1,0 +1,258 @@
+{
+ "checks": [
+  {
+   "check": "extract_formats.py",
+   "exit": 0,
+   "summary": [
+    "cli-formats.json matches the installed binaries"
+   ]
+  },
+  {
+   "check": "secret_inventory.py",
+   "exit": 0,
+   "summary": [
+    "secret inventory: 0 outstanding (0 exposed in reachable history), 263 dispositioned, 95973 advisory, 96236 scanned; posture=enforcing (reporting, not blocking)"
+   ]
+  },
+  {
+   "check": "validate.py",
+   "exit": 0,
+   "summary": [
+    "  /home/dmitry/projects/veldo-worktrees/build-veldo-0172/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit"
+   ]
+  },
+  {
+   "check": "check_git_boundary.py",
+   "exit": 0,
+   "summary": [
+    "Git subprocess boundary: pass"
+   ]
+  },
+  {
+   "check": "footprint_check.py",
+   "exit": 0,
+   "summary": [
+    "changed 25, outside the footprint: none"
+   ]
+  },
+  {
+   "check": "anchor_check.py",
+   "exit": 0,
+   "summary": [
+    "0 bad anchors"
+   ]
+  }
+ ],
+ "clean_environment": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo-0172-gate-home",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "suites": [
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "53_veldo_0123_mutations",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 40 passed, 0 failed in 12.05s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "61_scope_covers",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 28 passed, 0 failed in 0.00s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "75_veldo_0062_accounts",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 48 passed, 0 failed in 47.94s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "78_veldo_0060_claude_adapter",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 60 passed, 0 failed in 31.94s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "78_veldo_0160_account_pool",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 59 passed, 0 failed in 32.46s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "79_veldo_0061_codex_adapter",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 46 passed, 0 failed in 17.20s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "80_veldo_0155_claude_baseline",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 43 passed, 0 failed in 15.37s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "81_veldo_0156_codex_baseline",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 47 passed, 0 failed in 3.85s"
+    ]
+   },
+   {
+    "exit": 2,
+    "failed_rows": [],
+    "suite": "82_veldo_0172_live_formats",
+    "summary": [
+     "selftest (PARTIAL, 1 of 122 suites): 30 passed, 0 failed in 147.34s"
+    ]
+   }
+  ]
+ },
+ "engine_copies": {
+  "byte_identical": true,
+  "changed_engine_modules": 0,
+  "config_files_unchanged_from_base": true,
+  "preexisting_config_differences": [
+   "architecture.yaml",
+   "policy.yaml"
+  ],
+  "python_copies_compared": 198
+ },
+ "final_checks": {
+  "anchors": "0 bad anchors",
+  "diff_check": "pass",
+  "footprint": "32 changed files, none outside footprint",
+  "git_boundary": "pass",
+  "validation": "pass"
+ },
+ "gate": "Not run, as instructed.",
+ "mutations": {
+  "all_by_assertion": true,
+  "all_named_rows_red": true,
+  "controls_green": true,
+  "noop_controls": 3,
+  "rejected": 5
+ },
+ "normal_suites": [
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "75_veldo_0062_accounts",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 48 passed, 0 failed in 35.06s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "78_veldo_0060_claude_adapter",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 60 passed, 0 failed in 19.22s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "78_veldo_0160_account_pool",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 59 passed, 0 failed in 20.78s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "79_veldo_0061_codex_adapter",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 46 passed, 0 failed in 11.05s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "80_veldo_0155_claude_baseline",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 43 passed, 0 failed in 10.54s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "81_veldo_0156_codex_baseline",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 47 passed, 0 failed in 2.51s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "53_veldo_0123_mutations",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 40 passed, 0 failed in 12.10s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "61_scope_covers",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 28 passed, 0 failed in 0.01s"
+   ]
+  },
+  {
+   "exit": 2,
+   "failed_rows": [],
+   "suite": "82_veldo_0172_live_formats",
+   "summary": [
+    "selftest (PARTIAL, 1 of 122 suites): 30 passed, 0 failed in 119.54s"
+   ]
+  }
+ ],
+ "red": {
+  "by_assertion": true,
+  "commit": "6512503076f231b94485421f91dc663ee0a36649",
+  "failed_rows": [
+   "VELDO-0172 table/capture",
+   "VELDO-0172 fake/capture",
+   "VELDO-0172 capture/allowlist",
+   "VELDO-0172 capture/planted"
+  ]
+ },
+ "schema": "veldo.verification-record/v1",
+ "spec_id": "VELDO-0172",
+ "whole_selftest": {
+  "command": "python3 scripts/selftest.py",
+  "exit": 0,
+  "failed": 0,
+  "failed_rows": [],
+  "log_sha256": "af85e1b48145bb195a2bc5a61a79dcec45bd061c83689d836c74a2832bb5bbd9",
+  "passed": 6864,
+  "suites": 122,
+  "summary": "selftest: 6864 passed, 0 failed",
+  "worktree_untouched_during_run": true
+ }
+}

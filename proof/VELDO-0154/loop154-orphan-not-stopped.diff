@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -526 +526 @@
+-                _stop_orphan(entry['group'], entry['process'])
++                pass  # defect: the stop the dead receiver owed is never made

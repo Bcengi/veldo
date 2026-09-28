@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0165/extract_environment.py
++++ b/proof/VELDO-0165/extract_environment.py
+@@ -79 +79 @@
+-            if SHAPE.fullmatch(piece):
++            if SHAPE.fullmatch(piece) and not piece.endswith(b'_ID'):

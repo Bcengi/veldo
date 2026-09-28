@@ -1,0 +1,6 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1347 +1347,2 @@
+-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}
++    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()
++            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'secrets': {}, 'routes': routes}

@@ -171,7 +171,7 @@ def _v76_suite():
                                             revoked_at=1 if who == 'rex' else None, expires_at=None))
                 if who in public:
                     put('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
-            writer.command_registry['claim_operation'] = {'transition': CLM.transition,
+            writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                           'writes': ('entities', 'journal', 'commands', 'nonces')}
 
             def reservation_authority(conn, command):
@@ -735,7 +735,10 @@ c.close()
                         runner.wait(outcome[1], timeout=20)
                     return outcome
 
-                x_unit = unit('U-76-x1', 'proj-x', claimed=True)
+                # The claim is taken while the unit is of an active project (VELDO-0169: the claim organ refuses
+                # a claim on a unit with no project); the fixture then points it at the project with no record.
+                x_unit = unit('U-76-x1', 'proj-b', claimed=True)
+                put(x_unit, 'execution_unit', dict(entity(x_unit)['data'], project='proj-x'))
                 foreign = attempt(lambda: put('project:proj-x', 'note', dict(name='proj-x')))
                 foreign_row = entity('project:proj-x')
                 x_foreign = gate.decide('selection', x_unit)
@@ -851,6 +854,7 @@ c.close()
                 b_paused_state = (project('proj-b') or {}).get('state')
                 before = journal()
                 paused_claim = signed_claim(k1)
+                paused_seen = dict(receiver.observations[-1]) if receiver.observations else {}
                 paused_written = journal()[len(before):]
                 paused_unit = state_of(k1)
                 b_resumed = change('resume', 'proj-b')
@@ -861,6 +865,10 @@ c.close()
                     ('the owner pauses the project', b_paused.get('ok') is True and b_paused_state == 'PAUSED'),
                     ('a signed claim of its unit is refused by name', paused_claim.get('ok') is False
                      and paused_claim.get('reason') == 'project_not_active:PAUSED'),
+                    # VELDO-0169: the claim organ refuses it too, inside the write; the receiver's own check is the
+                    # one that names the project and pins the records it read before anything is written.
+                    ('the receiver\'s own check names the project and the records it read',
+                     paused_seen.get('project') == 'proj-b' and 'project:proj-b' in paused_seen.get('accepted_versions', {})),
                     ('nothing is written and the unit stays READY', not paused_written
                      and paused_unit == 'READY'),
                     ('control: once resumed the same claim is accepted', b_resumed.get('ok') is True
@@ -869,6 +877,7 @@ c.close()
                 b_canceled = change('cancel', 'proj-b', reason='superseded', disposition='return the open unit to intake')
                 before = journal()
                 canceled_claim = signed_claim(k2)
+                canceled_seen = dict(receiver.observations[-1]) if receiver.observations else {}
                 canceled_written = journal() != before
                 check('project/canceled-claim', [
                     ('the owner cancels the project', b_canceled.get('ok') is True
@@ -876,6 +885,8 @@ c.close()
                     ('its unit is still READY (the cancel records a disposition, it moves no unit)', state_of(k2) == 'READY'),
                     ('a signed claim of it is refused by name', canceled_claim.get('ok') is False
                      and canceled_claim.get('reason') == 'project_not_active:CANCELED'),
+                    ('the receiver\'s own check names the project and the records it read',
+                     canceled_seen.get('project') == 'proj-b' and 'project:proj-b' in canceled_seen.get('accepted_versions', {})),
                     ('nothing is written and no claim exists', not canceled_written and state_of(k2) == 'READY'
                      and entity(CLM.claim_id(REPO, k2)) is None),
                     ('the receiver observes the refusals by name', [o.get('reason') for o in receiver.observations
@@ -895,6 +906,11 @@ c.close()
                     if command.get('operation') == 'claim_operation' and not window:
                         window['pause'] = change('pause', 'proj-x', reason='paused mid-claim')
                         window['journal'] = journal()
+                        try:
+                            return write(conn, command, *rest, **named)
+                        except Exception as error:  # noqa: BLE001 - the store's answer to the write is recorded
+                            window['write'] = getattr(error, 'code', type(error).__name__)
+                            raise
                     return write(conn, command, *rest, **named)
                 claims.S.execute = pause_before_write
                 try:
@@ -907,6 +923,9 @@ c.close()
                      window.get('pause', {}).get('ok') is True and (project('proj-x') or {}).get('state') == 'PAUSED'),
                     ('the claim is refused by name', raced.get('ok') is False
                      and raced.get('reason') == 'project_not_active:PAUSED'),
+                    # The pin, not the claim organ's own check inside the write (VELDO-0169), is what refuses the
+                    # write that was decided on the active record: the store answers it stale_version.
+                    ('the pinned project record refuses the claim\'s write as stale', window.get('write') == 'stale_version'),
                     ('nothing is written after the pause and the unit stays READY with no claim',
                      journal() == window.get('journal') and state_of(q1) == 'READY'
                      and entity(CLM.claim_id(REPO, q1)) is None)])

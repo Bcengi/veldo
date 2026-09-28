@@ -1,0 +1,5 @@
+--- a/scripts/suites/79_veldo_0061_codex_adapter.py
++++ b/scripts/suites/79_veldo_0061_codex_adapter.py
+@@ -1105 +1105 @@
+-        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')
++        fake_capture = (['defect: this suite no longer checks its fakes'], [])

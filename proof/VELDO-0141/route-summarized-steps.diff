@@ -1,0 +1,7 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -267 +267,3 @@
+-                    'lines': lines, 'cursor': lines[-1]['seq'] if lines else after, 'total': kept['total'],
++                    'lines': [dict(x, payload=(json.loads(x['payload']).get('type') if x['payload'].startswith('{')
++                                               else 'output')) for x in lines],  # defect: a summarized step list
++                    'cursor': lines[-1]['seq'] if lines else after, 'total': kept['total'],

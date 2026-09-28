@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -670,2 +670 @@
+-        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.
+-        self.clear_runs()
++        pass  # defect: the orphan release leaves the run directory

@@ -296,8 +296,18 @@ def _v128_checks(base):
         receiver = D.Dispatches(A.S, A.conn, domain=domain, repository=repo, principal='receiver', signer='authority',
                                 sign=A.journal_sign)
         CLM = A.claims
-        A.conn.command_registry['claim_operation'] = {'transition': CLM.transition,
+        A.conn.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
+        # VELDO-0169: the claim organ hands out a unit only on the Gate's project check, so the project the
+        # units name is activated by its owner, as a real factory's is.
+        PJ = _v128_load('v128_projects', organs / 'control_project.py')
+        PJ.Projects(A.S, A.CM, A.conn, ids, 'authority', A.journal_sign, stop=lambda dispatch, reason: dict(outcome='stopped')).apply(
+            A.signed_command('owner', dict(ids, operation='activate', principal='owner', command_id=A.next_id('project'),
+                                           nonce=A.next_id('project-nonce'), project='project-a', owner='owner',
+                                           charter=dict(purpose='Report the factory', exclusions=['billing']),
+                                           execution_repository=repo, authority_policy={'grooming': ['project_owner']},
+                                           coordination_budget=dict(capacity=4, invocations=40, wall_seconds=3600,
+                                                                    owner_minutes=120))))
         proofs = CP.ProofService(A.S, A.conn, domain=domain, repository=repo, repo=str(work), principal='proof-service',
                                  signer='authority', sign=A.journal_sign)
         A.fixture(DSP.review_policy_id(repo), 'review_policy', {

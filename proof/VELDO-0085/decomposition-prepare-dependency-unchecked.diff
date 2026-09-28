@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -594 +594 @@
+-            if None in current_dependencies or bound['specification_dependencies'] != current_dependencies:
++            if False:

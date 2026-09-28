@@ -1,0 +1,263 @@
+{
+ "checks": {
+  "footprint": "nothing outside",
+  "git_boundary": "pass, no findings",
+  "mutation_anchors": "0 bad anchors",
+  "mutation_finding": 169,
+  "mutations_rejected": 10,
+  "validate_all": "pass"
+ },
+ "containment_recheck": {
+  "failed": 0,
+  "partial_exit_code": 2,
+  "passed": 46,
+  "suite": "63_veldo_0040_containment"
+ },
+ "engine_copies": {
+  "control_andon.py": {
+   "engine_identical": true,
+   "sha256": "5583d85076dbd37a355a425c0ba5843322ab5fbf7f3260b5f73a5a6b47d3acc5"
+  },
+  "control_assignment.py": {
+   "engine_identical": true,
+   "sha256": "20aea1177c74a6346bd50af8e663af9404c155478c460645289c0af994b1e4ea"
+  },
+  "control_claim.py": {
+   "engine_identical": true,
+   "sha256": "c779130a8c27a2cec4ed5ffb97fe559dc8cc8541f88a4ef8386ec5231d9a6dfc"
+  }
+ },
+ "full_run_tree": "bac2a962",
+ "full_runs": [
+  {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 1,
+   "failed": 1,
+   "failed_rows": [
+    "VELDO-0040 containment/exit-notified"
+   ],
+   "passed": 6877
+  },
+  {
+   "command": "python3 scripts/selftest.py",
+   "completed": false,
+   "environment": "same stripped environment as selected suites",
+   "error": "FileNotFoundError in 12_warp_1210_hardening_four._m10_r12_fifo_at: bytecode cache parent absent with PYTHONDONTWRITEBYTECODE=1",
+   "exit_code": 1
+  },
+  {
+   "command": "python3 scripts/selftest.py",
+   "environment_overrides": {
+    "PYTHONUNBUFFERED": "1",
+    "TMPDIR": "/dev/shm"
+   },
+   "exit_code": 0,
+   "failed": 0,
+   "failed_rows": [],
+   "passed": 6878
+  }
+ ],
+ "gate_run": false,
+ "red": {
+  "by_assertion": true,
+  "commit": "6512503076f231b94485421f91dc663ee0a36649",
+  "rows_red": 18
+ },
+ "review_fix": {
+  "engine_copies_identical": [
+   "control_claim.py",
+   "control_assignment.py",
+   "control_andon.py",
+   "control_eligibility.py"
+  ],
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6963
+  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": true,
+  "parser_boundary": "pass",
+  "red": {
+   "0a2ba0f9979b137f64be47e57679421d7c3c8ece": 5,
+   "6512503076f231b94485421f91dc663ee0a36649": 21,
+   "by_assertion": true
+  },
+  "review": "rv169a",
+  "rows": 22,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 23,
+   "31": 19,
+   "52": 49,
+   "53": 52,
+   "54": 59,
+   "64": 36,
+   "68": 19,
+   "69": 17,
+   "75": 30,
+   "76": 26,
+   "78": 30,
+   "85": 19
+  },
+  "tree": "8aac2358",
+  "validate_all": "pass",
+  "writer_boundary": "pass"
+ },
+ "review_fix_2": {
+  "control_eligibility.py": "identical to main",
+  "drive_mutations": {
+   "all_by_assertion": true,
+   "all_named_rows_red": true,
+   "controls_green": true,
+   "mutants": 21
+  },
+  "engine_copies_identical": [
+   "control_andon.py",
+   "control_assignment.py",
+   "control_claim.py",
+   "control_heartbeat.py",
+   "control_store.py"
+  ],
+  "from": "6d2f40a7",
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6967,
+   "seconds": 1007
+  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": "already up to date (main 39bccb05)",
+  "mutation_anchors": "0 bad anchors",
+  "red": {
+   "0a2ba0f9": 9,
+   "65125030": 25,
+   "6d2f40a7": 8,
+   "by_assertion": true
+  },
+  "review": "rv169b",
+  "rows": 26,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 21,
+   "31": 19,
+   "35": 12,
+   "37": 61,
+   "41": 35,
+   "53": 52,
+   "64": 36,
+   "68": 19,
+   "75": 30,
+   "76": 26
+  },
+  "tree": "8f922a18",
+  "validate_all": "pass"
+ },
+ "review_fix_3": {
+  "engine_copies_identical": {
+   "control_andon.py": "05169026abcfbd5e861e46e875063086a50d544a8ae80d0938c584478ed99a64",
+   "control_assignment.py": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2",
+   "control_claim.py": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d",
+   "control_heartbeat.py": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea",
+   "control_store.py": "0cb0afd575b4f3675f4d826b9b4a15a32f03dc71710781fecd890a0a652195b6"
+  },
+  "full_selftest": {
+   "command": "python3 scripts/selftest.py",
+   "exit_code": 0,
+   "failed": 0,
+   "passed": 6997
+  },
+  "gate_run": false,
+  "git_boundary": "pass",
+  "merged_main": true,
+  "mutation_anchors": "0 bad anchors",
+  "mutations_added": [
+   "handout-store-invariant-skipped",
+   "handout-store-invariant-ignores-resumes",
+   "handout-store-reads-outside-transaction",
+   "handout-store-id-unit-unchecked"
+  ],
+  "mutations_removed": [
+   "handout-organ-write-outside-transaction",
+   "handout-store-claim-ownership-dropped",
+   "handout-store-organ-content-ignored",
+   "handout-store-organ-origin-unchecked"
+  ],
+  "red": {
+   "0a2ba0f9979b137f64be47e57679421d7c3c8ece": 10,
+   "6512503076f231b94485421f91dc663ee0a36649": 26,
+   "6d2f40a7577cc79d693316f620bddf1f5067fe85": 9,
+   "by_assertion": true,
+   "d22c687e9d9c36e93e87409cc2bac95999bd35c9": 5
+  },
+  "review": "rv169c",
+  "reviewer_probes": {
+   "inject_probe": "both cases refused project_not_active:PAUSED, no claim row, unit READY (run with the probe's module path pointed at this worktree and its declare call made optional)",
+   "upgrade_probe": "main phase on main's .veldo, then branch phase: claim receiver and assignment inbox attach OK; its declare line now reports the removed function (AttributeError)"
+  },
+  "rows": 27,
+  "suite": "84_veldo_0169_project_handouts",
+  "teeth": {
+   "133": 21,
+   "134": 36,
+   "169": 21,
+   "31": 19,
+   "35": 12,
+   "37": 61,
+   "41": 35,
+   "53": 52,
+   "64": 36,
+   "68": 19,
+   "75": 30,
+   "76": 26
+  },
+  "tree": "6dd8f15d",
+  "validate_all": "pass"
+ },
+ "selected_normal": {
+  "affected_suites_passed": 181,
+  "failed": 0,
+  "new_suite_with_preamble_passed": 44,
+  "partial_exit_code": 2
+ },
+ "selected_stripped_environment": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo-0169-home",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "failed": 0,
+  "partial_exit_code": 2,
+  "passed": 199
+ },
+ "selected_suites": [
+  "58_veldo_0031_claims",
+  "59_veldo_0031_review",
+  "60_veldo_0064_inbox",
+  "66_veldo_0047_authority",
+  "69_veldo_0133_dispositions",
+  "71_veldo_0076_projects",
+  "72_veldo_0075_andon",
+  "73_veldo_0078_backlog",
+  "82_veldo_0169_project_handouts"
+ ],
+ "spec_id": "VELDO-0169",
+ "suite_count": 122
+}

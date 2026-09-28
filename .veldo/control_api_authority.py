@@ -23,6 +23,17 @@ control_api_credentials.revoke_as_member, whose journal actor is the member. Eve
 with the operation, domain, principal, credential id, session handle, request id and the assertion
 digest, never the assertion's text or a signature.
 
+THE EXECUTION RECORD (VELDO-0141). `record` serves one run's execution record (control_execution_record) for a
+principal who is a current person member whose scope covers THAT run's project, the project its dispatch's
+contract reserved (else unauthorized:out_of_scope): the kept lines after a cursor, at most a page, each with
+its sequence, receive time, stream, redaction kinds and payload as kept (the receiver redacted every line
+before keeping it; nothing unredacted exists to serve), with the run's identity (dispatch, unit, station,
+project, account, host, state, process) and, once the dispatch has ended, its end and the line count, byte
+count and digest its exit committed, which the file must match or the read is refused by name. An unknown
+run is missing_evidence:unknown_run, a cursor past the end invalid_input:cursor_past_end, a record bound to
+another dispatch or not matching its commitment unknown_outcome:record_binding or :record_digest; none is
+served as an empty record. The records are read from `records`, the receivers' records directory.
+
 A workflow save (AC4) is VELDO-0132's Workflows.save, the only writer of workflow revisions, for the
 verified principal with the base version the assertion carries: its own transaction judges the editor
 (an active person member holding project_owner or technical_authority scoped to the repository) and
@@ -55,6 +66,8 @@ WHAT IT IS NOT. Not the transport: the service socket and its client are control
 control_client_api. Standard library only.
 """
 import fcntl
+import hashlib
+import hmac
 import importlib.util
 import json
 import os
@@ -74,7 +87,14 @@ AS = organ('control_api_assertion')
 CR = organ('control_api_credentials')
 MO = organ('control_api_models')
 WF = MO.WF
+MC = organ('control_mcp_catalog')
+CV = organ('control_credential')
 E = organ('control_channel_enrollment')
+ER = organ('control_execution_record')
+RECORD_SCHEMA = 'veldo.api_execution_record/v1'
+RECORD_LIMIT = 512
+# A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.
+ENDED = ('exited', 'refused', 'unknown')
 CM, AC = CR.CM, CR.AC
 SCHEMA = 'veldo.api_authority_observation/v1'
 HINT_SCHEMA = 'veldo.control_notification/v1'  # control_notify.SCHEMA, the VELDO-0046 hint
@@ -139,14 +159,18 @@ class ApiAuthority:
     descriptor holding the authority's lock (authority_problem)."""
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
-                 workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None):
+                 workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
+                 catalog=None, mcp_credentials=None, records=None):
         self.S, self.CM, self.conn = store, membership, conn
+        # VELDO-0141: the launch receivers' records directory (control_execution_record.directory).
+        self.records = records
         self.authority_lock = authority_lock
         self.ids = {f: ids.get(f) for f in AS.IDS}
         self.domain, self.edge = domain, edge
         self.intake, self.settlement, self.credentials, self.clock = intake, settlement, credentials, clock
         # VELDO-0132's Workflows on this connection, and VELDO-0051's Projection of this store.
         self.workflows, self.publication = workflows, publication
+        self.catalog, self.mcp_credentials = catalog, mcp_credentials
         # After each accepted command: notify(hint), the VELDO-0046 notification shape of the head record.
         self.notify = notify
         self.observe = observe or (lambda event: None)
@@ -216,6 +240,38 @@ class ApiAuthority:
     def events(self, principal, after, limit=256):
         """The committed journal records after `after`, oldest first, at most `limit`, for `principal`."""
         return self._answer(principal, lambda: self._feed(after, limit))
+
+    def record(self, principal, dispatch_id, after, limit=RECORD_LIMIT):
+        """One run's execution record after `after`, at most `limit` lines, for `principal` (VELDO-0141)."""
+        def produce():
+            self._authority()
+            if not isinstance(dispatch_id, str) or not dispatch_id or type(after) is not int or after < 0:
+                raise ER.Refused('invalid_input:record', 'a dispatch and a cursor')
+            row = self.conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + dispatch_id,)).fetchone()
+            dispatch = json.loads(row[1]) if row and row[0] == 'dispatch' else None
+            contract = (dispatch or {}).get('contract') or {}
+            reservation = contract.get('reservation') or {}
+            member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
+            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):
+                raise ER.Refused('unauthorized:out_of_scope', 'the run\'s project is outside the member\'s scope')
+            if dispatch is None:
+                raise ER.Refused('missing_evidence:unknown_run', 'no such run')
+            if self.records is None:
+                raise ER.Refused('unavailable_service:records', 'no records directory on this authority')
+            ended = dispatch.get('state') in ENDED
+            committed = dispatch.get('execution_record') if ended else None
+            kept = ER.read(self.records, dispatch_id, after, max(1, min(int(limit), RECORD_LIMIT)), committed)
+            header = kept['header']
+            if header.get('contract_digest') != dispatch.get('contract_digest'):
+                raise ER.Refused('unknown_outcome:record_binding', 'the record is bound to another run')
+            lines = kept['lines']
+            return {'schema': RECORD_SCHEMA, 'dispatch_id': dispatch_id, 'after': after,
+                    'run': {'unit': contract.get('unit'), 'station': contract.get('station'),
+                            'project': reservation.get('project'), 'account': reservation.get('account'),
+                            'host': header.get('host'), 'state': dispatch.get('state'), 'process': dispatch.get('process')},
+                    'lines': lines, 'cursor': lines[-1]['seq'] if lines else after, 'total': kept['total'],
+                    'ended': ended, 'committed': committed}
+        return self._answer(principal, produce)
 
     def feed(self, after, limit=256):
         """The same records for the API edge's own journal follow (ending sessions a record revokes); the
@@ -321,12 +377,38 @@ class ApiAuthority:
             return self.settlement.api_answer({'answer': derived, 'signature': packet.get('domain_signature')})
         provenance = {'channel': AS.CHANNEL, 'edge': self.edge, 'request_id': a['request_id'],
                       'credential_id': a['credential_id'], 'assertion_digest': AS.digest(a)}
+        if a['operation'] in (MC.SAVE,) + CV.OPERATIONS:
+            return self._mcp(a, packet)
         if a['operation'] == 'save_workflow':
             return self._save_workflow(a)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
         return {'outcome': 'revoked'}
+
+    def _mcp(self, a, packet):
+        p = dict(a['parameters'])
+        try:
+            if a['operation'] == MC.SAVE:
+                if self.catalog is None:
+                    raise MC.Refused('unavailable_service:mcp_catalog')
+                return self.catalog.save(p['definition'], principal=a['principal'], base=p['base'],
+                                         command_id=a['request_id'], session=a['session'])
+            if self.mcp_credentials is None:
+                raise MC.Refused('unavailable_service:mcp_credentials')
+            if a['operation'] == CV.SET:
+                value = packet.get('value')
+                bound = p.pop('value_digest')
+                if (not isinstance(value, str) or not isinstance(bound, str)
+                        or not hmac.compare_digest(hashlib.sha256(value.encode()).hexdigest(), bound)):
+                    raise MC.Refused('invalid_input:credential_binding')
+                p['value'] = value
+            return self.mcp_credentials.apply(a['operation'], p, principal=a['principal'],
+                                              command_id=a['request_id'], session=a['session'])
+        except UnicodeEncodeError:
+            return {'outcome': 'refused', 'reason': 'invalid_input:credential_encoding'}
+        except (MC.Refused, CV.Refused) as error:
+            return {'outcome': 'refused', 'reason': error.code}
 
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
@@ -350,7 +432,7 @@ class ApiAuthority:
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""
         return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
-                'save_workflow': WF.SAVE}
+                'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

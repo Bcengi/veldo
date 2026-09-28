@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -267 +267 @@
+-        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
++        if name != 'CLAUDE_AGENT_SDK_MCP_NO_PREFIX' and (name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES)):

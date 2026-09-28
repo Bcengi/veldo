@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -226 +226 @@
+-RESOLVERS = [subscription_token]
++RESOLVERS = []  # defect: the subscription token never enters the run's set

@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0172/scrub.py
++++ b/proof/VELDO-0172/scrub.py
+@@ -25 +25 @@
+-        return value if value in rules['strings'].get(field, []) else '<string>'
++        return value if '/' not in value else '<string>'

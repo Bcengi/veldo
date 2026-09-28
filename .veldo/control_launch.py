@@ -121,12 +121,13 @@ ENGINE_PROTOCOL with the same signatures, and the receiver drives each through t
 An engine module that does not implement the protocol is refused by name before acceptance.
 
 THE EVERYTHING-OFF BASELINE, THE PAID-API GUARD AND THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156). The
-protocol's `baseline(binding, run, environment)` is what every engine run adds right after its qualified
+protocol's `baseline(binding, run, environment, servers=())` is what every engine run adds right after its qualified
 flags (`baseline_at`, so an adapter's own trailing arguments stay last): each engine's everything-off
 options and its generated configuration, whose files the receiver writes 0600 into the run's own
 configuration directory, `<runs>/<digest of the dispatch>/config` (0700, fresh, outside every clone, under
 the config's `runs`, else the state root's `runs`, else beside the store), removed with the run once its
-engine has ended. A version or binary whose qualification record does not list the module's baseline is
+engine has ended; `servers` are the dispatch's selected catalog servers, which it adds to that
+configuration with their credentials (VELDO-0158). A version or binary whose qualification record does not list the module's baseline is
 refused by name before acceptance. `profile_problem(binding, environment, cwd)` and then
 `login_problem(binding, environment, cwd)` are checked before acceptance in the engine's own login
 environment and working directory (`cwd`: the clone's work tree the clone entrance changes into, this
@@ -148,6 +149,42 @@ its own and never the configuration directory) in ENGINE_RUNTIME, and the truste
 it execs, removes EXEC_STRIPPED and that name and makes the directory the engine's XDG_RUNTIME_DIR
 (`engine_environment`). The receiver reports each launch's baseline, the names it removed and never a
 value (`baseline` event).
+
+THE EXECUTION RECORD (VELDO-0141). Every run's output is kept, as it is read and in order, as its execution
+record (control_execution_record): the engine's standard output line by line (its structured events), the
+worker's error stream (piped to this receiver, never discarded) and the trusted wrapper's identity line, each
+redacted before it is kept, first of every value in the run's set of resolved credential values (`Resolved`,
+filled by RESOLVERS when the worker is spawned: the account's subscription token, and whatever a resolver adds),
+then by the secret scanner. After each batch the API is hinted with the last sequence (the configuration's
+`record_hints`), the exit record commits the record's line count, byte count and digest, and once the end is
+recorded a last hint marks it ended, before the runner is told. The record lives under the configuration's
+`records`, else the factory state root's `records`.
+
+THE CREDENTIALS OF A LINUX RUN (VELDO-0158). A dispatch configuration's `mcp` lists the catalog servers it uses
+(server id and revision, VELDO-0144). Immediately before the spawn the receiver reads each listed revision and
+resolves exactly the credential references its environment and headers hold from the keystore, through secretref's
+keychain scheme (control_credential_delivery); the engine's baseline then delivers them: Claude Code's generated MCP
+configuration, values included, in the run's private configuration directory (0700, removed with the run), or, for
+Codex, the engine environment under the name the server definition gives each, which the generated `mcp_servers`
+table names through `env_vars` or `bearer_token_env_var`. No value is on a command line, in the packet, the contract
+or the journal. A credential that does not resolve (keystore locked or unreachable, a reference naming nothing)
+refuses the launch as `credential_unavailable:<id>` before anything is spawned, and every value resolved enters the
+run's set of resolved values (`keystore_credentials`), a bearer token also without its scheme. A credential named for the
+Codex engine environment that collides with a name the engine already has is refused by name
+(`invalid_input:mcp_delivery:env_collision:<name>`), never replaces it. The receiver reports the revisions, credential
+ids and routes (`credentials` event), never a value. A run directory its receiver could not remove (the receiver died,
+or the run's group could not be emptied) is removed by the Runner once the kernel shows the run gone
+(`Runner.clear_runs`, after an orphan's release and at every sweep), and the authority service's start sweeps every
+directory whose dispatch is settled (`Runner.sweep_runs`); a run still alive keeps its directory until a later pass.
+
+THE LAUNCH PIPE (VELDO-0154). The factory loop in the authority service (control_service.FactoryLoop) owns a
+Runner and registers each running dispatch's receiver output, `Launch.fileno()`, in its service loop's poll set.
+`Launch.pump()` takes what the pipe holds without waiting and is true once the run's end is seen: the receiver's
+`exited` or `unknown` report, or the pipe's end of file when the receiver died without either (`lost`). The loop
+then settles the run through `Runner.wait(launch, timeout=0)`, which records a silent receiver's running dispatch
+`outcome_unknown` as always, and for a lost receiver `Runner.orphaned` frees the dispatch's ACCOUNT SLOT (its worker
+slot and usage reservation stay held, since its outcome is unknown): it makes the stop the dead receiver owed, reads
+from the kernel that nothing of the run is left and commits the reservation service's `release_account`.
 
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
@@ -184,6 +221,8 @@ S = D.S
 C = _organ('control_containment')
 HB = _organ('control_heartbeat')
 RT = _organ('control_retirement')
+ER = _organ('control_execution_record')
+DL = _organ('control_credential_delivery')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
@@ -194,6 +233,8 @@ ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('cont
 # the inherited environment loses and an adapter may configure.
 CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
+NEVER_CONFIGURED = frozenset().union(*(getattr(engine, 'BASELINE', {}).get('strip_names', ())
+                                       for engine in ENGINES.values()))
 # What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
                    'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
@@ -203,6 +244,26 @@ RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
 ACCEPT_SECONDS = 30
 WRAPPER_SCHEMA = 'veldo.launch_identity/v1'
+
+
+def subscription_token(receiver, contract, adapter, environment):
+    """The subscription token the receiver resolved for this run's account (VELDO-0155 AC2), if any."""
+    return [('subscription_token', receiver.token)] if receiver.token else []
+
+
+def keystore_credentials(receiver, contract, adapter, environment):
+    """VELDO-0158 AC3: every value the receiver resolved from the keystore for this run's selected MCP servers,
+    as resolved (an Authorization-style header's also without its scheme, for every engine) and as delivered, all
+    of the one kind."""
+    delivered = list(DL.values(receiver.credentials)) + list((receiver.delivered or {}).values())
+    return [(DL.KIND, value) for value in delivered]
+
+
+# VELDO-0141: the credential resolvers of a run, each `resolver(receiver, contract, adapter, environment)` ->
+# [(kind, value)], called once as the worker is spawned (it may deliver its value into the engine's
+# `environment`); every value one returns enters the run's set of resolved values, which the execution
+# record replaces before the secret scanner runs. VELDO-0158 AC3 adds the keystore's.
+RESOLVERS = [subscription_token, keystore_credentials]
 
 
 # OS process identity.
@@ -237,21 +298,52 @@ WRAPPER_REFUSED = 70
 # with (the SSH agent, the session bus, the Git tokens), and the variable naming the engine's own runtime
 # directory, which the wrapper makes the engine's XDG_RUNTIME_DIR. The receiver keeps all of them, so its
 # own systemd-run and systemctl still reach the user manager.
-EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN')
+EXEC_STRIPPED = ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'DBUS_SESSION_BUS_ADDRESS', 'GH_TOKEN', 'GITHUB_TOKEN',
+                 'SHELL', 'GIT_EDITOR', 'TRACEPARENT', 'TRACESTATE', 'TMUX', 'TMPDIR', 'TMPPREFIX', 'BUN_OPTIONS',
+                 'TEMP', 'TMP', 'GIT_CONFIG_PARAMETERS', 'COREPACK_ENABLE_AUTO_PIN',
+                 'NoDefaultCurrentDirectoryInExePath',
+                 # VELDO-0165: what Claude Code writes into its own environment when unset, for every child.
+                 'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE',
+                 # VELDO-0165: what Codex 0.154.0 sets on every command it runs (its unified exec pairs,
+                 # proof/VELDO-0165/codex-environment.json); each engine's baseline sets LANG and TERM itself.
+                 'NO_COLOR', 'TERM', 'LANG', 'LC_CTYPE', 'LC_ALL', 'COLORTERM', 'PAGER', 'GIT_PAGER', 'GH_PAGER')
 ENGINE_RUNTIME = 'VELDO_ENGINE_RUNTIME_DIR'
 RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
+# VELDO-0158: the names of the engine's own environment a credential delivered into it never takes, besides every
+# name the receiver's environment, the adapter, the baseline and the account set: a collision is refused by name.
+ENGINE_RESERVED = frozenset(('PATH', 'HOME', 'LANG', 'TERM', 'USER', 'LOGNAME', 'SHELL', 'TMPDIR', 'TZ',
+                             'XDG_RUNTIME_DIR', 'VELDO_DISPATCH_ID'))
+FACTORY_PREFIX = 'VELDO_'
+DELIVERY_PREFIX = 'VELDO_MCP_'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
+SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
+ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
+
+
+def runs_root(config):
+    """Where a receiver configuration keeps its runs' own directories (VELDO-0155, VELDO-0156): its `runs`, else the
+    factory state root's runs, else beside the store."""
+    return config.get('runs') or (os.path.join(config['state_root'], 'runs') if config.get('state_root')
+                                  else os.path.join(os.path.dirname(config['store']), 'runs'))
+
+
+def run_directory(runs, dispatch_id):
+    """The one directory of a dispatch's run under `runs`, derived from its dispatch identity."""
+    return os.path.join(runs, hashlib.sha256(dispatch_id.encode()).hexdigest()[:32])
 
 
 def engine_environment(environment):
     """THE ENVIRONMENT STRIP: an engine launch's environment (one naming ENGINE_RUNTIME) without the SSH agent,
     the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
-    the receiver's; any other environment unchanged. The trusted wrapper applies it to what it execs."""
+    the receiver's. VELDO-0165 also removes every session-prefixed name, then installs only the qualified
+    adapter, baseline and account values the receiver carried in ENGINE_OVERRIDES. Other launches are unchanged."""
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment
-    for name in EXEC_STRIPPED:
-        environment.pop(name, None)
+    for name in list(environment):
+        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
+            environment.pop(name, None)
+    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -349,14 +441,23 @@ class Runner:
     VELDO-0042's clone provisioner when dispatches use clones (its teardown retires their files).
     Every slot is returned through `retirements` (VELDO-0041): a refused retirement is kept pending
     and retried when what it waits on is completed, and `sweep()` retries every pending one that is
-    due, before each preparation and after each wait."""
+    due, before each preparation and after each wait. `runs` is where the receiver keeps each run's own
+    directories (runs_root of its configuration) and `profile` this host's worker profile: a run whose receiver
+    could not remove its directory (it died, or the run's group could not be emptied) has it removed here once
+    the kernel shows nothing of the run left (VELDO-0158)."""
 
-    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None):
+    def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
+                 profile=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
+        # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
+        self.orphans = {}
+        # VELDO-0158: settled dispatches whose run directory is left, by dispatch: {group, process}.
+        self.runs, self.profile = runs, profile
+        self.leftovers = {}
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
                                           observations=self.observations)
 
@@ -384,8 +485,63 @@ class Runner:
     def sweep(self):
         """Retry every pending retirement whose obligations have changed since its last attempt, or whose
         clone can now be removed (VELDO-0041); the dispatches whose slots it released. Each preparation
-        and each wait makes one, and a scheduler may make one at any time."""
+        and each wait makes one, and a scheduler may make one at any time. It also removes each run directory left
+        behind whose run the kernel now shows gone (clear_runs)."""
+        self.clear_runs()
         return self.retirements.sweep()
+
+    def _left(self, dispatch_id, group=None, process=None):
+        """A settled dispatch whose run directory its receiver may have left: removed once its run is gone."""
+        if self.runs and os.path.lexists(run_directory(self.runs, dispatch_id)):
+            self.leftovers[dispatch_id] = {'group': group, 'process': process}
+
+    def clear_runs(self):
+        """VELDO-0158: remove the run directory of every leftover dispatch whose run the kernel shows gone: its
+        recorded process ended, its reported group empty or gone, and no live group of this profile's slice its
+        scope. A run still alive, or one whose groups cannot be read, keeps its directory until a later call. The
+        dispatches whose directories were removed, in order."""
+        removed, live = [], None
+        for dispatch_id, entry in sorted(self.leftovers.items()):
+            seen = C.retirement(entry['group'], entry['process'])
+            if not (seen['terminated'] and seen['cleaned']):
+                continue
+            if self.profile is not None:
+                if live is None:
+                    try:
+                        status = C.status(self.profile)
+                    except Exception:  # noqa: BLE001 - groups that cannot be read keep every directory
+                        status = {'qualified': False}
+                    live = {g['unit'] for g in status['groups']} if status['qualified'] else False
+                if live is False or C.unit_name(dispatch_id) in live:
+                    continue
+            place = run_directory(self.runs, dispatch_id)
+            shutil.rmtree(place, ignore_errors=True)
+            if os.path.lexists(place):
+                self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'})
+                continue
+            del self.leftovers[dispatch_id]
+            self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'removed'})
+            removed.append(dispatch_id)
+        return removed
+
+    def sweep_runs(self):
+        """VELDO-0158: the start sweep. Every run directory under `runs` whose dispatch, of this Runner's domain and
+        repository, is settled (exited, refused or unknown) is a leftover, and each whose run the kernel shows gone
+        is removed now (clear_runs); one whose run is still alive is kept until a later sweep finds it gone. The
+        dispatches whose directories were removed."""
+        if not self.runs or not os.path.isdir(self.runs):
+            return []
+        present = set(os.listdir(self.runs))
+        for (data,) in self.dispatches.conn.execute('SELECT data FROM entities WHERE kind=?', (D.RECORD_KIND,)):
+            record = json.loads(data)
+            contract = record.get('contract') or {}
+            if (contract.get('domain') != self.dispatches.domain or contract.get('repository') != self.dispatches.repository
+                    or record.get('state') not in ('exited', 'refused', 'unknown')
+                    or not isinstance(record.get('dispatch_id'), str)):
+                continue
+            if os.path.basename(run_directory(self.runs, record['dispatch_id'])) in present:
+                self._left(record['dispatch_id'], process=record.get('process'))
+        return self.clear_runs()
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
                 deadline, context=None):
@@ -459,12 +615,89 @@ class Runner:
             clean = D.completed(record)
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
-            # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known.
+            # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
+            # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
+            self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
         # This dispatch's end may have completed another's obligation (a group the kernel emptied).
         self.sweep()
         return record
+
+    def orphaned(self, launch):
+        """VELDO-0154 AC2: the receiver of a running dispatch died before it reported the run's end (its launch pipe
+        reached its end of file), and `wait` has recorded the run `outcome_unknown` under its original dispatch. The
+        worker slot stays held with its outcome open and its usage reservation retained (VELDO-0041: an unknown
+        outcome is never retired), but the ACCOUNT SLOT is freed for the next dispatch once nothing of the run is
+        left: the stop the dead receiver owed is made here (its reported containment group killed, or the worker's
+        recorded process, checked by its identity on this boot, sent SIGKILL), and the release is the reservation
+        service's `release_account` over the runner's own kernel observation. A release that cannot be made yet
+        stays pending in `orphans` and is tried again by `release_orphans`. Returns what `release_orphans` returns."""
+        record = self.dispatches.record(launch.dispatch_id) or {}
+        if record.get('state') == 'unknown':
+            entry = self.retirements.entries.get(launch.dispatch_id) or {}
+            self.orphans[launch.dispatch_id] = {'group': getattr(launch, 'group', None) or entry.get('group'),
+                                                'process': record.get('process'), 'stopped': False}
+            self._left(launch.dispatch_id, self.orphans[launch.dispatch_id]['group'], record.get('process'))
+        return self.release_orphans()
+
+    def release_orphans(self):
+        """Free the account slot of every dispatch in `orphans` whose worker the kernel now shows gone; the
+        released dispatches, in order. A refused release keeps its dispatch pending, named in the observations."""
+        released = []
+        for dispatch_id, entry in sorted(self.orphans.items()):
+            if not entry['stopped']:
+                entry['stopped'] = True
+                _stop_orphan(entry['group'], entry['process'])
+            end = time.monotonic() + ORPHAN_SECONDS
+            seen = C.retirement(entry['group'], entry['process'])
+            while not (seen['terminated'] and seen['cleaned']) and time.monotonic() < end:
+                time.sleep(0.02)
+                seen = C.retirement(entry['group'], entry['process'])
+
+            def lifecycle(_dispatch, seen=seen, dispatch_id=dispatch_id):
+                state = (self.dispatches.record(dispatch_id) or {}).get('state')
+                return dict(seen, state=state, observer=RT.OBSERVER, basis='receiver_lost')
+            event = {'operation': 'release_account', 'dispatch_id': dispatch_id, 'request': 'release-account/' + dispatch_id}
+            try:
+                self.reservations.release_account('release-account/' + dispatch_id, dispatch_id, lifecycle,
+                                                  now=self.clock())
+            except Exception as error:  # noqa: BLE001 - a refused release keeps the account slot held, by name
+                self.observations.append(dict(event, outcome='refused', refusal=getattr(error, 'code', None)
+                                              or type(error).__name__))
+                continue
+            del self.orphans[dispatch_id]
+            self.observations.append(dict(event, outcome='released'))
+            released.append(dispatch_id)
+        # VELDO-0158: a dead receiver removed no run directory; each goes once the kernel shows its run gone.
+        self.clear_runs()
+        return released
+
+
+# VELDO-0154: how long the runner waits for the kernel to show an orphaned worker gone after its stop.
+ORPHAN_SECONDS = 5.0
+
+
+def _stop_orphan(group, process):
+    """The stop a dead receiver owed its worker: its containment group killed at once (cgroup.kill), or, with no
+    group, the recorded process sent SIGKILL through a descriptor of its own, only while its identity (pid, start
+    time and boot id) still names it, so a reused pid is never signaled."""
+    if isinstance(group, dict) and group.get('cgroup'):
+        with contextlib.suppress(OSError):
+            (C.CGROUP / group['cgroup'].lstrip('/') / 'cgroup.kill').write_text('1')
+        return
+    if not isinstance(process, dict) or not isinstance(process.get('pid'), int):
+        return
+    try:
+        fd = os.pidfd_open(process['pid'])
+    except OSError:
+        return
+    try:
+        if C.alive(process):
+            with contextlib.suppress(OSError):
+                signal.pidfd_send_signal(fd, signal.SIGKILL)
+    finally:
+        os.close(fd)
 
 
 def RES_ENTITY(domain, dispatch_id):
@@ -481,9 +714,10 @@ class Launch:
     and its group ended, `heartbeat` the interval and window it watches the worker's heartbeat with
     (VELDO-0041), and `stop()` asks it to stop the dispatch."""
 
-    def __init__(self, child, contract, dispatches, clock):
+    def __init__(self, child, contract, dispatches, clock, records=None):
         self.child, self.contract, self.dispatches, self.clock = child, contract, dispatches, clock
         self.dispatch_id = contract['dispatch_id']
+        self.records = records
         self.pending = b''
         self.messages = []
         self.result = None
@@ -496,6 +730,9 @@ class Launch:
         self.ends_by = None
         self.heartbeat = None
         self.artifact = None
+        # VELDO-0154: the run's end seen on the launch pipe, and whether it was the pipe's end of file.
+        self.ended = False
+        self.lost = False
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -521,6 +758,36 @@ class Launch:
             if not chunk:
                 return None
             self.pending += chunk
+        return self._take()
+
+    def fileno(self):
+        """THE LAUNCH PIPE (VELDO-0154): the receiver's output, which a scheduler's service loop registers in its
+        poll set while the dispatch runs; None once its end has been seen, or when no receiver of it runs."""
+        if not self.owned or self.child is None or self.child.stdout is None or self.ended:
+            return None
+        return self.child.stdout.fileno()
+
+    def pump(self, read=True):
+        """What the launch pipe holds now, without waiting (VELDO-0154): each whole line already read is taken as
+        `_message` takes it and, with `read`, one read of the pipe the poll set found readable. True once the run's
+        end is seen: the receiver reported `exited` or `unknown`, or the pipe reached its end of file because the
+        receiver ended without reporting either (`lost`, so its run is settled as the receiver's silence is)."""
+        if self.ended or self.fileno() is None:
+            return self.ended
+        if read and b'\n' not in self.pending:
+            chunk = os.read(self.child.stdout.fileno(), 65536)
+            if not chunk:
+                self.ended = self.lost = True
+                return True
+            self.pending += chunk
+        while b'\n' in self.pending:
+            message = self._take()
+            if message.get('event') in ('exited', 'unknown'):
+                self.ended = True
+                return True
+        return False
+
+    def _take(self):
         line, _, self.pending = self.pending.partition(b'\n')
         try:
             message = json.loads(line)
@@ -553,6 +820,20 @@ class Launch:
             if self.child.stdin is not None:
                 self.child.stdin.close()
 
+    def _record_commitment(self):
+        """The receiver has been reaped. Bind its final bytes even when it could not report an end."""
+        records = self.records
+        if records is None:
+            database = self.dispatches.conn.execute('PRAGMA database_list').fetchone()[2]
+            records = ER.directory({'store': database})
+        location = ER.path(records, self.dispatch_id)
+        if not os.path.exists(location):
+            return ER.Recorder(records, dict(self.contract, contract_digest=D.digest(self.contract)), None).close()
+        with open(location, 'rb') as handle:
+            data = handle.read()
+        return {'lines': max(0, data.count(b'\n') - 1), 'bytes': len(data),
+                'digest': 'sha256:' + hashlib.sha256(data).hexdigest()}
+
     def _settle(self, lost):
         """The launch result from the record. When the receiver ended without a conclusive record it
         is settled here: still prepared is refused (the receiver spawns only after its acceptance
@@ -565,7 +846,7 @@ class Launch:
                                             expected_state='prepared')
         elif lost and state == 'accepted':
             record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
-                                             expected_state='accepted')
+                                             expected_state='accepted', execution_record=self._record_commitment())
         state = (record or {}).get('state')
         self.record = record
         self.result = {'running': 'accepted', 'exited': 'accepted', 'refused': 'refused'}.get(state, 'unknown')
@@ -611,7 +892,8 @@ class Launch:
         if record and record['state'] == 'running':
             # The receiver that owned the worker has ended without recording its end.
             record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'], 'outcome_unknown',
-                                             now=self.clock(), expected_state='running')
+                                             now=self.clock(), expected_state='running',
+                                             execution_record=self._record_commitment())
         self.record = record
         return record
 
@@ -619,14 +901,19 @@ class Launch:
 def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):
     """Hand the prepared contract to the trusted receiver process named by the installed config."""
     try:
+        with open(config_path) as handle:
+            config = json.load(handle)
+        if not isinstance(config, dict):
+            raise ValueError('receiver config must be an object')
+        records = ER.directory(config)
         child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)
-    except OSError:
+    except (OSError, ValueError, KeyError, TypeError):
         # No receiver ran, so nothing was launched: a conclusive refusal, never a held unit.
         launch = Launch(None, contract, dispatches, clock or time.time)
         launch._settle(lost=True)
         return launch
-    launch = Launch(child, contract, dispatches, clock or time.time)
+    launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
@@ -644,7 +931,8 @@ class Receiver:
     environment?, identity?}}}. `host_trust` is this host's installed trust file, whose settlement
     signers the recheck's Gate verifies governing decisions with (VELDO-0069), exactly as the front
     door's Gate does. `profile` is this host's worker profile (control_containment); `control` is the
-    runner's channel after its request line (fd, what was already read of it), where it asks for a stop."""
+    runner's channel after its request line (fd, what was already read of it), where it asks for a stop.
+    Optional `clone_root` names the launcher's known work root for execution record path membership."""
 
     def __init__(self, config, emit, control=None):
         self.config, self.emit = config, emit
@@ -667,9 +955,50 @@ class Receiver:
         self.binding = None
         self.token = None
         self.run = None
+        # VELDO-0158: the selected MCP servers with their credentials resolved just before the spawn, and the
+        # values delivered into the engine environment, by name.
+        self.credentials = None
+        self.delivered = None
+        self.selected = None
+        # VELDO-0141: the contract launched, the run's resolved values and its execution record.
+        self.contract = None
+        self.resolved = None
+        self.recorder = None
+        self.committed = None
 
     def close(self):
+        if self.recorder is not None:
+            self.recorder.close()
         self.conn.close()
+
+    def _ended(self):
+        """The dispatch's end is recorded: the execution record's last hint, marked ended, before the runner is
+        told; returns the record's account for the end event the runner reads (VELDO-0141), never a value."""
+        if self.recorder is None:
+            return None
+        self.committed = self.recorder.close()
+        self.recorder.hint(True)
+        return self.recorder.summary()
+
+    def _record(self, adapter, environment):
+        """The run's set of resolved credential values, from every resolver (VELDO-0141), and its execution
+        record, opened before the worker exists and bound to its dispatch."""
+        contract = self.contract
+        self.resolved = ER.Resolved()
+        for resolver in RESOLVERS:
+            for kind, value in resolver(self, contract, adapter, environment) or ():
+                self.resolved.add(kind, value)
+        header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
+                  'unit': contract['unit'], 'station': contract['station'],
+                  'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
+                  'host': self.host}
+        argv = (self.binding or {}).get('argv', adapter['argv'])
+        cwd = self._engine_cwd(argv, contract['dispatch_id'], adapter.get('identity') == 'reported')
+        # The clone entrance's dispatch record supplies its work root. Direct launches may name a
+        # containing root in trusted receiver config when their cwd is a subdirectory.
+        self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
+        self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
+                                    hints=self.config.get('record_hints') or ())
 
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
@@ -727,6 +1056,7 @@ class Receiver:
     def launch(self, contract):
         dispatch_id = contract['dispatch_id']
         record = self.dispatches.record(dispatch_id)
+        self.contract = contract
         if record is None or record['state'] != 'prepared':
             # Not this receiver's to launch: another attempt of it was accepted, refused, ended or is
             # unknown. Nothing is recorded and nothing is spawned.
@@ -750,7 +1080,8 @@ class Receiver:
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
-            self.emit({'event': 'refused', 'refusal': refusal})
+            self.emit({'event': 'refused', 'refusal': refusal,
+                       'metrics': {'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
         try:
@@ -779,6 +1110,14 @@ class Receiver:
                 self._not_executed()
             self._uncontained(dispatch_id, contract_digest, error)
             return
+        except DL.Undeliverable as error:
+            # VELDO-0158 AC2: a credential that does not resolve refuses the launch by name before its spawn; the
+            # run never starts without its server.
+            self._not_executed()
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self.emit({'event': 'refused', 'refusal': error.code,
+                       'credentials': DL.report(dispatch_id, self.credentials, refusal=error, selected=self.selected)})
+            return
         except OSError as error:
             self._not_executed()
             refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
@@ -802,7 +1141,8 @@ class Receiver:
         except (OSError, ValueError, IndexError, subprocess.SubprocessError):
             self._stop(worker)
             self.dispatches.unknown(dispatch_id, contract_digest, 'process_identity_unreadable', now=time.time(),
-                                    expected_state='accepted')
+                                    expected_state='accepted',
+                                    execution_record=self.recorder.close() if self.recorder else None)
             self.emit({'event': 'unknown'})
             return
         try:
@@ -831,32 +1171,34 @@ class Receiver:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
-            self.emit({'event': 'unknown'})
+                                    expected_state='running', execution_record=self.committed)
+            self.emit({'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
         if remote and supervision['cause'] == 'paid_api':
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
-            self.emit({'event': 'unknown', 'supervision': supervision})
+                                    expected_state='running', execution_record=self.committed)
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
-                                    expected_state='running')
-            self.emit({'event': 'unknown', 'supervision': supervision})
+                                    expected_state='running', execution_record=self.committed)
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
-                                    expected_state='running')
-            self.emit({'event': 'unknown', 'supervision': supervision})
+                                    expected_state='running', execution_record=self.committed)
+            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
-        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact)
-        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision})
+        # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
+        self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
+                             execution_record=self.committed)
+        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision, 'record': self._ended()})
 
     def _login(self, contract, adapter):
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
@@ -875,6 +1217,10 @@ class Receiver:
         configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
         if configured:
             return 'invalid_input:adapter_environment:' + configured[0]
+        # VELDO-0165 AC2: a name the baseline strips by name (the MCP tool naming switch) is never configured.
+        renaming = sorted(set(adapter.get('environment') or {}) & NEVER_CONFIGURED)
+        if renaming:
+            return 'invalid_input:adapter_environment:' + renaming[0]
         account = contract['reservation']['account']
         record = ACC.read(self.conn, account)
         if record is not None and record.get('provider') != module.PROVIDER:
@@ -910,7 +1256,7 @@ class Receiver:
         for name in sorted(settings):
             if name in configured and configured[name] != settings[name]:
                 return 'invalid_input:adapter_environment:' + name
-        self.binding = dict(bound, argv=argv, environment=settings)
+        self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured))
         # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
         # and the login the engine would take in its environment, checked before acceptance: a profile item
         # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
@@ -991,10 +1337,9 @@ class Receiver:
         """The run's own directories (VELDO-0155, VELDO-0156), fresh and 0700, outside every clone: `config`
         holds its generated configuration, `runtime` is the engine's empty XDG_RUNTIME_DIR. Under the
         config's `runs`, else the factory state root's runs, else beside the store."""
-        runs = self.config.get('runs') or (os.path.join(self.config['state_root'], 'runs') if self.config.get('state_root')
-                                          else os.path.join(os.path.dirname(self.config['store']), 'runs'))
+        runs = runs_root(self.config)
         os.makedirs(runs, mode=0o700, exist_ok=True)
-        run = os.path.join(runs, hashlib.sha256(dispatch_id.encode()).hexdigest()[:32])
+        run = run_directory(runs, dispatch_id)
         os.mkdir(run, 0o700)
         self.run = run
         for name in (RUN_CONFIG, RUN_RUNTIME):
@@ -1007,7 +1352,12 @@ class Receiver:
         named for the wrapper's strip, and the subscription token of an account configured with one. The
         receiver reports what it added and the names removed, never a value."""
         run = self._run_directories(dispatch_id)
-        extra = self.login['engine'].baseline(self.binding, run, environment)
+        engine = self.login['engine']
+        try:
+            extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
+        except engine.Refused as error:
+            # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
+            raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
         for name, data in sorted(extra['files'].items()):
             with os.fdopen(os.open(os.path.join(run['config'], name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
                            'wb') as handle:
@@ -1018,12 +1368,41 @@ class Receiver:
         token = self.token
         if token is not None:
             environment[TOKEN_VARIABLE] = token
+        # Apply the checked adapter configuration after stripping inherited session values.
+        own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}
+        own.update(self.binding['environment'])
+        own.update(extra['environment'])
+        profile_name, profile_directory = ACC.profile(self.login['record'], self.host)
+        own[profile_name] = profile_directory
+        if token is not None:
+            own[TOKEN_VARIABLE] = token
+        # VELDO-0158 AC1: a credential the engine environment carries (Codex's), under the name its server's
+        # definition gives it; one naming a variable the engine already has (ENGINE_RESERVED, or any name the
+        # receiver's environment, the adapter, the baseline or the account sets) is refused by name, never replaces it.
+        secrets = extra.get('secrets') or {}
+        # Every VELDO_ name belongs to the factory (the launch sets some of them only after this baseline), except
+        # the names the engine module generates for delivered header credentials (DELIVERY_PREFIX).
+        taken = sorted(n for n in secrets if n in ENGINE_RESERVED or n in own or n in environment
+                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))
+        if taken:
+            credential = next(r['credential'] for r in extra['routes'] if r.get('variable') == taken[0])
+            raise DL.Undeliverable('invalid_input:mcp_delivery:env_collision:' + taken[0], credential, 'delivery_failed')
+        own.update(secrets)
+        self.delivered = dict(secrets)
+        environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)
         environment[ENGINE_RUNTIME] = run['runtime']
         self.emit({'event': 'baseline', 'baseline': {
+            'dispatch_id': dispatch_id,
+            'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
+            'strip_prefixes': list(SESSION_PREFIXES),
             'options': list(extra['argv']), 'environment': sorted(extra['environment']),
             'files': sorted(extra['files']), 'run': run, 'token': token is not None,
-            'removed': sorted(set(n for n in os.environ if n not in environment)
-                              | set(n for n in EXEC_STRIPPED if n in environment))}})
+            'removed': sorted((set(n for n in os.environ if n not in environment)
+                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
+                              - set(own))}})
+        if self.credentials:
+            # VELDO-0158: each launch's catalog revisions, resolved credential ids and the route each took.
+            self.emit({'event': 'credentials', 'credentials': DL.report(dispatch_id, self.credentials, extra['routes'])})
         return argv, environment
 
     def _invoke(self, contract, acceptance, adapter):
@@ -1073,7 +1452,8 @@ class Receiver:
             self.emit({'event': 'refused', 'refusal': error.code, 'group': error.group})
         else:
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
-                                    expected_state='accepted')
+                                    expected_state='accepted',
+                                    execution_record=self.recorder.close() if self.recorder else None)
             self.emit({'event': 'unknown', 'group': error.group})
 
     def _spawn(self, dispatch_id, acceptance, adapter):
@@ -1084,6 +1464,8 @@ class Receiver:
         accepted, were recorded before the worker existed. A local adapter's worker is started inside
         its dispatch's own containment group (VELDO-0040); a transport to another host is started as
         configured, and that host's profile contains the engine there."""
+        # VELDO-0158: the dispatch's selected MCP servers and their credentials, resolved immediately before the spawn.
+        self._resolve_credentials(adapter)
         environment = dict(os.environ)
         if self.login is not None:
             # VELDO-0062: the recorded account's own profile, no other profile and no other login in what
@@ -1104,10 +1486,27 @@ class Receiver:
                                                adapter.get('identity', 'local') == 'reported')
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+        # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
+        # stream comes to this receiver, which keeps it in the record.
+        self._record(adapter, environment)
         if adapter.get('identity', 'local') != 'reported':
             return self._contained(dispatch_id, argv, environment)
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.DEVNULL, env=environment, start_new_session=True, close_fds=True)
+                                stderr=subprocess.PIPE, env=environment, start_new_session=True, close_fds=True)
+
+    def _resolve_credentials(self, adapter):
+        """VELDO-0158 AC1, AC2: the catalog servers the dispatch configuration selects, with their credentials
+        resolved from the keystore through secretref's keychain scheme (control_credential_delivery), just before
+        the spawn. They are delivered only to a Linux engine run, through THE ENGINE PROTOCOL's baseline; a
+        selection for any other adapter, or a credential that does not resolve, is Undeliverable by name."""
+        self.credentials, self.delivered, self.selected = [], {}, []
+        configuration = self.contract['capability']['configuration']
+        self.selected = DL.selections(configuration)
+        if not self.selected:
+            return
+        if self.binding is None or adapter.get('identity', 'local') == 'reported':
+            raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(self.contract['capability']['adapter']))
+        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)
 
     def _contained(self, dispatch_id, argv, environment):
         """Start the trusted wrapper inside the dispatch's own containment group with every declared cap
@@ -1128,7 +1527,7 @@ class Receiver:
             with group.admission():
                 try:
                     worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                              stderr=subprocess.DEVNULL, env=group.environment, start_new_session=True,
+                                              stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
                                               close_fds=True, pass_fds=(beat,))
                 finally:
                     os.close(beat)
@@ -1181,6 +1580,8 @@ class Receiver:
             pending += chunk
         line, _, carry = pending.partition(b'\n')
         message = json.loads(line)
+        # VELDO-0141: the wrapper's line is the first line of the run's execution record.
+        worker.identity_line = line
         if not isinstance(message, dict) or message.get('schema') != WRAPPER_SCHEMA:
             raise ValueError('not an identity line')
         if D._text(message.get('refused')) and message['refused'].startswith('spawn_failed:'):
@@ -1286,9 +1687,14 @@ class Receiver:
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
         settle, emptied = None, (None, None)
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
+        # VELDO-0141: the worker's error stream, read here like its output, and the run's execution record.
+        errors = worker.stderr.fileno() if getattr(worker, 'stderr', None) is not None else None
+        recorder = self.recorder
         poller = select.poll()
         poller.register(output, select.POLLIN)
         poller.register(pidfd, select.POLLIN)
+        if errors is not None:
+            poller.register(errors, select.POLLIN)
         if group is not None:
             poller.register(group.events, select.POLLPRI | select.POLLERR)
         if watch is not None:
@@ -1319,6 +1725,12 @@ class Receiver:
             # VELDO-0062: a cap the CLI's own report reached stops the worker.
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
+        if recorder is not None:
+            # The wrapper's identity line first, then what the engine printed after it.
+            if getattr(worker, 'identity_line', None) is not None:
+                recorder.line('wrapper', worker.identity_line)
+            recorder.feed('engine', carry)
+            recorder.batch()
         take(carry)
         try:
             if self._stop_asked():
@@ -1344,7 +1756,15 @@ class Receiver:
                             poller.unregister(output)
                         size += len(chunk)
                         hasher.update(chunk)
+                        if recorder is not None:
+                            recorder.feed('engine', chunk)
                         take(chunk)
+                    elif fd == errors:
+                        chunk = os.read(errors, 65536)
+                        if not chunk:
+                            poller.unregister(errors)
+                        elif recorder is not None:
+                            recorder.feed('stderr', chunk)
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -1363,6 +1783,8 @@ class Receiver:
                             poller.unregister(watch.fd)
                     elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):
                         begin('requested')
+                if recorder is not None:
+                    recorder.batch()
                 now = time.monotonic()
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
@@ -1388,8 +1810,19 @@ class Receiver:
             for chunk in iter(lambda: os.read(output, 65536), b''):
                 size += len(chunk)
                 hasher.update(chunk)
+                if recorder is not None:
+                    recorder.feed('engine', chunk)
                 if metering is not None:
                     metering.feed(chunk)
+        if errors is not None:
+            os.set_blocking(errors, False)
+            with contextlib.suppress(OSError):
+                for chunk in iter(lambda: os.read(errors, 65536), b''):
+                    if recorder is not None:
+                        recorder.feed('stderr', chunk)
+        if recorder is not None:
+            # The record's last lines, and what the exit commits of it.
+            self.committed = recorder.close()
         code = worker.poll() if code is None else code
         result = group.conclude() if group is not None and empty else None
         if cause is None and result in ('timeout', 'oom-kill'):
@@ -1407,6 +1840,8 @@ class Receiver:
             group.close()
         feeder.join(timeout=5)
         worker.stdout.close()
+        if errors is not None:
+            worker.stderr.close()
         return {'returncode': code if code is not None and code >= 0 else None,
                 'signal': -code if code is not None and code < 0 else None,
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}

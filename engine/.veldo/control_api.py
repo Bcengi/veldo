@@ -64,6 +64,18 @@ ended membership, whether `follow` or the stream's own recheck saw it first, and
 a revocation ended while it was filling). Nothing is polled: a stream
 waits on its own condition, and its idle timeout only writes a keep-alive.
 
+THE EXECUTION RECORD (VELDO-0141). `runs.record` reads one run's execution record after a cursor through the
+authority's `record` (a page of kept lines, each with its sequence, receive time, stream, redaction kinds and
+payload, the run's identity and, once it ended, the committed line count and digest), for the session's own
+member; the authority refuses a member whose scope does not cover the run's project, an unknown run and a cursor
+past the end by name. `runs.record_stream` serves the same lines live as text/event-stream (`event: record`,
+each frame's id its cursor, so an EventSource resumes with Last-Event-ID): filled from the cursor at once, then
+woken by the launch receiver's record hint (control_execution_record.HINT_SCHEMA, which `deliver` routes to
+`deliver_record`) and filled through `record`, page after page, to the lines the record then holds; it closes as
+`ended` once the run has ended and every line to the committed count is out. A session that ends closes it as
+the event stream closes (signed_out, session_expired, revoked). Lines are served as the receiver kept them,
+already redacted; this process never holds an unredacted line. Nothing is polled.
+
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
 here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
 Workflows.save); this process holds no store connection and writes nothing but through the edge.
@@ -110,6 +122,9 @@ IDLE_SECONDS = 30 * 60
 ABSOLUTE_SECONDS = 12 * 3600
 HSTS = 'max-age=31536000'
 STREAM_IDLE_SECONDS = 15
+# VELDO-0141: the launch receiver's record hint, and the most lines one record page carries.
+RECORD_HINT_SCHEMA = 'veldo.execution_record_hint/v1'
+RECORD_LIMIT = 512
 # The credential check's reasons that are a revocation: the stream closes as revoked, as `follow` closes it.
 REVOKED = ('credential_revoked', 'principal_not_member')
 EVENT_LIMIT = 256
@@ -147,8 +162,23 @@ ROUTES = (
           ('version',), None),
     Route('workflows.save', 'POST', '/api/v1/domains/{domain}/workflows/save', 'configuration', True,
           ('workflow', 'base', 'definition'), ('layout',), 'save_workflow'),
+    Route('mcp.save', 'POST', '/api/v1/domains/{domain}/mcp/catalog/save', 'configuration', True,
+          ('definition', 'base'), (), 'save_mcp_server'),
+    Route('mcp.read', 'GET', '/api/v1/domains/{domain}/mcp/catalog', 'configuration', True,
+          ('server', 'revision'), (), None),
+    Route('mcp.credential_set', 'POST', '/api/v1/domains/{domain}/mcp/credentials/set', 'configuration', True,
+          ('id', 'label', 'base', 'value'), (), 'set_mcp_credential'),
+    Route('mcp.credential_delete', 'POST', '/api/v1/domains/{domain}/mcp/credentials/delete', 'configuration', True,
+          ('id', 'base'), (), 'delete_mcp_credential'),
+    Route('mcp.credential_read', 'GET', '/api/v1/domains/{domain}/mcp/credentials', 'configuration', True,
+          ('id',), (), None),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
+    # VELDO-0141: one run's execution record, read from a cursor and followed live.
+    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',),
+          None),
+    Route('runs.record_stream', 'GET', '/api/v1/domains/{domain}/runs/record/stream', 'events', True, ('dispatch',),
+          ('after',), None),
 )
 
 
@@ -191,6 +221,9 @@ class Stream:
     """One open event stream of one session: frames queued by the API, waited on with this stream's own
     condition, and a close reason once it ends."""
 
+    event = 'events'
+    dispatch_id = None
+
     def __init__(self, handle, principal, credential_id, cursor):
         self.handle, self.principal, self.credential_id, self.cursor = handle, principal, credential_id, cursor
         self.closed = None
@@ -221,6 +254,38 @@ class Stream:
             return 'idle', None
 
 
+class RecordStream(Stream):
+    """One session's live view of one run's execution record (VELDO-0141): frames of kept lines after its
+    cursor, `event: record`."""
+
+    event = 'record'
+    max_frames = 32
+    max_bytes = 4 * 1024 * 1024
+
+    def __init__(self, handle, principal, credential_id, cursor, dispatch_id):
+        super().__init__(handle, principal, credential_id, cursor)
+        self.dispatch_id = dispatch_id
+        self._queued_bytes = 0
+        self._fill_lock = threading.Lock()
+
+    def put(self, frame):
+        with self._condition:
+            size = len(json.dumps(frame, ensure_ascii=True).encode())
+            if len(self._frames) >= self.max_frames or (self._frames and self._queued_bytes + size > self.max_bytes):
+                self.close('slow_reader')
+                return
+            if self.closed is None:
+                self._queued_bytes += size
+                super().put(frame)
+
+    def next(self, timeout=None):
+        with self._condition:
+            kind, frame = super().next(timeout)
+            if kind == 'frame':
+                self._queued_bytes -= len(json.dumps(frame, ensure_ascii=True).encode())
+            return kind, frame
+
+
 def serve_stream(stream, write, idle=STREAM_IDLE_SECONDS):
     """Write one stream as text/event-stream frames through `write(bytes)` until it closes or the
     peer goes away. Returns the close reason."""
@@ -228,7 +293,8 @@ def serve_stream(stream, write, idle=STREAM_IDLE_SECONDS):
         while True:
             kind, frame = stream.next(idle)
             if kind == 'frame':
-                write(('id: %d\nevent: events\ndata: %s\n\n' % (frame['cursor'], json.dumps(frame, sort_keys=True))).encode())
+                write(('id: %d\nevent: %s\ndata: %s\n\n' % (frame['cursor'], stream.event,
+                                                             json.dumps(frame, sort_keys=True))).encode())
             elif kind == 'idle':
                 write(b': idle\n\n')
             else:
@@ -361,7 +427,11 @@ class ControlApi:
                          'auth.revoke_credential': self._write, 'messages.send': self._write,
                          'decisions.answer': self._write, 'reads.contract': self._contract,
                          'reads.workflow': self._workflow_read, 'workflows.save': self._write,
-                         'events.read': self._events_read, 'events.stream': self._stream}
+                         'events.read': self._events_read, 'events.stream': self._stream,
+                         'runs.record': self._record_read, 'runs.record_stream': self._record_stream}
+        self.handlers.update({'mcp.save': self._write, 'mcp.read': self._mcp_read,
+                              'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
+                              'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
 
     def route_problems(self):
@@ -637,6 +707,14 @@ class ControlApi:
 
     def _write(self, route, body, session, extra, headers):
         parameters = {f: body.get(f) for f in route.required + route.optional}
+        value = parameters.pop('value', None) if route.operation == 'set_mcp_credential' else None
+        if route.operation == 'set_mcp_credential':
+            if not isinstance(value, str) or not value:
+                raise Refused('invalid_input:credential', 'a nonempty credential value')
+            try:
+                parameters['value_digest'] = hashlib.sha256(value.encode()).hexdigest()
+            except UnicodeEncodeError:
+                raise Refused('invalid_input:credential_encoding', 'credential must be valid UTF-8') from None
         now = time.time()
         request_id = 'api-' + secrets.token_hex(16)
         expected = ({parameters['request_id']: parameters['request_version'],
@@ -645,7 +723,9 @@ class ControlApi:
         if route.operation == 'save_workflow':
             expected = {'workflow:' + str(parameters['workflow']): parameters['base']}
         target = {'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
-                  'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow'))}[route.operation]
+                  'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
+                  'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
+                  'delete_mcp_credential': 'mcp_credential'}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -663,8 +743,10 @@ class ControlApi:
                 raise Refused('unauthenticated:credential_not_current', 'the credential is no longer current') from None
             raise Refused('unavailable_service:signer:' + str(code), 'the protected signer did not sign') from None
         try:
-            answer = self.authority.apply({'assertion': assertion, 'signature': signature,
-                                           'domain_signature': domain_signature})
+            packet = {'assertion': assertion, 'signature': signature, 'domain_signature': domain_signature}
+            if route.operation == 'set_mcp_credential':
+                packet['value'] = value
+            answer = self.authority.apply(packet)
         except Exception:  # noqa: BLE001 - an unreachable authority executed nothing we can name
             raise Refused('unavailable_service:authority', 'the authority did not answer') from None
         self._refuse_unless_ok(answer)
@@ -674,7 +756,7 @@ class ControlApi:
         result = answer.get('result') or {}
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
-                'layout_digest')
+                'layout_digest', 'server', 'id', 'reference', 'seq')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -704,6 +786,20 @@ class ControlApi:
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
 
+    def _mcp_read(self, route, body, session, extra, headers):
+        catalog = organ('control_mcp_catalog')
+        if not catalog.identifier(body['server']):
+            raise Refused('invalid_input:server', 'a catalog identifier')
+        revision = _count(body['revision'], 'revision')
+        identity = catalog.revision_id(self.ids['domain_uuid'], body['server'], revision)
+        row = self._inspect([identity]).get(identity)
+        if row is None or row.get('kind') != catalog.KIND:
+            raise Refused('missing_evidence:mcp_server', 'no such revision')
+        return 200, {'server': row['data']}
+
+    def _credential_read_refused(self, route, body, session, extra, headers):
+        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')
+
     def _workflow_read(self, route, body, session, extra, headers):
         version = _count(body.get('version'), 'version') if 'version' in body else None
         return 200, self._ask(self.authority.workflow, session['principal'], body['workflow'], version)
@@ -732,6 +828,107 @@ class ControlApi:
             stream.close('session_expired' if state == 'session_expired' else 'revoked')
             self.drop(stream)
         return 200, stream
+
+    # the execution record (VELDO-0141)
+
+    def _record_page(self, principal, dispatch_id, after):
+        return self._ask(self.authority.record, principal, dispatch_id, after, RECORD_LIMIT)
+
+    def _record_read(self, route, body, session, extra, headers):
+        after = _count(body.get('after', '0'), 'after', minimum=0)
+        return 200, self._record_page(session['principal'], body['dispatch'], after)
+
+    def _record_stream(self, route, body, session, extra, headers):
+        # An EventSource reconnecting names the last cursor it received; the stream resumes after it.
+        cursor = headers.get('Last-Event-ID')
+        after = _count(body.get('after', '0') if cursor is None else cursor,
+                       'after' if cursor is None else 'last_event_id', minimum=0)
+        answer = self._record_page(session['principal'], body['dispatch'], after)
+        stream = RecordStream(session['handle'], session['principal'], session['credential_id'], after, body['dispatch'])
+        with self._lock:
+            self._streams.append(stream)
+        self._fill_record(stream, answer, always=True)
+        # Catch an end hint delivered after the first page read, before registration.
+        if stream.closed is None:
+            self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))
+        # A session ended while the stream was filling, before it was registered: closed as a delivery closes it.
+        problem = self._stream_problem(stream, credential=False)
+        if problem is not None:
+            stream.close(problem)
+            self.drop(stream)
+        return 200, stream
+
+    def _stream_problem(self, stream, credential=True):
+        """Why an open stream must close now, or None: its session ended (session_expired, or revoked for any other
+        end), or, with `credential`, its credential or membership is no longer current (the session is ended)."""
+        session = self.sessions.state(stream.handle)
+        if session != 'live':
+            return 'session_expired' if session == 'session_expired' else 'revoked'
+        if not credential:
+            return None
+        try:
+            problem = self._credential_problem(stream.credential_id, stream.principal)[1]
+        except Refused as exc:
+            return exc.code
+        if not problem:
+            return None
+        self.sessions.end_by_credential(stream.credential_id)
+        return 'revoked' if problem in REVOKED else 'unauthenticated:' + problem
+
+    def _fill_record(self, stream, answer, always=False):
+        # Initial catch-up and a concurrent hint share one cursor and one ordered frame queue.
+        with stream._fill_lock:
+            self._fill_record_locked(stream, answer, always)
+
+    def _fill_record_locked(self, stream, answer, always=False):
+        """Queue the record's lines after the stream's cursor, one frame per page (the first frame always),
+        reading the next page through `record` until the cursor reaches the lines the record held when read
+        (so past any hinted sequence), or a page brings nothing new; once the run has ended and every line
+        is out, the stream closes as ended."""
+        while stream.closed is None:
+            lines = [line for line in answer['lines'] if line['seq'] > stream.cursor]
+            if lines:
+                stream.cursor = lines[-1]['seq']
+            if lines or always:
+                stream.put(dict(answer, lines=lines, cursor=stream.cursor))
+            always = False
+            if answer.get('ended') and stream.cursor >= answer.get('total', 0):
+                stream.close('ended')
+                return
+            if not lines or stream.cursor >= answer.get('total', 0):
+                return
+            answer = self._record_page(stream.principal, stream.dispatch_id, stream.cursor)
+
+    def deliver_record(self, hint):
+        """The launch receiver's record hint (dispatch and last sequence): every open stream of that record is
+        judged again (its session, its credential and membership) and filled through `record` for its own member,
+        to the lines the record then holds. Returns {filled, closed} or a named refusal."""
+        if (not isinstance(hint, dict) or not isinstance(hint.get('dispatch_id'), str) or type(hint.get('seq')) is not int
+                or hint['seq'] < 0):
+            return {'refusal': 'invalid_input:record_hint'}
+        counts = {'filled': 0, 'closed': 0}
+        for stream in [s for s in self.streams() if s.dispatch_id == hint['dispatch_id']]:
+            problem = self._stream_problem(stream)
+            if problem is None:
+                try:
+                    self._fill_record(stream, self._record_page(stream.principal, stream.dispatch_id, stream.cursor))
+                    counts['filled'] += 1
+                except Refused as exc:
+                    problem = exc.code
+            if problem is not None:
+                stream.close(problem)
+                counts['closed'] += 1
+        with self._lock:
+            self._streams = [s for s in self._streams if s.closed is None]
+        return counts
+
+    def record_streams(self):
+        """The live followers of each record (for metrics)."""
+        counts = {}
+        for stream in self.streams():
+            if stream.dispatch_id is not None:
+                counts[stream.dispatch_id] = counts.get(stream.dispatch_id, 0) + 1
+        return counts
 
     def _fill(self, stream, answer, always=False):
         """Queue every record after the stream's cursor up to the head its first answer names, one
@@ -782,7 +979,10 @@ class ControlApi:
         the feed until the hinted record, applying every page in order: the sessions a record revokes end
         and their streams close as each record is met. Then it feeds every other open stream through
         `events` for its own member, page after page to the head. Returns {delivered, ended, closed,
-        cursor} or a named refusal (with the cursor the pages already applied reached)."""
+        cursor} or a named refusal (with the cursor the pages already applied reached). A launch receiver's
+        record hint goes to `deliver_record` (VELDO-0141)."""
+        if isinstance(hint, dict) and hint.get('schema') == RECORD_HINT_SCHEMA:
+            return self.deliver_record(hint)
         if (not isinstance(hint, dict) or hint.get('schema') != 'veldo.control_notification/v1'
                 or any(hint.get(f) != v for f, v in self.ids.items()) or type(hint.get('watermark')) is not int
                 or hint['watermark'] < 1):
@@ -828,7 +1028,8 @@ class ControlApi:
                     # A revoked credential or an ended membership is a revocation whichever path saw it
                     # first: this recheck (a revocation committed after the feed page was read) or `follow`.
                     why = 'revoked' if why in REVOKED else 'unauthenticated:' + why
-                else:
+                elif stream.dispatch_id is None:
+                    # A record stream is judged here and fed by its record's hints (VELDO-0141).
                     self._fill(stream, self._ask(self.authority.events, stream.principal, stream.cursor, EVENT_LIMIT))
             except Refused as exc:
                 why = exc.code

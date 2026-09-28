@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_authority.py
++++ b/.veldo/control_api_authority.py
+@@ -246,0 +247,2 @@
++            if dispatch is None:
++                raise ER.Refused('missing_evidence:unknown_run', 'no such run')

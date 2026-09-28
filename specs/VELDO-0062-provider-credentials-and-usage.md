@@ -306,3 +306,9 @@ never under-counted), and each final report records which case charged it (`whol
 `settle/resumed-other-session`), the red record at 0af8dc0 (all 20 behavior rows red by assertion, the
 two format rows green) and 50 finding 62 mutations, each red on its named row; findings 36, 39, 40 and
 41 still reject. Main merged at aa5c721d. Status unchanged.
+
+2026-09-27, VELDO-0165 review fixes: the owner's approval of VELDO-0165 (Telegram 29229)
+supersedes the inherited non-login setting exception for all four session prefixes. The existing
+login/no-paid-api row now requires CLAUDE_CODE_MAX_OUTPUT_TOKENS to arrive when configured and to be
+absent when only inherited. All configured login, redirect and provider-switch refusals remain.
+The trusted wrapper restores the adapter's checked configuration after stripping inherited names.

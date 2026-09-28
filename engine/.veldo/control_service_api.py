@@ -18,8 +18,8 @@ judges the peer, the request signature and the workspace coordinate. Its command
 (control_api_assertion.CALLS). The service verifies an API call's request signature against the enrolled
 api edge's key alone, in control_api_assertion.REQUEST_NAMESPACE (`verifies`), so no member key speaks as
 the API and the API's request signature stands in for no command. `call` then runs it on the judge:
-`apply` (one edge-signed assertion packet, rechecked there), `inspect`, `read`, `workflow`, `events` and
-`feed`, and `subscribe`.
+`apply` (one edge-signed assertion packet, rechecked there), `inspect`, `read`, `workflow`, `events`,
+`feed` and `record` (one run's execution record after a cursor, VELDO-0141), and `subscribe`.
 
 HOST COMMITS REACH THE API. A steward's enroll_api_credential or revoke_api_credential, signed at the host
 and sent to the service (`credential`), is admitted by control_api_credentials.Credentials on the same
@@ -63,6 +63,9 @@ EVP = _organ('control_event_projection')
 SCHEMA = 'veldo.api_service/v1'
 FIELDS = ('schema', 'store_path', 'authority_ids', 'authority_generation', 'journal', 'api_edge', 'domain',
           'projects', 'rp_id', 'origin', 'workflows_repository', 'publication_root')
+# VELDO-0141: the launch receivers' records directory (control_execution_record.directory), which the
+# execution record route reads; without it that route is unavailable_service by name.
+OPTIONAL = ('records',)
 SUBSCRIBER_LIMIT = 8
 SUBSCRIBERS_NAME = 'api-subscribers.json'
 HINT_LIMIT = 64 * 1024
@@ -89,8 +92,11 @@ def load_config(path):
         raise Refused('invalid_input', 'the API service configuration is not JSON') from None
     except Exception as exc:  # noqa: BLE001 - the ingress module names its own refusal
         raise Refused(_code(exc), str(path)) from None
-    if not isinstance(config, dict) or config.get('schema') != SCHEMA or set(config) != set(FIELDS):
+    if (not isinstance(config, dict) or config.get('schema') != SCHEMA
+            or not set(FIELDS) <= set(config) <= set(FIELDS) | set(OPTIONAL)):
         raise Refused('invalid_input', 'the API service configuration has exactly the %s fields' % SCHEMA)
+    if 'records' in config and not (isinstance(config['records'], str) and os.path.isabs(config['records'])):
+        raise Refused('invalid_input', 'the records directory is an absolute path')
     return config
 
 
@@ -168,11 +174,18 @@ class ServiceApi:
                                  generation=generation, clock=clock)
         publication = EVP.Projection(self.S, self.config['store_path'], domain=ids['domain_uuid'],
                                      repository=ids['repository_uuid'], root=self.config['publication_root'])
+        common = dict(domain=ids['domain_uuid'], repository=ids['repository_uuid'], signer=principal,
+                      sign=sign, generation=generation)
+        self.mcp_log = Path(state_dir) / 'observations.jsonl'
+        common['observe'] = self.observe_mcp
+        catalog = AUTH.MC.Catalog(self.S, self.conn, **common)
+        mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, **common)
         self.edge = self.config['api_edge']
         self.authority = AUTH.ApiAuthority(self.S, CM, self.conn, ids=ids, domain=self.config['domain'], edge=self.edge,
                                            intake=intake, settlement=ingress.settlement, credentials=self.credentials,
                                            workflows=workflows, publication=publication, clock=clock,
-                                           authority_lock=lock)
+                                           authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials,
+                                           records=self.config.get('records'))
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.
@@ -229,6 +242,12 @@ class ServiceApi:
             return self.authority.workflow(a['principal'], a['workflow'], a['version'])
         if name == 'subscribe':
             return self.subscribe(a['socket'])
+        if name == 'record':
+            after, limit = a['after'], a['limit']
+            if (not isinstance(a['dispatch_id'], str) or type(after) is not int or after < 0 or type(limit) is not int
+                    or not 0 < limit <= AUTH.RECORD_LIMIT):
+                raise Refused('invalid_input:api_call', 'a dispatch, a cursor and at most %d lines' % AUTH.RECORD_LIMIT)
+            return self.authority.record(a['principal'], a['dispatch_id'], after, limit)
         after, limit = a['after'], a['limit']
         if type(after) is not int or after < 0 or type(limit) is not int or not 0 < limit <= EVENT_LIMIT:
             raise Refused('invalid_input:api_call', 'after is a sequence and limit at most %d' % EVENT_LIMIT)
@@ -349,6 +368,13 @@ class ServiceApi:
         finally:
             channel.close()
 
+    def observe_mcp(self, event):
+        observed = dict(event, kind='api', at=time.time(), domain_uuid=self.config['authority_ids']['domain_uuid'])
+        fd = os.open(str(self.mcp_log), os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
+        with os.fdopen(fd, 'w') as handle:
+            handle.write(json.dumps(observed, sort_keys=True) + '\n')
+
     def status(self):
         return {'available': True, 'instance': self.instance, 'edge': self.edge, 'subscribers': len(self.subscribers),
-                'counts': dict(self.counts), 'metrics': self.authority.metrics()}
+                'counts': dict(self.counts), 'metrics': self.authority.metrics(),
+                'catalog': self.authority.catalog.metrics(), 'credentials': self.authority.mcp_credentials.metrics()}

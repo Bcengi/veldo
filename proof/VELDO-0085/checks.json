@@ -1,0 +1,42 @@
+{
+ "implementation_commit": "b33ae20f86fc292daac0c9dba2dcdb639339d762",
+ "checks": [
+  {
+   "name": "footprint",
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+    "VELDO-0085"
+   ],
+   "exit": 0,
+   "log": "footprint.log"
+  },
+  {
+   "name": "anchors",
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+   ],
+   "exit": 0,
+   "log": "anchors.log"
+  },
+  {
+   "name": "validate",
+   "command": [
+    "python3",
+    ".veldo/validate.py",
+    "all"
+   ],
+   "exit": 0,
+   "log": "validate.log"
+  }
+ ],
+ "engine_copies_identical": [
+  "control_alias",
+  "control_backlog",
+  "control_eligibility",
+  "control_decomposition",
+  "control_decomposition_binding",
+  "init_scaffold"
+ ]
+}
