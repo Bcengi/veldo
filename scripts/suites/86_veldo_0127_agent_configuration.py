@@ -258,7 +258,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                       bool(reports) and reports[0].get('credentials') == ['jira'])
                 artifact = next((m['artifact'] for m in (work.messages if work else []) if m.get('event') == 'artifact'), {})
                 document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
-                page = f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 10000, record.get('execution_record')) if work else {}
+                # A run refused before its engine started has no execution record: its rows red by assertion.
+                page = (attempt(lambda: f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 10000,
+                                                    record.get('execution_record')))[0] if work else None) or {}
                 contexts = [json.loads(r['payload']).get('first_turn_context') for r in page.get('lines', [])
                             if r['stream'] == 'wrapper' and 'first_turn_context' in r['payload']]
                 check('launch/instructions', engine + ': first turn context retained in the bound execution record',
