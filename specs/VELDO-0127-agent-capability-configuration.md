@@ -227,3 +227,12 @@ and checks its presence in init and absence from disallowedTools, moved from VEL
 registry concern became VELDO-0173. Status is draft; only the owner marks it ready.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-28: implementation inspection on build-veldo-0127 recorded a required-evidence
+blocker in proof/VELDO-0127/README.md. This session forbids running engines or models,
+while AC2 requires actual workers and AC4 requires live marker, debug-log and first-turn
+context-size qualification. Existing baseline and event-format proofs do not establish
+the new role handoffs. Following VELDO.md's stop-and-record rule, no production change
+or acceptance claim was made. Status remains ready; criteria and required evidence
+are unchanged. Resume with permitted qualification or independent live evidence for
+the final implementation, without substituting fixtures for that qualification.
