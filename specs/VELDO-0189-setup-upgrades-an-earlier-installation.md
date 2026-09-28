@@ -1,0 +1,216 @@
+---
+schema: veldo.spec/v1
+id: VELDO-0189
+title: Re-running factory setup upgrades any earlier installation's engine to the current one in place, keeping every store, key, enrollment and setting, switching in one step so a failure leaves a runnable engine, and a second run changes nothing
+status: draft
+risk: critical
+owner: dmitry
+human_approval: required
+lane: planned
+plan: PLAN-0019
+work: W149
+plan_revision: 4
+depends_on: [VELDO-0047, VELDO-0139]
+placement: [engine, distribution]
+protected_paths: []
+footprint:
+  - "engine/.veldo/control_factory_setup*.py"
+  - ".veldo/control_factory_setup*.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/services/*"
+  - ".veldo/services/*"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "bin/veldo"
+  - "engine/bin/veldo"
+  - "scripts/suites/*_veldo_0189_*.py"
+  - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
+  - "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md"
+  - "specs/index.md"
+  - "proof/VELDO-0189/*"
+behavior_bearing: true
+observability:
+  logs: >
+    Record each engine upgrade with the installed and current engine digests, the files it changed,
+    added and removed, the switch, the record and unit writes, the restart and its outcome, and a
+    switch back with its reason; never a key, token or store row.
+  metrics: >
+    Count setup runs that upgraded, found the engine already current, switched back, or refused an
+    installed engine by name.
+  traces: >
+    Join each upgrade to the setup run, the installation record it read and the one it wrote, and the
+    restart that followed.
+  error_taxonomy: >
+    Distinguish an installed engine file whose bytes are not the ones the installation records
+    (invalid_input:install_root:differs:<path>), a file in the engine directory the record does not name
+    (invalid_input:install_root:unrecorded:<path>), an install root whose filesystem cannot exchange two
+    directories in one step (unavailable_service:install_root:exchange), and a restarted service that does
+    not come up on the new engine, after which setup has switched back (unavailable_service:authority:upgrade_start).
+acceptance_criteria:
+  - id: AC1
+    text: >
+      Claim: Running factory setup again with the same arguments over an installation laid down by any
+      earlier engine replaces the installed engine with the current one, and the host ends as a fresh
+      installation of the current engine would be, apart from the owner's data, keys and enrollments, which
+      are kept. Set and completeness: The re-run, after VELDO-0171 AC4's argument checks and before any other
+      step, reads the installation record (`<install root>/<service>/config/service.json`, VELDO-0047's
+      installer) and compares its `closure` (each installed engine file's name and sha256 digest) and
+      `template` digest with the current engine's (control_service.closure(), with any file a later
+      specification records the same way): the files whose digest differs are changed, the names only the
+      current engine lists are new, and the names only the record lists are removed. Before it writes, every
+      file in the installed `bin` directory must equal its recorded digest, and a file that differs or that
+      the record does not name is refused by name, writing nothing. It works only from the record, which
+      every installation since VELDO-0139 writes, so it has no code path per engine version. It writes the
+      changed and new files, leaves out the removed ones, rewrites the record's `closure` and `template`, adds
+      a key the current installer writes that the record lacks with the value a fresh installation would
+      write for the same arguments, and renders the authority unit and VELDO-0171's API unit from the current
+      templates. The suite lays down two older engines, each as its own scratch host with its own state
+      root, install root, unit directory, host trust and clone: the whole `.veldo` of commit 8bc34e94 (the
+      merge that landed VELDO-0139) and of commit 971186ac (the landing of VELDO-0155 and VELDO-0156), each
+      taken with `git archive` and set up by its own setup module, and upgrades each with the current setup;
+      a fresh scratch host is set up by the current setup with the same arguments. The installed engine
+      directories must be equal byte for byte in names, bytes and modes; the unit files, the record and every
+      configuration file must be equal after each host's scratch root is substituted, apart from fields
+      listed in proof/VELDO-0189/fresh-equivalence.json, each with its reason (a key id, an enrollment digest,
+      the store and domain identities, the host identity), and any other difference fails the row. A third
+      row upgrades a current installation to a fixture engine derived from the current one without one module
+      it installs, and requires that file gone. A census row reads every first-parent commit of main from
+      8bc34e94 on and requires each one's installer to write the `closure` and `template` keys the upgrade
+      reads. Falsifier: Write only the files whose names the installed record already lists, and the 8bc34e94
+      row must fail on the upgraded engine directory lacking control_client_api.py.
+    falsified_by: >
+      Write only the files whose names the installed record already lists, and the 8bc34e94 row must fail
+      on the upgraded engine directory lacking control_client_api.py.
+  - id: AC2
+    text: >
+      Claim: At every point of an upgrade a complete engine, the previous one or the current one, is
+      installed, so an upgrade that fails or is killed leaves a factory that runs, and running setup again
+      finishes it. Set and completeness: Before its first write the upgrade checks that the install root's
+      filesystem exchanges two directories in one step (renameat2 with RENAME_EXCHANGE through the C
+      library, probed on two empty directories it then removes), refusing by name otherwise. It writes the
+      current engine complete into a new directory beside `bin`, at the installer's modes, and reads every
+      file back against the current engine's digests; then one exchange puts the new directory at `bin` and
+      the previous engine beside it; then the record and the units are each written to a new file and renamed
+      over the old one. Any failure setup sees after the exchange (a record or unit write, or the restart of
+      AC4) exchanges the directories back, restores the previous record and units and refuses by name, and a
+      failed restart also restarts the service once on the previous engine. The previous engine directory is
+      removed only after the upgrade and its restart have succeeded. A re-run that finds a new directory
+      left beside `bin` removes it and starts again; one that finds the installed files equal to the current
+      engine's digests but the record not yet rewritten writes the record. The suite takes the upgrade's
+      write points in order from its own step log, so a new write is a new point, and kills setup at each
+      one over the 8bc34e94 host; after each kill the installed `bin` equals exactly one engine's digests,
+      and the installed control_service.py `serve` starts on the scratch store and answers an inspect over
+      its socket; a second run then ends as AC1 requires. A stand-in systemctl fails the restart once, and
+      the row requires the previous engine back in `bin`, its record restored and the service answering.
+      Falsifier: Write the new files over the installed ones in place, one by one, and the kill row at the
+      first new file must fail on an engine directory that equals neither engine's digests.
+    falsified_by: >
+      Write the new files over the installed ones in place, one by one, and the kill row at the first new
+      file must fail on an engine directory that equals neither engine's digests.
+  - id: AC3
+    text: >
+      Claim: The upgrade keeps everything the owner or setup wrote other than the engine: every store,
+      journal, key, enrollment, account profile and configuration value. Set and completeness: The upgrade
+      writes only the engine directory, the record's engine keys, the keys the record lacks, and the two
+      unit files. Every file under the key directory, the host trust, the workspace binding, the token file
+      and every registered account's profile directory (VELDO-0160) is unchanged byte for byte; every
+      journal row and entity row in the store before the upgrade is unchanged, in order and digest; and every
+      value in every configuration file under the installation's `config` directory (service.json's values
+      other than its engine keys, the ingress, API and work configurations, each receiver configuration)
+      keeps what was there, the only change being a key the file lacked. Before upgrading each older host of
+      AC1, the suite sets one value in each configuration file as the owner could have (a receiver
+      configuration's adapters, the work configuration's lines) and snapshots every file above and the store's
+      rows, and compares them after the upgrade. Falsifier: Write each configuration file as a fresh
+      installation would, and the kept-data row must fail on the receiver configuration's owner-set adapters.
+    falsified_by: >
+      Write each configuration file as a fresh installation would, and the kept-data row must fail on the
+      receiver configuration's owner-set adapters.
+  - id: AC4
+    text: >
+      Claim: The owner upgrades with the one command he already runs, is told in plain words what will change
+      and what changed, the service restarts once, and a second run changes nothing. Set and completeness:
+      The upgrade is a step of `veldo factory setup` with the same arguments; there is no other command.
+      Before its first write, setup prints to its standard error one plain line naming what it will change
+      (for example "Upgrading the installed factory engine: 12 files change, 3 are new, 0 are removed; the
+      authority service will restart once."), and its JSON answer's `engine_upgrade` step says what it did,
+      with the previous and current engine digests and the files changed, added and removed, or
+      `already_done` when the installed engine is current. After the switch, when the authority unit is
+      active, setup restarts it once through control_service's Systemctl (the API unit restarts with it,
+      VELDO-0171 AC2) and waits for the service to answer an inspect over its socket; when the service runs
+      but not through its unit (the store lock is held and the unit is inactive), it restarts nothing and the
+      answer names the one command to run; when nothing runs, it starts nothing and the answer says the next
+      start runs the current engine. A second run over the upgraded host writes nothing: every file under the
+      state root, install root, unit directory, host trust and workspace binding is byte for byte the same,
+      the journal head is unchanged, and the stand-in systemctl's invocation log, which the suite owns
+      outside setup's write access, shows no restart. Falsifier: Restart the authority unit on every run, and
+      the second-run row must fail on the restart in the invocation log.
+    falsified_by: >
+      Restart the authority unit on every run, and the second-run row must fail on the restart in the
+      invocation log.
+required_evidence: [unit, integration]
+rollback: >
+  While the previous engine directory is still beside `bin`, stop the service, exchange the two by hand and
+  put back the previous service.json and units; the store, keys, enrollments and every configuration value
+  are never changed by the upgrade. No automatic rollback beyond AC2's switch back is authorized, and a
+  downgrade after the previous engine is removed is out of scope.
+---
+
+## Intent
+
+Anyone running an older factory installation, the owner's own host first, brings it up to the current
+Veldo by running factory setup again, as he already does, and loses nothing: his stores, keys, enrollments
+and settings stay, and a failure never leaves a factory that cannot start.
+
+## Context
+
+W149 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. The owner's host
+holds an installation that VELDO-0139's setup laid down at an older engine. VELDO-0171's review found that
+its re-run refuses that host (`unavailable_service:api:not_installed`), because VELDO-0171 AC4 said the
+installed engine files are never replaced, which contradicts its promise to add the API steps to a
+VELDO-0139 host. The owner asked for the upgrade in Release 1 (Telegram 29307, "For 0171, ok to add") and
+for it to work for anyone on an old installation, not only his host (29309, "Need to make sure anybody
+running old install upgrades easily too"). VELDO-0047's installer lays the engine down under
+`<install root>/<service>/bin`, byte for byte and read-only, and records each file's digest in the
+installation's service.json `closure`; that record is what this upgrade compares, so it needs no knowledge
+of past versions. VELDO-0171 now depends on this specification, its AC4 says installed engine files are
+replaced only by this upgrade, and its rows over a VELDO-0139 host lay the host down from the whole engine
+of the older commit. VELDO-0139 is a standalone built item, so its edge is kept here and not in the plan
+graph. A draft: only the owner marks it ready.
+
+## Out of scope
+
+Store schema migrations, which each specification that changes the store owns; downgrading to an older
+engine (the rollback is by hand); the Mac's installation (VELDO-0147); pins and runtime assets beyond the
+engine files the record names (VELDO-0186's setup step runs on every re-run).
+
+## What the reviewer judges
+
+- Normal use: the owner, or anyone with an older installation, updates Veldo and runs `veldo factory
+  setup` with the same arguments; setup says it is upgrading the engine and what will change, replaces
+  it, restarts the service once, and reports what changed; his factory runs on the current engine with
+  his stores, keys, enrollments and settings as they were. Running setup again changes nothing.
+- Threat model: an older installation left on its old engine, or refused; an upgrade that overwrites a
+  key, an enrollment, a store row or a configuration value; an engine half old and half new after a
+  failure; a file the current engine no longer ships left installed and loaded; an engine file edited by
+  hand overwritten without notice; a restart on every run; a service left stopped after an upgrade.
+- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as two
+  setups upgrading one installation at once, or the host losing power during the exchange itself (the
+  exchange is one system call); files planted in the installed directory by another account; forged rows
+  in our own store.
+
+## Notes
+
+The exchange keeps every path the unit and the record name unchanged, so the unit needs no edit to run
+the new engine; only a changed template rewrites it. A running service has loaded its modules already,
+and the launch receiver and API process it starts read `bin` afresh, which is why the restart follows the
+switch at once.
+
+## History
+
+2026-09-28: new draft for the owner's requirement that setup upgrade an older installation in place
+(Telegram 29307) and that anyone on an old installation upgrade the same way (29309). Only the owner marks
+a specification ready.
