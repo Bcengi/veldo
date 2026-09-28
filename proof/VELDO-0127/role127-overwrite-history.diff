@@ -1,10 +1,6 @@
 --- a/.veldo/control_agent_config.py
 +++ b/.veldo/control_agent_config.py
-@@ -155,4 +155,7 @@
-             raise Refused(error.code) from None
-         self.observe(dict(about, outcome='saved', role=name, revision=result['revision'], digest=result['digest']))
+@@ -156,0 +157,3 @@
 +        if base and kind == KINDS[0]:
 +            self.conn.execute("UPDATE entities SET data=? WHERE id=?",
 +                (json.dumps(result), identity(self.domain, self.repository, kind, name, base)))
-         return result
- 

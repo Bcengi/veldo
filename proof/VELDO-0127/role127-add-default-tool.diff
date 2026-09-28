@@ -1,9 +1,5 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -178,5 +178,5 @@
-             value = [v['name'] for v in value]
-         if field == 'tools' and set(value) - set(wanted[field]):
+@@ -180 +180 @@
 -            return 'configuration_stop:unexpected_tool'
 +            return None
-         if sorted(value) != sorted(wanted[field]):
-             return 'configuration_stop:' + field

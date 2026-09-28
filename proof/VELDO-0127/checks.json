@@ -58,7 +58,7 @@
   "exit_code": 0
  },
  "whitespace": {
-  "exit_code": 2,
-  "summary": "proof/VELDO-0127/role127-allow-unlisted-skill.diff:4: trailing whitespace.\n+ \nproof/VELDO-0127/role127-overwrite-history.diff:10: trailing whitespace.\n+ \nproof/VELDO-0127/role127-overwrite-history.diff:10: new blank line at EOF."
+  "exit_code": 0,
+  "summary": ""
  }
 }

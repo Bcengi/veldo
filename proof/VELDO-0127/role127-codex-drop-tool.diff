@@ -1,9 +1,5 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -218,5 +218,5 @@
-     configuration['developer_instructions'] = capability['instructions']
-     for server, entry in inventory.items():
+@@ -220 +220 @@
 -        configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']
 +        configuration['mcp_servers'][server]['enabled_tools'] = []
-         configuration['mcp_servers'][server]['required'] = True
-     # The receiver stages only these generated skills in the clone's discovery directory.

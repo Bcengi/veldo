@@ -1,15 +1,7 @@
 --- a/.veldo/control_agent_config_handoff.py
 +++ b/.veldo/control_agent_config_handoff.py
-@@ -189,4 +189,5 @@
-     revision = capability['revision']
-     wanted = expected(capability, inventory)
+@@ -190,0 +191 @@
 +    wanted['tools'] = [n for n in wanted['tools'] if n != 'mcp__jira__jira_search']
-     extra['expected'] = wanted
-     extra['argv'] += [OPTION + 'debug-file', str(config / 'role-debug.log')]
-@@ -203,5 +204,5 @@
-         extra['argv'] += [OPTION + 'model', revision['settings']['model']]
-     # MCP tools stay server-prefixed. Deny unselected tools, including a listed server's other tools.
+@@ -205 +206 @@
 -    denied = ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]
 +    denied = ['mcp__jira__jira_search'] + ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]
-     for index, arg in enumerate(extra['argv']):
-         if arg.startswith(OPTION + 'disallowedTools=') and denied:
