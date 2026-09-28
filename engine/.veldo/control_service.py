@@ -13,10 +13,11 @@ under this host's installed trust (control_eligibility.load_host_trust, the Host
 entry point uses) and then lays down, under <install root>/<service id>:
 
   bin/     the FIXED EXECUTABLE: the entry points (this module, the launch receiver and the key
-           custody wrapper), the architecture validator the receiver's recheck runs, and every module
+           custody wrapper and runtime qualifier), the architecture validator the receiver's recheck runs, and every module
            these load, derived from the engine at installation (closure()), never listed by hand,
-           copied byte for byte and read-only (0400, the three entry points 0500, the
-           directory 0500). The unit runs this copy, never a repository's.
+           copied byte for byte and read-only (0400, the entry points 0500, the directory 0500).
+           Runtime files named by those modules are copied beside them with their digests recorded.
+           The unit runs this copy, never a repository's.
   config/  the PROTECTED CONFIGURATION (0700): service.json (0600), a copy of the enrollment signers
            this host trusted at installation (0600), and one launch receiver configuration per
            repository (receiver-<repository>.json, 0600) naming this host's QUALIFIED linux-systemd

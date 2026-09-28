@@ -27,7 +27,9 @@ already exist, in the order they depend on each other, checking each. It reimple
      it), naming the account's own 0600 bot token file, never a copy of the token;
  10. the VELDO-0047 authority service, installed with that ingress (control_service.install). It starts
      nothing: the service is started by the owner's explicit start and its channel is inert
-     (not_activated) until his VELDO-0138 qualify and activate.
+     (not_activated) until his VELDO-0138 qualify and activate;
+ 11. the qualified Claude Code copy under the state root (control_engine_claude.pin) and the qualified
+     Codex vendor binding, checked against the installed runtime records and recorded in host/engines.json.
 
 WHAT IS REFUSED, BY NAME, WITH NOTHING WRITTEN. Every check runs before the first write: a state root that
 is absent, a link, not a directory, not this account's, not 0700, on an unsupported filesystem or not
@@ -35,7 +37,9 @@ empty (a store, a trust or anything else already there); a host trust file that 
 workspace that is not a Git clone, is already enrolled, or overlaps the state root; an owner key that is
 not a readable private key that signs; a token file that is not this account's own 0600 file holding one
 token, or lies inside the workspace; a chat id that is not a Telegram user id; a key directory a worker
-could write; a worker profile this host does not qualify. Nothing is ever overwritten: every file is
+could write; a worker profile this host does not qualify; a missing runtime asset, an unlisted engine
+version or bytes whose digest is not qualified. Engines are located through PATH without executing them.
+Nothing is ever overwritten: every file is
 created exclusively.
 
 ROLLBACK. The setup never deletes. A step that fails after writing began is reported by name with the

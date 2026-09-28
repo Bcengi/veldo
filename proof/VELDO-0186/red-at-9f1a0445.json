@@ -9,10 +9,13 @@
   "VELDO-0186 runtime/assets detail: runtime/future.json installed with digest",
   "VELDO-0186 runtime/assets detail: reported assets and count",
   "VELDO-0186 runtime/missing detail: absent source named without installation: None",
+  "VELDO-0186 bind/engines detail: installed receiver names the factory state root",
   "VELDO-0186 bind/engines detail: pinned copy exists at mode 0555",
   "VELDO-0186 bind/engines detail: claude_code binds through installed engine protocol: missing_evidence:engine_qualification",
+  "VELDO-0186 bind/engines detail: claude_code uses the fixed executable",
   "VELDO-0186 bind/engines detail: claude_code recorded binding equals installed binding",
   "VELDO-0186 bind/engines detail: codex binds through installed engine protocol: missing_evidence:engine_qualification",
+  "VELDO-0186 bind/engines detail: codex uses the fixed executable",
   "VELDO-0186 bind/engines detail: codex recorded binding equals installed binding",
   "VELDO-0186 bind/engines detail: pin count",
   "VELDO-0186 engines/unlisted detail: claude_code unknown version refused before writing: None",
@@ -50,7 +53,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 9.35,
+ "seconds": 9.213,
  "spec_id": "VELDO-0186",
  "suite": "scripts/suites/86_veldo_0186_setup_assets.py",
  "tree": "unchanged git archive of the pre-change commit"
