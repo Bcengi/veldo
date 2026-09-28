@@ -138,8 +138,9 @@ holds the prompt: the receiver writes the engine's input from `Guard.opening(pac
 Claude Code's initialize control request with its input left open, Codex's packet whole and closed),
 reads the stream through `Guard.feed`, where a login the engine reports that is not a subscription stops
 the worker by name (stop cause `paid_api`, the invocation cancelled, the artifact's `login` naming it)
-before the prompt is ever written, and writes `Guard.release()` (the prompt, once the login is
-confirmed) before closing the input; a stopped run's input is closed with nothing more written. An
+before the prompt is ever written, and writes each `Guard.release()` (the prompt, once the login is
+confirmed; for a role-bound run first its capability probe, VELDO-0127) before closing the input after the
+prompt; a stopped run's input is closed with nothing more written. An
 account the config's `subscription_tokens` names (account to a 0600 file of this account's own) runs
 with that token as CLAUDE_CODE_OAUTH_TOKEN, the one login variable it then carries; the file is opened
 once, without following a link, and checked and read on that one descriptor. The receiver's own environment keeps
@@ -1013,9 +1014,6 @@ class Receiver:
         self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
                                     hints=self.config.get('record_hints') or ())
-        if (self.binding or {}).get('expected') is not None:
-            self.recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
-                'role_revision_digest': self.binding['revision']['digest']}).encode())
 
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
@@ -1396,7 +1394,7 @@ class Receiver:
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
             if extra.get('expected') and engine.PROVIDER == 'codex':
-                listing = HANDOFF.codex_listing(self.binding, extra, environment)
+                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
                 self.emit({'event': 'capability_listing', 'listing': [
                     {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
         except (engine.Refused, HANDOFF.Refused) as error:
@@ -1720,11 +1718,16 @@ class Receiver:
             try:
                 worker.stdin.write(opening)
                 worker.stdin.flush()
-                if not close:
+                # Each input the Guard releases, in order, until its last (the prompt) or a stop (None);
+                # a role-bound run's capability probe comes before the prompt (VELDO-0127).
+                last = close
+                while not last:
                     later = held.get()
-                    if later:
-                        worker.stdin.write(later)
-                        worker.stdin.flush()
+                    if not later:
+                        break
+                    data, last = later
+                    worker.stdin.write(data)
+                    worker.stdin.flush()
             except OSError:
                 pass
             finally:
@@ -1771,7 +1774,7 @@ class Receiver:
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
-                    held.put(prompt)
+                    held.put((prompt, getattr(login, 'released', True)))
             # VELDO-0062: a cap the CLI's own report reached stops the worker.
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
@@ -1779,6 +1782,10 @@ class Receiver:
             # The wrapper's identity line first, then what the engine printed after it.
             if getattr(worker, 'identity_line', None) is not None:
                 recorder.line('wrapper', worker.identity_line)
+            # VELDO-0127: a role-bound run's recorded launch set and revision, right after the identity line.
+            if (self.binding or {}).get('expected') is not None:
+                recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
+                                                     'role_revision_digest': self.binding['revision']['digest']}).encode())
             recorder.feed('engine', carry)
             recorder.batch()
         take(carry)
@@ -1875,7 +1882,10 @@ class Receiver:
             debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
             if debug is not None and debug.is_file():
                 recorder.feed('stderr', debug.read_bytes())
-            if metering is not None and metering.first_turn_context is not None:
+            if (metering is not None and metering.first_turn_context is not None
+                    and (self.binding or {}).get('capability')):
+                # VELDO-0127 AC4: a role-bound run's first-turn context size, which the marker qualification
+                # compares; a run bound to no role keeps its identity line as its one wrapper line (VELDO-0141).
                 recorder.line('wrapper', json.dumps({'first_turn_context': metering.first_turn_context}).encode())
             # The record's last lines, and what the exit commits of it.
             self.committed = recorder.close()

@@ -69,9 +69,27 @@ for i, arg in enumerate(args):
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
-if 'mcp' in args and 'list' in args:
-    print(json.dumps([{'name': k, 'enabled': True, 'transport': v, 'enabled_tools':v.get('enabled_tools',[])} for k,v in config.get('mcp_servers',{}).items()]))
-    sys.exit(0)
+if 'mcp' in args:
+    # As Codex 0.154: `mcp` takes no exec option, reads CODEX_HOME's config.toml under its -c overrides, and
+    # lists servers without their tools, which `mcp get` prints.
+    if P + 'ignore-user-config' in args:
+        print("error: unexpected argument '" + P + "ignore-user-config' found", file=sys.stderr)
+        sys.exit(2)
+    home = Path(os.environ.get('CODEX_HOME') or Path(os.environ['HOME']) / '.codex')
+    servers = tomllib.loads((home / 'config.toml').read_text()).get('mcp_servers', {}) if (home / 'config.toml').is_file() else {}
+    for name, entry in config.get('mcp_servers', {}).items():
+        servers.setdefault(name, {}).update(entry)
+    rest = args[args.index('mcp') + 1:]
+    if rest[:1] == ['list']:
+        print(json.dumps([{'name': k, 'enabled': True, 'transport': {'type': 'stdio', 'command': v.get('command')}}
+                          for k, v in servers.items()]))
+        sys.exit(0)
+    if rest[:1] == ['get'] and rest[1] in servers:
+        entry = servers[rest[1]]
+        print(json.dumps({'name': rest[1], 'enabled': True, 'transport': {'type': 'stdio', 'command': entry.get('command')},
+                          'enabled_tools': entry.get('enabled_tools'), 'disabled_tools': None}))
+        sys.exit(0)
+    sys.exit(1)
 def server_tools(entry):
     env = {'PATH': os.environ['PATH']}
     env.update(entry.get('env', {}))
@@ -83,20 +101,36 @@ def server_tools(entry):
     return [t['name'] for a in answer if a.get('id') == 2 for t in a.get('result',{}).get('tools',[])]
 own = {'argv':args, 'dispatch':os.environ.get('VELDO_DISPATCH_ID'), 'engine':engine}
 if engine == 'claude':
+    # As Claude Code 2.1.281: its built-in plugins, bundled skills, built-in skills and built-in commands
+    # load unless the generated settings turn them off; `--disable-slash-commands` withdraws every skill
+    # and the Skill tool; the init event comes only when a first user message arrives, and a message
+    # with shouldQuery false draws it and a zero-turn result without any turn.
     mcp_path = value('mcp-config')
+    settings = json.loads(Path(value('settings')).read_text()) if value('settings') else {}
     servers = json.loads(Path(mcp_path).read_text())['mcpServers'] if mcp_path else {}
     tools = [n for n in value('tools','Read').split(',') if n]
     denied = value('disallowedTools','').split(',')
     for name,entry in servers.items(): tools += ['mcp__'+name+'__'+n for n in server_tools(entry)]
     tools = [n for n in tools if n not in denied]
+    no_skills = P + 'disable-slash-commands' in args
+    if no_skills: tools = [n for n in tools if n != 'Skill']
     plugin = value('plugin-dir')
     skills = ['veldo-role:' + p.parent.name for p in Path(plugin).glob('skills/*/SKILL.md')] if plugin else []
+    overrides = settings.get('skillOverrides') or {}
+    engine_skills = ([] if settings.get('disableBundledSkills') else ['deep-research', 'code-review']) + [
+        n for n in ('design', 'doctor') if overrides.get(n) != 'off']
+    skills = [] if no_skills else skills + engine_skills
+    commands = [] if no_skills else ['clear', 'compact', 'init']
+    plugins = [{'name':'veldo-role','path':plugin,'source':'veldo-role@inline'}] if plugin else []
+    plugins += [{'name':n.split('@')[0],'path':'builtin','source':n} for n in ('agents-md@builtin', 'telemetry@builtin')
+                if (settings.get('enabledPlugins') or {}).get(n) is not False]
     init = complete_event({'type':'system','subtype':'init','tools':tools,'apiKeySource':'none',
                           'mcp_servers':[{'name':n,'status':'connected'} for n in servers],
-                          'skills':skills,'slash_commands':skills,
-                          'plugins':[{'name':'veldo-role','path':plugin}] if plugin else [],
+                          'skills':skills,'slash_commands':skills + commands,'plugins':plugins,
                           'model':value('model','fixture-model')})
-    if mcp_path and not plugin: init['plugins'] = []
+    # The launch set as computed, an empty list included (the format completion fills empty lists).
+    init.update(tools=tools, mcp_servers=[{'name':n,'status':'connected'} for n in servers], skills=skills,
+                slash_commands=skills + commands, plugins=plugins)
     fault = (markers / 'fault').read_text() if (markers / 'fault').exists() else ''
     if fault == 'skill': init['skills'].append('unlisted')
     if fault == 'tool': init['tools'].append('UnlistedTool')
@@ -106,18 +140,34 @@ if engine == 'claude':
     if value('debug-file'):
         Path(value('debug-file')).write_text('Role instruction discovery disabled' + chr(10))
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
+    reported = False
+    received = []
     for raw in sys.stdin:
         message = json.loads(raw)
+        received.append({k: message.get(k) for k in ('type', 'shouldQuery')} if message.get('type') == 'user' else
+                        {'type': message.get('type')})
+        if message.get('type') == 'user':
+            received[-1]['content'] = message['message']['content']
+        (markers / (str(os.getpid()) + '.input')).write_text(json.dumps(received))
         if message.get('type') == 'control_request':
+            listed = [{'name': n, 'description': n, 'argumentHint': ''} for n in skills if n.startswith('veldo-role:')]
+            listed += [{'name': n, 'description': n, 'argumentHint': '', 'builtin': True}
+                       for n in engine_skills + commands if not no_skills]
             emit({'type':'control_response','response':{'subtype':'success','request_id':message['request_id'],
-                  'response':{'account':{'subscriptionType':'Claude Team','apiProvider':'firstParty'},'pid':os.getpid()}}})
-            if mcp_path:
-                print(json.dumps(init), flush=True)
+                  'response':{'account':{'subscriptionType':'Claude Team','apiProvider':'firstParty'},'pid':os.getpid(),
+                              'commands': listed}}})
         elif message.get('type') == 'user':
+            if not reported:
+                reported = True
+                with (markers / (str(os.getpid()) + '.out')).open('a') as out: out.write(json.dumps(init) + chr(10))
+                print(json.dumps(init), flush=True)
+            if message.get('shouldQuery') is False:
+                emit({'type':'result','subtype':'success','is_error':False,'num_turns':0,'result':'',
+                      'usage':{'input_tokens':0,'output_tokens':0}})
+                continue
             packet = json.loads(message['message']['content'])
             break
     else: sys.exit(0)
-    if not mcp_path: emit(init)
 else:
     own['configuration'] = config
     own['mcp_tools'] = {n: [t for t in server_tools(e) if t in e.get('enabled_tools',[])]
@@ -188,7 +238,12 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   and b['digest'] != a['digest'] and bool(stale) and unauthorized == 'unauthorized:agent_owner'
                   and invalid == 'invalid_input:agent_mcp')
             for engine in ('claude','codex'):
-                if engine == 'codex': f.save(f.role(engine))
+                if engine == 'codex':
+                    f.save(f.role(engine))
+                    # The account profile's own MCP server, which exec never loads (--ignore-user-config): the
+                    # listing must read exactly the table exec is handed, never this profile's config.toml.
+                    profile = Path(f.HELPER.resolve('acct-x1', root=str(f.helper_root)))
+                    (profile / 'config.toml').write_text('[mcp_servers.profile_only]\ncommand = "/bin/false"\n')
                 work, record, own, error = run(engine, 'handoff-' + engine, {'role': engine})
                 check('handoff/' + engine, 'the Runner and receiver complete the accepted role',
                       record.get('state') == 'exited' and f.D.completed(record) and bool(own))
@@ -218,6 +273,17 @@ for step in (packet.get('payload') or {}).get('script',[]):
                                    if v.startswith('-'*2+'disallowedTools=')), [])
                     check('launch/push', 'PushNotification is offered and never disallowed',
                           'PushNotification' in init.get('tools',[]) and 'PushNotification' not in denied)
+                    pid = next((p.stem for p in markers.glob('*.json')
+                                if json.loads(p.read_text()).get('dispatch') == (work.dispatch_id if work else '')), '')
+                    received = json.loads((markers / (pid + '.input')).read_text()) if (markers / (pid + '.input')).is_file() else []
+                    users = [m for m in received if m['type'] == 'user']
+                    check('handoff/claude', 'an empty no-turn probe draws init before the prompt is written',
+                          [m['type'] for m in received] == ['control_request', 'user', 'user']
+                          and users[0] == {'type': 'user', 'shouldQuery': False, 'content': []}
+                          and users[1].get('shouldQuery') is None and bool(users[1].get('content')))
+                    check('handoff/claude', 'engine plugins, bundled and built-in skills stay off; built-in commands only typed',
+                          [p['name'] for p in init.get('plugins', [])] == ['veldo-role'] and init.get('skills') == ['veldo-role:inspect']
+                          and set(init.get('slash_commands', [])) - {'veldo-role:inspect'} == {'clear', 'compact', 'init'})
                     check('launch/instructions', 'both listed instruction sources reach generated Claude file',
                           own.get('instructions') == 'Use the listed role instruction.\n\n\nUse the project role instruction.\n')
                 else:
@@ -226,6 +292,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'fixture-model'
                           and cfg.get('features',{}).get('shell_tool') is True
                           and cfg.get('features',{}).get('multi_agent') is False)
+                    listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
+                    check('handoff/codex', "Codex's own listing names exactly the generated table, not the profile's",
+                          listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
                     check('launch/instructions', 'Codex gets both sources through developer instructions',
                           'project role instruction' in cfg.get('developer_instructions',''))
             # A prepared A is launched after B has been saved, so the receiver must not reread the head.

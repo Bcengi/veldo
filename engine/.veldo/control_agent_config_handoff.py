@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import selectors
 import subprocess
 import time
@@ -111,9 +112,7 @@ def tools_list(server):
                     raw = response.read().decode()
                 if not raw:
                     return {}
-                if raw.startswith('event:') or raw.startswith('data:'):
-                    raw = next(line[5:].strip() for line in raw.splitlines() if line.startswith('data:'))
-                return json.loads(raw)
+                return json.loads(_event_stream_data(raw))
         if 'result' not in exchange(init):
             raise Refused('unavailable_service:mcp_initialize:' + server['id'])
         exchange(ready)
@@ -136,6 +135,17 @@ def tools_list(server):
             proc.kill()
             proc.communicate()
             selector.close()
+
+
+def _event_stream_data(raw):
+    """The JSON body of a streamable HTTP answer: the body itself, or its first server-sent event's data field
+    (the MCP streamable HTTP transport's `event:`/`data:` frames)."""
+    if not re.match(r'(?:event|data):', raw):
+        return raw
+    found = re.search(r'(?m)^data:(.*)$', raw)
+    if found is None:
+        raise ValueError('no data field')
+    return found.group(1).strip()
 
 
 def inventory(capability, servers):
@@ -165,11 +175,16 @@ def expected(capability, inventory):
             'plugins': ['veldo-role'] if skills else [], 'model': revision['settings'].get('model')}
 
 
-def difference(event, wanted):
+def difference(event, wanted, builtin=()):
+    """The named stop for an init event whose launch set differs from `wanted` in either direction, else None.
+    `builtin` names the engine's own built-in commands (its initialize answer marks them): typed commands the
+    model is not offered, left out of the slash commands only; every skill the model is offered is compared."""
     for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):
         value = event.get(field)
         if not isinstance(value, list):
             return 'configuration_stop:' + field
+        if field == 'slash_commands':
+            value = [v for v in value if v not in set(builtin)]
         if field in ('mcp_servers', 'plugins'):
             if not all(isinstance(v, dict) and isinstance(v.get('name'), str) for v in value):
                 return 'configuration_stop:' + field
@@ -185,16 +200,35 @@ def difference(event, wanted):
     return None
 
 
+# What Claude Code 2.1.281 loads of its own beyond the qualified baseline, read from its init event with
+# nothing listed: its built-in plugins (on in every run), and, once `--disable-slash-commands` gives way to a
+# role's skills, its bundled skills (the disableBundledSkills setting removes them) and the built-in skills
+# that setting leaves (skillOverrides "off" hides each from the model and from typing). A role-bound run turns
+# every one off in its generated settings; one a later version adds reaches the init comparison and stops it.
+CLAUDE_ENGINE_PLUGINS = ('agents-md@builtin', 'telemetry@builtin')
+CLAUDE_ENGINE_SKILLS = ('design', 'doctor')
+SETTINGS_FILE = 'settings.json'
+
+
 def claude(extra, capability, inventory, config):
     revision = capability['revision']
     wanted = expected(capability, inventory)
     extra['expected'] = wanted
+    if SETTINGS_FILE not in extra['files']:
+        raise Refused('missing_evidence:engine_settings')
+    settings = json.loads(extra['files'][SETTINGS_FILE])
+    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,
+                    skillOverrides={name: 'off' for name in CLAUDE_ENGINE_SKILLS})
+    extra['files'][SETTINGS_FILE] = (json.dumps(settings, sort_keys=True) + '\n').encode()
     extra['argv'] += [OPTION + 'debug-file', str(config / 'role-debug.log')]
     if capability['instructions']:
         extra['files']['role-instructions.md'] = capability['instructions'].encode()
         extra['argv'] += [OPTION + 'append-system-prompt-file', str(config / 'role-instructions.md')]
-    if capability['skills']:
+    # `--disable-slash-commands` also withdraws the Skill tool, so a role granting it, or listing a skill, runs
+    # without it; the generated settings above keep the engine's own skills off either way.
+    if capability['skills'] or 'Skill' in revision['native_tools']:
         extra['argv'].remove(OPTION + 'disable-slash-commands')
+    if capability['skills']:
         extra['argv'] += [OPTION + 'plugin-dir', str(config / 'role-plugin')]
         extra['files']['role-plugin/.claude-plugin/plugin.json'] = json.dumps({'name': 'veldo-role'}).encode()
         for skill in capability['skills']:
@@ -231,29 +265,43 @@ def codex(configuration, capability, inventory, config):
     return files
 
 
-def codex_listing(bound, extra, environment):
-    """Codex's own view of the generated MCP table, before exec sees a prompt."""
+def codex_listing(bound, extra, environment, config):
+    """Codex's own view of the generated MCP table, before exec sees a prompt: `mcp list` for the server set
+    and `mcp get` for each server's enabled tools (the 0.154 list prints none), with exec's own overrides.
+    Neither subcommand takes exec's `--ignore-user-config`; both read CODEX_HOME's config.toml, so each runs
+    with CODEX_HOME an empty directory of this run's own (`listing-home` in `config`) and reads exactly the
+    table exec is handed, never the account profile's own servers. Neither needs the login."""
     args = extra['argv']
     overrides = []
     for i, arg in enumerate(args):
-        if arg == '-c':
+        if arg in ('-c', OPTION + 'enable', OPTION + 'disable'):
             overrides.extend(args[i:i + 2])
-    done = subprocess.run([bound['path'], OPTION + 'ignore-user-config', 'mcp', 'list', OPTION + 'json'] + overrides,
-                          env=dict(environment, **extra['environment'], **extra['secrets']),
-                          capture_output=True, timeout=20, text=True)
-    try:
-        listing = json.loads(done.stdout) if done.returncode == 0 else None
-    except ValueError:
-        listing = None
+    home = Path(config) / 'listing-home'
+    home.mkdir(mode=0o700)
+    env = dict(environment, **extra['environment'], **extra['secrets'])
+    env['CODEX_HOME'] = str(home)
+
+    def ask(command):
+        try:
+            done = subprocess.run([bound['path'], 'mcp'] + command + [OPTION + 'json'] + overrides, env=env,
+                                  cwd=str(home), capture_output=True, timeout=20, text=True, stdin=subprocess.DEVNULL)
+            return json.loads(done.stdout) if done.returncode == 0 else None
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return None
+    listing = ask(['list'])
     wanted = extra['expected']['mcp_servers']
-    if not isinstance(listing, list) or sorted(i.get('name', '') for i in listing) != wanted:
+    if (not isinstance(listing, list) or not all(isinstance(i, dict) for i in listing)
+            or sorted(i.get('name', '') for i in listing) != wanted):
         raise Refused('configuration_stop:mcp_servers')
-    if any(not i.get('enabled') for i in listing):
+    if any(i.get('enabled') is not True for i in listing):
         raise Refused('configuration_stop:mcp_servers')
     for item in listing:
+        server = ask(['get', item['name']])
         tools = [t.split('__', 2)[2] for t in extra['expected']['tools'] if t.startswith('mcp__' + item['name'] + '__')]
-        if sorted(item.get('enabled_tools') or []) != sorted(tools):
+        if (not isinstance(server, dict) or server.get('name') != item['name'] or server.get('enabled') is not True
+                or not isinstance(server.get('enabled_tools'), list) or sorted(server['enabled_tools']) != sorted(tools)):
             raise Refused('configuration_stop:mcp_tools')
+        item['enabled_tools'] = list(server['enabled_tools'])
     return listing
 
 

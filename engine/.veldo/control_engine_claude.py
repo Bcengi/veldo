@@ -1278,6 +1278,13 @@ SUBSCRIPTION_PROVIDER = 'firstParty'
 # subscriptions): Enterprise, Team, Max and Pro. Its default label for any other tier, "Claude API", is not one.
 SUBSCRIPTIONS = ('Claude Enterprise', 'Claude Team', 'Claude Max', 'Claude Pro')
 TOKEN_SOURCE = 'CLAUDE_CODE_OAUTH_TOKEN'
+# VELDO-0127: the capability probe of a role-bound run. The 2.1.281 binary reports its init event only once a
+# first user message reaches it (its engine yields system/init as it starts reading input), never for the
+# initialize request alone, so a prompt held until init is never released. Its stream JSON user message takes
+# shouldQuery false: the message is appended to the transcript without an assistant turn and merged into the
+# next user message that queries. With no content it adds nothing to that message; the binary answers it with
+# its init event (after the selected MCP servers have connected) and a zero-turn result, before any model request.
+PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None, 'shouldQuery': False}
 # The Anthropic profile store the binary reads when ANTHROPIC_CONFIG_DIR is unset (it is stripped):
 # XDG_CONFIG_HOME/anthropic, else HOME/.config/anthropic; the active profile named by its active_config
 # file, else `default`; a profile of either type below logs a run in ahead of the claude.ai login.
@@ -1552,6 +1559,8 @@ class Guard:
         self.released = False
         self.expected = None
         self.capabilities_confirmed = False
+        self.probed = False
+        self.builtin_commands = ()
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1561,11 +1570,17 @@ class Guard:
         return (json.dumps(request) + '\n').encode(), False
 
     def release(self):
-        """The prompt as the user message of stream JSON input, once, after a confirmed subscription login and
-        with no stop; None otherwise (and ever after)."""
-        if (not self.confirmed or self.stop is not None or self.prompt is None or self.released
-                or (self.expected is not None and not self.capabilities_confirmed)):
+        """The next input to write after a confirmed subscription login and with no stop, else None: for a
+        role-bound run (`expected` set, VELDO-0127) first the capability PROBE, once, and the prompt only after
+        the init event it draws matches; then the prompt as the user message of stream JSON input, once.
+        `released` is true once the prompt itself is returned, the input's last write."""
+        if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
             return None
+        if self.expected is not None and not self.capabilities_confirmed:
+            if self.probed:
+                return None
+            self.probed = True
+            return (json.dumps(PROBE) + '\n').encode()
         self.released = True
         message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
                    'parent_tool_use_id': None}
@@ -1607,6 +1622,12 @@ class Guard:
             return self._stopped('subscriptionType', subscription)
         if self.stop is None:
             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
+            # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
+            # from the model); the init comparison leaves only those out of the slash commands it compares.
+            commands = response.get('commands')
+            self.builtin_commands = tuple(sorted(
+                c['name'] for c in commands if isinstance(c, dict) and c.get('builtin') is True
+                and isinstance(c.get('name'), str))) if isinstance(commands, list) else ()
         return None
 
     def _line(self, line):
@@ -1623,7 +1644,7 @@ class Guard:
             return None
         if event.get('type') == 'system' and event.get('subtype') == 'init':
             if self.expected is not None:
-                problem = _capability_handoff().difference(event, self.expected)
+                problem = _capability_handoff().difference(event, self.expected, self.builtin_commands)
                 if problem:
                     self.stop = problem
                     return problem
