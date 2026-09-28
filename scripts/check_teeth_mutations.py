@@ -8988,12 +8988,33 @@ def cases():
     # unless the upgraded service carries the store's declarations to its installed bytes; a digest the file's
     # bytes do not have is never taken.
     upgrade('upgrade189-ownership-not-carried', 'control_service.py',
-            "            rebound = S.rebind_owners(conn, installed_engine(config))\n",
-            "            rebound = []  # defect: the declarations keep the previous engine's digests\n", 'switch/kill-points')
+            "            S.rebind_owners(conn, installed_engine(config), keep_previous=keep,\n",
+            "            (lambda *args, **kwargs: [])(conn, installed_engine(config), keep_previous=keep,"
+            "  # defect: the declarations keep the previous engine's digests\n", 'switch/kill-points')
     upgrade('upgrade189-rebind-any-digest', 'control_store.py',
             "                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]\n",
             "                if r[4] in installed and r[5] != installed[r[4]]]  # defect: any digest is taken\n",
             'switch/kill-points')
+    # The review of 2026-09-28: a restart that came up on the current engine (which rebound the declarations to its
+    # bytes) and then failed switches back with the previous engine's owned commands refused, unless the rebinding
+    # recorded the previous bindings and the switch back restores them, the store checking each file's bytes; and a
+    # committed upgrade keeps no record.
+    upgrade('upgrade189-no-ownership-restore', 'control_factory_setup_upgrade.py',
+            "        point(plan['log'], {'point': 'ownership_restore', 'outcome': restore_ownership(plan)})\n",
+            "        point(plan['log'], {'point': 'ownership_restore', 'outcome': 'restored'})"
+            "  # defect: the switch back skips the restore\n", 'switch/failed-after-start')
+    upgrade('upgrade189-rebind-not-recorded', 'control_store.py',
+            "        if keep_previous and rebound:\n            _record_previous(conn, rebound)\n",
+            "        if False:  # defect: the rebinding does not record the previous bindings\n"
+            "            _record_previous(conn, rebound)\n", 'switch/failed-after-start')
+    upgrade('upgrade189-restore-any-bytes', 'control_store.py',
+            "            if module_digest(module) != previous:\n",
+            "            if False:  # defect: the restore does not check the file has the previous bytes\n",
+            'ownership/restore-differs')
+    upgrade('upgrade189-commit-not-sent', 'control_factory_setup_upgrade.py',
+            "        if active and commit is not None:\n",
+            "        if False:  # defect: the committed upgrade leaves the previous bindings recorded\n",
+            'ownership/committed')
 
     # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
     # criterion's declared falsifier first, then the threat model's other routes.

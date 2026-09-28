@@ -201,6 +201,10 @@ ASK_SECONDS = 7 * 86400
 ACCEPT_SECONDS = 0.25
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
+# VELDO-0189: the previous engine an upgrade keeps beside `bin` until its restart succeeded
+# (control_factory_setup_upgrade.STAGE), and the one request that commits its ownership record.
+PREVIOUS_ENGINE = 'bin.upgrade'
+OWNERSHIP_COMMIT = 'ownership_commit'
 DEFAULT_KEY_ROOT = '/var/lib/veldo/keys'
 JOURNAL_KEY = 'journal'
 EXIT_LOCK_HELD = 75
@@ -231,6 +235,7 @@ NAMED = {
     'read_only_handle': 'unavailable_service', 'incomplete_transaction': 'unknown_outcome',
     'unowned': 'stale_subject', 'not_owner': 'missing_authority', 'stale_generation': 'stale_subject',
     'capability': 'missing_authority', 'parked': 'stale_subject', 'ownership_uncertain': 'unknown_outcome',
+    'ownership_restore_differs': 'stale_subject',
 }
 
 
@@ -1117,6 +1122,8 @@ class Service:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
+            elif isinstance(packet, dict) and packet.get('operation') == OWNERSHIP_COMMIT and 'command' not in packet:
+                result = self.commit_ownership()
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
@@ -1355,6 +1362,19 @@ class Service:
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
                 'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status()}
 
+    def commit_ownership(self):
+        """VELDO-0189: the upgrade committed (setup removed the previous engine after this service answered),
+        so the store's record of the previous bindings is dropped; refused while a previous engine is still
+        installed beside this one, which a switch back could still need."""
+        previous = previous_engine(self.config)
+        if previous is None:
+            raise Refused('invalid_input:ownership:not_installed', 'this service is not its installation\'s executable')
+        if os.path.lexists(previous):
+            raise Refused('invalid_input:ownership:previous_engine_installed', previous)
+        dropped = S.drop_previous_owners(self.conn, observe=lambda rows: observe_ownership(
+            self.config, 'ownership_commit', rows))
+        return {'ok': True, 'reason': OWNERSHIP_COMMIT, 'dropped': len(dropped)}
+
     def pending(self):
         claims = sum(1 for (data,) in self.conn.execute("SELECT data FROM entities WHERE kind='claim'")
                      if json.loads(data).get('state') not in (None, 'released'))
@@ -1371,7 +1391,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') in ('channel', 'api', 'loop'):
+        if observation.get('kind') in ('channel', 'api', 'loop', 'ownership'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
@@ -1382,9 +1402,23 @@ class Service:
         self._log(observation)
 
     def _log(self, observation):
-        fd = os.open(self.config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
-        with os.fdopen(fd, 'a') as handle:
-            handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
+        append_observation(self.config, observation)
+
+
+def append_observation(config, observation):
+    """One line of the installation's observation log."""
+    fd = os.open(config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
+    with os.fdopen(fd, 'a') as handle:
+        handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
+
+
+def observe_ownership(config, operation, rows):
+    """VELDO-0189: a rebinding, restore or commit of the store's ownership declarations, observed inside its
+    store transaction before the commit, so a change that lands always has its line."""
+    append_observation(config, {'kind': 'ownership', 'operation': operation, 'at': time.time(),
+                                'domain_uuid': config.get('domain_uuid'), 'bindings': [
+                                    {'selector': r[0], 'value': r[1], 'module': r[2], 'previous': r[3], 'digest': r[4]}
+                                    for r in rows]})
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1821,6 +1855,35 @@ def installed_engine(config):
             if isinstance(name, str) and isinstance(value, str) and os.path.basename(name) == name}
 
 
+def previous_engine(config):
+    """The directory an upgrade keeps the previous engine in beside this installed engine (VELDO-0189), or
+    None when this module is not the installation record's executable."""
+    executable = config.get('executable')
+    if not isinstance(executable, str) or os.path.realpath(__file__) != os.path.realpath(executable):
+        return None
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(executable))), PREVIOUS_ENGINE)
+
+
+def restore_owners(config_path):
+    """veldo's switch back (VELDO-0189), run from the new engine's directory before the previous engine
+    starts: every declaration this engine's rebinding moved is bound again to the previous engine's bytes,
+    the store checking that each file has them. Takes the lock, so it runs only while no service does."""
+    config = load_config(config_path)
+    lock = acquire(config['lock'], config)
+    try:
+        conn = S.open_store(config['store_path'])
+        try:
+            try:
+                restored = S.restore_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_restore', rows))
+            except S.StoreRefused as error:
+                raise Refused(error.code, error.detail)
+        finally:
+            conn.close()
+    finally:
+        os.close(lock)
+    return {'restored': len(restored)}
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
@@ -1830,14 +1893,16 @@ def serve(config_path):
         conn = S.open_store(config['store_path'])
         try:
             # VELDO-0189: an upgraded engine's owning modules carry the store's ownership declarations
-            # to their installed bytes before anything attaches.
-            rebound = S.rebind_owners(conn, installed_engine(config))
+            # to their installed bytes before anything attaches, recording the previous bindings while the
+            # previous engine is still installed beside this one (a switch back restores them), and a record
+            # no previous engine remains for is dropped.
+            previous = previous_engine(config)
+            keep = previous is not None and os.path.lexists(previous)
+            S.rebind_owners(conn, installed_engine(config), keep_previous=keep,
+                            observe=lambda rows: observe_ownership(config, 'ownership_rebind', rows))
+            if previous is not None and not keep:
+                S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
-            if rebound:
-                service._log({'kind': 'ownership', 'operation': 'ownership_rebind', 'at': time.time(),
-                              'domain_uuid': service.domain, 'rebound': [
-                                  {'selector': r[0], 'value': r[1], 'module': r[2], 'previous': r[3], 'digest': r[4]}
-                                  for r in rebound]})
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
@@ -1916,6 +1981,11 @@ def main(argv=None):
             if len(argv) != 2:
                 raise Refused('invalid_input:usage', 'serve <installed service.json>')
             serve(argv[1])
+            return 0
+        if argv[:1] == ['restore-owners']:
+            if len(argv) != 2:
+                raise Refused('invalid_input:usage', 'restore-owners <installed service.json>')
+            print(json.dumps(restore_owners(argv[1]), sort_keys=True))
             return 0
         import argparse
         parser = argparse.ArgumentParser(prog='control_service.py', description=__doc__.split('\n\n')[0])

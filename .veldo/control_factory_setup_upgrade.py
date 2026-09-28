@@ -46,6 +46,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import time
 
 STAGE = 'bin.upgrade'
@@ -55,6 +56,7 @@ LOG = 'engine-upgrade.jsonl'
 AT_FDCWD = -100
 RENAME_EXCHANGE = 2
 ANSWER_SECONDS = 30
+RESTORE_SECONDS = 60
 
 
 class Refused(Exception):
@@ -196,7 +198,8 @@ def inspect(laid, record, record_path, api_unit=None):
             'recorded_template': recorded_template, 'changed': changed, 'added': added, 'removed': removed,
             'previous_digest': engine_digest(recorded, recorded_template),
             'current_digest': engine_digest(current, template), 'writes': writes, 'restart_due': due,
-            'fixed': laid['fixed'], 'unit': laid['unit']}
+            'fixed': laid['fixed'], 'unit': laid['unit'], 'python': laid['config'].get('python'),
+            'config_path': str(record_path)}
 
 
 def switched_without_restart(log):
@@ -282,8 +285,10 @@ def announce(plan, active, running):
     return '%s; %s.' % (head, tail)
 
 
-def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream):
-    """Carry the inspected plan out. Returns the engine_upgrade step of setup's answer."""
+def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, commit=None):
+    """Carry the inspected plan out. Returns the engine_upgrade step of setup's answer. `commit()` asks the
+    running service to drop its record of the previous ownership bindings once the previous engine is
+    removed (True when it did)."""
     unit = plan['unit']
     report = {'step': 'engine_upgrade', 'previous': plan['previous_digest'], 'current': plan['current_digest'],
               'changed': plan['changed'], 'added': plan['added'], 'removed': plan['removed']}
@@ -345,6 +350,10 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream):
     if os.path.isdir(plan['stage']):
         remove_engine_directory(plan['stage'])
         point(log, {'point': 'removed_previous'})
+        if active and commit is not None:
+            # The upgrade is committed: the service running the current engine drops the previous
+            # bindings its rebinding recorded (the store is written by the engine it binds, never here).
+            point(log, {'point': 'committed', 'outcome': 'dropped' if commit() else 'not_answered'})
     point(log, {'point': 'done'})
     report['restart'] = restart
     if restart == 'not_through_unit':
@@ -375,6 +384,29 @@ def switch_back(plan, replaced, runner, reason, restart_again, answers):
         runner.run(['daemon-reload'])
     point(plan['log'], {'point': 'switched_back', 'reason': reason})
     if restart_again:
+        # The current engine may have served before it failed, rebinding the store's ownership declarations
+        # to its bytes: with the service stopped, its own restore entry point (from its directory, now
+        # beside bin) binds them to the previous engine's bytes again before the previous engine starts.
+        runner.run(['stop', plan['unit']])
+        point(plan['log'], {'point': 'ownership_restore', 'outcome': restore_ownership(plan)})
         code, _out, _err = runner.run(['restart', plan['unit']])
         point(plan['log'], {'point': 'restart', 'outcome': 'previous_engine_restarted' if not code and wait(answers)
                             else 'previous_engine_failed'})
+
+
+def restore_ownership(plan):
+    """Run the current engine's restore-owners from its directory beside bin over the installation's
+    configuration: 'restored' or the refusal it named."""
+    python = plan.get('python') or 'python3'
+    try:
+        done = subprocess.run([python, '-B', os.path.join(plan['stage'], 'control_service.py'), 'restore-owners',
+                               plan['config_path']], capture_output=True, text=True, timeout=RESTORE_SECONDS,
+                              stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return 'failed:' + type(exc).__name__
+    if done.returncode == 0:
+        return 'restored'
+    try:
+        return 'refused:' + str(json.loads(done.stderr.strip().splitlines()[-1]).get('refusal'))
+    except (ValueError, IndexError, AttributeError):
+        return 'failed:exit_%d' % done.returncode

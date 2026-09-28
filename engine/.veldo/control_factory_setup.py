@@ -956,22 +956,27 @@ def inspect_engine(plan, installed, home, unit_dir, api_unit):
     return engine
 
 
-def service_answers(plan):
-    """A check that the running authority service answers an inspect over its socket, signed by the owner."""
+def service_request(plan, packet):
+    """A request to the running authority service over its socket, signed by the owner: True when it was
+    accepted and its result is ok."""
     CC, CE, EL, ACT = organ('control_client'), organ('control_enrollment'), organ('control_eligibility'), organ(
         'control_channel_activation')
     workspace, owner_sign = plan['workspace'], ACT.ssh_signer(plan['owner_key'])
     trust, binding = EL.load_host_trust(plan['host_trust']), CE.read_binding(workspace)
     verify = trust.verifier(binding.get('enrolled_by'), workspace)
 
-    def answers():
+    def request():
         try:
-            answer = CC.send(workspace, {'operation': 'inspect', 'entity_ids': []}, CE, verify, owner_sign,
-                             trust.host_identity, timeout=10)
+            answer = CC.send(workspace, dict(packet), CE, verify, owner_sign, trust.host_identity, timeout=10)
         except Exception:
             return False
-        return bool(answer.get('accepted'))
-    return answers
+        return bool(answer.get('accepted')) and (answer.get('result') or {}).get('ok') is not False
+    return request
+
+
+def service_answers(plan):
+    """A check that the running authority service answers an inspect over its socket, signed by the owner."""
+    return service_request(plan, {'operation': 'inspect', 'entity_ids': []})
 
 
 def upgrade_engine(plan, engine, runner, running):
@@ -979,7 +984,8 @@ def upgrade_engine(plan, engine, runner, running):
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),
                                modes=CS.fixed_mode, bin_mode=CS.BIN_MODE,
-                               is_active=lambda unit: API.service_running(runner, unit), stream=sys.stderr))
+                               is_active=lambda unit: API.service_running(runner, unit), stream=sys.stderr,
+                               commit=service_request(plan, {'operation': CS.OWNERSHIP_COMMIT})))
 
 
 def main(argv=None, **overrides):

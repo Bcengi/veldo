@@ -54,8 +54,9 @@ def _v189_suite():
     }
     ROWS = ('install/assets', 'upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'upgrade/removed-module',
             'upgrade/census', 'upgrade/refused-by-name', 'switch/kill-points', 'switch/failed-restart',
-            'kept/owner-data', 'announce/before-first-write', 'restart/rules', 'second-run/changes-nothing')
-    IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR = ROWS
+            'kept/owner-data', 'announce/before-first-write', 'restart/rules', 'second-run/changes-nothing',
+            'switch/failed-after-start', 'ownership/restore-differs', 'ownership/committed')
+    IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC = ROWS
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -186,11 +187,13 @@ def _v189_suite():
         """A stand-in for the owner's systemd user manager: start runs a unit's ExecStart (Type=notify waits
         for READY=1) and then every unit its .wants links; stop stops every unit bound to or part of it
         first, with SIGTERM; restart is stop then start, and fails once (the unit left stopped) while
-        `fail_restart` is set; show reports the state. `calls` is the invocation log of what setup asked
+        `fail_restart` is set: before the start, or with `fail_after_start` after the unit came up and was
+        stopped again (`came_up` holds that process's pid); show reports the state. `calls` is the invocation log of what setup asked
         for, the suite's own lifecycle actions calling start and stop directly and never appearing in it."""
 
         def __init__(self, unit_dir):
             self.unit_dir, self.procs, self.calls, self.fail_restart = Path(unit_dir), {}, [], 0
+            self.fail_after_start, self.came_up = False, []
             self.lock = threading.Lock()
 
         def _field(self, unit, key):
@@ -226,6 +229,11 @@ def _v189_suite():
                     self.stop(unit)
                     if self.fail_restart:
                         self.fail_restart -= 1
+                        if self.fail_after_start:
+                            # The reviewer's case: the unit comes up on what is installed, then stops.
+                            code, _out, _err = self.start(unit)
+                            self.came_up.append(self.pid(unit) if code == 0 else None)
+                            self.stop(unit)
                         return 1, '', 'Job for %s failed (the suite stand-in fails this restart)' % unit
                     return self.start(unit)
                 return 0, '', ''
@@ -485,6 +493,24 @@ def _v189_suite():
 
     def journal(store):
         return read_store(store, lambda c: S.export_journal(c))
+
+    def recorded_previous(host):
+        """The store's record of previous ownership bindings (VELDO-0189), or 'no record kept' when the store
+        keeps none."""
+        lister = getattr(S, 'previous_owners', None)
+        return read_store(host.store, lister) if lister is not None else 'no record kept'
+
+    def ownership_observations(host):
+        """The ownership lines of the installation's observation log."""
+        path = Path(host.record()['observations'])
+        lines = [json.loads(line) for line in path.read_text().splitlines() if line.strip()] if path.is_file() else []
+        return [line for line in lines if line.get('kind') == 'ownership']
+
+    def channel_of(host):
+        """The running service's channel status from an inspect over its socket."""
+        answer = host.send({'operation': 'inspect', 'entity_ids': []})
+        channel = (answer.get('result') or {}).get('channel') or {}
+        return {k: channel.get(k) for k in ('available', 'refusal') if k in channel} or {'answer': answer.get('reason')}
 
     def entity_rows(store):
         return read_store(store, lambda c: [list(r) for r in c.execute(
@@ -785,8 +811,10 @@ def _v189_suite():
             rel = '.veldo/control_factory_setup_upgrade.py'
             check(IA, rel + ' installed by the scaffold, not claimed as validator substrate',
                   rel in scaffold._FILES and rel not in scaffold.REQUIRED_SUBSTRATE)
+            check(IA, 'the service names the previous engine directory the upgrade keeps beside bin [%s %s]'
+                  % (getattr(CS, 'PREVIOUS_ENGINE', None), UP.STAGE), getattr(CS, 'PREVIOUS_ENGINE', None) == UP.STAGE)
             for rel in ('.veldo/control_factory_setup.py', '.veldo/control_factory_setup_upgrade.py',
-                        '.veldo/control_service.py', '.veldo/init_scaffold.py'):
+                        '.veldo/control_service.py', '.veldo/control_store.py', '.veldo/init_scaffold.py'):
                 engine = ROOT / 'engine' / rel
                 check(IA, rel + ' engine copy identical', engine.is_file() and engine.read_bytes() == (ROOT / rel).read_bytes())
 
@@ -802,7 +830,7 @@ def _v189_suite():
         current_template = fresh.record()['template']
 
         # AC1 and AC3 and AC4, over each older engine's host.
-        hosts = {}
+        hosts, laid_down = {}, {}
         for commit, row in zip(OLDER, (U8, U9)):
             old = older_engine(commit)
             host = Host('h' + commit)
@@ -812,6 +840,7 @@ def _v189_suite():
                     check(name, 'the setup of %s laid a host down [%s]' % (commit, laid.get('reason')), False)
                 continue
             hosts[commit] = host
+            laid_down[commit] = save(host.root, host.install, host.units, host.trust.parent)
             active = commit == OLDER[1]
             if active:
                 # The 971186ac host upgrades with its service running through its unit, on its own engine; the
@@ -975,7 +1004,7 @@ def _v189_suite():
         kill = Host('kill')
         code, laid = kill.setup(module=old8) if old8 else (None, {})
         if code != 0:
-            for name in (KP, FR, RF):
+            for name in (KP, FR, RF, FA, OC):
                 check(name, 'the setup of %s laid the kill host down [%s]' % (OLDER[0], laid.get('reason')), False)
             raise StopIteration
         owner_sets(kill)
@@ -1000,10 +1029,23 @@ def _v189_suite():
             ts.set('ready')
             kill.manager.start(kill.unit)
 
-        with section(KP):
+        with section(KP, OC):
             fresh_start()
             whole = killed(0)
             points = [json.loads(line).get('point') for line in log.read_text().splitlines()] if log.is_file() else []
+            # AC2: the upgrade committed (its restart answered, the previous engine removed), and its service had
+            # recorded the previous bindings its rebinding replaced while the previous engine was beside bin.
+            seen = ownership_observations(kill)
+            rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
+            commits = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_commit']
+            check(OC, 'the upgraded service rebound the declarations of the owning modules the upgrade changed [%s]'
+                  % [len(b or []) for b in rebinds], len(rebinds) == 1 and rebinds[0])
+            check(OC, 'the commit dropped exactly the previous bindings that rebinding recorded [%s]'
+                  % [len(b or []) for b in commits], commits == rebinds[:1] and commits)
+            check(OC, 'the step log records the commit after the previous engine was removed [%s]' % points[-4:],
+                  points[-3:] == ['removed_previous', 'committed', 'done'])
+            check(OC, 'a committed upgrade has no recorded previous bindings [%s]' % recorded_previous(kill),
+                  recorded_previous(kill) == [])
             check(KP, 'an upgrade run to its end names its write points in its step log [%s %s]' % (whole, points),
                   whole == 0 and 'exchanged' in points and points[-1:] == ['done'])
             exchanged = points.index('exchanged') + 1 if 'exchanged' in points else None
@@ -1074,6 +1116,117 @@ def _v189_suite():
                 conn.close()
             check(KP, 'a declaration is not rebound to a digest its file\'s bytes do not have [%s]' % again,
                   again == [] and after == owners)
+
+        # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
+        # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
+        # own restore before the previous engine starts, so its channel and every owned command are available.
+        def failed_after_start(host, saved, label):
+            host.manager.stop_all()
+            restore(saved)
+            ts.set('ready')
+            host.manager.start(host.unit)
+            old = named(host.home / 'bin')
+            old_record = host.record_path.read_bytes()
+            before = channel_of(host)
+            check(FA, '%s: before the upgrade the previous engine\'s channel is available [%s]' % (label, before),
+                  before.get('available') is True)
+            declared = read_store(host.store, S.entity_owners)
+            differs = [r for r in declared if os.path.dirname(r[4]) == str(host.home / 'bin')
+                       and host.record()['closure'].get(os.path.basename(r[4])) != current.get(os.path.basename(r[4]))]
+            host.manager.fail_restart, host.manager.fail_after_start, host.manager.came_up = 1, True, []
+            calls = len(host.manager.calls)
+            try:
+                code, report = host.setup()
+            finally:
+                host.manager.fail_restart, host.manager.fail_after_start = 0, False
+            ran = host.manager.calls[calls:]
+            check(FA, '%s: setup refused by name after the restart came up and failed [%s %s; came up %s]'
+                  % (label, code, report.get('reason'), host.manager.came_up),
+                  code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_start'
+                  and len(host.manager.came_up) == 1 and host.manager.came_up[0])
+            check(FA, '%s: the previous engine is back in bin and its record restored byte for byte' % label,
+                  named(host.home / 'bin') == old and host.record_path.read_bytes() == old_record)
+            seen = ownership_observations(host)
+            rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
+            restores = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_restore']
+            if differs:
+                check(FA, '%s: the current engine came up and rebound the %d declarations of the owning modules it '
+                      'changed, and the switch back restored exactly those [%s %s]'
+                      % (label, len(differs), [len(b or []) for b in rebinds], [len(b or []) for b in restores]),
+                      len(rebinds) == 1 and len(rebinds[0] or []) == len(differs) and restores == rebinds)
+            steps = [json.loads(line) for line in (host.home / 'state' / UP.LOG).read_text().splitlines()]
+            check(FA, '%s: the step log records the switch back and the restore before the previous engine\'s restart '
+                  '[%s]' % (label, [(s.get('point'), s.get('outcome')) for s in steps][-4:]),
+                  [(s.get('point'), s.get('outcome')) for s in steps][-3:]
+                  == [('switched_back', None), ('ownership_restore', 'restored'), ('restart', 'previous_engine_restarted')])
+            check(FA, '%s: the service was restarted once more, on the previous engine [%s]'
+                  % (label, [c for c in ran if c[0] in ('start', 'stop', 'restart')]),
+                  [c for c in ran if c[0] == 'restart'] == [['restart', host.unit]] * 2)
+            after = channel_of(host)
+            check(FA, '%s: the previous engine\'s channel is available [%s]' % (label, after),
+                  after.get('available') is True and not after.get('refusal'))
+            owners = read_store(host.store, S.entity_owners)
+            wrong = [(r[1], os.path.basename(r[4])) for r in owners if S.module_digest(r[4]) != r[5]]
+            check(FA, '%s: every owned command is available: each of the %d declarations binds the bytes its file has '
+                  'now, the previous engine\'s [%s]' % (label, len(owners), wrong[:3]), owners and not wrong)
+            check(FA, '%s: no previous binding is left recorded [%s]' % (label, recorded_previous(host)),
+                  recorded_previous(host) == [])
+            host.manager.stop_all()
+
+        with section(FA):
+            failed_after_start(kill, saved, OLDER[0])
+            if OLDER[1] in laid_down:
+                failed_after_start(hosts[OLDER[1]], laid_down[OLDER[1]], OLDER[1])
+            else:
+                check(FA, 'the %s host was laid down' % OLDER[1], False)
+
+        # A restore whose previous file bytes do not match is refused by name and leaves the new bindings; each
+        # step's observation is written before its commit.
+        with section(OD):
+            parts = ('rebind_owners', 'restore_owners', 'previous_owners')
+            check(OD, 'the store rebinds keeping the previous bindings, restores them and lists them [%s]'
+                  % [n for n in parts if not hasattr(S, n)], all(hasattr(S, n) for n in parts))
+            if all(hasattr(S, n) for n in parts):
+                scratch = base / 'restore-differs'
+                scratch.mkdir()
+                module = Path(os.path.realpath(str(scratch))) / 'owning_module.py'
+                module.write_bytes(b'# the previous engine\n')
+                store = str(scratch / 'owners.sqlite3')
+                conn = S.open_store(store)
+                committed = []
+
+                def seen_by_another(rows):
+                    committed.append(read_store(store, S.entity_owners)[0][5])
+                try:
+                    S.declare_owners(conn, 'v189-owner', kinds={'v189_owned': ['v189_write']}, module=str(module))
+                    previous = S.module_digest(str(module))
+                    module.write_bytes(b'# the current engine\n')
+                    new = S.module_digest(str(module))
+                    rebound = S.rebind_owners(conn, {str(module): new}, keep_previous=True, observe=seen_by_another)
+                    record = S.previous_owners(conn)
+                    check(OD, 'the rebinding recorded the previous binding in its transaction and was observed before its '
+                          'commit [%s %s]' % (record, committed),
+                          rebound and record == [('kind', 'v189_owned', str(module), previous, new)]
+                          and committed == [previous] and S.entity_owners(conn)[0][5] == new)
+                    module.write_bytes(b'# neither engine\n')
+                    try:
+                        S.restore_owners(conn, observe=seen_by_another)
+                        refused = None
+                    except S.StoreRefused as exc:
+                        refused = (exc.code, exc.detail)
+                    check(OD, 'a restore whose file does not have the previous bytes is refused by name [%s]' % (refused,),
+                          refused is not None and refused[0] == 'ownership_restore_differs' and str(module) in refused[1])
+                    check(OD, 'the refused restore leaves the new bindings and the record [%s]' % S.previous_owners(conn),
+                          S.entity_owners(conn)[0][5] == new and S.previous_owners(conn) == record
+                          and len(committed) == 1)
+                    module.write_bytes(b'# the previous engine\n')
+                    restored = S.restore_owners(conn, observe=seen_by_another)
+                    check(OD, 'with the previous bytes back the restore binds the previous digest, clears the record and is '
+                          'observed before its commit [%s %s]' % (restored, committed),
+                          restored == record and S.entity_owners(conn)[0][5] == previous and S.previous_owners(conn) == []
+                          and committed == [previous, new])
+                finally:
+                    conn.close()
 
         # AC2: a restart that fails puts the previous engine back and the service answering on it.
         with section(FR):
