@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -720 +720 @@
+-            table['env_vars'] = forwarded
++            table['env'] = dict(literals, **{n: secrets[n] for n in forwarded})

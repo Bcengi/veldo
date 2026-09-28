@@ -1,0 +1,164 @@
+{
+ "by_assertion": true,
+ "commit": "7851ae9bef69c2d9d8e54a0b95a823110113b1ef",
+ "details": [
+  "VELDO-0158 delivery/claude-private-file detail: the generated MCP configuration holds exactly the selected servers, each credential value included where its definition names it [[]]",
+  "VELDO-0158 delivery/claude-private-file detail: the engine's own environment and command line hold no value; each server received its credential in its environment from the file",
+  "VELDO-0158 delivery/codex-environment detail: the generated mcp_servers table names each stdio credential by its variable in env_vars and the Atlassian bearer token by bearer_token_env_var, literals only in env [{}]",
+  "VELDO-0158 delivery/codex-environment detail: the engine environment carries each value under that name",
+  "VELDO-0158 delivery/codex-environment detail: each stdio server received its credential through env_vars",
+  "VELDO-0158 delivery/command-lines detail: claude: every process of the account was read while the run held [210 read, ready True]",
+  "VELDO-0158 delivery/command-lines detail: claude: the environments holding a value are its servers' alone [[], wanted [], inside []]",
+  "VELDO-0158 delivery/command-lines detail: codex: every process of the account was read while the run held [210 read, ready True]",
+  "VELDO-0158 delivery/command-lines detail: codex: the environments holding a value are its servers' and its engine's, all inside the run's own group [[], wanted [3875799], inside []]",
+  "VELDO-0158 delivery/command-lines detail: every keystore lookup carried the reference alone, never a value",
+  "VELDO-0158 delivery/own-server-only detail: claude: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN",
+  "VELDO-0158 delivery/own-server-only detail: codex: the tracker server holds none of the notes credential and the notes server none of the tracker's, though it asks for TRACKER_TOKEN",
+  "VELDO-0158 delivery/own-server-only detail: the keystore was asked only for the selected servers' credentials [0 lookups]",
+  "VELDO-0158 delivery/not-in-packet-contract-journal detail: the contracts and dispatch records name the selected revisions and hold no value, though both runs' servers received it [0 delivered]",
+  "VELDO-0158 delivery/private-dir-removed detail: the Claude Code configuration file the engine read, holding the values, is gone",
+  "VELDO-0158 delivery/report detail: claude: the credentials event names each revision, credential id and its route [{}]",
+  "VELDO-0158 delivery/report detail: codex: the credentials event names each revision, credential id and its route [{}]",
+  "VELDO-0158 refusal/keystore-locked detail: the dispatch is refused as credential_unavailable:tracker-token [exited None]",
+  "VELDO-0158 refusal/keystore-locked detail: the keystore was asked for that reference and no engine process was started [0 calls]",
+  "VELDO-0158 refusal/keystore-locked detail: the refusal names the selected revision, the credential and the reason, never a value [None]",
+  "VELDO-0158 refusal/keystore-unreachable detail: the dispatch is refused as credential_unavailable:tracker-token [exited None]",
+  "VELDO-0158 refusal/keystore-unreachable detail: the keystore was asked for that reference and no engine process was started [0 calls]",
+  "VELDO-0158 refusal/keystore-unreachable detail: the refusal names the selected revision, the credential and the reason, never a value [None]",
+  "VELDO-0158 refusal/reference-not-found detail: the dispatch is refused as credential_unavailable:gone-token [exited None]",
+  "VELDO-0158 refusal/reference-not-found detail: the keystore was asked for that reference and no engine process was started [0 calls]",
+  "VELDO-0158 refusal/reference-not-found detail: the refusal names the selected revision, the credential and the reason, never a value [None]",
+  "VELDO-0158 refusal/no-credential-launches detail: with the keystore still locked, a run whose configuration needs no credential launches normally with its server [exited None]",
+  "VELDO-0158 redaction/claude-keystore-value detail: the run printed the keystore values alone, inside a command's output and on its error stream [{'alone': False, 'command output': False, 'error stream': False}]",
+  "VELDO-0158 redaction/claude-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [[], 6 lines]",
+  "VELDO-0158 redaction/claude-keystore-value detail: each such line's redaction field names the kind [0 lines]",
+  "VELDO-0158 redaction/codex-keystore-value detail: the run printed the keystore values alone, inside a command's output and on its error stream [{'alone': False, 'command output': False, 'error stream': False}]",
+  "VELDO-0158 redaction/codex-keystore-value detail: every occurrence is replaced by the marker naming its kind and no line holds any part of either value [[], 5 lines]",
+  "VELDO-0158 redaction/codex-keystore-value detail: each such line's redaction field names the kind [0 lines]",
+  "VELDO-0158 redaction/per-run-set detail: a run selecting only the other server exited, its own value replaced [exited]",
+  "VELDO-0158 format/fake-lines detail: every event line the fakes printed is one of the binaries' own schemas with its required fields [19 lines, []]"
+ ],
+ "failed_rows": [
+  "VELDO-0158 delivery/claude-private-file",
+  "VELDO-0158 delivery/codex-environment",
+  "VELDO-0158 delivery/command-lines",
+  "VELDO-0158 delivery/own-server-only",
+  "VELDO-0158 delivery/not-in-packet-contract-journal",
+  "VELDO-0158 delivery/private-dir-removed",
+  "VELDO-0158 delivery/report",
+  "VELDO-0158 refusal/keystore-locked",
+  "VELDO-0158 refusal/keystore-unreachable",
+  "VELDO-0158 refusal/reference-not-found",
+  "VELDO-0158 refusal/no-credential-launches",
+  "VELDO-0158 redaction/claude-keystore-value",
+  "VELDO-0158 redaction/codex-keystore-value",
+  "VELDO-0158 redaction/per-run-set",
+  "VELDO-0158 format/fake-lines"
+ ],
+ "modules": {
+  ".veldo/control_credential.py": {
+   "at_commit": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95",
+   "now": "4c7065e26e676ce344c3418b82f8f07eb148efa69d0f9827d1c90976e98d2d95"
+  },
+  ".veldo/control_credential_delivery.py": {
+   "at_commit": null,
+   "now": "874e652cad42f95dda5ee3f3a5927630203463a22ea7708d4437aca4e3788b0e"
+  },
+  ".veldo/control_credential_keystore.py": {
+   "at_commit": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294",
+   "now": "009c19b2624fb88b8e809639f32871f63c64b61dc976085a2aa9099d0036a294"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "7d7494c368d07a33d6734cb3f9c5ac9a551218a5e80b6358143984f6ff73607d",
+   "now": "17d82ed47515637855c80aeb1fa748932811495032a10a414eb79abf926b24a7"
+  },
+  ".veldo/control_engine_codex.py": {
+   "at_commit": "c7a1d9a71fc9a1e589d694939f0cc469eedfbad03e2b1a6a2dca7246f2081742",
+   "now": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "9f83b8e8756b5361bd07b0081b92a7a89d1a54397e444ac192a59fab2a676e67",
+   "now": "bd38dc03e16e536232362457fd3bf034bf16975ff9f21d3226c56bbf9db51ef9"
+  },
+  ".veldo/secretref.py": {
+   "at_commit": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3",
+   "now": "9557b11754c3f24bfd4ebbc6b09f27c702e1f475ba7540018f3a966e3cf82af3"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0158 delivery/claude-private-file",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/codex-environment",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/command-lines",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/own-server-only",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/not-in-packet-contract-journal",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/private-dir-removed",
+   false
+  ],
+  [
+   "VELDO-0158 delivery/report",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/keystore-locked",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/keystore-unreachable",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/reference-not-found",
+   false
+  ],
+  [
+   "VELDO-0158 refusal/no-credential-launches",
+   false
+  ],
+  [
+   "VELDO-0158 redaction/claude-keystore-value",
+   false
+  ],
+  [
+   "VELDO-0158 redaction/codex-keystore-value",
+   false
+  ],
+  [
+   "VELDO-0158 redaction/per-run-set",
+   false
+  ],
+  [
+   "VELDO-0158 fixture/route-set",
+   true
+  ],
+  [
+   "VELDO-0158 fixture/control-word",
+   true
+  ],
+  [
+   "VELDO-0158 format/fake-lines",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.993,
+ "spec_id": "VELDO-0158",
+ "suite": "scripts/suites/85_veldo_0158_credential_delivery.py",
+ "tree": "git archive 7851ae9bef69c2d9d8e54a0b95a823110113b1ef, unchanged; the current suite file run against it"
+}

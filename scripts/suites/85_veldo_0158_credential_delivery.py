@@ -969,7 +969,7 @@ err.close()
                 tracker_env = json.dumps((servers.get('tracker') or {}).get('env') or {})
                 notes_env = json.dumps((servers.get('notes') or {}).get('env') or {})
                 check('delivery/own-server-only', engine + ': the tracker server holds none of the notes credential and '
-                      'the notes server none of the tracker\'s, though it asks for TRACKER_TOKEN',
+                      'the notes server none of the tracker\'s',
                       sorted(servers) == ['notes', 'tracker']
                       and VALUES['tracker-token'] in tracker_env and VALUES['notes-token'] not in tracker_env
                       and VALUES['notes-token'] in notes_env and VALUES['tracker-token'] not in notes_env
@@ -991,9 +991,12 @@ err.close()
             store_bytes = b''.join(p.read_bytes() for p in db.parent.glob('control.sqlite3*') if p.is_file())
             journal = json.dumps([list(r) for r in writer.execute('SELECT * FROM journal')])
             messages = json.dumps([m for l in launches if l for m in l.messages])
+            delivered = [(runs[e]['servers'].get('tracker') or {}).get('env', {}).get('TRACKER_TOKEN') for e in runs]
             check('delivery/not-in-packet-contract-journal', 'the contracts and dispatch records name the selected '
-                  'revisions and hold no value',
-                  all(l and l.contract['capability']['configuration'].get('mcp') for l in launches)
+                  'revisions and hold no value, though both runs\' servers received it [%d delivered]'
+                  % delivered.count(VALUES['tracker-token']),
+                  delivered == [VALUES['tracker-token']] * 2
+                  and all(l and l.contract['capability']['configuration'].get('mcp') for l in launches)
                   and not [v for v in SECRETS if v in contracts])
             check('delivery/not-in-packet-contract-journal', 'the packets the engines read hold no value',
                   all(r['own'].get('packet') for r in runs.values()) and not [v for v in SECRETS if v in packets])
@@ -1010,8 +1013,10 @@ err.close()
                 check('delivery/private-dir-removed', engine + ': the run\'s directory is gone once it was reaped',
                       run_dir is not None and runs[engine]['record'].get('state') == 'exited'
                       and run_dir not in runs[engine]['runs_after'] and not (runs_dir / run_dir).exists())
-            check('delivery/private-dir-removed', 'the Claude Code configuration file the engine read is gone',
+            check('delivery/private-dir-removed', 'the Claude Code configuration file the engine read, holding the '
+                  'values, is gone',
                   bool((claude['own'].get('mcp_file') or {}).get('path'))
+                  and VALUES['tracker-token'] in json.dumps(claude['own'].get('mcp') or {})
                   and not Path(claude['own']['mcp_file']['path']).exists())
             check('delivery/private-dir-removed', 'a refused launch leaves no run directory [%s]' % run_dirs(),
                   all(not r['runs_after'] for r in refused.values() if 'runs_after' in r) and not run_dirs())

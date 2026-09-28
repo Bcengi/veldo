@@ -8842,6 +8842,43 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+
+    # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
+    # criterion's declared falsifier first, then the threat model's other routes.
+    def delivery(name, module, old, new, rows, also=()):
+        add(158, 'delivery158-' + name, '85_veldo_0158_credential_delivery.py', module, old, new, rows, also)
+    # AC1: a Codex server's secret on the engine command line (the -c table's env instead of env_vars).
+    delivery('codex-value-on-argv', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env'] = dict(literals, **{n: secrets[n] for n in forwarded})\n",
+             ['delivery/command-lines'])
+    # AC2: the run launched without its server when its credential does not resolve.
+    delivery('run-without-server', 'control_launch.py',
+             "        self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n",
+             "        try:\n            self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)\n"
+             "        except DL.Undeliverable:\n            self.credentials = []  # defect: launched without the server\n",
+             ['refusal/keystore-locked', 'refusal/keystore-unreachable', 'refusal/reference-not-found'])
+    # AC3: the keystore value resolved without being added to the run's set.
+    delivery('value-not-in-set', 'control_launch.py',
+             'RESOLVERS = [subscription_token, keystore_credentials]\n',
+             'RESOLVERS = [subscription_token]\n',
+             ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
+    # AC1: Claude Code's values put in the engine environment besides its private file.
+    delivery('claude-value-in-environment', 'control_engine_claude.py',
+             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
+             "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'secrets': {}, 'routes': routes}\n",
+             ['delivery/claude-private-file'])
+    # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
+    delivery('every-server-variable', 'control_engine_codex.py',
+             "        if forwarded:\n            table['env_vars'] = forwarded\n",
+             "        if forwarded:\n            table['env_vars'] = sorted(secrets)\n",
+             ['delivery/own-server-only'])
+    # AC1: the run's private directory left behind once it is reaped.
+    delivery('run-directory-kept', 'control_launch.py',
+             '            shutil.rmtree(run, ignore_errors=True)\n',
+             '            pass  # defect: the run directory and its generated configuration stay\n',
+             ['delivery/private-dir-removed'])
     return result
 
 
