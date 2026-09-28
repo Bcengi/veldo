@@ -248,3 +248,22 @@ the ignore-user-config option and prints no enabled tools, so its listing runs `
 empty CODEX_HOME of the run's own. The marker qualification compares first-turn context within a stated
 bound, because two real runs of one role differ by a few dozen tokens. The footprint adds the scaffolder,
 whose file list must lay down both role modules. Status unchanged.
+
+2026-09-28, review repair at f96c1931: stopped on the owner's explicit condition that
+an unobtainable exact Codex tool list must be reported instead of weakening AC2.
+The qualified Codex 0.154.0 offline debug prompt-input command was run with the
+captured native configuration and with shell and unified exec disabled, a generated
+credential-free MCP fixture, empty temporary profiles and TCP denied by Landlock.
+Both successful outputs contain only input messages, no effective tool definitions.
+The retained blocker evidence is proof/VELDO-0127/codex-offline-tools.json. No production
+fix is claimed. Captured live runs exist but do not close this review. The proof README
+and mutation ledger now distinguish captured evidence from incomplete qualification.
+No footprint expansion was needed. Status unchanged.
+
+2026-09-28, follow-up ticket for AC3: qualify a worker already running under revision A
+while B is authored, then show that worker remains on A and a later dispatch binds B.
+The current row changes revisions between prepare and launch, not during execution.
+
+2026-09-28, follow-up ticket for refusal reporting: preserve a handoff configuration_stop
+as a configuration failure. The current wrapper reports credential delivery failure
+and names mcp_servers as a credential. This reporting repair is outside this job.

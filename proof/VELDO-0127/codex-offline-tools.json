@@ -1,0 +1,287 @@
+{
+  "schema": "veldo.offline-tool-observation/v1",
+  "engine": "codex",
+  "version": "0.154.0",
+  "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "matches_qualified_digest": true,
+  "network": "Landlock denies every TCP connection",
+  "model_requests": 0,
+  "configuration_source": "codex-live.json runs[0].configuration; MCP command replaced by generated credential-free stdio fixture advertising jira_search, selected skills disabled to remove expired capture paths",
+  "runs": [
+    {
+      "case": "captured-native-settings",
+      "arguments": [
+        "debug",
+        "prompt-input",
+        "-c",
+        "cli_auth_credentials_store=\"file\"",
+        "-c",
+        "developer_instructions=\"Use the listed role instruction.\\n\\n\\nUse the project role instruction.\\n\"",
+        "-c",
+        "features.apply_patch_freeform=false",
+        "-c",
+        "features.multi_agent=false",
+        "-c",
+        "features.shell_tool=true",
+        "-c",
+        "features.view_image=false",
+        "-c",
+        "forced_login_method=\"chatgpt\"",
+        "-c",
+        "mcp_servers.jira.command=\"/usr/bin/python3\"",
+        "-c",
+        "mcp_servers.jira.args=[\"/tmp/127-offline-mcp.py\"]",
+        "-c",
+        "mcp_servers.jira.enabled_tools=[\"jira_search\"]",
+        "-c",
+        "mcp_servers.jira.required=true",
+        "-c",
+        "model=\"gpt-6-astra\"",
+        "-c",
+        "project_doc_max_bytes=0",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "skills.include_instructions=false",
+        "-c",
+        "web_search=\"disabled\"",
+        "hello"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a1a93d59b1b6d9e5022cf3f3e25c8840ad9fe162341d52c7e2b5425ea6b3dd6d",
+      "output_type": "list",
+      "items": [
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text",
+            "input_text",
+            "input_text"
+          ],
+          "content_kinds": [
+            "generic.developer_instructions",
+            "permissions.instructions",
+            "collaboration_mode.instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "multi_agent.role_instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "multi_agent.mode_instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "user",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "environments.environment_context"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "user",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "user.text"
+          ]
+        }
+      ],
+      "tool_definitions_present": false
+    },
+    {
+      "case": "shell-off-unified-exec-off",
+      "arguments": [
+        "debug",
+        "prompt-input",
+        "-c",
+        "cli_auth_credentials_store=\"file\"",
+        "-c",
+        "developer_instructions=\"Use the listed role instruction.\\n\\n\\nUse the project role instruction.\\n\"",
+        "-c",
+        "features.apply_patch_freeform=false",
+        "-c",
+        "features.multi_agent=false",
+        "-c",
+        "features.shell_tool=false",
+        "-c",
+        "features.view_image=false",
+        "-c",
+        "features.unified_exec=false",
+        "-c",
+        "forced_login_method=\"chatgpt\"",
+        "-c",
+        "mcp_servers.jira.command=\"/usr/bin/python3\"",
+        "-c",
+        "mcp_servers.jira.args=[\"/tmp/127-offline-mcp.py\"]",
+        "-c",
+        "mcp_servers.jira.enabled_tools=[\"jira_search\"]",
+        "-c",
+        "mcp_servers.jira.required=true",
+        "-c",
+        "model=\"gpt-6-astra\"",
+        "-c",
+        "project_doc_max_bytes=0",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "skills.include_instructions=false",
+        "-c",
+        "web_search=\"disabled\"",
+        "hello"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "1e6220ebf713d7520845b0426e14a8ee2d68372d1b6be163adecfda902a48cdf",
+      "output_type": "list",
+      "items": [
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text",
+            "input_text",
+            "input_text"
+          ],
+          "content_kinds": [
+            "generic.developer_instructions",
+            "permissions.instructions",
+            "collaboration_mode.instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "multi_agent.role_instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "developer",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "multi_agent.mode_instructions"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "user",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "environments.environment_context"
+          ]
+        },
+        {
+          "type": "message",
+          "role": "user",
+          "keys": [
+            "content",
+            "id",
+            "internal_chat_message_metadata_passthrough",
+            "role",
+            "type"
+          ],
+          "content_types": [
+            "input_text"
+          ],
+          "content_kinds": [
+            "user.text"
+          ]
+        }
+      ],
+      "tool_definitions_present": false
+    }
+  ],
+  "conclusion": "The authorized offline renderer returns input messages only, not the model request tools field. Neither run exposes an exact effective tool list. This is blocker evidence, not AC2 acceptance evidence.",
+  "fixture_source": "import json\nimport sys\nfor raw in sys.stdin:\n    m = json.loads(raw)\n    if 'id' not in m:\n        continue\n    if m['method'] == 'initialize':\n        result = {'protocolVersion':'2024-11-05','capabilities':{'tools':{}},'serverInfo':{'name':'fixture','version':'1'}}\n    elif m['method'] == 'tools/list':\n        result = {'tools':[{'name':'jira_search','description':'Fixture search','inputSchema':{'type':'object','properties':{}}}]}\n    else:\n        result = {}\n    print(json.dumps({'jsonrpc':'2.0','id':m['id'],'result':result}), flush=True)\n",
+  "interpretation": "The five output objects are messages with input_text content. Tool names and JSON tool definitions are absent, including the configured jira_search tool. Changing shell_tool and unified_exec does not turn this interface into a tool inventory. The command help offers prompt, image, configuration and feature options only."
+}

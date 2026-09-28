@@ -1,8 +1,28 @@
 # VELDO-0127 role capability configuration
 
-Implementation is committed. Live qualification is pending the lead's run of
-`proof/VELDO-0127/live.py`. The specification remains ready. The suite fails closed
-on the two absent capture files and does not claim actual engine qualification.
+The lead captured Claude Code 2.1.281 and Codex 0.154.0 runs in `claude-live.json`
+and `codex-live.json`. Those captures predate the review findings and do not establish
+AC2's exact Codex native-tool equality. The specification remains ready.
+
+The 2026-09-28 review repair stopped at the owner's explicit blocker condition.
+The qualified Codex binary's offline `debug prompt-input` command returns input
+messages, not the model request's tool definitions. `codex-offline-tools.json` retains
+the binary digest, configuration arguments, generated MCP fixture source, output
+structure and output hashes for two successful renders. Both used empty temporary
+CODEX_HOME and HOME directories with Landlock denying every TCP connection. The
+first used the captured native settings; the second disabled shell and unified exec.
+Neither returned a tool list, including the fixture's selected Jira tool. VELDO-0156
+used this interface to observe instruction content, not to enumerate effective tools.
+No model request, login or real credential was used.
+
+Completing AC2 needs an offline interface that exposes the pinned engine's actual
+model-request tool definitions, or authorization for a different observation method.
+Inferring those definitions from feature switches would preserve the review defect.
+No production changes or new behavior rows were made in this stopped repair.
+Findings 1 through 6 remain open, including the debug-log positive control and probe
+terminal-record defect. Existing empty debug lines have no positive control and do
+not prove instruction exclusion; the captured context-size comparison is the only
+current marker evidence. The lead must recapture after the eventual production fixes.
 
 `control_agent_config.Configurations.save` accepts immutable role revisions under
 current owner authority, using the signed store's writer and compare-and-swap.
@@ -104,15 +124,13 @@ context comparison (`rejudge`), without new runs; the production modules did not
 exception. The old tree has no accepted role writer or handoff implementation.
 
 Finding 127 registers 18 distinct mutations in `scripts/check_teeth_mutations.py`.
-`mutations.json` and the individual diffs record their exact replacements and source
-hashes. Static checks require each anchor once and parse every resulting module. The eleven
-live-qualification mutants (the probe withheld or given content, the engine plugins or bundled
-skills kept, built-in commands compared, the Skill tool withdrawn, the three Codex listing
-defects, the context line on every run, and the scaffold omitting the role modules) were each
-applied once by hand to the committed tree, and each named row redded by assertion. Two name
-other suites: `82_veldo_0141_execution_record` and `66_veldo_0047_authority`. The withheld probe
-takes about 210 seconds, because its runs wait for the suite's 30 second deadline. The
-mutation checker itself is reserved to the reviewer.
+`mutations.json` and the individual diffs retain their replacements and source hashes.
+The lead reports that the checker rejected the seven mutants preceding
+`role127-probe-withheld`, then stopped when that mutant exceeded the 120 second
+worker limit. This is incomplete mutation qualification. The later mutants were not
+reached by that checker run. Earlier builder claims about manually driven mutants
+are historical reports, not evidence of a completed checker run. No mutations were
+executed during this stopped repair.
 
 The footprint adds that mutation registry for the required falsifiers and the
 VELDO-0173 suite because its sole caller-built role revision must migrate to the

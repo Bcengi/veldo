@@ -1,5 +1,7 @@
 {
- "executed": false,
+ "completed": false,
+ "executed": true,
+ "execution_source": "Owner review findings supplied at f96c1931; raw checker output not supplied.",
  "finding": 127,
  "mutants": [
   {
@@ -11,7 +13,7 @@
     "revision/history"
    ],
    "source_sha256": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -23,7 +25,7 @@
     "handoff/claude"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -35,7 +37,7 @@
     "handoff/codex"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -47,7 +49,7 @@
     "dispatch/refusal"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -59,7 +61,7 @@
     "launch/push"
    ],
    "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -71,7 +73,7 @@
     "launch/unlisted"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -83,7 +85,7 @@
     "launch/instructions"
    ],
    "source_sha256": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4",
-   "status": "registered; reviewer execution pending",
+   "status": "lead-reported rejected; raw failing lines not supplied",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -95,7 +97,7 @@
     "handoff/claude"
    ],
    "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "lead-reported timeout at 120 seconds; not rejected by assertion",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -107,7 +109,7 @@
     "handoff/claude"
    ],
    "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -119,7 +121,7 @@
     "handoff/claude"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -131,7 +133,7 @@
     "handoff/claude"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -143,7 +145,7 @@
     "handoff/claude"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -155,7 +157,7 @@
     "launch/unlisted"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -167,7 +169,7 @@
     "handoff/codex"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -179,7 +181,7 @@
     "handoff/codex"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -191,7 +193,7 @@
     "handoff/codex"
    ],
    "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "86_veldo_0127_agent_configuration.py"
   },
   {
@@ -204,7 +206,7 @@
     "record/codex-complete"
    ],
    "source_sha256": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "82_veldo_0141_execution_record.py"
   },
   {
@@ -216,11 +218,11 @@
     "authority/installed-assets"
    ],
    "source_sha256": "7ed9c433e66756c3044e6ed0ee86c52e8ee247fa25119336bd7ed4abab6b444a",
-   "status": "registered; the builder applied it once to the committed tree and its suite redded every named row by assertion; reviewer execution pending",
+   "status": "not reached by the lead checker run",
    "suite": "66_veldo_0047_authority.py"
   }
  ],
- "reason": "Owner reserves mutation execution to the reviewer. The builder drove the eleven live-qualification mutants once by hand (named rows red by assertion, none raised); that is not the checker run.",
+ "reason": "Lead-reported checker run rejected the seven mutants before role127-probe-withheld, then stopped at its 120 second worker limit. Subsequent mutants were not reached. No checker run or manual mutations executed in this repair.",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0127"
 }
