@@ -16,6 +16,7 @@ proof/VELDO-0189/red-at-COMMIT.json. Nothing in that tree is changed: it has no 
 assertion (the suite records that against each row rather than raising).
 
     python3 -B proof/VELDO-0189/drive.py --red <pre-change commit>
+    python3 -B proof/VELDO-0189/drive.py --cache <directory> [--budget <seconds>]   (resumable)
 """
 import ast
 import contextlib
@@ -37,7 +38,13 @@ SUITE = '86_veldo_0189_engine_upgrade.py'
 PREFIX = 'VELDO-0189 '
 FINDING = 189
 MODULES = ('control_factory_setup.py', 'control_factory_setup_upgrade.py', 'control_factory_setup_api.py',
-           'control_service.py', 'init_scaffold.py')
+           'control_service.py', 'control_store.py', 'init_scaffold.py')
+# With `--cache DIR` each run's result is kept in DIR under the digest of the suite, the tree and every
+# substituted file, so a drive longer than one sitting is finished by running it again.
+CACHE = None
+# With `--budget SECONDS` beside it, no run starts after that many seconds; the drive stops and says so.
+BUDGET = None
+BEGAN = time.monotonic()
 
 
 def _load(name, path):
@@ -85,12 +92,23 @@ def one(paths, root):
 
 
 def run(paths=None, root=None):
+    key = None
+    if CACHE is not None:
+        key = hashlib.sha256(json.dumps([_sha(ROOT / 'scripts/suites' / SUITE), str(root or ROOT),
+                                         sorted((m, _sha(p)) for m, p in (paths or {}).items())]).encode()).hexdigest()
+        if (CACHE / (key + '.json')).is_file():
+            return json.loads((CACHE / (key + '.json')).read_text())
+        if BUDGET is not None and time.monotonic() - BEGAN > BUDGET:
+            raise SystemExit('drive: the budget is spent; the finished runs are kept in %s, run it again' % CACHE)
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
-    return dict(json.loads(proc.stdout), seconds=round(time.monotonic() - started, 3))
+    result = dict(json.loads(proc.stdout), seconds=round(time.monotonic() - started, 3))
+    if key is not None:
+        (CACHE / (key + '.json')).write_text(json.dumps(result))
+    return result
 
 
 def _sha(path):
@@ -122,6 +140,14 @@ def red(commit):
 
 
 def main():
+    global CACHE, BUDGET
+    if len(sys.argv) >= 3 and sys.argv[1] == '--cache':
+        CACHE = Path(sys.argv[2])
+        CACHE.mkdir(parents=True, exist_ok=True)
+        del sys.argv[1:3]
+        if len(sys.argv) >= 3 and sys.argv[1] == '--budget':
+            BUDGET = float(sys.argv[2])
+            del sys.argv[1:3]
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
         red(sys.argv[2])
         return
