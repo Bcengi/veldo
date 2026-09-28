@@ -209,7 +209,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 check(row, 'accepted role handoff is absent in this tree', False)
         else:
             fixture = load('v127_factory', TREE / 'proof/VELDO-0127/factory.py')
-            f = fixture.factory(ROOT, base, PRODUCTION, fake_engine)
+            # A fake run ends in a second; a run held past this deadline (a prompt never released) is stopped
+            # by it and reds its row.
+            f = fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30)
             L = f.L
             C = f.config_api
             def payload(engine):
@@ -314,8 +316,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
             deferred['instructions'].append({'source':'factory','path':'not-present.md','load':'when assigned'})
             f.save(deferred)
             _, rec, own, _ = run('claude','deferred',{'role':'deferred'})
-            check('launch/unlisted', 'unassigned server, skill and instruction never load',
-                  rec.get('state') == 'exited' and 'Bash' not in own.get('init',{}).get('tools',[])
+            check('launch/unlisted', 'unassigned server, skill and instruction never load; the granted Skill tool stays',
+                  rec.get('state') == 'exited' and f.D.completed(rec) and 'Bash' not in own.get('init',{}).get('tools',[])
+                  and 'Skill' in own.get('init',{}).get('tools',[])
                   and own.get('init',{}).get('skills') == []
                   and own.get('init',{}).get('plugins') == []
                   and own.get('init',{}).get('mcp_servers') == [{'name':'jira','status':'connected'}])

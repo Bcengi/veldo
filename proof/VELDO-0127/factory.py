@@ -18,7 +18,7 @@ def load(name, path):
     return module
 
 
-def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None):
+def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None, deadline_seconds=90):
     connections = []
     mods = base / 'installed' / '.veldo'
     mods.mkdir(parents=True)
@@ -258,7 +258,7 @@ for raw in sys.stdin:
                                    command_id='role-save-' + str(serial[0]))
     def prepare(engine, unit, configuration, payload):
         return runners[engine].prepare(admitted(unit), 'build', holder=HOLDER, source=str(src), revision='HEAD',
-                                       payload=payload, adapter=engine, configuration=configuration, deadline=time.time() + 90)
+                                       payload=payload, adapter=engine, configuration=configuration, deadline=time.time() + deadline_seconds)
     def launch(engine, contract):
         previous = Path.cwd()
         try:
