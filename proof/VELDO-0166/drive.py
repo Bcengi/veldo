@@ -76,6 +76,21 @@ def run(paths=None, root=None):
     return dict(json.loads(proc.stdout), seconds=round(time.monotonic() - started, 3))
 
 
+def registry(case, mutant=None):
+    """A case of another suite (the 0062 journey) runs through the registry's own worker, the same
+    process the gate's mutation check starts, and is judged on the rows it names."""
+    started = time.monotonic()
+    command = [sys.executable, '-B', str(ROOT / 'scripts/check_teeth_mutations.py'), '-' * 2 + 'finding', str(FINDING),
+               '-' * 2 + 'worker', case['name']] + (['-' * 2 + 'mutant', str(mutant)] if mutant else [])
+    proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
+    if proc.returncode:
+        raise RuntimeError('registry worker did not complete its assertions: ' + proc.stderr[-2000:])
+    observed = json.loads(proc.stdout)
+    return {'rows': observed['observations'], 'failed_rows': observed['failed_rows'],
+            'details': ['%s: %s' % tuple(d) for d in observed['failed_details']],
+            'targets': observed['targets'], 'seconds': round(time.monotonic() - started, 3)}
+
+
 def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest() if Path(path).is_file() else None
 
@@ -112,12 +127,33 @@ def main():
         print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
         return
     ctm = _driver()
-    cases = [c for c in ctm.cases() if c['finding'] == FINDING]
+    everything = [c for c in ctm.cases() if c['finding'] == FINDING]
+    cases = [c for c in everything if c['suite'] == SUITE]
+    others = [c for c in everything if c['suite'] != SUITE]
     report = {'schema': 'veldo.proof-mutations/v1', 'spec_id': 'VELDO-0166', 'suite': 'scripts/suites/' + SUITE,
               'registry': 'scripts/check_teeth_mutations.py ' + '-' * 2 + 'finding %d' % FINDING, 'baseline': run(), 'noop': None,
               'mutants': []}
     with tempfile.TemporaryDirectory(prefix='v166-drive-') as directory:
         report['noop'] = {}
+        report['other_suites'] = {}
+        for case in others:
+            prepared = ctm.materialize(case, 'mutant', Path(directory) / case['name'])
+            honest = registry(case)
+            broken = registry(case, prepared['mutant'])
+            source = prepared['source'].read_text()
+            (HERE / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
+                source.splitlines(keepends=True), ctm.mutate(source, case).splitlines(keepends=True),
+                n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
+            report['other_suites'][case['name']] = dict(
+                suite='scripts/suites/' + case['suite'], module='.veldo/' + case['module'], named_rows=case['rows'],
+                diff='proof/VELDO-0166/%s.diff' % case['name'], source_sha256=prepared['old_digest'],
+                mutant_sha256=prepared['new_digest'],
+                baseline=dict(failed_rows=honest['failed_rows'], seconds=honest['seconds'],
+                              targets=honest['targets']),
+                mutant=dict(failed_rows=broken['failed_rows'], details=broken['details'], seconds=broken['seconds'],
+                            targets=broken['targets']),
+                named_row_red=all(honest['targets'][r] == [True] and broken['targets'][r] == [False]
+                                  for r in case['rows']))
         for module in sorted({c['module'] for c in cases}):
             case = next(c for c in cases if c['module'] == module)
             noop = ctm.materialize(case, 'noop', Path(directory) / ('noop-' + module))
@@ -135,10 +171,12 @@ def main():
                                           source_sha256=prepared['old_digest'], mutant_sha256=prepared['new_digest'],
                                           named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),
                                           by_assertion=not _raised(observed), **observed))
-    report['all_named_rows_red'] = all(m['named_row_red'] for m in report['mutants'])
+    report['all_named_rows_red'] = all(m['named_row_red'] for m in report['mutants']) and all(
+        o['named_row_red'] for o in report['other_suites'].values())
     report['all_by_assertion'] = all(m['by_assertion'] for m in report['mutants'])
     report['controls_green'] = not report['baseline']['failed_rows'] and all(
-        not n['failed_rows'] for n in report['noop'].values())
+        not n['failed_rows'] for n in report['noop'].values()) and all(
+        not o['baseline']['failed_rows'] for o in report['other_suites'].values())
     per_row = {}
     for m in report['mutants']:
         for r in m['named_rows']:
@@ -147,7 +185,7 @@ def main():
     report['serial_seconds'] = round(report['baseline']['seconds'] + sum(n['seconds'] for n in report['noop'].values())
                                      + sum(m['seconds'] for m in report['mutants']), 3)
     (HERE / 'mutations.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
-    print(json.dumps({'mutants': len(report['mutants']), 'all_named_rows_red': report['all_named_rows_red'],
+    print(json.dumps({'mutants': len(report['mutants']) + len(report['other_suites']), 'all_named_rows_red': report['all_named_rows_red'],
                       'all_by_assertion': report['all_by_assertion'],
                       'controls_green': report['controls_green'], 'serial_seconds': report['serial_seconds']}))
 

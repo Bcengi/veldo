@@ -23,6 +23,10 @@
     true
    ],
    [
+    "VELDO-0166 windows/rejection-kept",
+    true
+   ],
+   [
     "VELDO-0166 profiles/existing",
     true
    ],
@@ -31,7 +35,7 @@
     true
    ]
   ],
-  "seconds": 0.277
+  "seconds": 0.295
  },
  "controls_green": true,
  "mutants": [
@@ -44,17 +48,20 @@
     "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
     "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
     "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
-    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained",
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604815.2597885, 'reset_at': 1790608415, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'rejected', 'utilization': 1.0}]",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604815.267725, 'reset_at': 1790601215, 'source_dispatch': 'dispatch/kept-passed', 'status': 'rejected', 'utilization': 1.0}]"
    ],
    "diff": "proof/VELDO-0166/windows166-named-only.diff",
    "failed_rows": [
     "VELDO-0166 windows/five-hour",
     "VELDO-0166 windows/qualified-set",
     "VELDO-0166 windows/status-only-named",
-    "VELDO-0166 windows/missing-reset-receipts"
+    "VELDO-0166 windows/missing-reset-receipts",
+    "VELDO-0166 windows/rejection-kept"
    ],
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "5962afd7d32f56324f894a78478cf263461e6f2f11d83a00c6f5d5a487805fc3",
+   "mutant_sha256": "d049250228b1828aeb92f25de7bcbe2172ca5247aaf40e4748484cb514ca8967",
    "name": "windows166-named-only",
    "named_row_red": true,
    "named_rows": [
@@ -80,150 +87,7 @@
      false
     ],
     [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.21,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day"
-   ],
-   "diff": "proof/VELDO-0166/windows166-status-spills.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/status-only-named"
-   ],
-   "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "ba71cc323eb281cf345601d42b1893a03b58d11a5820065e0cb1a2a30df95733",
-   "name": "windows166-status-spills",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/status-only-named"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     true
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     true
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     false
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.28,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day"
-   ],
-   "diff": "proof/VELDO-0166/windows166-allowed-invented.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/status-only-named"
-   ],
-   "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "507ca684a5b2b350b7ab09e942c60402b814f9e0016bafebc980acaf8da4c0df",
-   "name": "windows166-allowed-invented",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/status-only-named"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     true
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     true
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     false
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.283,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
-    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
-    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
-   ],
-   "diff": "proof/VELDO-0166/windows166-reset-borrowed.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/five-hour",
-    "VELDO-0166 windows/qualified-set",
-    "VELDO-0166 windows/missing-reset-receipts"
-   ],
-   "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "a6373e45298e6e5b9d8aaa108b38667349626a38fa7ce4b2b6c66ca4ae22b827",
-   "name": "windows166-reset-borrowed",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/missing-reset-receipts",
-    "windows/qualified-set"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     false
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     false
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     true
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
+     "VELDO-0166 windows/rejection-kept",
      false
     ],
     [
@@ -235,167 +99,8 @@
      true
     ]
    ],
-   "seconds": 0.28,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
-    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values"
-   ],
-   "diff": "proof/VELDO-0166/windows166-utilization-borrowed.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/five-hour",
-    "VELDO-0166 windows/qualified-set"
-   ],
-   "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "e31dab9ac509b20fcf5930c31751971dd231315a4b976f9ac738ff0e6765829d",
-   "name": "windows166-utilization-borrowed",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/five-hour",
-    "windows/qualified-set"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     false
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     false
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     true
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.286,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
-    "VELDO-0166 detail: windows/five-hour: each raw receipt retained and attributed to its invocation and account",
-    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
-    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
-    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
-   ],
-   "diff": "proof/VELDO-0166/windows166-named-duplicated.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/five-hour",
-    "VELDO-0166 windows/qualified-set",
-    "VELDO-0166 windows/status-only-named",
-    "VELDO-0166 windows/missing-reset-receipts"
-   ],
-   "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "2a47ce6b7bb7460d8dfdfd9e0c39e3d0eb6f0396f3fc2593a25289f15e81ed52",
-   "name": "windows166-named-duplicated",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/qualified-set"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     false
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     false
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     false
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
-     false
-    ],
-    [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.3,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
-  },
-  {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
-    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
-    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
-    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
-    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained"
-   ],
-   "diff": "proof/VELDO-0166/windows166-absent-status-refused.diff",
-   "failed_rows": [
-    "VELDO-0166 windows/five-hour",
-    "VELDO-0166 windows/qualified-set",
-    "VELDO-0166 windows/status-only-named",
-    "VELDO-0166 windows/missing-reset-receipts"
-   ],
-   "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "a11b4e229fca7f337792fd6b1656dce656d5ef38bfd140373294c6c31186f482",
-   "name": "windows166-absent-status-refused",
-   "named_row_red": true,
-   "named_rows": [
-    "windows/five-hour",
-    "windows/status-only-named"
-   ],
-   "preamble_rows": 26,
-   "rows": [
-    [
-     "VELDO-0166 windows/five-hour",
-     false
-    ],
-    [
-     "VELDO-0166 windows/qualified-set",
-     false
-    ],
-    [
-     "VELDO-0166 windows/status-only-named",
-     false
-    ],
-    [
-     "VELDO-0166 windows/missing-reset-receipts",
-     false
-    ],
-    [
-     "VELDO-0166 profiles/existing",
-     true
-    ],
-    [
-     "VELDO-0166 profiles/created",
-     true
-    ]
-   ],
-   "seconds": 0.215,
-   "source_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+   "seconds": 0.224,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
   },
   {
    "by_assertion": true,
@@ -433,6 +138,10 @@
      true
     ],
     [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
      "VELDO-0166 profiles/existing",
      false
     ],
@@ -441,8 +150,452 @@
      true
     ]
    ],
-   "seconds": 0.278,
+   "seconds": 0.288,
    "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604815.8400946, 'reset_at': 1790608475, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'allowed', 'utilization': 0.4}]",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604815.852859, 'reset_at': 1790601275, 'source_dispatch': 'dispatch/kept-passed', 'status': 'allowed', 'utilization': 0.4}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-status-spills.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "b8b39ad29394a7ca8116c866eb6c2765e7782d0beb8a4592f628b3b51311ef15",
+   "name": "windows166-status-spills",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.292,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604816.1331062, 'reset_at': 1790608476, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'allowed', 'utilization': 0.4}]",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604816.146044, 'reset_at': 1790601276, 'source_dispatch': 'dispatch/kept-passed', 'status': 'allowed', 'utilization': 0.4}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-allowed-invented.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "f53188018b05b7fccd84e68062ca776e5290a0ef146c96e879ad2708676f44cf",
+   "name": "windows166-allowed-invented",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.289,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/five-hour: each raw receipt retained and attributed to its invocation and account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604816.4169843, 'reset_at': 1790608416, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'rejected', 'utilization': 1.0}]",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604816.438102, 'reset_at': 1790601276, 'source_dispatch': 'dispatch/kept-passed', 'status': None, 'utilization': 0.4}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-named-twice.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "0a3f48f09eb33027aedb68523eab8c8b4830ab248b5f1fef4b93fafffc4b3b02",
+   "name": "windows166-named-twice",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/qualified-set",
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.293,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604816.7257347, 'reset_at': 1790960400, 'source_dispatch': 'dispatch/kept-passed', 'status': None, 'utilization': 0.4}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-reset-borrowed.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/missing-reset-receipts",
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "c0f5abe71c0cef5b3f16c4855c2bc17e77d1f63c04fe36b0f2ac3ebc9e0b1692",
+   "name": "windows166-reset-borrowed",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/qualified-set",
+    "windows/missing-reset-receipts"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.284,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values"
+   ],
+   "diff": "proof/VELDO-0166/windows166-utilization-borrowed.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "fe8f3384b6628e326df785aca95964e322f771977f430523b42f91cb0db63c38",
+   "name": "windows166-utilization-borrowed",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/qualified-set"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.296,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/five-hour: both live windows, resets and utilization reach the account",
+    "VELDO-0166 detail: windows/qualified-set: every qualified window recorded once with its own values",
+    "VELDO-0166 detail: windows/status-only-named: rejected belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
+    "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
+    "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained",
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604817.2324502, 'reset_at': 1790608417, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'rejected', 'utilization': 1.0}]",
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604817.2407224, 'reset_at': 1790601217, 'source_dispatch': 'dispatch/kept-passed', 'status': 'rejected', 'utilization': 1.0}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-absent-status-refused.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/five-hour",
+    "VELDO-0166 windows/qualified-set",
+    "VELDO-0166 windows/status-only-named",
+    "VELDO-0166 windows/missing-reset-receipts",
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "4313a2c7c4ae4c5dc387e7121aba2182d95ef0b263d367ff891a4495465727e5",
+   "name": "windows166-absent-status-refused",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/five-hour",
+    "windows/status-only-named"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     false
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     false
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     false
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     false
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.22,
+   "source_sha256": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604817.513327, 'reset_at': 1790608477, 'source_dispatch': 'dispatch/kept-in-force', 'status': None, 'utilization': 0.4}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-rejection-lifted.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "87dda66ebd0b2cccd3cb623c67bcf45e57f6dd265f90bd81aa5f82a3956c2353",
+   "name": "windows166-rejection-lifted",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/rejection-kept"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.285,
+   "source_sha256": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604817.8220305, 'reset_at': 1790601217, 'source_dispatch': 'dispatch/kept-passed', 'status': 'rejected', 'utilization': 1.0}]"
+   ],
+   "diff": "proof/VELDO-0166/windows166-rejection-kept-forever.diff",
+   "failed_rows": [
+    "VELDO-0166 windows/rejection-kept"
+   ],
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "7c6d27702bb4efa9870f1f4ee75955a43e8b1f9aad295a2b52ebbefb2a8ce887",
+   "name": "windows166-rejection-kept-forever",
+   "named_row_red": true,
+   "named_rows": [
+    "windows/rejection-kept"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0166 windows/five-hour",
+     true
+    ],
+    [
+     "VELDO-0166 windows/qualified-set",
+     true
+    ],
+    [
+     "VELDO-0166 windows/status-only-named",
+     true
+    ],
+    [
+     "VELDO-0166 windows/missing-reset-receipts",
+     true
+    ],
+    [
+     "VELDO-0166 windows/rejection-kept",
+     false
+    ],
+    [
+     "VELDO-0166 profiles/existing",
+     true
+    ],
+    [
+     "VELDO-0166 profiles/created",
+     true
+    ]
+   ],
+   "seconds": 0.302,
+   "source_sha256": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2"
   },
   {
    "by_assertion": true,
@@ -480,6 +633,10 @@
      true
     ],
     [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
      "VELDO-0166 profiles/existing",
      true
     ],
@@ -488,7 +645,7 @@
      false
     ]
    ],
-   "seconds": 0.268,
+   "seconds": 0.288,
    "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
   }
  ],
@@ -501,6 +658,7 @@
   ],
   "windows/five-hour": [
    "windows166-named-only",
+   "windows166-reset-borrowed",
    "windows166-utilization-borrowed",
    "windows166-absent-status-refused"
   ],
@@ -509,13 +667,18 @@
   ],
   "windows/qualified-set": [
    "windows166-named-only",
+   "windows166-named-twice",
    "windows166-reset-borrowed",
-   "windows166-utilization-borrowed",
-   "windows166-named-duplicated"
+   "windows166-utilization-borrowed"
+  ],
+  "windows/rejection-kept": [
+   "windows166-rejection-lifted",
+   "windows166-rejection-kept-forever"
   ],
   "windows/status-only-named": [
    "windows166-status-spills",
    "windows166-allowed-invented",
+   "windows166-named-twice",
    "windows166-absent-status-refused"
   ]
  },
@@ -543,6 +706,10 @@
      true
     ],
     [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
      "VELDO-0166 profiles/existing",
      true
     ],
@@ -551,11 +718,11 @@
      true
     ]
    ],
-   "seconds": 0.284,
+   "seconds": 0.291,
    "source_sha256": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c"
   },
   "control_accounts.py": {
-   "copy_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f",
+   "copy_sha256": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -577,6 +744,10 @@
      true
     ],
     [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
      "VELDO-0166 profiles/existing",
      true
     ],
@@ -585,11 +756,11 @@
      true
     ]
    ],
-   "seconds": 0.288,
-   "source_sha256": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+   "seconds": 0.285,
+   "source_sha256": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2"
   },
   "control_engine_claude.py": {
-   "copy_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591",
+   "copy_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -611,6 +782,10 @@
      true
     ],
     [
+     "VELDO-0166 windows/rejection-kept",
+     true
+    ],
+    [
      "VELDO-0166 profiles/existing",
      true
     ],
@@ -619,13 +794,47 @@
      true
     ]
    ],
-   "seconds": 0.286,
-   "source_sha256": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+   "seconds": 0.291,
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
+  }
+ },
+ "other_suites": {
+  "windows166-named-only-journey": {
+   "baseline": {
+    "failed_rows": [],
+    "seconds": 40.292,
+    "targets": {
+     "attribution/stored-account": [
+      true
+     ]
+    }
+   },
+   "diff": "proof/VELDO-0166/windows166-named-only-journey.diff",
+   "module": ".veldo/control_engine_claude.py",
+   "mutant": {
+    "details": [],
+    "failed_rows": [
+     "VELDO-0062 attribution/stored-account"
+    ],
+    "seconds": 39.856,
+    "targets": {
+     "attribution/stored-account": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "d049250228b1828aeb92f25de7bcbe2172ca5247aaf40e4748484cb514ca8967",
+   "named_row_red": true,
+   "named_rows": [
+    "attribution/stored-account"
+   ],
+   "source_sha256": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2",
+   "suite": "scripts/suites/75_veldo_0062_accounts.py"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 166",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 3.535,
+ "serial_seconds": 4.223,
  "spec_id": "VELDO-0166",
  "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
 }

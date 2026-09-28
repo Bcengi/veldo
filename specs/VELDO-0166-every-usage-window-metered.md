@@ -16,7 +16,6 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_accounts.py"
   - ".veldo/control_accounts.py"
-  - "scripts/drive.py"
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "engine/.veldo/control_launch*.py"
@@ -138,8 +137,9 @@ falsifier. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
 
-2026-09-27: implementation on build-veldo-0166 records every unified window, with no status
-invented for a companion window, and preserves existing profile directories. AC1 needs the
-footprint addition of control_accounts.py and its engine copy: the writer must accept an absent
-window status. The footprint also adds scripts/drive.py for the requested reproducible red and
-mutation records; that driver did not previously exist. Status unchanged.
+2026-09-27: implementation on build-veldo-0166 records every window an event reports: the named window
+with the event's own status, reset and utilization, every other unifiedWindows entry as reported with no
+status. The footprint adds control_accounts.py and its engine copy: the writer accepts an absent status,
+and such an observation never lifts a rejection still in force (VELDO-0160's blocking), found when the
+merged VELDO-0172 fake templates put zero-valued companions beside every fake rejection. Existing profile
+directories keep their mode. Proof driver at proof/VELDO-0166/drive.py. Status unchanged.

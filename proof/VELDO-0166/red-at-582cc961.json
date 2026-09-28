@@ -9,6 +9,8 @@
   "VELDO-0166 detail: windows/status-only-named: allowed_warning belongs only to seven_day",
   "VELDO-0166 detail: windows/status-only-named: allowed belongs only to seven_day",
   "VELDO-0166 detail: windows/missing-reset-receipts: missing reset stays absent; unreadable entry skipped; named fallback retained",
+  "VELDO-0166 detail: windows/rejection-kept: in-force: five_hour after a seven_day event beside it [{'observed_at': 1790604726.4792485, 'reset_at': 1790608326, 'source_dispatch': 'dispatch/kept-in-force', 'status': 'rejected', 'utilization': 1.0}]",
+  "VELDO-0166 detail: windows/rejection-kept: passed: five_hour after a seven_day event beside it [{'observed_at': 1790604726.486941, 'reset_at': 1790601126, 'source_dispatch': 'dispatch/kept-passed', 'status': 'rejected', 'utilization': 1.0}]",
   "VELDO-0166 detail: profiles/existing: claude_code existing mode, contents and registration preserved",
   "VELDO-0166 detail: profiles/existing: codex existing mode, contents and registration preserved",
   "VELDO-0166 detail: profiles/created: claude_code new directory created exactly 0700 and recorded as created",
@@ -19,6 +21,7 @@
   "VELDO-0166 windows/qualified-set",
   "VELDO-0166 windows/status-only-named",
   "VELDO-0166 windows/missing-reset-receipts",
+  "VELDO-0166 windows/rejection-kept",
   "VELDO-0166 profiles/existing",
   "VELDO-0166 profiles/created"
  ],
@@ -29,11 +32,11 @@
   },
   ".veldo/control_accounts.py": {
    "at_commit": "21b40b6d53153ad4fe51897eb5b88afdea805e1119f39ff5d19fdc84be8076d1",
-   "now": "37a637238d73a150bd7ad55532aee954c6130460fcffb6e93de7b8f84c5e8b6f"
+   "now": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2"
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "6cd199382a3b3a0faa3038f99c70af73649da97db19e06fe41d3440e93266a84",
-   "now": "11a9c2d1ff1dc0321b32e3c7382accae254cf13d1dd61f348af7b4952d74c591"
+   "now": "0ae8888a9a55cd47d5fbde93a3cb272052e1ec132994e2338ea62d1089f48cb2"
   }
  },
  "preamble_rows": 26,
@@ -55,6 +58,10 @@
    false
   ],
   [
+   "VELDO-0166 windows/rejection-kept",
+   false
+  ],
+  [
    "VELDO-0166 profiles/existing",
    false
   ],
@@ -64,7 +71,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.252,
+ "seconds": 0.247,
  "spec_id": "VELDO-0166",
  "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
  "tree": "git archive 582cc9615f08e13a83086e6bc4cf50f230fbe846, unchanged; the current suite file run against it"

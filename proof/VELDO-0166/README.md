@@ -1,59 +1,80 @@
 # VELDO-0166 proof
 
-Implementation: `f6e0654f` on `build-veldo-0166`, based on `582cc961`.
+Branch `build-veldo-0166`, based on `582cc961`, with main merged at `f2526112` (VELDO-0154, 0158, 0165,
+0169 and 0172 among it). Implementation `f6e0654f` by Codex, finished after its usage limit in `0ada81fa`
+and the commits after it.
 
-The Claude Code meter emits one observation for every readable entry of `unifiedWindows`, plus
-`rateLimitType` when that window is absent from the map. Each observation carries its own utilization
-and reset and the original line and digest. The named window retains the existing allowed/rejected
-normalization; companions have a null status. The account writer accepts that absence without
-inventing allowance. The production receiver keeps each raw receipt and records the observation
-against its dispatch's account. Window names and statuses remain countable in the signed account
-journal. Missing resets remain null; an unreadable entry emits no observation.
+**The meter.** A Claude Code `rate_limit_event` becomes one window observation for the window
+`rateLimitType` names, carrying the event's own status (normalized to allowed or rejected as before),
+reset and utilization, and one for every other readable entry of `unifiedWindows`, carrying that entry's
+reset and utilization and no status, because the event rated only the window it names. In the live line
+the named window's own fields equal its `unifiedWindows` entry; the meter takes them from the event's
+top level. Each observation keeps the raw line as its receipt, with its digest. A missing reset stays
+null; an unreadable entry gives no observation.
 
-The profile helper chmods only a directory it creates. Its persisted record names the directory and
-whether it was `created` or `existing`, so additions can be counted by those outcomes. Existing
-contents and permissions are left intact. The three changed engine modules are byte-identical to
-the installed copies.
+**Why the named window reads the top level.** After the merge, VELDO-0172's shared fake constructors fill
+a `unifiedWindows` map with zero values into every fake rate-limit line that lacks one. Codex's first
+version read the named window from that map, so a fake five-hour rejection was recorded with reset 0 and
+utilization 0, and suites 0062 (`usage/rate-limit-reset`) and 0160 (five rows) went red. Reading the
+event's own fields for the window it names is faithful to the live line and to every older line.
 
-The spec footprint adds `control_accounts.py` and its engine copy because AC1 needs the account
-writer to accept an absent status. It adds `scripts/drive.py` because the requested proof driver was
-absent. No protected file changed.
+**A rejection in force is kept.** The account writer accepts an observation with no status. Such an
+observation never replaces a recorded rejection whose reset has not passed (VELDO-0160's `blocking`
+decides): only a rating of that window, or its reset, lifts it. Without this, an event rating seven_day
+beside a five-hour window at its limit would erase the five-hour rejection and hand the account work
+before its reset (suite 0160 `pool/until-earliest` went red on exactly that). A rejection whose reset
+has passed is replaced by the report as it came.
+
+**The profile helper** chmods only a directory it creates, 0700. A directory that already exists keeps
+its mode and contents. The persisted record names the directory and whether it was `created` or
+`existing`. The three changed modules are byte-identical to their `engine/.veldo` copies.
+
+The spec footprint adds `control_accounts.py` and its engine copy, since the writer must accept an
+absent status and keep a rejection in force. The proof driver is `proof/VELDO-0166/drive.py`.
 
 ## Rows
 
-Suite: `83_veldo_0166_usage_windows`, six rows, one report per row. It drives the real `Metering`
-receiver seam, `Accounts` writer and production membership authorization over a signed SQLite store.
-The journal key, profiles and receipt directories are generated temporary fixtures. No model runs,
-login or real credential is used. The fake Claude in suite 75 also prints the complete source event
-from the spec, including both windows and all outer fields.
+Suite `83_veldo_0166_usage_windows`, seven rows, each reported once. It drives the real `Metering`
+receiver seam, the `Accounts` writer and production membership authorization over a signed SQLite store
+with a generated journal key, profiles and receipt directories. No engine, login or credential.
 
 | Criterion | Row | Evidence |
 | --- | --- | --- |
-| AC1 | `windows/five-hour` | The verbatim source line records both windows with their exact utilization and resets, one raw receipt and digest each, bound to the account and dispatch. |
-| AC1 | `windows/qualified-set` | All six windows in the 2.1.281 qualification record are stored exactly once with their own values. |
-| AC1 | `windows/status-only-named` | Rejected, allowed-warning and allowed events apply status only to the named window; companions have null status and are not declared rejected. |
-| AC1 | `windows/missing-reset-receipts` | A readable companion without a reset stays null, an unreadable entry is skipped, and the named window absent from the map is retained, with receipts and dispatch attribution. |
-| AC2 | `profiles/existing` | Both providers register a generated 0755 directory without changing its mode, file bytes, file mtime or entries, and persist its existing-directory outcome. |
-| AC2 | `profiles/created` | Both providers create a missing directory exactly 0700 and persist its created-directory outcome and resolvable path. |
+| AC1 | `windows/five-hour` | The verbatim 2.1.281 line records five_hour (0.3, 1790487000) and seven_day (0.7, 1790960400) on the account, one raw receipt and digest per observation, bound to the dispatch and account. |
+| AC1 | `windows/qualified-set` | Every window the 2.1.281 qualification lists is stored exactly once with its own values. |
+| AC1 | `windows/status-only-named` | Rejected, allowed_warning and allowed apply only to seven_day, the named window; companions hold no status and `blocking` names only seven_day on a rejection. |
+| AC1 | `windows/missing-reset-receipts` | A companion without a reset stays null, an unreadable entry is skipped, a named window absent from the map is still recorded, receipts and attribution intact. |
+| AC1 | `windows/rejection-kept` | A five-hour rejection in force survives a later seven_day event beside it and still blocks; a rejection whose reset has passed is replaced by the companion's values. |
+| AC2 | `profiles/existing` | For both providers a generated 0755 directory keeps its mode, file bytes, mtime and entries, recorded `existing`. |
+| AC2 | `profiles/created` | For both providers a missing directory is created exactly 0700 under umask 022, recorded `created` and resolvable. |
+
+Suite 75 (`75_veldo_0062_accounts`) prints the spec's live line verbatim through a shared VELDO-0172
+constructor (`c_live_rate`, `live_step`), every field of it, both windows included, and its
+`attribution/stored-account` row checks the five-hour window reached acct-c1 through the real Runner and
+receiver with its reset, utilization, dispatch and no status. Its teardown `conform_fake` compares the
+line against the live capture (`fake/capture:0062_accounts`).
 
 ## Red record and mutations
 
-`scripts/drive.py` with the red option and `582cc961` archives the unchanged pre-change tree and
-runs the current suite against it. `red-at-582cc961.json` records all six rows red by assertion.
-The created-directory row fails because the old helper does not record the created outcome;
-its existing 0700 behavior is a positive control.
+`proof/VELDO-0166/drive.py` with its red option and `582cc961` archives the unchanged pre-change
+tree and runs the current suite against it: `red-at-582cc961.json` records all seven rows red by assertion.
 
-`mutations.json` records nine finding-166 mutations, green baseline and unmodified-copy controls,
-source digests, exact applied diffs, and the failing named rows. All nine reject by assertion,
-including the declared named-window-only and unconditional-chmod falsifiers. The independent
-registry command with finding 0166 and two jobs also rejects all nine. The additional mutations
-cover invented companion status, borrowed resets and utilization, duplicated named observations,
-rejection of missing status, and public permissions on a new directory.
+`proof/VELDO-0166/drive.py` writes `mutations.json`: a green baseline, green unmodified copies of each
+module, and twelve finding-166 mutations each red on its named rows by assertion, with its exact diff.
 
-## Validation
+| Mutation | Named rows |
+| --- | --- |
+| `windows166-named-only` (AC1 declared falsifier) | `windows/five-hour`, `windows/qualified-set` |
+| `windows166-named-only-journey` (same edit, suite 75) | `attribution/stored-account` |
+| `windows166-existing-chmod` (AC2 declared falsifier) | `profiles/existing` |
+| `windows166-status-spills` | `windows/status-only-named` |
+| `windows166-allowed-invented` | `windows/status-only-named` |
+| `windows166-named-twice` | `windows/qualified-set`, `windows/status-only-named` |
+| `windows166-reset-borrowed` | `windows/five-hour`, `windows/qualified-set`, `windows/missing-reset-receipts` |
+| `windows166-utilization-borrowed` | `windows/five-hour`, `windows/qualified-set` |
+| `windows166-absent-status-refused` | `windows/five-hour`, `windows/status-only-named` |
+| `windows166-rejection-lifted` | `windows/rejection-kept` |
+| `windows166-rejection-kept-forever` | `windows/rejection-kept` |
+| `windows166-new-profile-public` | `profiles/created` |
 
-The new suite has six passing rows and 26 shared preamble checks. Targeted suite runs return 2
-when passing because the repository explicitly distinguishes a partial run from full verification.
-The footprint checker reports no paths outside the spec; the anchor checker reports zero bad
-anchors; the Git boundary checker and repository validation pass. The canonical gate is not run,
-as instructed. Final targeted and whole-selftest results are recorded below when completed.
+The suite-75 case runs through the registry's own worker, as the gate's mutation check runs it.

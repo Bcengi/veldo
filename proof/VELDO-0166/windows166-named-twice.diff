@@ -2,4 +2,4 @@
 +++ b/.veldo/control_engine_claude.py
 @@ -1087 +1087 @@
 -            windows = [(named, info)] + [(window, values) for window, values in companions.items() if window != named]
-+            windows = [(named, info)]
++            windows = [(named, info)] + [(window, values) for window, values in companions.items()]
