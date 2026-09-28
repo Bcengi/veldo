@@ -175,6 +175,15 @@ def expected(capability, inventory):
             'plugins': ['veldo-role'] if skills else [], 'model': revision['settings'].get('model')}
 
 
+def builtin_commands(commands):
+    """Exclude a command name only when every entry of that name is built-in."""
+    entries = {}
+    for command in commands if isinstance(commands, list) else []:
+        if isinstance(command, dict) and isinstance(command.get('name'), str):
+            entries.setdefault(command['name'], []).append(command.get('builtin') is True)
+    return tuple(sorted(name for name, flags in entries.items() if all(flags)))
+
+
 def difference(event, wanted, builtin=()):
     """The named stop for an init event whose launch set differs from `wanted` in either direction, else None.
     `builtin` names the engine's own built-in commands (its initialize answer marks them): typed commands the
@@ -314,6 +323,14 @@ def stage_skills(capability, config):
             link = root / skill['name']
             if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
                 continue
+            exclude = subprocess.run(['git', '-C', str(capability['project']), 'rev-parse',
+                                      OPTION + 'git-path', 'info/exclude'], check=True, capture_output=True, text=True)
+            path = Path(exclude.stdout.strip())
+            if not path.is_absolute():
+                path = Path(capability['project']) / path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('a') as handle:
+                handle.write('\n/.agents/skills/' + skill['name'] + '\n')
             link.symlink_to(config / 'role-skills' / skill['name'], target_is_directory=True)
             staged.append(link)
     return staged

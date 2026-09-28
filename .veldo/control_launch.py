@@ -1713,6 +1713,7 @@ class Receiver:
         opening, close = login.opening(json.dumps(packet).encode()) if login is not None \
             else (json.dumps(packet).encode(), True)
         held = queue.Queue()
+        input_failed = threading.Event()
 
         def feed():
             try:
@@ -1728,8 +1729,10 @@ class Receiver:
                     data, last = later
                     worker.stdin.write(data)
                     worker.stdin.flush()
+                    if last and getattr(metering.terminal, 'require_prompt', False):
+                        metering.terminal.wrote_prompt()
             except OSError:
-                pass
+                input_failed.set()
             finally:
                 with contextlib.suppress(OSError):
                     worker.stdin.close()
@@ -1771,13 +1774,12 @@ class Receiver:
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
                 begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
+            if metering is not None and metering.feed(chunk):
+                begin('usage_cap')
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
                     held.put((prompt, getattr(login, 'released', True)))
-            # VELDO-0062: a cap the CLI's own report reached stops the worker.
-            if metering is not None and metering.feed(chunk):
-                begin('usage_cap')
         if recorder is not None:
             # The wrapper's identity line first, then what the engine printed after it.
             if getattr(worker, 'identity_line', None) is not None:
@@ -1801,6 +1803,8 @@ class Receiver:
                     break
                 live = cause is None and code is None
                 waits = [contract['deadline'] - time.time()] if live else []
+                if live and getattr(login, 'init_deadline', None) is not None and not login.released:
+                    waits.append(login.init_deadline - time.monotonic())
                 waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
                                                              watch.due() if watch is not None and live else math.inf,
                                                              settle if settle is not None else math.inf)
@@ -1843,6 +1847,9 @@ class Receiver:
                 if recorder is not None:
                     recorder.batch()
                 now = time.monotonic()
+                if cause is None and code is None and hasattr(login, 'expired') and login.expired(now):
+                    metering.login_stop = login.stop
+                    begin('configuration_stop')
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
@@ -1877,6 +1884,11 @@ class Receiver:
                 for chunk in iter(lambda: os.read(errors, 65536), b''):
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
+        feeder.join(timeout=1)
+        if (metering is not None and getattr(metering.terminal, 'require_prompt', False)
+                and (input_failed.is_set() or not metering.terminal.prompt_written)):
+            metering.login_stop = metering.login_stop or 'configuration_stop:prompt_write_failed'
+            cause = cause or 'configuration_stop'
         if recorder is not None:
             # Role debug qualification and first-turn size remain in the committed execution record.
             debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
@@ -1963,6 +1975,7 @@ class Metering:
         self.login_guard = self.engine.Guard()
         if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':
             self.login_guard.expected = receiver.binding['expected']
+            self.terminal.hold_prompt()
         self.login_stop = None
         self.context_pending = b''
         self.first_turn_context = None

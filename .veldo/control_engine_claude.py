@@ -1561,6 +1561,8 @@ class Guard:
         self.capabilities_confirmed = False
         self.probed = False
         self.builtin_commands = ()
+        self.init_deadline = None
+        self.probe_result = None
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1576,7 +1578,7 @@ class Guard:
         `released` is true once the prompt itself is returned, the input's last write."""
         if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
             return None
-        if self.expected is not None and not self.capabilities_confirmed:
+        if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
             if self.probed:
                 return None
             self.probed = True
@@ -1622,12 +1624,19 @@ class Guard:
             return self._stopped('subscriptionType', subscription)
         if self.stop is None:
             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
+            if self.expected is not None:
+                self.init_deadline = time.monotonic() + 5
             # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
             # from the model); the init comparison leaves only those out of the slash commands it compares.
             commands = response.get('commands')
-            self.builtin_commands = tuple(sorted(
-                c['name'] for c in commands if isinstance(c, dict) and c.get('builtin') is True
-                and isinstance(c.get('name'), str))) if isinstance(commands, list) else ()
+            self.builtin_commands = _capability_handoff().builtin_commands(commands)
+        return None
+
+    def expired(self, now):
+        if (self.init_deadline is not None and now >= self.init_deadline
+                and not self.released and self.stop is None):
+            self.stop = 'configuration_stop:init_missing'
+            return self.stop
         return None
 
     def _line(self, line):
@@ -1637,6 +1646,11 @@ class Guard:
             return None
         if not isinstance(event, dict):
             return None
+        if event.get('type') == 'result' and self.probed and not self.released:
+            self.probe_result = _terminal(event)
+            if self.probe_result is None or self.probe_result['num_turns'] != 0:
+                self.stop = 'configuration_stop:probe_result'
+                return self.stop
         if event.get('type') == 'control_response':
             answer = event.get('response')
             if isinstance(answer, dict) and answer.get('request_id') == self.request_id and not self.confirmed:
@@ -1696,6 +1710,18 @@ class Terminal:
         self.malformed = 0
         self.result = None
         self.receipt = None
+        self.prompt_written = True
+        self.require_prompt = False
+        self.probe_result = None
+        self.assistants_before_prompt = 0
+
+    def hold_prompt(self):
+        self.require_prompt = True
+        self.prompt_written = False
+
+    def wrote_prompt(self):
+        self.prompt_written = True
+
 
     def feed(self, chunk):
         self.pending += chunk
@@ -1718,10 +1744,15 @@ class Terminal:
         if not isinstance(event, dict) or not _text(event.get('type')):
             self.malformed += 1
             return
+        if event['type'] == 'assistant' and not self.prompt_written:
+            self.assistants_before_prompt += 1
         if event['type'] == 'result':
             decoded = _terminal(event)
             if decoded is None:
                 self.malformed += 1
+                return
+            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):
+                self.probe_result = decoded
                 return
             self.result, self.receipt = decoded, receipt(line)
 
@@ -1740,6 +1771,8 @@ class Terminal:
             found.append('nonzero_exit')
         if self.malformed:
             found.append('malformed_output')
+        if not self.prompt_written:
+            found.append('configuration_stop:prompt_not_written')
         if self.result is None:
             found.append('missing_result')
         elif self.result['subtype'] != 'success' or self.result['is_error']:
@@ -1752,6 +1785,8 @@ class Terminal:
         problems = self.problems(termination, cause)
         return {'schema': ARTIFACT_SCHEMA, 'engine': PROVIDER, 'verdict': problems[0] if problems else 'complete',
                 'complete': not problems, 'problems': problems, 'terminal': self.result, 'terminal_receipt': self.receipt,
+                'probe': {'result': self.probe_result, 'assistants_before_prompt': self.assistants_before_prompt,
+                          'prompt_written': self.prompt_written},
                 'stream': {'lines': self.lines, 'malformed': self.malformed,
                            'output_digest': (termination or {}).get('output_digest'),
                            'output_bytes': (termination or {}).get('output_bytes')},
