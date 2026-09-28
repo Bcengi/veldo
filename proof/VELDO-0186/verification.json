@@ -1,0 +1,58 @@
+{
+ "checks": {
+  "anchors": "0 bad anchors",
+  "engine_copies": {
+   "control_factory_setup.py": "325f0d1e8f24e6da3d7f8fe135ef2c322744378cc076a29895d3821933caced9",
+   "control_factory_setup_engines.py": "763d6811a10142d12f37a800124fedbc9aa71a383361fe280c491046bdf56fc8",
+   "control_service.py": "3e091ad0caa9741dc2994d5cba110ce84401898b40548c62bb0c35101055af87",
+   "init_scaffold.py": "34db300408b751b006155f94b58685ae5104c6a1ac561f84f4470054ccbfbd48"
+  },
+  "footprint": "changed 23, outside the footprint: none",
+  "validate_all": {
+   "exit_code": 0,
+   "log_sha256": "9e6883992332a14ccb14ff6d4feda4c4a02827ce810cfcf2b3a092bb613ac117"
+  }
+ },
+ "clean": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/v186-clean-home-8fxbm0j_",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "exit_code": 2,
+  "failed": 0,
+  "partial": true,
+  "passed": 32,
+  "seconds": 11.54
+ },
+ "command": "python3 scripts/selftest.py --suite 86_veldo_0186_setup_assets",
+ "implementation_commit": "3aa62dd72b764d0dc26188d38b89e9269adc68cc",
+ "limitation": "Partial runs do not certify the gate or authorize landing.",
+ "mutations": "registered; execution reserved for reviewer",
+ "normal": {
+  "exit_code": 2,
+  "failed": 0,
+  "partial": true,
+  "passed": 32,
+  "seconds": 10.77
+ },
+ "not_run": [
+  "whole selftest",
+  "scripts/verify.sh",
+  "scripts/check_teeth_mutations.py",
+  "scripts/check_gate_mutations.py",
+  "other suite selectors"
+ ],
+ "red_record": "red-at-9f1a0445.json",
+ "spec_id": "VELDO-0186",
+ "suite": "86_veldo_0186_setup_assets"
+}
