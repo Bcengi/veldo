@@ -12,6 +12,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import tomllib
@@ -28,17 +29,42 @@ def load(name, path):
     return module
 
 
-def capture(f, engine, mode, marker, evidence):
+SENSITIVE = re.compile(r'token|key|secret|authoriz|credential|bearer|cookie|password|[A-Za-z0-9+/=_-]{40,}', re.I)
+
+
+def diagnose(path, label, work, record, page):
+    """A failed run's receiver messages and record lines, with any sensitive-looking line dropped."""
+    if not path:
+        return
+    lines = ['== ' + label, 'record: ' + json.dumps({k: record.get(k) for k in sorted(record)
+                                                    if k not in ('execution_record',)}, default=str)[:4000]]
+    for message in getattr(work, 'messages', []) or []:
+        lines.append('message: ' + json.dumps(message, default=str)[:2000])
+    for row in (page or {}).get('lines', []):
+        lines.append(row['stream'] + ': ' + row['payload'][:600])
+    kept = [l for l in lines if not SENSITIVE.search(l)]
+    with open(path, 'a') as handle:
+        handle.write('\n'.join(kept) + '\n(dropped %d sensitive-looking lines)\n' % (len(lines) - len(kept)))
+
+
+def capture(f, engine, mode, marker, evidence, diagnostics=None):
     role = engine + '-' + mode
     contract = f.prepare(engine, engine + '-' + mode + ('-planted' if marker else '-control'), {'role': role},
                          {'task': 'Reply with the word ready. Do not invoke any tools.'})
     work = f.launch(engine, contract)
     record = f.finish(engine, work)
+    label = engine + ' ' + mode + (' planted' if marker else ' control')
+    try:
+        page = f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 100000, record.get('execution_record'))
+    except f.L.ER.Refused as error:
+        diagnose(diagnostics, label + ' (no record: ' + str(error) + ')', work, record, None)
+        raise
+    if diagnostics and not f.D.completed(record):
+        diagnose(diagnostics, label, work, record, page)
     revision = contract['capability']['configuration']['role_revision']
     baseline = next((e['baseline'] for e in work.messages if e.get('event') == 'baseline'), {})
     artifact = next((e['artifact'] for e in work.messages if e.get('event') == 'artifact'), {})
     document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
-    page = f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 100000, record.get('execution_record'))
     events, debug, retained = [], [], []
     for row in page['lines']:
         retained.append(row['payload'])
@@ -95,7 +121,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ('claude', 'codex', 'claude-profile', 'codex-profile', 'claude-model', 'codex-model'):
         parser.add_argument(P + option, required=True)
+    # Diagnosis only: one engine, one mode and one marker choice, printed, never written as a capture.
+    parser.add_argument(P + 'only', help='engine:mode:control|planted')
+    parser.add_argument(P + 'diagnostics', help='a file under /run/user/UID/ for redacted failed-run lines')
     args = vars(parser.parse_args())
+    only = tuple(args.pop('only').split(':')) if args.get('only') else None
+    diagnostics = args.pop('diagnostics')
+    if diagnostics and not diagnostics.startswith('/run/user/' + str(os.getuid()) + '/'):
+        raise SystemExit('diagnostics must be under /run/user/' + str(os.getuid()))
     evidence = load('role_live_evidence', HERE / 'evidence.py')
     fixture = load('role_live_factory', HERE / 'factory.py')
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
@@ -116,6 +149,8 @@ def main():
         f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
         try:
             for engine in ('claude', 'codex'):
+                if only and only[0] != engine:
+                    continue
                 for mode in ('always', 'deferred'):
                     definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
                     if mode == 'deferred':
@@ -123,7 +158,12 @@ def main():
                     f.save(definition)
                 result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
                 for mode in ('always', 'deferred'):
-                    result['runs'].append(capture(f, engine, mode, False, evidence))
+                    if only and only[1] != mode:
+                        continue
+                    if not only or only[2] == 'control':
+                        result['runs'].append(capture(f, engine, mode, False, evidence, diagnostics))
+                    if only and only[2] != 'planted':
+                        continue
                     profile = base / (engine + '-login')
                     marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
                     if engine == 'codex':
@@ -131,10 +171,17 @@ def main():
                     for path in marker_paths:
                         path.write_text(('VELDO0127_UNLISTED_MARKER ' * 4000) + '\n')
                     try:
-                        result['runs'].append(capture(f, engine, mode, True, evidence))
+                        result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
                     finally:
                         for path in marker_paths: path.unlink()
                 result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
+                if only:
+                    for run in result['runs']:
+                        print(json.dumps({k: run[k] for k in ('mode', 'marker', 'completed', 'init', 'expected',
+                                                              'first_turn_context', 'listing', 'marker_present',
+                                                              'debug_marker_present', 'credential_sources')}))
+                    print(engine + ' (diagnosis only, not written): ' + '; '.join(result['problems']))
+                    continue
                 (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
                 print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
         finally:
