@@ -93,4 +93,8 @@ two workers. The builder did not run that mutation mode or the mutation checker.
 The review repair runs only suite `86_veldo_0148_re_land`, serially, in the ordinary environment
 and the requested empty gate environment. These are partial checks, not a full gate verdict;
 subset mode intentionally exits 2. Final counts and the footprint, anchor and validation results
-are recorded in the specification History. Changed engine modules match their repository copies.
+are recorded in the specification History. Each environment passes all 12 suite rows (38 with
+shared preamble), with zero failures. The supplied footprint check reports 41 changed paths and
+none outside; the anchor check reports 0 bad anchors; validation exits 0. All three changed engine
+modules match their repository copies. The suite remains registered once; requires.json was
+regenerated without changes. No other suites or full gate ran in this repair.

@@ -240,3 +240,16 @@ both passes directly. No footprint expansion.
 rebuild; offer the rebuild review at its new evidence commit; reject open with follows=None after
 an end; replace the module-declared EXTERNAL_LOADERS opt-out; move synchronous re-land gates out
 of loop passes; clean up refs/veldo/observed/*.
+
+2026-09-28, review repair proof: suite 86 passes all 12 rows in ordinary and empty gate
+environments, serially (38 including the shared preamble, zero failures; subset exit 2).
+The current suite replayed against b33e82f8 makes both new approval rows red by assertion;
+against ad916989 all ten behavior rows are red by assertion. The repeated-question row now
+counts questions on both passes directly. All 14 finding-148 registrations have unique names,
+valid single anchors, compiling mutant sources and current digests and diffs; their execution
+is reserved for the reviewer. The prior 12 rejections are preserved separately as historical
+evidence. The supplied footprint checker reports 41 changed paths, none outside; anchor_check
+reports 0 bad anchors; validate.py all exits 0; the three changed engine modules match byte for
+byte and the diff has no whitespace errors. Suite 86 remains registered once and requires.json
+was regenerated without changes. No other suites, full gate or mutation checker ran in this
+repair. Gate byproducts are restored before the final commit and are excluded from this work.
