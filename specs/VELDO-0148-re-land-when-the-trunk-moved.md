@@ -29,6 +29,12 @@ footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
   - "packs/*/.veldo/control_service*.py"
+  - "engine/.veldo/control_verification.py"
+  - ".veldo/control_verification.py"
+  - "packs/*/.veldo/control_verification.py"
+  - "engine/.veldo/control_proof.py"
+  - ".veldo/control_proof.py"
+  - "packs/*/.veldo/control_proof.py"
   - "scripts/suites/*_veldo_0148_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -167,3 +173,29 @@ marks a specification ready.
 2026-09-25, PLAN-0019 revision 4 review: the factory loop this concern extends is VELDO-0154, split
 from VELDO-0129 (its former AC4 is VELDO-0154 AC1), so depends_on names VELDO-0154 in place of
 VELDO-0129 and the loop references follow. Criterion meaning unchanged.
+
+2026-09-28: built on branch build-veldo-0148 from main ad916989. Each land of a unit is its own land dispatch,
+recorded by the land station, class LandStation in the new `control_landing_station.py` (records of kind
+`land_dispatch`, one transition, `open` and `end`, by an active service member; one land of a unit at a time, and
+a land that follows another must follow the unit's latest one, only after it ended trunk_moved or
+awaiting_approval). A land runs the factory land unchanged (GitLandOps with the CandidatePolicy and the
+VELDO-0057 Landing) and ends landed, trunk_moved (the publication refused `stale-subject` at the listing or
+`trunk-moved` after it, with the watermark, the tip found and the classification), conflict, awaiting_approval
+(only a grant for the re-merged tree is missing, with its exact subject), unknown or failed. The factory loop's
+next-station rule (`control_service.py` Line.after_land) re-lands a trunk_moved unit as one new land dispatch,
+sends a conflicted one back to its builder as a new build dispatch whose payload names the new trunk to merge and
+offers its review once it completed, and asks the project's owner once per re-land for a fresh grant, recording
+his grant as an approval bound to exactly the re-merged tree before the next land dispatch; each land runs to its
+end inside the pass, and one whose end owes a next station wakes the next pass as a run's end. The work
+configuration names a repository's `land` station (installation refuses a malformed one by name), and the loop's
+status reports each station's dispatches. The effect executor (`control_effect_executor.py`) fetches each
+destination's moved tip into its publication clone and records a lost lease as a refused publication,
+`trunk-moved`, when every destination's trunk holds a commit that does not contain the candidate; a tip that
+contains it stays unknown. The lander loads its siblings by its own path (`lander.py`), so the land station runs
+from the service's installed executable. Two files outside the drafted footprint were needed for that, added
+here: the installation's closure reads a module's declared EXTERNAL_LOADERS, and `control_verification.py`
+declares its `_policy_main`, which loads the trusted installation's policy_check.py in a process of its own; and
+`control_proof.py` loads validate.py through control_eligibility's ValidatorSnapshot of its own directory, since
+validate.py loads its organs from a repository tree and the CandidatePolicy asks the proof reader about the
+candidate. Suite 86, the red record against ad916989, finding 148 and proof/VELDO-0148/ carry the evidence. No
+criterion or status changes.
