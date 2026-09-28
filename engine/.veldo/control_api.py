@@ -462,8 +462,8 @@ class ControlApi:
         self.observe(event)
         kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
         out = [('Content-Type', kind), ('Cache-Control', 'no-store'),
-               ('Strict-Transport-Security', HSTS), ('Content-Security-Policy', CSP),
-               ('X-Content-Type-Options', 'nosniff')] + extra
+               ('Strict-Transport-Security', HSTS), ('X-Content-Type-Options', 'nosniff')] + extra
+        out.append(('Content-Security-Policy', CSP))
         return status, out, value
 
     def _handle(self, method, path, headers, raw, extra, about):

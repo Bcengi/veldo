@@ -71,6 +71,8 @@ def _v140_suite():
     for source in sorted((ROOT / '.veldo').glob('*.py')):
         shutil.copyfile(source, mods / source.name)
     shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-authority.service', mods / 'services' / 'veldo-authority.service')
+    if (ROOT / '.veldo' / 'services' / 'veldo-api.service').is_file():
+        shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-api.service', mods / 'services' / 'veldo-api.service')
     for name, source in PRODUCTION.items():
         target = mods / name
         if target.exists():
@@ -84,6 +86,12 @@ def _v140_suite():
     K = load('v140_keys', mods / 'control_keys.py')
     git = load('v140_git', mods / 'git_process.py')
     H = load('v140_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
+    # VELDO-0171: setup reads Tailscale; this suite's setup reads the stand-in replaying the scrubbed capture,
+    # never the host's real CLI.
+    TS = load('v140_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
+    tailscale = TS.stand_in(ROOT / 'proof' / 'VELDO-0171' / 'tailscale-capture.json', sys.executable)
+    ts_overrides = ({'tailscale': [tailscale.path], 'api_port': TS.free_port()}
+                    if 'tailscale' in __import__('inspect').signature(F.setup).parameters else {})
     AC = ACT.AC
 
     # The socket guard of this process: nothing but the loopback interface, every other attempt counted.
@@ -176,7 +184,7 @@ def _v140_suite():
         report, fault = attempt(F.setup, str(state_root), owner, str(owner_key), str(clone), chat, str(token_file),
                                 host_trust=str(base / 'xdg' / 'veldo' / 'host_trust.json'),
                                 install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile,
-                                writable=[], runner=Manager(), origin=url)
+                                writable=[], runner=Manager(), origin=url, **ts_overrides)
         report = report or {}
         keys = state_root / 'keys'
         config, fault2 = attempt(CSV.load_config, os.path.join(report.get('home') or str(base / 'none'), 'config', 'service.json'))
@@ -594,6 +602,7 @@ def _v140_suite():
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         with contextlib.suppress(Exception):
             stop_api()
+        tailscale.close()
         for handle in (getattr(ch, 'ingress', None), getattr(service, 'conn', None)):
             with contextlib.suppress(Exception):
                 (handle.conn if hasattr(handle, 'acquirer') else handle).close()

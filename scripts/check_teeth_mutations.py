@@ -5526,7 +5526,7 @@ def cases():
             "    if held and held[0] != 'store':  # defect: an existing store is set up over\n", 'refuse/existing-store')
     factory('state-root-mode-unchecked', "    if stat.S_IMODE(info.st_mode) != 0o700:\n",
             "    if False:  # defect: a state root open to others is accepted\n", 'refuse/writes-nothing')
-    factory('host-trust-overwritten', "    if os.path.lexists(host_trust):\n",
+    factory('host-trust-overwritten', "    if not rerun and os.path.lexists(host_trust):\n",
             "    if False:  # defect: an existing host trust is not refused before writing\n", 'refuse/writes-nothing')
     factory('host-directory-open', "            os.chmod(os.path.join(root, name), 0o700)\n",
             "            os.chmod(os.path.join(root, name), 0o755 if name == HOST_DIR else 0o700)  # defect: open to others\n",
@@ -5547,8 +5547,8 @@ def cases():
     factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
             "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
             'chat/enrolled')
-    factory('setup-starts-service', "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n",
-            "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n"
+    factory('setup-starts-service', "                                   api_service=api_service)\n",
+            "                                   api_service=api_service)\n"
             "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
             'service/starts-inert')
     # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
@@ -5587,8 +5587,8 @@ def cases():
             'qualification/one-request-across-restart', module='control_service_channel.py')
     # Review 1, filed and fixed with it.
     factory('rerun-blocked-by-kept-directory',
-            "    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):\n",
-            "    if E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace))):"
+            "    if not rerun and (E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace))):\n",
+            "    if not rerun and (E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace)))):"
             "  # defect: a directory the rollback keeps blocks a second setup\n", 'rollback/rerun')
     factory('store-world-readable',
             "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))\n            os.chmod(plan['store'], 0o600)\n",
@@ -8842,6 +8842,80 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+    # VELDO-0171: setup lays the API down behind Tailscale Serve and a re-run changes nothing. Each criterion's
+    # declared falsifier first, then the threat model's other shapes.
+    def setup_api(name, module, old, new, row, also=()):
+        add(171, name, '85_veldo_0171_setup_api.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the api edge's enrollment is left out of setup, its key kept.
+    setup_api('api171-edge-not-enrolled', 'control_factory_setup.py',
+              "            enroll_api_edge(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)\n",
+              "            (lambda *a: None)(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id,"
+              " projection)  # defect: the api edge is not enrolled\n", 'api-edge/installed-api-call')
+    # AC2 (declared falsifier): setup runs `tailscale funnel` in place of `tailscale serve`.
+    setup_api('api171-funnel-in-place-of-serve', 'control_factory_setup_api.py',
+              "    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % HTTPS_PORT, target(port)])\n",
+              "    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % HTTPS_PORT, target(port)])"
+              "  # defect: Funnel publishes the API\n", 'tailscale/serve-bg')
+    # AC3 (declared falsifier): the API's origin is written as the loopback address, not the tailnet name.
+    setup_api('api171-origin-loopback', 'control_factory_setup_api.py',
+              "            'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],\n",
+              "            'api': {'origin': target(port), 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],"
+              "  # defect: the loopback address as the origin\n", 'passkey/first-enrollment',
+              also=[("            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],\n",
+                     "            'origin': target(PORT), 'workflows_repository': ids['repository_uuid'],"
+                     "  # defect: the loopback address as the origin\n")])
+    # AC4 (declared falsifier): a new api edge key is generated on every run.
+    setup_api('api171-new-key-every-run', 'control_factory_setup.py',
+              "        if edge == 'absent':\n            API.generate_keys(api['key'], api['connection_key'])\n",
+              "        for stale in (api['key'], api['key'] + '.pub', api['connection_key'], api['connection_key'] + '.pub'):"
+              "  # defect: a new api edge key on every run\n"
+              "            if os.path.lexists(stale):\n                os.unlink(stale)\n"
+              "        if True:\n            API.generate_keys(api['key'], api['connection_key'])\n", 'rerun/changes-nothing')
+    # AC1: setup writes the store while the running service holds its lock.
+    setup_api('api171-store-written-while-running', 'control_factory_setup.py', "    running = lock is None\n",
+              "    running = False  # defect: the running service's lock is ignored\n", 'api-edge/running-service')
+    setup_api('api171-projection-not-republished', 'control_factory_setup.py',
+              "                API.republish(S, CM, K, plan['store'], projection)\n",
+              "                pass  # defect: the key projection is not republished\n", 'api-edge/running-service')
+    # AC2: the API listens beyond loopback, the operator setting is not checked, the CLI is found on PATH, the
+    # API process is not in the installed executable.
+    setup_api('api171-listens-beyond-loopback', 'control_factory_setup_api.py',
+              "            'listen': {'host': LOOPBACK, 'port': port},\n",
+              "            'listen': {'host': '0.0.0.0', 'port': port},  # defect: every interface\n", 'api/loopback-only')
+    setup_api('api171-operator-unchecked', 'control_factory_setup_api.py',
+              "    if os.getuid() != 0 and not (isinstance(prefs.get('OperatorUser'), str) and prefs['OperatorUser'].strip()):\n",
+              "    if False:  # defect: the operator setting is not checked\n", 'tailscale/refusals')
+    # (A mutant that searches PATH would run the host's real CLI wherever a row names no location, so the
+    # falsifier is a location list that is not the fixed system paths; every row names its CLI explicitly.)
+    setup_api('api171-cli-location-not-fixed', 'control_factory_setup_api.py',
+              "TAILSCALE_PATHS = ('/usr/bin/tailscale', ",
+              "TAILSCALE_PATHS = ('tailscale', '/usr/bin/tailscale', ", 'tailscale/fixed-paths')
+    setup_api('api171-entry-point-dropped', 'control_service.py',
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py')\n",
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')"
+              "  # defect: the API process is not installed\n", 'api/unit')
+    setup_api('api171-started-when-added', 'control_factory_setup.py', "        if running and not added:\n",
+              "        if running:  # defect: the service is not restarted, but the API is started anyway\n", 'api/start-rules')
+    # AC3: the host command signs whichever registration comes first; the policy is left out.
+    setup_api('api171-fingerprint-ignored', 'control_factory_setup_api.py',
+              "             if CR.describe(record).get('fingerprint') == fingerprint]\n",
+              "             if live]  # defect: the fingerprint the owner named is not compared\n", 'passkey/first-enrollment')
+    setup_api('api171-policy-omitted', 'control_api.py', "        out.append(('Content-Security-Policy', CSP))\n",
+              "        pass  # defect: no content security policy\n", 'api/content-security-policy')
+    setup_api('api171-policy-only-on-handled', 'control_api.py',
+              "            if not getattr(self, '_policy_sent', False):\n",
+              "            if False:  # defect: the responses http.server writes itself carry no policy\n",
+              'api/content-security-policy')
+    # AC4: an argument is not compared; an existing differing file is taken as equal; the module is not scaffolded.
+    setup_api('api171-chat-not-compared', 'control_factory_setup.py',
+              "    if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:\n",
+              "    if False:  # defect: the chat is not compared\n", 'rerun/arguments-compared')
+    setup_api('api171-differing-file-accepted', 'control_factory_setup_api.py',
+              "            or Path(path).read_text() != data):\n",
+              "            or False):  # defect: a file that would differ is taken as equal\n", 'rerun/differs-refused')
+    setup_api('api171-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_api.py",\n', '',
+              'install/assets')
     return result
 
 

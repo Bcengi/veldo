@@ -114,7 +114,8 @@ def _v171_suite():
         if Path(source).is_file():
             shutil.copyfile(source, target)
     H = load('v171_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
-    TS = load('v171_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
+    STAND_IN = ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py'
+    TS = load('v171_tailscale', STAND_IN) if STAND_IN.is_file() else None
     _git_process = load('v171_git', mods / 'git_process.py')
     CS = load('v171_service', mods / 'control_service.py')
     CC = load('v171_client', mods / 'control_client.py')
@@ -418,8 +419,8 @@ def _v171_suite():
     profile = {'kind': 'linux-systemd', 'slice': 'v171%s.slice' % os.urandom(3).hex(), 'lock': str(base / 'workers.lock'),
                'concurrency': 1, 'runtime_seconds': 600, 'memory_bytes': 256 << 20, 'cpu_percent': 100,
                'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
-    ts = TS.stand_in(CAPTURE, sys.executable)
-    port = TS.free_port()
+    ts = TS.stand_in(CAPTURE, sys.executable) if TS is not None and CAPTURE.is_file() else None
+    port = TS.free_port() if TS is not None else 0
     managers = []
 
     def setup(state_root, workspace, host_trust, install, units, manager, tailscale=None, module=None, **replace):
@@ -581,11 +582,12 @@ def _v171_suite():
             return {'accepted': False, 'reason': 'routing:' + exc.reason}
 
     try:
-        takes = F is not None and FA is not None and 'tailscale' in inspect.signature(F.setup).parameters
+        takes = (F is not None and FA is not None and ts is not None
+                 and 'tailscale' in inspect.signature(F.setup).parameters)
         if not takes:
             for name in ROWS:
-                check(name, 'veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, and setup '
-                      'takes the Tailscale CLI\'s system paths)', False)
+                check(name, 'veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the '
+                      'Tailscale CLI\'s system paths, and the capture and its stand-in exist)', False)
             raise StopIteration
 
         # AC1 to AC3: the module, its template and its routing travel with the engine.
@@ -1231,7 +1233,8 @@ def _v171_suite():
             with contextlib.suppress(Exception):
                 manager.close()
         stop_bot_api()
-        ts.close()
+        if ts is not None:
+            ts.close()
         for directory, _dirs, _files in os.walk(str(base)):
             with contextlib.suppress(OSError):
                 os.chmod(directory, 0o700)
