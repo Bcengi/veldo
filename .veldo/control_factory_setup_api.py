@@ -401,7 +401,11 @@ def passkey(state_root, owner, owner_key, fingerprint=None, clock=time.time):
                     membership_version=status.get('membership_version'),
                     delegation_version=status.get('delegation_version'),
                     command_digest=AC.canonical_command_digest(command))
-    result = send({'command': command, 'envelope': envelope, 'signature': sign(AC.canonical_envelope_bytes(envelope))})
+    try:
+        signature = sign(AC.canonical_envelope_bytes(envelope))
+    except ACT.Refused:
+        raise Refused('invalid_input:owner_key:does_not_sign', 'the owner key did not sign') from None
+    result = send({'command': command, 'envelope': envelope, 'signature': signature})
     shown = dict(CR.describe(record), principal=owner, pending_id=path.stem,
                  credential_id=record['binding'].get('credential_id'), command_id=command['command_id'])
     if not result.get('ok'):

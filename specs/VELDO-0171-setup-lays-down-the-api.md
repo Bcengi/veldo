@@ -32,6 +32,8 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0171_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/support/v171_tailscale.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"

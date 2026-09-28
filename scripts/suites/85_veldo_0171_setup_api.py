@@ -854,89 +854,6 @@ def _v171_suite():
                   not any(c[0] in ('start', 'stop', 'restart', 'enable') for c in calls_a)
                   and not manager_a.alive(unit_a) and not manager_a.alive(api_unit_a))
 
-        # AC4 (declared falsifier): a second run over the complete host changes nothing.
-        binding_a = Path(CEN.binding_path(str(clone_a)))
-        trees_a = (root_a, install_a, units_a, trust_a.parent, binding_a)
-        with section(RR):
-            before, head = snapshot(*trees_a), journal(store_a)
-            keys_before = {p.name: p.read_bytes() for p in sorted(keys_a.iterdir())}
-            code2, again = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
-            changed, added, removed = changes(before, snapshot(*trees_a))
-            check(RR, 'a second run with the same arguments is accepted and reports every step already done [%s %s]'
-                  % (again.get('outcome'), again.get('reason')),
-                  code2 == 0 and again.get('outcome') == 'already_set_up'
-                  and all(s.get('outcome') in ('already_done', 'deferred') for s in again.get('steps') or [])
-                  and [s.get('step') for s in again.get('steps') or []][:12] == list(F.BASE_STEPS))
-            check(RR, 'every file under the state root, install root, unit directory, host trust and workspace binding '
-                  'is byte for byte the same [%s]' % (changed + added + removed)[:4], not (changed or added or removed))
-            keys_after = {p.name: p.read_bytes() for p in sorted(keys_a.iterdir())}
-            check(RR, 'no key was generated and none changed', keys_after == keys_before)
-            after = journal(store_a)
-            check(RR, 'the journal head is unchanged and it still holds one api edge enrollment [%d %d]'
-                  % (len(head), len(after)), after == head
-                  and len([r for r in after if 'api-edge' in str(r.get('command_id'))]) == 1)
-            check(RR, 'the Serve status is unchanged and no `serve --bg` ran again [%s]' % ts.invocations(),
-                  ts.target() == TARGET and not any(c[:1] in (['serve'], ['funnel']) and '--bg' in c for c in ts.invocations()))
-            ts.clear()
-
-        # AC4: a run whose arguments differ from what is laid down is refused by name, writing nothing.
-        with section(AR):
-            other_clone = clone('clone-other')
-            variants = (('owner', {'--owner': 'someone'}), ('owner_key', {'--owner-key': str(other_key)}),
-                        ('workspace', {'--workspace': str(other_clone)}), ('chat', {'--chat': str(chat + 1)}),
-                        ('token_file', {'--token-file': str(other_token)}))
-            for name, replace in variants:
-                before = snapshot(base)
-                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a, **replace)
-                changed, added, removed = changes(before, snapshot(base))
-                check(AR, 'another %s: refused as invalid_input:state_root:holds_%s, writing nothing [%s %s]'
-                      % (name, name, shown.get('reason'), (changed + added + removed)[:3]),
-                      got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_' + name
-                      and not (changed or added or removed))
-            for name, place in (('host_trust', dict(trust=base / 'xdg-other' / 'veldo' / 'host_trust.json')),
-                                ('install_root', dict(install=base / 'install-other')),
-                                ('unit_dir', dict(units=base / 'units-other'))):
-                before = snapshot(base)
-                got, shown = setup(root_a, clone_a, place.get('trust', trust_a), place.get('install', install_a),
-                                   place.get('units', units_a), manager_a)
-                changed, added, removed = changes(before, snapshot(base))
-                check(AR, 'another %s: refused as invalid_input:state_root:holds_%s, writing nothing [%s %s]'
-                      % (name, name, shown.get('reason'), (changed + added + removed)[:3]),
-                      got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_' + name
-                      and not (changed or added or removed))
-            kept = profile['concurrency']
-            profile['concurrency'] = 2
-            before = snapshot(base)
-            try:
-                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
-            finally:
-                profile['concurrency'] = kept
-            changed, added, removed = changes(before, snapshot(base))
-            check(AR, 'another profile: refused as invalid_input:state_root:holds_profile, writing nothing [%s]'
-                  % shown.get('reason'), got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_profile'
-                  and not (changed or added or removed))
-            check(AR, 'every argument was judged before Tailscale was read [%s]' % ts.invocations(), ts.invocations() == [])
-
-        # AC4: an existing file the run would write differently is refused by name and never overwritten.
-        with section(DF):
-            for path in (home_a / 'config' / 'api-process.json', units_a / api_unit_a, host_a / 'signer.json'):
-                original = path.read_bytes()
-                os.chmod(str(path), 0o600)
-                path.write_bytes(original.replace(b'127.0.0.1', b'127.0.0.2') if b'127.0.0.1' in original
-                                 else original + b'\n# changed\n')
-                os.chmod(str(path), 0o644 if path.suffix == '.service' else 0o600)
-                planted = path.read_bytes()
-                before = snapshot(base)
-                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
-                changed, added, removed = changes(before, snapshot(base))
-                check(DF, '%s differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing '
-                      'written [%s %s]' % (path.name, shown.get('reason'), (changed + added + removed)[:3]),
-                      got == 1 and shown.get('reason') == 'invalid_input:state_root:differs:' + str(path)
-                      and path.read_bytes() == planted and not (changed or added or removed))
-                path.write_bytes(original)
-                os.chmod(str(path), 0o644 if path.suffix == '.service' else 0o600)
-            ts.clear()
-
         # The fresh host's service is started by the owner: the API unit starts with it.
         began = CS.start(unit_a, manager_a)
         api_pid = wait(lambda: manager_a.pid(api_unit_a) if listening(manager_a.pid(api_unit_a) or 0) else None, 20)
@@ -1058,6 +975,90 @@ def _v171_suite():
         with section(UN):
             check(UN, 'stopping the authority unit stops the API unit bound to it',
                   not manager_a.alive(unit_a) and not manager_a.alive(api_unit_a))
+
+        # AC4 (declared falsifier): a second run over the complete host changes nothing.
+        binding_a = Path(CEN.binding_path(str(clone_a)))
+        trees_a = (root_a, install_a, units_a, trust_a.parent, binding_a)
+        with section(RR):
+            head = journal(store_a)
+            before = snapshot(*trees_a)
+            keys_before = {p.name: p.read_bytes() for p in sorted(keys_a.iterdir())}
+            code2, again = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
+            changed, added, removed = changes(before, snapshot(*trees_a))
+            check(RR, 'a second run with the same arguments is accepted and reports every step already done [%s %s]'
+                  % (again.get('outcome'), again.get('reason')),
+                  code2 == 0 and again.get('outcome') == 'already_set_up'
+                  and all(s.get('outcome') in ('already_done', 'deferred') for s in again.get('steps') or [])
+                  and [s.get('step') for s in again.get('steps') or []][:12] == list(F.BASE_STEPS))
+            check(RR, 'every file under the state root, install root, unit directory, host trust and workspace binding '
+                  'is byte for byte the same [%s]' % (changed + added + removed)[:4], not (changed or added or removed))
+            keys_after = {p.name: p.read_bytes() for p in sorted(keys_a.iterdir())}
+            check(RR, 'no key was generated and none changed', keys_after == keys_before)
+            after = journal(store_a)
+            check(RR, 'the journal head is unchanged and it still holds one api edge enrollment [%d %d]'
+                  % (len(head), len(after)), after == head
+                  and len([r for r in after if 'api-edge' in str(r.get('command_id'))]) == 1)
+            check(RR, 'the Serve status is unchanged and no `serve --bg` ran again [%s]' % ts.invocations(),
+                  ts.target() == TARGET and not any(c[:1] in (['serve'], ['funnel']) and '--bg' in c for c in ts.invocations()))
+            ts.clear()
+
+        # AC4: a run whose arguments differ from what is laid down is refused by name, writing nothing.
+        with section(AR):
+            other_clone = clone('clone-other')
+            variants = (('owner', {'--owner': 'someone'}), ('owner_key', {'--owner-key': str(other_key)}),
+                        ('workspace', {'--workspace': str(other_clone)}), ('chat', {'--chat': str(chat + 1)}),
+                        ('token_file', {'--token-file': str(other_token)}))
+            for name, replace in variants:
+                before = snapshot(base)
+                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a, **replace)
+                changed, added, removed = changes(before, snapshot(base))
+                check(AR, 'another %s: refused as invalid_input:state_root:holds_%s, writing nothing [%s %s]'
+                      % (name, name, shown.get('reason'), (changed + added + removed)[:3]),
+                      got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_' + name
+                      and not (changed or added or removed))
+            for name, place in (('host_trust', dict(trust=base / 'xdg-other' / 'veldo' / 'host_trust.json')),
+                                ('install_root', dict(install=base / 'install-other')),
+                                ('unit_dir', dict(units=base / 'units-other'))):
+                before = snapshot(base)
+                got, shown = setup(root_a, clone_a, place.get('trust', trust_a), place.get('install', install_a),
+                                   place.get('units', units_a), manager_a)
+                changed, added, removed = changes(before, snapshot(base))
+                check(AR, 'another %s: refused as invalid_input:state_root:holds_%s, writing nothing [%s %s]'
+                      % (name, name, shown.get('reason'), (changed + added + removed)[:3]),
+                      got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_' + name
+                      and not (changed or added or removed))
+            kept = profile['concurrency']
+            profile['concurrency'] = 2
+            before = snapshot(base)
+            try:
+                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
+            finally:
+                profile['concurrency'] = kept
+            changed, added, removed = changes(before, snapshot(base))
+            check(AR, 'another profile: refused as invalid_input:state_root:holds_profile, writing nothing [%s]'
+                  % shown.get('reason'), got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_profile'
+                  and not (changed or added or removed))
+            check(AR, 'every argument was judged before Tailscale was read [%s]' % ts.invocations(), ts.invocations() == [])
+
+        # AC4: an existing file the run would write differently is refused by name and never overwritten.
+        with section(DF):
+            for path in (home_a / 'config' / 'api-process.json', units_a / api_unit_a, host_a / 'signer.json'):
+                original = path.read_bytes()
+                os.chmod(str(path), 0o600)
+                path.write_bytes(original.replace(b'127.0.0.1', b'127.0.0.2') if b'127.0.0.1' in original
+                                 else original + b'\n# changed\n')
+                os.chmod(str(path), 0o644 if path.suffix == '.service' else 0o600)
+                planted = path.read_bytes()
+                before = snapshot(base)
+                got, shown = setup(root_a, clone_a, trust_a, install_a, units_a, manager_a)
+                changed, added, removed = changes(before, snapshot(base))
+                check(DF, '%s differs: refused as invalid_input:state_root:differs:<its path>, left as it is, nothing '
+                      'written [%s %s]' % (path.name, shown.get('reason'), (changed + added + removed)[:3]),
+                      got == 1 and shown.get('reason') == 'invalid_input:state_root:differs:' + str(path)
+                      and path.read_bytes() == planted and not (changed or added or removed))
+                path.write_bytes(original)
+                os.chmod(str(path), 0o644 if path.suffix == '.service' else 0o600)
+            ts.clear()
 
         # AC1: with the service running, a store write the service takes no command for is refused by name.
         with section(RS):

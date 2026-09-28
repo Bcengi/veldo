@@ -1089,7 +1089,7 @@ class Service:
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
             elif command.get('operation') == EDGE.ENROLL and 'envelope' in packet:
-                result = self.api_edge(packet, observation)
+                result = self.api_edge(packet, repository, observation)
             elif command.get('operation') == CH.AUTHORIZE:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CH.DELEGATION_OPERATIONS:
@@ -1162,7 +1162,7 @@ class Service:
             return {'ok': False, 'reason': error.code}
         return {'ok': True, 'reason': command['operation'], 'result': result}
 
-    def api_edge(self, packet, observation):
+    def api_edge(self, packet, repository, observation):
         """The owner's enroll_channel_edge of the API's own edge (channel "api", VELDO-0171), signed at the host
         with the edge key's possession co-signature and sent by veldo factory setup while this service holds
         the store's lock; admitted by control_channel_enrollment on this instance's connection. No other
@@ -1171,7 +1171,7 @@ class Service:
         if not isinstance(params, dict) or params.get('channel') not in EDGE.API_CHANNELS:
             raise Refused('forbidden_command', 'the service enrolls only the API\'s own edge')
         writer = EDGE.Enrollment(S, self.conn, {'domain_uuid': self.domain, 'store_uuid': self.store,
-                                                'repository_uuid': (packet.get('envelope') or {}).get('repository_uuid')},
+                                                'repository_uuid': repository},
                                  self.principal, self.sign, authority_generation=self.generation)
         observed = writer.admit(packet.get('envelope'), packet.get('command'), packet.get('signature'),
                                 packet.get('possession'))
