@@ -8976,6 +8976,43 @@ def cases():
     add(127, 'role127-forget-first-context', suite127, 'control_launch.py',
         '                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)',
         '                    self.first_turn_context = None', ['launch/instructions'])
+    # VELDO-0127 live qualification: what the real engines accept and report, which the fakes now follow.
+    add(127, 'role127-probe-withheld', suite127, 'control_engine_claude.py',
+        "            self.probed = True\n            return (json.dumps(PROBE) + '\\n').encode()\n",
+        "            return None  # defect: the prompt waits for an init the engine reports only for a message\n",
+        ['handoff/claude'])
+    add(127, 'role127-probe-content', suite127, 'control_engine_claude.py',
+        "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []},",
+        "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': 'capability check'},", ['handoff/claude'])
+    add(127, 'role127-engine-plugins-kept', suite127, 'control_agent_config_handoff.py',
+        "    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
+        "    settings.update(disableBundledSkills=True,", ['handoff/claude'])
+    add(127, 'role127-bundled-skills-kept', suite127, 'control_agent_config_handoff.py',
+        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
+        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=False,", ['handoff/claude'])
+    add(127, 'role127-builtin-commands-compared', suite127, 'control_agent_config_handoff.py',
+        "            value = [v for v in value if v not in set(builtin)]",
+        "            value = list(value)", ['handoff/claude'])
+    add(127, 'role127-skill-tool-withdrawn', suite127, 'control_agent_config_handoff.py',
+        "    if capability['skills'] or 'Skill' in revision['native_tools']:",
+        "    if capability['skills']:", ['launch/unlisted'])
+    add(127, 'role127-codex-listing-exec-flag', suite127, 'control_agent_config_handoff.py',
+        "            done = subprocess.run([bound['path'], 'mcp'] + command",
+        "            done = subprocess.run([bound['path'], OPTION + 'ignore-user-config', 'mcp'] + command", ['handoff/codex'])
+    add(127, 'role127-codex-listing-profile', suite127, 'control_agent_config_handoff.py',
+        "    env['CODEX_HOME'] = str(home)\n",
+        "    pass  # defect: the listing reads the account profile's config.toml\n", ['handoff/codex'])
+    add(127, 'role127-codex-listing-tools-from-list', suite127, 'control_agent_config_handoff.py',
+        "        server = ask(['get', item['name']])",
+        "        server = dict(item)", ['handoff/codex'])
+    add(127, 'role127-context-line-every-run', '82_veldo_0141_execution_record.py', 'control_launch.py',
+        "            if (metering is not None and metering.first_turn_context is not None\n"
+        "                    and (self.binding or {}).get('capability')):\n",
+        "            if metering is not None and metering.first_turn_context is not None:\n",
+        ['record/claude-complete', 'record/codex-complete'])
+    add(127, 'role127-scaffold-omits-role-modules', '66_veldo_0047_authority.py', 'init_scaffold.py',
+        '    ".veldo/control_agent_config.py",\n    ".veldo/control_agent_config_handoff.py",\n', '',
+        ['authority/installed-assets'])
 
     return result
 
