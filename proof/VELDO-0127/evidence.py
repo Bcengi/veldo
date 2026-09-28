@@ -37,8 +37,10 @@ def wire_observation(body, expected, handoff):
             wanted.append('mcp__' + server + '.' + tool)
         else:
             wanted.extend(mapping.get(name, [name]))
-    tools = handoff.codex_request_tools(body)
-    actual = handoff.codex_tool_names(tools)
+    try:
+        actual = handoff.codex_tool_names(handoff.codex_request_tools(body))
+    except handoff.Refused:
+        actual = []
     return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
             'unexpected': sorted(set(actual) - set(wanted)),
             'missing': sorted(set(wanted) - set(actual)),

@@ -207,3 +207,11 @@ shell mapping, hiding owner-decision tools and hiding missing grants. No switch
 mutation is invented because no working switch was found or shipped. The reviewer
 must run mutation rejection; this run executes no mutants. Live rows still require
 fresh lead qualification, including the independent Claude recapture.
+
+Final scoped checks for this continuation: both normal and clean gate-environment
+runs report 16 owned behavior and format rows passing and two live rows failing.
+`red-at-04795046.json` records the changed row red by assertion. The footprint check
+reports nothing outside, the anchor check reports 0 bad anchors, and validate all
+exits 0. The gate and mutation worker were not run. Engine modules and qualification
+copies are byte-identical. `checks.json` records the scoped results without a gate
+or completed qualification claim.

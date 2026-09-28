@@ -24,8 +24,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-owner-tools-hidden.diff",
-   "source_sha256": "13113afa20a05c5887fc7c079dbe88d95e2a43deb9f416981405e99ad90c4ef3",
-   "mutant_sha256": "196cd426e7a1e30d82ab85329215786fd88254d0572a994c2cd9489631c07738",
+   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
+   "mutant_sha256": "f18be5ec0f784dd5f742460b82f5d1b5395887d4de9beb874510df0ac1aeda0e",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -36,8 +36,8 @@
     "review/codex-tools"
    ],
    "diff": "role127-code-mode-hides-missing-grants.diff",
-   "source_sha256": "13113afa20a05c5887fc7c079dbe88d95e2a43deb9f416981405e99ad90c4ef3",
-   "mutant_sha256": "79af30a23a9ff0d184dc31bac94be0289ec4d1be5c3277f7c735b9496addb7f3",
+   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
+   "mutant_sha256": "8b241e614271f76c45c91e1295c573ef508fc51f0190de2bc2ff954901cdcb82",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -325,8 +325,8 @@
     "review/marker-debug"
    ],
    "diff": "role127-planted-debug-ignored.diff",
-   "source_sha256": "13113afa20a05c5887fc7c079dbe88d95e2a43deb9f416981405e99ad90c4ef3",
-   "mutant_sha256": "dc68741349de4961fa0f1a542a383e157be5bfe4bf0f37f2b7f28fd25fc08393",
+   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
+   "mutant_sha256": "76cb03daacf5d00c535012e33acdb236d128b7a963a271514817e8d9e35f492e",
    "status": "registered; execution reserved for reviewer"
   },
   {
@@ -337,8 +337,8 @@
     "review/marker-debug"
    ],
    "diff": "role127-debug-control-vacuous.diff",
-   "source_sha256": "13113afa20a05c5887fc7c079dbe88d95e2a43deb9f416981405e99ad90c4ef3",
-   "mutant_sha256": "521bf89304b9ce6325ffe64b4764554f6bc502dc7a3c40d7af93870fb0804db2",
+   "source_sha256": "d668a145a6462094a2c404c3217f6d9789d42d5d5edcda7f33438160a14bd42d",
+   "mutant_sha256": "a0c6f6fa3f44bbc4acfa6eadb2c1eb03f2d9693c7a8df8e293e6541d14a4b0f6",
    "status": "registered; execution reserved for reviewer"
   },
   {

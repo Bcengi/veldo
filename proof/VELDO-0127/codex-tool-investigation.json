@@ -351,5 +351,18 @@
    ],
    "request_sha256": "7cd274d133e9084bb05e2344413608d015873d09650b1bd1363162b658bfc070"
   }
- ]
+ ],
+ "feature_listing": [
+  "code_mode                                under development  false",
+  "code_mode_host                           stable             true",
+  "code_mode_only                           under development  false",
+  "default_mode_request_user_input          under development  false",
+  "multi_agent                              stable             false",
+  "multi_agent_mode                         removed            false",
+  "multi_agent_v2                           stable             false",
+  "shell_tool                               stable             true"
+ ],
+ "feature_listing_command": "codex features list under the production role configuration, empty profiles and loopback.capture containment",
+ "model_catalog_command": "codex debug models under empty profiles and loopback.capture containment",
+ "reproduction": "For each probe, copy codex-loopback.json configuration, apply its overrides, and call loopback.capture(binary, configuration). Compare codex_tool_names(codex_request_tools(request body)). All probes use the unchanged pinned model catalog."
 }

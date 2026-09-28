@@ -1,7 +1,7 @@
 --- proof/VELDO-0127/evidence.py
 +++ proof/VELDO-0127/evidence.py
-@@ -41,7 +41,7 @@
-     actual = handoff.codex_tool_names(tools)
+@@ -43,7 +43,7 @@
+         actual = []
      return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
              'unexpected': sorted(set(actual) - set(wanted)),
 -            'missing': sorted(set(wanted) - set(actual)),

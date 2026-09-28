@@ -185,7 +185,6 @@ else:
 
     own['mcp_tools'] = {n: [t for t in server_tools(e) if t in e.get('enabled_tools',[])]
                        for n,e in config.get('mcp_servers',{}).items()}
-    (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     own['wire']['tools'] += [{'type':'namespace', 'name':'mcp__' + n,
                               'tools':[{'type':'function', 'name':t, 'parameters':{}} for t in ts]}
                              for n,ts in own['mcp_tools'].items()]
@@ -339,7 +338,8 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     check('review/codex-tools', 'qualification writer and comparator share exact shell and plan vocabulary',
                           observed.get('native_tool_mapping') == {'shell':['exec_command','write_stdin'], 'update_plan':['update_plan']}
                           and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
-                          and observed.get('missing') == [] and observed.get('unexpected') == [])
+                          and observed.get('missing') == [] and observed.get('unexpected') == []
+                          and observe({}, wanted, L.HANDOFF).get('stop') == 'missing_evidence:codex_request_tools')
                     capture = json.loads((TREE / 'proof/VELDO-0127/codex-loopback.json').read_text())
                     captured_wire = capture['requests'][0]['body']
                     facts = observe(captured_wire, wanted, L.HANDOFF) if observe else {}
