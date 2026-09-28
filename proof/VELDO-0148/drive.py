@@ -12,7 +12,7 @@ every run. Writes proof/VELDO-0148/mutations.json and one exact applied diff per
 With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
 extracted read-only with `git archive` into a temporary directory, and writes
 proof/VELDO-0148/red-at-COMMIT.json. Nothing in that tree is changed. Against the original base all behavior rows fail by assertion;
-against the review base the new approval-scope rows expose the overbroad requests and grants.
+against f59b3136 the four re-check rows expose mixed requests, repeated grants and revoked approvals.
 
     python3 -B proof/VELDO-0148/drive.py --red <pre-change commit>
 """

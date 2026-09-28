@@ -41,15 +41,15 @@ the shared conformance checker.
 
 The new approval rows drive the final authorization with an owner policy update after the real
 CandidatePolicy accepts and before Landing publishes. This reaches the final approval check even
-though a missing approval already present at the earlier policy check stops there. Both rows use
+though a missing approval already present at the earlier policy check stops there. These rows use
 the signed store writer, real land station, installed service inbox and signed owner answers.
 
 ## Red record
 
 [red-at-ad916989.json](red-at-ad916989.json) replays the current suite against an unchanged archive
-of the original pre-concern commit: all ten behavior rows fail by assertion and the format control
-stays green. [red-at-b33e82f8.json](red-at-b33e82f8.json) replays the current suite against the commit
-before this review repair: both new approval rows fail by assertion; the existing rows stay green.
+of the original pre-concern commit: all 13 behavior rows fail by assertion and the format control
+stays green. [red-at-b33e82f8.json](red-at-b33e82f8.json) preserves the earlier suite replay against the commit
+before the first review repair: its two new approval rows fail by assertion; the existing rows stay green.
 [red-at-f59b3136.json](red-at-f59b3136.json) records this re-check: all four changed or new
 behavior rows fail by assertion, with the existing behavior and format rows green.
 No exception counts as evidence. [drive.py](drive.py) records module digests and assertion details.
@@ -103,6 +103,8 @@ two workers. The builder did not run that mutation mode or the mutation checker.
 This re-check runs only suite `86_veldo_0148_re_land`, serially, in the ordinary environment
 and the requested empty gate environment. These are partial checks, not a full gate verdict;
 subset mode intentionally exits 2. Final counts and the footprint, anchor and validation results
-are recorded in the specification History. Engine copies match their repository counterparts.
+are recorded in the specification History. Both environments pass 15 suite rows (41 with shared
+preamble), zero failures. The footprint check reports 46 paths, none outside; the anchor check
+reports 0 bad anchors and validation exits 0. Engine copies match their repository counterparts.
 The suite remains registered once and requires.json was regenerated. No other suites, full gate
 or mutation execution run in this repair.

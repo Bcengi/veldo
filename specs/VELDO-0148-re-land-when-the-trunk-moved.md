@@ -96,7 +96,12 @@ acceptance_criteria:
       a unit whose policy requires an approval: observe one request for the re-merged candidate tree and
       no publication until it is granted; answer it, and the new compare-and-swap lands. Present the
       approval granted for the old candidate tree to the re-land's publication and require refusal by
-      name with the trunk unchanged. Falsifier: Accept the approval bound to the old candidate tree for
+      name with the trunk unchanged. Ask only when every approval problem is a tree-only binding
+      mismatch for a prior grant at this revision. A mixed refusal (including a missing, revoked or
+      proof-mismatched approval) stays failed with its named reasons, no subject and no loop action.
+      Apply a grant at most once per dispatch and never to a failed dispatch. At answer time recheck
+      every prior grant before any write; a revoked or otherwise ineligible grant refuses by name.
+      Falsifier: Accept the approval bound to the old candidate tree for
       the re-merged tree; the fresh-grant row must fail.
     falsified_by: >
       Accept the approval bound to the old candidate tree for the re-merged tree; the fresh-grant row must
@@ -263,3 +268,17 @@ reports 0 bad anchors; validate.py all exits 0; the three changed engine modules
 byte and the diff has no whitespace errors. Suite 86 remains registered once and requires.json
 was regenerated without changes. No other suites, full gate or mutation checker ran in this
 repair. Gate byproducts are restored before the final commit and are excluded from this work.
+
+2026-09-28, re-check proof complete: repair commit bc92f46f passes suite 86 in ordinary
+and empty gate environments, serially: 15 suite rows, 41 with the shared preamble, zero
+failures (expected subset exit 2). The current suite is red by assertion on all four re-check
+rows against f59b3136, and all 13 behavior rows against the original ad916989; format controls
+stay green. Finding 148 now has 18 registered mutations with exact diffs and current digests,
+0 bad anchors and no duplicate names. The lead's 14 of 14 rejections at f59b3136 are recorded
+as attributed historical evidence; all current registrations, including four new ones, await
+reviewer execution. The supplied footprint check reports 46 paths, none outside; the repair's
+20 paths also fit. Validation exits 0. The three production modules and engine copies match,
+requires.json is regenerated, and the diff has no whitespace errors. Audited production readers
+and writers of approval subjects, replacement names, grant events and loop dispatch states.
+No other suite, full gate or mutation runner ran. Gate byproducts are restored before the final
+commit. No footprint expansion was necessary.
