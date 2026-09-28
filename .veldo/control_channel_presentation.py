@@ -336,6 +336,12 @@ def _chunks(text, room, stats=None):
                     break
                 used += utf16_units(ch)
                 at += 1
+            # Every escape is one visible atom, including an escaped literal opener.
+            opener = text.rfind('<U+', 0, at)
+            if opener >= 0 and text.find('>', opener) >= at:
+                at = opener
+            if at == 0:
+                raise ValueError('presentation_too_long')
             pieces.append(prefix + text[:at] + TEXT.CUT)
             prefix = TEXT.CONTINUED
             if stats is not None:
@@ -352,11 +358,14 @@ def render(record, version=TEXT.VERSION, stats=None):
     brief in order across them, and the last carrying the choices and how to answer. Nothing is
     truncated or replaced by a link: the owner reads decisions on Telegram and cannot open links
     there. Raises ValueError when the choices and answer instruction alone do not fit one part."""
+    if type(version) is not int:
+        raise ValueError('unknown_renderer_version')
     if version == 1:
         return LEGACY.render(record)
     if version != TEXT.VERSION:
         raise ValueError('unknown_renderer_version')
-    c = record['request']
+    c = dict(record['request'])
+    c['brief'] = TEXT.lines(c['brief'])
     budget = ', '.join('%s=%s' % (unit, c['budget'][unit]) for unit in sorted(c['budget']))
     head = ['Veldo needs your %s' % c['kind'].replace('_', ' '),
             'Request: %s' % record['request_id'],
@@ -376,7 +385,7 @@ def render(record, version=TEXT.VERSION, stats=None):
              'Deadline: %s' % c['deadline'],
              'Budget: %s' % budget,
              'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
-             'Risk (stated by %s): %s' % (record['framed_by'], record['risk_statement']),
+             'Risk (stated by %s): %s' % (record['framed_by'], TEXT.lines(record['risk_statement'])),
              'Authority: %s' % record['authority_statement']]
     body = TEXT.visible('\n'.join(head + ['', c['brief']]), stats)
     tail = '\n'.join(['Choices: %s' % ' | '.join(record['choices']),
@@ -414,7 +423,7 @@ def receipt_problems(receipt, platform=None, retrieved=True):
     if missing:
         return ['receipt lacks %s' % f for f in missing]
     version = receipt.get('renderer_version', 1)
-    if version not in (1, TEXT.VERSION):
+    if type(version) is not int or version not in (1, TEXT.VERSION):
         return ['unknown_renderer_version']
     problems = []
     try:
@@ -1213,6 +1222,7 @@ class Presenter:
         """A short plain reply to the owner's own message when it cannot count as an answer, so a
         reply is never met with silence. It grants nothing. It is recorded by the inbound message's
         platform identity before it is sent, so a redelivered message is never told twice."""
+        text = TEXT.message(text, free_text=False)
         tid = tell_id(ev['chat_id'], ev['platform_message_id'])
         if self._entity(tid) is not None:
             return
@@ -1267,15 +1277,16 @@ class Presenter:
             first = 'I took your message as new work, not as an answer to a request.'
             how = ('To answer a waiting request, press Reply on the request message itself and write '
                    '<choice>: <your reason>.')
-        lines = ([lead, ''] if lead else []) + [first, how, 'Waiting for your answer:']
+        lines = ([TEXT.visible(TEXT.lines(lead)), ''] if lead else []) + [first, how, 'Waiting for your answer:']
         named = []
         for r in receipts:
             line = 'Request: %s (version %d), choices %s' % (r['request_id'], r['request_version'], ' | '.join(r['choices']))
+            line = TEXT.visible(line)
             if utf16_units('\n'.join(lines + [line])) > MESSAGE_LIMIT:
                 break
             lines.append(line)
             named.append(r)
-        return ('\n'.join(lines), named) if named else (None, [])
+        return (TEXT.edges('\n'.join(lines)), named) if named else (None, [])
 
     def hint_owner(self, message, taken=None, lead=None, remember=False):
         """Tell the owner, once, how to answer, when his attributed message replies to no presentation

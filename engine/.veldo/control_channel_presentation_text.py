@@ -11,15 +11,22 @@ def counters():
     return dict(escaped={key: 0 for key in CLASSES}, hard_cuts=0)
 
 
-def visible(text, stats=None):
-    """Normalize CRLF only; escape invisible characters and literal escape introducers once."""
+def lines(text):
+    """Normalize CRLF in free text only, never in identifying values."""
     text = str(text).replace('\r\n', '\n')
+    return text
+
+
+def visible(text, stats=None):
+    """Escape invisible characters and literal escape or cut marker introducers once."""
+    text = str(text)
     shown = []
     for i, ch in enumerate(text):
         category = unicodedata.category(ch)
         invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch != '\n'
                      or category == 'Zs' and ch != ' ')
         literal = text.startswith('<U+', i)
+        literal = literal or text.startswith((CUT, CONTINUED), i)
         if invisible or literal:
             shown.append('<U+%04X>' % ord(ch))
             if stats is not None:
@@ -49,9 +56,9 @@ def edges(shown, stats=None):
     return ''.join(out)
 
 
-def message(text, stats=None):
+def message(text, stats=None, free_text=True):
     """One whole Telegram message: every invisible character escaped, and its trimmed ends kept."""
-    return edges(visible(text, stats), stats)
+    return edges(visible(lines(text) if free_text else text, stats), stats)
 
 
 def add(stats, more):

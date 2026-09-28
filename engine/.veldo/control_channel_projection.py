@@ -227,7 +227,8 @@ def render(brief, stats=None):
     spaces are kept as written; invisible characters, and the whitespace at either end of the message
     (which the platform trims), are shown escaped (VELDO-0168). Owner, scope, deadline and budget are
     shown as the inbox holds them."""
-    c = brief['content']
+    c = dict(brief['content'])
+    c['brief'] = TEXT.lines(c['brief'])
     budget = ', '.join('%s=%s' % (unit, c['budget'][unit]) for unit in sorted(c['budget']))
     lines = [
         'Veldo needs your %s' % c['kind'].replace('_', ' '),
@@ -242,7 +243,7 @@ def render(brief, stats=None):
         '',
         c['brief'],
     ]
-    return TEXT.message('\n'.join(lines), stats)
+    return TEXT.message('\n'.join(lines), stats, free_text=False)
 
 
 class TelegramEdge:

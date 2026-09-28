@@ -2154,7 +2154,7 @@ def cases():
                  "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
     presentation('render-omits-risk',
-                 "             'Risk (stated by %s): %s' % (record['framed_by'], record['risk_statement']),\n", "",
+                 "             'Risk (stated by %s): %s' % (record['framed_by'], TEXT.lines(record['risk_statement'])),\n", "",
                  'presentation/receipt-binds-shown-content')
     presentation('framing-signature-unchecked',
                  "                or not self._framing_signed(request, framing, state, c)):\n",
@@ -4186,7 +4186,7 @@ def cases():
           'hint/answer-without-reply-one-reply')
     # Intake's project question and the note go out as two replies.
     hints('question-and-note-apart', 'control_intake.py',
-          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)\n",
+          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
           "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
           'hint/two-projects-one-reply')
     # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
@@ -9001,8 +9001,8 @@ def cases():
             "        if space >= 0:\n            at = space + 1  # defect: the part ends with the whitespace run\n",
             ['lines/edges'])
     text168('message-end-not-escaped', 'control_channel_presentation_text.py',
-            "    return edges(visible(text, stats), stats)\n",
-            "    return visible(text, stats)  # defect: the whitespace ending a message is left for Telegram to trim\n",
+            "    return edges(visible(lines(text) if free_text else text, stats), stats)\n",
+            "    return visible(lines(text) if free_text else text, stats)  # defect: the whitespace ending a message is left for Telegram to trim\n",
             ['lines/edges'])
     text168('last-part-end-not-escaped', 'control_channel_presentation.py',
             "        pieces = _chunks(TEXT.edges(body, counted), room, counted) + [tail]\n",
@@ -9040,7 +9040,7 @@ def cases():
             "    tail = tail  # defect: the choices are shown unescaped\n",
             ['escape/fields'])
     text168('inbox-fields-unescaped', 'control_channel_projection.py',
-            "    return TEXT.message('\\n'.join(lines), stats)\n",
+            "    return TEXT.message('\\n'.join(lines), stats, free_text=False)\n",
             "    return '\\n'.join(lines[:-1] + [TEXT.message(lines[-1], stats)])  # defect: only the brief escaped\n",
             ['escape/fields'])
     # AC3, declared: the marker dropped at a hard cut; then the continuation marker, the room kept for
@@ -9077,7 +9077,7 @@ def cases():
             "        at = cut  # defect: renderer 1 no longer cuts at whitespace as it did\n",
             ['receipts/earlier'])
     text168('unknown-version-not-named', 'control_channel_presentation.py',
-            "    if version not in (1, TEXT.VERSION):\n        return ['unknown_renderer_version']\n",
+            "    if type(version) is not int or version not in (1, TEXT.VERSION):\n        return ['unknown_renderer_version']\n",
             "    if False:  # defect: an unknown renderer version reads as a content mismatch\n        return ['unknown_renderer_version']\n",
             ['receipts/unknown'])
     text168('new-receipt-names-renderer-1', 'control_channel_presentation.py',
@@ -9097,13 +9097,59 @@ def cases():
             "            extra.update(renderer_version=receipt.get('renderer_version', 1),\n",
             "            extra.update(renderer_version=None,  # defect: the observation names no renderer\n",
             ['observability/counters'])
-    # The send inventory: a further send of the question prompt, and a further Bot API endpoint.
-    text168('unlisted-send', 'control_intake.py',
-            "    def _ask(self, qid, command):\n",
-            "    def _ask_raw(self, where, question):\n"
-            "        return self.asker.send(where['chat_id'], question['prompt'])  # defect: an unrendered send\n\n"
-            "    def _ask(self, qid, command):\n",
+    # Outside the original four modules, a new edge send must still be inventoried.
+    text168('unlisted-send', 'control_service_channel.py',
+            "    def tell_renewal(self, record):\n",
+            "    def raw_notice(self, presenter, chat, text):\n"
+            "        return presenter.edge.send(chat, text)  # defect: unlisted edge send\n\n"
+            "    def tell_renewal(self, record):\n",
             ['inventory/sends-and-assets'])
+    text168('unlisted-presenter-send', 'control_channel_presentation.py',
+            "    def _tell(self, ev, receipt, text):\n",
+            "    def raw_text(self, chat, text):\n"
+            "        return self._send(chat, text, None)  # defect: unlisted raw text caller\n\n"
+            "    def _tell(self, ev, receipt, text):\n",
+            ['inventory/sends-and-assets'])
+    text168('refusal-unescaped', 'control_channel_presentation.py',
+            "        text = TEXT.message(text, free_text=False)\n",
+            "        text = text  # defect: refusal choices bypass rendering\n",
+            ['replies/refused', 'inventory/sends-and-assets'])
+    text168('hint-unescaped', 'control_channel_presentation.py',
+            "            line = TEXT.visible(line)\n",
+            "            line = line  # defect: hint choices and ids bypass rendering\n",
+            ['replies/hint', 'inventory/sends-and-assets'])
+    text168('hint-lead-double-escaped', 'control_intake.py',
+            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)  # defect: already rendered\n",
+            ['intake/delivery'])
+    text168('escape-split-at-cut', 'control_channel_presentation.py',
+            "            if opener >= 0 and text.find('>', opener) >= at:\n",
+            "            if False:  # defect: hard cut splits an escape atom\n",
+            ['cuts/escape-boundary'])
+    text168('typed-marker-unescaped', 'control_channel_presentation_text.py',
+            "        literal = literal or text.startswith((CUT, CONTINUED), i)\n",
+            "        literal = literal  # defect: a typed cut marker looks inserted\n",
+            ['escape/markers'])
+    text168('decision-field-crlf-collapsed', 'control_channel_presentation.py',
+            "    body = TEXT.visible('\\n'.join(head + ['', c['brief']]), stats)\n",
+            "    body = TEXT.visible(TEXT.lines('\\n'.join(head + ['', c['brief']])), stats)  # defect: field CR lost\n",
+            ['escape/field-crlf'])
+    text168('inbox-field-crlf-collapsed', 'control_channel_projection.py',
+            "    return TEXT.message('\\n'.join(lines), stats, free_text=False)\n",
+            "    return TEXT.message('\\n'.join(lines), stats)  # defect: field CR lost\n",
+            ['escape/field-crlf'])
+    text168('compose-recheck-ignored', 'control_channel_presentation.py',
+            "            problems = receipt_problems(prior, retrieved=False)\n",
+            "            problems = []  # defect: a current receipt is never rechecked\n",
+            ['receipts/compose-recheck'])
+    text168('compose-unknown-misnamed', 'control_channel_presentation.py',
+            "                reason = 'unknown_renderer_version' if 'unknown_renderer_version' in problems else 'presentation_mismatch'\n",
+            "                reason = 'presentation_mismatch'  # defect: unknown version mislabeled\n",
+            ['receipts/compose-recheck'])
+    text168('version-type-unchecked', 'control_channel_presentation.py',
+            "    if type(version) is not int or version not in (1, TEXT.VERSION):\n",
+            "    if version not in (1, TEXT.VERSION):  # defect: bool and float are version numbers\n",
+            ['receipts/version-type'])
     text168('unlisted-endpoint', 'control_telegram_report.py',
             "SCHEMA = 'veldo.telegram_report/v1'\n",
             "DIRECT = 'https://api.telegram.org/bot%s/sendMessage'  # defect: a send the inventory does not name\n"

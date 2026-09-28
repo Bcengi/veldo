@@ -14,6 +14,8 @@ depends_on: [VELDO-0064, VELDO-0065, VELDO-0128]
 placement: [contracts, tracker, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_service_channel.py"
+  - ".veldo/control_service_channel.py"
   - "engine/.veldo/control_channel_presentation*.py"
   - ".veldo/control_channel_presentation*.py"
   - "engine/.veldo/control_channel_projection*.py"
@@ -175,3 +177,11 @@ of a message and the receipt binds the exact bytes: a soft cut is made at the st
 so no part ends in whitespace, and whitespace that begins or ends a whole message is shown escaped.
 Suite `86_veldo_0168_text`, 32 mutations under finding 168, proof in `proof/VELDO-0168/`. Criteria text
 unchanged. Status unchanged.
+
+2026-09-28: review fixes. Refusal replies and request hints use the renderer, and the inventory traces
+all engine sends and Presenter._send callers. The footprint gains control_service_channel.py in both
+copies because that trace found its delegation renewal notice, another AC1 send. Escape atoms stay
+whole at hard cuts; typed cut markers escape their opener; CRLF normalization is limited to free text.
+Composition rechecks and strict integer renderer versions have dedicated rows and finding 168 mutants.
+
+2026-09-28: follow-up: split inbox items, reports and intake prompts that exceed 4096 after escaping.

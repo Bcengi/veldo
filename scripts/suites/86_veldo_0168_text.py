@@ -9,9 +9,11 @@ render_prompt seam, while the literal-escape project name exercises the real que
 def _v168_suite():
     import ast
     import copy
+    from collections import Counter
     import importlib.util
     import json
     import os
+    import re
     from pathlib import Path
     import shutil
     import socket
@@ -19,6 +21,7 @@ def _v168_suite():
     import unicodedata
 
     production = {
+        'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
         'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
         'control_channel_presentation_text.py': ROOT / ".veldo" / "control_channel_presentation_text.py",
         'control_channel_presentation_v1.py': ROOT / ".veldo" / "control_channel_presentation_v1.py",
@@ -30,7 +33,9 @@ def _v168_suite():
              'escape/zero-width', 'escape/direction', 'escape/whitespace', 'escape/literal',
              'escape/categories', 'escape/fields', 'cuts/long-token', 'cuts/words',
              'receipts/earlier', 'receipts/new', 'receipts/unknown', 'observability/counters',
-             'intake/delivery', 'inventory/sends-and-assets', 'lines/edges')
+             'intake/delivery', 'inventory/sends-and-assets', 'lines/edges',
+             'replies/refused', 'replies/hint', 'cuts/escape-boundary', 'escape/markers',
+             'escape/field-crlf', 'receipts/compose-recheck', 'receipts/version-type')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -171,6 +176,68 @@ def _v168_suite():
             check('escape/fields', 'writer-accepted choices, scopes and subject references keep their distinctions',
                   all(fields_ok))
 
+
+            # Render actual writer snapshots carrying unsupported choices through the two reply paths.
+            # waiting is the read seam: these choices cannot become decision rulings, but must remain
+            # distinguishable wherever a receipt's choice text is displayed.
+            odd = 'accept\u200b\u202e'
+            _, odd_brief, _ = opened('reply input', choices=['accept', odd])
+            reply_receipt = copy.deepcopy(receipt)
+            reply_receipt['choices'] = odd_brief['content']['choices']
+            reply_receipt['request_id'] += '\u202e'
+            incoming = H.deliver(api, token, owner, 'not a choice')
+            mid = incoming['message']['message_id']
+            ing.presenter._tell(dict(chat_id=owner['id'], platform_message_id=mid), reply_receipt,
+                                ing.presenter._how(reply_receipt, 'That reply did not match a choice.'))
+            told = ing.presenter._entity(V.tell_id(owner['id'], mid))
+            tell_text = (told or {}).get('data', {}).get('text', '')
+            delivered_text = [m['text'] for m in api['bots'][token]['messages'].values()
+                              if (m.get('reply_to_message') or {}).get('message_id') == mid]
+            check('replies/refused', 'refusal writer records and sends distinct escaped choices',
+                  'accept | accept<U+200B><U+202E>' in tell_text and tell_text in delivered_text
+                  and odd not in tell_text)
+            incoming = H.deliver(api, token, owner, 'ordinary message')
+            mid = incoming['message']['message_id']
+            waiting = ing.presenter.waiting
+            ing.presenter.waiting = lambda principal, chat: [reply_receipt]
+            try:
+                hinted = ing.presenter.hint_owner(dict(cause='not_a_reply', principal='owner',
+                    chat_id=owner['id'], sender_id=owner['id'], message_id=mid),
+                    lead='question\r\nwith <U+200B>')
+            finally:
+                ing.presenter.waiting = waiting
+            delivery = hinted.get('delivery') or {}
+            hint_text = api['bots'][token]['messages'].get((owner['id'], delivery.get('message_id')), {}).get('text', '')
+            check('replies/hint', 'hint writer sends escaped choices and ids and renders raw lead once',
+                  hinted.get('outcome') == 'sent' and 'accept | accept<U+200B><U+202E>' in hint_text
+                  and reply_receipt['request_id'] not in hint_text
+                  and expected(reply_receipt['request_id']) in hint_text
+                  and 'question\nwith <U+003C>U+200B>' in hint_text)
+
+            field_crlf = []
+            for value in ('x\r\ny', 'x\ny'):
+                _, fb, _ = opened('free\r\ntext', scope=value, choices=[value, 'reject'], subject=value)
+                current = copy.deepcopy(receipt)
+                current.update(request=fb['content'], choices=fb['content']['choices'],
+                               subject_digests=V.subject_digests(fb['content']))
+                outputs = ['\n'.join(V.render(current)), P.render(fb)]
+                wanted = value.replace('\r', '<U+000D>')
+                field_crlf.append(all(out.count(wanted) >= 3 and 'free\ntext' in out for out in outputs))
+            check('escape/field-crlf', 'CRLF in choice scope and subject keeps the CR, free text normalizes it',
+                  all(field_crlf))
+            marker_sample = 'typed [cut inside a word, continues in the next part] and [continued]'
+            marker_wanted = 'typed <U+005B>cut inside a word, continues in the next part] and <U+005B>continued]'
+            check('escape/markers', 'typed markers are distinct from inserted markers in every renderer',
+                  all(marker_wanted in out for out in renders(marker_sample)))
+            _, _, escaped_long = opened('\u200b' * 600, risk='ordinary')
+            escape_parts = (escaped_long or {}).get('rendered', [])
+            without_escapes = [re.sub(r'<U\+[0-9A-F]{4,6}>', '', part) for part in escape_parts]
+            check('cuts/escape-boundary', '600 zero-width characters stay whole across every hard cut',
+                  (escaped_long or {}).get('outcome') == 'published' and len(escape_parts) > 1
+                  and sum(part.count('<U+200B>') for part in escape_parts) == 600
+                  and all('<U+' not in part for part in without_escapes)
+                  and all(len(part.encode('utf-16-le')) // 2 <= 4096 for part in escape_parts))
+
             _, _, long = opened('z' * 9000, risk='ordinary')
             parts = (long or {}).get('rendered', [])
             cut, continued = '[cut inside a word, continues in the next part]', '[continued]'
@@ -208,6 +275,26 @@ def _v168_suite():
             check('receipts/unknown', 'unknown version is distinct from mismatched content',
                   V.receipt_problems(unknown, retrieved=False) == ['unknown_renderer_version']
                   and 'rendered bytes are not the rendering of the bound fields' in V.receipt_problems(changed, retrieved=False))
+
+            version_ok = []
+            legacy = json.loads((Path(proof) / 'renderer-1-receipt.json').read_text())
+            for version in (True, 1.0, 2.0):
+                candidate = dict(legacy if version == 1 else receipt, renderer_version=version)
+                version_ok.append(V.receipt_problems(candidate, retrieved=False) == ['unknown_renderer_version'])
+            check('receipts/version-type', 'bool and float versions are unknown even when equal to integers',
+                  all(version_ok))
+            prior_reader = ing.presenter.receipt
+            compose_ok = []
+            try:
+                for broken, wanted in ((changed, 'presentation_mismatch'), (unknown, 'unknown_renderer_version')):
+                    ing.presenter.receipt = lambda pid, broken=broken: broken if pid == receipt['presentation_id'] else prior_reader(pid)
+                    refusal, composed, _ = ing.presenter.compose(rid)
+                    compose_ok.append(refusal == wanted and composed is None)
+            finally:
+                ing.presenter.receipt = prior_reader
+            check('receipts/compose-recheck', 'compose refuses an otherwise current receipt failing its own recheck',
+                  all(compose_ok))
+
             observations = [ing.presenter.observations, projection.observations, reporter.observations]
             # The three-line text holds one tab: the decision presentation shows it in the brief and in the
             # risk statement (two), the inbox item and the report in the brief (one each).
@@ -260,39 +347,90 @@ def _v168_suite():
                   len(sent_texts) > 10 and all(t == t.strip(' \n') for t in sent_texts)
                   and all(p == p.strip(' \n') for p in soft_parts + parts + (separate or [])))
 
-            # Inventory all engine Bot API endpoints and all calls into the four in-scope send seams, in the
-            # engine's installed copies and in the production copies this suite runs.
+            # Enumerate every send and _send call, including unrelated transports explicitly. No
+            # file or receiver spelling filter can hide a new Telegram edge in another module.
             inventories = {}
+            render_routes = {}
+            render_assignments = {}
             def walk(node, file, parents=()):
                 if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
                     parents += (node.name,)
                 if isinstance(node, ast.Constant) and isinstance(node.value, str) and '/sendMessage' in node.value and '\n' not in node.value:
                     endpoints.add((file, '.'.join(parents)))
-                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'send':
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
                     receiver = ast.unparse(node.func.value)
-                    if file in ('control_channel_presentation.py', 'control_channel_projection.py', 'control_telegram_report.py', 'control_intake.py'):
-                        calls.add((file, '.'.join(parents), receiver))
+                    if node.func.attr in ('send', '_send'):
+                        calls.append((file, '.'.join(parents), receiver, node.func.attr))
+                    if node.func.attr in ('message', 'visible') and receiver in ('TEXT', 'V.TEXT'):
+                        routes.add((file, '.'.join(parents), receiver + '.' + node.func.attr))
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        assignments.add((file, '.'.join(parents), ast.unparse(target), ast.unparse(node.value)))
                 for child in ast.iter_child_nodes(node):
                     walk(child, file, parents)
-            for label, folder in (('engine', ROOT / 'engine/.veldo'), ('production', organs)):
-                endpoints, calls = set(), set()
-                for file in sorted(folder.glob('*.py')):
-                    walk(ast.parse(file.read_text()), file.name)
-                inventories[label] = (endpoints, calls)
+            for label, folder in (('engine', ROOT / 'engine'), ('production', organs)):
+                endpoints, calls, routes, assignments = set(), [], set(), set()
+                for file in sorted(folder.rglob('*.py')):
+                    walk(ast.parse(file.read_text()), file.relative_to(folder).as_posix().removeprefix('.veldo/'))
+                inventories[label] = (endpoints, Counter(calls))
+                render_routes[label] = routes
+                render_assignments[label] = assignments
             wanted_endpoints = {('control_channel_projection.py', 'TelegramEdge.send'),
                                 ('control_channel_presentation.py', 'TelegramPresentationEdge.send')}
-            wanted_calls = {('control_channel_projection.py', 'Projection._send', 'self.edge'),
-                            ('control_channel_presentation.py', 'Presenter._send', 'self.edge'),
-                            ('control_telegram_report.py', 'Reporter._send', 'self.edge'),
-                            ('control_intake.py', 'Intake._ask', 'self.asker')}
+            wanted_calls = {
+                ('control_channel_projection.py', 'Projection._send', 'self.edge', 'send'),
+                ('control_channel_projection.py', 'Projection._project', 'self', '_send'),
+                ('control_channel_presentation.py', 'Presenter._send', 'self.edge', 'send'),
+                ('control_channel_presentation.py', 'Presenter._send_parts', 'self', '_send'),
+                ('control_channel_presentation.py', 'Presenter._tell', 'self', '_send'),
+                ('control_channel_presentation.py', 'Presenter.hint_owner', 'self', '_send'),
+                ('control_telegram_report.py', 'Reporter._send', 'self.edge', 'send'),
+                ('control_telegram_report.py', 'Reporter.report', 'self', '_send'),
+                ('control_intake.py', 'Intake._ask', 'self.asker', 'send'),
+                ('control_service_channel.py', 'Channel.tell_renewal', 'presenter', '_send'),
+                ('control_client_api.py', 'ServiceAuthority._call', 'CC', 'send'),
+                ('control_claim_client.py', 'Client.request', 'IPC', 'send'),
+                ('control_channel_activation.py', 'main.send', 'CC', 'send'),
+                ('status_server.py', '_Handler.do_GET', 'self', '_send'),
+            }
+            wanted_calls = Counter(wanted_calls)
+            wanted_calls[('status_server.py', '_Handler.do_GET', 'self', '_send')] = 3
+            engine_calls = Counter({
+                ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 2,
+                ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_POST', 'self', '_send'): 2,
+                ('scripts/runners/auth/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 8,
+                ('scripts/runners/integration/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 3,
+            })
+            outside_calls = Counter({('request_doorbell.py', 'ring', 'sink', 'send'): 1})
+            # Trace the text producers of Presenter._send: render -> _send_parts, _tell,
+            # _hint_text -> hint_owner, and the service's renewal. Missing rendering is red
+            # even if the raw send has the same caller and receiver as an allowed send.
+            wanted_routes = {
+                ('control_channel_presentation.py', 'render', 'TEXT.visible'),
+                ('control_channel_presentation.py', 'Presenter._tell', 'TEXT.message'),
+                ('control_channel_presentation.py', 'Presenter._hint_text', 'TEXT.visible'),
+                ('control_service_channel.py', 'Channel.tell_renewal', 'V.TEXT.message'),
+            }
+            wanted_assignments = {
+                ('control_channel_presentation.py', 'Presenter._tell', 'text', 'TEXT.message(text, free_text=False)'),
+                ('control_channel_presentation.py', 'Presenter._hint_text', 'line', 'TEXT.visible(line)'),
+                ('control_service_channel.py', 'Channel.tell_renewal', 'text', 'V.TEXT.message(text, free_text=False)'),
+            }
             # The repository's own doorbell (.veldo/request_doorbell.py, not installed into the engine) is
             # named outside the set by the specification.
             outside = {('request_doorbell.py', 'TelegramSink.send')}
+            for label, (_, found) in inventories.items():
+                expected_calls = wanted_calls + (outside_calls if label == 'production' else engine_calls)
+                if found != expected_calls:
+                    print('VELDO-0168 detail: inventory delta', label,
+                          sorted((found - expected_calls).items()), sorted((expected_calls - found).items()))
             scaffold = load('v168_scaffold', ROOT / '.veldo/init_scaffold.py')
             assets = ['.veldo/control_channel_presentation_text.py', '.veldo/control_channel_presentation_v1.py']
             check('inventory/sends-and-assets', 'complete endpoint and send inventory; new renderer assets installed identically',
-                  inventories['engine'] == (wanted_endpoints, wanted_calls)
-                  and inventories['production'] == (wanted_endpoints | outside, wanted_calls)
+                  inventories['engine'] == (wanted_endpoints, wanted_calls + engine_calls)
+                  and all(wanted_routes <= routes for routes in render_routes.values())
+                  and all(wanted_assignments <= found for found in render_assignments.values())
+                  and inventories['production'] == (wanted_endpoints | outside, wanted_calls + outside_calls)
                   and all(rel in scaffold._FILES and (ROOT / rel).is_file()
                           and (ROOT / rel).read_bytes() == (ROOT / 'engine' / rel).read_bytes() for rel in assets))
         except Exception as error:

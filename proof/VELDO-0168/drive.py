@@ -28,7 +28,7 @@ PREFIX = 'VELDO-0168 '
 FINDING = 168
 MODULES = {name: '.veldo' for name in (
     'control_channel_presentation.py', 'control_channel_presentation_text.py', 'control_channel_presentation_v1.py',
-    'control_channel_projection.py', 'control_telegram_report.py', 'control_intake.py')}
+    'control_channel_projection.py', 'control_telegram_report.py', 'control_intake.py', 'control_service_channel.py')}
 
 
 def _load(name, path):

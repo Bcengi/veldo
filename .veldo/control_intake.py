@@ -665,7 +665,7 @@ class Intake:
             self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
         prompt = render_prompt(question['prompt'])
-        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)
+        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
         if hinted.get('attempted'):
             sent = hinted.get('delivery')
             if not isinstance(sent, dict):
