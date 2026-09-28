@@ -456,7 +456,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             IN.journal_signer(config['journal'])
             IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
         with step('service_install'):
-            installed = CS.install([workspace], host_trust=plan['host_trust'], key_directory=keys,
+            installed = CS.install([workspace], state_root=root, host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress)
         with step('engine_pins'):

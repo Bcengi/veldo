@@ -774,7 +774,7 @@ def installable_work(path, repositories, adapters):
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
             receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None,
-            work=None):
+            work=None, state_root=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
@@ -902,7 +902,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
-                                'adapters': adapters}), 0o600)
+                                'adapters': adapters, 'state_root': state_root}), 0o600)
             receivers[repository] = path
         config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
                   'store_uuid': first['store_uuid'], 'store_path': first['store_path'],

@@ -30,6 +30,10 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0186_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
+  - "scripts/suites/71_veldo_0138_channel_service.py"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "scripts/suites/83_veldo_0154_factory_loop.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -143,4 +147,7 @@ including the runtime qualification entry point and its LangGraph record. Factor
 engine versions and digests, pins Claude Code through the existing writer, binds both against the installed
 records and records their paths, versions and digests. Suite 86 covers installed assets, missing source,
 installed receiver bindings, unlisted versions and digest mismatches. Proof lives in proof/VELDO-0186/.
-The footprint is unchanged. Status remains ready for independent review.
+The footprint also names suites 66 (0047), 71 (0130 and 0138) and 83 (0154): AC1 changes their
+installer input from Python-only fixture trees to complete source trees with runtime assets. Their
+production calls remain unchanged. The scaffold includes the new setup helper. Status remains ready
+for independent review.

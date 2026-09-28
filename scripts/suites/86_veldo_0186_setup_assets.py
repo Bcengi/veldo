@@ -125,16 +125,23 @@ def _v186_suite():
 
         receiver, error = attempt(lambda: load('v186_installed_receiver', installed / 'control_launch.py'))
         check('bind/engines', 'installed receiver loads', error is None)
+        receiver_paths = config.get('receiver', {}).get('configs', {})
+        receiver_config = json.loads(Path(next(iter(receiver_paths.values()))).read_text()) if receiver_paths else {}
+        state_root = receiver_config.get('state_root')
+        check('bind/engines', 'installed receiver names the factory state root', state_root == args[0])
         pinned = Path(args[0]) / 'engines/claude_code' / engines['version']
         check('bind/engines', 'pinned copy exists at mode 0555', pinned.is_file()
-              and not pinned.is_symlink() and stat.S_IMODE(pinned.stat().st_mode) == 0o555)
+              and not pinned.is_symlink() and stat.S_IMODE(pinned.stat().st_mode) == 0o555
+              and pinned.read_bytes() == engines['source'].read_bytes())
         recorded_path = Path(args[0]) / 'host/engines.json'
         recorded = json.loads(recorded_path.read_text()) if recorded_path.is_file() else {}
         for engine, adapter in [('claude_code', {'executable': {'version': engines['version']}}),
                                 ('codex', {'executable': str(engines['vendor'])})]:
-            bound, error = attempt(lambda: receiver.ENGINES[engine].bind(adapter, args[0]))
+            bound, error = attempt(lambda: receiver.ENGINES[engine].bind(adapter, state_root))
             check('bind/engines', engine + ' binds through installed engine protocol: ' + str(error), error is None)
             summary = {key: bound[key] for key in ('path', 'version', 'sha256')} if bound else None
+            check('bind/engines', engine + ' uses the fixed executable', bound is not None
+                  and bound['path'] == str(pinned if engine == 'claude_code' else engines['vendor']))
             check('bind/engines', engine + ' recorded binding equals installed binding',
                   summary is not None and recorded.get(engine) == summary == report.get('engines', {}).get(engine))
         check('bind/engines', 'pin count', report.get('pins_made') == 1)
