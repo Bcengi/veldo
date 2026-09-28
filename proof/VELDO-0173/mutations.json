@@ -1,0 +1,837 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 27,
+  "rows": [
+   [
+    "VELDO-0173 launch/no-revision",
+    true
+   ],
+   [
+    "VELDO-0173 launch/registry",
+    true
+   ],
+   [
+    "VELDO-0173 launch/revision",
+    true
+   ],
+   [
+    "VELDO-0173 report/tools",
+    true
+   ],
+   [
+    "VELDO-0173 evidence/registry",
+    true
+   ],
+   [
+    "VELDO-0173 evidence/classification",
+    true
+   ],
+   [
+    "VELDO-0173 baseline/required",
+    true
+   ],
+   [
+    "VELDO-0173 fixture/extraction",
+    true
+   ],
+   [
+    "VELDO-0173 fixture/fake-default",
+    true
+   ],
+   [
+    "VELDO-0173 format/fake-lines",
+    true
+   ]
+  ],
+  "seconds": 3.123
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 launch/no-revision detail: the tools option names exactly the in-run list None",
+    "VELDO-0173 launch/no-revision detail: the init event offers the in-run list the binary registers, ['Agent', 'AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'Bash', 'ClaudeDesign', 'CronCreate', 'CronDelete', 'CronList', 'DesignSync', 'Edit', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'Glob', 'Grep', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Monitor', 'NotebookEdit', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'Read', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'Skill', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WaitForMcpServers', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log'] missing only ['REPL']",
+    "VELDO-0173 launch/no-revision detail: RemoteTrigger is absent from the init event",
+    "VELDO-0173 launch/no-revision detail: SendMessage, PushNotification and the claude.ai-writing tools are absent ['AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'ClaudeDesign', 'DesignSync', 'Projects', 'PushNotification', 'RemoteTrigger', 'SendMessage', 'ShareOnboardingGuide']",
+    "VELDO-0173 launch/no-revision detail: no self_hosted_runner tool is offered",
+    "VELDO-0173 launch/registry detail: disallowedTools is the full registry less the launch tool set [[] extra, ['AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'ClaudeDesign', 'CronDelete', 'CronList', 'DesignSync', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskUpdate', 'WaitForMcpServers', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log'] missing]",
+    "VELDO-0173 launch/registry detail: ReportFindings is switched off at launch",
+    "VELDO-0173 launch/registry detail: every tool the live init offered beyond the in-run list is switched off",
+    "VELDO-0173 launch/registry detail: every registry tool is either launched or switched off, and none is both",
+    "VELDO-0173 launch/revision detail: the tools option names exactly the revision's native tools None",
+    "VELDO-0173 launch/revision detail: no granted tool is switched off, and every other registry tool is",
+    "VELDO-0173 launch/revision detail: the init event offers exactly the granted tools ['Agent', 'AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'Bash', 'ClaudeDesign', 'CronCreate', 'CronDelete', 'CronList', 'DesignSync', 'Edit', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'Glob', 'Grep', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Monitor', 'NotebookEdit', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'Read', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'Skill', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WaitForMcpServers', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log']",
+    "VELDO-0173 launch/revision detail: an in-run tool the revision does not grant is switched off"
+   ],
+   "diff": "proof/VELDO-0173/tools173-options-omitted.diff",
+   "failed_rows": [
+    "VELDO-0173 launch/no-revision",
+    "VELDO-0173 launch/registry",
+    "VELDO-0173 launch/revision"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "5080c1d2a73d05d16def4c2513d5764dfadfdf7f8b18eb2bb391199a31bc2f74",
+   "name": "tools173-options-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/no-revision"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     false
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     false
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     false
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.105,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 launch/registry detail: disallowedTools is the full registry less the launch tool set [['JavaScript', 'Task'] extra, ['AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'ClaudeDesign', 'CronDelete', 'CronList', 'DesignSync', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'WaitForMcpServers', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log'] missing]",
+    "VELDO-0173 launch/registry detail: ReportFindings is switched off at launch",
+    "VELDO-0173 launch/registry detail: every tool the live init offered beyond the in-run list is switched off",
+    "VELDO-0173 launch/registry detail: every registry tool is either launched or switched off, and none is both",
+    "VELDO-0173 launch/revision detail: no granted tool is switched off, and every other registry tool is",
+    "VELDO-0173 launch/revision detail: an in-run tool the revision does not grant is switched off",
+    "VELDO-0173 report/tools detail: an unbound launch reports the in-run source, its launch set and what it switched off"
+   ],
+   "diff": "proof/VELDO-0173/tools173-disallowed-from-table.diff",
+   "failed_rows": [
+    "VELDO-0173 launch/registry",
+    "VELDO-0173 launch/revision",
+    "VELDO-0173 report/tools"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "cc5b430092c512e44b1753fb9b39904b923c4ccfe48e967e92a03638a29e425b",
+   "name": "tools173-disallowed-from-table",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/registry"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     false
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     false
+    ],
+    [
+     "VELDO-0173 report/tools",
+     false
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.089,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 baseline/required detail: one registry tool (ReportFindings) left unclassified: refused by name before anything is spawned",
+    "VELDO-0173 baseline/required detail: one registry tool (ReportFindings) left unclassified: counted once as a refused baseline"
+   ],
+   "diff": "proof/VELDO-0173/tools173-unclassified-accepted.diff",
+   "failed_rows": [
+    "VELDO-0173 baseline/required"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "d337c730244ae01c11b62faf06ce8f4d8a573281eb0e8ff29a09e7a61ea1ffcd",
+   "name": "tools173-unclassified-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/required"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     false
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.27,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 baseline/required detail: no tool registry: refused by name before anything is spawned",
+    "VELDO-0173 baseline/required detail: no tool registry: counted once as a refused baseline",
+    "VELDO-0173 baseline/required detail: a null tool registry: refused by name before anything is spawned",
+    "VELDO-0173 baseline/required detail: a null tool registry: counted once as a refused baseline"
+   ],
+   "diff": "proof/VELDO-0173/tools173-registry-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0173 baseline/required"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "36c9a99b4fb7f863bada8844a25dbec49285b9cc160b6bf225e68fc6d2e29b9e",
+   "name": "tools173-registry-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/required"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     false
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.136,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 baseline/required detail: no tool classification: refused by name before anything is spawned",
+    "VELDO-0173 baseline/required detail: no tool classification: counted once as a refused baseline"
+   ],
+   "diff": "proof/VELDO-0173/tools173-classification-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0173 baseline/required"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "d78f4d921024b03dedb635ff31327bd1cecfe1e657ab387f73f56afbf3070cbb",
+   "name": "tools173-classification-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "baseline/required"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     false
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.151,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 launch/revision detail: the tools option names exactly the revision's native tools ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'REPL', 'Read', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']",
+    "VELDO-0173 launch/revision detail: no granted tool is switched off, and every other registry tool is",
+    "VELDO-0173 launch/revision detail: the init event offers exactly the granted tools ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']",
+    "VELDO-0173 launch/revision detail: an in-run tool the revision does not grant is switched off",
+    "VELDO-0173 launch/revision detail: a bound revision with no native tool list is refused by name before spawn",
+    "VELDO-0173 report/tools detail: a bound launch reports the revision by role and number and its granted tools"
+   ],
+   "diff": "proof/VELDO-0173/tools173-revision-ignored.diff",
+   "failed_rows": [
+    "VELDO-0173 launch/revision",
+    "VELDO-0173 report/tools"
+   ],
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "d9c28d937fee96dc3d0e769307c4f84156b5809719781a63d258313901f760ff",
+   "name": "tools173-revision-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/revision"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     false
+    ],
+    [
+     "VELDO-0173 report/tools",
+     false
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.223,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 launch/revision detail: the tools option names exactly the revision's native tools ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'REPL', 'Read', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']",
+    "VELDO-0173 launch/revision detail: no granted tool is switched off, and every other registry tool is",
+    "VELDO-0173 launch/revision detail: the init event offers exactly the granted tools ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']",
+    "VELDO-0173 launch/revision detail: an in-run tool the revision does not grant is switched off",
+    "VELDO-0173 launch/revision detail: a bound revision with no native tool list is refused by name before spawn",
+    "VELDO-0173 report/tools detail: a bound launch reports the revision by role and number and its granted tools"
+   ],
+   "diff": "proof/VELDO-0173/tools173-receiver-revision-unread.diff",
+   "failed_rows": [
+    "VELDO-0173 launch/revision",
+    "VELDO-0173 report/tools"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "b320d3a09c415575797862fdc00e3fd18d1bf1ee20bc4da175dda9ffedfa50ce",
+   "name": "tools173-receiver-revision-unread",
+   "named_row_red": true,
+   "named_rows": [
+    "launch/revision"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     false
+    ],
+    [
+     "VELDO-0173 report/tools",
+     false
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.238,
+   "source_sha256": "6c0b0ad967278a9b3a756703554d772b454765685651cdb3cf0db1bfbabc3cf6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 report/tools detail: an unbound launch reports the in-run source, its launch set and what it switched off",
+    "VELDO-0173 report/tools detail: a bound launch reports the revision by role and number and its granted tools"
+   ],
+   "diff": "proof/VELDO-0173/tools173-tools-unreported.diff",
+   "failed_rows": [
+    "VELDO-0173 report/tools"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "465e5458666eb1902530fe41f377184b4c8e211c8b33c85b262ea8c508fe321d",
+   "name": "tools173-tools-unreported",
+   "named_row_red": true,
+   "named_rows": [
+    "report/tools"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     false
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.112,
+   "source_sha256": "6c0b0ad967278a9b3a756703554d772b454765685651cdb3cf0db1bfbabc3cf6"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0173 evidence/registry detail: the shipped registry is a fresh extraction of the pinned bytes [None]",
+    "VELDO-0173 evidence/classification detail: each reason is read from the tool's own definition",
+    "VELDO-0173 fixture/extraction detail: the committed inventory equals a fresh extraction and is what the record carries"
+   ],
+   "diff": "proof/VELDO-0173/tools173-extractor-drops-lazy.diff",
+   "failed_rows": [
+    "VELDO-0173 evidence/registry",
+    "VELDO-0173 evidence/classification",
+    "VELDO-0173 fixture/extraction"
+   ],
+   "module": "proof/VELDO-0173/extract_tools.py",
+   "mutant_sha256": "083446b4f0ecdc06d338ded2dbdf3bc39d412219b16ce47b5ea024913f98245c",
+   "name": "tools173-extractor-drops-lazy",
+   "named_row_red": true,
+   "named_rows": [
+    "evidence/registry"
+   ],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     false
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     false
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     false
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 2.893,
+   "source_sha256": "0f2a78809407c2b63c4698ddbd34960b89174b94592385145625d0865aea747c"
+  }
+ ],
+ "mutations_per_row": {
+  "baseline/required": [
+   "tools173-unclassified-accepted",
+   "tools173-registry-unchecked",
+   "tools173-classification-unchecked"
+  ],
+  "evidence/registry": [
+   "tools173-extractor-drops-lazy"
+  ],
+  "launch/no-revision": [
+   "tools173-options-omitted"
+  ],
+  "launch/registry": [
+   "tools173-disallowed-from-table"
+  ],
+  "launch/revision": [
+   "tools173-revision-ignored",
+   "tools173-receiver-revision-unread"
+  ],
+  "report/tools": [
+   "tools173-tools-unreported"
+  ]
+ },
+ "noop": {
+  "control_engine_claude.py": {
+   "copy_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.134,
+   "source_sha256": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  "control_launch.py": {
+   "copy_sha256": "6c0b0ad967278a9b3a756703554d772b454765685651cdb3cf0db1bfbabc3cf6",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.104,
+   "source_sha256": "6c0b0ad967278a9b3a756703554d772b454765685651cdb3cf0db1bfbabc3cf6"
+  },
+  "extract_tools.py": {
+   "copy_sha256": "0f2a78809407c2b63c4698ddbd34960b89174b94592385145625d0865aea747c",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 27,
+   "rows": [
+    [
+     "VELDO-0173 launch/no-revision",
+     true
+    ],
+    [
+     "VELDO-0173 launch/registry",
+     true
+    ],
+    [
+     "VELDO-0173 launch/revision",
+     true
+    ],
+    [
+     "VELDO-0173 report/tools",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/registry",
+     true
+    ],
+    [
+     "VELDO-0173 evidence/classification",
+     true
+    ],
+    [
+     "VELDO-0173 baseline/required",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/extraction",
+     true
+    ],
+    [
+     "VELDO-0173 fixture/fake-default",
+     true
+    ],
+    [
+     "VELDO-0173 format/fake-lines",
+     true
+    ]
+   ],
+   "seconds": 3.122,
+   "source_sha256": "0f2a78809407c2b63c4698ddbd34960b89174b94592385145625d0865aea747c"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 173",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 40.7,
+ "spec_id": "VELDO-0173",
+ "suite": "scripts/suites/82_veldo_0173_tool_registry.py"
+}

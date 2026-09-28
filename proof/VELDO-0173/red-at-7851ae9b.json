@@ -1,0 +1,103 @@
+{
+ "by_assertion": true,
+ "commit": "7851ae9bef69c2d9d8e54a0b95a823110113b1ef",
+ "details": [
+  "VELDO-0173 launch/no-revision detail: the tools option names exactly the in-run list None",
+  "VELDO-0173 launch/no-revision detail: the init event offers the in-run list the binary registers, ['Agent', 'AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'Bash', 'ClaudeDesign', 'CronCreate', 'CronDelete', 'CronList', 'DesignSync', 'Edit', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'Glob', 'Grep', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Monitor', 'NotebookEdit', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'Read', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'Skill', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WaitForMcpServers', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log'] missing only ['REPL']",
+  "VELDO-0173 launch/no-revision detail: RemoteTrigger is absent from the init event",
+  "VELDO-0173 launch/no-revision detail: SendMessage, PushNotification and the claude.ai-writing tools are absent ['AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'ClaudeDesign', 'DesignSync', 'Projects', 'PushNotification', 'RemoteTrigger', 'SendMessage', 'ShareOnboardingGuide']",
+  "VELDO-0173 launch/no-revision detail: no self_hosted_runner tool is offered",
+  "VELDO-0173 launch/registry detail: disallowedTools is the full registry less the launch tool set [[] extra, ['AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'ClaudeDesign', 'CronDelete', 'CronList', 'DesignSync', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskUpdate', 'WaitForMcpServers', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log'] missing]",
+  "VELDO-0173 launch/registry detail: ReportFindings is switched off at launch",
+  "VELDO-0173 launch/registry detail: every tool the live init offered beyond the in-run list is switched off",
+  "VELDO-0173 launch/registry detail: every registry tool is either launched or switched off, and none is both",
+  "VELDO-0173 launch/revision detail: the tools option names exactly the revision's native tools None",
+  "VELDO-0173 launch/revision detail: no granted tool is switched off, and every other registry tool is",
+  "VELDO-0173 launch/revision detail: the init event offers exactly the granted tools ['Agent', 'AppifactRepl', 'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AskUserQuestion', 'Bash', 'ClaudeDesign', 'CronCreate', 'CronDelete', 'CronList', 'DesignSync', 'Edit', 'EndConversation', 'EnterPlanMode', 'EnterWorktree', 'ExitPlanMode', 'ExitWorktree', 'FetchInboxMessage', 'Glob', 'Grep', 'LSP', 'ListAgents', 'ListConnectors', 'ListMcpResourcesTool', 'ListPlugins', 'ListSkills', 'Monitor', 'NotebookEdit', 'Poll', 'PowerShell', 'Projects', 'ProposeGoal', 'PushNotification', 'Read', 'ReadMcpResourceDirTool', 'ReadMcpResourceTool', 'ReadNotifications', 'RefreshMcpTools', 'RemoteTrigger', 'ReportFindings', 'ScheduleWakeup', 'SearchMcpRegistry', 'SearchPlugins', 'SearchSkills', 'SendFeedback', 'SendFile', 'SendMessage', 'SendUserFile', 'SendUserMessage', 'ShareOnboardingGuide', 'ShowOnboardingRolePicker', 'Skill', 'SuggestConnectors', 'SuggestPluginInstall', 'SuggestSkills', 'TaskCreate', 'TaskGet', 'TaskList', 'TaskStop', 'TaskUpdate', 'TodoWrite', 'ToolSearch', 'WaitForMcpServers', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'enable__mcp__claude-in-chrome', 'enable__mcp__remote-devices__Claude_Browser', 'enable__mcp__remote-devices__computer', 'memory_list', 'memory_read', 'memory_write', 'propose_skills', 'request_computer', 'self_hosted_runner_get_pool', 'self_hosted_runner_list_runners', 'self_hosted_runner_list_secrets', 'self_hosted_runner_list_sessions', 'self_hosted_runner_read_health', 'self_hosted_runner_read_metrics', 'self_hosted_runner_requeue_session', 'self_hosted_runner_spawn_local', 'self_hosted_runner_tail_log']",
+  "VELDO-0173 launch/revision detail: an in-run tool the revision does not grant is switched off",
+  "VELDO-0173 launch/revision detail: a bound revision with no native tool list is refused by name before spawn",
+  "VELDO-0173 report/tools detail: an unbound launch reports the in-run source, its launch set and what it switched off",
+  "VELDO-0173 report/tools detail: a bound launch reports the revision by role and number and its granted tools",
+  "VELDO-0173 evidence/registry detail: the shipped registry is a fresh extraction of the pinned bytes [None]",
+  "VELDO-0173 evidence/registry detail: the registry holds the live init's tools and the outward ones the table lacks",
+  "VELDO-0173 evidence/registry detail: every in-run tool is registered but the compiled-out REPL slot",
+  "VELDO-0173 evidence/classification detail: every registry tool is classified in_run or outward",
+  "VELDO-0173 evidence/classification detail: the in-run tools equal the in-run list of the VELDO-0160 build",
+  "VELDO-0173 evidence/classification detail: each reason is read from the tool's own definition",
+  "VELDO-0173 baseline/required detail: no tool registry: refused by name before anything is spawned",
+  "VELDO-0173 baseline/required detail: no tool registry: counted once as a refused baseline",
+  "VELDO-0173 baseline/required detail: no tool classification: refused by name before anything is spawned",
+  "VELDO-0173 baseline/required detail: no tool classification: counted once as a refused baseline",
+  "VELDO-0173 baseline/required detail: a null tool registry: refused by name before anything is spawned",
+  "VELDO-0173 baseline/required detail: a null tool registry: counted once as a refused baseline",
+  "VELDO-0173 baseline/required detail: one registry tool (ReportFindings) left unclassified: refused by name before anything is spawned",
+  "VELDO-0173 baseline/required detail: one registry tool (ReportFindings) left unclassified: counted once as a refused baseline"
+ ],
+ "failed_rows": [
+  "VELDO-0173 launch/no-revision",
+  "VELDO-0173 launch/registry",
+  "VELDO-0173 launch/revision",
+  "VELDO-0173 report/tools",
+  "VELDO-0173 evidence/registry",
+  "VELDO-0173 evidence/classification",
+  "VELDO-0173 baseline/required"
+ ],
+ "modules": {
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "7d7494c368d07a33d6734cb3f9c5ac9a551218a5e80b6358143984f6ff73607d",
+   "now": "f1b5e4b45f76b487da75c27a89d3b537e65751c7e9f6da0d6c174b95635ae457"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "9f83b8e8756b5361bd07b0081b92a7a89d1a54397e444ac192a59fab2a676e67",
+   "now": "6c0b0ad967278a9b3a756703554d772b454765685651cdb3cf0db1bfbabc3cf6"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0173 launch/no-revision",
+   false
+  ],
+  [
+   "VELDO-0173 launch/registry",
+   false
+  ],
+  [
+   "VELDO-0173 launch/revision",
+   false
+  ],
+  [
+   "VELDO-0173 report/tools",
+   false
+  ],
+  [
+   "VELDO-0173 evidence/registry",
+   false
+  ],
+  [
+   "VELDO-0173 evidence/classification",
+   false
+  ],
+  [
+   "VELDO-0173 baseline/required",
+   false
+  ],
+  [
+   "VELDO-0173 fixture/extraction",
+   true
+  ],
+  [
+   "VELDO-0173 fixture/fake-default",
+   true
+  ],
+  [
+   "VELDO-0173 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.686,
+ "spec_id": "VELDO-0173",
+ "suite": "scripts/suites/82_veldo_0173_tool_registry.py",
+ "tree": "git archive 7851ae9bef69c2d9d8e54a0b95a823110113b1ef, unchanged; the current suite file run against it"
+}
