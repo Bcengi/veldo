@@ -218,3 +218,13 @@ stop the dead receiver owed, and `control_account_pool.py` stops counting such a
 `scripts/check_teeth_mutations.py` is added for the finding 154 mutations. Proof in proof/VELDO-0154/.
 
 2026-09-27, integration with VELDO-0169 on main: the suite registers the claim organ as a transaction transition (the store passes it the command transaction), the form VELDO-0169 introduced; no criterion changes.
+
+2026-09-27, gate timing: the mutation stage gives each case 120 s, and `loop154-pipe-not-polled` ran suite 83 to
+that deadline, because every wait ran to its full bound once the loop stopped and the reset row waited on the real
+clock for a minute boundary after every other row. Suite 83 now runs the reset row in a second installation of its
+own (clone, store, one account, service), begun before the other rows and closed after them, so its minute passes
+while the first installation runs the rest; each wait has its own bound (8 s) inside a 100 s suite budget, the
+first installation's rows have a 45 s deadline, and once a wait for a needed pass comes back empty every later
+wait of that installation returns at once, so its rows red by assertion. Every assertion is unchanged, and AC4's
+quiet interval is still watched in full, up to a second before the reset. The per-case `seconds` bound this branch
+had added to `scripts/check_teeth_mutations.py` is removed, since the gate never honors it. No criterion changes.
