@@ -192,6 +192,18 @@ refused by name (`paid_api:anthropic_profile:<type>`) from the profile's configu
 path resolved against the engine's working directory as the binary resolves it. The subscription token
 of an account configured to use one reaches the engine as CLAUDE_CODE_OAUTH_TOKEN from the receiver's
 configuration (control_launch).
+
+THE LAUNCH TOOL SET, VELDO-0173. A version is also qualified with the binary's full tool registry, every tool
+it registers (the entry's `tool_registry`, read from its bytes by proof/VELDO-0173/extract_tools.py, never the
+22-name built-in table), and the classification of every registry tool as `in_run` or `outward` with its reason
+(`tool_classification`, which also keeps an in-run tool the build does not register, REPL on 2.1.281). A record
+missing either, or whose classification leaves a registry tool unclassified, refuses every launch of the version
+before anything is accepted (`missing_evidence:engine_baseline:<version>`). `tool_options(binding, revision)`
+derives the run's options from the record and the bound role revision alone: the launch tool set is the
+revision's native tools (VELDO-0127, the owner's grant, which may go beyond the in-run list) when one is bound,
+else the classification's in-run tools; the `--tools` option names exactly that set and `--disallowedTools`
+every registry tool outside it, so the binary switches them off at launch (it turns both into deny rules over
+its registry). Each value is one `--option=value` argument, so the variadic option takes nothing after it.
 Standard library only.
 """
 import datetime
@@ -1204,12 +1216,14 @@ def bind(adapter, state_root, record=None):
         raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
     # VELDO-0155: the version is qualified with the everything-off baseline, or nothing is accepted.
     base = qualified_baseline({'version': version}, record)
+    # VELDO-0173: and with its full tool registry and the classification of every registry tool.
+    tools = qualified_tools(version, entry)
     # VELDO-0155 AC3: and with stream JSON input, so the prompt waits for the login check (Guard).
     if not input_protocol(entry['flags']):
         raise Refused('missing_evidence:engine_input_protocol:%s' % version,
                       'the version is not qualified with stream JSON input')
     return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
-            'flags': list(entry['flags']), 'baseline': base}
+            'flags': list(entry['flags']), 'baseline': base, 'tools': tools}
 
 
 def command(bound, adapter):
@@ -1321,23 +1335,79 @@ def qualified_baseline(bound, record=None):
     if entry.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound['version'],
                       'the version is not qualified with the everything-off baseline')
+    qualified_tools(bound['version'], entry)
     return BASELINE
 
 
+# VELDO-0173: the launch tool options, each one `--option=value` argument (the binary's `--tools <tools...>`
+# and `--disallowedTools <tools...>` are variadic, and a separate value would take the arguments after it).
+TOOLS_OPTION, DISALLOWED_OPTION = '--tools', '--disallowedTools'
+TOOL_CLASSES = ('in_run', 'outward')
+# A tool name the options can carry: the binary splits a value at commas and spaces outside parentheses.
+TOOL_NAME = re.compile(r'[A-Za-z0-9_.-]+')
+
+
+def qualified_tools(version, entry):
+    """{registry, in_run}: the version's full tool registry and its classification's in-run tools, from
+    the qualification entry. A missing registry or classification, or a registry tool the classification
+    leaves unclassified, refuses every launch of the version by name."""
+    refused = 'missing_evidence:engine_baseline:%s' % version
+    registry = entry.get('tool_registry')
+    if (not isinstance(registry, list) or not registry
+            or not all(isinstance(n, str) and TOOL_NAME.fullmatch(n) for n in registry)):
+        raise Refused(refused, 'the version is not qualified with its tool registry')
+    classification = entry.get('tool_classification')
+    if not isinstance(classification, dict) or not all(
+            isinstance(row, dict) and row.get('class') in TOOL_CLASSES and TOOL_NAME.fullmatch(name)
+            for name, row in classification.items()):
+        raise Refused(refused, 'the version is not qualified with its tool classification')
+    unclassified = sorted(set(registry) - set(classification))
+    if unclassified:
+        raise Refused(refused, 'registry tools left unclassified: ' + ', '.join(unclassified))
+    return {'registry': sorted(set(registry)),
+            'in_run': sorted(name for name, row in classification.items() if row['class'] == 'in_run')}
+
+
+def tool_options(bound, revision=None):
+    """{argv, report}: the run's launch tool set and the registry tools switched off, from the qualified
+    record (the binding's `tools`) and the bound role revision (None before VELDO-0127 binds one; else its
+    `native_tools`, the owner's grant). The report is names only."""
+    tools = bound.get('tools')
+    if not isinstance(tools, dict):
+        raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
+    if revision is None:
+        launch, source = list(tools['in_run']), 'in_run'
+    else:
+        native = revision.get('native_tools') if isinstance(revision, dict) else None
+        if not isinstance(native, list) or not all(isinstance(n, str) and TOOL_NAME.fullmatch(n) for n in native):
+            raise Refused('invalid_input:role_revision', 'the bound role revision names no native tool list')
+        launch, source = sorted(set(native)), 'role_revision'
+    disallowed = sorted(set(tools['registry']) - set(launch))
+    argv = ['%s=%s' % (TOOLS_OPTION, ','.join(launch)), '%s=%s' % (DISALLOWED_OPTION, ','.join(disallowed))]
+    identity = ({k: revision[k] for k in ('role', 'revision') if k in revision}
+                if isinstance(revision, dict) else None)
+    return {'argv': argv, 'report': {'source': source, 'launch': list(launch), 'disallowed': disallowed,
+                                     'revision': identity}}
+
+
 def baseline(bound, run, environment=None, record=None):
-    """{argv, environment, files}: what the run adds after its qualified flags. `run` names the run's own
-    `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
-    generated `--settings` and `--mcp-config` options name."""
+    """{argv, environment, files, tools}: what the run adds after its qualified flags. `run` names the run's
+    own `config` directory, where `files` ({name: bytes}) are written before the spawn and which the
+    generated `--settings` and `--mcp-config` options name, and its bound role `revision` (VELDO-0173), whose
+    launch tool options end the argv; `tools` reports them by name."""
     base = bound.get('baseline') if record is None else qualified_baseline(bound, record)
     if base != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
+    if record is not None:
+        bound = dict(bound, tools=qualified_tools(bound['version'], qualified(bound['version'], record)))
+    options = tool_options(bound, run.get('revision'))
     config = Path(run['config'])
     files = {SETTINGS_FILE: (json.dumps(base['settings'], sort_keys=True) + '\n').encode(),
              MCP_FILE: (json.dumps(base['mcp_config'], sort_keys=True) + '\n').encode()}
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
                                          base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
-            + list(base['stream_options']))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files}
+            + list(base['stream_options']) + list(options['argv']))
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report']}
 
 
 class Unresolved(Exception):
