@@ -76,3 +76,26 @@ builder's permitted completion run.
 The completion run also exercises the proof, floor, candidates and gate output suites separately.
 Its final results and footprint, anchor and validation checks are recorded in the specification's
 History. Engine production copies are byte-identical to their repository counterparts.
+
+## Completion checks
+
+These are partial suite results on the merged tree, not a full gate verdict. Each final run was
+serial; candidates and gate output were repeated separately after their first runs accidentally
+overlapped. All reported zero failures; subset mode intentionally exits 2.
+
+| Suite | Context | Passing suite rows |
+|---|---|---|
+| `86_veldo_0148_re_land` | ordinary environment | 10 |
+| `86_veldo_0148_re_land` | gate environment | 10 |
+| `64_veldo_0050_proof` | proof | 14 |
+| `63_veldo_0049_floor` | floor | 20 |
+| `67_veldo_0056_candidates` | candidates | 11 |
+| `69_veldo_0058_gate_output` | gate output | 16 |
+| `58_veldo_0028_effects` | effect executor | 51 |
+| `70_veldo_0057_landing` | landing | 31 |
+| `83_veldo_0154_factory_loop` | factory loop | 13 |
+
+The gate-environment run used an empty environment, PATH `/usr/bin:/usr/bin:/bin`, a generated
+HOME under `/dev/shm`, TMPDIR `/dev/shm`, `C.UTF-8` language and locale, UTC, disabled Python
+bytecode and user site, hash seed 0, disabled system Git configuration, global Git configuration
+`/dev/null`, and disabled terminal prompting, exactly as requested.

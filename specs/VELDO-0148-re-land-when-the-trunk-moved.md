@@ -208,3 +208,12 @@ text (including the forced-push mutation's second replacement), and all source a
 match the merged production modules. No records are missing or stale; mutation names are unique
 across the registry. The saved baseline and four no-op controls are green. This was a static audit
 of the previous builder's evidence, not a new mutation run; the reviewer runs the mutation checker.
+
+2026-09-28, merged-tree regression checks: suite 86 passes all 10 rows in both the ordinary
+and requested gate environments. The proof (64, 14 rows), floor (63, 20), candidates (67, 11),
+gate output (69, 16), effect executor (58, 51), landing (70, 31) and factory loop (83, 13) suites
+all pass without failures. Candidates and gate output initially overlapped accidentally, then
+were rerun serially; all final runs were separate. Subset mode intentionally exits 2 and does not
+constitute a full gate verdict. No merge repair was needed. Searched production writers and
+readers of the land dispatch, trunk-moved classification, approval request and installed-loader
+seams; all eight changed production modules match their engine copies byte for byte.
