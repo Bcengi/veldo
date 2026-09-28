@@ -1006,7 +1006,13 @@ def _v189_suite():
                   whole == 0 and 'exchanged' in points and points[-1:] == ['done'])
             exchanged = points.index('exchanged') + 1 if 'exchanged' in points else None
             restarted = points.index('restart') + 1 if 'restart' in points else None
+            before_points = sum(not one for _label, one in rows[KP])
             for at in range(1, len(points) + 1):
+                # The row is red from the first point that fails; the points after it are not run (a defect that
+                # writes one point per file would otherwise cost a kill per file).
+                if sum(not one for _label, one in rows[KP]) > before_points:
+                    check(KP, 'the kill rows stopped at the first point that failed, before point %d' % at, False)
+                    break
                 fresh_start()
                 calls = len(kill.manager.calls)
                 code = killed(at)
@@ -1038,7 +1044,8 @@ def _v189_suite():
                                                            if s.get('step') == 'engine_upgrade'][:1]),
                           any(s.get('step') == 'engine_upgrade' and s.get('restart') == 'restarted'
                               for s in report.get('steps') or []))
-            check(KP, 'a kill row ran at every point [%d]' % len(points), len(points) >= 4)
+            check(KP, 'a kill row ran at every point, at least begin, staged, exchanged, record and restart [%s]' % points,
+                  {'begin', 'staged', 'exchanged', 'record', 'restart'} <= set(points))
 
         # AC2: a restart that fails puts the previous engine back and the service answering on it.
         with section(FR):
