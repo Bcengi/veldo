@@ -55,8 +55,11 @@ def _v189_suite():
     ROWS = ('install/assets', 'upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'upgrade/removed-module',
             'upgrade/census', 'upgrade/refused-by-name', 'switch/kill-points', 'switch/failed-restart',
             'kept/owner-data', 'announce/before-first-write', 'restart/rules', 'second-run/changes-nothing',
-            'switch/failed-after-start', 'ownership/restore-differs', 'ownership/committed')
-    IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC = ROWS
+            'switch/failed-after-start', 'ownership/restore-differs', 'ownership/committed',
+            'switch/resumed-failure', 'switch/rollback-kills', 'switch/stop-refused',
+            'ownership/restore-reported', 'ownership/start-drops', 'ownership/commit-refused',
+            'switch/stop-before-restore')
+    IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC, RE, BK, ST, RP, SD, CR, BS = ROWS
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -194,6 +197,7 @@ def _v189_suite():
         def __init__(self, unit_dir):
             self.unit_dir, self.procs, self.calls, self.fail_restart = Path(unit_dir), {}, [], 0
             self.fail_after_start, self.came_up = False, []
+            self.fail_stop, self.keep_failed_running, self.after_failed_start = False, False, None
             self.lock = threading.Lock()
 
         def _field(self, unit, key):
@@ -223,6 +227,8 @@ def _v189_suite():
                 if args[0] == 'start':
                     return self.start(unit)
                 if args[0] == 'stop':
+                    if self.fail_stop:
+                        return 1, '', 'stand-in stop refused'
                     self.stop(unit)
                     return 0, '', ''
                 if args[0] == 'restart':
@@ -233,7 +239,10 @@ def _v189_suite():
                             # The reviewer's case: the unit comes up on what is installed, then stops.
                             code, _out, _err = self.start(unit)
                             self.came_up.append(self.pid(unit) if code == 0 else None)
-                            self.stop(unit)
+                            if self.after_failed_start:
+                                self.after_failed_start()
+                            if not self.keep_failed_running:
+                                self.stop(unit)
                         return 1, '', 'Job for %s failed (the suite stand-in fails this restart)' % unit
                     return self.start(unit)
                 return 0, '', ''
@@ -1157,7 +1166,7 @@ def _v189_suite():
             steps = [json.loads(line) for line in (host.home / 'state' / UP.LOG).read_text().splitlines()]
             check(FA, '%s: the step log records the switch back and the restore before the previous engine\'s restart '
                   '[%s]' % (label, [(s.get('point'), s.get('outcome')) for s in steps][-4:]),
-                  [(s.get('point'), s.get('outcome')) for s in steps][-3:]
+                  [(s.get('point'), s.get('outcome')) for s in steps if s.get('point') != 'stopped'][-3:]
                   == [('switched_back', None), ('ownership_restore', 'restored'), ('restart', 'previous_engine_restarted')])
             check(FA, '%s: the service was restarted once more, on the previous engine [%s]'
                   % (label, [c for c in ran if c[0] in ('start', 'stop', 'restart')]),
@@ -1179,6 +1188,135 @@ def _v189_suite():
                 failed_after_start(hosts[OLDER[1]], laid_down[OLDER[1]], OLDER[1])
             else:
                 check(FA, 'the %s host was laid down' % OLDER[1], False)
+
+        # Each recovery row starts with the real older installer and the real setup writer.
+        def fail_next(keep=False):
+            kill.manager.fail_restart = 1
+            kill.manager.fail_after_start = True
+            kill.manager.keep_failed_running = keep
+
+        def clear_failure():
+            kill.manager.fail_restart = 0
+            kill.manager.fail_after_start = False
+            kill.manager.keep_failed_running = False
+            kill.manager.fail_stop = False
+            kill.manager.after_failed_start = None
+
+        def previous_answers(row, label):
+            check(row, label + ': previous engine and original record restored',
+                  named(kill.home / 'bin') == old_engine and kill.record_path.read_bytes() == old_record)
+            check(row, label + ': previous engine channel available', channel_of(kill).get('available') is True)
+
+        with section(RE):
+            for target in ('unit', 'record'):
+                fresh_start()
+                units_before = snapshot(kill.units)
+                at = points.index(target) + 1 if target in points else None
+                check(RE, 'the upgrade has a ' + target + ' write point', at is not None)
+                if at is None:
+                    continue
+                check(RE, 'setup killed after ' + target, killed(at) == -signal.SIGKILL)
+                # A second begin must not hide the first exchange.
+                check(RE, 'the resumed setup killed after its begin', killed(1) == -signal.SIGKILL)
+                fail_next()
+                code, report = kill.setup()
+                clear_failure()
+                check(RE, target + ': failed resumed restart refused', code == 1)
+                previous_answers(RE, target)
+                check(RE, target + ': every original unit restored across runs', snapshot(kill.units) == units_before)
+                code, report = kill.setup()
+                check(RE, target + ': forward re-run answers before removing previous engine',
+                      code == 0 and channel_of(kill).get('available') is True
+                      and not (kill.home / UP.STAGE).exists())
+
+        with section(BK):
+            fresh_start()
+            fail_next()
+            killed(0)
+            clear_failure()
+            back_points = [json.loads(line)['point'] for line in log.read_text().splitlines()]
+            begin_back = back_points.index('switched_back') if 'switched_back' in back_points else len(back_points)
+            check(BK, 'switch back exposes the stop as a kill point', 'stopped' in back_points)
+            for at in range(begin_back + 1, len(back_points) + 1):
+                fresh_start()
+                fail_next()
+                check(BK, 'killed inside switch back at ' + back_points[at-1], killed(at) == -signal.SIGKILL)
+                clear_failure()
+                calls = len(kill.manager.calls)
+                code, report = kill.setup()
+                ran = kill.manager.calls[calls:]
+                check(BK, 'resume after ' + back_points[at-1] + ' restarts and answers',
+                      code == 0 and ['restart', kill.unit] in ran and channel_of(kill).get('available') is True)
+                check(BK, 'resume removes stage only after the service answers', not (kill.home / UP.STAGE).exists())
+
+        with section(ST):
+            fresh_start()
+            fail_next(keep=True)
+            kill.manager.fail_stop = True
+            code, report = kill.setup()
+            check(ST, 'stop failure is refused by name in the owner answer',
+                  code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_stop')
+            check(ST, 'stop failure does not attempt ownership restore',
+                  not any(json.loads(line)['point'] == 'ownership_restore' for line in log.read_text().splitlines()))
+            clear_failure()
+            code, report = kill.setup()
+            check(ST, 'a re-run after stop failure recovers', code == 0 and channel_of(kill).get('available') is True)
+
+        with section(BS):
+            fresh_start()
+            fail_next(keep=True)
+            code, report = kill.setup()
+            clear_failure()
+            previous_answers(BS, 'failed restart leaves current service alive')
+            check(BS, 'restore ran after a successful stop',
+                  any(json.loads(line).get('outcome') == 'restored' for line in log.read_text().splitlines()))
+
+        with section(RP):
+            fresh_start()
+            fail_next()
+            def damage_previous():
+                path = kill.home / UP.STAGE / 'control_channel_activation.py'
+                os.chmod(path, 0o600)
+                path.write_bytes(path.read_bytes() + b'\n# changed previous engine\n')
+            kill.manager.after_failed_start = damage_previous
+            code, report = kill.setup()
+            clear_failure()
+            blocked = recorded_previous(kill)
+            detail = report.get('detail', '')
+            check(RP, 'restore refusal and forward recovery are in the owner answer',
+                  code == 1 and 'ownership_restore_differs' in detail and 're-run setup forward' in detail)
+            check(RP, 'every blocked ownership row is named in the answer',
+                  len(blocked) >= 2 and all(value in detail and module in detail for _, value, module, _, _ in blocked))
+            check(RP, 'a refused restore leaves all bindings and records intact',
+                  blocked and all(r[5] == next((b[4] for b in blocked if b[0:2] == r[0:2]), r[5])
+                                  for r in read_store(kill.store, S.entity_owners)))
+            # Restore the edited fixture bytes; the refused transaction itself changes no row.
+            path = kill.home / 'bin' / 'control_channel_activation.py'
+            path.write_bytes(saved['entries'][str(path)][2])
+            os.chmod(path, saved['entries'][str(path)][1])
+            code, report = kill.setup()
+            check(RP, 're-running setup forward recovers owned commands',
+                  code == 0 and channel_of(kill).get('available') is True)
+
+        with section(SD, CR):
+            fresh_start()
+            at = points.index('restart') + 1 if 'restart' in points else None
+            check(CR, 'setup killed after current service answered', at is not None and killed(at) == -signal.SIGKILL)
+            before = recorded_previous(kill)
+            reply = kill.send({'operation': CS.OWNERSHIP_COMMIT})
+            check(CR, 'commit refuses while previous engine is installed and keeps all records',
+                  reply.get('accepted') is False and 'previous_engine_installed' in json.dumps(reply)
+                  and before and recorded_previous(kill) == before)
+            kill.manager.stop_all()
+            # Exercise serve's crash recovery after the real setup writer removed the previous engine.
+            fresh_start()
+            at = points.index('removed_previous') + 1 if 'removed_previous' in points else None
+            check(SD, 'setup killed after removing previous engine', at is not None and killed(at) == -signal.SIGKILL)
+            before = recorded_previous(kill)
+            kill.manager.stop_all()
+            kill.manager.start(kill.unit)
+            check(SD, 'serve drops previous bindings with no previous engine beside it',
+                  before and recorded_previous(kill) == [] and channel_of(kill).get('available') is True)
 
         # A restore whose previous file bytes do not match is refused by name and leaves the new bindings; each
         # step's observation is written before its commit.

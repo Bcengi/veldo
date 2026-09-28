@@ -915,10 +915,14 @@ def restore_owners(conn, observe=None):
         raise StoreRefused("read_only_handle", "this handle cannot restore ownership (%s)" % e)
     try:
         restored = previous_owners(conn)
+        blocked = []
         for selector, value, module, previous, digest in restored:
             if module_digest(module) != previous:
-                raise StoreRefused("ownership_restore_differs", "%s does not have the previous bytes %s (%s %r)"
-                                   % (module, previous, selector, value))
+                blocked.append("%s does not have the previous bytes %s (%s %r)"
+                               % (module, previous, selector, value))
+        if blocked:
+            raise StoreRefused("ownership_restore_differs", "; ".join(blocked))
+        for selector, value, module, previous, digest in restored:
             conn.execute("UPDATE entity_owners SET module_digest=? WHERE selector=? AND value=? AND module=? AND module_digest=?",
                          (previous, selector, value, module, digest))
         conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)

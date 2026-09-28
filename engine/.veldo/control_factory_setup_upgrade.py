@@ -196,7 +196,7 @@ def inspect(laid, record, record_path, api_unit=None):
         state = 'current'
         writes = []
     # A restart is due after an exchange no restart has followed (an upgrade killed after its switch).
-    due = state == 'resume' or (state == 'current' and switched_without_restart(log))
+    due = state == 'resume' or switched_without_restart(log)
     return {'state': state, 'home': home, 'bin': bin_dir, 'stage': stage, 'stage_left': os.path.lexists(stage),
             'log': log, 'current': current, 'template': template, 'recorded': recorded,
             'recorded_template': recorded_template, 'changed': changed, 'added': added, 'removed': removed,
@@ -206,18 +206,34 @@ def inspect(laid, record, record_path, api_unit=None):
             'config_path': str(record_path)}
 
 
-def switched_without_restart(log):
-    """Whether the step log's last upgrade exchanged the engine and no restart followed."""
+def recovery(log):
+    """The exchange and its outcome span setup runs; begin never resets the transaction."""
+    held = dict(switched=False, due=False, back=False, backups=[], active=False)
     entries = []
     with contextlib.suppress(OSError, ValueError):
         entries = [json.loads(line) for line in Path(log).read_text().splitlines() if line.strip()]
-    begun = max((i for i, e in enumerate(entries) if e.get('point') == 'begin'), default=None)
-    if begun is None:
-        return False
-    after = [e.get('point') for e in entries[begun:]]
-    if 'exchanged' not in after:
-        return False
-    return 'restart' not in after[after.index('exchanged'):]
+    for entry in entries:
+        name = entry.get('point')
+        if name == 'prepared':
+            held.update(backups=entry['backups'], active=entry['active'])
+        elif name == 'exchanged':
+            held.update(switched=True, due=True, back=False)
+        elif name == 'switched_back':
+            held.update(switched=False, due=True, back=True)
+        elif name == 'ownership_restore' and entry.get('outcome') != 'restored':
+            # A refused restore must recover forward on the next setup, keeping its all-or-nothing result.
+            held['back'] = False
+        elif name == 'restart' and entry.get('outcome') in (
+                'restarted', 'not_running', 'not_through_unit', 'previous_engine_restarted'):
+            held.update(due=False, back=False)
+        elif name == 'done':
+            held.update(switched=False, due=False, back=False, backups=[])
+    return held
+
+
+def switched_without_restart(log):
+    """Whether any exchange or switch back still needs its successful restart."""
+    return recovery(log)['due']
 
 
 def point(log, entry):
@@ -296,7 +312,12 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
     unit = plan['unit']
     report = {'step': 'engine_upgrade', 'previous': plan['previous_digest'], 'current': plan['current_digest'],
               'changed': plan['changed'], 'added': plan['added'], 'removed': plan['removed']}
+    pending = recovery(plan['log'])
     active = is_active(unit)
+    if pending['back']:
+        finish_switch_back(plan, runner, answers)
+        active = is_active(unit)
+    active = active or (plan['restart_due'] and pending['active'])
     if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:
         return dict(report, outcome='already_done', changed=[], added=[], removed=[], previous=plan['current_digest'])
     if plan['state'] == 'current':
@@ -318,16 +339,22 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
             point(log, {'point': 'removed_stage'})
         stage(plan, modes, bin_mode)
         point(log, {'point': 'staged', 'files': len(plan['fixed'])})
-    replaced, switched = [], plan['state'] == 'resume' and os.path.isdir(plan['stage'])
+    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups']]
+    switched = (pending['switched'] or plan['state'] == 'resume') and os.path.isdir(plan['stage'])
     restart = None
     try:
         if plan['state'] == 'upgrade':
+            replaced = [(path, Path(path).read_bytes(), stat.S_IMODE(os.lstat(path).st_mode))
+                        for kind, path, _body, _mode in plan['writes'] if kind in ('record', 'unit')]
+            point(log, {'point': 'prepared', 'active': active,
+                        'backups': [(p, body.decode(), mode) for p, body, mode in replaced]})
             exchange(plan['stage'], plan['bin'])
             switched = True
             point(log, {'point': 'exchanged', 'bin': plan['bin'], 'previous': plan['stage']})
         units = False
         for kind, path, body, mode in plan['writes']:
-            replaced.append((path, Path(path).read_bytes(), stat.S_IMODE(os.lstat(path).st_mode)))
+            if not any(saved[0] == path for saved in replaced):
+                replaced.append((path, Path(path).read_bytes(), stat.S_IMODE(os.lstat(path).st_mode)))
             replace(path, body, mode)
             units = units or kind == 'unit'
             point(log, {'point': kind, 'path': path})
@@ -388,14 +415,28 @@ def switch_back(plan, replaced, runner, reason, restart_again, answers):
         runner.run(['daemon-reload'])
     point(plan['log'], {'point': 'switched_back', 'reason': reason})
     if restart_again:
-        # The current engine may have served before it failed, rebinding the store's ownership declarations
-        # to its bytes: with the service stopped, its own restore entry point (from its directory, now
-        # beside bin) binds them to the previous engine's bytes again before the previous engine starts.
-        runner.run(['stop', plan['unit']])
-        point(plan['log'], {'point': 'ownership_restore', 'outcome': restore_ownership(plan)})
-        code, _out, _err = runner.run(['restart', plan['unit']])
-        point(plan['log'], {'point': 'restart', 'outcome': 'previous_engine_restarted' if not code and wait(answers)
-                            else 'previous_engine_failed'})
+        finish_switch_back(plan, runner, answers)
+
+
+def finish_switch_back(plan, runner, answers):
+    """Complete a switch back, including one whose setup died after stopping the unit."""
+    code, _out, err = runner.run(['stop', plan['unit']])
+    if code:
+        raise Refused('unavailable_service:authority:upgrade_stop',
+                      'the authority unit did not stop: %s; re-run setup forward' % str(err).strip()[:200])
+    point(plan['log'], {'point': 'stopped'})
+    outcome = restore_ownership(plan)
+    point(plan['log'], {'point': 'ownership_restore', 'outcome': outcome})
+    if outcome != 'restored':
+        raise Refused('setup_incomplete:engine_upgrade:ownership_restore',
+                      '%s; re-run setup forward' % outcome)
+    code, _out, _err = runner.run(['restart', plan['unit']])
+    answered = not code and wait(answers)
+    point(plan['log'], {'point': 'restart', 'outcome': 'previous_engine_restarted' if answered
+                        else 'previous_engine_failed'})
+    if not answered:
+        raise Refused('unavailable_service:authority:previous_engine_start',
+                      'the previous engine did not answer; re-run setup')
 
 
 def restore_ownership(plan):
@@ -411,6 +452,7 @@ def restore_ownership(plan):
     if done.returncode == 0:
         return 'restored'
     try:
-        return 'refused:' + str(json.loads(done.stderr.strip().splitlines()[-1]).get('refusal'))
+        answer = json.loads(done.stderr.strip().splitlines()[-1])
+        return 'refused:%s: %s' % (answer.get('refusal'), answer.get('detail', ''))
     except (ValueError, IndexError, AttributeError):
         return 'failed:exit_%d' % done.returncode

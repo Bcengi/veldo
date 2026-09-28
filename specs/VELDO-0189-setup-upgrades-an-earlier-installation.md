@@ -158,8 +158,9 @@ acceptance_criteria:
 required_evidence: [unit, integration]
 rollback: >
   While the previous engine directory is still beside `bin`, stop the service, exchange the two by hand and
-  put back the previous service.json and units; the store, keys, enrollments and every configuration value
-  are never changed by the upgrade. No automatic rollback beyond AC2's switch back is authorized, and a
+  put back the previous service.json and units. Run bin.upgrade/control_service.py restore-owners
+  <config>/service.json from the current engine directory before starting the previous engine; this restores
+  its ownership declarations. The store rows, keys, enrollments and every configuration value are kept. No automatic rollback beyond AC2's switch back is authorized, and a
   downgrade after the previous engine is removed is out of scope.
 ---
 
@@ -268,3 +269,14 @@ with no previous engine beside it drops any left. Rebind, restore and drop are e
 switch/failed-after-start (over both older hosts), ownership/restore-differs and ownership/committed, and four
 finding 189 mutations. The rollback by hand still needs the restore run before the previous engine starts,
 which the rollback text does not say: the owner's decision.
+
+
+2026-09-28, follow-up review: recovery reads exchanges and successful restarts across every begin in the
+step log. A prepared entry keeps the original record and unit renderings before exchange, so resumed
+failures restore every unit written across runs. An interrupted switch back completes its stop, ownership
+restore and previous-engine restart before removing a directory; setup releases its own store lock for
+that recovery and reacquires it afterwards. Stop failures and restore refusals are named to the owner,
+with every blocking declaration named and forward setup as recovery; restore remains all or nothing.
+The manual rollback instruction now includes the real restore-owners command. Seven additional rows
+cover resumed failures, rollback kills, stop refusal, restore reporting, serve cleanup, commit refusal
+and stop-before-restore. Finding 189 mutations cover each. No acceptance criterion or footprint changed.

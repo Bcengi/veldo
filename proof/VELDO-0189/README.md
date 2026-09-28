@@ -36,7 +36,7 @@ every other write is done. Then the restart (AC4), and only after it succeeds is
 previous engine, removed.
 
 **Failure and kill.** A failure setup sees after the exchange exchanges the directories back, puts back
-every file this run replaced (their previous bytes and modes are held in memory) and refuses by name; a
+every record and unit any run replaced (their original bytes and modes are kept in the prepared step-log entry), plus configurations replaced by this run and refuses by name; a
 failed restart (`unavailable_service:authority:upgrade_start`) also restarts the service once on the
 previous engine, after stopping it and running the current engine's own restore of the ownership
 declarations (below), so a current engine that came up and then failed leaves nothing bound to its bytes. A re-run finds its state from the files alone: `bin` equal to the record with
@@ -47,8 +47,8 @@ the exchange and no restart after it is a restart still due.
 
 **The step log.** `<home>/state/engine-upgrade.jsonl`, 0600, one line after each write (each line is a
 write point): `begin` (the installed and current engine digests and the files changed, added and
-removed), `removed_stage`, `staged`, `exchanged`, `unit` and `configuration` (each path), `record`,
-`restart` (its outcome), `switched_back` (its reason), `ownership_restore` (its outcome),
+removed), `removed_stage`, `staged`, `prepared` (the original record and units, and whether the unit was active), `exchanged`, `unit` and `configuration` (each path), `record`,
+`restart` (its outcome), `switched_back` (its reason), `stopped`, `ownership_restore` (its outcome),
 `removed_previous`, `committed` (whether the running service dropped its record of previous bindings),
 `done`. It never carries a key,
 a token or a store row. The staged directory is one write point: it is not installed until the exchange,
@@ -189,7 +189,7 @@ older bytes. AC2's automatic switch back always runs it. The spec's rollback by 
 engine directory is still beside `bin`) leaves the previous engine's owned commands refused
 `ownership_conflict` unless the owner also runs `<home>/bin.upgrade/control_service.py restore-owners
 <home>/config/service.json` (the directory holding the current engine after his exchange) before he starts
-the previous engine; the rollback text does not say so, and changing it is the owner's decision.
+the previous engine; the rollback instruction now includes this command.
 
 ## Evidence files
 
@@ -204,3 +204,38 @@ the previous engine; the rollback text does not say so, and changing it is the o
   assertion (the previous engine's channel refused `ownership_conflict` after the switch back; the store
   keeps no record of previous bindings).
 - `mutations.json`, `*.diff`: the drive's record.
+
+
+## Follow-up recovery review
+
+The step log is authoritative across all setup runs. A begin never hides an exchange or an outstanding
+restart. The prepared entry precedes exchange and contains the original installation record and units
+(no key contents, tokens or store rows); a resumed failure restores those original bytes. A switch back
+without a successful restart remains due, including when its stop left the unit inactive. Setup releases
+its own authority lock during that recovery. Stop failure refuses upgrade_stop without attempting restore;
+a refused restore names ownership_restore_differs and every blocking declaration in the setup answer,
+keeps the entire transaction unchanged, and asks the owner to re-run setup forward.
+
+Additional rows, each reported once:
+
+- `switch/resumed-failure` (AC2): kill after unit and record writes, kill the resumed begin again, then fail
+  the current engine's restart after it served. The original engine, record and every original unit return,
+  its channel answers, and another setup succeeds.
+- `switch/rollback-kills` (AC2): kill at every logged switch-back point, including stopped and ownership
+  restore, then re-run setup. The service answers before stage cleanup.
+- `switch/stop-refused` (AC2): a running current engine refuses stop; setup names upgrade_stop, never attempts
+  restore, and a later setup recovers.
+- `ownership/restore-reported` (AC2, AC4): two declarations blocked by changed previous-engine bytes are both
+  named to the owner with forward recovery; every binding and previous record stays intact. Once the edited
+  fixture bytes are put back, setup forward restores available owned commands.
+- `ownership/start-drops` (AC2): kill setup after removal of the previous engine but before commit; a real
+  installed serve drops the remaining previous bindings on its next start.
+- `ownership/commit-refused` (AC2): the owner's signed request over the real socket refuses commitment while
+  the previous engine is installed and preserves every previous binding.
+- `switch/stop-before-restore` (AC2): a failed restart leaves the current service alive; setup must stop it
+  before restore can take the lock, and the previous engine's channel answers afterwards.
+
+The new defect rows are red against the merged pre-fix tree in `red-at-ed93984c.json`. The three rows for
+already-existing defenses (serve drop, commit refusal and stop before restore) are expected green there;
+their named finding 189 mutations remove those defenses. Mutation execution is reserved to the reviewer
+in this job; new mutation results are marked pending, never inferred from anchor checks.

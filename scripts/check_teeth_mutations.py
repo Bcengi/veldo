@@ -9036,8 +9036,8 @@ def cases():
     # recorded the previous bindings and the switch back restores them, the store checking each file's bytes; and a
     # committed upgrade keeps no record.
     upgrade('upgrade189-no-ownership-restore', 'control_factory_setup_upgrade.py',
-            "        point(plan['log'], {'point': 'ownership_restore', 'outcome': restore_ownership(plan)})\n",
-            "        point(plan['log'], {'point': 'ownership_restore', 'outcome': 'restored'})"
+            "    outcome = restore_ownership(plan)\n",
+            "    outcome = 'restored'"
             "  # defect: the switch back skips the restore\n", 'switch/failed-after-start')
     upgrade('upgrade189-rebind-not-recorded', 'control_store.py',
             "        if keep_previous and rebound:\n            _record_previous(conn, rebound)\n",
@@ -9051,6 +9051,40 @@ def cases():
             "        if active and commit is not None:\n",
             "        if False:  # defect: the committed upgrade leaves the previous bindings recorded\n",
             'ownership/committed')
+
+    # Follow-up review: recovery spans begins, rollback kill points and named all-or-nothing refusals.
+    upgrade('upgrade189-last-begin-only', 'control_factory_setup_upgrade.py',
+            "    for entry in entries:\n",
+            "    entries = entries[max((i for i, e in enumerate(entries) if e.get('point') == 'begin'), default=0):]\n"
+            "    for entry in entries:\n", 'switch/resumed-failure')
+    upgrade('upgrade189-resumed-not-switched', 'control_factory_setup_upgrade.py',
+            "    switched = (pending['switched'] or plan['state'] == 'resume') and os.path.isdir(plan['stage'])\n",
+            "    switched = plan['state'] == 'resume' and os.path.isdir(plan['stage'])\n", 'switch/resumed-failure')
+    upgrade('upgrade189-resumed-units-forgotten', 'control_factory_setup_upgrade.py',
+            "    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups']]\n",
+            "    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups'] if not p.endswith('.service')]\n",
+            'switch/resumed-failure')
+    upgrade('upgrade189-switch-back-not-due', 'control_factory_setup_upgrade.py',
+            "            held.update(switched=False, due=True, back=True)\n",
+            "            held.update(switched=False, due=False, back=False)\n", 'switch/rollback-kills')
+    upgrade('upgrade189-stop-exit-ignored', 'control_factory_setup_upgrade.py',
+            "    if code:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n",
+            "    if False:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n", 'switch/stop-refused')
+    upgrade('upgrade189-restore-refusal-unreported', 'control_factory_setup_upgrade.py',
+            "    if outcome != 'restored':\n",
+            "    if False:\n", 'ownership/restore-reported')
+    upgrade('upgrade189-restore-only-first-blocker', 'control_store.py',
+            'raise StoreRefused("ownership_restore_differs", "; ".join(blocked))',
+            'raise StoreRefused("ownership_restore_differs", blocked[0])', 'ownership/restore-reported')
+    upgrade('upgrade189-serve-keeps-previous-bindings', 'control_service.py',
+            "            if previous is not None and not keep:\n",
+            "            if False:\n", 'ownership/start-drops')
+    upgrade('upgrade189-commit-with-previous-engine', 'control_service.py',
+            "        if os.path.lexists(previous):\n",
+            "        if False:\n", 'ownership/commit-refused')
+    upgrade('upgrade189-restore-without-stop', 'control_factory_setup_upgrade.py',
+            "    code, _out, err = runner.run(['stop', plan['unit']])\n",
+            "    code, _out, err = 0, '', ''\n", 'switch/stop-before-restore')
 
     # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
     # criterion's declared falsifier first, then the threat model's other routes.

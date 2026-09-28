@@ -813,7 +813,14 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                               'the running service takes no command for this store write')
             raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
         # VELDO-0189: an earlier engine is replaced by the current one before any other step writes.
+        released = lock is not None and lock != -1 and engine['restart_due']
+        if released:
+            os.close(lock)
+            lock = None
         upgraded = upgrade_engine(plan, engine, runner, running)
+        if released:
+            lock = take_lock(root, create=False)
+            running = (lock is None)
         installed = json.loads(Path(api['service_json']).read_text())
         outcomes = [upgraded] + [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
 
