@@ -58,11 +58,12 @@ acceptance_criteria:
       Claim: A Claude Code run whose role lists the file memory has auto-memory on in exactly the memory
       record's directory, whichever account runs it, and one whose role does not list it keeps auto-memory
       off. Set and completeness: VELDO-0127's capability configuration gains a `file_memory` item, and the
-      seeded assistant roles list it `always`. For a run that lists it, the generated settings (VELDO-0155)
+      assistant roles setup saves (VELDO-0177 AC2) list it `always`, as a new role revision. For a run that lists it, the generated settings (VELDO-0155)
       set `autoMemoryEnabled` true and `autoMemoryDirectory` to the record's file memory directory, and the
       launch leaves `CLAUDE_CODE_DISABLE_AUTO_MEMORY` unset; every other part of the baseline is unchanged.
-      Both settings are qualified on 2.1.281 and recorded in its qualification record, and a version whose
-      baseline lacks them launches no run that lists the item (missing_evidence:engine_baseline:<version>).
+      The 2.1.281 binary carries `autoMemoryDirectory` and applies it from flag settings, the source the
+      baseline's settings file is passed as (control_engine_claude `settings_option`); both settings are
+      qualified on 2.1.281 and recorded in its qualification record, and a version whose baseline lacks them launches no run that lists the item (missing_evidence:engine_baseline:<version>).
       The init event's `memory_paths` must name exactly that directory, else the run is stopped by name
       before its first turn (binding_mismatch:engine_memory). The suite runs the item on two accounts and a
       role without it. Falsifier: Leave `autoMemoryDirectory` unset, and the memory-path row must fail on
@@ -77,7 +78,9 @@ acceptance_criteria:
       Codex run that lists the item, the generated configuration (VELDO-0156) adds the record's file memory
       directory to the workspace-write sandbox's writable roots and puts the index file's content, with one
       paragraph naming the layout (one fact per file, the index kept current), into the developer
-      instructions; Codex's own memory feature stays off, since it keeps memory in the account profile. Both
+      instructions; Codex's own memory feature stays off, with `memories.generate_memories` and
+      `memories.use_memories` false in the generated configuration (both keys of 0.154.0), since it keeps
+      memory in the account profile. Both
       forms are qualified on 0.154.0 and recorded in its qualification record, and a version without them
       launches no run that lists the item. The suite's fake Codex writes a new memory file and updates the
       index, and a later Claude Code run reads it. Falsifier: Hand the index in the instructions without the
@@ -141,3 +144,7 @@ requires for every environment switch and setting; a new version is requalified.
 
 2026-09-27: new draft for the owner's memory requirement (Telegram 29294). Only the owner marks a
 specification ready.
+
+2026-09-27, review of the drafts: AC2 names Codex's memory switch (`memories.generate_memories` and
+`memories.use_memories` false), and AC1 says `autoMemoryDirectory` is in the 2.1.281 binary and applies
+from flag settings. Still a draft.

@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0186
-title: Factory setup installs every runtime asset and qualification record and pins both engines, so after the owner logs in each account the installed factory dispatches build and review to both engines on every account
+title: Factory setup installs every runtime asset and qualification record the installed modules read and pins both qualified engines, so the installed launch receiver binds Claude Code and Codex
 status: draft
 risk: critical
 owner: dmitry
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W146
 plan_revision: 4
-depends_on: [VELDO-0139, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0173, VELDO-0185]
+depends_on: [VELDO-0139, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0173]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -39,17 +39,17 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record each runtime asset setup installs with its path and digest, each engine pin with its version and
-    digest, and each account's first dispatch after setup with its engine and station; never a credential.
+    Record each runtime asset setup installs with its path and digest and each engine pin with its version
+    and digest; never a credential.
   metrics: >
-    Count runtime assets installed, pins made, and dispatches per engine and account after setup.
+    Count runtime assets installed, pins made, and binds refused after setup.
   traces: >
     Join each launch after setup to the installed qualification record and pin it bound.
   error_taxonomy: >
     Distinguish a module that reads a runtime file the installation lacks
     (missing_evidence:runtime_asset:<path>), an installed engine version the qualification record does not
-    list (missing_evidence:engine_baseline:<version>), a pin whose digest differs from the qualified one
-    (binding_mismatch:engine_digest) and an account not yet logged in (missing_authority:account_login:<id>).
+    list (missing_evidence:engine_baseline:<version>) and a pin whose digest differs from the qualified one
+    (binding_mismatch:engine_digest).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -73,28 +73,13 @@ acceptance_criteria:
       runs control_engine_claude `pin` for the version the installed qualification record lists, copying
       the versioned file to `<state root>/engines/claude_code/<version>` at mode 0555, and refuses by name a
       host whose installed version is not listed or whose copy's digest is not the qualified one; it checks
-      the Codex vendor binary's digest against its qualification record the same way. After setup, `bind`
-      accepts both adapters of VELDO-0185 AC1. The suite sets up with fixture engines and qualification
+      the Codex vendor binary's digest against its qualification record the same way. After setup,
+      control_launch `bind` accepts a `claude_code` adapter naming the pinned version and a `codex` adapter
+      naming the vendor binary, the adapters VELDO-0185 AC1 writes. The suite sets up with fixture engines and qualification
       records for their digests. Falsifier: Skip the Claude Code pin, and the bind row must fail on the
       absent pinned copy.
     falsified_by: >
       Skip the Claude Code pin, and the bind row must fail on the absent pinned copy.
-  - id: AC3
-    text: >
-      Claim: After setup and the owner's one-time login of each account, the installed factory dispatches
-      build and review work to both engines on every registered account, and a second setup run changes
-      nothing. Set and completeness: With the owner's accounts registered (three Claude Code and one Codex in
-      his case) and each logged in once (VELDO-0160 AC1's login step), a unit submitted after setup is built
-      and reviewed through the installed service and receiver alone, and over successive units every
-      account runs at least one build or review, with the Codex account among them; an account not yet
-      logged in is refused by name (missing_authority:account_login:<id>) and takes no work, and the others
-      carry on. A second setup run follows VELDO-0171 AC4's rule: every installed file and pin is byte for
-      byte the same and nothing is pinned or installed again. The suite uses fake engines that print the
-      installed CLIs' output shape (VELDO-0172). Falsifier: Write the receiver's adapters without `codex`,
-      and the every-account row must fail on the Codex account with no run.
-    falsified_by: >
-      Write the receiver's adapters without `codex`, and the every-account row must fail on the Codex
-      account with no run.
 required_evidence: [unit, integration]
 rollback: >
   Stop the service and remove the pinned copies and installed runtime files by hand; the store and every
@@ -103,8 +88,8 @@ rollback: >
 
 ## Intent
 
-The factory the owner sets up can actually run his engines: the files the engines need are installed,
-both engines are pinned, and after he logs in each account once, work runs on all of them.
+The factory the owner sets up can actually run his engines: the files the engines need are installed and
+both engines are pinned, so the installed receiver can launch Claude Code and Codex.
 
 ## Context
 
@@ -112,8 +97,9 @@ W146 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 st
 review on 2026-09-27 found that setup installs only `.py` modules, so `runtime/claude-qualification.json`
 and a pinned Claude Code binary are missing and Claude Code cannot launch through an installed service at
 all; the owner's accounts are three Claude Code and one Codex. The qualification records and the pin are
-VELDO-0060, VELDO-0155 and VELDO-0156's; the receiver's adapters and the work configuration are
-VELDO-0185's. VELDO-0139 is a standalone built item, so its edge is kept here and not in the plan graph. A
+VELDO-0060, VELDO-0155 and VELDO-0156's; the receiver's adapters, the work configuration, the second
+setup run and the end-to-end dispatch on every account are VELDO-0185's, which is built after this
+specification because its adapters name this pin. VELDO-0139 is a standalone built item, so its edge is kept here and not in the plan graph. A
 draft: only the owner marks it ready.
 
 ## Out of scope
@@ -123,11 +109,11 @@ new engine version (VELDO-0060, VELDO-0061); the Mac's engines (VELDO-0147).
 
 ## What the reviewer judges
 
-- Normal use: the owner sets up a fresh host, logs in each of his four accounts once, sends a unit, and it
-  is built and reviewed; over the day every account runs work, the Codex account among them.
+- Normal use: the owner sets up a fresh host, and the installed tree holds every runtime file its modules
+  read and a pinned Claude Code copy, so a launch through the installed receiver binds both engines.
 - Threat model: an installed module reading a runtime file that is not there, so a launch fails at run
   time; an engine launched unpinned or from the auto-updating link; a pin whose digest is not the
-  qualified one; an account that is not logged in taking work; a re-run that repins or reinstalls.
+  qualified one.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as the
   installer's updater removing a version between check and pin (setup refuses by name and a re-run pins);
   files planted in the installed directory.
@@ -141,3 +127,8 @@ new runtime file is installed without a list kept by hand.
 
 2026-09-27: new draft for the VELDO-0154 review finding of 2026-09-27 that Claude Code cannot launch through
 an installed service. Only the owner marks a specification ready.
+
+2026-09-27, review of the drafts: the order with VELDO-0185 is reversed, since VELDO-0185's adapters need
+this pin: this specification no longer depends on VELDO-0185, and its former AC3 (dispatch on every
+account after login, and the second setup run) moved to VELDO-0185 AC4 and AC3, where the login check
+and control_accounts are. Still a draft.

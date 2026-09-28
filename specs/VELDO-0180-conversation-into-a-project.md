@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0180
-title: One owner message turns a conversation into a new or existing project's work, and that work starts with the conversation's context and results
+title: One typed owner command turns a conversation into a new or existing project's work, and that work starts with the conversation's context and results
 status: draft
 risk: critical
 owner: dmitry
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W140
 plan_revision: 4
-depends_on: [VELDO-0143, VELDO-0150, VELDO-0152, VELDO-0175, VELDO-0176, VELDO-0177]
+depends_on: [VELDO-0143, VELDO-0150, VELDO-0152, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178]
 placement: [contracts, loop, fleet]
 protected_paths: []
 footprint:
@@ -26,6 +26,8 @@ footprint:
   - ".veldo/control_workflow_cycle*.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
+  - "engine/.veldo/control_api*.py"
+  - ".veldo/control_api*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0180_*.py"
@@ -38,44 +40,53 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record each conversion with its conversation, the owner message that asked for it, the route, the
-    project and objective it made, and the digests of the rendering and the workspace snapshot it bound;
+    Record each conversion with its conversation, the owner command that asked for it and its route (API
+    or Telegram), the project route, the project and objective it made, and the digests of the rendering and the workspace snapshot it bound;
     never their content.
   metrics: >
-    Count conversions by route (new project, existing project), conversions that asked the owner one
-    question, and route documents refused.
+    Count conversions by route (new project, existing project) and by command route, conversions that
+    asked the owner one question, and conversion commands refused.
   traces: >
-    Join each conversion to the turn whose message asked for it, the route document it produced and the
-    project's first PM and build runs that read its inputs.
+    Join each conversion to the owner command that asked for it, the route document the factory built from
+    it and the project's first PM and build runs that read its inputs.
   error_taxonomy: >
-    Distinguish a route document from a turn whose input was not the owner's own message
-    (missing_authority:conversation_route), a malformed or out-of-scope route (VELDO-0152 AC4's refusals)
-    and a snapshot whose digest differs from the one bound (binding_mismatch:conversation_snapshot).
+    Distinguish a conversion command from anyone but the owner (missing_authority:conversation_owner), one
+    with no project name (invalid_input:conversation_command:project_name), an out-of-scope route
+    (VELDO-0152 AC4's refusals) and a snapshot whose digest differs from the one bound
+    (binding_mismatch:conversation_snapshot).
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: The owner's one message in a conversation asking to make it a project becomes that project's
-      work through VELDO-0152's routing command, with no further question when his message names what the
-      route needs. Set and completeness: The turn that his message starts ends with the route document of
-      VELDO-0152 AC3, a new project (with the project name and Git identity when his message names them) or
-      an existing project named by id, marked with its conversation as its source. Intake's routing command
-      carries out exactly that route, and only for a turn whose input was the conversation owner's own
-      authenticated message; a route document from any other turn is refused by name
-      (missing_authority:conversation_route). A new project goes through VELDO-0143's proposal, which asks
-      his one answer only when the name or identity is missing; the objective his message proposes is
-      accepted by that message (VELDO-0150) in either route. A reply text that says a project was made, with
-      no route document, makes nothing. Falsifier: Take the route from the reply's text in place of the
-      route document, and the route-document row must fail on a project made from a reply that only says
-      "created".
+      Claim: A conversation becomes a project's work only on the owner's typed command,
+      `conversations.make_project` in the API or `/project <name>` on Telegram in reply to one of its
+      messages, and the project is named from that command, never from anything a turn produced. Set and
+      completeness: `conversations.make_project` is a POST route this specification adds to the published
+      ROUTES table (VELDO-0130, VELDO-0178), and `/project` is read as VELDO-0175 AC4 reads its commands.
+      The command names the conversation, its current version (VELDO-0174 AC1) and a name,
+      with any text after the name as the objective in his words, else the conversation's first message. A
+      name that is one of his projects' names or ids is the existing-project route; any other is a new
+      project with that name, with the Git identity when the command names one. The factory builds VELDO-0152
+      AC3's route document from the command alone, marked with its conversation as its source, and intake's
+      routing command carries it out; a new project goes through VELDO-0143's proposal, which asks his one
+      answer only when the identity is missing, and the objective is accepted by his command (VELDO-0150) in
+      either route. A command from anyone but the owner is refused by name
+      (missing_authority:conversation_owner) and one with no name is refused by name
+      (invalid_input:conversation_command:project_name), each making nothing. A route document, a project
+      name or a "created" claim in a turn's reply, tool results or protocol messages makes nothing, and
+      VELDO-0181 AC2 keeps it as text. The suite sends each command form, and ends a turn with a well-formed
+      route document naming a project and a reply that says "created". Falsifier: Carry out a route document
+      found in a turn's final message, and the injected-route row must fail on a project made with no owner
+      command.
     falsified_by: >
-      Take the route from the reply's text in place of the route document, and the route-document row must
-      fail on a project made from a reply that only says "created".
+      Carry out a route document found in a turn's final message, and the injected-route row must fail on a
+      project made with no owner command.
   - id: AC2
     text: >
       Claim: The project's work starts with the conversation's context and results: its objective binds
       the conversation's history and a snapshot of its workspace, and the project's PM and first build runs
       receive both. Set and completeness: At conversion the factory binds to the objective the conversation
-      id, VELDO-0176 AC3's rendering of every turn so far (from the redacted records) by digest, and a
+      id, VELDO-0176 AC3's rendering of every turn so far (from the redacted records), never shortened because
+      runs receive it as an input artifact file and not as their prompt, by digest, and a
       snapshot of the workspace: its files, and for each attached project clone its local commits as a Git
       bundle against the trunk commit it was taken at, stored by digest under the project's state. The
       project's PM run and the first build run of the unit it stages receive the rendering and the snapshot
@@ -97,32 +108,36 @@ rollback: >
 ## Intent
 
 A conversation that turns out to be real work becomes a project, or part of an existing one, with one
-message, and the project does not start from nothing: it has what the conversation learned and made.
+typed command, and the project does not start from nothing: it has what the conversation learned and made.
 
 ## Context
 
 W140 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. VELDO-0152's
 routing command carries out a PM's route document, VELDO-0143 makes a new project on the owner's one
-answer, and VELDO-0150 accepts an objective proposed by his own message. A conversation turn proposes the
-same route document, so no new authority is added: the route takes effect through the same command, on
-the owner's own message. A draft: only the owner marks it ready.
+answer, and VELDO-0150 accepts an objective proposed by his own message. The factory builds the same route
+document from the owner's typed command, so no new authority is added: the route takes effect through the
+same routing command. A turn's output never proposes it, because a tool result or a fetched page could
+carry a well-formed route document, and the name comes from his command for the same reason. A draft: only the owner marks it ready.
 
 ## Out of scope
 
-Turning part of a conversation into several projects at once (one message, one route); moving an
+Turning part of a conversation into several projects at once (one command, one route); moving an
 existing project's work back into a conversation; landing anything from the conversation itself (only the
 pipeline lands).
 
 ## What the reviewer judges
 
-- Normal use: after a morning of back and forth that produced a working script, the owner writes "make
-  this a new personal project called ads-audit"; the project is made with no question, and its first PM
-  run and build start from the conversation's history and the script.
-- Threat model: a project made from a route the owner did not ask for (a turn's own idea, a tool result, a
-  re-run continuation); a reply that claims a project was made; a snapshot changed between conversion and
+- Normal use: after a morning of back and forth that produced a working script, the owner replies
+  `/project ads-audit audit last month's Google Ads spend` to the last reply; the project is made, asking him
+  only for the Git identity when none is named, and its first PM run and build start from the
+  conversation's history and the script.
+- Threat model: a project made from a route the owner did not type (a turn's own route document, a tool
+  result or fetched page carrying one, a re-run continuation); a project named from a turn's output; a reply that claims a project was made; a snapshot changed between conversion and
   the build; the conversation's commits reaching trunk without the gate and review.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); forged rows in
-  our own store.
+  our own store; a new project this conversion or VELDO-0143 makes gets no Line until the service is
+  reinstalled with a work configuration naming its repository, since VELDO-0154 builds Lines only at
+  installation and no specification yet owns adding a Line at run time (filed for the lead to place).
 
 ## Notes
 
@@ -133,3 +148,8 @@ never reaches the project's runs.
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: AC1 takes the conversion only from the owner's typed command
+(`conversations.make_project` or Telegram's `/project <name>`), with the name from that command, since an
+injected tool result could otherwise make a project with no question; depends_on adds VELDO-0178, whose
+routes table the command joins. Filed: a new project gets no Line without a reinstall. Still a draft.

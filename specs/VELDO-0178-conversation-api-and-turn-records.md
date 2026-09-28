@@ -99,7 +99,8 @@ full live execution of each turn, through the same API the UI uses.
 W138 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. VELDO-0130 owns
 the API and its published ROUTES table, VELDO-0141 the execution record and its record routes, and
 VELDO-0164 scopes reads to the reader's projects; a conversation has no project, so its scope is its
-owner. The UI screens are VELDO-0179. A draft: only the owner marks it ready.
+owner. The conversion route `conversations.make_project` is VELDO-0180's, and the UI screens are
+VELDO-0179. A draft: only the owner marks it ready.
 
 ## Out of scope
 
@@ -122,3 +123,7 @@ The record is the same record every run keeps; only its binding and its read sco
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: the conversion route is VELDO-0180's own, since a conversation becomes a
+project only on the owner's typed command; the commands' version is VELDO-0174 AC1's. Criteria unchanged.
+Still a draft.

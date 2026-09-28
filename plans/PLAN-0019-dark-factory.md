@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187]
     order: 16059
     release: 1
     stage: 6
@@ -1283,15 +1283,15 @@ work:
     spec: VELDO-0174
     title: A conversation is a second kind of work beside projects, open until the owner closes it, and each of his messages in it is one turn the factory loop runs in order
     feature_refs: [F7]
-    depends_on: [VELDO-0039, VELDO-0127, VELDO-0154, VELDO-0160, VELDO-0162]
+    depends_on: [VELDO-0039, VELDO-0127, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0172, VELDO-0185]
     order: 15174
     release: 1
     stage: 5
   - item: W135
     spec: VELDO-0175
-    title: The owner starts a conversation from Telegram or the UI, continues it by replying to any of its messages or writing in its screen, and gets every reply where he wrote
+    title: The owner starts a conversation from Telegram or the UI, continues it by replying to any of its messages or writing in its screen, steers it by typed commands, and gets every reply where he wrote
     feature_refs: [F5]
-    depends_on: [VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0136, VELDO-0152, VELDO-0168, VELDO-0174]
+    depends_on: [VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0136, VELDO-0152, VELDO-0168, VELDO-0174, VELDO-0176, VELDO-0177]
     order: 15175
     release: 1
     stage: 5
@@ -1299,7 +1299,7 @@ work:
     spec: VELDO-0176
     title: The factory keeps each conversation's engine session and history, so a turn resumes it on any account of its engine, after an account limit and after a restart
     feature_refs: [F4]
-    depends_on: [VELDO-0141, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0174]
+    depends_on: [VELDO-0065, VELDO-0068, VELDO-0141, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0174, VELDO-0177]
     order: 15176
     release: 1
     stage: 5
@@ -1307,7 +1307,7 @@ work:
     spec: VELDO-0177
     title: A conversation acts in its own workspace with exactly its role's tools and servers, inside the same containment and credential rules as project runs, and can work on a fresh clone of a project it is attached to
     feature_refs: [F4]
-    depends_on: [VELDO-0040, VELDO-0042, VELDO-0127, VELDO-0158, VELDO-0162, VELDO-0165, VELDO-0173, VELDO-0174]
+    depends_on: [VELDO-0040, VELDO-0042, VELDO-0127, VELDO-0158, VELDO-0162, VELDO-0165, VELDO-0171, VELDO-0173, VELDO-0174, VELDO-0185]
     order: 15177
     release: 1
     stage: 5
@@ -1321,17 +1321,17 @@ work:
     stage: 5
   - item: W139
     spec: VELDO-0179
-    title: The UI's conversation screens let the owner start, continue and close conversations on phone and desktop and watch every turn live as a terminal
+    title: The UI's conversation screens let the owner start, continue, change the role of, attach a project to and close conversations on phone and desktop and watch every turn live as a terminal
     feature_refs: [F9]
-    depends_on: [VELDO-0145, VELDO-0178]
+    depends_on: [VELDO-0131, VELDO-0145, VELDO-0178]
     order: 15179
     release: 1
     stage: 5
   - item: W140
     spec: VELDO-0180
-    title: One owner message turns a conversation into a new or existing project's work, and that work starts with the conversation's context and results
+    title: One typed owner command turns a conversation into a new or existing project's work, and that work starts with the conversation's context and results
     feature_refs: [F6]
-    depends_on: [VELDO-0143, VELDO-0150, VELDO-0152, VELDO-0175, VELDO-0176, VELDO-0177]
+    depends_on: [VELDO-0143, VELDO-0150, VELDO-0152, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178]
     order: 15180
     release: 1
     stage: 5
@@ -1339,13 +1339,13 @@ work:
     spec: VELDO-0181
     title: A decision a conversation raises goes through the existing Telegram decision flow, only the conversation's owner drives it, and nothing a turn produces carries authority
     feature_refs: [F5]
-    depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0136, VELDO-0160, VELDO-0175, VELDO-0180]
+    depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0136, VELDO-0160, VELDO-0175, VELDO-0176, VELDO-0180]
     order: 15181
     release: 1
     stage: 5
   - item: W142
     spec: VELDO-0182
-    title: The factory keeps one memory store record naming where each part of Ava's memory lives, outside every account profile, and hands the same locations to every run on every account
+    title: The factory keeps one memory store record naming where each part of Ava's memory lives, none containing an account profile, and hands the same locations to every run on every account
     feature_refs: [F8]
     depends_on: [VELDO-0144, VELDO-0160, VELDO-0171]
     order: 15182
@@ -1353,7 +1353,7 @@ work:
     stage: 5
   - item: W143
     spec: VELDO-0183
-    title: Ava's ava-memory, knowledge graph and claude-mem servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
+    title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
     feature_refs: [F7]
     depends_on: [VELDO-0141, VELDO-0144, VELDO-0158, VELDO-0177, VELDO-0182]
     order: 15183
@@ -1369,18 +1369,26 @@ work:
     stage: 5
   - item: W145
     spec: VELDO-0185
-    title: Factory setup gives the installed service its engine adapters and work configuration, enrolls the authority and launch receiver as reservation services, and writes the receiver's state root, and a second run changes nothing
+    title: Factory setup saves the default team, gives the installed service its engine adapters and work configuration, enrolls the authority and launch receiver as reservation services and writes the receivers' state root, so after the owner logs in each account work runs on both engines on every account, and a second run changes nothing
     feature_refs: [F8]
-    depends_on: [VELDO-0154, VELDO-0160, VELDO-0167, VELDO-0170, VELDO-0171]
-    order: 15185
+    depends_on: [VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186]
+    order: 15186
     release: 1
     stage: 5
   - item: W146
     spec: VELDO-0186
-    title: Factory setup installs every runtime asset and qualification record and pins both engines, so after the owner logs in each account the installed factory dispatches build and review to both engines on every account
+    title: Factory setup installs every runtime asset and qualification record the installed modules read and pins both qualified engines, so the installed launch receiver binds Claude Code and Codex
     feature_refs: [F8]
-    depends_on: [VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0173, VELDO-0185]
-    order: 15186
+    depends_on: [VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0173]
+    order: 15185
+    release: 1
+    stage: 5
+  - item: W147
+    spec: VELDO-0187
+    title: Every conversation turn reaches claude-mem's session history through a factory-side feed built from the redacted record, so the owner's assistant and later conversations find it
+    feature_refs: [F7]
+    depends_on: [VELDO-0141, VELDO-0155, VELDO-0174, VELDO-0176, VELDO-0182, VELDO-0183]
+    order: 15187
     release: 1
     stage: 5
 
@@ -1752,8 +1760,9 @@ These are writing-only allocations; no specification status or existing evidence
 | W142 | VELDO-0182 | 1 | 5; one memory store record |
 | W143 | VELDO-0183 | 1 | 5; memory servers in the catalog |
 | W144 | VELDO-0184 | 1 | 5; file memory handed to every run |
-| W145 | VELDO-0185 | 1 | 5; setup lays down the dispatch configuration |
+| W145 | VELDO-0185 | 1 | 5; setup lays down the dispatch configuration, after VELDO-0186 |
 | W146 | VELDO-0186 | 1 | 5; setup installs engines and runtime assets |
+| W147 | VELDO-0187 | 1 | 5; conversation turns captured into claude-mem |
 
 ## Related baseline and follow-up disposition
 
@@ -1982,8 +1991,9 @@ W90 (VELDO-0127) depends on W133 and its AC4 proves the bound PushNotification g
 API ceremony, host command and content security policy through its existing dependency on W131
 (VELDO-0171); W131 has no dependency on W105. All amended specifications remain draft.
 
-2026-09-27: within revision 4, thirteen new drafts, each one concern, adding function and cutting none, all
-stage 5. Conversations, the owner's requirement of 2026-09-27 ("just like I work with Ava now ... not just a
+2026-09-27: within revision 4, thirteen new drafts, each one concern, adding function, all stage 5 (this
+entry first said "cutting none", which was wrong: the drafts deferred claude-mem's capture of factory turns
+and stopped a history too long for a fresh session, and the next entry restores both). Conversations, the owner's requirement of 2026-09-27 ("just like I work with Ava now ... not just a
 question, but more"), which supersedes and contains the smaller question-answering draft he agreed to that
 day: W134's VELDO-0174 makes a conversation a second kind of work beside projects, each owner message one
 turn the factory loop runs in order, beside project work; W135's VELDO-0175 starts one from Telegram or the
@@ -2006,3 +2016,18 @@ and pin both engines, so the installed factory dispatches build and review to bo
 account. In section 12's order, VELDO-0185 and VELDO-0186 are built before the owner's first use.
 VELDO-0182, VELDO-0185 and VELDO-0186 also build on the standalone VELDO-0139, an edge kept in the
 specifications. W44 (VELDO-0059) depends on all thirteen. The graph stays acyclic and stage-ordered.
+
+2026-09-27: within revision 4, the review of the thirteen conversation, memory and setup drafts, with the
+lead's decisions, applied; one new draft and no function cut. W147's VELDO-0187 feeds every conversation
+turn into claude-mem's session history from the redacted record, through the interface claude-mem's own
+hooks use, since the everything-off baseline switches those hooks off. VELDO-0176 asks the owner, when every
+account of a conversation's engine is at its limit, whether to wait or move to the other engine, and
+carries the newest whole turns that fit a fresh session in place of stopping; VELDO-0174 names the one
+conversation Line and conversation receiver configuration that launch turns, since the installed service
+runs one Line and one receiver per repository; VELDO-0175 and VELDO-0179 give the role change and the
+project attach a Telegram command and UI controls; VELDO-0180 takes a conversion only from the owner's
+typed command; VELDO-0182 and VELDO-0183 add memory_kb as the fifth memory part and name the fixed data
+paths and the knowledge graph's entry point from the code; VELDO-0184 names Codex's memory switch. The
+order of W145 and W146 is reversed: VELDO-0186 is built first and VELDO-0185, which now depends on it,
+saves the default team and carries the end-to-end dispatch on every account. W44 (VELDO-0059) depends on
+VELDO-0187 too. The graph stays acyclic and stage-ordered.

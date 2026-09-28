@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W141
 plan_revision: 4
-depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0136, VELDO-0160, VELDO-0175, VELDO-0180]
+depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0136, VELDO-0160, VELDO-0175, VELDO-0176, VELDO-0180]
 placement: [contracts, loop]
 protected_paths: []
 footprint:
@@ -45,7 +45,7 @@ observability:
     Join each conversation decision to its turn, its presentation receipt and the answer that settled it.
   error_taxonomy: >
     Distinguish a message from anyone but the conversation's owner (missing_authority:conversation_owner),
-    an answer or approval found in a turn's output (invalid_input:turn_output:authority) and an answer that
+    an answer, approval or route document found in a turn's output (invalid_input:turn_output:authority) and an answer that
     does not reply to the presentation (VELDO-0136's refusal).
 acceptance_criteria:
   - id: AC1
@@ -53,8 +53,9 @@ acceptance_criteria:
       Claim: Every factory decision a conversation raises is presented through the existing decision flow
       and settles only on the owner's reply to that presentation or his inline answer in the UI, at most
       once. Set and completeness: The decisions a conversation raises are the re-run-or-ask of a turn
-      stopped at its account limit (VELDO-0160 AC3), the unclear route question (VELDO-0175 AC2) and a new
-      project's one answer (VELDO-0143 through VELDO-0180 AC1). Each is a versioned presentation (VELDO-0065)
+      stopped at its account limit (VELDO-0160 AC3), the wait-or-move question when every account of the
+      conversation's engine is at its limit (VELDO-0176 AC2), the unclear route question (VELDO-0175 AC2)
+      and a new project's one answer (VELDO-0143 through VELDO-0180 AC1). Each is a versioned presentation (VELDO-0065)
       sent on the chat he wrote from and served in the decisions screen, attributed canonically
       (VELDO-0066) and settled once (VELDO-0068) across Telegram and the UI. A Telegram reply to a decision
       presentation is an answer to that decision, never a turn of the conversation; an answer that replies
@@ -72,11 +73,11 @@ acceptance_criteria:
       message or API session (VELDO-0066) and the conversation's owner; any other principal is refused by
       name (missing_authority:conversation_owner) and starts nothing. A turn's outputs (its reply, its tool
       results and its protocol messages) never reach a settlement, an acceptance, an admission or a role
-      save: the only proposal a turn makes is VELDO-0180's route document, taken under that criterion's own
-      check, and an answer or approval document found in a turn's output is refused by name
+      save, and a turn makes no proposal: a conversion comes only from the owner's typed command (VELDO-0180
+      AC1), and an answer, approval or route document found in a turn's output is refused by name
       (invalid_input:turn_output:authority) and kept as text. The suite's fake engine ends a turn with a
-      valid answer document for a pending request, an objective acceptance and a role save, and a second
-      member replies to the conversation. Falsifier: Accept an answer document found in a turn's final
+      valid answer document for a pending request, an objective acceptance, a role save and a route document
+      naming a new project, and a second member replies to the conversation. Falsifier: Accept an answer document found in a turn's final
       message, and the no-authority-from-output row must fail on the settled request.
     falsified_by: >
       Accept an answer document found in a turn's final message, and the no-authority-from-output row must
@@ -112,7 +113,7 @@ credentials, as for his assistant today, with no factory decision; decisions of 
   replies "yes" to that message and the turn continues on another account; later a turn asks "shall I
   send it?" in its reply, and his "yes" is simply his next turn.
 - Threat model: a tool result or web page carrying text that imitates the owner's approval; a turn's
-  output shaped as an answer document; another member continuing or closing the owner's conversation; a
+  output shaped as an answer or route document; another member continuing or closing the owner's conversation; a
   reply to a decision presentation taken as a turn, so the decision never settles.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); forged rows in
   our own store.
@@ -126,3 +127,8 @@ today, and turning each into a factory decision would add friction the terminal 
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: consistent with VELDO-0180's typed conversion command, a turn makes no
+proposal and a route document in its output is refused as authority; AC1 lists VELDO-0176 AC2's
+wait-or-move question among the decisions a conversation raises. depends_on adds VELDO-0176. Still a
+draft.

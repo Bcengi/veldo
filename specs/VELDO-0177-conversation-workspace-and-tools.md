@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W137
 plan_revision: 4
-depends_on: [VELDO-0040, VELDO-0042, VELDO-0127, VELDO-0158, VELDO-0162, VELDO-0165, VELDO-0173, VELDO-0174]
+depends_on: [VELDO-0040, VELDO-0042, VELDO-0127, VELDO-0158, VELDO-0162, VELDO-0165, VELDO-0171, VELDO-0173, VELDO-0174, VELDO-0185]
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
@@ -24,6 +24,10 @@ footprint:
   - ".veldo/control_agent_config*.py"
   - "engine/.veldo/control_team*.py"
   - ".veldo/control_team*.py"
+  - "engine/.veldo/control_factory_setup*.py"
+  - ".veldo/control_factory_setup*.py"
+  - "bin/veldo"
+  - "engine/bin/veldo"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0177_*.py"
@@ -69,14 +73,16 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: A turn is offered exactly its role revision's tools and servers, so it can read and change
-      files, run commands and look things up, and the seeded default team has an assistant role on each
+      files, run commands and look things up, and setup gives the default team an assistant role on each
       engine. Set and completeness: The launch hands in the bound revision's native tools, MCP selections,
       skills and instruction files exactly as VELDO-0127 AC2 hands them for a project run; nothing is added or
-      taken away for a conversation. The default team VELDO-0162 seeds gains `assistant` on Claude Code,
-      granting the pinned version's in-run tools with WebSearch and WebFetch, and `assistant_codex` on Codex,
-      granting its workspace-write sandbox with network access and web search, all `always` (VELDO-0183 and
-      VELDO-0184 add the memory items to both); the owner changes either in the role form (VELDO-0163). The
-      suite reads the init event's tools and servers against the revision, and the record of a turn that
+      taken away for a conversation. Setup saves `assistant` on Claude Code, granting the pinned version's
+      in-run tools with WebSearch and WebFetch, and `assistant_codex` on Codex, granting its workspace-write
+      sandbox with network access and web search, all `always`, into the default team by the owner's signed
+      commands: one capability configuration revision each (VELDO-0162 AC1) and one `save_default_team`
+      revision (VELDO-0162 AC4) adding both roles to the team VELDO-0185 AC1 saves, and a second setup run
+      saves nothing again (VELDO-0171 AC4's re-run rule). VELDO-0183 and VELDO-0184 add the memory items to
+      both, and the owner changes either in the role form (VELDO-0163). The suite reads the init event's tools and servers against the revision, and the record of a turn that
       edits a file, runs a command and fetches a loopback page. Falsifier: Launch conversation turns with no
       role revision bound, and the offered-tools row must fail on WebFetch missing from the init event.
     falsified_by: >
@@ -86,7 +92,8 @@ acceptance_criteria:
     text: >
       Claim: The owner attaches one of his projects to a conversation, and its turns then read and change a
       fresh isolated clone of that project's repository with its history, and never publish to it. Set and
-      completeness: The `attach_project` command (from the API or a message route) names a project in the
+      completeness: The `attach_project` command (from the API, VELDO-0178, or Telegram's `/attach`,
+      VELDO-0175 AC4), on the conversation's current version (VELDO-0174 AC1), names a project in the
       owner's scope, and anyone else's is refused by name (missing_authority:project). It makes a VELDO-0042
       isolated clone of the project's repository at its current trunk commit under the workspace's
       `projects/<project>` directory, with the full history, recorded with that commit; attaching again
@@ -138,10 +145,15 @@ exhaustive containment qualification (Release 2, O4); keeping an attached clone 
 
 ## Notes
 
-The seeded assistant roles are a starting grant, never a ceiling: only the owner changes them, and the
+The assistant roles setup saves are a starting grant, never a ceiling: only the owner changes them, and the
 factory never narrows them for a conversation (C15).
 
 ## History
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: AC2 no longer says VELDO-0162 seeds the default team, which it does not;
+setup saves `assistant` and `assistant_codex` into the default team VELDO-0185 saves, by the owner's
+signed commands. AC3's attach comes from the API or Telegram's `/attach`. depends_on adds VELDO-0171 and
+VELDO-0185. Still a draft.

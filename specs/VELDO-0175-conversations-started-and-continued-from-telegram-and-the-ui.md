@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0175
-title: The owner starts a conversation from Telegram or the UI, continues it by replying to any of its messages or writing in its screen, and gets every reply where he wrote
+title: The owner starts a conversation from Telegram or the UI, continues it by replying to any of its messages or writing in its screen, steers it by typed commands, and gets every reply where he wrote
 status: draft
 risk: high
 owner: dmitry
@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W135
 plan_revision: 4
-depends_on: [VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0136, VELDO-0152, VELDO-0168, VELDO-0174]
+depends_on: [VELDO-0126, VELDO-0128, VELDO-0130, VELDO-0136, VELDO-0152, VELDO-0168, VELDO-0174, VELDO-0176, VELDO-0177]
 placement: [contracts, loop, distribution]
 protected_paths: []
 footprint:
@@ -41,19 +41,21 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Record how intake decided each conversation message (a reply, a conversation field, or a factory PM
-    route) with the conversation id and turn sequence, and each reply part sent with its chat and message
-    id; never the text.
+    Record how intake decided each conversation message (a reply, a conversation field, a typed command,
+    or a factory PM route) with the conversation id and turn sequence or command, and each reply part sent
+    with its chat and message id; never the text.
   metrics: >
-    Count conversation messages by how they were decided, conversations opened by route, reply parts sent,
-    and replies to a closed or foreign conversation refused.
+    Count conversation messages by how they were decided, typed commands by kind and outcome,
+    conversations opened by route, reply parts sent, and replies to a closed or foreign conversation
+    refused.
   traces: >
     Join each sent reply part to its turn, and each continuing message to the sent message it replied to.
   error_taxonomy: >
     Distinguish a reply or conversation field naming a conversation the sender does not own
     (missing_authority:conversation_owner), one naming a closed conversation
-    (stale_subject:conversation_closed) and a route naming an open conversation that is not the sender's
-    (invalid_input:route:conversation).
+    (stale_subject:conversation_closed), a route naming an open conversation that is not the sender's
+    (invalid_input:route:conversation) and a typed command that replies to no conversation message or
+    names no role or project of his (invalid_input:conversation_command:<reason>).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -106,6 +108,25 @@ acceptance_criteria:
     falsified_by: >
       Record only the first part's message id, and the reply-to-the-last-part row must fail on an inbox
       proposal in place of the next turn.
+  - id: AC4
+    text: >
+      Claim: The owner changes a conversation's role, attaches one of his projects to it or closes it from
+      Telegram by a typed command in reply to any of its messages, and a command is never a turn and is
+      taken from no one else. Set and completeness: A Telegram message that replies to one of the
+      conversation's sent messages (AC1) and whose text starts with `/role <role>`, `/attach <project>` or
+      `/close` is that conversation's typed command: intake sends the owner's `set_conversation_role`
+      (VELDO-0176 AC3), `attach_project` (VELDO-0177 AC3) or `close_conversation` (VELDO-0174 AC1) with the
+      conversation's current version and the name exactly as he typed it, answers with one line naming
+      what changed, and makes no turn. `/project <name>` is VELDO-0180 AC1's. A command from anyone but
+      the owner is refused by name (missing_authority:conversation_owner), and one that replies to no
+      conversation message or names no role of the default team or project in his scope is refused by name
+      (invalid_input:conversation_command:<reason>), each with one line and nothing changed. The suite
+      sends each command as the owner, as another member, with no reply and with an unknown role.
+      Falsifier: Take every reply to a conversation message as its next turn, as AC1 alone does, and the
+      command row must fail on a turn whose message is `/role assistant_codex` in place of the role change.
+    falsified_by: >
+      Take every reply to a conversation message as its next turn, as AC1 alone does, and the command row
+      must fail on a turn whose message is `/role assistant_codex` in place of the role change.
 required_evidence: [unit, integration]
 rollback: >
   Stop resolving replies and routes to conversations while keeping every record; messages then go to the
@@ -115,7 +136,8 @@ rollback: >
 ## Intent
 
 The owner starts a conversation the way he writes to his assistant today, by writing, and continues it by
-replying, from Telegram or the UI, and each reply comes back where he wrote.
+replying, from Telegram or the UI, and each reply comes back where he wrote. From his phone he also
+changes its role, attaches a project and closes it without leaving the chat.
 
 ## Context
 
@@ -123,8 +145,10 @@ W135 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 st
 resolves a Telegram reply to a presentation it sent (control_intake `_replied_proposal`), and VELDO-0152
 sends every undecided message to the factory project's PM, which records one of three routes. This
 specification adds the conversation to both: a reply or field decides a conversation deterministically,
-and the PM gains two routes. The UI's message box posts through `messages.send` (VELDO-0179). A draft:
-only the owner marks it ready.
+and the PM gains two routes. Telegram has no other place to change a conversation, so AC4's typed
+commands carry the role change, the project attach and the close that the API and the UI send as routes
+(VELDO-0178, VELDO-0179). The UI's message box posts through `messages.send` (VELDO-0179). A draft: only
+the owner marks it ready.
 
 ## Out of scope
 
@@ -135,19 +159,26 @@ Release 4 channels); editing a sent message; the UI screen (VELDO-0179).
 
 - Normal use: the owner writes "why did yesterday's Google Ads spend jump?" on Telegram; the factory PM
   routes it to a new conversation; the reply comes back as a reply to his message; he replies to it with a
-  follow-up, and that continues the same conversation with no PM run.
+  follow-up, and that continues the same conversation with no PM run; later he replies `/role
+  assistant_codex` and the next turn runs on Codex.
 - Threat model: a reply from another member continuing the owner's conversation; a reply to a closed
   conversation starting work; a route that puts a message into someone else's conversation; a reply part
-  whose reply is not recognized, so the follow-up loses its conversation; a reply shown altered.
+  whose reply is not recognized, so the follow-up loses its conversation; a reply shown altered; a typed
+  command run as a turn, or sent by another member.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962), such as a reply
   to a message sent before a Telegram edge re-enrollment; forged rows in our own store.
 
 ## Notes
 
 A reply to a decision presentation inside a conversation stays an answer to that decision (VELDO-0181
-AC1); only the conversation's own reply parts continue it.
+AC1); only the conversation's own reply parts continue it, and a typed command in such a reply is the
+command, never a turn.
 
 ## History
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: AC4 adds the Telegram typed commands `/role`, `/attach` and `/close`,
+since the role change and the project attach had only an API route; depends_on adds VELDO-0176 and
+VELDO-0177, whose commands they send. Still a draft.

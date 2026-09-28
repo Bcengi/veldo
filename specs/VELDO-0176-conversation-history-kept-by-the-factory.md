@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W136
 plan_revision: 4
-depends_on: [VELDO-0141, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0174]
+depends_on: [VELDO-0065, VELDO-0068, VELDO-0141, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0172, VELDO-0174, VELDO-0177]
 placement: [engine, fleet, loop]
 protected_paths: []
 footprint:
@@ -28,6 +28,10 @@ footprint:
   - ".veldo/runtime/codex-qualification*.json"
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
+  - "engine/.veldo/control_request_settlement*.py"
+  - ".veldo/control_request_settlement*.py"
+  - "engine/.veldo/control_channel_presentation*.py"
+  - ".veldo/control_channel_presentation*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0176_*.py"
@@ -42,17 +46,18 @@ observability:
   logs: >
     Record each session capture and placement with the conversation id, turn sequence, engine, session
     id, account and digest, each resumption with the session id the engine reported, and each history
-    rendering with its turn count and digest; never session content.
+    rendering with its turn count, the turns left out and its digest, and each question AC2 asks with its
+    answer; never session content.
   metrics: >
-    Count turns resumed from a held session, turns started from a rendering, captures, and turns stopped
-    by a history that is too large or a held session whose digest differs.
+    Count turns resumed from a held session, turns started from a rendering and from a shortened one,
+    captures, engine questions by answer, and turns stopped by a held session whose digest differs.
   traces: >
     Join each turn to the held session it resumed and the capture it produced, across accounts.
   error_taxonomy: >
     Distinguish a held session whose digest differs from its turn record
-    (binding_mismatch:conversation_session), an engine that reported another session than the one placed
-    (binding_mismatch:conversation_resume), and a rendering beyond the engine's qualified input bound
-    (invalid_input:conversation_history:too_large).
+    (binding_mismatch:conversation_session) and an engine that reported another session than the one
+    placed (binding_mismatch:conversation_resume); a rendering longer than the engine's input bound is
+    shortened, never refused.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -76,39 +81,53 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: A turn stopped at its account's limit continues on another account of its engine from where it
-      stopped, and after a factory restart the owner's next message resumes the conversation. Set and
-      completeness: For a turn that ended `account_limit`, AC1's capture is taken as for any turn, and the
-      loop's re-run of VELDO-0154 AC3, under VELDO-0160 AC3's re-run-or-ask decision, dispatches the same
-      turn under a new dispatch identity on another account, resuming that capture with an input saying the
-      previous run stopped at an account limit. When every account of the engine is at its limit, the turn
-      waits for the first reset (VELDO-0154's reset wake), and the owner is told the reset time on his
-      channel. At a restart, a turn that was running is `outcome_unknown` (VELDO-0154 AC2) and the owner is
-      told; the last capture stays, and his next message resumes from it. The suite limits account A in the
-      middle of a turn, then restarts the service between two turns. Falsifier: Discard the capture of a
-      turn that ended `account_limit`, and the continues-after-a-limit row must fail on a fresh session in
-      place of the captured one.
+      stopped; when every account of that engine is at its limit, the owner is asked whether to wait or move
+      the conversation to the other engine; and after a factory restart his next message resumes the
+      conversation. Set and completeness: For a turn that ended `account_limit`, AC1's capture is taken as
+      for any turn, and the loop's re-run of VELDO-0154 AC3, under VELDO-0160 AC3's re-run-or-ask decision,
+      dispatches the same turn under a new dispatch identity on another account, resuming that capture with
+      an input saying the previous run stopped at an account limit. When every account of the engine is at
+      its limit, the owner is asked through the existing decision flow (VELDO-0065, VELDO-0068; VELDO-0181
+      AC1 lists this decision), on the chat he wrote from and in the decisions screen, whether to wait for
+      the reset it names or move the conversation to his assistant role on the other engine (`assistant_codex`
+      from Claude Code, `assistant` from Codex, VELDO-0177 AC2): wait leaves the turn waiting for that reset
+      (VELDO-0154's reset wake), move sends his `set_conversation_role` and the turn runs under AC3, and
+      nothing moves before his answer. At a restart, a turn that was running is `outcome_unknown`
+      (VELDO-0154 AC2) and the owner is told; the last capture stays, and his next message resumes from it.
+      The suite limits account A in the middle of a turn, then limits every Claude Code account and answers
+      the question each way, then restarts the service between two turns. Falsifier: Discard the capture of
+      a turn that ended `account_limit`, and the continues-after-a-limit row must fail on a fresh session in
+      place of the captured one; move the conversation to the other engine with no question when every
+      account is limited, and the ask row must fail on a Codex turn with no settled answer.
     falsified_by: >
       Discard the capture of a turn that ended `account_limit`, and the continues-after-a-limit row must
-      fail on a fresh session in place of the captured one.
+      fail on a fresh session in place of the captured one; move the conversation to the other engine with no
+      question when every account is limited, and the ask row must fail on a Codex turn with no settled
+      answer.
   - id: AC3
     text: >
-      Claim: A conversation changes engine only when the owner changes its role to one on the other engine,
+      Claim: A conversation changes engine only on the owner's role change or his answer to AC2's question,
       and that engine's first turn starts from the factory's history of the conversation, built from the
-      redacted execution records. Set and completeness: The owner's `set_conversation_role` command (from
-      the API or a message route) names a role of his team; a role on the same engine keeps resuming the
-      held session. For a role on the other engine, the next turn starts a fresh session whose first input
-      is the rendering: every earlier turn in order, with the owner's message, the tool calls with their
-      inputs and results and the reply, all as their execution records keep them after redaction (VELDO-0141
-      AC4), never from the held session. A rendering beyond the engine's qualified input bound stops the
-      turn by name (invalid_input:conversation_history:too_large) and tells the owner, launching nothing.
-      The earlier engine's held session is kept, so a change back resumes it. A held session whose digest
-      differs from its turn record is refused by name (binding_mismatch:conversation_session) and never
-      replaced by a rendering. The suite's fake Claude Code tool result prints a resolved credential value.
-      Falsifier: Build the rendering from the held session, and the redaction row must fail on the
-      credential value in the Codex turn's first input.
+      redacted execution records, carrying the newest whole turns that fit that engine's input. Set and
+      completeness: The owner's `set_conversation_role` command (from the API, VELDO-0178, Telegram's
+      `/role`, VELDO-0175 AC4, or his answer to AC2's question) names a role of the default team; a role on
+      the same engine keeps resuming the held session. For a role on the other engine, the next turn starts a
+      fresh session whose first input is the rendering: earlier turns in order, each with the owner's
+      message, the tool calls with their inputs and results and the reply, all as their execution records
+      keep them after redaction (VELDO-0141 AC4), never from the held session. The rendering carries the
+      newest whole turns that fit the target engine's input bound, which this specification records in that
+      engine's qualification record for the pinned version, and opens with one line naming how many earlier
+      turns were left out; the full history stays in the factory's record. The earlier engine's held session
+      is kept, so a change back resumes it. A held session whose digest differs from its turn record is
+      refused by name (binding_mismatch:conversation_session) and never replaced by a rendering. The suite's
+      fake Claude Code tool result prints a resolved credential value, and a second conversation's history
+      is three times the fixture bound. Falsifier: Build the rendering from the held session, and the
+      redaction row must fail on the credential value in the Codex turn's first input; refuse a history
+      beyond the bound and launch nothing, and the long-history row must fail on the turn that never ran.
     falsified_by: >
       Build the rendering from the held session, and the redaction row must fail on the credential value in
-      the Codex turn's first input.
+      the Codex turn's first input; refuse a history beyond the bound and launch nothing, and the
+      long-history row must fail on the turn that never ran.
 required_evidence: [unit, integration]
 rollback: >
   Stop placing held sessions and start every turn from the rendering while keeping every capture and
@@ -132,20 +151,22 @@ option. The rendering reads VELDO-0141's execution records. A draft: only the ow
 
 ## Out of scope
 
-Compacting a history that is too large for a fresh session (Release 2; the engine's own compaction
-applies inside a held session); moving a conversation to the other engine without the owner's role
-change, which would change its tools silently (C15); recovery matrices for a capture interrupted by a
+Summarizing the earlier turns a shortened rendering leaves out (they stay in the record, and the
+engine's own compaction applies inside a held session); moving a conversation to the other engine without
+the owner's role change or his answer, which would change its tools silently (C15); recovery matrices for a capture interrupted by a
 crash (Release 2).
 
 ## What the reviewer judges
 
 - Normal use: turn 1 runs on the first Claude Code account, turn 2 on the third, and the reply shows it
   remembers turn 1; the second account hits its weekly limit in the middle of turn 5, which continues on
-  another account; after a restart the next message continues; later the owner moves the conversation to
-  his Codex role and the first Codex turn knows the earlier turns.
+  another account; after a restart the next message continues; one evening every Claude Code account is
+  at its weekly limit and he answers "move", and the first Codex turn knows the earlier turns, the newest
+  in full when the history is long.
 - Threat model: a turn resuming another conversation's session; a session left in an account profile, so
   that account's later runs see it; a held session swapped or edited between turns; a credential value
-  carried into another engine's input; a limited turn restarted from nothing.
+  carried into another engine's input; a limited turn restarted from nothing; a conversation moved to the
+  other engine without his answer; a long history cut in the middle of a turn.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); forged rows in
   our own store and files planted in the state root; engine versions other than the pinned ones.
 
@@ -159,3 +180,8 @@ crosses to the other engine is only the redacted record.
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.
+
+2026-09-27, review of the drafts: AC2 asks the owner, when every account of the engine is at its limit,
+whether to wait for the reset or move to his assistant role on the other engine, never switching silently;
+AC3 carries the newest whole turns that fit the target engine and names how many were left out, in place of
+stopping a history that is too long. depends_on adds VELDO-0065, VELDO-0068 and VELDO-0177. Still a draft.

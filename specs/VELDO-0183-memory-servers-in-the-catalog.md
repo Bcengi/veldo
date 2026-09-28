@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0183
-title: Ava's ava-memory, knowledge graph and claude-mem servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
+title: Ava's ava-memory, knowledge graph, claude-mem and memory_kb servers are catalog MCP servers over the one memory store, never handed a paid model API, and every memory call is in the run's record
 status: draft
 risk: critical
 owner: dmitry
@@ -53,19 +53,26 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: Setup defines ava-memory, the knowledge graph and claude-mem as catalog MCP server records
-      launched as the owner's assistant launches them today and pointing at the one memory store, and the
-      seeded assistant roles select all three with all their tools. Set and completeness: From the memory
-      record (VELDO-0182), setup saves three VELDO-0144 catalog records by the owner's signed command:
-      `ava-memory` (the mem0_memory interpreter running mcp_server.py in its code directory, as myday's
-      `.mcp.json` launches it), `knowledge-graph` (the knowledge_graph interpreter running its mcp_server.py)
-      and `claude-mem` (its search server's command from the manifest), each reading the record's location
-      of its data. Setup adds each to the `assistant` and `assistant_codex` roles of VELDO-0177 AC2 as an
-      `always` selection of all tools, as a new role revision. The init event of a turn on each engine lists
-      the three servers connected with every tool each registers. Falsifier: Seed the roles without
-      `claude-mem`, and the init row must fail on the missing server.
+      Claim: Setup defines ava-memory, the knowledge graph, claude-mem and memory_kb as catalog MCP server
+      records launched from their own code and pointing at the one memory store, and the assistant roles
+      select all four with all their tools. Set and completeness: From the memory record (VELDO-0182), setup
+      saves four VELDO-0144 catalog records by the owner's signed command: `ava-memory` (the mem0_memory
+      interpreter running mcp_server.py in its code directory, as myday's `.mcp.json` launches it);
+      `knowledge-graph` (the knowledge_graph interpreter running mcp_server.py in its code directory, whose
+      main creates the database with init_db and serves FastMCP `knowledge-graph` over stdio; myday's
+      `.mcp.json` lists only ava-memory among the memory servers, so this entry point is named from the
+      code); `claude-mem` (its search server's command from the manifest); and `memory-kb`, a stdio server
+      the factory ships (control_memory_kb), since memory_kb is a command-line tool with no server of its
+      own, whose tools are its cli.py subcommands (search, index-file, index-dir, index-telegram, stats, list,
+      delete, clear and setup-passphrase), each run as memory_kb's interpreter in its code directory and
+      answering the command's output, with memory_kb's `JARVIS_PASSPHRASE` (kb/crypto.py) as the record's
+      credential reference when the owner has saved it (VELDO-0158 delivers and redacts it). Setup adds each
+      to the `assistant` and `assistant_codex` roles of VELDO-0177 AC2 as an `always` selection of all
+      tools, as a new role revision. The init event of a turn on each engine lists the four servers
+      connected with every tool each registers. Falsifier: Save the roles without `claude-mem`, and the init
+      row must fail on the missing server.
     falsified_by: >
-      Seed the roles without `claude-mem`, and the init row must fail on the missing server.
+      Save the roles without `claude-mem`, and the init row must fail on the missing server.
   - id: AC2
     text: >
       Claim: No catalog server is ever handed a paid model API credential or switch, so ava-memory's one tool
@@ -76,9 +83,9 @@ acceptance_criteria:
       (invalid_input:mcp_server:paid_api:<name>), for every catalog record, not only memory. ava-memory's
       `memory_add_smart` needs `ANTHROPIC_API_KEY` for its extraction model (myday mem0_memory
       memory_store.add_smart); it stays offered, since tools are never taken away, and answers its own
-      missing-key message, while `memory_search`, `memory_add` and every knowledge graph and claude-mem tool
-      work. Falsifier: Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and the paid-API row
-      must fail on the saved revision.
+      missing-key message, while `memory_search`, `memory_add` and every knowledge graph, claude-mem and
+      memory_kb tool work. Falsifier: Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and
+      the paid-API row must fail on the saved revision.
     falsified_by: >
       Accept `ANTHROPIC_API_KEY` as the ava-memory record's credential, and the paid-API row must fail on the
       saved revision.
@@ -88,9 +95,9 @@ acceptance_criteria:
       conversation is found by another conversation and by the owner's assistant, because it is the one
       store. Set and completeness: Each call to a memory server's tool is kept in the turn's execution record
       (VELDO-0141 AC1) with its input and result, redacted as every line is. The suite runs fixture copies of
-      the three servers over one fixture store: conversation A adds a memory and a knowledge graph fact;
-      conversation B, on another account, finds both by search; and the fixture's own server, started as
-      myday's `.mcp.json` starts it, finds them too. Falsifier: Hand each conversation its own copy of the
+      the four servers over one fixture store: conversation A adds a memory, a knowledge graph fact and a
+      memory_kb document; conversation B, on another account, finds all three by search; and the fixture's
+      own servers and memory_kb's command line, started as the owner's assistant starts them, find them too. Falsifier: Hand each conversation its own copy of the
       data directory, and the cross-conversation row must fail on B's empty search.
     falsified_by: >
       Hand each conversation its own copy of the data directory, and the cross-conversation row must fail
@@ -110,28 +117,34 @@ he can see every memory call it makes.
 
 W143 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. The owner's
 requirement (Telegram 29294, lead agreed): conversations use Ava's memory, each part offered as a catalog
-MCP server (VELDO-0144). myday's `.mcp.json` starts ava-memory and the knowledge graph as stdio servers
-from their own virtual environments; claude-mem is a Claude Code plugin with its own search server. Their
+MCP server (VELDO-0144). myday's `.mcp.json` starts ava-memory as a stdio server from its own virtual
+environment; the knowledge graph is a stdio server of the same shape (knowledge_graph/mcp_server.py) that
+`.mcp.json` does not list; memory_kb is a command-line tool the owner's assistant runs from its shell;
+claude-mem is a Claude Code plugin with its own search server. memory_kb gets a factory-shipped server
+rather than a shell command so each of its calls is a named tool call in the record and its passphrase a
+keystore credential, as for every other server. Their
 calls are ordinary MCP tool calls, so the record already keeps them once they run in a turn. The owner's
 standing rule is no paid model API; mem0's smart extraction is the one memory path that needs one. A
 draft: only the owner marks it ready.
 
 ## Out of scope
 
-claude-mem's session capture, which runs from its Claude Code hooks, and the everything-off baseline
-keeps hooks off (VELDO-0155); the factory keeps a conversation's history itself (VELDO-0176), and capturing
-factory turns into claude-mem is filed for Release 2. Concurrent-write qualification of the stores
-(Release 2).
+claude-mem's capture of conversation turns, which is VELDO-0187, since its own capture runs from Claude
+Code hooks that the everything-off baseline keeps off (VELDO-0155).
 
 ## What the reviewer judges
 
 - Normal use: a conversation searches ava-memory for a rule the owner saved, adds a knowledge graph fact,
-  and searches claude-mem for how a problem was solved last month; the owner's assistant later finds the
-  new fact.
+  searches claude-mem for how a problem was solved last month and memory_kb for last week's session
+  summary; the owner's assistant later finds the new fact.
 - Threat model: a paid model API key handed to a server; a server pointed at another store than the
   record; a memory call missing from the record; a memory tool taken away from a role.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); faults inside
-  the memory servers' own code, which is the owner's assistant's.
+  the memory servers' own code, which is the owner's assistant's; concurrent writers from several
+  conversations and Ava in normal use, which the knowledge graph serializes through SQLite's own locking
+  (db.py opens every connection in WAL mode) while mem0_memory's and memory_kb's ChromaDB stores take no
+  lock across processes, so concurrent writes to those two are filed for Release 2; claude-mem's search
+  server answers only while claude-mem's own worker runs, which setup neither starts nor checks (filed).
 
 ## Notes
 
@@ -142,3 +155,8 @@ select, and the receiver's environment strip still holds for the engines.
 
 2026-09-27: new draft for the owner's memory requirement (Telegram 29294). Only the owner marks a
 specification ready.
+
+2026-09-27, review of the drafts: AC1 adds memory_kb as a fourth server and names the knowledge graph's
+entry point from its code, since myday's `.mcp.json` lists only ava-memory; claude-mem's capture of turns
+is no longer deferred and is VELDO-0187. Filed: concurrent ChromaDB writers and claude-mem's worker. Still
+a draft.
