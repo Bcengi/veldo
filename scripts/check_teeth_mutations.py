@@ -1802,7 +1802,7 @@ def cases():
         add(64, name, '60_veldo_0064_inbox.py', module, old, new, [row])
 
     inbox('inbox-retain-claim-while-waiting', 'control_assignment.py',
-          "            if 'release' in params:\n                changes.update(self.claims.transition(params['release'], before))\n",
+          "            if 'release' in params:\n                changes.update(self.claims.transition(self.conn, params['release'], before))\n",
           "            if 'release' in params:\n                pass  # defective: the claim stays owned while the person is asked\n",
           'inbox/waiting-resources')
     inbox('inbox-requester-keeps-waiting', 'control_assignment.py',
@@ -5430,14 +5430,16 @@ def cases():
     # Codex review of 3c85f33b (P2): a signed claim through the claim receiver took a paused or canceled
     # project's unit. The receiver skips the project check; the shared check it calls reads nothing.
     project('claim-ignores-project', 'control_claim.py',
-            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:\n",
+            "        if command['operation'] == 'claim':\n",
             "        if False:  # defect: a claim never asks the unit's project\n", ['paused-claim', 'canceled-claim'])
     project('claim-project-check-empty', 'control_eligibility.py',
             "        return self._project_problems(data.get('project'), record, member), read\n",
             "        return [], read  # defect: the boundary's project check refuses nothing\n",
             ['paused-claim', 'canceled-claim'])
     # Review of ba4eb66e: the project and owner records the claim receiver's project check read are pinned
-    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed.
+    # in the claim's transaction, and no row drove the pin. Dropped, a pause committed mid-claim is missed by
+    # the pin (since VELDO-0169 the claim organ's own check inside the write refuses it, so the row reads the
+    # store's answer to the write: stale_version only while the pin holds).
     project('claim-pins-dropped', 'control_claim.py',
             "            versions.update(read)\n",
             "            pass  # defect: the records the project check read are not pinned\n", ['paused-mid-claim'])
@@ -5989,8 +5991,8 @@ def cases():
           'resume/unknown-effect-stays-stopped')
     andon('andon-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_andon.py",\n', '', 'install/assets')
     andon('refusal-unclassed', 'control_andon.py',
-          "                                      error_class=None if accepted else taxonomy(reason)))\n",
-          "                                      error_class=None))  # defect: refusals carry no error class\n",
+          "                                      error_class=None if accepted else taxonomy(reason),\n",
+          "                                      error_class=None,  # defect: refusals carry no error class\n",
           'observability/named-refusals')
     andon('reason-text-observed', 'control_andon.py',
           "                               versions=expected, effect=effect, station=c['station'])\n",
@@ -8671,6 +8673,169 @@ def cases():
     formats172('census-drops-conform', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
                "        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')\n",
                "        fake_capture = (['defect: this suite no longer checks its fakes'], [])\n", 'fake/census')
+    # VELDO-0154: the factory loop inside the authority service. Each criterion's declared falsifier first, each on
+    # its named row of suite 83, then the seams the rows rest on.
+    def loop154(name, module, old, new, rows, also=()):
+        add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
+    loop154('loop154-pipe-not-polled', 'control_service.py',
+            "                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]\n",
+            "                    ready = select.select([listener], [], [], wait)[0]  # defect: the launch pipes are not polled\n",
+            ['loop/review-offered'])
+    loop154('loop154-eof-ignored', 'control_launch.py',
+            "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
+            "            if not chunk:\n                return False  # defect: the receiver's death is not an end\n",
+            ['loop/receiver-death'])
+    loop154('loop154-ask-reruns', 'control_service.py',
+            "        if decision['decision'] == LIM.RERUN:\n            return self.rerun(record, report)\n",
+            "        if True:  # defect: every limited run is dispatched again, asking nobody\n"
+            "            return self.rerun(record, report)\n",
+            ['loop/ask-before-rerun'])
+    loop154('loop154-periodic-pass', 'control_service.py',
+            "                    if service.loop is not None and service.loop.due(time.time()):\n",
+            "                    if service.loop is not None:  # defect: every turn of the service loop starts a pass\n",
+            ['loop/no-other-timer'])
+    loop154('loop154-journal-wake-dropped', 'control_service.py',
+            "        if self.loop is not None and self.watermark() > before:\n            self.loop.wake('journal')\n",
+            "", ['loop/journal-wake-offers'])
+    loop154('loop154-account-slot-kept', 'control_account_pool.py',
+            "            active += int(not record.get('retired') and not record.get('account_released'))\n",
+            "            active += int(not record.get('retired'))\n", ['loop/receiver-death'])
+    loop154('loop154-orphan-not-stopped', 'control_launch.py',
+            "                _stop_orphan(entry['group'], entry['process'])\n",
+            "                pass  # defect: the stop the dead receiver owed is never made\n", ['loop/receiver-death'])
+    loop154('loop154-rerun-from-head', 'control_service.py',
+            "                          revision=contract['source']['commit'], holder=context.get('holder'), context=context,\n",
+            "                          revision='HEAD', holder=context.get('holder'), context=context,\n",
+            ['loop/rerun-another-account'])
+    loop154('loop154-owner-no-reruns', 'control_service.py',
+            "        if ruling == ASK_CHOICES[0]:\n",
+            "        if ruling in ASK_CHOICES:  # defect: his stop re-runs the unit too\n", ['loop/owner-no-stops'])
+    loop154('loop154-reset-timer-unset', 'control_service.py',
+            "        self.timer = min(resets) if resets else None\n",
+            "        self.timer = None  # defect: no pass is woken at the reset a waiting unit needs\n",
+            ['loop/reset-timer-wake'])
+    # VELDO-0169: every path that hands out work asks the Gate's one project check; the claim organ and the
+    # station contract writer ask it themselves inside the write transaction, and the store's commit path
+    # refuses every claim record that hands out work of a stopped project, whoever built it. Each criterion's
+    # declared falsifier first (AC1 to AC4), then the lead's decisions of the review-fix rounds, then the
+    # seams they rest on.
+    def handout(name, module, old, new, rows, also=()):
+        add(169, 'handout-' + name, '84_veldo_0169_project_handouts.py', module, old, new, rows, also)
+
+    # AC1: a second resume path that writes a claim without the check; the census fails on it.
+    handout('unlisted-resume', 'control_assignment.py',
+            '    def _check_project(self, unit, entities, observation):',
+            "    def _resume_again(self, state, entities, current, principal, now, command, params, observation):\n"
+            "        unit = self.read(params['assignment_id'])['data'].get('unit_id')\n"
+            "        backlog = entities[unit]['data']['backlog_item_uuid']\n"
+            "        params['resume'] = dict(action='resume', unit_id=unit, backlog_item_uuid=backlog,\n"
+            "                                claim_id=self.claims.claim_id(self.ids['repository_uuid'], unit), holder=principal,\n"
+            "                                generation=0, capabilities=[], repository_uuid=self.ids['repository_uuid'],\n"
+            "                                parked_on=params['assignment_id'])\n"
+            "        return {unit, backlog}\n\n"
+            '    def _check_project(self, unit, entities, observation):',
+            ['census/writers'],
+            also=[("            elif op == 'resume':\n",
+                   "            elif op == 'resume_again':\n"
+                   "                touched.update(self._resume_again(state, entities, current, principal, now, command, params, observation))\n"
+                   "            elif op == 'resume':\n")])
+    handout('unlisted-station-contract', 'control_andon.py',
+            '    def run(self):\n',
+            "    def resume_quick(self, sid, contract, permission, evidence, expected, command_id):\n"
+            "        self._commit(dict(action='resume', stop_id=sid, unit_id=contract['unit'], contract=contract,\n"
+            "                          permission=permission, evidence=evidence), expected, self.journal_signer, command_id, command_id)\n\n"
+            '    def run(self):\n', ['census/writers'])
+    handout('constructor-bypassed', 'control_andon.py',
+            "                        **self.issue_station_contract(params['contract'], before))\n",
+            "                        **{cid: {'kind': CONTRACT_KIND, 'data': params['contract']}})\n", ['census/writers'])
+    # AC2 and AC3: the resume, the backlog disposition and the andon resume without the caller's check (the
+    # claim organ and the station contract writer still refuse inside the write, so the rows read what only
+    # the caller's check gives: the refusal naming the project and the versions it read, and the census).
+    handout('resume-unchecked', 'control_assignment.py',
+            "        self._check_project(unit, entities, observation)\n        params['resume']",
+            "        params['resume']", ['resume/PAUSED', 'census/writers'])
+    handout('backlog-unchecked', 'control_assignment.py',
+            "            self._check_project(unit, entities, observation)\n            plan['unpark']",
+            "            plan['unpark']", ['dispose/PAUSED', 'census/writers'])
+    handout('andon-unchecked', 'control_andon.py',
+            '            refusals, expected = self.project_gate.project_problems(unit)',
+            '            refusals, expected = [], {}', ['andon/PAUSED', 'census/writers'])
+    # AC4: the null-project claim skipped at the receiver, as before the fix.
+    handout('null-claim-unchecked', 'control_claim.py',
+            "        if command['operation'] == 'claim':",
+            "        if command['operation'] == 'claim' and u['data'].get('project') is not None:",
+            ['claim/absent', 'claim/null'])
+    # Lead decision 1 (second round): the claim organ asks the check itself, inside the write transaction,
+    # before any other reason. It skips it; it reuses a check made in an earlier transaction (a check
+    # outside this write's transaction). The store's commit path refuses the same claims, so the rows read
+    # the organ's precedence: a unit the worker may not hold is refused by the project's name, not not_authorized.
+    handout('organ-check-skipped', 'control_claim.py',
+            "        if refusals:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            "        if False:\n            raise S.StoreRefused(refusals[0], 'the unit\\'s project takes no new assignment')\n    return _changes(",
+            ['organ/stopped', 'organ/race'])
+    handout('organ-check-outside-transaction', 'control_claim.py',
+            "        refusals, _read = _project_gate(conn).project_problems(params['unit_id'])\n",
+            "        refusals, _read = transition.__dict__.setdefault(params['unit_id'], _project_gate(conn).project_problems(params['unit_id']))"
+            "  # defect: a check made in an earlier transaction decides this one\n",
+            ['organ/race'])
+    # The station contract writer, the same: it skips its check, and it issues outside a command transaction.
+    handout('contract-check-skipped', 'control_andon.py',
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if refusals:",
+            "        refusals, _read = self.project_gate.project_problems(contract['unit'])\n        if False:",
+            ['organ/stopped'])
+    handout('contract-outside-transaction', 'control_andon.py',
+            "        if not self.conn.in_transaction or not getattr(self.conn, 'command_transaction', False):\n",
+            "        if False:\n", ['organ/outside'])
+    # Lead decision of the third round: the store's commit path holds the invariant for every writer of a
+    # claim record. It skips it; it takes a resume for a write that hands nothing out; it reads the project
+    # outside the transaction (a second connection, which sees the committed state, not the one this
+    # transaction commits); it checks only the unit a record's fields name, never the one its id names.
+    handout('store-invariant-skipped', 'control_store.py',
+            "        stopped = handout_problem(conn, changes, before)\n",
+            "        stopped = None  # defect: the store hands out whatever a transition writes\n",
+            ['store/invariant', 'guard/forge', 'organ/stopped'])
+    handout('store-claim-kind-unchecked', 'control_store.py',
+            '        if eid.startswith(CLAIM_PREFIX) and (changes[eid] or {}).get("kind") != CLAIM_KIND:\n'
+            '            return eid, None, ["invalid_input:claim_kind"]\n',
+            '',
+            ['store/invariant'])
+    handout('store-invariant-ignores-resumes', 'control_store.py',
+            '        return "resume" if was.get("parked_on") else "claim"\n',
+            '        return None if was.get("parked_on") else "claim"  # defect: a parked unit taken again hands nothing out\n',
+            ['store/invariant', 'organ/stopped'])
+    handout('store-reads-outside-transaction', 'control_store.py',
+            "    return _ELIGIBILITY[0].Gate(_Records(), conn, domain_uuid=None, repository_uuid=None)\n",
+            "    return _ELIGIBILITY[0].Gate(_Records(), sqlite3.connect(conn.execute('PRAGMA database_list').fetchone()[2]),"
+            " domain_uuid=None, repository_uuid=None)  # defect: the project is read outside the transaction\n",
+            ['store/invariant'])
+    handout('store-id-unit-unchecked', 'control_store.py',
+            "    for i, c in enumerate(eid):\n",
+            "    for i, c in ():  # defect: the unit a claim's id names is never checked\n",
+            ['store/invariant'])
+    # The project and owner records the check read, pinned through the commit.
+    handout('assignment-project-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if not k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('assignment-owner-unpinned', 'control_assignment.py',
+            "        versions.update(observation.get('project_versions', {}))",
+            "        versions.update({k: v for k, v in observation.get('project_versions', {}).items() if k.startswith('project:')})",
+            ['resume/race', 'dispose/race'])
+    handout('andon-project-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if not k.startswith('project:')},",
+            ['andon/race'])
+    handout('andon-owner-unpinned', 'control_andon.py',
+            "            expected = dict(self._pinned(state, permission['principal']), **expected,",
+            "            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if k.startswith('project:')},",
+            ['andon/race'])
+    # A project race is stale_version; any other race of the andon resume keeps stale_subject.
+    handout('andon-project-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_subject'\n", ['andon/race'])
+    handout('andon-subject-race-renamed', 'control_andon.py',
+            "            return 'stale_version' if moved else 'stale_subject'\n",
+            "            return 'stale_version'\n", ['andon/subject-race'])
     return result
 
 

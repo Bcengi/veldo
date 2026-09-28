@@ -244,10 +244,10 @@ class Renewals:
         backlog = ((before.get(contract['unit']) or {}).get('data') or {}).get('backlog_item_uuid')
         if contract['unit'] not in before or backlog not in before:
             raise D.Refused('missing_authority:claim', binding['entity'])
-        return D.CLM.transition(dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog,
-                                     claim_id=binding['entity'], holder=binding['holder'],
-                                     generation=binding['generation'], capabilities=[],
-                                     repository_uuid=contract['repository']), before)
+        return D.CLM.transition(conn, dict(action='renew', unit_id=contract['unit'], backlog_item_uuid=backlog,
+                                           claim_id=binding['entity'], holder=binding['holder'],
+                                           generation=binding['generation'], capabilities=[],
+                                           repository_uuid=contract['repository']), before)
 
     def renew(self, contract, contract_digest, process, seq, now):
         """Renew the claim `contract` binds for heartbeat `seq`: (True, None), (False, refusal), or

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1785 +1785 @@
+-                    if service.loop is not None and service.loop.due(time.time()):
++                    if service.loop is not None:  # defect: every turn of the service loop starts a pass

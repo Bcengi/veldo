@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1531 +1531 @@
+-        if decision['decision'] == LIM.RERUN:
++        if True:  # defect: every limited run is dispatched again, asking nobody

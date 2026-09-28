@@ -1,0 +1,5 @@
+--- a/.veldo/control_andon.py
++++ b/.veldo/control_andon.py
+@@ -802 +802 @@
+-            expected = dict(self._pinned(state, permission['principal']), **expected,
++            expected = dict(self._pinned(state, permission['principal']), **{k: v for k, v in expected.items() if k.startswith('project:')},

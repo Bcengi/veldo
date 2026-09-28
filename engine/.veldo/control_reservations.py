@@ -293,6 +293,15 @@ class Reservations:
         self._lifecycle = lifecycle
         return self._run(command_id, 'retire', entity('worker', [self.domain, identity(dispatch)]), {}, now)
 
+    def release_account(self, command_id, dispatch, lifecycle, *, now):
+        """VELDO-0154: free the account slot of a worker whose dispatch ended `unknown` when its receiver died,
+        leaving the slot itself held (not retired: its capacity and every invocation under it stay reserved).
+        lifecycle(dispatch) is the trusted runner's kernel observation, taken inside this transaction: the
+        worker's process gone and its group empty, and the dispatch's recorded state. The account pool no longer
+        counts the slot among the account's active runs (control_account_pool)."""
+        self._lifecycle = lifecycle
+        return self._run(command_id, 'release_account', entity('worker', [self.domain, identity(dispatch)]), {}, now)
+
     def _transition(self, params, before):
         if self.authorize(self.conn, self._command) is not True:
             raise Refused('missing_authority')
@@ -404,6 +413,17 @@ class Reservations:
             if any(r['state'] not in ('settled', 'unknown') for r in calls):
                 raise Refused('missing_accounting')
             value = dict(current, retired=True, retirement=observation)
+        elif action == 'release_account':
+            if not current or current['type'] != 'worker' or current['retired']:
+                raise Refused('missing_worker')
+            if current.get('account_released'):
+                raise Refused('already_released')
+            seen = self._lifecycle(current['dispatch'])
+            if not (seen.get('terminated') is True and seen.get('cleaned') is True):
+                raise Refused('worker_alive')
+            if seen.get('state') != 'unknown':
+                raise Refused('missing_outcome')
+            value = dict(current, account_released=seen)
         else:
             raise Refused('invalid_input')
         return {target: {'kind': 'subscription_reservation', 'data': value}}
