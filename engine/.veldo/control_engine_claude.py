@@ -1079,18 +1079,20 @@ class Meter:
                     info.get('rateLimitType') or LIMIT_WINDOW):
                 self.limited = None  # The same window reported open again: the run is no longer at its limit.
             named = str(info.get('rateLimitType') or 'unified')
-            windows = info.get('unifiedWindows')
-            windows = dict(windows) if isinstance(windows, dict) else {}
-            # One observation per window. The named window also exists on older events
-            # without unifiedWindows; its event status belongs to that window alone.
-            windows.setdefault(named, info)
+            companions = info.get('unifiedWindows')
+            companions = companions if isinstance(companions, dict) else {}
+            # VELDO-0166: one observation per window. The window the event names carries the event's own
+            # status, reset and utilization; every other unifiedWindows entry is recorded as reported,
+            # with no status, since the event rated only the window it names.
+            windows = [(named, info)] + [(window, values) for window, values in companions.items() if window != named]
             found = []
-            for window, values in windows.items():
+            for window, values in windows:
                 if not isinstance(values, dict):
-                    continue  # Unreadable entry, unlike a readable window with no reset.
+                    continue  # An unreadable entry, unlike a readable window reported without a reset.
                 reset, utilization = values.get('resetsAt'), values.get('utilization')
-                found.append(dict(seen, kind='window', window_id=window,
-                                  status=('rejected' if status == 'rejected' else 'allowed') if window == named else None,
+                rated = window == named
+                found.append(dict(seen, kind='window', window_id=str(window),
+                                  status=('rejected' if status == 'rejected' else 'allowed') if rated else None,
                                   reset_at=reset if _number(reset) else None,
                                   utilization=utilization if _number(utilization) and utilization >= 0 else None))
             return found

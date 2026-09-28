@@ -20,6 +20,7 @@ def _v166_suite():
     }
     rows = {name: [] for name in ('windows/five-hour', 'windows/qualified-set',
                                   'windows/status-only-named', 'windows/missing-reset-receipts',
+                                  'windows/rejection-kept',
                                   'profiles/existing', 'profiles/created')}
 
     def check(row, label, condition):
@@ -68,7 +69,7 @@ def _v166_suite():
                 accounts.register('register/' + name, fields['account'], fields['provider'], fields['label'],
                                   fields['profiles'], now=1)
                 accounts.principal = 'receiver'
-            def observe(name, line):
+            def observe(name, *lines):
                 register(name)
                 contract = dict(dispatch_id='dispatch/' + name, unit='unit/' + name,
                                 reservation=dict(account=name, project='project'))
@@ -80,8 +81,9 @@ def _v166_suite():
                 meter.started()
                 try:
                     # The real receiver path, including chunk buffering, private raw receipts and account writes.
-                    meter.feed(line[:37])
-                    meter.feed(line[37:] + b'\n')
+                    for line in lines:
+                        meter.feed(line[:37])
+                        meter.feed(line[37:] + b'\n')
                     meter.file.flush()
                     path = base / 'receipts' / (hashlib.sha256(meter.invocation.encode()).hexdigest() + '.jsonl')
                     kept = path.read_bytes().splitlines()
@@ -107,6 +109,9 @@ def _v166_suite():
             info['unifiedWindows'] = {name: dict(utilization=(i + 1) / 10, resetsAt=1790960400 + i)
                                       for i, name in enumerate(names)}
             info['rateLimitType'] = 'seven_day'
+            # As in the live line, the named window's own fields equal its unifiedWindows entry.
+            info['utilization'] = info['unifiedWindows']['seven_day']['utilization']
+            info['resetsAt'] = info['unifiedWindows']['seven_day']['resetsAt']
             windows, meter, kept = observe('qualified', json.dumps(event).encode())
             check('windows/qualified-set', 'every qualified window recorded once with its own values',
                   set(windows) == set(names) and len(kept) == len(names) + 1 and not meter.errors
@@ -123,7 +128,7 @@ def _v166_suite():
                       and A.blocking({'windows': windows}, 1) == (['seven_day'] if status == 'rejected' else []))
 
             info['unifiedWindows'] = {'five_hour': {'utilization': 0.3}, 'seven_day_opus': None}
-            info['status'] = 'allowed_warning'
+            info.update(status='allowed_warning', resetsAt=1790960400, utilization=0.7)
             line = json.dumps(event).encode()
             windows, meter, kept = observe('missing', line)
             check('windows/missing-reset-receipts', 'missing reset stays absent; unreadable entry skipped; named fallback retained',
@@ -132,6 +137,26 @@ def _v166_suite():
                   and all(w['source_dispatch'] == 'dispatch/missing' for w in windows.values())
                   and kept[1:] == [line, line]
                   and meter.receipts == ['sha256:' + hashlib.sha256(line).hexdigest()] * 2)
+
+            # A window reported beside the named one never lifts a rejection still in force (VELDO-0160's
+            # blocking), while a rejection whose reset has passed is replaced by the report as it came.
+            import time
+            for label, reset, kept_status in (('in-force', int(time.time()) + 3600, 'rejected'),
+                                              ('passed', int(time.time()) - 3600, None)):
+                first = json.loads(raw)
+                first['rate_limit_info'].update(status='rejected', rateLimitType='five_hour', resetsAt=reset,
+                                                utilization=1.0)
+                first['rate_limit_info']['unifiedWindows']['five_hour'] = {'utilization': 1.0, 'resetsAt': reset}
+                second = json.loads(raw)
+                second['rate_limit_info']['unifiedWindows']['five_hour'] = {'utilization': 0.4, 'resetsAt': reset + 60}
+                windows, meter, kept = observe('kept-' + label, json.dumps(first).encode(), json.dumps(second).encode())
+                five = windows.get('five_hour', {})
+                check('windows/rejection-kept', '%s: five_hour after a seven_day event beside it [%s]' % (label, five),
+                      not meter.errors and set(windows) == {'five_hour', 'seven_day'}
+                      and five.get('status') == kept_status
+                      and five.get('reset_at') == (reset if kept_status else reset + 60)
+                      and A.blocking({'windows': windows}, time.time()) == (['five_hour'] if kept_status else [])
+                      and windows['seven_day']['status'] == 'allowed' and len(kept) == 5)
 
             for provider in ('claude_code', 'codex'):
                 existing = base / ('existing-' + provider)
