@@ -1,0 +1,5 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -164 +164 @@
+-                                '+%s:%s' % (ref, observed))
++                                '+%s-unfetched:%s' % (ref, observed))  # defect: the moved tip is never fetched
