@@ -1,101 +1,87 @@
 {
- "schema": "veldo.implementation-checks/v1",
- "spec_id": "VELDO-0127",
- "baseline_commit": "321f638d",
+ "anchors": "0 bad anchors",
+ "baseline_commit": "0fbf6f09",
+ "codex_loopback": {
+  "equality": false,
+  "login_used": false,
+  "missing_tools": [],
+  "model_executed": false,
+  "provider": "127.0.0.1 stand-in",
+  "records": [
+   "catalog-loopback-gpt-6-astra.json",
+   "catalog-loopback-gpt-5.5.json"
+  ],
+  "returncode": 0,
+  "unexpected_tools": [
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "read_mcp_resource"
+  ]
+ },
  "engine_sync": {
+  "equal": true,
   "modules": [
    "control_agent_config.py",
    "control_agent_config_handoff.py",
-   "control_engine_claude.py",
-   "control_engine_codex.py",
-   "control_launch.py",
-   "init_scaffold.py"
+   "control_engine_codex.py"
   ],
-  "equal": true
+  "qualification_records": true
  },
- "suites": {
-  "normal": {
-   "selector": "86_veldo_0127_agent_configuration",
-   "failed_rows": [
-    "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex",
-    "VELDO-0127 review/codex-tools"
-   ],
-   "passing_suite_rows": 17,
-   "log_sha256": "d21ee586f3a8e326fc6520b46c6939e237186c9b8f9313706cd193913fd891d6",
-   "partial_selftest_exit": 1
-  },
-  "gate_environment": {
-   "selector": "86_veldo_0127_agent_configuration",
-   "failed_rows": [
-    "VELDO-0127 live/claude",
-    "VELDO-0127 live/codex",
-    "VELDO-0127 review/codex-tools"
-   ],
-   "passing_suite_rows": 17,
-   "log_sha256": "2b9064e19d6d6f3385db30b09cf8478989ea87be5fad6a6444d910bbce01a1ce",
-   "partial_selftest_exit": 1
-  }
- },
- "red": {
-  "record": "red-at-321f638d.json",
-  "behavior_rows": 3,
-  "scope": "Changed direct comparison, model mode and lead capture rows; earlier behavior rows retained separately.",
-  "every_behavior_row_red": true,
-  "by_assertion": true
- },
- "mutation_checks": {
-  "executed": false,
-  "registered": 36,
-  "rejected_this_run": 0,
-  "static_audit": "0 bad anchors; unique names; exact diffs generated, no mutant executed",
-  "switch_mutations_added": 0,
-  "reason": "Direct-model probes did not identify working switches. Five model-mode and lead capture mutations added; reviewer execution remains required."
- },
+ "footprint": "changed 107, outside the footprint: none",
  "gate": {
   "executed": false,
-  "reason": "owner forbids gate and mutation runners"
+  "reason": "Owner reserves gate, aggregate selftest and mutation execution for reviewer."
+ },
+ "implementation_commit": "961ba84c",
+ "limitations": [
+  "Three ungranted MCP resource readers remain the sole case (c); exact comparison fails closed.",
+  "Fresh lead subscription captures required for both engines.",
+  "Mutation rejection and full gate are reserved for reviewer."
+ ],
+ "mutation_checks": {
+  "catalog_and_comparison_mutations_added": 15,
+  "executed": false,
+  "registered": 51,
+  "rejected_this_run": 0,
+  "static_audit": "0 bad anchors; unique names; exact diffs and syntax checked; no mutant executed"
  },
  "neighboring_suites": {
   "executed": false,
-  "reason": "Only the owned suite was run under the explicit own-suite-only rule; no neighboring suite file was edited."
+  "reason": "Only the owned selector was run."
  },
- "footprint": "outside the footprint: none; no additions needed",
- "anchors": "0 bad anchors",
+ "red": {
+  "behavior_rows": 8,
+  "by_assertion": true,
+  "every_behavior_row_red": true,
+  "record": "red-at-0fbf6f09.json"
+ },
+ "requires": "Regenerated; registration updated; dependency closure unchanged.",
+ "schema": "veldo.implementation-checks/v1",
+ "spec_id": "VELDO-0127",
+ "suites": {
+  "gate_environment": {
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "b67e903ecca3ad8bcf648b8783bc738ce5c4f7e4d99eeedb35c7c8d1db0246ee",
+   "partial_selftest_exit": 1,
+   "passing_suite_rows": 23,
+   "selector": "86_veldo_0127_agent_configuration"
+  },
+  "normal": {
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "699991d883e78aabb56d8e01a62491b3705b04bf366f1a5aa488fb43640b84a1",
+   "partial_selftest_exit": 1,
+   "passing_suite_rows": 23,
+   "selector": "86_veldo_0127_agent_configuration"
+  }
+ },
  "validate_all": {
-  "exit": 0
- },
- "requires": "regenerated; suite remains registered and requires content is unchanged",
- "codex_loopback": {
-  "record": "codex-direct-loopback.json",
-  "returncode": 0,
-  "provider": "127.0.0.1 stand-in",
-  "model_executed": false,
-  "login_used": false,
-  "model": "gpt-5.5",
-  "equality": false,
-  "unexpected_tools": [
-   "apply_patch",
-   "list_mcp_resource_templates",
-   "list_mcp_resources",
-   "read_mcp_resource",
-   "tool_search"
-  ],
-  "missing_direct_definitions": [
-   "mcp__jira.jira_search"
-  ],
-  "case_c_record": "codex-loopback.json"
- },
- "claude_live": {
-  "executed": false,
-  "reason": "real login and model forbidden; probe and positive-control recapture remains for lead"
- },
- "status": "Incomplete: model refusal, case (c) retention and direct-model lead capture implemented; direct equality and per-switch mutations unresolved. Fresh lead live qualification still required.",
- "codex_model_modes": {
-  "record": "codex-model-modes.json",
-  "models": 11,
-  "source": "binary debug models; empty temporary profile with loopback containment",
-  "writer_matches": true,
-  "code_mode_named_refusal": "configuration_stop:codex_code_mode_model"
+  "exit": 0,
+  "log_sha256": "f9527a0498ae02d2b73e36f3b9cf74da77fcd61a066bb8f4736942bd8354299f"
  }
 }
