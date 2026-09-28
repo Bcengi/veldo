@@ -313,6 +313,8 @@ RUN_CONFIG, RUN_RUNTIME = 'config', 'runtime'
 # name the receiver's environment, the adapter, the baseline and the account set: a collision is refused by name.
 ENGINE_RESERVED = frozenset(('PATH', 'HOME', 'LANG', 'TERM', 'USER', 'LOGNAME', 'SHELL', 'TMPDIR', 'TZ',
                              'XDG_RUNTIME_DIR', 'VELDO_DISPATCH_ID'))
+FACTORY_PREFIX = 'VELDO_'
+DELIVERY_PREFIX = 'VELDO_MCP_'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
 SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
 ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
@@ -1378,7 +1380,10 @@ class Receiver:
         # definition gives it; one naming a variable the engine already has (ENGINE_RESERVED, or any name the
         # receiver's environment, the adapter, the baseline or the account sets) is refused by name, never replaces it.
         secrets = extra.get('secrets') or {}
-        taken = sorted(set(secrets) & (ENGINE_RESERVED | set(own) | set(environment)))
+        # Every VELDO_ name belongs to the factory (the launch sets some of them only after this baseline), except
+        # the names the engine module generates for delivered header credentials (DELIVERY_PREFIX).
+        taken = sorted(n for n in secrets if n in ENGINE_RESERVED or n in own or n in environment
+                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))
         if taken:
             credential = next(r['credential'] for r in extra['routes'] if r.get('variable') == taken[0])
             raise DL.Undeliverable('invalid_input:mcp_delivery:env_collision:' + taken[0], credential, 'delivery_failed')

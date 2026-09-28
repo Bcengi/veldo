@@ -197,3 +197,5 @@ a Claude Code run printing its bearer token alone is redacted. A Codex credentia
 already has (PATH, HOME, LANG, TERM, or any name the receiver, the adapter, the baseline or the account sets) is refused
 as `invalid_input:mcp_delivery:env_collision:<name>`, never replaces it. Suite 85 adds five rows and finding 158 five
 mutations; the red record at 7851ae9b is regenerated. Criteria and ready status unchanged.
+
+2026-09-28, fix check: a Codex credential named for a VELDO_ variable the launch sets after the baseline (VELDO_DISPATCH_ACCEPTANCE) replaced it. Every VELDO_ name is now the factory's and refused as env_collision, except the engine module's own delivery names (VELDO_MCP_); row case and mutation env-collision-factory-names (finding 158, 12/12).

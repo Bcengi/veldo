@@ -8904,8 +8904,12 @@ def cases():
              ['redaction/claude-bare-bearer'])
     # A Codex credential replacing an inherited variable of the engine (PATH), as before the fix.
     delivery('env-collision-inherited', 'control_launch.py',
-             "        taken = sorted(set(secrets) & (ENGINE_RESERVED | set(own) | set(environment)))\n",
-             "        taken = sorted(set(secrets) & (set(own) | set(environment) - set(os.environ)))\n",
+             "        taken = sorted(n for n in secrets if n in ENGINE_RESERVED or n in own or n in environment\n",
+             "        taken = sorted(n for n in secrets if n in own or (n in environment and n not in os.environ)\n",
+             ['refusal/env-collision'])
+    delivery('env-collision-factory-names', 'control_launch.py',
+             "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
+             "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
     return result
 

@@ -747,6 +747,8 @@ err.close()
             # A credential named for a variable the Codex engine already has: inherited, and set by its account.
             'clash-path': stdio('clash-path', ['PATH'], {'PATH': {'reference': REFS['clash-token']}}),
             'clash-home': stdio('clash-home', ['CODEX_HOME'], {'CODEX_HOME': {'reference': REFS['clash-token']}}),
+            'clash-acceptance': stdio('clash-acceptance', ['VELDO_DISPATCH_ACCEPTANCE'],
+                                      {'VELDO_DISPATCH_ACCEPTANCE': {'reference': REFS['clash-token']}}),
         }
         saves = {name: call('POST', MCP + 'catalog/save', {'definition': d, 'base': 0}, cookie=owner_cookie,
                             token=owner_token) for name, d in DEFINITIONS.items()}
@@ -898,7 +900,8 @@ err.close()
 
         # A Codex credential named for a variable the engine already has, refused by name before any engine exists.
         collided = {}
-        for name_, server_ in (('PATH', 'clash-path'), ('CODEX_HOME', 'clash-home')):
+        for name_, server_ in (('PATH', 'clash-path'), ('CODEX_HOME', 'clash-home'),
+                               ('VELDO_DISPATCH_ACCEPTANCE', 'clash-acceptance')):
             before = len(calls())
             launch, record, error, _ = dispatch('acct-158x', 'codex', selected(server_), {'task': 'work the unit'})
             collided[name_] = dict(launch=launch, record=record, error=error, calls=calls()[before:],
