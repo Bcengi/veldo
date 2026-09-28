@@ -78,3 +78,13 @@ module, and twelve finding-166 mutations each red on its named rows by assertion
 | `windows166-new-profile-public` | `profiles/created` |
 
 The suite-75 case runs through the registry's own worker, as the gate's mutation check runs it.
+
+## Verification
+
+On `099b8511`: suites 83_veldo_0166_usage_windows (33 assertions), 75_veldo_0062_accounts (49),
+78_veldo_0160_account_pool (60) and 82_veldo_0172_live_formats (30) each pass with no failure.
+The mutation registry, two jobs, one finding after another: finding 166 rejects all 12, finding 62
+all 50, finding 160 all 134, each from a green baseline. Anchors report 0 bad, the Git boundary check
+and `.veldo/validate.py all` pass, and every `.veldo` module is byte-identical to its `engine/.veldo`
+copy. The whole selftest passed: 7076 assertions, zero failed, exit status 0, with the worktree left
+untouched while it ran. The canonical gate was not run, as instructed.
