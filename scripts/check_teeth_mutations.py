@@ -8639,10 +8639,11 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
-    def formats172(name, directory, module, old, new, row):
-        add(172, 'formats172-' + name, '82_veldo_0172_live_formats.py', module, old, new, [row])
+    def formats172(name, directory, module, old, new, row, suite='82_veldo_0172_live_formats.py'):
+        # A fake engine's own defect reds the `fake/capture:<suite>` row the suite that embeds it reports
+        # (the suite is its own mutated module); the table, scrub and census defects red 0172's rows.
+        add(172, 'formats172-' + name, suite, module, old, new, [row])
         result[-1]['dir'] = directory
-        result[-1]['timeout'] = 300  # this census drives six real launch suites
 
     formats172('binary-only', 'proof/VELDO-0062', 'extract_formats.py',
                "    capture = json.loads(Path(capture_path).read_text())",
@@ -8650,7 +8651,7 @@ def cases():
                "    capture = json.loads(Path(capture_path).read_text())", 'table/capture')
     formats172('login-stdout', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
                "    print('Logged in using ChatGPT', file=sys.stderr)",
-               "    print('Logged in using ChatGPT')", 'fake/capture')
+               "    print('Logged in using ChatGPT')", 'fake/capture', suite='79_veldo_0061_codex_adapter.py')
     formats172('denylist-string', 'proof/VELDO-0172', 'scrub.py',
                "        return value if value in rules['strings'].get(field, []) else '<string>'",
                "        return value if '/' not in value else '<string>'", 'capture/planted')
@@ -8665,7 +8666,11 @@ def cases():
                "            if False:  # defect: a field its emitter writes under a condition stays required", 'table/capture')
     formats172('hygiene-answer-drops-provider', 'scripts/suites', '82_veldo_0165_launch_hygiene.py',
                "'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},",
-               "'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped", 'fake/capture')
+               "'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped", 'fake/capture',
+               suite='82_veldo_0165_launch_hygiene.py')
+    formats172('census-drops-conform', 'scripts/suites', '79_veldo_0061_codex_adapter.py',
+               "        fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')\n",
+               "        fake_capture = (['defect: this suite no longer checks its fakes'], [])\n", 'fake/census')
     return result
 
 
@@ -8749,6 +8754,9 @@ def worker(case, mutant=None):
             if mutant:
                 source = source.replace('ROOT / "scripts" / "fixtures"',
                                         '__import__("pathlib").Path(' + repr(mutant) + ')')
+        elif mutant and case.get('dir') == 'scripts/suites' and case['module'] == case['suite']:
+            # The mutated module is the suite itself (a fake engine it embeds): its copy is what runs.
+            source = Path(mutant).read_text()
         elif mutant:
             anchor = 'ROOT / "' + case.get('dir', '.veldo') + '" / "' + case['module'] + '"'
             if not source.count(anchor):

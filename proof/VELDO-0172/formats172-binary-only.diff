@@ -1,4 +1,4 @@
 --- a/proof/VELDO-0062/extract_formats.py
 +++ b/proof/VELDO-0062/extract_formats.py
-@@ -1553,0 +1554 @@
+@@ -1708,0 +1709 @@
 +    return table  # defect: regenerate from the binary alone

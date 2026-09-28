@@ -1,19 +1,18 @@
 """VELDO-0172: live capture, binary schema and every discovered fake engine agree.
 
-The census runs each suite's real production launch path, then reads back its generated executable
-before teardown. Four assertion rows, one report each; no real CLI, login or network is used.
+Each suite that builds a fake Claude Code or Codex engine observes its own fakes where they run: at its
+teardown it calls compare_formats.conform_fake and reports `VELDO-0172 fake/capture:<suite>`. This suite
+never runs another suite. Its `fake/census` row reads every suite's syntax tree, finds each suite that
+builds a fake engine and requires that call and that row of it, and requires the suites together to print
+every event the capture recorded, each with the capture's shape in the shared templates. Four assertion
+rows, one report each; no real CLI, login or network is used.
 """
 
 
 def _v172_suite():
-    import ast
-    import contextlib
-    import copy
     import importlib.util
-    import io
     import json
     from pathlib import Path
-    import re
 
     HERE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
     ORACLE = HERE / 'proof/VELDO-0172'
@@ -21,12 +20,11 @@ def _v172_suite():
     EXTRACTOR = ROOT / "proof/VELDO-0062" / "extract_formats.py"
     SCRUBBER = ROOT / "proof/VELDO-0172" / "scrub.py"
     SUITE79 = ROOT / "scripts/suites" / "79_veldo_0061_codex_adapter.py"
-    SUITE165 = ROOT / "scripts/suites" / "82_veldo_0165_launch_hygiene.py"
     # A mutated copy of a census suite is read in its place; its name is the suite's own.
-    COPIES = {path.name: path for path in (SUITE79, SUITE165)}
+    COPIES = {path.name: path for path in (SUITE79,)}
     TABLE = ROOT / 'proof/VELDO-0062/cli-formats.json'
     CAPTURE = ROOT / 'proof/VELDO-0172/capture.json'
-    rows = {name: [] for name in ('table/capture', 'fake/capture', 'capture/allowlist', 'capture/planted')}
+    rows = {name: [] for name in ('table/capture', 'fake/census', 'capture/allowlist', 'capture/planted')}
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, path)
@@ -115,39 +113,15 @@ def _v172_suite():
     else:
         check('capture/allowlist', False, 'capture:absent')
 
-    census = comparison.census(ROOT / 'scripts/suites')
-    check('fake/capture', bool(census), 'census:empty')
-    traces = []
-    for suite in census:
-        observed = []
-        def observer(local):
-            try:
-                issues, trace = comparison.observe_fake(local, suite, table, reference)
-            except Exception as error:
-                observed.append('observer:did-not-complete:' + type(error).__name__)
-                return
-            observed.extend(issues)
-            traces.extend(trace)
-        # Suite-local namespaces keep the real tests independent; their format assertions also cover
-        # every scripted line and uncaptured event, including error states. Their rows are not re-reported.
-        inner_rows = []
-        namespace = {'ROOT': ROOT, '__file__': str(suite), '__suite_file__': str(suite),
-                     'expect': lambda name, ok: inner_rows.append((name, bool(ok))), '__engine_observer__': observer}
-        source = COPIES.get(suite.name, suite).read_text()
-        # The red archive predates the observer hook. Instrument only teardown, leaving its writers intact.
-        if '__engine_observer__' not in source:
-            source = re.sub(r'^    finally:\n', "    finally:\n        __engine_observer__(locals())\n", source, count=1, flags=re.M)
-        with contextlib.redirect_stdout(io.StringIO()):
-            exec(compile(source, str(suite), 'exec'), namespace)
-        checks = [(name, ok) for name, ok in inner_rows if 'format/' in name]
-        check('fake/capture', bool(checks) and all(ok for _, ok in checks), suite.name + ':schema-conformance')
-        check('fake/capture', any(t['suite'] == suite.name for t in traces), suite.name + ':no-writer-observed')
-        check('fake/capture', not observed, suite.name + ':' + ', '.join(observed))
-    expected = {(engine, comparison.event_name(line)) for engine in reference['streams'] for line in reference['streams'][engine]}
-    check('fake/capture', expected <= {(t['engine'], t['event']) for t in traces}, 'census:capture-event-not-printed')
-    globals()['__v172_observations__'] = {'census': [p.name for p in census], 'fake_lines': traces,
+    # Static census: each suite that builds a fake engine checks its own fakes at its teardown and reports
+    # its own `fake/capture:<suite>` row; this row reads every suite's syntax tree and never runs one.
+    templates = json.loads((ORACLE / 'fake_templates.json').read_text())
+    census, census_problems, printed = comparison.static_census(
+        ROOT / 'scripts/suites', reference, templates, COPIES)
+    check('fake/census', not census_problems, ', '.join(census_problems))
+    globals()['__v172_observations__'] = {'census': census, 'printed_events': printed,
                                         'field_metrics': table.get('capture', {}).get('metrics', {})}
-    print('VELDO-0172 census: %d suites, %d fake lines' % (len(census), len(traces)))
+    print('VELDO-0172 census: %d fake-building suites, each with its own fake/capture row: %s' % (len(census), ', '.join(census)))
     for row, observations in rows.items():
         for ok, detail in observations:
             if not ok:

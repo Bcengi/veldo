@@ -1092,8 +1092,8 @@
    "requires": [
     "82_veldo_0172_live_formats"
    ],
-   "regions": "Binary-schema and live-capture field reconciliation; census of every fake engine writer, actual stdout and stderr read-back; allowlist scrub, two selected tap answers, secret scan and planted host, pid and home values.",
-   "requires_note": "Uses only ROOT and expect. Runs discovered suites through their real production interfaces, observing their generated fake executable and line constructors before teardown. Scratch profiles only, no real engine or login. Four assertion rows, each reported once."
+   "regions": "Binary-schema and live-capture field reconciliation; static census of every suite that builds a fake engine, each required to check its own fakes at teardown and report its fake/capture row, with the capture's events covered; allowlist scrub, two selected tap answers, secret scan and planted host, pid and home values.",
+   "requires_note": "Uses only ROOT and expect. Reads every suite's syntax tree and runs none of them; each fake-building suite drives its own generated executables at its teardown. No real engine or login. Four assertion rows, each reported once."
   }
  ]
 }

@@ -12,296 +12,10 @@
     "78_veldo_0160_account_pool.py",
     "79_veldo_0061_codex_adapter.py",
     "80_veldo_0155_claude_baseline.py",
-    "81_veldo_0156_codex_baseline.py"
-   ],
-   "fake_lines": [
-    {
-     "engine": "claude",
-     "event": "control_response",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "claude",
-     "event": "system/init",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "claude",
-     "event": "assistant",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "claude",
-     "event": "rate_limit_event",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "claude",
-     "event": "result/success",
-     "line": 5,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "codex",
-     "event": "thread.started",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.started",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.completed",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "75_veldo_0062_accounts.py"
-    },
-    {
-     "engine": "claude",
-     "event": "control_response",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "system/init",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "assistant",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "rate_limit_event",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "result/success",
-     "line": 5,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "thread.started",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.started",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.completed",
-     "line": 5,
-     "row": "fake/capture",
-     "suite": "78_veldo_0060_claude_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "control_response",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "claude",
-     "event": "system/init",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "claude",
-     "event": "assistant",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "claude",
-     "event": "rate_limit_event",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "claude",
-     "event": "result/success",
-     "line": 5,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "codex",
-     "event": "thread.started",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.started",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.completed",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "78_veldo_0160_account_pool.py"
-    },
-    {
-     "engine": "codex",
-     "event": "thread.started",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.started",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.started",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 5,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 6,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.completed",
-     "line": 7,
-     "row": "fake/capture",
-     "suite": "79_veldo_0061_codex_adapter.py"
-    },
-    {
-     "engine": "claude",
-     "event": "control_response",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "80_veldo_0155_claude_baseline.py"
-    },
-    {
-     "engine": "claude",
-     "event": "system/init",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "80_veldo_0155_claude_baseline.py"
-    },
-    {
-     "engine": "claude",
-     "event": "assistant",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "80_veldo_0155_claude_baseline.py"
-    },
-    {
-     "engine": "claude",
-     "event": "result/success",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "80_veldo_0155_claude_baseline.py"
-    },
-    {
-     "engine": "codex",
-     "event": "thread.started",
-     "line": 1,
-     "row": "fake/capture",
-     "suite": "81_veldo_0156_codex_baseline.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.started",
-     "line": 2,
-     "row": "fake/capture",
-     "suite": "81_veldo_0156_codex_baseline.py"
-    },
-    {
-     "engine": "codex",
-     "event": "item.completed",
-     "line": 3,
-     "row": "fake/capture",
-     "suite": "81_veldo_0156_codex_baseline.py"
-    },
-    {
-     "engine": "codex",
-     "event": "turn.completed",
-     "line": 4,
-     "row": "fake/capture",
-     "suite": "81_veldo_0156_codex_baseline.py"
-    }
+    "81_veldo_0156_codex_baseline.py",
+    "82_veldo_0129_worker_wiring.py",
+    "82_veldo_0141_execution_record.py",
+    "82_veldo_0165_launch_hygiene.py"
    ],
    "field_metrics": {
     "claude_code": {
@@ -313,7 +27,7 @@
      "control_response": {
       "from_capture": 29,
       "known": 43,
-      "optional": 14
+      "optional": 15
      },
      "rate_limit_event": {
       "from_capture": 0,
@@ -333,7 +47,7 @@
      "system/init": {
       "from_capture": 1,
       "known": 56,
-      "optional": 26
+      "optional": 27
      }
     },
     "codex": {
@@ -378,6 +92,121 @@
       "optional": 0
      }
     }
+   },
+   "printed_events": {
+    "75_veldo_0062_accounts.py": [
+     "assistant",
+     "error",
+     "message",
+     "rate_limit_event",
+     "result/success",
+     "system/init",
+     "thread.started",
+     "turn.completed",
+     "turn.failed",
+     "turn.started"
+    ],
+    "78_veldo_0060_claude_adapter.py": [
+     "agent_message",
+     "assistant",
+     "item.completed",
+     "message",
+     "rate_limit_event",
+     "reasoning",
+     "result/success",
+     "system/init",
+     "thread.started",
+     "turn.completed",
+     "turn.started"
+    ],
+    "78_veldo_0160_account_pool.py": [
+     "assistant",
+     "content_block_delta",
+     "content_block_start",
+     "content_block_stop",
+     "control_cancel_request",
+     "control_request",
+     "control_response",
+     "error",
+     "item.started",
+     "keep_alive",
+     "mcp_tool_call",
+     "mcp_tool_result",
+     "mcp_tool_use",
+     "message",
+     "message_start",
+     "progress",
+     "rate_limit_event",
+     "redacted_thinking",
+     "result/error_during_execution",
+     "result/success",
+     "server_tool_use",
+     "skill_progress",
+     "system/init",
+     "text",
+     "text_delta",
+     "thinking",
+     "thread.started",
+     "tool_result",
+     "tool_use",
+     "transcript_mirror",
+     "turn.completed",
+     "turn.failed",
+     "turn.started",
+     "turn.unlisted",
+     "unlisted_block",
+     "unlisted_stream_event",
+     "workflow_agent",
+     "workflow_phase"
+    ],
+    "79_veldo_0061_codex_adapter.py": [
+     "error",
+     "thread.started",
+     "turn.completed",
+     "turn.failed",
+     "turn.progress",
+     "turn.started"
+    ],
+    "80_veldo_0155_claude_baseline.py": [
+     "command",
+     "control_request",
+     "control_response",
+     "oidc_federation",
+     "user",
+     "user_oauth"
+    ],
+    "81_veldo_0156_codex_baseline.py": [
+     "error"
+    ],
+    "82_veldo_0129_worker_wiring.py": [
+     "missing"
+    ],
+    "82_veldo_0141_execution_record.py": [
+     "content_block_delta",
+     "content_block_start",
+     "content_block_stop",
+     "message_start",
+     "message_stop",
+     "stream_event",
+     "system/init",
+     "text",
+     "text_delta",
+     "tool_use"
+    ],
+    "82_veldo_0165_launch_hygiene.py": [
+     "agent_message",
+     "any",
+     "assistant",
+     "item.completed",
+     "message",
+     "object",
+     "rate_limit_event",
+     "result/success",
+     "sdk",
+     "thread.started",
+     "turn.completed",
+     "turn.started"
+    ]
    }
   },
   "rows": [
@@ -386,7 +215,7 @@
     true
    ],
    [
-    "VELDO-0172 fake/capture",
+    "VELDO-0172 fake/census",
     true
    ],
    [
@@ -398,21 +227,22 @@
     true
    ]
   ],
-  "seconds": 146.247
+  "seconds": 1.047
  },
  "controls_green": true,
  "mutants": [
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0172 table/capture detail: table:regeneration-disagrees: control_response.response.response.agents:table:unknown, control_response.response.response.analytics_disabled:table:unknown, control_response.response.response.available_output_styles:table:unknown, control_response.response.response.commands:table:unknown, control_response.response.response.current_permission_mode:table:unknown, control_response.response.response.fast_mode_disabled_reason:table:unknown, control_response.response.response.fast_mode_state:table:unknown, control_response.response.response.ide_rc_auto_enable_gate:table:unknown, control_response.response.response.models:table:unknown, control_response.response.response.output_style:table:unknown, control_response.response.response.pid:table:unknown, control_response.response.response.remote_control_auto_connect_default:table:unknown, control_response.response.response.remote_control_auto_enable:table:unknown, control_response.response.response.remote_control_auto_on_by_default:table:unknown, control_response.response.response.remote_control_available:table:unknown, control_response.response.response.session_state:table:unknown, control_response.response.response.user_output_styles_dir:table:unknown, system/init.messaging_socket_path:table:unknown, assistant.message.diagnostics:table:unknown, assistant.message.input_transformations:table:unknown, assistant.message.usage.server_tool_use:table:required"
+    "VELDO-0172 table/capture detail: table:regeneration-disagrees: control_response.response.response.agents:table:unknown, control_response.response.response.analytics_disabled:table:unknown, control_response.response.response.available_output_styles:table:unknown, control_response.response.response.commands:table:unknown, control_response.response.response.current_permission_mode:table:unknown, control_response.response.response.fast_mode_disabled_reason:table:unknown, control_response.response.response.fast_mode_state:table:unknown, control_response.response.response.ide_rc_auto_enable_gate:table:unknown, control_response.response.response.models:table:unknown, control_response.response.response.output_style:table:unknown, control_response.response.response.pid:table:unknown, control_response.response.response.remote_control_auto_connect_default:table:unknown, control_response.response.response.remote_control_auto_enable:table:unknown, control_response.response.response.remote_control_auto_on_by_default:table:unknown, control_response.response.response.remote_control_available:table:unknown, control_response.response.response.session_state:table:unknown, control_response.response.response.user_output_styles_dir:table:unknown, system/init.messaging_socket_path:table:unknown, assistant.message.diagnostics:table:unknown, assistant.message.input_transformations:table:unknown, assistant.message.usage.server_tool_use:table:required",
+    "VELDO-0172 table/capture detail: table:conditional-field-required: ['control_response.response.response.fast_mode_disabled_reason', 'system/init.capabilities', 'system/init.messaging_socket_path', 'system/init.per_turn_effort_active', 'system/init.view_mode'] ['control_response.response.response.agents:table:unknown', 'control_response.response.response.analytics_disabled:table:unknown', 'control_response.response.response.available_output_styles:table:unknown', 'control_response.response.response.commands:table:unknown']"
    ],
    "diff": "proof/VELDO-0172/formats172-binary-only.diff",
    "failed_rows": [
     "VELDO-0172 table/capture"
    ],
    "module": "proof/VELDO-0062/extract_formats.py",
-   "mutant_sha256": "96ce30fd3ab261cdc1d365ac094e7608265d43e5fc5de7ee1132e1420dc2ba0b",
+   "mutant_sha256": "834a6973299edde073579f042cc379d43d3470638e7ea954e5ac45cd7ad942b5",
    "name": "formats172-binary-only",
    "named_row_red": true,
    "named_rows": [
@@ -426,296 +256,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -727,7 +271,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -747,7 +291,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -792,6 +336,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -800,7 +459,7 @@
      false
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -812,421 +471,39 @@
      true
     ]
    ],
-   "seconds": 146.982,
-   "source_sha256": "884904611ee24e8049f58975709724cd47c5d273d40bf62d19be2ac9904043e6"
+   "seconds": 1.081,
+   "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0172 fake/capture detail: 79_veldo_0061_codex_adapter.py:login_status:stdout:fake:wrong-stream, login_status:stderr:fake:wrong-stream, login_status:fake:subscription-status"
+    "VELDO-0172 fake/capture:0061_codex_adapter detail: login_status:stdout:fake:wrong-stream",
+    "VELDO-0172 fake/capture:0061_codex_adapter detail: login_status:stderr:fake:wrong-stream",
+    "VELDO-0172 fake/capture:0061_codex_adapter detail: login_status:fake:subscription-status"
    ],
    "diff": "proof/VELDO-0172/formats172-login-stdout.diff",
    "failed_rows": [
     "VELDO-0172 fake/capture"
    ],
    "module": "scripts/suites/79_veldo_0061_codex_adapter.py",
-   "mutant_sha256": "f37603e54cb1d50e4a674d29d4087cb7cb3d173b49cd54681068c73f6998d8df",
+   "mutant_sha256": "feaea1f5d83ef63e93b91adc1f6f008e6cffdf607f5ac47123b5ce18a2081ba9",
    "name": "formats172-login-stdout",
    "named_row_red": true,
    "named_rows": [
     "fake/capture"
    ],
-   "preamble_rows": 26,
-   "readback": {
-    "census": [
-     "75_veldo_0062_accounts.py",
-     "78_veldo_0060_claude_adapter.py",
-     "78_veldo_0160_account_pool.py",
-     "79_veldo_0061_codex_adapter.py",
-     "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
-    ],
-    "field_metrics": {
-     "claude_code": {
-      "assistant": {
-       "from_capture": 4,
-       "known": 150,
-       "optional": 67
-      },
-      "control_response": {
-       "from_capture": 29,
-       "known": 43,
-       "optional": 14
-      },
-      "rate_limit_event": {
-       "from_capture": 0,
-       "known": 33,
-       "optional": 20
-      },
-      "result/error": {
-       "from_capture": 0,
-       "known": 79,
-       "optional": 23
-      },
-      "result/success": {
-       "from_capture": 0,
-       "known": 100,
-       "optional": 42
-      },
-      "system/init": {
-       "from_capture": 1,
-       "known": 56,
-       "optional": 26
-      }
-     },
-     "codex": {
-      "error": {
-       "from_capture": 0,
-       "known": 2,
-       "optional": 0
-      },
-      "item.completed": {
-       "from_capture": 3,
-       "known": 5,
-       "optional": 0
-      },
-      "item.started": {
-       "from_capture": 0,
-       "known": 2,
-       "optional": 0
-      },
-      "item.updated": {
-       "from_capture": 0,
-       "known": 2,
-       "optional": 0
-      },
-      "thread.started": {
-       "from_capture": 0,
-       "known": 2,
-       "optional": 0
-      },
-      "turn.completed": {
-       "from_capture": 0,
-       "known": 7,
-       "optional": 5
-      },
-      "turn.failed": {
-       "from_capture": 0,
-       "known": 3,
-       "optional": 0
-      },
-      "turn.started": {
-       "from_capture": 0,
-       "known": 1,
-       "optional": 0
-      }
-     }
-    }
-   },
+   "preamble_rows": 46,
+   "readback": {},
    "rows": [
-    [
-     "VELDO-0172 table/capture",
-     true
-    ],
     [
      "VELDO-0172 fake/capture",
      false
-    ],
-    [
-     "VELDO-0172 capture/allowlist",
-     true
-    ],
-    [
-     "VELDO-0172 capture/planted",
-     true
     ]
    ],
-   "seconds": 146.565,
-   "source_sha256": "bffca908e2bcc5115a4232bd4ed3e1f0df10c39f9ff947daefd061624da9163a"
+   "seconds": 15.263,
+   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "suite": "scripts/suites/79_veldo_0061_codex_adapter.py"
   },
   {
    "by_assertion": true,
@@ -1253,296 +530,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1554,7 +545,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -1574,7 +565,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -1619,6 +610,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -1627,7 +733,7 @@
      true
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -1639,8 +745,9 @@
      false
     ]
    ],
-   "seconds": 135.182,
-   "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
+   "seconds": 1.069,
+   "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
   {
    "by_assertion": true,
@@ -1667,296 +774,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -1968,7 +789,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -1988,7 +809,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -2033,6 +854,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -2041,7 +977,7 @@
      true
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -2053,20 +989,22 @@
      false
     ]
    ],
-   "seconds": 134.989,
-   "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
+   "seconds": 1.064,
+   "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0172 table/capture detail: table:regeneration-disagrees: control_response.response.response.agents[].model:table:required, control_response.response.response.agents[].model:table:required, control_response.response.response.models[].supportsFastMode:table:required, control_response.response.response.models[].supportsFastMode:table:required, control_response.response.response.models[].supportedEffortLevels:table:required, control_response.response.response.models[].supportsAdaptiveThinking:table:required, control_response.response.response.models[].supportsAutoMode:table:required, control_response.response.response.models[].supportsEffort:table:required, control_response.response.response.models[].supportsFastMode:table:required, assistant.message.usage.server_tool_use:table:required"
+    "VELDO-0172 table/capture detail: table:regeneration-disagrees: control_response.response.response.agents[].model:table:required, control_response.response.response.agents[].model:table:required, control_response.response.response.models[].supportsFastMode:table:required, control_response.response.response.models[].supportsFastMode:table:required, control_response.response.response.models[].supportedEffortLevels:table:required, control_response.response.response.models[].supportsAdaptiveThinking:table:required, control_response.response.response.models[].supportsAutoMode:table:required, control_response.response.response.models[].supportsEffort:table:required, control_response.response.response.models[].supportsFastMode:table:required, assistant.message.usage.server_tool_use:table:required",
+    "VELDO-0172 table/capture detail: table:conditional-field-required: ['control_response.response.response.fast_mode_disabled_reason', 'system/init.capabilities', 'system/init.messaging_socket_path', 'system/init.per_turn_effort_active', 'system/init.view_mode'] ['control_response.response.response.agents[].model:table:required', 'control_response.response.response.agents[].model:table:required', 'control_response.response.response.models[].supportsFastMode:table:required', 'control_response.response.response.models[].supportsFastMode:table:required']"
    ],
    "diff": "proof/VELDO-0172/formats172-required-usage.diff",
    "failed_rows": [
     "VELDO-0172 table/capture"
    ],
    "module": "proof/VELDO-0062/extract_formats.py",
-   "mutant_sha256": "e657834d84c5c77a6de2bba8c3fa3e2d19192c6835af88a31fee912aece650f4",
+   "mutant_sha256": "81d807db5ae3a93be0682f1fa48812e07b0d93ce82c0365a5a3d5f938f86005b",
    "name": "formats172-required-usage",
    "named_row_red": true,
    "named_rows": [
@@ -2080,296 +1018,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -2381,7 +1033,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -2401,7 +1053,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -2446,6 +1098,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -2454,7 +1221,7 @@
      false
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -2466,8 +1233,528 @@
      true
     ]
    ],
-   "seconds": 122.329,
-   "source_sha256": "884904611ee24e8049f58975709724cd47c5d273d40bf62d19be2ac9904043e6"
+   "seconds": 1.091,
+   "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0172 table/capture detail: table:regeneration-disagrees:",
+    "VELDO-0172 table/capture detail: table:conditional-field-required: ['control_response.response.response.fast_mode_disabled_reason', 'system/init.capabilities', 'system/init.messaging_socket_path', 'system/init.per_turn_effort_active', 'system/init.view_mode'] ['control_response.response.response.fast_mode_disabled_reason:table:required', 'system/init.messaging_socket_path:table:required']"
+   ],
+   "diff": "proof/VELDO-0172/formats172-emitter-required.diff",
+   "failed_rows": [
+    "VELDO-0172 table/capture"
+   ],
+   "module": "proof/VELDO-0062/extract_formats.py",
+   "mutant_sha256": "30171d569050fadfba495e797c8e4c18306ee595b837a82771e12abb0b96a6d1",
+   "name": "formats172-emitter-required",
+   "named_row_red": true,
+   "named_rows": [
+    "table/capture"
+   ],
+   "preamble_rows": 26,
+   "readback": {
+    "census": [
+     "75_veldo_0062_accounts.py",
+     "78_veldo_0060_claude_adapter.py",
+     "78_veldo_0160_account_pool.py",
+     "79_veldo_0061_codex_adapter.py",
+     "80_veldo_0155_claude_baseline.py",
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
+    ],
+    "field_metrics": {
+     "claude_code": {
+      "assistant": {
+       "from_capture": 4,
+       "known": 150,
+       "optional": 67
+      },
+      "control_response": {
+       "from_capture": 29,
+       "known": 43,
+       "optional": 15
+      },
+      "rate_limit_event": {
+       "from_capture": 0,
+       "known": 33,
+       "optional": 20
+      },
+      "result/error": {
+       "from_capture": 0,
+       "known": 79,
+       "optional": 23
+      },
+      "result/success": {
+       "from_capture": 0,
+       "known": 100,
+       "optional": 42
+      },
+      "system/init": {
+       "from_capture": 1,
+       "known": 56,
+       "optional": 27
+      }
+     },
+     "codex": {
+      "error": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "item.completed": {
+       "from_capture": 3,
+       "known": 5,
+       "optional": 0
+      },
+      "item.started": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "item.updated": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "thread.started": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "turn.completed": {
+       "from_capture": 0,
+       "known": 7,
+       "optional": 5
+      },
+      "turn.failed": {
+       "from_capture": 0,
+       "known": 3,
+       "optional": 0
+      },
+      "turn.started": {
+       "from_capture": 0,
+       "known": 1,
+       "optional": 0
+      }
+     }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
+    }
+   },
+   "rows": [
+    [
+     "VELDO-0172 table/capture",
+     false
+    ],
+    [
+     "VELDO-0172 fake/census",
+     true
+    ],
+    [
+     "VELDO-0172 capture/allowlist",
+     true
+    ],
+    [
+     "VELDO-0172 capture/planted",
+     true
+    ]
+   ],
+   "seconds": 1.068,
+   "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:fake:handshake-refused",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: claude:production:terminal-incomplete",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: control_response.response.response.account.apiProvider:table:required",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: control_response.response.response.account.apiProvider:fake:missing",
+    "VELDO-0172 fake/capture:0165_launch_hygiene detail: assistant:fake:streamed-output-count"
+   ],
+   "diff": "proof/VELDO-0172/formats172-hygiene-answer-drops-provider.diff",
+   "failed_rows": [
+    "VELDO-0172 fake/capture"
+   ],
+   "module": "scripts/suites/82_veldo_0165_launch_hygiene.py",
+   "mutant_sha256": "713efb1f24a114f938fc6a399e1a126f8ca8f3d23431331d1a9e173afeafc956",
+   "name": "formats172-hygiene-answer-drops-provider",
+   "named_row_red": true,
+   "named_rows": [
+    "fake/capture"
+   ],
+   "preamble_rows": 48,
+   "readback": {},
+   "rows": [
+    [
+     "VELDO-0172 fake/capture",
+     false
+    ]
+   ],
+   "seconds": 13.908,
+   "source_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1",
+   "suite": "scripts/suites/82_veldo_0165_launch_hygiene.py"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0172 fake/census detail: 79_veldo_0061_codex_adapter.py:census:no-conform-in-teardown"
+   ],
+   "diff": "proof/VELDO-0172/formats172-census-drops-conform.diff",
+   "failed_rows": [
+    "VELDO-0172 fake/census"
+   ],
+   "module": "scripts/suites/79_veldo_0061_codex_adapter.py",
+   "mutant_sha256": "fd9eb8241d3823dbed864c1c4910739e97e475d57b9463b130579029bf6db9d6",
+   "name": "formats172-census-drops-conform",
+   "named_row_red": true,
+   "named_rows": [
+    "fake/census"
+   ],
+   "preamble_rows": 26,
+   "readback": {
+    "census": [
+     "75_veldo_0062_accounts.py",
+     "78_veldo_0060_claude_adapter.py",
+     "78_veldo_0160_account_pool.py",
+     "79_veldo_0061_codex_adapter.py",
+     "80_veldo_0155_claude_baseline.py",
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
+    ],
+    "field_metrics": {
+     "claude_code": {
+      "assistant": {
+       "from_capture": 4,
+       "known": 150,
+       "optional": 67
+      },
+      "control_response": {
+       "from_capture": 29,
+       "known": 43,
+       "optional": 15
+      },
+      "rate_limit_event": {
+       "from_capture": 0,
+       "known": 33,
+       "optional": 20
+      },
+      "result/error": {
+       "from_capture": 0,
+       "known": 79,
+       "optional": 23
+      },
+      "result/success": {
+       "from_capture": 0,
+       "known": 100,
+       "optional": 42
+      },
+      "system/init": {
+       "from_capture": 1,
+       "known": 56,
+       "optional": 27
+      }
+     },
+     "codex": {
+      "error": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "item.completed": {
+       "from_capture": 3,
+       "known": 5,
+       "optional": 0
+      },
+      "item.started": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "item.updated": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "thread.started": {
+       "from_capture": 0,
+       "known": 2,
+       "optional": 0
+      },
+      "turn.completed": {
+       "from_capture": 0,
+       "known": 7,
+       "optional": 5
+      },
+      "turn.failed": {
+       "from_capture": 0,
+       "known": 3,
+       "optional": 0
+      },
+      "turn.started": {
+       "from_capture": 0,
+       "known": 1,
+       "optional": 0
+      }
+     }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
+    }
+   },
+   "rows": [
+    [
+     "VELDO-0172 table/capture",
+     true
+    ],
+    [
+     "VELDO-0172 fake/census",
+     false
+    ],
+    [
+     "VELDO-0172 capture/allowlist",
+     true
+    ],
+    [
+     "VELDO-0172 capture/planted",
+     true
+    ]
+   ],
+   "seconds": 1.065,
+   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "suite": "scripts/suites/82_veldo_0172_live_formats.py"
   }
  ],
  "mutations_per_row": {
@@ -2476,16 +1763,36 @@
    "formats172-keep-pid"
   ],
   "fake/capture": [
-   "formats172-login-stdout"
+   "formats172-login-stdout",
+   "formats172-hygiene-answer-drops-provider"
+  ],
+  "fake/census": [
+   "formats172-census-drops-conform"
   ],
   "table/capture": [
    "formats172-binary-only",
-   "formats172-required-usage"
+   "formats172-required-usage",
+   "formats172-emitter-required"
   ]
  },
  "noop": {
-  "79_veldo_0061_codex_adapter.py": {
-   "copy_sha256": "bffca908e2bcc5115a4232bd4ed3e1f0df10c39f9ff947daefd061624da9163a",
+  "79_veldo_0061_codex_adapter.py in 79_veldo_0061_codex_adapter.py": {
+   "copy_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 46,
+   "readback": {},
+   "rows": [
+    [
+     "VELDO-0172 fake/capture",
+     true
+    ]
+   ],
+   "seconds": 15.314,
+   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da"
+  },
+  "79_veldo_0061_codex_adapter.py in 82_veldo_0172_live_formats.py": {
+   "copy_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2496,296 +1803,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -2797,7 +1818,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -2817,7 +1838,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -2862,6 +1883,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -2870,7 +2006,7 @@
      true
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -2882,11 +2018,26 @@
      true
     ]
    ],
-   "seconds": 145.277,
-   "source_sha256": "bffca908e2bcc5115a4232bd4ed3e1f0df10c39f9ff947daefd061624da9163a"
+   "seconds": 1.039,
+   "source_sha256": "b8964da48df7b5162eb0840247bb156db2c1378313d3ed89eac9e6220eb603da"
   },
-  "extract_formats.py": {
-   "copy_sha256": "884904611ee24e8049f58975709724cd47c5d273d40bf62d19be2ac9904043e6",
+  "82_veldo_0165_launch_hygiene.py in 82_veldo_0165_launch_hygiene.py": {
+   "copy_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 48,
+   "readback": {},
+   "rows": [
+    [
+     "VELDO-0172 fake/capture",
+     true
+    ]
+   ],
+   "seconds": 14.127,
+   "source_sha256": "14fa5920f9a487577f23c7782ccb2a24d03f99765579e3ec2580c0dd83ee2ab1"
+  },
+  "extract_formats.py in 82_veldo_0172_live_formats.py": {
+   "copy_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -2897,296 +2048,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -3198,7 +2063,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -3218,7 +2083,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -3263,6 +2128,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -3271,7 +2251,7 @@
      true
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -3283,10 +2263,10 @@
      true
     ]
    ],
-   "seconds": 134.305,
-   "source_sha256": "884904611ee24e8049f58975709724cd47c5d273d40bf62d19be2ac9904043e6"
+   "seconds": 1.031,
+   "source_sha256": "d631701dd40b3dfa73c18e9813574211b21ea7485b875261ff626542ddb2a303"
   },
-  "scrub.py": {
+  "scrub.py in 82_veldo_0172_live_formats.py": {
    "copy_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8",
    "details": [],
    "failed_rows": [],
@@ -3298,296 +2278,10 @@
      "78_veldo_0160_account_pool.py",
      "79_veldo_0061_codex_adapter.py",
      "80_veldo_0155_claude_baseline.py",
-     "81_veldo_0156_codex_baseline.py"
-    ],
-    "fake_lines": [
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "75_veldo_0062_accounts.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0060_claude_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "rate_limit_event",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "78_veldo_0160_account_pool.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.started",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 5,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 6,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 7,
-      "row": "fake/capture",
-      "suite": "79_veldo_0061_codex_adapter.py"
-     },
-     {
-      "engine": "claude",
-      "event": "control_response",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "system/init",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "assistant",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "claude",
-      "event": "result/success",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "80_veldo_0155_claude_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "thread.started",
-      "line": 1,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.started",
-      "line": 2,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "item.completed",
-      "line": 3,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     },
-     {
-      "engine": "codex",
-      "event": "turn.completed",
-      "line": 4,
-      "row": "fake/capture",
-      "suite": "81_veldo_0156_codex_baseline.py"
-     }
+     "81_veldo_0156_codex_baseline.py",
+     "82_veldo_0129_worker_wiring.py",
+     "82_veldo_0141_execution_record.py",
+     "82_veldo_0165_launch_hygiene.py"
     ],
     "field_metrics": {
      "claude_code": {
@@ -3599,7 +2293,7 @@
       "control_response": {
        "from_capture": 29,
        "known": 43,
-       "optional": 14
+       "optional": 15
       },
       "rate_limit_event": {
        "from_capture": 0,
@@ -3619,7 +2313,7 @@
       "system/init": {
        "from_capture": 1,
        "known": 56,
-       "optional": 26
+       "optional": 27
       }
      },
      "codex": {
@@ -3664,6 +2358,121 @@
        "optional": 0
       }
      }
+    },
+    "printed_events": {
+     "75_veldo_0062_accounts.py": [
+      "assistant",
+      "error",
+      "message",
+      "rate_limit_event",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.started"
+     ],
+     "78_veldo_0060_claude_adapter.py": [
+      "agent_message",
+      "assistant",
+      "item.completed",
+      "message",
+      "rate_limit_event",
+      "reasoning",
+      "result/success",
+      "system/init",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ],
+     "78_veldo_0160_account_pool.py": [
+      "assistant",
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "control_cancel_request",
+      "control_request",
+      "control_response",
+      "error",
+      "item.started",
+      "keep_alive",
+      "mcp_tool_call",
+      "mcp_tool_result",
+      "mcp_tool_use",
+      "message",
+      "message_start",
+      "progress",
+      "rate_limit_event",
+      "redacted_thinking",
+      "result/error_during_execution",
+      "result/success",
+      "server_tool_use",
+      "skill_progress",
+      "system/init",
+      "text",
+      "text_delta",
+      "thinking",
+      "thread.started",
+      "tool_result",
+      "tool_use",
+      "transcript_mirror",
+      "turn.completed",
+      "turn.failed",
+      "turn.started",
+      "turn.unlisted",
+      "unlisted_block",
+      "unlisted_stream_event",
+      "workflow_agent",
+      "workflow_phase"
+     ],
+     "79_veldo_0061_codex_adapter.py": [
+      "error",
+      "thread.started",
+      "turn.completed",
+      "turn.failed",
+      "turn.progress",
+      "turn.started"
+     ],
+     "80_veldo_0155_claude_baseline.py": [
+      "command",
+      "control_request",
+      "control_response",
+      "oidc_federation",
+      "user",
+      "user_oauth"
+     ],
+     "81_veldo_0156_codex_baseline.py": [
+      "error"
+     ],
+     "82_veldo_0129_worker_wiring.py": [
+      "missing"
+     ],
+     "82_veldo_0141_execution_record.py": [
+      "content_block_delta",
+      "content_block_start",
+      "content_block_stop",
+      "message_start",
+      "message_stop",
+      "stream_event",
+      "system/init",
+      "text",
+      "text_delta",
+      "tool_use"
+     ],
+     "82_veldo_0165_launch_hygiene.py": [
+      "agent_message",
+      "any",
+      "assistant",
+      "item.completed",
+      "message",
+      "object",
+      "rate_limit_event",
+      "result/success",
+      "sdk",
+      "thread.started",
+      "turn.completed",
+      "turn.started"
+     ]
     }
    },
    "rows": [
@@ -3672,7 +2481,7 @@
      true
     ],
     [
-     "VELDO-0172 fake/capture",
+     "VELDO-0172 fake/census",
      true
     ],
     [
@@ -3684,13 +2493,13 @@
      true
     ]
    ],
-   "seconds": 134.747,
+   "seconds": 1.091,
    "source_sha256": "f105a7b6320521cd4cbe4e615d60274ee95768d37110a004944d8fcf2b435de8"
   }
  },
  "registry": "scripts/check_teeth_mutations.py",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 1246.623,
+ "serial_seconds": 69.258,
  "spec_id": "VELDO-0172",
  "suite": "scripts/suites/82_veldo_0172_live_formats.py"
 }

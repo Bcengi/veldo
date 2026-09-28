@@ -48,6 +48,10 @@ def _v129_suite():
     fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     fake_formats = importlib.util.module_from_spec(fake_spec)
     fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v129-', dir=runtime))
     slice_name = 'v129%s.slice' % os.urandom(4).hex()
@@ -701,8 +705,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         for row in names:
             check(row, 'fixture setup did not complete: %s: %s' % (type(error).__name__, str(error)[:500]), False)
     finally:
-        if globals().get('__engine_observer__'):
-            __engine_observer__(locals())
+        fake_capture = conform_formats.conform_fake(locals(), '0129_worker_wiring')
         subprocess.run(['systemctl', opt + 'user', 'stop', slice_name], capture_output=True, timeout=20)
         for run in sessions:
             with contextlib.suppress(Exception): run.close()
@@ -718,5 +721,8 @@ sys.exit(7 if mode == 'nonzero' else 0)
             for label, ok in observations:
                 if not ok: print('  VELDO-0129 %s detail: %s' % (row, label))
             expect('VELDO-0129 ' + row, bool(observations) and all(ok for _, ok in observations))
+    for line in conform_formats.describe('0129_worker_wiring', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0129_worker_wiring', bool(fake_capture[1]) and not fake_capture[0])
 
 _v129_suite()

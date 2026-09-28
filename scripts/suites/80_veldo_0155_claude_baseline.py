@@ -93,6 +93,10 @@ def _v155_suite():
     fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     fake_formats = importlib.util.module_from_spec(fake_spec)
     fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
     live_step = fake_formats.live_step
 
     started = time.monotonic()
@@ -983,8 +987,7 @@ out.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        if globals().get('__engine_observer__'):
-            __engine_observer__(locals())
+        fake_capture = conform_formats.conform_fake(locals(), '0155_claude_baseline')
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
                            stdin=subprocess.DEVNULL)
@@ -1018,6 +1021,9 @@ out.close()
             if not observed:
                 print('  VELDO-0155 %s detail: no check ran' % name)
         expect('VELDO-0155 ' + name, ok)
+    for line in conform_formats.describe('0155_claude_baseline', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0155_claude_baseline', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0155 suite seconds: %.3f' % (time.monotonic() - started))
 
 

@@ -1,4 +1,4 @@
-"""Value-free shape comparison, and a census of actual fake engine writers in every suite."""
+"""Value-free shape comparison, each suite's own fake-engine conformance check, and the static census of fake writers."""
 import ast
 import copy
 import json
@@ -93,21 +93,154 @@ def binary_only(value):
     return value
 
 
-def census(directory):
-    """Discover embedded executable sources by protocol syntax, not suite names or a fixed file list."""
+ROW = 'VELDO-0172 fake/capture:'
+CONFORM = 'conform_fake'
+
+
+def short_name(path):
+    """A suite's row suffix: its file stem without the ordering prefix and `veldo_` (79_veldo_0061_x -> 0061_x)."""
+    stem = Path(path).stem
+    return stem.split('_veldo_', 1)[1] if '_veldo_' in stem else stem
+
+
+def builds_fake(tree):
+    """A suite builds a fake engine when an executable literal of it prints a Claude Code or Codex line."""
+    return any(isinstance(node, ast.Constant) and isinstance(node.value, str)
+               and ('sys.stdout' in node.value or 'print(' in node.value)
+               and ('login' in node.value and 'status' in node.value or 'control_response' in node.value
+                    or 'turn.completed' in node.value)
+               for node in ast.walk(tree))
+
+
+def census(directory, copies=None):
+    """Discover embedded executable sources by protocol syntax, not suite names or a fixed file list.
+
+    `copies` maps a suite's file name to the file read in its place (a registered mutant copy).
+    """
+    copies = copies or {}
     found = []
     for path in sorted(Path(directory).glob('*.py')):
-        tree = ast.parse(path.read_text())
-        candidates = [node for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, str)
-                      and ('sys.stdout' in node.value or 'print(' in node.value)
-                      and ('login' in node.value and 'status' in node.value or 'control_response' in node.value
-                           or 'turn.completed' in node.value)]
-        if candidates:
+        if builds_fake(ast.parse(Path(copies.get(path.name, path)).read_text())):
             found.append(path)
     return found
 
 
-def observe_fake(local, suite, table, capture):
+def _trees(tree):
+    """The suite's own tree and every embedded executable literal that parses as a program."""
+    yield tree
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and 'print(' in node.value:
+            try:
+                yield ast.parse(node.value)
+            except SyntaxError:
+                continue
+
+
+def printed_events(tree):
+    """Event names the suite's constructors and executables declare in a dict display naming the event type.
+
+    The shape of each event comes from the shared templates; this is only which events a suite prints.
+    """
+    events = set()
+    for part in _trees(tree):
+        for node in ast.walk(part):
+            if not isinstance(node, ast.Dict):
+                continue
+            keys = {key.value: value for key, value in zip(node.keys, node.values)
+                    if isinstance(key, ast.Constant) and isinstance(key.value, str)}
+            kind = keys.get('type')
+            if not (isinstance(kind, ast.Constant) and isinstance(kind.value, str)):
+                continue
+            if kind.value in ('system', 'result'):
+                sub = keys.get('subtype')
+                if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
+                    events.add(kind.value + '/' + sub.value)
+            else:
+                events.add(kind.value)
+    return events
+
+
+def wiring(tree, name):
+    """How a fake-building suite reports its own conformance: named problems, empty when complete.
+
+    It must call the shared conform function with its own locals and short name inside a `finally`
+    (the teardown, so it runs whatever the tests did), report `VELDO-0172 fake/capture:<short name>`
+    through expect, and keep a `format/` row of its own for the lines it scripts.
+    """
+    short = short_name(name)
+    in_teardown = any(
+        isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute) and call.func.attr == CONFORM
+        and len(call.args) == 2 and isinstance(call.args[0], ast.Call)
+        and isinstance(call.args[0].func, ast.Name) and call.args[0].func.id == 'locals'
+        and isinstance(call.args[1], ast.Constant) and call.args[1].value == short
+        for node in ast.walk(tree) if isinstance(node, ast.Try)
+        for statement in node.finalbody for call in ast.walk(statement))
+    reported = any(
+        isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'expect'
+        and node.args and isinstance(node.args[0], ast.Constant) and node.args[0].value == ROW + short
+        for node in ast.walk(tree))
+    format_row = any(isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value.startswith('format/')
+                     for node in ast.walk(tree))
+    return ([] if in_teardown else [name + ':census:no-conform-in-teardown']) + \
+        ([] if reported else [name + ':census:no-fake-capture-row']) + \
+        ([] if format_row else [name + ':census:no-format-row'])
+
+
+def static_census(directory, capture, templates, copies=None):
+    """The census row's facts, read from each suite's syntax tree without running it.
+
+    Returns (suites, problems, events): every fake-building suite, what is missing from its wiring or
+    from the union of printed events, and each suite's statically known printed events.
+    """
+    copies = copies or {}
+    suites, problems, events = [], [], {}
+    for path in sorted(Path(directory).glob('*.py')):
+        tree = ast.parse(Path(copies.get(path.name, path)).read_text())
+        if not builds_fake(tree):
+            continue
+        suites.append(path.name)
+        problems += wiring(tree, path.name)
+        events[path.name] = sorted(printed_events(tree))
+    if not suites:
+        problems.append('census:empty')
+    printed = set().union(*map(set, events.values())) if events else set()
+    for engine, lines in capture['streams'].items():
+        for line in lines:
+            name = event_name(line)
+            if name not in printed:
+                problems.append(engine + ':' + name + ':census:capture-event-not-printed')
+            template = templates.get(engine, {}).get(name)
+            if template is None:
+                problems.append(engine + ':' + name + ':census:no-template')
+            elif paths(template) != paths(line):
+                problems.append(engine + ':' + name + ':census:template-shape')
+    return suites, problems, events
+
+
+def conform_fake(local, suite_name, table=None, capture=None):
+    """One suite's own fake/capture observation, called at its teardown with its locals.
+
+    Loads the committed table and capture beside this module unless given, drives the suite's generated
+    executables once and returns (issues, trace). Never raises: a failure is the suite's named issue.
+    """
+    root = Path(__file__).resolve().parents[2]
+    try:
+        table = table or json.loads((root / 'proof/VELDO-0062/cli-formats.json').read_text())
+        capture = capture or json.loads((root / 'proof/VELDO-0172/capture.json').read_text())
+        return observe_fake(local, suite_name, table, capture)
+    except Exception as error:  # noqa: BLE001 - reported on the suite's own row, never raised past teardown
+        return ['observer:did-not-complete:' + type(error).__name__ + ':' + str(error)[:200]], []
+
+
+def describe(suite_name, issues, trace):
+    """The suite's report lines: each issue, then the count and events it compared (never a value)."""
+    lines = ['  %s%s detail: %s' % (ROW, suite_name, issue) for issue in issues]
+    lines.append('%s%s: %d fake lines compared, events %s'
+                 % (ROW, suite_name, len(trace), sorted({t['engine'] + ':' + t['event'] for t in trace})))
+    return lines
+
+
+def observe_fake(local, suite_name, table, capture):
     """Run the suite's actual generated executable and line constructors, then compare its bytes.
 
     The surrounding suite already drives real qualification, launch, accounting and artifacts. This
@@ -231,7 +364,13 @@ def observe_fake(local, suite, table, capture):
                 actual, expected = paths(line), paths(reference[name])
                 problems += [name + field + ':fake:missing' for field in sorted(expected - actual)]
                 problems += [name + field + ':fake:added' for field in sorted(actual - expected)]
-            printed.append({'suite': suite.name, 'row': 'fake/capture', 'engine': engine, 'line': index + 1, 'event': name})
+            printed.append({'suite': suite_name, 'row': ROW + suite_name, 'engine': engine, 'line': index + 1, 'event': name})
+        # AC2's suite-level facts, where this suite prints the event.
+        for line in lines:
+            if line.get('type') == 'rate_limit_event' and 'unifiedWindows' not in (line.get('rate_limit_info') or {}):
+                problems.append('rate_limit_event:fake:no-unifiedWindows')
+            if line.get('type') == 'turn.completed' and len(line.get('usage') or {}) != 5:
+                problems.append('turn.completed:fake:usage-fields:%d' % len(line.get('usage') or {}))
         if engine == 'claude':
             answers = [line for line in lines if line.get('type') == 'control_response']
             if not answers or answers[0]['response']['response']['account'].get('subscriptionType') != 'Claude Team':

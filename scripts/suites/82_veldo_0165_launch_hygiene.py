@@ -59,6 +59,10 @@ def _v165_suite():
     fake_spec = importlib.util.spec_from_file_location('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     fake_formats = importlib.util.module_from_spec(fake_spec)
     fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engines against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
     live_step = fake_formats.live_step
 
     started = time.monotonic()
@@ -693,8 +697,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        if globals().get('__engine_observer__'):
-            __engine_observer__(locals())
+        fake_capture = conform_formats.conform_fake(locals(), '0165_launch_hygiene')
         for connection in connections:
             connection.close()
         shutil.rmtree(base)
@@ -704,6 +707,9 @@ sys.exit(payload.get('code', 0))
             if not value:
                 print('  VELDO-0165 %s detail: %s' % (name, label))
         expect('VELDO-0165 ' + name, ok)
+    for line in conform_formats.describe('0165_launch_hygiene', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0165_launch_hygiene', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0165 suite seconds: %.3f' % (time.monotonic() - started))
 
 

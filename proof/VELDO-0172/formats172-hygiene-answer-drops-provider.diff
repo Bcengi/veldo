@@ -1,0 +1,5 @@
+--- a/scripts/suites/82_veldo_0165_launch_hygiene.py
++++ b/scripts/suites/82_veldo_0165_launch_hygiene.py
+@@ -230 +230 @@
+-                      'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
++                      'response': {'account': {'subscriptionType': 'Claude Team'},  # defect: required field dropped

@@ -226,3 +226,17 @@ reports a source it cannot read as a named problem instead of raising. Whole-lin
 `fixture/mcp-control` expect the built-in tools ahead of the MCP ones. New mutation
 `formats172-hygiene-answer-drops-provider` reds `fake/capture`. The footprint adds the three suite files.
 Status unchanged.
+
+2026-09-27, census redesign on batch-0165-0172: the observation now happens where each fake runs, once.
+The `fake/capture` census executed every other fake-engine suite in full inside this suite (136 s with
+nine suites, growing with each new one), past the gate's 120-second mutation worker budget. Each suite
+that builds a fake Claude Code or Codex engine now calls `conform_fake` from
+proof/VELDO-0172/compare_formats.py at its own teardown and reports `VELDO-0172 fake/capture:<suite>`
+from its own run: equal field paths per captured event, every line conforming to the table, and the
+suite-level facts of AC2 where that suite prints the event. This suite runs no other suite. Its
+`fake/census` row reads every suite's syntax tree, requires each fake-building suite to make that call in
+a `finally` and report that row, and requires the suites' declared events to cover every captured event,
+each with the capture's exact field paths in the shared templates. The suite takes about 1 s. The AC2
+falsifier is now registered on suite 79 and reds its own `fake/capture` row on the stream; new mutation
+`formats172-census-drops-conform` removes suite 79's call and reds `fake/census`; the hygiene mutation
+reds suite 0165's own row. Criteria text unchanged. Status unchanged.

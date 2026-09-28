@@ -21,7 +21,7 @@ SUITE = '82_veldo_0172_live_formats.py'
 PREFIX = 'VELDO-0172 '
 FINDING = 172
 MODULES = {'extract_formats.py': 'proof/VELDO-0062', 'scrub.py': 'proof/VELDO-0172',
-           '79_veldo_0061_codex_adapter.py': 'scripts/suites'}
+           '79_veldo_0061_codex_adapter.py': 'scripts/suites', '82_veldo_0165_launch_hygiene.py': 'scripts/suites'}
 
 
 def _load(name, path):
@@ -42,11 +42,15 @@ def _driver():
     return module
 
 
-def one(paths, root):
-    """Run the shared preamble of `root` and the current suite once, in this interpreter."""
+def one(paths, root, suite=SUITE):
+    """Run the shared preamble of `root` and the current `suite` once, in this interpreter.
+
+    A fake engine's defect is in the suite that embeds it, which reports its own `fake/capture` row: a
+    mutated copy of that suite is the suite that runs. Any other module replaces its literal anchor.
+    """
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
-    ns = {'__file__': str(shared), '__suite_file__': str(ROOT / 'scripts/suites' / SUITE),
+    ns = {'__file__': str(shared), '__suite_file__': str(ROOT / 'scripts/suites' / suite),
           '__observe__': lambda name, condition: rows.append([name.split(':', 1)[0], bool(condition)])}
     tree = ast.parse(shared.read_text(), str(shared))
     for node in tree.body:
@@ -55,22 +59,25 @@ def one(paths, root):
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
-        source = (ROOT / 'scripts/suites' / SUITE).read_text()
+        source = (ROOT / 'scripts/suites' / suite).read_text()
         for module, path in paths.items():
+            if module == suite:
+                source = Path(path).read_text()
+                continue
             anchor = 'ROOT / "' + MODULES[module] + '" / "' + module + '"'
             if source.count(anchor) != 1:
                 raise RuntimeError('suite production-copy anchor moved: ' + module)
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(path) + ')')
-        exec(compile(source, SUITE, 'exec'), ns)
+        exec(compile(source, suite, 'exec'), ns)
     mine = [r for r in rows if r[0].startswith(PREFIX)]
     details = [line.strip() for line in out.getvalue().split('\n') if PREFIX.strip() in line and 'detail:' in line]
     return {'rows': mine, 'failed_rows': [r[0] for r in mine if not r[1]], 'details': details,
             'preamble_rows': len(rows) - len(mine), 'readback': ns.get('__v172_observations__', {})}
 
 
-def run(paths=None, root=None):
+def run(paths=None, root=None, suite=SUITE):
     started = time.monotonic()
-    command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
+    command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT), suite]
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -110,8 +117,8 @@ def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
         red(sys.argv[2])
         return
-    if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
+    if len(sys.argv) >= 5 and sys.argv[1] == '--one':
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], sys.argv[4])))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == FINDING]
@@ -119,9 +126,12 @@ def main():
               'registry': 'scripts/check_teeth_mutations.py', 'noop': {}, 'mutants': []}
     with tempfile.TemporaryDirectory(prefix='v172-drive-') as directory:
         prepared = {}
-        for module in sorted({c['module'] for c in cases}):
-            case = next(c for c in cases if c['module'] == module)
-            prepared['noop-' + module] = ctm.materialize(case, 'noop', Path(directory) / ('noop-' + module))
+        # One no-op copy per module and the suite that runs it: an unchanged copy keeps that suite green.
+        pairs = sorted({(c['module'], c['suite']) for c in cases})
+        for module, suite in pairs:
+            case = next(c for c in cases if (c['module'], c['suite']) == (module, suite))
+            key = module + ' in ' + suite
+            prepared['noop-' + key] = ctm.materialize(case, 'noop', Path(directory) / ('noop-%d' % len(prepared)))
         for case in cases:
             prepared[case['name']] = ctm.materialize(case, 'mutant', Path(directory) / case['name'])
             source = prepared[case['name']]['source'].read_text()
@@ -130,9 +140,11 @@ def main():
                 fromfile='a/' + case['dir'] + '/' + case['module'], tofile='b/' + case['dir'] + '/' + case['module'])))
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             baseline = pool.submit(run)
-            noops = {module: pool.submit(run, {module: str(prepared['noop-' + module]['mutant'])})
-                     for module in sorted({c['module'] for c in cases})}
-            mutants = {case['name']: pool.submit(run, {case['module']: str(prepared[case['name']]['mutant'])})
+            noops = {module + ' in ' + suite: pool.submit(
+                         run, {module: str(prepared['noop-' + module + ' in ' + suite]['mutant'])}, None, suite)
+                     for module, suite in pairs}
+            mutants = {case['name']: pool.submit(run, {case['module']: str(prepared[case['name']]['mutant'])}, None,
+                                                 case['suite'])
                        for case in cases}
             report['baseline'] = baseline.result()
             print(json.dumps({'control': 'baseline', 'failed_rows': report['baseline']['failed_rows']}), flush=True)
@@ -145,6 +157,7 @@ def main():
                 entry = prepared[case['name']]
                 observed = mutants[case['name']].result()
                 report['mutants'].append(dict(name=case['name'], module=case['dir'] + '/' + case['module'],
+                    suite='scripts/suites/' + case['suite'],
                     named_rows=case['rows'], diff='proof/VELDO-0172/%s.diff' % case['name'],
                     source_sha256=entry['old_digest'], mutant_sha256=entry['new_digest'],
                     named_row_red=all(PREFIX + r in observed['failed_rows'] for r in case['rows']),
