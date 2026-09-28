@@ -1,5 +1,11 @@
 --- proof/VELDO-0127/live.py
-+++ mutant/proof/VELDO-0127/live.py
-@@ -119 +119 @@
++++ proof/VELDO-0127/live.py
+@@ -116,7 +116,7 @@
+         wire = loopback.capture(document['executable']['path'], configuration)
+     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
+             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
 -            'builtin_commands':builtin, 'probe':document.get('probe'),
 +            'builtin_commands':builtin, 'probe':None,
+             'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire,
+             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
+             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),

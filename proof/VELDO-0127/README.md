@@ -1,34 +1,66 @@
 # VELDO-0127 role capability configuration
 
-Review continuation from `5a9a05d2`: items 2 through 6 have production fixes and
-assertion rows. Item 1 has a successful real offline capture and a strict comparison,
-but remains incomplete: the pinned Codex still offers tools the role does not grant.
-The specification stays ready. No full qualification or gate pass is claimed.
+Item 1 continuation from `04795046`: the offline request is captured successfully,
+but AC2 exact equality remains blocked. No switch tested against the pinned binary
+removed the remaining tools. These are case (c) owner decisions, recorded individually
+in `codex-owner-decisions.json`, not approved exceptions. No capability was removed
+from the role or production configuration. No metadata override was introduced.
+The specification stays ready; no full qualification or gate pass is claimed.
 
-`codex-loopback-before.json` records the original generated configuration's request.
-`codex-loopback.json` records the current production handoff's generated configuration.
-Both use the qualified 0.154.0 vendored binary, a temporary empty login profile, a
-127.0.0.1 HTTP stand-in, generated credential-free MCP fixtures, and a Landlock TCP
-restriction to the stand-in's port. No model, account profile, login or real credential
-was used. The stand-in returned a streaming completion and Codex exited successfully.
-Its observed wire format is Responses, with an exact `tools` array nested in an
-`additional_tools` input item. The reader also accepts a top-level Responses array,
-Chat function definitions and namespace entries.
+`codex-loopback-before.json` retains the original capture. `codex-loopback.json` is a
+fresh capture of the current production handoff configuration. Both use Codex
+0.154.0, empty temporary HOME and CODEX_HOME, a 127.0.0.1 HTTP stand-in, generated
+credential-free MCP fixtures and a Landlock TCP restriction to the stand-in port.
+No model, account profile, login or real credential was used. The request carries
+its exact tools array in an `additional_tools` input item.
 
-The role grants shell, update_plan and selected Jira search. The final request still
-contains collaboration tools, functions.exec, functions.wait and
-functions.request_user_input_async. The generated switches remove clock.sleep and
-ordinary request_user_input but do not establish exact equality. The proof records
-`configuration_stop:codex_unexpected_tool`; this is a proof rejection, not a claim
-that the production Codex launcher now prevents these defaults. No metadata override
-or expanded role grant was shipped to make this mismatch disappear.
+The binary's own `debug models` output identifies `gpt-6-astra` with `shell_type`
+`unified_exec`, `tool_mode` `code_mode_only` and `multi_agent_version` `v2`.
+The request's embedded declarations identify `exec_command` and `write_stdin` as
+shell operations, and `update_plan` as plan editing. That direct-call vocabulary
+now has one production mapping in `control_engine_codex.NATIVE_TOOL_MAPPING`,
+written by the qualification writer, shipped in both qualification records and
+consumed by the handoff comparator. This is a direct-call mapping, not a claim
+that this model emits those definitions directly. The Code Mode wrappers are not
+shell-only aliases: their description also exposes patching, MCP resource readers
+and clock access. Mapping the wrappers to shell would conceal those capabilities.
 
-The owned suite was run normally and under the exact clean gate environment. All six
-new review rows and the existing behavioral rows pass. Only `live/claude` and
-`live/codex` fail: the old captures are stale, Claude lacks the new probe/control facts,
-and Codex lacks the new wire capture per live run. Real Claude recapture is reserved
-for the lead because this run cannot use a real login or model. No neighboring suite,
-mutation worker or gate was run, following the owner's command restrictions.
+| Case (c) tool | Capability retained for owner decision |
+| - | - |
+| functions.exec | JavaScript orchestration over registered tools, including ungranted nested operations. |
+| functions.wait | Resume or terminate a JavaScript cell, using cell_id rather than a shell session_id. |
+| functions.request_user_input_async | Ask questions and receive asynchronous user input. |
+| collaboration.followup_task | Send work to an existing agent and start its turn. |
+| collaboration.interrupt_agent | Interrupt an agent turn. |
+| collaboration.list_agents | List live agents. |
+| collaboration.send_message | Message an existing agent. |
+| collaboration.spawn_agent | Create a sub-agent. |
+| collaboration.wait_agent | Wait for agent updates. |
+
+`codex-tool-investigation.json` records one-change loopback probes and their exact
+names and request hashes. The binary's strings identify the tested feature keys.
+Both boolean and table forms of Code Mode and multi-agent switches left these
+tools present. The binary's `features list` reports Code Mode and multi-agent false
+under the current configuration, yet the model request still contains them. The
+`default_mode_request_user_input` switch did not remove async input. Code Mode host,
+multi-agent mode, tool search, orchestrator and non_code_mode_only controls likewise
+did not produce equality. No working switch is claimed, and none was added to the
+production configuration. This establishes the failure of the tested switches, not
+an exhaustive proof that no undocumented switch exists.
+
+The evidence judge now reports every unexpected and missing name together. All nine
+tools above remain unexpected. The direct definitions `exec_command`, `write_stdin`,
+`update_plan` and `mcp__jira.jira_search` are missing. Shell and plan declarations
+inside the wrapper are observations, not substitutes for tool definitions. Jira is
+still selected in the generated MCP table but has no explicit definition in this
+request. Consequently even accepting the nine extras would not by itself establish
+that every grant is exposed. The reader preserves `configuration_stop:codex_unexpected_tool`.
+
+The updated fake-driven `review/codex-tools` row consumes the actual fake worker's
+request, generated from the production launch configuration and authenticated MCP
+listing. It checks the qualification writer's mapping, exact comparison in both
+directions, and the named unresolved observations from the real capture. Its green
+result does not mean real Codex equality. The other review repairs are unchanged.
 
 The debug leg has no qualified positive control yet. Empty old debug lines prove
 nothing. The retained old context-size comparison is the only present AC4 marker
@@ -76,7 +108,7 @@ slice is stopped at teardown. No real credential or model is used by the suite.
 | AC3 | dispatch/binding, dispatch/refusal | A prepared A still launches A after B is saved, the next dispatch binds B, unsupported settings and missing tools give named refusals, and an extra default tool stops before the prompt. |
 | AC4 | launch/push, launch/unlisted, launch/instructions | PushNotification is in init and absent from the deny list; unassigned native tools, servers, skills and instruction files do not load; an extra skill stops before the prompt; both instruction sources reach each engine and first-turn context is kept in the committed execution record. |
 | AC2, AC4 | live/claude, live/codex | Fail closed until digest-bound live captures qualify both role modes, exact engine surfaces, credential sources, and marker/context comparisons. |
-| AC2 | review/codex-tools | A fixture request passes the production wire comparator; adding an ungranted tool or removing a selected MCP tool fails. This is fake-driven comparison evidence, not real Codex equality. |
+| AC2 | review/codex-tools | The fake worker derives its request from production configuration and its authenticated MCP listing. The qualification mapping agrees, extra or missing tools fail, and the real Code Mode capture retains every unresolved name and missing definition. |
 | AC2, AC4 | review/skill-commit | A real fake-worker commit of everything contains its delivery but no staged skill symlink. |
 | AC4 | review/marker-debug | The live capture reader consumes a production execution record; planted instruction debug lines fail, and absent positive debug evidence requires an explicit context-size-only fallback. |
 | AC3, AC4 | review/probe-terminal | A fake engine closes input after the zero-turn probe. The receiver names the failed prompt write, never accepts that probe as terminal, and the live driver records zero turns and zero pre-prompt assistant events. |
@@ -143,7 +175,7 @@ context comparison (`rejudge`), without new runs; the production modules did not
 review behavior rows red by assertion, with no raised exception. Other already
 implemented rows are retained separately and are not falsely claimed red.
 
-Finding 127 now registers 28 unique mutations. `mutations.json` and the individual
+Finding 127 now registers 31 unique mutations. `mutations.json` and the individual
 diffs contain current exact replacements and source hashes. No mutant was executed
 in this run. The earlier owner report of seven rejections followed by the withheld
 probe timeout is historical. The new bounded init wait and suite launch skip make
@@ -154,7 +186,7 @@ will remain red until the live qualification rows are closed.
 
 The suite remains registered in manifest.json; requires.json was regenerated.
 The touched canonical engine modules and installed .veldo copies are byte-identical.
-The footprint and anchor checks pass without expanding the footprint. checks.json
+The footprint adds the two shipped Codex qualification records because AC2 now records the direct-call vocabulary there. checks.json
 records the final scoped results and limitations. The gate's byproducts are not
 implementation changes and are not committed.
 
@@ -166,3 +198,12 @@ previous repair stop, the debug prompt-input command could not expose tool defin
 This continuation uses an explicitly authorized loopback request capture for item 1
 and fixes the independent items 2 through 6. The remaining blockers are stated at the
 start of this README. No prior success claim substitutes for fresh live qualification.
+
+Item 1 investigation from `04795046` additionally records the binary's model defaults,
+the ineffective switch probes and each unresolved capability above. The current
+red replay targets only the changed `review/codex-tools` behavior row; the other
+review rows were already implemented at that baseline. Three mutations target the
+shell mapping, hiding owner-decision tools and hiding missing grants. No switch
+mutation is invented because no working switch was found or shipped. The reviewer
+must run mutation rejection; this run executes no mutants. Live rows still require
+fresh lead qualification, including the independent Claude recapture.

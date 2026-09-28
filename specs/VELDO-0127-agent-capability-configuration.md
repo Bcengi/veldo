@@ -14,6 +14,8 @@ depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
+  - "engine/runtime/codex-qualification.json"
+  - ".veldo/runtime/codex-qualification.json"
   - "engine/.veldo/control_agent_config*.py"
   - ".veldo/control_agent_config*.py"
   - "packs/*/.veldo/control_agent_config*.py"
@@ -286,3 +288,19 @@ captured role still exposes ungranted collaboration, async-input and Code Mode t
 observed switches, so item 1 remains incomplete and the proof rejects it. The old Claude live
 capture also lacks the new probe and positive-control evidence. These two live rows stay red;
 no complete qualification, mutation rejection, gate pass or shipped status is claimed.
+
+
+2026-09-28, item 1 continuation from 04795046: inspected each extra tool's real
+schema and the pinned binary's strings, feature listing and built-in model catalog.
+Code Mode exec/wait are JavaScript orchestration, not shell-only aliases. Shell's
+nested direct operations are exec_command/write_stdin; the qualification writer and
+handoff now share that vocabulary. AC2 needs the shipped record, so the footprint
+adds engine/runtime/codex-qualification.json and .veldo/runtime/codex-qualification.json.
+Each tested Code Mode, collaboration and async-input switch left the extra tools
+present. The fresh production capture and evidence reader retain all nine extras
+by name as case (c) owner decisions, without exempting them, and retain all missing
+direct definitions, including the selected Jira tool. No grant, generated switch
+or model metadata was changed. The fake-driven row checks the production writer's
+mapping and these honest refusal observations. Item 1 remains blocked on the owner
+decisions and missing wire definitions; no exact equality or completed qualification
+is claimed. Status and acceptance criteria are unchanged.

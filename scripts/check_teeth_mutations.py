@@ -8947,6 +8947,16 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0127 item 1: direct shell vocabulary and named, unmasked Code Mode evidence.
+    add(127, 'role127-shell-wire-mapping-loses-wait', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}",
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command'], 'update_plan': ['update_plan']}", ['review/codex-tools'])
+    add(127, 'role127-owner-tools-hidden', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
+        "'unexpected': sorted(set(actual) - set(wanted)),", "'unexpected': [],", ['review/codex-tools'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-code-mode-hides-missing-grants', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
+        "'missing': sorted(set(wanted) - set(actual)),", "'missing': [],", ['review/codex-tools'])
+    result[-1]['dir'] = '.'
     # VELDO-0127: immutable revision history and exact role capability handoff.
     suite127 = '86_veldo_0127_agent_configuration.py'
     add(127, 'role127-overwrite-history', suite127, 'control_agent_config.py',

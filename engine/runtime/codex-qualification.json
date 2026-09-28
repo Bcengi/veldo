@@ -39,6 +39,15 @@
   "-c",
   "check_for_update_on_startup=false"
  ],
+ "native_tool_mapping": {
+  "shell": [
+   "exec_command",
+   "write_stdin"
+  ],
+  "update_plan": [
+   "update_plan"
+  ]
+ },
  "package": "@openai/codex",
  "package_version": "0.154.0-linux-x64",
  "rate_limit_windows": [

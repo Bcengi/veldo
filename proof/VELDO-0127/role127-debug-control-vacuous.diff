@@ -1,5 +1,11 @@
 --- proof/VELDO-0127/evidence.py
-+++ mutant/proof/VELDO-0127/evidence.py
-@@ -25 +25 @@
++++ proof/VELDO-0127/evidence.py
+@@ -22,7 +22,7 @@
+         bad.append('planted debug log reports instruction discovery')
+     if not control.get('ran') or control.get('returncode') != 0:
+         bad.append('instruction discovery debug control missing')
 -    elif not control.get('debug_lines') and control.get('qualification') != 'context-size-only':
 +    elif False:
+         bad.append('debug has no positive control; context-size-only must be explicit')
+     return bad
+ 

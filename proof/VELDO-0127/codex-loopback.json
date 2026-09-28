@@ -1,7 +1,8 @@
 {
  "returncode": 0,
- "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e97a-a47a-7661-92d5-8e900ecef14d\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
- "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-yjd16ddg\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-yjd16ddg/profile\"))\nReading prompt from stdin...\n",
+ "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
+ "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-vd30ykw3\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-vd30ykw3/profile\"))\nReading prompt from stdin...\n",
+ "schema": "veldo.offline-tool-observation/v1",
  "requests": [
   {
    "path": "/v1/responses",
@@ -10,7 +11,7 @@
     "input": [
      {
       "type": "additional_tools",
-      "id": "at_a820537d-f551-5075-abd0-9348028a950c",
+      "id": "at_be79ffc6-2d41-5407-b34b-0f07060cd043",
       "role": "developer",
       "tools": [
        {
@@ -251,7 +252,7 @@
      },
      {
       "type": "message",
-      "id": "msg_8adfa71c-c814-5418-8e40-8352c433b66a",
+      "id": "msg_ffc33ade-52b5-587b-a0a4-99b96b28b084",
       "role": "developer",
       "content": [
        {
@@ -262,7 +263,7 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e97a-a4f3-70d2-91ff-6cbe588e0fbf",
+      "id": "msg_01a0e98b-d8c8-7022-98bd-02b002bf1787",
       "role": "developer",
       "content": [
        {
@@ -281,7 +282,7 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e97a-a4f3-70d2-91ff-6ccdf138a998",
+      "id": "msg_01a0e98b-d8c8-7022-98bd-02c34c55452c",
       "role": "developer",
       "content": [
        {
@@ -292,7 +293,7 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e97a-a4f3-70d2-91ff-6cda601526d5",
+      "id": "msg_01a0e98b-d8c8-7022-98bd-02d147db81de",
       "role": "developer",
       "content": [
        {
@@ -303,18 +304,18 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e97a-a4f3-70d2-91ff-6ce44b0f51e0",
+      "id": "msg_01a0e98b-d8c8-7022-98bd-02ec81a9f752",
       "role": "user",
       "content": [
        {
         "type": "input_text",
-        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-yjd16ddg/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-yjd16ddg/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
+        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-vd30ykw3/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-vd30ykw3/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
        }
       ]
      },
      {
       "type": "message",
-      "id": "msg_01a0e97a-a4fc-7f71-bb2d-1800db3fd61d",
+      "id": "msg_01a0e98b-d8cb-7092-bb37-9c1803c92243",
       "role": "user",
       "content": [
        {
@@ -335,18 +336,18 @@
     "include": [
      "reasoning.encrypted_content"
     ],
-    "prompt_cache_key": "01a0e97a-a47a-7661-92d5-8e900ecef14d",
+    "prompt_cache_key": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
     "text": {
      "verbosity": "low"
     },
     "client_metadata": {
-     "x-codex-turn-metadata": "{\"installation_id\":\"321f43c2-62d3-4b5e-acbd-bbb0420c5c11\",\"session_id\":\"01a0e97a-a47a-7661-92d5-8e900ecef14d\",\"thread_id\":\"01a0e97a-a47a-7661-92d5-8e900ecef14d\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e97a-a499-77a3-abef-f72da5b2fe12\",\"window_id\":\"01a0e97a-a47a-7661-92d5-8e900ecef14d:0\",\"window_number\":0,\"context_window_id\":\"01a0e97a-a47a-7661-92d5-8ea5d46c1a95\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e97a-a499-77a3-abef-f72da5b2fe12\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790623523994}",
-     "session_id": "01a0e97a-a47a-7661-92d5-8e900ecef14d",
-     "root_turn_id": "01a0e97a-a499-77a3-abef-f72da5b2fe12",
-     "x-codex-window-id": "01a0e97a-a47a-7661-92d5-8e900ecef14d:0",
-     "turn_id": "01a0e97a-a499-77a3-abef-f72da5b2fe12",
-     "x-codex-installation-id": "321f43c2-62d3-4b5e-acbd-bbb0420c5c11",
-     "thread_id": "01a0e97a-a47a-7661-92d5-8e900ecef14d"
+     "thread_id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
+     "x-codex-turn-metadata": "{\"installation_id\":\"1bd9f8e6-2590-49f9-8216-9c5453a5c844\",\"session_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\",\"thread_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e98b-d88c-7762-a6b6-61990d408cdd\",\"window_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e:0\",\"window_number\":0,\"context_window_id\":\"01a0e98b-d87b-7aa0-8a24-ac75c1d1646f\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e98b-d88c-7762-a6b6-61990d408cdd\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790624651405}",
+     "session_id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
+     "x-codex-installation-id": "1bd9f8e6-2590-49f9-8216-9c5453a5c844",
+     "x-codex-window-id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e:0",
+     "turn_id": "01a0e98b-d88c-7762-a6b6-61990d408cdd",
+     "root_turn_id": "01a0e98b-d88c-7762-a6b6-61990d408cdd"
     }
    }
   }
@@ -422,15 +423,116 @@
  },
  "production": {
   "control_agent_config.py": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
-  "control_agent_config_handoff.py": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+  "control_agent_config_handoff.py": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
   "control_launch.py": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
   "control_engine_claude.py": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
-  "control_engine_codex.py": "665cff65666ad6d30315a16e7422784465e0b8e8b41ab92734fa60a9bb0c9f5b"
+  "control_engine_codex.py": "4c5659be5dd88cc0ee086a1922c737962c8711cb0b0a36ad41c8afba6b8669d2"
+ },
+ "observations": [
+  {
+   "native_tool_mapping": {
+    "shell": [
+     "exec_command",
+     "write_stdin"
+    ],
+    "update_plan": [
+     "update_plan"
+    ]
+   },
+   "actual": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "expected": [
+    "exec_command",
+    "mcp__jira.jira_search",
+    "update_plan",
+    "write_stdin"
+   ],
+   "unexpected": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "missing": [
+    "exec_command",
+    "mcp__jira.jira_search",
+    "update_plan",
+    "write_stdin"
+   ],
+   "stop": "configuration_stop:codex_unexpected_tool"
+  }
+ ],
+ "owner_decisions": {
+  "collaboration.followup_task": {
+   "capability": "Sends work to an existing agent and starts an idle agent turn.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "collaboration.interrupt_agent": {
+   "capability": "Interrupts an existing agent turn.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "collaboration.list_agents": {
+   "capability": "Lists live agents in the current thread tree.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "collaboration.send_message": {
+   "capability": "Sends a message to an existing agent.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "collaboration.spawn_agent": {
+   "capability": "Creates a sub-agent to perform a task.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "collaboration.wait_agent": {
+   "capability": "Waits for agent updates or new user input.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "functions.exec": {
+   "capability": "Runs JavaScript that can invoke registered tools. Its embedded declarations include exec_command and write_stdin for shell and update_plan, but also ungranted apply_patch, MCP resource readers and clock__curr_time. It is not a shell-only alias.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "functions.request_user_input_async": {
+   "capability": "Posts questions during work and accepts an asynchronous user reply; the role does not grant this capability.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  },
+  "functions.wait": {
+   "capability": "Resumes or terminates a yielded JavaScript cell. Its cell_id schema belongs to Code Mode, not to the shell process session_id schema.",
+   "classification": "c: owner decision required; no working switch found",
+   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
+   "evidence": "codex-tool-investigation.json"
+  }
  },
  "problems": [
   "configuration_stop:codex_unexpected_tool"
- ],
- "schema": "veldo.offline-tool-observation/v1",
- "wire_api": "responses",
- "api_shape": "input additional_tools tools array"
+ ]
 }

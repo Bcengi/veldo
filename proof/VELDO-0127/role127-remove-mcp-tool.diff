@@ -1,7 +1,19 @@
 --- .veldo/control_agent_config_handoff.py
-+++ mutant/.veldo/control_agent_config_handoff.py
-@@ -224,0 +225 @@
++++ .veldo/control_agent_config_handoff.py
+@@ -225,6 +225,7 @@
+ def claude(extra, capability, inventory, config):
+     revision = capability['revision']
+     wanted = expected(capability, inventory)
 +    wanted['tools'] = [n for n in wanted['tools'] if n != 'mcp__jira__jira_search']
-@@ -248 +249 @@
+     extra['expected'] = wanted
+     if SETTINGS_FILE not in extra['files']:
+         raise Refused('missing_evidence:engine_settings')
+@@ -248,7 +249,7 @@
+     if revision['settings'].get('model'):
+         extra['argv'] += [OPTION + 'model', revision['settings']['model']]
+     # MCP tools stay server-prefixed. Deny unselected tools, including a listed server's other tools.
 -    denied = ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]
 +    denied = ['mcp__jira__jira_search'] + ['mcp__%s__%s' % (s, t) for s, e in inventory.items() for t in e['offered'] if t not in e['tools']]
+     for index, arg in enumerate(extra['argv']):
+         if arg.startswith(OPTION + 'disallowedTools=') and denied:
+             extra['argv'][index] += (',' if not arg.endswith('=') else '') + ','.join(sorted(denied))

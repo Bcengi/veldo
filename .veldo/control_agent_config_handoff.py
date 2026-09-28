@@ -14,6 +14,9 @@ _spec = spec_from_file_location('handoff_config', Path(__file__).with_name('cont
 C = module_from_spec(_spec)
 _spec.loader.exec_module(C)
 Refused = C.Refused
+_wire_spec = spec_from_file_location('handoff_codex', Path(__file__).with_name('control_engine_codex.py'))
+X = module_from_spec(_wire_spec)
+_wire_spec.loader.exec_module(X)
 OPTION = '-' * 2
 CODEX_NATIVE = {'shell': 'shell_tool', 'apply_patch': 'apply_patch_freeform',
                 'view_image': 'view_image', 'multi_agent': 'multi_agent'}
@@ -310,8 +313,8 @@ def codex_tool_difference(body, wanted):
     """Exact wire names, with only the qualified shell family and MCP namespace spelling expanded."""
     expected_names = []
     for name in wanted['tools']:
-        if name == 'shell':
-            expected_names.extend(['exec_command', 'write_stdin'])
+        if name in X.NATIVE_TOOL_MAPPING:
+            expected_names.extend(X.NATIVE_TOOL_MAPPING[name])
         elif name.startswith('mcp__'):
             server, tool = name[5:].split('__', 1)
             expected_names.append('mcp__' + server + '.' + tool)

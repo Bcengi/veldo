@@ -135,7 +135,10 @@ if __name__ == '__main__':
     H.codex(cfg, capability, {'jira':{'tools':['jira_search']}}, Path('/unused'))
     result = capture(binary, cfg)
     result['expected'] = run['expected']
-    result['production'] = load('capture_evidence', ROOT / 'proof/VELDO-0127/evidence.py').production(ROOT)
+    evidence = load('capture_evidence', ROOT / 'proof/VELDO-0127/evidence.py')
+    result['production'] = evidence.production(ROOT)
+    result['observations'] = [evidence.wire_observation(r['body'], run['expected'], H) for r in result['requests']]
+    result['owner_decisions'] = json.loads((ROOT / 'proof/VELDO-0127/codex-owner-decisions.json').read_text())
     result['problems'] = [H.codex_tool_difference(r['body'], run['expected']) for r in result['requests']]
     result['problems'] = [p for p in result['problems'] if p]
     (ROOT / 'proof/VELDO-0127/codex-loopback.json').write_text(json.dumps(result, indent=1) + '\n')

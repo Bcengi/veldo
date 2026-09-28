@@ -421,6 +421,9 @@ FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')
 ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
+# Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
+NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan']}
+
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
 STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
@@ -499,6 +502,7 @@ def qualification(executable, flags=FLAGS):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
+            'native_tool_mapping': NATIVE_TOOL_MAPPING,
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',

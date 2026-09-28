@@ -179,8 +179,16 @@ if engine == 'claude':
     else: sys.exit(0)
 else:
     own['configuration'] = config
+    native = (['exec_command', 'write_stdin'] if config.get('features', {}).get('shell_tool') else [])
+    if config.get('tools', {}).get('update_plan', {}).get('enabled'): native.append('update_plan')
+    own['wire'] = {'tools': [{'type':'function', 'name':n, 'parameters':{}} for n in native]}
+
     own['mcp_tools'] = {n: [t for t in server_tools(e) if t in e.get('enabled_tools',[])]
                        for n,e in config.get('mcp_servers',{}).items()}
+    (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
+    own['wire']['tools'] += [{'type':'namespace', 'name':'mcp__' + n,
+                              'tools':[{'type':'function', 'name':t, 'parameters':{}} for t in ts]}
+                             for n,ts in own['mcp_tools'].items()]
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     packet = json.loads(sys.stdin.read())
     if Path('.git').exists():
@@ -315,7 +323,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     check('review/skill-commit', 'a commit of everything includes delivery and no staged skill link',
                           'delivered.txt' in own.get('committed_paths', [])
                           and not any(p.startswith('.agents/skills/') for p in own.get('committed_paths', [])))
-                    wire = json.loads((TREE / 'proof/VELDO-0127/request-fixture.json').read_text())
+                    wire = own.get('wire', {'tools':[]})
                     wanted = L.HANDOFF.expected({'revision':bound, 'skills':[]}, {'jira':{'tools':['jira_search']}})
                     compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
                     good = compare(wire, wanted) if compare else 'absent comparison'
@@ -325,6 +333,20 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           compare is not None and good is None
                           and compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool'
                           and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
+                    evidence = load('v127_wire_evidence', EVIDENCE_PATH)
+                    observe = getattr(evidence, 'wire_observation', None)
+                    observed = observe(wire, wanted, L.HANDOFF) if observe else {}
+                    check('review/codex-tools', 'qualification writer and comparator share exact shell and plan vocabulary',
+                          observed.get('native_tool_mapping') == {'shell':['exec_command','write_stdin'], 'update_plan':['update_plan']}
+                          and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
+                          and observed.get('missing') == [] and observed.get('unexpected') == [])
+                    capture = json.loads((TREE / 'proof/VELDO-0127/codex-loopback.json').read_text())
+                    captured_wire = capture['requests'][0]['body']
+                    facts = observe(captured_wire, wanted, L.HANDOFF) if observe else {}
+                    owners = json.loads((TREE / 'proof/VELDO-0127/codex-owner-decisions.json').read_text())
+                    check('review/codex-tools', 'real Code Mode extras stay named and never hide missing grants',
+                          facts.get('unexpected') == sorted(owners) and facts.get('missing') == observed.get('expected')
+                          and facts.get('stop') == 'configuration_stop:codex_unexpected_tool')
                     cfg = own.get('configuration', {})
                     check('handoff/codex', 'generated settings, native features and filtered MCP list match',
                           own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'fixture-model'

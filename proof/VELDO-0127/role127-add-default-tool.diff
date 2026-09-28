@@ -1,5 +1,11 @@
 --- .veldo/control_agent_config_handoff.py
-+++ mutant/.veldo/control_agent_config_handoff.py
-@@ -204 +204 @@
++++ .veldo/control_agent_config_handoff.py
+@@ -204,7 +204,7 @@
+                 return 'configuration_stop:mcp_servers'
+             value = [v['name'] for v in value]
+         if field == 'tools' and set(value) - set(wanted[field]):
 -            return 'configuration_stop:unexpected_tool'
 +            return None
+         if sorted(value) != sorted(wanted[field]):
+             return 'configuration_stop:' + field
+     if wanted.get('model') is not None and event.get('model') != wanted['model']:

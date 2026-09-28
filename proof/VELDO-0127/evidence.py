@@ -27,6 +27,24 @@ def debug_problems(run, control):
     return bad
 
 
+def wire_observation(body, expected, handoff):
+    """Keep every mismatch by name. Nested declarations do not establish wire equality."""
+    mapping = handoff.X.NATIVE_TOOL_MAPPING
+    wanted = []
+    for name in expected['tools']:
+        if name.startswith('mcp__'):
+            server, tool = name[5:].split('__', 1)
+            wanted.append('mcp__' + server + '.' + tool)
+        else:
+            wanted.extend(mapping.get(name, [name]))
+    tools = handoff.codex_request_tools(body)
+    actual = handoff.codex_tool_names(tools)
+    return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
+            'unexpected': sorted(set(actual) - set(wanted)),
+            'missing': sorted(set(wanted) - set(actual)),
+            'stop': handoff.codex_tool_difference(body, expected)}
+
+
 def problems(root, engine, record, handoff):
     bad = []
     if (record.get('schema') != 'veldo.role-live/v1' or record.get('engine') != engine
@@ -66,7 +84,9 @@ def problems(root, engine, record, handoff):
             for request in requests:
                 difference = handoff.codex_tool_difference(request.get('body') or {}, expected)
                 if difference:
-                    bad.append(difference)
+                    observation = wire_observation(request.get('body') or {}, expected, handoff)
+                    bad.append(difference + ': unexpected=' + ','.join(observation['unexpected'])
+                               + '; missing=' + ','.join(observation['missing']))
             tables = run.get('configuration', {}).get('mcp_servers', {})
             listing = run.get('listing') or []
             if sorted(tables) != sorted(expected.get('mcp_servers', [])) or sorted(i['name'] for i in listing) != sorted(tables):
