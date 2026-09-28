@@ -23,7 +23,7 @@ def _v127_suite():
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
-            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources')
+            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -199,7 +199,8 @@ else:
     nested = list(native)
     if entry.get('apply_patch_tool_type', 'freeform'):
         nested.append('apply_patch')
-    nested += ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+    if config.get('mcp_servers'):
+        nested += ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
     if entry.get('supports_search_tool', True):
         nested.append('tool_search')
     else:
@@ -370,22 +371,30 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     observed, obs_error = attempt(lambda: observe(wire, wanted, L.HANDOFF))
                     observed = observed or {}
                     resources = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
-                    granted = dict(wanted, tools=wanted['tools'] + resources)
+                    granted = wanted
                     good = compare(wire, granted) if compare else 'absent comparison'
                     extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted'})
                     missing = {'tools':[{'type':'function','name':'exec_command'}, {'type':'function','name':'update_plan'}]}
                     check('review/codex-tools', 'both directions compare effective definitions with mapped grants',
                           compare is not None and good is None
                           and compare(extra, granted) == 'configuration_stop:codex_unexpected_tool'
+                          and observe(extra, wanted, L.HANDOFF).get('unexpected') == ['ungranted']
                           and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
                     check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
                           observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
                           and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
-                          and observed.get('missing') == [] and observed.get('unexpected') == resources
-                          and observe(missing, wanted, L.HANDOFF).get('missing') == ['mcp__jira__jira_search', 'write_stdin'])
-                    check('wire/resources', 'ungranted readers remain visible and fail closed',
-                          observed.get('unexpected') == resources and observed.get('stop') == 'configuration_stop:codex_unexpected_tool'
-                          and good is None)
+                          and observed.get('missing') == [] and observed.get('unexpected') == []
+                          and observe(missing, wanted, L.HANDOFF).get('missing') == sorted(resources + ['mcp__jira__jira_search', 'write_stdin']))
+                    check('wire/resources', 'selected server grants exactly its three resource readers',
+                          observed.get('unexpected') == [] and observed.get('missing') == []
+                          and observed.get('stop') is None and good is None
+                          and set(resources) <= set(observed.get('actual', [])))
+                    for resource in resources:
+                        reduced = copy.deepcopy(wire)
+                        reduced['tools'] = [t for t in reduced['tools']
+                            if t.get('function', t).get('name') != resource]
+                        check('wire/resources', resource + ': missing reader fails equality',
+                              compare(reduced, wanted) == 'configuration_stop:codex_missing_tool')
                     aliases = copy.deepcopy(wire)
                     for tool in aliases['tools']:
                         if 'function' in tool:
@@ -404,12 +413,41 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           'project role instruction' in cfg.get('developer_instructions',''))
             for mode, model in [('code', 'gpt-6-astra'), ('direct', 'gpt-5.5')]:
                 body = json.loads((TREE / ('proof/VELDO-0127/request-' + mode + '.json')).read_text())
-                wanted = {'model':model, 'tools':['shell','update_plan','mcp__jira__jira_search']}
+                wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
+                                            {'jira':{'tools':['jira_search']}})
                 facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
-                check('wire/resources', mode + ': retained binary request exposes only configured-server readers beyond grants',
-                      facts is not None and facts.get('missing') == [] and facts.get('unexpected') == resources
-                      and facts.get('stop') == 'configuration_stop:codex_unexpected_tool')
+                check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
+                      facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
             qualified = json.loads((base / 'codex-qualification.json').read_text())
+            check('wire/no-server', 'qualification records the conditional MCP server grant',
+                  qualified.get('native_tool_mapping', {}).get('mcp_server') == resources)
+            for model in ('gpt-6-astra', 'gpt-5.5'):
+                definition = f.role('codex', 'no-server-' + model)
+                definition['settings']['model'] = model
+                definition['mcp'] = []
+                f.save(definition)
+                _, rec, own, _ = run('codex', 'no-server-' + model, {'role':definition['role']})
+                revision = rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
+                wanted = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
+                wire = own.get('wire', {})
+                observed = evidence.wire_observation(wire, wanted, L.HANDOFF)
+                check('wire/no-server', model + ': accepted empty server selection exposes no resource readers',
+                      f.D.completed(rec) and own.get('configuration', {}).get('mcp_servers', {}) == {}
+                      and observed['actual'] == observed['expected'] and observed['stop'] is None
+                      and not set(resources) & set(observed['actual']))
+                captured = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-none.json')).read_text())
+                observations = [evidence.wire_observation(r['body'], wanted, L.HANDOFF)
+                                for r in captured.get('requests', [])]
+                check('wire/no-server', model + ': real loopback capture confirms absence without a server',
+                      captured.get('returncode') == 0 and bool(observations)
+                      and captured.get('configuration', {}).get('mcp_servers') == {}
+                      and all(o['actual'] == o['expected'] and not set(resources) & set(o['actual'])
+                              and o['stop'] is None for o in observations))
+                for resource in resources:
+                    extra = copy.deepcopy(wire)
+                    extra.setdefault('tools', []).append({'type':'function', 'name':resource})
+                    check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
+                          compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
             modes = json.loads((TREE / 'proof/VELDO-0127/codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
             check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
                   bool(modes) and qualified.get('model_tool_modes') == modes)
@@ -441,10 +479,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                                           {'jira':{'tools':['jira_search']}})
                 obs, _ = attempt(lambda: evidence.wire_observation(own.get('wire', {}), wanted, L.HANDOFF))
                 check('wire/normalization', model + ': runner and nested declarations expose every grant',
-                      obs is not None and obs.get('missing') == [] and obs.get('unexpected') == resources
+                      obs is not None and obs.get('missing') == [] and obs.get('unexpected') == []
                       and set(obs.get('actual', [])) == {'exec','wait','exec_command','write_stdin','update_plan','mcp__jira__jira_search', *resources})
                 if model == 'gpt-6-astra':
-                    granted_wire = dict(wanted, tools=wanted['tools'] + resources)
+                    granted_wire = wanted
                     check('review/codex-tools', 'Code Mode equality includes runner and nested declarations',
                           compare(own.get('wire', {}), granted_wire) is None)
                     bound_revision = dict(native_tools=['shell','update_plan'], settings={'model':model})

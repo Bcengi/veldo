@@ -1066,6 +1066,11 @@
    "clock__curr_time",
    "clock.sleep"
   ],
+  "mcp_server": [
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "read_mcp_resource"
+  ],
   "multi_agent": [
    "collaboration.followup_task",
    "collaboration.interrupt_agent",

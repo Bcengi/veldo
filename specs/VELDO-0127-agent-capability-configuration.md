@@ -70,7 +70,11 @@ acceptance_criteria:
       and completeness: For actual Claude Code and Codex workers on Linux (the Mac handoff is
       VELDO-0147), enumerate
       effective engine-native and MCP capabilities at launch and compare set equality and settings
-      with the accepted role revision in both directions. Include a configured Jira-capable MCP tool
+      with the accepted role revision in both directions. Selecting at least one MCP server grants
+      exactly list_mcp_resources, list_mcp_resource_templates and read_mcp_resource on Codex 0.154;
+      selecting no MCP server grants none of them, and their presence fails closed. Remove a reader
+      with a server selected or expect readers with no server selected: the corresponding equality
+      row must fail. Include a configured Jira-capable MCP tool
       as an ordinary tool, with no special factory channel. Verify each server authenticates
       using exactly its configured credential delivery, including the Atlassian catalog server's
       keystore credential, without gaining another server's credentials.
@@ -334,3 +338,12 @@ The resource readers remain a named fail-closed case (c) pending owner decision;
 they reach only resources of configured role MCP servers. The lead capture uses
 gpt-6-astra with this generated catalog. Earlier Code Mode case (c) entries are history.
 The existing footprint covers this repair; no paths were added.
+
+2026-09-28, owner Telegram 29400 (asked) and 29401 ("Ok"): reading an MCP server's
+resources is part of granting that server. AC2 expects exactly list_mcp_resources,
+list_mcp_resource_templates and read_mcp_resource when the revision selects any MCP
+server, and none when it selects no server. Missing readers in the first case and
+present readers in the second fail exact equality. The native mapping and qualification
+record retain this rule; direct and Code Mode loopback captures qualify both cases.
+The prior resource-reader case (c) table becomes history. The existing footprint
+covers the production mapping, comparison, suite and proof files; no paths added.

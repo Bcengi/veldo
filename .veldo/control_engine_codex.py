@@ -428,6 +428,9 @@ NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': 
                                                'send_message', 'spawn_agent', 'wait_agent')],
     'request_user_input_async': ['request_user_input_async'], 'clock': ['clock__curr_time', 'clock.sleep']}
 NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
+# Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
+# This mapping key is conditional on the selected server set, not a native role tool.
+NATIVE_TOOL_MAPPING['mcp_server'] = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
 # Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
 MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
 

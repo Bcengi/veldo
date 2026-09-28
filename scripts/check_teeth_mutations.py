@@ -8949,6 +8949,12 @@ def cases():
              ['refusal/env-collision'])
     # VELDO-0127 catalog controls and effective Code Mode definitions.
     catalog_suite = '86_veldo_0127_agent_configuration.py'
+    add(127, 'role127-resource-grant-omitted', catalog_suite, 'control_agent_config_handoff.py',
+        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
+        "    if False:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/resources'])
+    add(127, 'role127-resource-grant-without-server', catalog_suite, 'control_agent_config_handoff.py',
+        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
+        "    if True:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/no-server'])
     add(127, 'role127-catalog-subagents-retained', catalog_suite, 'control_agent_config_handoff.py',
         "        selected.pop('multi_agent_version', None)", "        pass", ['catalog/fields'])
     add(127, 'role127-catalog-patch-retained', catalog_suite, 'control_agent_config_handoff.py',

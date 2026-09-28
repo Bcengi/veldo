@@ -1137,7 +1137,7 @@
    "requires": [
     "86_veldo_0127_agent_configuration"
    ],
-   "regions": "Immutable accepted roles, bundled catalog overrides for unchanged Codex models, exact direct and Code Mode effective tool comparison, bound dispatch revisions, launch capability equality and pending live captures.",
+   "regions": "Immutable accepted roles, bundled catalog overrides for unchanged Codex models, exact direct and Code Mode effective tool comparison including resource readers only with selected MCP servers, bound dispatch revisions, launch capability equality and pending live captures.",
    "requires_note": "Shared ROOT and expect only. Production signed store, role and MCP catalog writers, credentials, Runner, receiver and both engine adapters. Generated VELDO-0172 fake engines and temporary profiles."
   }
  ]

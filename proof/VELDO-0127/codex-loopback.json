@@ -1,7 +1,7 @@
 {
  "returncode": 0,
- "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
- "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-vd30ykw3\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-vd30ykw3/profile\"))\nReading prompt from stdin...\n",
+ "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0e9ba-4e4f-7f03-9319-688f75b4764d\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n",
+ "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-pb2_2k89\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-pb2_2k89/profile\"))\nReading prompt from stdin...\n",
  "schema": "veldo.offline-tool-observation/v1",
  "requests": [
   {
@@ -11,7 +11,7 @@
     "input": [
      {
       "type": "additional_tools",
-      "id": "at_be79ffc6-2d41-5407-b34b-0f07060cd043",
+      "id": "at_c22f4b99-86c7-531e-aea8-22bea6c9db41",
       "role": "developer",
       "tools": [
        {
@@ -22,7 +22,7 @@
          {
           "type": "custom",
           "name": "exec",
-          "description": "Run JavaScript code to orchestrate/compose tool calls\n- Evaluates the provided JavaScript code in a fresh V8 isolate as an async module.\n- All nested tools are available on the global `tools` object, for example `await tools.exec_command(...)`. Tool names are exposed as normalized JavaScript identifiers, for example `await tools.mcp__ologs__get_profile(...)`.\n- Nested tool methods take either a string or an object as their input argument.\n- Nested tools return either an object or a string, based on the description.\n- Runs raw JavaScript -- no Node, no file system, no network access, no console.\n- Accepts raw JavaScript source text, not JSON, quoted strings, or markdown code fences.\n- You may optionally start the tool input with a first-line pragma like `// @exec: {\"yield_time_ms\": 10000, \"max_output_tokens\": 1000}`.\n- `yield_time_ms` asks `exec` to yield early if the script is still running. Defaults to 30000 ms.\n- `max_output_tokens` sets the token budget for direct `exec` results. Defaults to 10000 tokens.\n- When the JS code is fully evaluated, the isolate's lifetime ends and unawaited promises are silently discarded.\n\n- Global helpers:\n- `exit()`: Immediately ends the current script successfully (like an early return from the top level).\n- `text(value: string | number | boolean | undefined | null)`: Appends a text item. Non-string values are stringified with `JSON.stringify(...)` when possible.\n- `image(imageUrlOrItem: string | { image_url: string; detail?: \"auto\" | \"low\" | \"high\" | \"original\" | null } | ImageContent, detail?: \"auto\" | \"low\" | \"high\" | \"original\" | null)`: Appends an image item. `image_url` should be a base64-encoded `data:` URL. To forward an MCP tool image, pass an individual `ImageContent` block from `result.content`, for example `image(result.content[0])`. MCP image blocks may request detail with `_meta: { \"codex/imageDetail\": \"original\" }`. When provided, the second `detail` argument overrides any detail embedded in the first argument.\n- `audio(audioUrlOrItem: string | { audio_url: string } | AudioContent)`: Appends an audio item. `audio_url` should be a base64-encoded `data:` URL. To forward an MCP tool audio block, pass an individual `AudioContent` block from `result.content`, for example `audio(result.content[0])`.\n- `generatedImage(result: { image_url: string; output_hint?: string })`: Appends an image-generation result and its optional output hint. HTTP(S) URLs are not supported.\n- `store(key: string, value: any)`: stores a serializable value under a string key for later `exec` calls in the same session.\n- `load(key: string)`: returns the stored value for a string key, or `undefined` if it is missing.\n- `notify(value: string | number | boolean | undefined | null)`: immediately injects an extra `custom_tool_call_output` for the current `exec` call. Values are stringified like `text(...)`.\n- `setTimeout(callback: () => void, delayMs?: number)`: schedules a callback to run later and returns a timeout id. Pending timeouts do not keep `exec` alive by themselves; await an explicit promise if you need to wait for one.\n- `clearTimeout(timeoutId?: number)`: cancels a timeout created by `setTimeout`.\n- `ALL_TOOLS`: metadata for the enabled nested tools as `{ name, description }` entries.\n- `yield_control()`: yields the accumulated output to the model immediately while the script keeps running.\n\nSome deferred nested tools may be omitted from this description. They are still available on the global `tools` object and listed in `ALL_TOOLS`.\nTo find one, filter `ALL_TOOLS` by `name` and `description`.\n\nShared MCP Types:\n```ts\ntype Role = \"user\" | \"assistant\";\ntype MetaObject = Record<string, unknown>;\ntype Annotations = {\n  audience?: Role[];\n  priority?: number;\n  lastModified?: string;\n};\ntype Icon = {\n  src: string;\n  mimeType?: string;\n  sizes?: string[];\n  theme?: \"light\" | \"dark\";\n};\ntype TextResourceContents = {\n  uri: string;\n  mimeType?: string;\n  _meta?: MetaObject;\n  text: string;\n};\ntype BlobResourceContents = {\n  uri: string;\n  mimeType?: string;\n  _meta?: MetaObject;\n  blob: string;\n};\ntype TextContent = {\n  type: \"text\";\n  text: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ImageContent = {\n  type: \"image\";\n  data: string;\n  mimeType: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype AudioContent = {\n  type: \"audio\";\n  data: string;\n  mimeType: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ResourceLink = {\n  icons?: Icon[];\n  name: string;\n  title?: string;\n  uri: string;\n  description?: string;\n  mimeType?: string;\n  annotations?: Annotations;\n  size?: number;\n  _meta?: MetaObject;\n  type: \"resource_link\";\n};\ntype EmbeddedResource = {\n  type: \"resource\";\n  resource: TextResourceContents | BlobResourceContents;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ContentBlock =\n  | TextContent\n  | ImageContent\n  | AudioContent\n  | ResourceLink\n  | EmbeddedResource;\ntype CallToolResult<TStructured = { [key: string]: unknown }> = {\n  _meta?: MetaObject;\n  content: ContentBlock[];\n  isError?: boolean;\n  structuredContent?: TStructured;\n  [key: string]: unknown;\n};\n```\n\n### `apply_patch`\nThe `apply_patch` tool can be used to edit files. This is a FREEFORM tool, so do not wrap the patch in JSON.\n\nexec tool declaration:\n```ts\ndeclare const tools: { apply_patch(input: string): Promise<unknown>; };\n```\n\n### `exec_command`\nRuns a command in a PTY, returning output or a session ID for ongoing interaction.\n\nexec tool declaration:\n```ts\ndeclare const tools: { exec_command(args: {\n  // Shell command to execute.\n  cmd: string;\n  // User-facing approval question for `require_escalated`; omit otherwise.\n  justification?: string;\n  // True runs the shell with -l/-i semantics; false disables them. Defaults to true.\n  login?: boolean;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Reusable approval prefix for `cmd`, only with `sandbox_permissions: \"require_escalated\"`; for example [\"git\", \"pull\"].\n  prefix_rule?: Array<string>;\n  // Per-command sandbox override. Defaults to `use_default`; use `require_escalated` for unsandboxed execution.\n  sandbox_permissions?: \"use_default\" | \"require_escalated\";\n  // Shell binary to launch. Defaults to the user's default shell.\n  shell?: string;\n  // True allocates a PTY for the command; false or omitted uses plain pipes.\n  tty?: boolean;\n  // Working directory for the command. Defaults to the turn cwd.\n  workdir?: string;\n  // Wait before yielding output. Defaults to 10000 ms; effective range is 250-30000 ms.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```\n\n### `list_mcp_resource_templates`\nLists resource templates provided by MCP servers. Parameterized resource templates allow servers to share data that takes parameters and provides context to language models, such as files, database schemas, or application-specific information. Prefer resource templates over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resource_templates(args: {\n  // Opaque cursor from a previous list_mcp_resource_templates call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resource templates from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```\n\n### `list_mcp_resources`\nLists resources provided by MCP servers. Resources allow servers to share data that provides context to language models, such as files, database schemas, or application-specific information. Prefer resources over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resources(args: {\n  // Opaque cursor from a previous list_mcp_resources call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resources from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```\n\n### `read_mcp_resource`\nRead a specific resource from an MCP server given the server name and resource URI.\n\nexec tool declaration:\n```ts\ndeclare const tools: { read_mcp_resource(args: {\n  // MCP server name exactly as configured. Must match the 'server' field returned by list_mcp_resources.\n  server: string;\n  // Resource URI to read. Must be one of the URIs returned by list_mcp_resources.\n  uri: string;\n}): Promise<unknown>; };\n```\n\n### `update_plan`\nUpdates the task plan.\nProvide an optional explanation and a list of plan items, each with a step and status.\nAt most one step can be in_progress at a time.\n\n\nexec tool declaration:\n```ts\ndeclare const tools: { update_plan(args: {\n  // Optional explanation for this plan update.\n  explanation?: string;\n  // The list of steps\n  plan: Array<{\n  // Step status.\n  status: \"pending\" | \"in_progress\" | \"completed\";\n  // Task step text.\n  step: string;\n}>;\n}): Promise<unknown>; };\n```\n\n### `write_stdin`\nWrites characters to an existing unified exec session and returns recent output.\n\nexec tool declaration:\n```ts\ndeclare const tools: { write_stdin(args: {\n  // Bytes to write to stdin. Defaults to empty, which polls without writing.\n  chars?: string;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Identifier of the running unified exec session.\n  session_id: number;\n  // Wait before yielding output. Non-empty writes default to 250 ms and cap at 30000 ms; empty polls wait 5000-300000 ms by default.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```\n\n## clock\nTools for reading and waiting on time.\n\n### `clock__curr_time`\nReturn the current time in UTC.\n\nexec tool declaration:\n```ts\ndeclare const tools: { clock__curr_time(args: {}): Promise<{\n  // Current UTC time formatted as YYYY-MM-DD HH:MM:SS UTC.\n  current_time: string;\n}>; };\n```",
+          "description": "Run JavaScript code to orchestrate/compose tool calls\n- Evaluates the provided JavaScript code in a fresh V8 isolate as an async module.\n- All nested tools are available on the global `tools` object, for example `await tools.exec_command(...)`. Tool names are exposed as normalized JavaScript identifiers, for example `await tools.mcp__ologs__get_profile(...)`.\n- Nested tool methods take either a string or an object as their input argument.\n- Nested tools return either an object or a string, based on the description.\n- Runs raw JavaScript -- no Node, no file system, no network access, no console.\n- Accepts raw JavaScript source text, not JSON, quoted strings, or markdown code fences.\n- You may optionally start the tool input with a first-line pragma like `// @exec: {\"yield_time_ms\": 10000, \"max_output_tokens\": 1000}`.\n- `yield_time_ms` asks `exec` to yield early if the script is still running. Defaults to 30000 ms.\n- `max_output_tokens` sets the token budget for direct `exec` results. Defaults to 10000 tokens.\n- When the JS code is fully evaluated, the isolate's lifetime ends and unawaited promises are silently discarded.\n\n- Global helpers:\n- `exit()`: Immediately ends the current script successfully (like an early return from the top level).\n- `text(value: string | number | boolean | undefined | null)`: Appends a text item. Non-string values are stringified with `JSON.stringify(...)` when possible.\n- `image(imageUrlOrItem: string | { image_url: string; detail?: \"auto\" | \"low\" | \"high\" | \"original\" | null } | ImageContent, detail?: \"auto\" | \"low\" | \"high\" | \"original\" | null)`: Appends an image item. `image_url` should be a base64-encoded `data:` URL. To forward an MCP tool image, pass an individual `ImageContent` block from `result.content`, for example `image(result.content[0])`. MCP image blocks may request detail with `_meta: { \"codex/imageDetail\": \"original\" }`. When provided, the second `detail` argument overrides any detail embedded in the first argument.\n- `audio(audioUrlOrItem: string | { audio_url: string } | AudioContent)`: Appends an audio item. `audio_url` should be a base64-encoded `data:` URL. To forward an MCP tool audio block, pass an individual `AudioContent` block from `result.content`, for example `audio(result.content[0])`.\n- `generatedImage(result: { image_url: string; output_hint?: string })`: Appends an image-generation result and its optional output hint. HTTP(S) URLs are not supported.\n- `store(key: string, value: any)`: stores a serializable value under a string key for later `exec` calls in the same session.\n- `load(key: string)`: returns the stored value for a string key, or `undefined` if it is missing.\n- `notify(value: string | number | boolean | undefined | null)`: immediately injects an extra `custom_tool_call_output` for the current `exec` call. Values are stringified like `text(...)`.\n- `setTimeout(callback: () => void, delayMs?: number)`: schedules a callback to run later and returns a timeout id. Pending timeouts do not keep `exec` alive by themselves; await an explicit promise if you need to wait for one.\n- `clearTimeout(timeoutId?: number)`: cancels a timeout created by `setTimeout`.\n- `ALL_TOOLS`: metadata for the enabled nested tools as `{ name, description }` entries.\n- `yield_control()`: yields the accumulated output to the model immediately while the script keeps running.\n\nShared MCP Types:\n```ts\ntype Role = \"user\" | \"assistant\";\ntype MetaObject = Record<string, unknown>;\ntype Annotations = {\n  audience?: Role[];\n  priority?: number;\n  lastModified?: string;\n};\ntype Icon = {\n  src: string;\n  mimeType?: string;\n  sizes?: string[];\n  theme?: \"light\" | \"dark\";\n};\ntype TextResourceContents = {\n  uri: string;\n  mimeType?: string;\n  _meta?: MetaObject;\n  text: string;\n};\ntype BlobResourceContents = {\n  uri: string;\n  mimeType?: string;\n  _meta?: MetaObject;\n  blob: string;\n};\ntype TextContent = {\n  type: \"text\";\n  text: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ImageContent = {\n  type: \"image\";\n  data: string;\n  mimeType: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype AudioContent = {\n  type: \"audio\";\n  data: string;\n  mimeType: string;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ResourceLink = {\n  icons?: Icon[];\n  name: string;\n  title?: string;\n  uri: string;\n  description?: string;\n  mimeType?: string;\n  annotations?: Annotations;\n  size?: number;\n  _meta?: MetaObject;\n  type: \"resource_link\";\n};\ntype EmbeddedResource = {\n  type: \"resource\";\n  resource: TextResourceContents | BlobResourceContents;\n  annotations?: Annotations;\n  _meta?: MetaObject;\n};\ntype ContentBlock =\n  | TextContent\n  | ImageContent\n  | AudioContent\n  | ResourceLink\n  | EmbeddedResource;\ntype CallToolResult<TStructured = { [key: string]: unknown }> = {\n  _meta?: MetaObject;\n  content: ContentBlock[];\n  isError?: boolean;\n  structuredContent?: TStructured;\n  [key: string]: unknown;\n};\n```\n\n### `exec_command`\nRuns a command in a PTY, returning output or a session ID for ongoing interaction.\n\nexec tool declaration:\n```ts\ndeclare const tools: { exec_command(args: {\n  // Shell command to execute.\n  cmd: string;\n  // User-facing approval question for `require_escalated`; omit otherwise.\n  justification?: string;\n  // True runs the shell with -l/-i semantics; false disables them. Defaults to true.\n  login?: boolean;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Reusable approval prefix for `cmd`, only with `sandbox_permissions: \"require_escalated\"`; for example [\"git\", \"pull\"].\n  prefix_rule?: Array<string>;\n  // Per-command sandbox override. Defaults to `use_default`; use `require_escalated` for unsandboxed execution.\n  sandbox_permissions?: \"use_default\" | \"require_escalated\";\n  // Shell binary to launch. Defaults to the user's default shell.\n  shell?: string;\n  // True allocates a PTY for the command; false or omitted uses plain pipes.\n  tty?: boolean;\n  // Working directory for the command. Defaults to the turn cwd.\n  workdir?: string;\n  // Wait before yielding output. Defaults to 10000 ms; effective range is 250-30000 ms.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```\n\n### `list_mcp_resource_templates`\nLists resource templates provided by MCP servers. Parameterized resource templates allow servers to share data that takes parameters and provides context to language models, such as files, database schemas, or application-specific information. Prefer resource templates over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resource_templates(args: {\n  // Opaque cursor from a previous list_mcp_resource_templates call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resource templates from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```\n\n### `list_mcp_resources`\nLists resources provided by MCP servers. Resources allow servers to share data that provides context to language models, such as files, database schemas, or application-specific information. Prefer resources over web search when possible.\n\nexec tool declaration:\n```ts\ndeclare const tools: { list_mcp_resources(args: {\n  // Opaque cursor from a previous list_mcp_resources call; omit for the first page.\n  cursor?: string;\n  // MCP server name. Omit to list resources from every configured server.\n  server?: string;\n}): Promise<unknown>; };\n```\n\n### `read_mcp_resource`\nRead a specific resource from an MCP server given the server name and resource URI.\n\nexec tool declaration:\n```ts\ndeclare const tools: { read_mcp_resource(args: {\n  // MCP server name exactly as configured. Must match the 'server' field returned by list_mcp_resources.\n  server: string;\n  // Resource URI to read. Must be one of the URIs returned by list_mcp_resources.\n  uri: string;\n}): Promise<unknown>; };\n```\n\n### `update_plan`\nUpdates the task plan.\nProvide an optional explanation and a list of plan items, each with a step and status.\nAt most one step can be in_progress at a time.\n\n\nexec tool declaration:\n```ts\ndeclare const tools: { update_plan(args: {\n  // Optional explanation for this plan update.\n  explanation?: string;\n  // The list of steps\n  plan: Array<{\n  // Step status.\n  status: \"pending\" | \"in_progress\" | \"completed\";\n  // Task step text.\n  step: string;\n}>;\n}): Promise<unknown>; };\n```\n\n### `write_stdin`\nWrites characters to an existing unified exec session and returns recent output.\n\nexec tool declaration:\n```ts\ndeclare const tools: { write_stdin(args: {\n  // Bytes to write to stdin. Defaults to empty, which polls without writing.\n  chars?: string;\n  // Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy.\n  max_output_tokens?: number;\n  // Identifier of the running unified exec session.\n  session_id: number;\n  // Wait before yielding output. Non-empty writes default to 250 ms and cap at 30000 ms; empty polls wait 5000-300000 ms by default.\n  yield_time_ms?: number;\n}): Promise<{\n  // Chunk identifier included when the response reports one.\n  chunk_id?: string;\n  // Process exit code when the command finished during this call.\n  exit_code?: number;\n  // Approximate token count before output truncation.\n  original_token_count?: number;\n  // Command output text, possibly truncated.\n  output: string;\n  // Session identifier to pass to write_stdin when the process is still running.\n  session_id?: number;\n  // Elapsed wall time spent waiting for output in seconds.\n  wall_time_seconds: number;\n}>; };\n```\n\n### `mcp__jira__jira_search`\njira_search\n\nexec tool declaration:\n```ts\ndeclare const tools: { mcp__jira__jira_search(args: { [key: string]: unknown; }): Promise<CallToolResult>; };\n```",
           "format": {
            "type": "grammar",
            "syntax": "lark",
@@ -59,192 +59,6 @@
            ],
            "additionalProperties": false
           }
-         },
-         {
-          "type": "function",
-          "name": "request_user_input_async",
-          "description": "Ask the user one or more questions during ongoing work. Use this tool only to request missing information, preferences, constraints, clarification, or approval. The tool returns immediately without ending the turn or waiting for a reply; any reply arrives asynchronously as a new user message. Keep questions concise, self-contained, and easy to understand, using a level of detail appropriate to the user and task. The UI always allows a free-text answer, including when suggested options are provided. A preselected option is not submitted automatically.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "questions": {
-             "type": "array",
-             "description": "One or more self-contained questions to present together, in display order.",
-             "items": {
-              "type": "object",
-              "properties": {
-               "options": {
-                "type": "array",
-                "description": "Suggested answers, in display order. Put the recommended answer first; the first option is preselected by default. The user can select one option or enter a free-text answer. Do not include an Other option or a free-text placeholder; the UI provides free-text input automatically. Omit options for a free-text-only question.",
-                "items": {
-                 "type": "string"
-                },
-                "minItems": 1
-               },
-               "title": {
-                "type": "string",
-                "description": "The complete question shown to the user, including any context needed to answer it."
-               }
-              },
-              "required": [
-               "title"
-              ],
-              "additionalProperties": false
-             },
-             "minItems": 1
-            }
-           },
-           "required": [
-            "questions"
-           ],
-           "additionalProperties": false
-          }
-         }
-        ]
-       },
-       {
-        "type": "namespace",
-        "name": "collaboration",
-        "description": "Tools for spawning and managing sub-agents.",
-        "tools": [
-         {
-          "type": "function",
-          "name": "followup_task",
-          "description": "Send a follow-up task to an existing non-root target agent and trigger a turn if it is idle. If the target is already running, deliver the task promptly at message boundaries while sampling, or after the pending tool call completes.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "message": {
-             "type": "string",
-             "description": "Message text to send to the target agent.",
-             "encrypted": true
-            },
-            "target": {
-             "type": "string",
-             "description": "Agent id or canonical task name to send a follow-up task to (from spawn_agent)."
-            }
-           },
-           "required": [
-            "target",
-            "message"
-           ],
-           "additionalProperties": false
-          }
-         },
-         {
-          "type": "function",
-          "name": "interrupt_agent",
-          "description": "Interrupt an agent's current turn, if any, and return its previous status. The agent remains available for messages and follow-up tasks.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "target": {
-             "type": "string",
-             "description": "Agent id or canonical task name to interrupt (from spawn_agent)."
-            }
-           },
-           "required": [
-            "target"
-           ],
-           "additionalProperties": false
-          }
-         },
-         {
-          "type": "function",
-          "name": "list_agents",
-          "description": "List live agents in the current root thread tree. Optionally filter by task-path prefix.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "path_prefix": {
-             "type": "string",
-             "description": "Task-path prefix filter without a trailing slash. Omit to list all live agents."
-            }
-           },
-           "additionalProperties": false
-          }
-         },
-         {
-          "type": "function",
-          "name": "send_message",
-          "description": "Send a message to an existing agent. The message will be delivered promptly. Does not trigger a new turn.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "message": {
-             "type": "string",
-             "description": "Message text to queue on the target agent.",
-             "encrypted": true
-            },
-            "target": {
-             "type": "string",
-             "description": "Relative or canonical task name to message (from spawn_agent)."
-            }
-           },
-           "required": [
-            "target",
-            "message"
-           ],
-           "additionalProperties": false
-          }
-         },
-         {
-          "type": "function",
-          "name": "spawn_agent",
-          "description": "\n        Available model overrides (optional; inherited parent model is preferred):\n- `gpt-6-astra`: Our most capable model for complex, demanding work. Reasoning efforts: low (default), medium, high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-5.6-sol`: Latest frontier agentic coding model. Reasoning efforts: low (default), medium, high, xhigh, max, ultra. Service tiers: priority, ultrafast.\n- `gpt-5.6-terra`: Balanced agentic coding model for everyday work. Reasoning efforts: low, medium (default), high, xhigh, max, ultra. Service tiers: priority.\n- `gpt-5.6-luna`: Fast and affordable agentic coding model. Reasoning efforts: low, medium (default), high, xhigh, max. Service tiers: priority.\n- `gpt-5.5`: Frontier model for complex coding, research, and real-world work. Reasoning efforts: low, medium (default), high, xhigh. Service tiers: priority.\n        Spawns an agent to work on the specified task. If your current task is `/root/task1` and you spawn_agent with task_name \"task_3\" the agent will have canonical task name `/root/task1/task_3`.\nYou are then able to refer to this agent as `task_3` or `/root/task1/task_3` interchangeably. However an agent `/root/task2/task_3` would only be able to communicate with this agent via its canonical name `/root/task1/task_3`.\nThe spawned agent will have the same tools as you and the ability to spawn its own subagents.\n\nOnly call this tool for a concrete, bounded subtask that can run independently alongside useful local work; otherwise continue locally.\nIt will be able to send you and other running agents messages, and its final answer will be provided to you when it finishes.\nThe new agent's canonical task name will be provided to it along with the message.\n\nNote that passing `fork_turns=\"none\"` will not pass any surrounding context to the spawned subagent, which may cause the agent to lack the context it needs to complete its task, whereas `fork_turns=\"all\"` will provide the subagent with all surrounding context.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "fork_turns": {
-             "type": "string",
-             "description": "Optional number of turns to fork. Defaults to `all`. Use `none`, `all`, or a positive integer string such as `3` to fork only the most recent turns."
-            },
-            "message": {
-             "type": "string",
-             "description": "Initial plain-text task for the new agent.",
-             "encrypted": true
-            },
-            "model": {
-             "type": "string",
-             "description": "Model override for the new agent. Omit unless an explicit override is needed."
-            },
-            "reasoning_effort": {
-             "type": "string",
-             "description": "Reasoning effort override for the new agent. Omit to inherit the parent effort."
-            },
-            "task_name": {
-             "type": "string",
-             "description": "Task name for the new agent. Use lowercase letters, digits, and underscores."
-            }
-           },
-           "required": [
-            "task_name",
-            "message"
-           ],
-           "additionalProperties": false
-          }
-         },
-         {
-          "type": "function",
-          "name": "wait_agent",
-          "description": "Wait for a mailbox update from any live agent, including queued messages and final-status notifications. The wait also ends early when new user input is steered into the active turn. Does not return the content; returns either a summary of which agents have updates (if any), an interruption summary for steered input, or a timeout summary if no activity arrives before the deadline.",
-          "strict": false,
-          "parameters": {
-           "type": "object",
-           "properties": {
-            "timeout_ms": {
-             "type": "number",
-             "description": "Timeout in milliseconds. Defaults to 30000, min 10000, max 3600000."
-            }
-           },
-           "additionalProperties": false
-          }
          }
         ]
        }
@@ -252,7 +66,7 @@
      },
      {
       "type": "message",
-      "id": "msg_ffc33ade-52b5-587b-a0a4-99b96b28b084",
+      "id": "msg_72cefba9-320a-5541-8403-70f8244f9418",
       "role": "developer",
       "content": [
        {
@@ -263,7 +77,7 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e98b-d8c8-7022-98bd-02b002bf1787",
+      "id": "msg_01a0e9ba-4e92-7a02-85f7-9daf689b9353",
       "role": "developer",
       "content": [
        {
@@ -282,40 +96,18 @@
      },
      {
       "type": "message",
-      "id": "msg_01a0e98b-d8c8-7022-98bd-02c34c55452c",
-      "role": "developer",
-      "content": [
-       {
-        "type": "input_text",
-        "text": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collaborating to fulfill the user's goals.\n\nAt the start of your turn, you are the active agent.\nYou can spawn sub-agents to handle subtasks, and those sub-agents can spawn their own sub-agents.\nAll agents in the team, including the agents that you can assign tasks to, are equally intelligent and capable, and have access to the same set of tools.\n\nYou can use `spawn_agent` to create a new agent, `followup_task` to give an existing agent a new task and trigger a turn, and `send_message` to pass a message to a running agent without triggering a turn.\n`send_message` calls may be read by a human, so ensure they are legible. Always put proper spaces between words and/or numbers.\nChild agents can also spawn their own sub-agents.\nYou can decide how much context you want to propagate to your sub-agents with the `fork_turns` parameter.\n\nYou will receive messages in the analysis channel in the form:\n```\nMessage Type: MESSAGE | FINAL_ANSWER\nTask name: <recipient>\nSender: <author>\nPayload:\n<payload text>\n```\nThey may be addressed as to=/root\n\nNote that collaboration tools cannot be called from inside `functions.exec`. Call `spawn_agent`, `send_message`, `followup_task`, `wait_agent`, `interrupt_agent`, and `list_agents` only as direct tool calls using the recipient shown in their tool definitions, such as `to=functions.collaboration.spawn_agent`, since they are intentionally absent from the `functions.exec` `tools.*` namespace. Available tools in `functions.exec` are explicitly described with a `tools` namespace in the developer message.\n\nAll agents share the same directory. In detail:\n- All agents have access to the same container and filesystem as you.\n- All agents use the same current working directory.\n- As a result, edits made by one agent are immediately visible to all other agents.\n\nWhen calling `wait_agent`, prefer longer waits (minutes) to avoid busy polling.\n\nThere are 4 available concurrency slots, meaning that up to 4 agents can be active at once, including you.\n\nFull-history forks (`fork_turns` omitted or `\"all\"`) inherit the parent model and reasoning effort and do not accept overrides. Only set `model` or `reasoning_effort` when explicitly requested by the user, applicable `AGENTS.md` instructions, or skill instructions; when doing so, set `fork_turns` to `\"none\"` or a positive integer string.</multi_agent_role>"
-       }
-      ]
-     },
-     {
-      "type": "message",
-      "id": "msg_01a0e98b-d8c8-7022-98bd-02d147db81de",
-      "role": "developer",
-      "content": [
-       {
-        "type": "input_text",
-        "text": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegation no longer applies. Do not spawn sub-agents unless the user or applicable AGENTS.md/skill instructions explicitly ask for sub-agents, delegation, or parallel agent work.</multi_agent_mode>"
-       }
-      ]
-     },
-     {
-      "type": "message",
-      "id": "msg_01a0e98b-d8c8-7022-98bd-02ec81a9f752",
+      "id": "msg_01a0e9ba-4e92-7a02-85f7-9dbf1962e83f",
       "role": "user",
       "content": [
        {
         "type": "input_text",
-        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-vd30ykw3/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-vd30ykw3/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
+        "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-pb2_2k89/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-28</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-pb2_2k89/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>"
        }
       ]
      },
      {
       "type": "message",
-      "id": "msg_01a0e98b-d8cb-7092-bb37-9c1803c92243",
+      "id": "msg_01a0e9ba-4e94-78b0-a5db-a755d20c346f",
       "role": "user",
       "content": [
        {
@@ -336,18 +128,18 @@
     "include": [
      "reasoning.encrypted_content"
     ],
-    "prompt_cache_key": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
+    "prompt_cache_key": "01a0e9ba-4e4f-7f03-9319-688f75b4764d",
     "text": {
      "verbosity": "low"
     },
     "client_metadata": {
-     "thread_id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
-     "x-codex-turn-metadata": "{\"installation_id\":\"1bd9f8e6-2590-49f9-8216-9c5453a5c844\",\"session_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\",\"thread_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e98b-d88c-7762-a6b6-61990d408cdd\",\"window_id\":\"01a0e98b-d87b-7aa0-8a24-ac6256c5f92e:0\",\"window_number\":0,\"context_window_id\":\"01a0e98b-d87b-7aa0-8a24-ac75c1d1646f\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e98b-d88c-7762-a6b6-61990d408cdd\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790624651405}",
-     "session_id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e",
-     "x-codex-installation-id": "1bd9f8e6-2590-49f9-8216-9c5453a5c844",
-     "x-codex-window-id": "01a0e98b-d87b-7aa0-8a24-ac6256c5f92e:0",
-     "turn_id": "01a0e98b-d88c-7762-a6b6-61990d408cdd",
-     "root_turn_id": "01a0e98b-d88c-7762-a6b6-61990d408cdd"
+     "x-codex-installation-id": "9879d890-d82b-45b7-84f1-a71537e330b6",
+     "session_id": "01a0e9ba-4e4f-7f03-9319-688f75b4764d",
+     "thread_id": "01a0e9ba-4e4f-7f03-9319-688f75b4764d",
+     "x-codex-window-id": "01a0e9ba-4e4f-7f03-9319-688f75b4764d:0",
+     "turn_id": "01a0e9ba-4e60-7772-9aa0-cbaa33a2d47a",
+     "root_turn_id": "01a0e9ba-4e60-7772-9aa0-cbaa33a2d47a",
+     "x-codex-turn-metadata": "{\"installation_id\":\"9879d890-d82b-45b7-84f1-a71537e330b6\",\"session_id\":\"01a0e9ba-4e4f-7f03-9319-688f75b4764d\",\"thread_id\":\"01a0e9ba-4e4f-7f03-9319-688f75b4764d\",\"agent_name\":\"/root\",\"turn_id\":\"01a0e9ba-4e60-7772-9aa0-cbaa33a2d47a\",\"window_id\":\"01a0e9ba-4e4f-7f03-9319-688f75b4764d:0\",\"window_number\":0,\"context_window_id\":\"01a0e9ba-4e4f-7f03-9319-6894b58ba414\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0e9ba-4e60-7772-9aa0-cbaa33a2d47a\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790627696225}"
     }
    }
   }
@@ -390,15 +182,12 @@
    "enabled": false
   },
   "features.goals": false,
-  "features.code_mode": {
-   "enabled": false
-  },
-  "features.code_mode_only": false,
   "features.multi_agent_v2": {
    "enabled": false
   },
   "web_search": "disabled",
-  "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n"
+  "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
+  "model_catalog_json": "/unused/model-catalog.json"
  },
  "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME",
  "expected": {
@@ -422,11 +211,11 @@
   ]
  },
  "production": {
-  "control_agent_config.py": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
-  "control_agent_config_handoff.py": "2f5e0d6f79b71d7136b6ea55aa7f4e74caf9fad095006f6665b8944400bd5f0a",
+  "control_agent_config.py": "1fdd225047839a139a31fda5da6dce287c0e7cc55a0235e60291fe1a0f72791e",
+  "control_agent_config_handoff.py": "d2da8db143e143959f4604ad5672dd5a01b8417e825ec8c0d96f46fc60279bad",
   "control_launch.py": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
   "control_engine_claude.py": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
-  "control_engine_codex.py": "4c5659be5dd88cc0ee086a1922c737962c8711cb0b0a36ad41c8afba6b8669d2"
+  "control_engine_codex.py": "37ae7a758778863cd353f8cb3466c0788145cedf1dfc99f18acf80bc1c8fcadf"
  },
  "observations": [
   {
@@ -437,102 +226,82 @@
     ],
     "update_plan": [
      "update_plan"
+    ],
+    "sub_agents": [
+     "collaboration.followup_task",
+     "collaboration.interrupt_agent",
+     "collaboration.list_agents",
+     "collaboration.send_message",
+     "collaboration.spawn_agent",
+     "collaboration.wait_agent"
+    ],
+    "request_user_input_async": [
+     "request_user_input_async"
+    ],
+    "clock": [
+     "clock__curr_time",
+     "clock.sleep"
+    ],
+    "multi_agent": [
+     "collaboration.followup_task",
+     "collaboration.interrupt_agent",
+     "collaboration.list_agents",
+     "collaboration.send_message",
+     "collaboration.spawn_agent",
+     "collaboration.wait_agent"
+    ],
+    "mcp_server": [
+     "list_mcp_resource_templates",
+     "list_mcp_resources",
+     "read_mcp_resource"
     ]
    },
    "actual": [
-    "collaboration.followup_task",
-    "collaboration.interrupt_agent",
-    "collaboration.list_agents",
-    "collaboration.send_message",
-    "collaboration.spawn_agent",
-    "collaboration.wait_agent",
-    "functions.exec",
-    "functions.request_user_input_async",
-    "functions.wait"
+    "exec",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "mcp__jira__jira_search",
+    "read_mcp_resource",
+    "update_plan",
+    "wait",
+    "write_stdin"
    ],
    "expected": [
+    "exec",
     "exec_command",
-    "mcp__jira.jira_search",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "mcp__jira__jira_search",
+    "read_mcp_resource",
     "update_plan",
+    "wait",
     "write_stdin"
    ],
-   "unexpected": [
-    "collaboration.followup_task",
-    "collaboration.interrupt_agent",
-    "collaboration.list_agents",
-    "collaboration.send_message",
-    "collaboration.spawn_agent",
-    "collaboration.wait_agent",
-    "functions.exec",
-    "functions.request_user_input_async",
-    "functions.wait"
-   ],
-   "missing": [
-    "exec_command",
-    "mcp__jira.jira_search",
-    "update_plan",
-    "write_stdin"
-   ],
-   "stop": "configuration_stop:codex_unexpected_tool"
+   "unexpected": [],
+   "missing": [],
+   "stop": null
   }
  ],
  "owner_decisions": {
-  "collaboration.followup_task": {
-   "capability": "Sends work to an existing agent and starts an idle agent turn.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
+  "list_mcp_resource_templates": {
+   "capability": "Lists resource templates of the configured role MCP servers.",
+   "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+   "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+   "evidence": "resource-qualification.json"
   },
-  "collaboration.interrupt_agent": {
-   "capability": "Interrupts an existing agent turn.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
+  "list_mcp_resources": {
+   "capability": "Lists resources of the configured role MCP servers.",
+   "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+   "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+   "evidence": "resource-qualification.json"
   },
-  "collaboration.list_agents": {
-   "capability": "Lists live agents in the current thread tree.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "collaboration.send_message": {
-   "capability": "Sends a message to an existing agent.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "collaboration.spawn_agent": {
-   "capability": "Creates a sub-agent to perform a task.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "collaboration.wait_agent": {
-   "capability": "Waits for agent updates or new user input.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "functions.exec": {
-   "capability": "Runs JavaScript that can invoke registered tools. Its embedded declarations include exec_command and write_stdin for shell and update_plan, but also ungranted apply_patch, MCP resource readers and clock__curr_time. It is not a shell-only alias.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "functions.request_user_input_async": {
-   "capability": "Posts questions during work and accepts an asynchronous user reply; the role does not grant this capability.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
-  },
-  "functions.wait": {
-   "capability": "Resumes or terminates a yielded JavaScript cell. Its cell_id schema belongs to Code Mode, not to the shell process session_id schema.",
-   "classification": "c: owner decision required; no working switch found",
-   "disposition": "Unresolved; retained in comparison as unexpected, not an exemption.",
-   "evidence": "codex-tool-investigation.json"
+  "read_mcp_resource": {
+   "capability": "Reads a resource URI offered by a configured role MCP server.",
+   "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+   "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+   "evidence": "resource-qualification.json"
   }
  },
- "problems": [
-  "configuration_stop:codex_unexpected_tool"
- ]
+ "problems": []
 }

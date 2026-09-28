@@ -1,6 +1,6 @@
 # VELDO-0127 role capability configuration
 
-Item 1 repair from `0fbf6f09`, under owner Telegram 29393 and 29398: the accepted
+Item 1 catalog repair from `0fbf6f09`, under owner Telegram 29393 and 29398: the accepted
 model stays unchanged and models that default to Code Mode keep Code Mode. The
 handoff now uses the pinned binary's bundled model catalog to remove ungranted
 capabilities. The earlier blanket refusal of restricted Code Mode roles is gone.
@@ -36,24 +36,38 @@ definitions. It removes functions prefixes and normalizes both MCP spellings to
 The accepted model determines whether the runner is expected. Neither runner
 presence nor nested tools can silently broaden the expected grants.
 
-## Remaining owner decision
+## Resource-reader rule
 
-`catalog-loopback-gpt-6-astra.json` and `catalog-loopback-gpt-5.5.json` capture the
-real pinned binary using the production generated catalog, credential-free MCP
-fixtures, empty temporary profiles and the loopback stand-in. Every selected grant
-is present. Both captures still expose these three ungranted resource readers:
+Owner Telegram 29400 (asked), 29401 ("Ok"), 2026-09-28: reading an MCP server's
+resources is part of granting that server. The Codex native mapping records an
+`mcp_server` grant for exactly list_mcp_resources, list_mcp_resource_templates and
+read_mcp_resource. The qualification writer retains that mapping in both shipped
+records. The comparison adds it only when the bound role's selected server set is
+nonempty. A missing reader then fails equality. With no selected server, none is
+expected and the presence of any reader fails closed. No role model changes.
 
-| Current case (c) | Reach |
+`resource_probe.py` regenerates production configuration and selected catalog from
+the retained production role configuration, varying only the model and server
+selection for qualification. It uses `loopback.py`, empty temporary HOME and
+CODEX_HOME and the 127.0.0.1 stand-in. `resource-qualification.json` indexes all four
+captures: gpt-6-astra Code Mode and gpt-5.5 direct mode, with and without a server.
+All four reach exact equality. The real pinned 0.154.0 binary exposes none of the
+three readers without a server. `codex-loopback.json` is also a fresh capture of
+the current production configuration: exact equality, no missing or extra tools.
+No real provider, model, account profile or login was used.
+
+## Historical case (c)
+
+The earlier catalog captures reported the following readers as unexpected. Owner
+Telegram 29400/29401 resolves this table; it is history, not an outstanding decision.
+
+| Historical reader | Reach under the approved grant |
 | - | - |
 | list_mcp_resource_templates | Templates of the role's configured MCP servers |
 | list_mcp_resources | Resources of the role's configured MCP servers |
 | read_mcp_resource | A resource URI from a configured MCP server |
 
-These tools can expose files, schemas or other data offered as resources by those
-servers. They do not add another server or another server's credentials. The suite
-keeps them unexpected and the comparator returns
-`configuration_stop:codex_unexpected_tool`. They are not added to role grants by
-this repair. Exact qualification remains blocked on this single case (c).
+These readers add no server and no other server's credentials.
 
 `resource-investigation.json` records the binary string search and loopback probes.
 The catalog has no resource-reader field. Strings identify the resource handlers,
@@ -88,11 +102,12 @@ scopes stopped at teardown. One assertion report is emitted per row name.
 | AC1, AC2 | catalog/grants | Each catalog capability and their combined grant survive accepted role save and production launch |
 | AC2, AC3 | catalog/integrity, review/codex-mode | Qualification captures the bundled catalog and digest; restricted Code Mode roles launch without substitution; absent or mismatched catalog evidence stops by name |
 | AC2 | review/codex-tools, wire/normalization | Runner and nested declarations, direct definitions, namespace and MCP aliases, and both missing and extra tool detection |
-| AC2 | wire/resources | Both real fixture bodies and fake worker output retain the three readers as ungranted extras and fail closed |
+| AC2 | wire/resources | Selected server implies exact equality including all three readers; removing any reader fails |
+| AC2 | wire/no-server | Accepted roles with no server expose no readers in direct and Code Mode; every injected reader fails; qualification mapping and real loopback absence are checked |
 | AC2 | review/codex-capture | The live driver runs gpt-6-astra with its generated catalog and records the loopback tools beside the unchanged model |
 | AC3 | dispatch/binding, dispatch/refusal | Running A survives accepted B; later dispatch binds B; unsupported settings, missing tools and extra defaults stop |
 | AC4 | launch/push, launch/unlisted, launch/instructions | PushNotification, selected skills and instruction sources, absent deferred items, and retained first-turn context |
-| AC2, AC4 | live/claude, live/codex | Still red pending fresh lead captures, with the resource-reader difference also unresolved |
+| AC2, AC4 | live/claude, live/codex | Still red pending fresh lead subscription captures |
 | AC2, AC4 | review/skill-commit, review/marker-debug | Staged skill links stay out of commits; planted debug loads fail; absent debug control needs explicit context-size-only evidence |
 | AC3, AC4 | review/probe-terminal, review/init-bound, review/slash-collision | No-turn probes cannot complete workers, init is bounded and duplicate slash entries remain visible |
 | Fixture | format/fake-lines, VELDO-0172 fake/capture | Fake streams conform to the retained binary formats |
@@ -112,23 +127,23 @@ temporary profiles and runs workers serially. Baseline and planted-marker runs c
 always-only and deferred roles. The evidence judge checks production digests,
 configuration, exact effective tools, generated catalog, model, credential sources,
 execution record, debug controls and context-size comparisons. Fresh captures are
-still required for both engines. A fresh capture does not waive the resource readers.
+still required for both engines. The resource-reader loopback qualification is complete.
 
 ## Red record and mutations
 
-`red-at-0fbf6f09.json` replays the current suite against the unchanged pre-change Git
-archive. All eight changed behavior rows are red by assertion, with no exception:
-review/codex-tools, review/codex-mode, review/codex-capture, catalog/fields,
-catalog/grants, catalog/integrity, wire/normalization and wire/resources.
-Older red records remain historical.
+`red-at-44a1b857.json` replays the current suite against the unchanged pre-change Git
+archive. All four changed behavior rows are red by assertion, with no exception:
+wire/resources, wire/no-server, review/codex-tools and wire/normalization. The
+no-server row also checks that the real qualification writer records the conditional
+server grant. Older red records remain historical.
 
-Finding 127 registers mutations for each of the four catalog removals, each granted
-field's retention, unchanged reasoning, digest checking, both name normalizations,
-nested declarations, runner expectations and resource-reader visibility. Earlier
-criterion falsifiers remain registered. `mutations.json` and individual diffs retain
-exact replacements and hashes. Mutation execution is reserved for the reviewer;
-zero rejections are claimed by this run. The honest-run prerequisite remains red on
-the live qualification rows.
+Finding 127 adds role127-resource-grant-omitted (wire/resources) and
+role127-resource-grant-without-server (wire/no-server). The existing mutation that
+hides readers still fails the selected-server row. Earlier criterion falsifiers
+remain registered. `mutations.json` and individual diffs retain exact replacements
+and hashes. Mutation execution is reserved for the reviewer; zero rejections are
+claimed by this run. The honest-run prerequisite remains red on the pre-existing
+live qualification rows, which need authorized lead subscription captures.
 
 `checks.json` records the scoped normal and clean gate-environment runs, footprint,
 anchor, validator and engine-copy checks. No gate or aggregate selftest was run.
@@ -149,10 +164,10 @@ Mode. The earlier case (c) table is historical:
 | Six collaboration tools | Removed with multi_agent_version unless sub-agents are granted |
 
 `codex-owner-decisions-before-catalog.json` retains the old table verbatim;
-`codex-owner-decisions.json` names only the three current readers.
+`codex-owner-decisions.json` records the approved conditional grant for all three readers.
 
 The prior apply_patch and tool_search extras are also removed by their catalog
 fields. The selected Jira definition now appears directly when search is disabled.
-The three resource readers above are the sole remaining case (c). Earlier captures,
+No resource-reader case (c) remains after Telegram 29400/29401. Earlier captures,
 switch investigations and other review repairs remain in this proof directory;
 none is treated as fresh live qualification of this tree.
