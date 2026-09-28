@@ -867,6 +867,7 @@ class Receiver:
         # values delivered into the engine environment, by name.
         self.credentials = None
         self.delivered = None
+        self.selected = None
         # VELDO-0141: the contract launched, the run's resolved values and its execution record.
         self.contract = None
         self.resolved = None
@@ -1023,7 +1024,7 @@ class Receiver:
             self._not_executed()
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
             self.emit({'event': 'refused', 'refusal': error.code,
-                       'credentials': DL.report(dispatch_id, self.credentials, refusal=error)})
+                       'credentials': DL.report(dispatch_id, self.credentials, refusal=error, selected=self.selected)})
             return
         except OSError as error:
             self._not_executed()
@@ -1403,9 +1404,10 @@ class Receiver:
         resolved from the keystore through secretref's keychain scheme (control_credential_delivery), just before
         the spawn. They are delivered only to a Linux engine run, through THE ENGINE PROTOCOL's baseline; a
         selection for any other adapter, or a credential that does not resolve, is Undeliverable by name."""
-        self.credentials, self.delivered = [], {}
+        self.credentials, self.delivered, self.selected = [], {}, []
         configuration = self.contract['capability']['configuration']
-        if not DL.selections(configuration):
+        self.selected = DL.selections(configuration)
+        if not self.selected:
             return
         if self.binding is None or adapter.get('identity', 'local') == 'reported':
             raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(self.contract['capability']['adapter']))

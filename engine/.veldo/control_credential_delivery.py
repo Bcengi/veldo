@@ -126,12 +126,14 @@ def values(servers):
     return out
 
 
-def report(dispatch_id, servers, routes=None, refusal=None):
+def report(dispatch_id, servers, routes=None, refusal=None, selected=()):
     """What the receiver reports of a launch's credentials: the catalog revisions and credential ids it
-    resolved, the route each took, or its named refusal; never a value."""
+    resolved, the route each took, or its named refusal with the revisions the configuration selected; never
+    a value."""
     credentials = sorted({item['credential'] for s in servers or () for f in ('environment', 'headers')
                           for item in s[f].values() if 'credential' in item})
-    event = {'dispatch_id': dispatch_id, 'servers': [{'id': s['id'], 'revision': s['revision']} for s in servers or ()],
+    revisions = [(s['id'], s['revision']) for s in servers or ()] or list(selected or ())
+    event = {'dispatch_id': dispatch_id, 'servers': [{'id': s, 'revision': r} for s, r in revisions],
              'credentials': credentials, 'routes': list(routes or [])}
     if refusal is not None:
         event.update(refusal=refusal.code, credential=refusal.credential, reason=refusal.reason)
