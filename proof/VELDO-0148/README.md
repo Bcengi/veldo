@@ -99,3 +99,8 @@ The gate-environment run used an empty environment, PATH `/usr/bin:/usr/bin:/bin
 HOME under `/dev/shm`, TMPDIR `/dev/shm`, `C.UTF-8` language and locale, UTC, disabled Python
 bytecode and user site, hash seed 0, disabled system Git configuration, global Git configuration
 `/dev/null`, and disabled terminal prompting, exactly as requested.
+
+The supplied footprint check reports 37 changed paths and none outside VELDO-0148. The supplied
+anchor check reports 0 bad anchors and no duplicate mutation names. `python3 .veldo/validate.py all`
+passes; the diff has no whitespace errors. All eight changed production modules match their engine
+copies. The full gate and mutation checker were left to the independent reviewer as directed.

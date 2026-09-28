@@ -217,3 +217,12 @@ were rerun serially; all final runs were separate. Subset mode intentionally exi
 constitute a full gate verdict. No merge repair was needed. Searched production writers and
 readers of the land dispatch, trunk-moved classification, approval request and installed-loader
 seams; all eight changed production modules match their engine copies byte for byte.
+
+2026-09-28, final completion checks: the supplied footprint checker reports 37 changed paths,
+none outside this specification; the supplied anchor checker reports 0 bad anchors and no
+mutation-name duplicates. `python3 .veldo/validate.py all` passes, and the diff has no whitespace
+errors. The suite registry preserves every main entry and adds suite 86 exactly once; requires.json
+is regenerated. The proof README maps each criterion's rows, the saved red record, the 12 audited
+mutation rejections and replay instructions. No further footprint expansion or criterion change
+was needed. The full gate and mutation checker were not run, as directed; they remain for the
+independent reviewer. Gate byproducts are restored before the final commit and are not this work.
