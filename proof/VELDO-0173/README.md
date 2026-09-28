@@ -95,5 +95,7 @@ diff each):
 
 The new suite and the suites of every touched module pass on their own selectors and again in the
 empty gate environment. Findings 173 (9), 155 (25), 165 (23), 60 (35), 129 (15) and 172 (9) reject
-every mutation with two jobs; every registered mutation's text is still present in its module. No
+every mutation with two jobs; every registered mutation's text is still present in its module. On a20e7baf the whole selftest ran once
+with the checkout unchanged throughout: 7,057 rows passed, zero failed. The Git boundary check, the
+repository validator, the footprint and anchor checks pass, and the engine copies are byte-identical. No
 canonical gate, real engine run, login or push was performed.
