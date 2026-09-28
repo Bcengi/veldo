@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1360 +1360 @@
+-    if not isinstance(classification, dict) or not all(
++    if False and not all(

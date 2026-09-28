@@ -392,6 +392,13 @@ sys.exit(payload.get('code', 0))
                    if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
+        if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'qualified_tools'):
+            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
+            record173 = json.loads((mods / 'runtime' / 'claude-qualification.json').read_text())
+            record173['versions']['2.1.281'].update(tool_registry=tools173['tool_registry'],
+                                                    tool_classification=tools173['tool_classification'])
+            (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(record173))
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
         if pin is not None:
             pin('2.1.281', versions=str(versions), state_root=str(factory))

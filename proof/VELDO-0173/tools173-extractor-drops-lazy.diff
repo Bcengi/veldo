@@ -1,0 +1,5 @@
+--- a/proof/VELDO-0173/extract_tools.py
++++ b/proof/VELDO-0173/extract_tools.py
+@@ -365 +365 @@
+-            return self.export(m.group(1), m.group(2), slot, depth + 1)
++            return []
