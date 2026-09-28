@@ -5,8 +5,8 @@
    "module": "control_service.py",
    "name": "setup186-python-only",
    "rows": [
-    "VELDO-0186 runtime/assets",
-    "VELDO-0186 bind/engines"
+    "runtime/assets",
+    "bind/engines"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -15,7 +15,7 @@
    "module": "control_factory_setup_engines.py",
    "name": "setup186-skip-claude-pin",
    "rows": [
-    "VELDO-0186 bind/engines"
+    "bind/engines"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -24,7 +24,7 @@
    "module": "control_service.py",
    "name": "setup186-missing-runtime-ignored",
    "rows": [
-    "VELDO-0186 runtime/missing"
+    "runtime/missing"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -33,7 +33,7 @@
    "module": "control_factory_setup_engines.py",
    "name": "setup186-claude-unlisted-taxonomy",
    "rows": [
-    "VELDO-0186 engines/unlisted"
+    "engines/unlisted"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -42,7 +42,7 @@
    "module": "control_factory_setup_engines.py",
    "name": "setup186-codex-unlisted-taxonomy",
    "rows": [
-    "VELDO-0186 engines/unlisted"
+    "engines/unlisted"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -51,7 +51,7 @@
    "module": "control_factory_setup_engines.py",
    "name": "setup186-claude-digest-unchecked",
    "rows": [
-    "VELDO-0186 engines/digest"
+    "engines/digest"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -60,7 +60,7 @@
    "module": "control_factory_setup_engines.py",
    "name": "setup186-codex-digest-unchecked",
    "rows": [
-    "VELDO-0186 engines/digest"
+    "engines/digest"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"
@@ -69,7 +69,7 @@
    "module": "control_service.py",
    "name": "setup186-receiver-without-state-root",
    "rows": [
-    "VELDO-0186 bind/engines"
+    "bind/engines"
    ],
    "status": "pending_reviewer",
    "suite": "86_veldo_0186_setup_assets.py"

@@ -30,6 +30,7 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0186_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
   - "scripts/suites/66_veldo_0047_authority.py"
   - "scripts/suites/71_veldo_0138_channel_service.py"
   - "scripts/suites/71_veldo_0130_api.py"
@@ -151,3 +152,10 @@ The footprint also names suites 66 (0047), 71 (0130 and 0138) and 83 (0154): AC1
 installer input from Python-only fixture trees to complete source trees with runtime assets. Their
 production calls remain unchanged. The scaffold includes the new setup helper. Status remains ready
 for independent review.
+
+2026-09-28: review repair. Finding 186 mutation targets now use the final row labels that the
+checker matches, preserving the suite's single report per exact behavior row. Added suite 74
+(0140) to the footprint because AC1 and AC2 require its real factory setup fixture to carry
+runtime records and qualified inert engine bytes, using the existing 0186 fixture writer.
+Audited setup and service installer callers across suites and shared helpers; the other installer
+fixtures already carry these inputs. Production refusals and the selftest scope contract are unchanged.
