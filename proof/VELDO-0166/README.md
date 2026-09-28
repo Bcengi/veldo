@@ -1,6 +1,6 @@
 # VELDO-0166 proof
 
-Review fixes on `build-veldo-0166`, after merging local main `9f1a0445` at `3544d4c4`.
+Implementation commit `2c4f250c` on `build-veldo-0166`, after merging local main `9f1a0445` at `3544d4c4`.
 Veldo records every reported Claude Code usage window against the account and preserves an
 existing profile directory when registering it. All fixtures are generated locally; no engine,
 login, real credential, network or user service manager is used.
@@ -73,5 +73,7 @@ The ordinary and isolated gate-environment runs of suite 0166 each passed: 12 be
 38 assertions including the shared preamble, zero failures. These are partial suite runs,
 not gate or landing evidence. requires.json was regenerated and was already current after the
 clean merge. The anchor check reports 0 bad anchors. Validation of all specifications passes.
-The footprint check and final module equality check are recorded after the implementation commit.
+On implementation commit `2c4f250c`, the footprint check reports 40 changed files, none outside
+the footprint; all four production modules match their engine copies. All registered mutation names
+are unique across findings. The working tree was clean after the implementation commit.
 The gate, whole selftest, other suites and mutation checks were not run, as instructed.
