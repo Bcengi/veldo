@@ -1,5 +1,5 @@
---- a/.veldo/control_engine_claude.py
-+++ b/.veldo/control_engine_claude.py
+--- .veldo/control_engine_claude.py
++++ mutant/.veldo/control_engine_claude.py
 @@ -1392 +1392 @@
 -        launch, source = sorted(set(native)), 'role_revision'
 +        launch, source = sorted(set(tools['in_run'])), 'role_revision'

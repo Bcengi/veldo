@@ -1,6 +1,8 @@
 {
+ "schema": "veldo.implementation-checks/v1",
+ "spec_id": "VELDO-0127",
+ "baseline_commit": "5a9a05d2",
  "engine_sync": {
-  "equal": true,
   "modules": [
    "control_agent_config.py",
    "control_agent_config_handoff.py",
@@ -8,55 +10,67 @@
    "control_engine_codex.py",
    "control_launch.py",
    "init_scaffold.py"
-  ]
+  ],
+  "equal": true
  },
- "live_driver": {
-  "captures": {
-   "claude": "proof/VELDO-0127/claude-live.json",
-   "codex": "proof/VELDO-0127/codex-live.json"
+ "suites": {
+  "normal": {
+   "selector": "86_veldo_0127_agent_configuration",
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "all_six_review_rows_pass": true,
+   "log_sha256": "58179b49ab70561fdd97b7a4d28ad2ad9efeb9f38a4a72ada0d5f4f345b45f5f",
+   "partial_selftest_exit": 1
   },
-  "codex_rejudged": "judged again with the bounded context comparison, no new runs",
-  "executed": true,
-  "model_turns": 14,
-  "problems": {
-   "claude": [],
-   "codex": []
-  },
-  "real_workers": 19
- },
- "mutation_checks": {
-  "builder_drive": "each applied once by hand to the committed tree; every named row red by assertion, none raised",
-  "builder_driven": 11,
-  "executed": false,
-  "registered": 18,
-  "static_audit": "18 unique mutations; every replacement occurs exactly once; every mutated module parses"
+  "gate_environment": {
+   "selector": "86_veldo_0127_agent_configuration",
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "all_six_review_rows_pass": true,
+   "log_sha256": "c5cd838b68a010c8ff0aab37ee265b03a0c62e34d2474f0fd1542d168d6dbcdc",
+   "partial_selftest_exit": 1
+  }
  },
  "red": {
-  "by_assertion": true,
-  "failed_rows": 11,
-  "record": "proof/VELDO-0127/red-at-abeb3e8c.json",
-  "rows": 11
+  "record": "red-at-5a9a05d2.json",
+  "behavior_rows": 6,
+  "every_behavior_row_red": true,
+  "by_assertion": true
  },
- "schema": "veldo.implementation-checks/v1",
- "spec_id": "VELDO-0127",
- "suites": {
-  "86_veldo_0127_agent_configuration": "selftest (PARTIAL, 1 of 132 suites): 38 passed, 0 failed",
-  "launch_neighbours": {
-   "78_veldo_0060_claude_adapter": "61 passed, 0 failed",
-   "79_veldo_0061_codex_adapter": "47 passed, 0 failed",
-   "80_veldo_0155_claude_baseline": "44 passed, 0 failed",
-   "81_veldo_0156_codex_baseline": "48 passed, 0 failed",
-   "82_veldo_0165_launch_hygiene": "49 passed, 0 failed",
-   "82_veldo_0172_live_formats": "30 passed, 0 failed",
-   "82_veldo_0173_tool_registry": "37 passed, 0 failed",
-   "85_veldo_0158_credential_delivery": "49 passed, 0 failed"
-  },
-  "not_run": "the whole selftest, the mutation checker and scripts/verify.sh (the lead runs them)",
-  "regressions_fixed": {
-   "51_parser_boundary": "51 passed, 0 failed",
-   "66_veldo_0047_authority": "56 passed, 0 failed",
-   "82_veldo_0129_worker_wiring": "55 passed, 0 failed",
-   "82_veldo_0141_execution_record": "66 passed, 0 failed"
-  }
+ "mutation_checks": {
+  "executed": false,
+  "registered": 28,
+  "rejected_this_run": 0,
+  "static_audit": "0 bad anchors; unique names; exact diffs generated, no mutant executed"
+ },
+ "gate": {
+  "executed": false,
+  "reason": "owner forbids gate and mutation runners"
+ },
+ "neighboring_suites": {
+  "executed": false,
+  "reason": "owner restricts suite execution to this specification"
+ },
+ "footprint": "outside the footprint: none",
+ "anchors": "0 bad anchors",
+ "validate_all": {
+  "exit": 0
+ },
+ "requires": "regenerated with scripts/run_scope.py emit-requires; content unchanged",
+ "codex_loopback": {
+  "record": "codex-loopback.json",
+  "returncode": 0,
+  "provider": "127.0.0.1 stand-in",
+  "model_executed": false,
+  "login_used": false,
+  "equality": false
+ },
+ "claude_live": {
+  "executed": false,
+  "reason": "real login and model forbidden; probe and positive-control recapture remains for lead"
  }
 }

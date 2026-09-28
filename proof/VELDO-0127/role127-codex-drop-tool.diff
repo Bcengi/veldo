@@ -1,5 +1,5 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -254 +254 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -270 +270 @@
 -        configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']
 +        configuration['mcp_servers'][server]['enabled_tools'] = []

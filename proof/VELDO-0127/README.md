@@ -1,28 +1,41 @@
 # VELDO-0127 role capability configuration
 
-The lead captured Claude Code 2.1.281 and Codex 0.154.0 runs in `claude-live.json`
-and `codex-live.json`. Those captures predate the review findings and do not establish
-AC2's exact Codex native-tool equality. The specification remains ready.
+Review continuation from `5a9a05d2`: items 2 through 6 have production fixes and
+assertion rows. Item 1 has a successful real offline capture and a strict comparison,
+but remains incomplete: the pinned Codex still offers tools the role does not grant.
+The specification stays ready. No full qualification or gate pass is claimed.
 
-The 2026-09-28 review repair stopped at the owner's explicit blocker condition.
-The qualified Codex binary's offline `debug prompt-input` command returns input
-messages, not the model request's tool definitions. `codex-offline-tools.json` retains
-the binary digest, configuration arguments, generated MCP fixture source, output
-structure and output hashes for two successful renders. Both used empty temporary
-CODEX_HOME and HOME directories with Landlock denying every TCP connection. The
-first used the captured native settings; the second disabled shell and unified exec.
-Neither returned a tool list, including the fixture's selected Jira tool. VELDO-0156
-used this interface to observe instruction content, not to enumerate effective tools.
-No model request, login or real credential was used.
+`codex-loopback-before.json` records the original generated configuration's request.
+`codex-loopback.json` records the current production handoff's generated configuration.
+Both use the qualified 0.154.0 vendored binary, a temporary empty login profile, a
+127.0.0.1 HTTP stand-in, generated credential-free MCP fixtures, and a Landlock TCP
+restriction to the stand-in's port. No model, account profile, login or real credential
+was used. The stand-in returned a streaming completion and Codex exited successfully.
+Its observed wire format is Responses, with an exact `tools` array nested in an
+`additional_tools` input item. The reader also accepts a top-level Responses array,
+Chat function definitions and namespace entries.
 
-Completing AC2 needs an offline interface that exposes the pinned engine's actual
-model-request tool definitions, or authorization for a different observation method.
-Inferring those definitions from feature switches would preserve the review defect.
-No production changes or new behavior rows were made in this stopped repair.
-Findings 1 through 6 remain open, including the debug-log positive control and probe
-terminal-record defect. Existing empty debug lines have no positive control and do
-not prove instruction exclusion; the captured context-size comparison is the only
-current marker evidence. The lead must recapture after the eventual production fixes.
+The role grants shell, update_plan and selected Jira search. The final request still
+contains collaboration tools, functions.exec, functions.wait and
+functions.request_user_input_async. The generated switches remove clock.sleep and
+ordinary request_user_input but do not establish exact equality. The proof records
+`configuration_stop:codex_unexpected_tool`; this is a proof rejection, not a claim
+that the production Codex launcher now prevents these defaults. No metadata override
+or expanded role grant was shipped to make this mismatch disappear.
+
+The owned suite was run normally and under the exact clean gate environment. All six
+new review rows and the existing behavioral rows pass. Only `live/claude` and
+`live/codex` fail: the old captures are stale, Claude lacks the new probe/control facts,
+and Codex lacks the new wire capture per live run. Real Claude recapture is reserved
+for the lead because this run cannot use a real login or model. No neighboring suite,
+mutation worker or gate was run, following the owner's command restrictions.
+
+The debug leg has no qualified positive control yet. Empty old debug lines prove
+nothing. The retained old context-size comparison is the only present AC4 marker
+observation, and is not a fresh qualification of the changed tree. `live.py` now runs
+one discovery-enabled control, retains its CLAUDE.md debug lines, and explicitly marks
+`context-size-only` if a successful control produces none. `evidence.py` requires
+empty planted `debug_lines` and rejects a missing control or an unstated fallback.
 
 `control_agent_config.Configurations.save` accepts immutable role revisions under
 current owner authority, using the signed store's writer and compare-and-swap.
@@ -37,7 +50,7 @@ selected MCP server using its catalog credentials, checks requested tool availab
 and constructs exactly the selected launch set. Claude Code joins the instruction
 files and stages selected skills as a generated plugin. Its Guard holds the prompt
 until both the subscription handshake and the complete init set match. Codex stages
-only selected skills in the clone, uses explicit skill configuration, developer
+only selected skills in the clone with exact local Git exclusions, uses explicit skill configuration, developer
 instructions, native-tool feature settings, and required MCP tables; its own MCP
 listing is checked before exec receives a prompt. Unsupported settings, an unavailable
 tool and a changed launch set stop by name. The execution record keeps the first-turn
@@ -63,6 +76,12 @@ slice is stopped at teardown. No real credential or model is used by the suite.
 | AC3 | dispatch/binding, dispatch/refusal | A prepared A still launches A after B is saved, the next dispatch binds B, unsupported settings and missing tools give named refusals, and an extra default tool stops before the prompt. |
 | AC4 | launch/push, launch/unlisted, launch/instructions | PushNotification is in init and absent from the deny list; unassigned native tools, servers, skills and instruction files do not load; an extra skill stops before the prompt; both instruction sources reach each engine and first-turn context is kept in the committed execution record. |
 | AC2, AC4 | live/claude, live/codex | Fail closed until digest-bound live captures qualify both role modes, exact engine surfaces, credential sources, and marker/context comparisons. |
+| AC2 | review/codex-tools | A fixture request passes the production wire comparator; adding an ungranted tool or removing a selected MCP tool fails. This is fake-driven comparison evidence, not real Codex equality. |
+| AC2, AC4 | review/skill-commit | A real fake-worker commit of everything contains its delivery but no staged skill symlink. |
+| AC4 | review/marker-debug | The live capture reader consumes a production execution record; planted instruction debug lines fail, and absent positive debug evidence requires an explicit context-size-only fallback. |
+| AC3, AC4 | review/probe-terminal | A fake engine closes input after the zero-turn probe. The receiver names the failed prompt write, never accepts that probe as terminal, and the live driver records zero turns and zero pre-prompt assistant events. |
+| AC3, AC4 | review/init-bound | After a confirmed login, an engine withholding init stops by configuration_stop:init_missing in under 15 seconds. The production init bound is five seconds. |
+| AC4 | review/slash-collision | A built-in and non-built-in entry sharing a slash name remains visible to the exact comparison and stops the run. |
 | Fixture | format/fake-lines, VELDO-0172 fake/capture | Generated streams complete both production terminal protocols and conform to the captured formats. |
 
 ## Lead capture
@@ -119,25 +138,31 @@ context comparison (`rejudge`), without new runs; the production modules did not
 
 ## Red record and mutations
 
-`drive.py` replays this suite against an unchanged Git archive of pre-change `abeb3e8c`.
-`red-at-abeb3e8c.json` records every one of its 11 rows red by assertion, without an
-exception. The old tree has no accepted role writer or handoff implementation.
+`drive.py` replays the current suite against an unchanged Git archive. The original
+`red-at-abeb3e8c.json` is historical. `red-at-5a9a05d2.json` records all six new
+review behavior rows red by assertion, with no raised exception. Other already
+implemented rows are retained separately and are not falsely claimed red.
 
-Finding 127 registers 18 distinct mutations in `scripts/check_teeth_mutations.py`.
-`mutations.json` and the individual diffs retain their replacements and source hashes.
-The lead reports that the checker rejected the seven mutants preceding
-`role127-probe-withheld`, then stopped when that mutant exceeded the 120 second
-worker limit. This is incomplete mutation qualification. The later mutants were not
-reached by that checker run. Earlier builder claims about manually driven mutants
-are historical reports, not evidence of a completed checker run. No mutations were
-executed during this stopped repair.
+Finding 127 now registers 28 unique mutations. `mutations.json` and the individual
+diffs contain current exact replacements and source hashes. No mutant was executed
+in this run. The earlier owner report of seven rejections followed by the withheld
+probe timeout is historical. The new bounded init wait and suite launch skip make
+that mutant terminate by assertion, but its actual checker rejection remains for the
+reviewer. A missing probe on the first Claude handoff skips all later Claude launches
+and leaves their rows false by assertion. The checker's honest-run prerequisite
+will remain red until the live qualification rows are closed.
 
-The footprint adds that mutation registry for the required falsifiers and the
-VELDO-0173 suite because its sole caller-built role revision must migrate to the
-accepted writer. Its fake now emits init before the held prompt for bound roles.
-The existing 0158 credential and 0156 profile-skill mutation anchors follow the
-refactored baseline and explicit selected-skill check.
+The suite remains registered in manifest.json; requires.json was regenerated.
+The touched canonical engine modules and installed .veldo copies are byte-identical.
+The footprint and anchor checks pass without expanding the footprint. checks.json
+records the final scoped results and limitations. The gate's byproducts are not
+implementation changes and are not committed.
 
-`checks.json` records the actual scoped runs and documentation checks. The older
-`inspection.json` is the prior pass's read-only inspection, not current acceptance proof.
-No gate, other specification's suite, model, login, remote host or push was run.
+## History
+
+The first real qualification and initial implementation are described above. At the
+previous repair stop, the debug prompt-input command could not expose tool definitions;
+`codex-offline-tools.json` retains that evidence. Findings 1 through 6 were then open.
+This continuation uses an explicitly authorized loopback request capture for item 1
+and fixes the independent items 2 through 6. The remaining blockers are stated at the
+start of this README. No prior success claim substitutes for fresh live qualification.

@@ -267,3 +267,22 @@ The current row changes revisions between prepare and launch, not during executi
 2026-09-28, follow-up ticket for refusal reporting: preserve a handoff configuration_stop
 as a configuration failure. The current wrapper reports credential delivery failure
 and names mcp_servers as a credential. This reporting repair is outside this job.
+
+2026-09-28, review continuation from 5a9a05d2: six new review rows exercise the production
+handoff and proof readers. Staged Codex skill links receive exact clone-local Git exclusions;
+Claude waits at most five seconds for init after the subscription handshake, retains its
+zero-turn probe and pre-prompt assistant count, rejects a failed prompt write and excludes
+pre-prompt results from the terminal record. A duplicate slash-command name is excluded only
+when every entry is built-in. Planted debug instruction lines now fail qualification; the live
+driver adds an instruction-discovery positive control and explicitly records context-size-only
+qualification if the pinned binary does not log the load. The control has not been run here.
+The six review rows are red by assertion against 5a9a05d2 and green on the repaired code,
+including under the gate environment. No footprint expansion was needed.
+
+The Codex loopback route succeeded without a login or model: the pinned 0.154 binary sends
+Responses streaming requests with its exact tools array inside an additional_tools input item.
+The new reader compares this array in both directions and the live driver retains it. The
+captured role still exposes ungranted collaboration, async-input and Code Mode tools after the
+observed switches, so item 1 remains incomplete and the proof rejects it. The old Claude live
+capture also lacks the new probe and positive-control evidence. These two live rows stay red;
+no complete qualification, mutation rejection, gate pass or shipped status is claimed.

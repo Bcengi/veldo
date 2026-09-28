@@ -1,0 +1,5 @@
+--- proof/VELDO-0127/evidence.py
++++ mutant/proof/VELDO-0127/evidence.py
+@@ -21 +21 @@
+-    if run.get('marker') and run.get('debug_lines') != []:
++    if False:

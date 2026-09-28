@@ -1,5 +1,5 @@
---- a/.veldo/control_agent_config.py
-+++ b/.veldo/control_agent_config.py
+--- .veldo/control_agent_config.py
++++ mutant/.veldo/control_agent_config.py
 @@ -156,0 +157,3 @@
 +        if base and kind == KINDS[0]:
 +            self.conn.execute("UPDATE entities SET data=? WHERE id=?",

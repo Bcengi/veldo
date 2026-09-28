@@ -1,228 +1,347 @@
 {
- "completed": false,
- "executed": true,
- "execution_source": "Owner review findings supplied at f96c1931; raw checker output not supplied.",
  "finding": 127,
+ "executed": false,
+ "completed": false,
+ "mutations_rejected_this_run": 0,
  "mutants": [
   {
-   "diff": "role127-overwrite-history.diff",
-   "module": "control_agent_config.py",
-   "mutant_sha256": "8be31d9c060c7440b047d9ddaded5b1a58d4f6ebfddb69b7ee6a5c744a273037",
    "name": "role127-overwrite-history",
+   "module": ".veldo/control_agent_config.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "revision/history"
    ],
+   "diff": "role127-overwrite-history.diff",
    "source_sha256": "7cd69a365291279326138b0af551ea5038829e4c046da01f8a6c52590b3aeab0",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "mutant_sha256": "8be31d9c060c7440b047d9ddaded5b1a58d4f6ebfddb69b7ee6a5c744a273037",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-remove-mcp-tool.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "8896411445091858931971a8c184dee15449b0c50c83f9a3b298506b42513197",
    "name": "role127-remove-mcp-tool",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-remove-mcp-tool.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "18cccf3d0e2b401bdc0999c66136d71105a4f2441640db488fea5e4133de59cd",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-codex-drop-tool.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "56046753704f7cb5a62709c3559f815d391e01d1308a366bbfe69cb582732b22",
    "name": "role127-codex-drop-tool",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/codex"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-codex-drop-tool.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "59297ea18e0e2ed29ff817400d6ef823b8e0ca31b96199dd1c9e5397c713fbc1",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-add-default-tool.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "032d3fac91f01a44dce454c95f2d3e4200fb8f1b9f1d6a83f871bce967d2b9be",
    "name": "role127-add-default-tool",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "dispatch/refusal"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-add-default-tool.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "578ce87ae91194652cf93fdb987d8756d9b8ae295a84cfd99c0143fc8492cd3f",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-in-run-ceiling.diff",
-   "module": "control_engine_claude.py",
-   "mutant_sha256": "0bd60874d4d1c2298805bc072f0693b3103bf2d9000ab3dad9c07511871262e3",
    "name": "role127-in-run-ceiling",
+   "module": ".veldo/control_engine_claude.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "launch/push"
    ],
-   "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-in-run-ceiling.diff",
+   "source_sha256": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
+   "mutant_sha256": "04d80c633267afb5a3f5f1a31417b954d0fe51cf845e2d90be391a039c258fb6",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-allow-unlisted-skill.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "96c3976c53a301bf202d4728050f46421c3dc2dec584aa0df19fcefa514d0dd2",
    "name": "role127-allow-unlisted-skill",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "launch/unlisted"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-allow-unlisted-skill.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "d2659ab7277aa850432f0934702a9a02e1bfe14fd64dd0f3862b7da39c0a66e8",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-forget-first-context.diff",
-   "module": "control_launch.py",
-   "mutant_sha256": "ecb0dbb1bb313d838b59b5105f87f4182af61006a6b671e4312674e1266c8be2",
    "name": "role127-forget-first-context",
+   "module": ".veldo/control_launch.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "launch/instructions"
    ],
-   "source_sha256": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4",
-   "status": "lead-reported rejected; raw failing lines not supplied",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-forget-first-context.diff",
+   "source_sha256": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
+   "mutant_sha256": "9afb1e35dc3e7a0883f1d8e29459edaae441eaaa122052088fd95ef35e6da0c9",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-probe-withheld.diff",
-   "module": "control_engine_claude.py",
-   "mutant_sha256": "a92d61d46dfe3ffc374bc2823e7859a36330571551e284fa9133be2f6c937e0c",
    "name": "role127-probe-withheld",
+   "module": ".veldo/control_engine_claude.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "lead-reported timeout at 120 seconds; not rejected by assertion",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-probe-withheld.diff",
+   "source_sha256": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
+   "mutant_sha256": "081bef55d5af701405db49182079ed82fb7f9e7ec1dbe83cc26b54fa5d233dfa",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-probe-content.diff",
-   "module": "control_engine_claude.py",
-   "mutant_sha256": "11998daf6d944acaf40b7dd362eebb459e19263c51bd8fc96d98f0af1686ba14",
    "name": "role127-probe-content",
+   "module": ".veldo/control_engine_claude.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "9fa63d36d23c6dca7ab72b091c51f6a353aa6031f8d1792fa1d214a832e4dca6",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-probe-content.diff",
+   "source_sha256": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
+   "mutant_sha256": "d612e90fe9efa0811c0e7ab28ef3d80704da2ddaf83fe4ae226706d9d0985b38",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-engine-plugins-kept.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "174b4628bad4450303bd3d9371b622aa8c99fb44d7cee4fef4870ee5212c7c44",
    "name": "role127-engine-plugins-kept",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-engine-plugins-kept.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "93b0719d5a193b113db166bfe3537e66a580173731a6f59010aa743aef96abef",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-bundled-skills-kept.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "a2b741d24fe8c9be2d95ecd21ed6a83be281adf0279d459c1088cdc7d24b701f",
    "name": "role127-bundled-skills-kept",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-bundled-skills-kept.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "cb531703d882d88d81c4ae2504c0c935483cb06e0491f31e48251f5c6d63889a",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-builtin-commands-compared.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "02c59fdcae9dffa33a1688215ac435a597c2358b6f2726bd41f83a240cc62369",
    "name": "role127-builtin-commands-compared",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/claude"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-builtin-commands-compared.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "017a2096f1b02a909b3dff3e06417dd4bd557b4fc2d6392fcf007222802b0d6e",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-skill-tool-withdrawn.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "012463986ce8bd4c85329b109d21ff2070a7465b802d8bfed7030070ae1c6f75",
    "name": "role127-skill-tool-withdrawn",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "launch/unlisted"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-skill-tool-withdrawn.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "944c9f08ca4d508f02ae0586df5bf807a2c64dcfb871738929873570aa2dd42a",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-codex-listing-exec-flag.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "737a2e6b879797bba17a02b4beb8d3429b8cee2f7a9455b0d20c45f1e07aa94a",
    "name": "role127-codex-listing-exec-flag",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/codex"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-codex-listing-exec-flag.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "c3d61cde539ce692e130d133b13aab3668f8c497d2f2741fa079efb587e435bb",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-codex-listing-profile.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "672cc8bbf4b5eb77c8d69913ee9ba66cf0f5149cf8a8c60a683cc731416038a0",
    "name": "role127-codex-listing-profile",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/codex"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-codex-listing-profile.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "cd13eaca04095710f71b28e91218fa18485cb3d88b92c95578e8785b77b112fd",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-codex-listing-tools-from-list.diff",
-   "module": "control_agent_config_handoff.py",
-   "mutant_sha256": "0c8efcba25282f279a2f4135eab36e1c34396474a90d8ffb91680357b5951446",
    "name": "role127-codex-listing-tools-from-list",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
    "named_rows": [
     "handoff/codex"
    ],
-   "source_sha256": "243951a7e92166b84cc946e57bc3a2d0c62ed6a7f89669499b1f9fc3f3005488",
-   "status": "not reached by the lead checker run",
-   "suite": "86_veldo_0127_agent_configuration.py"
+   "diff": "role127-codex-listing-tools-from-list.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "30a99bffabd0eb29df19dea9b96d9e7c1aec738d78b688ac90741b47c531fed4",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-context-line-every-run.diff",
-   "module": "control_launch.py",
-   "mutant_sha256": "cfe0954fca23724ea8134379901a6c2d0962640c48ae3a3de571b318527d8567",
    "name": "role127-context-line-every-run",
+   "module": ".veldo/control_launch.py",
+   "suite": "82_veldo_0141_execution_record.py",
    "named_rows": [
     "record/claude-complete",
     "record/codex-complete"
    ],
-   "source_sha256": "58bf7835dcb0d685828ebb24e2b5dc351f0c1e65dfe80be6cb37570bc3b78ff4",
-   "status": "not reached by the lead checker run",
-   "suite": "82_veldo_0141_execution_record.py"
+   "diff": "role127-context-line-every-run.diff",
+   "source_sha256": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
+   "mutant_sha256": "a21ee728375f65876d23c323a8a4357ef4a6bdae8be00020e67979462a7f9b6a",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "diff": "role127-scaffold-omits-role-modules.diff",
-   "module": "init_scaffold.py",
-   "mutant_sha256": "ad4822cf660b3862044b63cbbf9d5e02679d303e1e2608eeca153deecc8092ee",
    "name": "role127-scaffold-omits-role-modules",
+   "module": ".veldo/init_scaffold.py",
+   "suite": "66_veldo_0047_authority.py",
    "named_rows": [
     "authority/installed-assets"
    ],
+   "diff": "role127-scaffold-omits-role-modules.diff",
    "source_sha256": "7ed9c433e66756c3044e6ed0ee86c52e8ee247fa25119336bd7ed4abab6b444a",
-   "status": "not reached by the lead checker run",
-   "suite": "66_veldo_0047_authority.py"
+   "mutant_sha256": "ad4822cf660b3862044b63cbbf9d5e02679d303e1e2608eeca153deecc8092ee",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-staged-skill-committed",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/skill-commit"
+   ],
+   "diff": "role127-staged-skill-committed.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "d0fa2e0b30e598c632342fda658be7be554e8ab8d71c8320bb1835108c46ec17",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-probe-is-terminal",
+   "module": ".veldo/control_engine_claude.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/probe-terminal"
+   ],
+   "diff": "role127-probe-is-terminal.diff",
+   "source_sha256": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
+   "mutant_sha256": "ef7cb3a89c4b4d788a8a84ad52eb6e8882e1a68dabd834170af6b7953f5a39a2",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-prompt-write-failure-swallowed",
+   "module": ".veldo/control_launch.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/probe-terminal"
+   ],
+   "diff": "role127-prompt-write-failure-swallowed.diff",
+   "source_sha256": "db7f5c524562a9aa9e03d6ae55c5624ce8b367a5212ceb81428485521b8fe52d",
+   "mutant_sha256": "983ea950be876353d063f6b707433064b3d6f34b7df5302ca8e3d8b466a882d2",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-init-unbounded",
+   "module": ".veldo/control_engine_claude.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/init-bound"
+   ],
+   "diff": "role127-init-unbounded.diff",
+   "source_sha256": "de278e405ce51e1bee19b449494877fcdeec5c6d5c23e3b7953b4fcc6b1c17cf",
+   "mutant_sha256": "b239552ea350fff198e7ba51ac4f53b7347ff171219c1d76734d0342f725ceef",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-slash-collision-hidden",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/slash-collision"
+   ],
+   "diff": "role127-slash-collision-hidden.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "a74388a3f40e8260e8c057cdb88d569987b886936c37d341681a8ee955db9c28",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-planted-debug-ignored",
+   "module": "proof/VELDO-0127/evidence.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/marker-debug"
+   ],
+   "diff": "role127-planted-debug-ignored.diff",
+   "source_sha256": "35b33aef2cb71b71e28996f2da4f604c556b185d86d6c131f8d64939697fc2de",
+   "mutant_sha256": "7d7bef00b8c5bf77b36e7133b1542f67ffd746946cc9215487d8af95d6acdfaa",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-debug-control-vacuous",
+   "module": "proof/VELDO-0127/evidence.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/marker-debug"
+   ],
+   "diff": "role127-debug-control-vacuous.diff",
+   "source_sha256": "35b33aef2cb71b71e28996f2da4f604c556b185d86d6c131f8d64939697fc2de",
+   "mutant_sha256": "f0f3c59a4080555920f1fb48b6cd802670a05a22122c2a6e4d7fbd9a30abf77a",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-wire-extra-ignored",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-tools"
+   ],
+   "diff": "role127-wire-extra-ignored.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "a0bf30a94f066f77d740baa520c30bb29360ab0de55d0992e03cd4ecd8b377a5",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-wire-missing-ignored",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/codex-tools"
+   ],
+   "diff": "role127-wire-missing-ignored.diff",
+   "source_sha256": "826ca47192f88941dc200c17d08f2d59b2f5ef59c1f361e9244a3080c9b4462b",
+   "mutant_sha256": "b5b0d716a672c56fff2ae8d8012e80b77849db49febd4fcc12dd44d0d9ee9bd3",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "name": "role127-probe-capture-omitted",
+   "module": "proof/VELDO-0127/live.py",
+   "suite": "86_veldo_0127_agent_configuration.py",
+   "named_rows": [
+    "review/probe-terminal"
+   ],
+   "diff": "role127-probe-capture-omitted.diff",
+   "source_sha256": "4431b366cef9a1b90377021ab9728796b838e9cc284f63249230dae4f4bd0ae6",
+   "mutant_sha256": "b28295fcb10882a28cd65171f0c51897defc0a3246f582d998b3cee010e76a4e",
+   "status": "registered; execution reserved for reviewer"
   }
  ],
- "reason": "Lead-reported checker run rejected the seven mutants before role127-probe-withheld, then stopped at its 120 second worker limit. Subsequent mutants were not reached. No checker run or manual mutations executed in this repair.",
- "schema": "veldo.proof-mutations/v1",
- "spec_id": "VELDO-0127"
+ "blocker": "Honest suite retains two red live qualification rows. Lead recapture required before checker can qualify mutations.",
+ "previous_review_report": "Owner reported seven rejections before role127-probe-withheld timed out. No current mutation run claimed."
 }

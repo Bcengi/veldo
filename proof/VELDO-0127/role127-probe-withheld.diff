@@ -1,6 +1,6 @@
---- a/.veldo/control_engine_claude.py
-+++ b/.veldo/control_engine_claude.py
-@@ -1582,2 +1582 @@
+--- .veldo/control_engine_claude.py
++++ mutant/.veldo/control_engine_claude.py
+@@ -1584,2 +1584 @@
 -            self.probed = True
 -            return (json.dumps(PROBE) + '\n').encode()
 +            return None  # defect: the prompt waits for an init the engine reports only for a message

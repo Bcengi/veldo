@@ -1,0 +1,5 @@
+--- proof/VELDO-0127/live.py
++++ mutant/proof/VELDO-0127/live.py
+@@ -119 +119 @@
+-            'builtin_commands':builtin, 'probe':document.get('probe'),
++            'builtin_commands':builtin, 'probe':None,

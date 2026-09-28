@@ -1,0 +1,5 @@
+--- .veldo/control_engine_claude.py
++++ mutant/.veldo/control_engine_claude.py
+@@ -1628 +1628 @@
+-                self.init_deadline = time.monotonic() + 5
++                self.init_deadline = time.monotonic() + 90

@@ -1,0 +1,5 @@
+--- .veldo/control_launch.py
++++ mutant/.veldo/control_launch.py
+@@ -1890 +1890 @@
+-                and (input_failed.is_set() or not metering.terminal.prompt_written)):
++                and False):

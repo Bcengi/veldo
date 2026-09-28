@@ -1,0 +1,5 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -184 +184 @@
+-    return tuple(sorted(name for name, flags in entries.items() if all(flags)))
++    return tuple(sorted(name for name, flags in entries.items() if any(flags)))

@@ -1,0 +1,5 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -387 +387 @@
+-                handle.write('\n/.agents/skills/' + skill['name'] + '\n')
++                handle.write('\n')

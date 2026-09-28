@@ -1,5 +1,5 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -187 +187 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -196 +196 @@
 -            value = [v for v in value if v not in set(builtin)]
 +            value = list(value)

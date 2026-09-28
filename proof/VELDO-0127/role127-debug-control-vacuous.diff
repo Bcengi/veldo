@@ -1,0 +1,5 @@
+--- proof/VELDO-0127/evidence.py
++++ mutant/proof/VELDO-0127/evidence.py
+@@ -25 +25 @@
+-    elif not control.get('debug_lines') and control.get('qualification') != 'context-size-only':
++    elif False:

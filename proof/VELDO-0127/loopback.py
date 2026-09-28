@@ -118,7 +118,7 @@ def capture(binary, configuration):
             server.shutdown()
             thread.join()
             server.server_close()
-        result.update(requests=requests, executable_digest='sha256:' + hashlib.sha256(Path(binary).read_bytes()).hexdigest(),
+        result.update(schema='veldo.offline-tool-observation/v1', requests=requests, executable_digest='sha256:' + hashlib.sha256(Path(binary).read_bytes()).hexdigest(),
                       configuration=configuration, network='loopback stand-in only; empty temporary HOME and CODEX_HOME')
         return result
 

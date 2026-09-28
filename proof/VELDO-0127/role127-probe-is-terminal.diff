@@ -1,0 +1,5 @@
+--- .veldo/control_engine_claude.py
++++ mutant/.veldo/control_engine_claude.py
+@@ -1754 +1754 @@
+-            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):
++            if False:

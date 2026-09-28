@@ -1,5 +1,5 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -182 +182 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -191 +191 @@
 -    for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):
 +    for field in ('tools', 'mcp_servers', 'slash_commands', 'plugins'):

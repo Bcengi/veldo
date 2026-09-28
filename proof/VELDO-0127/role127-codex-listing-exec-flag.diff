@@ -1,5 +1,5 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -286 +286 @@
+--- .veldo/control_agent_config_handoff.py
++++ mutant/.veldo/control_agent_config_handoff.py
+@@ -349 +349 @@
 -            done = subprocess.run([bound['path'], 'mcp'] + command + [OPTION + 'json'] + overrides, env=env,
 +            done = subprocess.run([bound['path'], OPTION + 'ignore-user-config', 'mcp'] + command + [OPTION + 'json'] + overrides, env=env,
