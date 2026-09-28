@@ -121,7 +121,8 @@ files and the service's own state directory, which the running service writes, a
 
 Suites 73 (VELDO-0139) and 74 (VELDO-0140) now give setup the same stand-in (added to this footprint), so
 no suite reaches the host's real Tailscale; suite 73's re-run row expects `holds_workspace` (VELDO-0139
-AC1 as amended) and its "only reloads" row accepts the second reload after the API unit.
+AC1 as amended) and its "only reloads" row accepts the second reload after the API unit. Suite 66 (VELDO-0047) names the API process
+among the programs an installation runs by path, installed 0500.
 
 ## Red record and mutations
 

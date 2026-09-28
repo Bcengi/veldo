@@ -33,6 +33,7 @@ footprint:
   - "scripts/suites/*_veldo_0171_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
   - "scripts/suites/support/v171_tailscale.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -304,5 +305,6 @@ installation whose fixed executable predates this change has no API process and 
 `unavailable_service:api:not_installed` before anything is written, the engine upgrade staying Release 2.
 The footprint adds scripts/suites/74_veldo_0140_standing_delegation.py and
 scripts/suites/support/v171_tailscale.py: suites 73 and 74 run setup too and now give it the same Tailscale
-stand-in, so no suite reaches the host's real CLI. Proof in suite 85_veldo_0171_setup_api and
+stand-in, so no suite reaches the host's real CLI; and scripts/suites/66_veldo_0047_authority.py, whose list
+of the programs an installation runs by path (installed 0500) now names the API process. Proof in suite 85_veldo_0171_setup_api and
 proof/VELDO-0171/. The live Serve leg remains the lead's with the owner.
