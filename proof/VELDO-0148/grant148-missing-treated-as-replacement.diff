@@ -1,0 +1,7 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -123 +123 @@
+-APPROVAL_CODES = ('binding_mismatch:approval/',)
++APPROVAL_CODES = ('binding_mismatch:approval/', 'missing_authority:approval/')
+@@ -423,0 +424 @@
++                replacements.append(name)  # defect: a grant never held is replaced

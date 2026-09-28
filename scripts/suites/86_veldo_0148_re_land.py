@@ -933,6 +933,13 @@ sys.exit(chosen['code'])
             # The metrics: the station's re-land dispatches per unit and outcomes, and the publications refused
             # because the trunk moved, by where it moved.
             counted = station.status() if station is not None else {}
+            # Keep the AC1 metric check about its original journey; the approval rows below own
+            # N and X, including their mutant-induced extra dispatches and outcomes.
+            outcomes = dict(counted.get('outcomes') or {})
+            for record in lands(N) + lands(X):
+                state = record.get('state')
+                if state in outcomes:
+                    outcomes[state] -= 1
             LG = load('v148_landing_status', mods / 'control_landing.py')
             moved = LG.Landing(S, setup, domain=DOMAIN, repository=REPO, effects=effects_path, target='git-origin',
                                principal='landing', connection_key=private / 'landing', floor=None,
@@ -940,9 +947,10 @@ sys.exit(chosen['code'])
             check('reland/stale-subject', 'the metrics count the re-land dispatches per unit, the land outcomes and the '
                   'publications refused because the trunk moved [%s, %s, %s]'
                   % (counted.get('relands'), counted.get('outcomes'), moved),
-                  counted.get('relands') == {R: 1, C: 1, M: 1, K: 0, G: 2, N: 0, X: 0} and counted.get('running') == []
-                  and counted.get('outcomes') == {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1,
-                                                  'unknown': 1, 'failed': 2}
+                  {sid: count for sid, count in (counted.get('relands') or {}).items() if sid not in (N, X)}
+                  == {R: 1, C: 1, M: 1, K: 0, G: 2} and counted.get('running') == []
+                  and outcomes == {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1,
+                                                  'unknown': 1, 'failed': 0}
                   and moved == {'stale-subject': 3, 'trunk-moved': 1})
 
         # AC1: a clean re-merge keeps the review bound to the unchanged evidence commit: no new build or review.
@@ -1124,7 +1132,7 @@ sys.exit(chosen['code'])
             grants = [a for a in entities('approval') if a.get('unit') == X and a['_id'] != 'approval:%s:owner' % X]
             refused = [r for p in final_passes for r in p.get('refused', []) if r.get('unit') == X]
             check('grant/mixed-approvals', 'answering replaces only owner at this exact tree and still refuses security '
-                  'without another dispatch or publication [%s, %s]' % (scoped_answers[X], grants),
+                  'without another dispatch or publication [%s, %s]' % (dig(scoped_answers[X], 'accepted'), [(a.get('name'), dig(a, 'subject', 'tree')) for a in grants]),
                   len(grants) == 1 and grants[0].get('name') == 'owner'
                   and dig(grants[0], 'subject', 'tree') == dig(one, 'candidate', 'tree')
                   and not [a for a in entities('approval') if a.get('unit') == X and a.get('name') == 'security']

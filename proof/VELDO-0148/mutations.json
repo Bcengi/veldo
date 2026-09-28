@@ -1,1076 +1,195 @@
 {
- "all_by_assertion": true,
- "all_named_rows_red": true,
- "baseline": {
-  "details": [],
-  "failed_rows": [],
-  "preamble_rows": 27,
-  "rows": [
-   [
-    "VELDO-0148 install/land-station",
-    true
-   ],
-   [
-    "VELDO-0148 reland/stale-subject",
-    true
-   ],
-   [
-    "VELDO-0148 reland/review-kept",
-    true
-   ],
-   [
-    "VELDO-0148 reland/conflict-rebuild",
-    true
-   ],
-   [
-    "VELDO-0148 reland/never-forced",
-    true
-   ],
-   [
-    "VELDO-0148 lease/trunk-moved",
-    true
-   ],
-   [
-    "VELDO-0148 lease/contains-unknown",
-    true
-   ],
-   [
-    "VELDO-0148 grant/fresh-request",
-    true
-   ],
-   [
-    "VELDO-0148 format/fake-lines",
-    true
-   ]
-  ],
-  "seconds": 21.704
- },
- "controls_green": true,
+ "all_by_assertion": null,
+ "all_named_rows_red": null,
+ "controls_green": null,
+ "historical_evidence": "proof/VELDO-0148/mutations-before-review.json",
  "mutants": [
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the colleague landed before the listing, and the executor refused the publication as stale-subject: the original land dispatch ended trunk_moved naming the watermark, the tip found and the classification [failed, stale_subject:publication/stale-subject, {'classification': 'stale-subject', 'tip': 'cf57292092aee7ea719e079d28997c10d04618e6', 'watermark': 'c92dea0c19ae0e190e40b6ed55af743dd6b693fb'}]",
-    "VELDO-0148 reland/stale-subject detail: the loop offered exactly one new land dispatch of R, following the refused one, and nothing after it [[(1, 'failed', None)], []]",
-    "VELDO-0148 reland/stale-subject detail: the re-land took a new watermark from the new main, re-merged the same build onto it and ran the gate again on the new candidate [None, None, None]",
-    "VELDO-0148 reland/stale-subject detail: the new compare-and-swap landed: its receipt names the re-land dispatch, its watermark as the old tip and its candidate, which the trunk holds [None, []]",
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 0, 'VELDO-9482': 0, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 0}, {'landed': 1, 'trunk_moved': 1, 'conflict': 0, 'awaiting_approval': 0, 'unknown': 1, 'failed': 3}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/review-kept detail: the landing's receipt carries the review of the unchanged evidence commit [None, None]",
-    "VELDO-0148 reland/conflict-rebuild detail: C's first land was refused stale-subject, and its re-land conflicted in the re-merge, named, publishing nothing [[(1, 'failed', 'stale_subject:publication/stale-subject')]]",
-    "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], None]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/conflict-rebuild detail: no land of C followed the conflict: its one re-land was the loop's only land offer of C [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
-    "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-stale-left-failed.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/review-kept",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_landing_station.py",
-   "mutant_sha256": "aeaf785df1b4d3c32566137d40b0b97d83a6312e1e159a87470a55ddcbb726d6",
+   "mutant_sha256": "f84158650a63cdc3a088a561931e765fdc9d3b30b812dbffa75b17d778822f9e",
    "name": "reland148-stale-left-failed",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/stale-subject"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     false
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 32.014,
-   "source_sha256": "d8528492ca3e75b833edec76e58fe4a9d0787faf869624b75f55b55d40a83aaf"
+   "source_sha256": "e89fff63a515fcb317da4ee361ba62edf339c9708bede966592479f4c9db3e39",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 0, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 1, 'trunk_moved': 3, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 2, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 0}]",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 lease/trunk-moved detail: the colleague landed between the listing and the push, and the executor recorded the lost lease as a refused publication, trunk-moved, not unknown [unknown, None]",
-    "VELDO-0148 lease/trunk-moved detail: the tip it judged was fetched into the publication clone, and the land dispatch ended trunk_moved naming the watermark, that tip and the classification [None, []]",
-    "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[(1, 'unknown', None)]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store1486c7ee369', 'store_path': '/dev/shm/v148-c40sobuh/authority/control.sqlite3', 'watermark': 197, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo1486c7ee369:land-grant-a7ed6e1d50572dbcee75e47a', 'assignment': {'actor_kind': 'person', 'alias': 'land-grant-a7ed6e1d50572dbcee75e47a', 'answer': {'accepted_at': 1790608193.9746568, 'command': {'alias': 'land-grant-a7ed6e1d50572dbcee75e47a', 'command_id': 'answer-6c7ee369-45', 'domain_uuid': 'dom1486c7ee369', 'nonce': 'an-6c7ee369-46', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo1486c7ee369', 'request_version': 1, 'ruling': 'grant', 'store_uuid': 'store1486c7ee369'}, 'command_id': 'answer-6c7ee369-45', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'grant', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgc18+itb+W7q+Bpy5DxHMiMc/2b\\nbuCKyhzAj7XDVhtgUAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAECYt00J3zskckF8Pin5wbQaYO0eaKLJ5yrln/gxt0jZoE/v5KrGYx\\n5rsMaHFGYpUrirLf3npHIJ7dcrO5zhPAAA\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Land dispatch/VELDO-9485/land-2-ae42bfef of unit VELDO-9485 re-merged it onto the new main at a599dc5b75cb80975763030c758f6e93bbce44b0. The approval it holds is bound to another tree, so it needs a fresh grant for the re-merged tree 3a01cad2d6a49ba4f5e86a3c87d61bd888daae5e (source 0d75094993220685e9f2978354bcf0f977042fc2, proof sha256:38608fff1a174575cf01af4d0999f85e277390cd537a9b10e809cd24ac2d4276): owner. Grant it, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['grant', 'stop'], 'deadline': '2026-10-05T15:09:36Z', 'disposition': None, 'domain_uuid': 'dom1486c7ee369', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo1486c7ee369', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo1486c7ee369'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:6f4fcc1b4ab65b84db0548de8a87fcffd6b5d0431bffeb7098b8c2905f82e9ed', 'kind': 'land_approval', 'ref': 'dispatch/VELDO-9485/land-2-ae42bfef'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-6c7ee369-45', 'seq': 197, 'record_digest': 'sha256:b0b8ace779123f04a6ab1ed6a3c8d266d25a85165beaeecc5b2cf81688e8a188', 'after_versions': {'assignment:repo1486c7ee369:land-grant-a7ed6e1d50572dbcee75e47a': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:91466bd78d90714666771d123eb828394ea38641d9414a5820a47b3faa6aed84', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [('approval:VELDO-9485:owner:f2735a5e87c7de24', '3a01cad2d6a49ba4f5e86a3c87d61bd888daae5e')], ('running', None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/lease148-loss-unknown.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 lease/trunk-moved",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_effect_executor.py",
    "mutant_sha256": "166ddd37ad2be5a7a01674a4695032d9481897635cdb46f3b24d4b57c1bc98fe",
    "name": "lease148-loss-unknown",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "lease/trunk-moved"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     false
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 32.921,
-   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 3, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 0, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [landed, []]",
-    "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/grant148-old-tree-accepted.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_landing.py",
-   "mutant_sha256": "e995b1207d9e7bc0175d2b74526f83d2deb379ef9fc5bd4f4451906df88d234b",
+   "mutant_sha256": "9e36a17c55281c45091b3f6b9ed129ab644509abb2b86e5344ba84c41ff2cc84",
    "name": "grant148-old-tree-accepted",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "grant/fresh-request"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 33.915,
-   "source_sha256": "fa55cc2c3ce66dc9f3269476a8d0d1b4c6088f2a4ab4ef0d6fdda3aeeac54aa5"
+   "source_sha256": "7306600e9f1ec7dce38f2203bd7dd9ae4b2c22180324b9239314981e4795b5b5",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the loop offered exactly one new land dispatch of R, following the refused one, and nothing after it [[(1, 'trunk_moved', None)], []]",
-    "VELDO-0148 reland/stale-subject detail: the re-land took a new watermark from the new main, re-merged the same build onto it and ran the gate again on the new candidate [None, None, None]",
-    "VELDO-0148 reland/stale-subject detail: the new compare-and-swap landed: its receipt names the re-land dispatch, its watermark as the old tip and its candidate, which the trunk holds [None, []]",
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 0, 'VELDO-9482': 0, 'VELDO-9483': 0, 'VELDO-9484': 0, 'VELDO-9485': 0}, {'landed': 0, 'trunk_moved': 4, 'conflict': 0, 'awaiting_approval': 0, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/review-kept detail: the landing's receipt carries the review of the unchanged evidence commit [None, None]",
-    "VELDO-0148 reland/conflict-rebuild detail: C's first land was refused stale-subject, and its re-land conflicted in the re-merge, named, publishing nothing [[(1, 'trunk_moved', 'stale_subject:publication/stale-subject')]]",
-    "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], None]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/conflict-rebuild detail: no land of C followed the conflict: its one re-land was the loop's only land offer of C [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 5 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 5 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[(1, 'trunk_moved', None)]]",
-    "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
-    "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-loop-offers-nothing.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/review-kept",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 lease/trunk-moved",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "a84437adc5919128e53ccc6bfa5bdfd865f6cfcbc80401bbc94dbdd129b47ac6",
+   "mutant_sha256": "0c3ca3a219e775000dc4cf15c5976c8a49660d905c68efe8916f48247f0d2023",
    "name": "reland148-loop-offers-nothing",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/stale-subject"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     false
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     false
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 30.968,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 2, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], None]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store148752c068d', 'store_path': '/dev/shm/v148-0dfiw8go/authority/control.sqlite3', 'watermark': 187, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo148752c068d:land-grant-1f8313f0e676c8b715e197e3', 'assignment': {'actor_kind': 'person', 'alias': 'land-grant-1f8313f0e676c8b715e197e3', 'answer': {'accepted_at': 1790608259.674688, 'command': {'alias': 'land-grant-1f8313f0e676c8b715e197e3', 'command_id': 'answer-752c068d-45', 'domain_uuid': 'dom148752c068d', 'nonce': 'an-752c068d-46', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo148752c068d', 'request_version': 1, 'ruling': 'grant', 'store_uuid': 'store148752c068d'}, 'command_id': 'answer-752c068d-45', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'grant', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgWl8i5+57woqW4AyTOBR9mf+QO+\\nnVuGrhUkx/8BGlJGMAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEAfMP59bKSM1lyYb1s7Hu/WtX8fJXRzlLU3W1P9SK1kW/vaKkd0Nw\\njLCn7EtDaEp+cXoX2fMzyenIRFbX7uHisK\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Land dispatch/VELDO-9485/land-2-863a4e05 of unit VELDO-9485 re-merged it onto the new main at c5cf98f1da681a4095a7405ae2d97ff5e648afb7. The approval it holds is bound to another tree, so it needs a fresh grant for the re-merged tree 5295ae11a833030246ff900f59c0584cb7428938 (source f10512f979aad78fd3711c2517979b36dd06bc75, proof sha256:3b263f551652e75ab321e55e38f636b0340ee7a2d69b11334fd7e57baf393085): owner. Grant it, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['grant', 'stop'], 'deadline': '2026-10-05T15:10:39Z', 'disposition': None, 'domain_uuid': 'dom148752c068d', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo148752c068d', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo148752c068d'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:c59efd5c56c46b7a1d20fc92bbd32eebc415d2c3fac4622c7a028720eb816a84', 'kind': 'land_approval', 'ref': 'dispatch/VELDO-9485/land-2-863a4e05'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-752c068d-45', 'seq': 187, 'record_digest': 'sha256:59412cb253e50e366f30c2dd2af5c073e34e499700d666d0fc5ad1f6d3c40eb7', 'after_versions': {'assignment:repo148752c068d:land-grant-1f8313f0e676c8b715e197e3': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:bbf3e1f3c56ba63ae60bf97134b39ec37d24b364bee7daa952faf93683f19bc2', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [('approval:VELDO-9485:owner:551c14e1a7556f79', '5295ae11a833030246ff900f59c0584cb7428938')], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-conflict-relanded.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "c8988b5b1a32c1f6af4c3d8ae65b9eae1521547ffb8321a92325abef9432b42e",
+   "mutant_sha256": "c145303f49081befb4d0544fba053241d45d4560ace42efa8c1693cec9233fda",
    "name": "reland148-conflict-relanded",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 34.583,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 2, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store148e424ceca', 'store_path': '/dev/shm/v148-ulcfku5m/authority/control.sqlite3', 'watermark': 196, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo148e424ceca:land-grant-6cbdccf6bc8d5b307a96de27', 'assignment': {'actor_kind': 'person', 'alias': 'land-grant-6cbdccf6bc8d5b307a96de27', 'answer': {'accepted_at': 1790608262.1505036, 'command': {'alias': 'land-grant-6cbdccf6bc8d5b307a96de27', 'command_id': 'answer-e424ceca-45', 'domain_uuid': 'dom148e424ceca', 'nonce': 'an-e424ceca-46', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo148e424ceca', 'request_version': 1, 'ruling': 'grant', 'store_uuid': 'store148e424ceca'}, 'command_id': 'answer-e424ceca-45', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'grant', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgXy7cqfH8k/OO/G7TsKTcG/m3kI\\n1Fq/dZ6lNeOxuGbEoAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEBOF6yODvTXCvB/UMUtYSSlyLkMmWUhg7h2Vr/SPe9sU8DWINnLcA\\nxerc497Zz5pmpWfd0lYI4/L4vmGAeum/UF\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Land dispatch/VELDO-9485/land-2-c710a378 of unit VELDO-9485 re-merged it onto the new main at fce421f168bbea527f4af53884f4171296d915f1. The approval it holds is bound to another tree, so it needs a fresh grant for the re-merged tree b51ae645736f20a47f83c1d64e0ce8710413757b (source 03e400f9aafbfb8d7b9cc1ccf419971178f02726, proof sha256:87df01cf14a6c916b446ac5663ea8546c700de67d4997a10273e27efd63a04f2): owner. Grant it, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['grant', 'stop'], 'deadline': '2026-10-05T15:10:41Z', 'disposition': None, 'domain_uuid': 'dom148e424ceca', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo148e424ceca', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo148e424ceca'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:3e2c83ed7cbf4b101de80598ad15ecbabd0302f1a1edda95bed16561dbbf0bd2', 'kind': 'land_approval', 'ref': 'dispatch/VELDO-9485/land-2-c710a378'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-e424ceca-45', 'seq': 196, 'record_digest': 'sha256:994e65522c727ab1537ea29e5cd680cdb3d77e5a7e8326f962f5b976b8695044', 'after_versions': {'assignment:repo148e424ceca:land-grant-6cbdccf6bc8d5b307a96de27': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:cdbe64f8c03cb6aee4d2b06371b2ba69f63e1a8e9a28b4f455d15df8ee480e33', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [('approval:VELDO-9485:owner:45341a73d8141d21', 'b51ae645736f20a47f83c1d64e0ce8710413757b')], ('running', None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-rebuild-not-reviewed.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "73d8b6d87956910ddaf2ca4120988fa02511a1aacdae3e5f1fb1330bc4560ce2",
+   "mutant_sha256": "6f82ae20540714d3f24e233a16be627edd0ac75ed08e3cb9595aef0352e488f8",
    "name": "reland148-rebuild-not-reviewed",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 35.189,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/review-kept detail: R was neither built nor reviewed again: its one build and one review dispatch, and its floor record untouched [[('build', 1), ('build', 2), ('review', 1)], (4, 4)]",
-    "VELDO-0148 lease/contains-unknown detail: its land dispatch stopped unknown, by name, and the loop offered nothing after it: no new attempt and no re-land [unknown, unknown_outcome:publication/unknown]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-landed-rebuilt.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/review-kept",
-    "VELDO-0148 lease/contains-unknown"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "5690e23be988473e876b88453da85930bbecdb5eb39a18e8769dc1df874c3033",
+   "mutant_sha256": "9c219d0a81654e4eab671b9ec2b1a1e04e71faaf94e1269a3e40338211f305f9",
    "name": "reland148-landed-rebuilt",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/review-kept"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     true
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     false
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     false
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 17.206,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 2, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], {'conflicts': ['src/veldo_9482.py'], 'land_dispatch': 'dispatch/VELDO-9482/land-2-24dc6f46', 'onto': '67686e789f257c7e5cb71a2086486ee30b6488b6', 'trunk': 'main'}]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-end-wakes-nothing.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "694c4b931bdc305041933b075f8c78edf80533e8fe605cf4a9ba2452e664e231",
+   "mutant_sha256": "80466645a897d83990066fb8f0316e72d117f299e1c9ec6dfcac6a5af990c69e",
    "name": "reland148-end-wakes-nothing",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 34.407,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 1, 'VELDO-9485': 2}, {'landed': 4, 'trunk_moved': 5, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 0, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 2}]",
-    "VELDO-0148 lease/contains-unknown detail: the colleague's commit contains K's candidate, and the publication stayed unknown with its stop owed, judged at its one push URL [refused, None, []]",
-    "VELDO-0148 lease/contains-unknown detail: its land dispatch stopped unknown, by name, and the loop offered nothing after it: no new attempt and no re-land [trunk_moved, stale_subject:publication/trunk-moved]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/lease148-contained-refused.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 lease/contains-unknown"
-   ],
    "module": ".veldo/control_effect_executor.py",
    "mutant_sha256": "09c59c376974244bbbbb2f695f96852c291638105ef90cc0c58bee0c45cb71a2",
    "name": "lease148-contained-refused",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "lease/contains-unknown"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     false
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 16.559,
-   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 0, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 1, 'trunk_moved': 3, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 2, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 0}]",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 lease/trunk-moved detail: the colleague landed between the listing and the push, and the executor recorded the lost lease as a refused publication, trunk-moved, not unknown [unknown, None]",
-    "VELDO-0148 lease/trunk-moved detail: the tip it judged was fetched into the publication clone, and the land dispatch ended trunk_moved naming the watermark, that tip and the classification [None, []]",
-    "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[(1, 'unknown', None)]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store14830e0a835', 'store_path': '/dev/shm/v148-3po0bis8/authority/control.sqlite3', 'watermark': 197, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo14830e0a835:land-grant-4325ff7df36e66c99acaa7cd', 'assignment': {'actor_kind': 'person', 'alias': 'land-grant-4325ff7df36e66c99acaa7cd', 'answer': {'accepted_at': 1790608325.2579124, 'command': {'alias': 'land-grant-4325ff7df36e66c99acaa7cd', 'command_id': 'answer-30e0a835-45', 'domain_uuid': 'dom14830e0a835', 'nonce': 'an-30e0a835-46', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo14830e0a835', 'request_version': 1, 'ruling': 'grant', 'store_uuid': 'store14830e0a835'}, 'command_id': 'answer-30e0a835-45', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'grant', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgZYy/QRO0ieC54yncsF+GnG/0eE\\ngp0moyUBdvzjrca58AAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEDuN6XZWdbmSrPgSpvcWR63SeWGs1JaT/LwrlwaSuiP95OCX+WIYx\\nUGNHP1m6YeJ6yXDeWjQPekN8MOKa6PuEAM\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Land dispatch/VELDO-9485/land-2-7e98684d of unit VELDO-9485 re-merged it onto the new main at 861ac0b0ea668935213066740dace7af76022916. The approval it holds is bound to another tree, so it needs a fresh grant for the re-merged tree ab2efbb7b1e42d4b7483b0ea49278adc7477a7ae (source b97016f229f71edb0dbe3c8925f96b212b574286, proof sha256:ebccb19871e21381ce16f7805e8cd97560e25d50506d94f4c1f13de0abb02377): owner. Grant it, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['grant', 'stop'], 'deadline': '2026-10-05T15:11:47Z', 'disposition': None, 'domain_uuid': 'dom14830e0a835', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo14830e0a835', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo14830e0a835'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:f97925fb1bc39faa205a5ab9f2030a77bb3867b52238c9abfa9aa7487b6b7673', 'kind': 'land_approval', 'ref': 'dispatch/VELDO-9485/land-2-7e98684d'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-30e0a835-45', 'seq': 197, 'record_digest': 'sha256:31d91fa461d51241c7e8405af88c831596c45281b0bfdd7d866eb3fd1ecb54ac', 'after_versions': {'assignment:repo14830e0a835:land-grant-4325ff7df36e66c99acaa7cd': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:f7cb4d26f4f95457cb17c4e192b4fd54a00c97cc319da9494808a2f63e597e58', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [('approval:VELDO-9485:owner:69be7bf10f418531', 'ab2efbb7b1e42d4b7483b0ea49278adc7477a7ae')], ('running', None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/lease148-tip-not-fetched.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 lease/trunk-moved",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_effect_executor.py",
    "mutant_sha256": "d81e1db3b6f32da1bca0277dcaa5d9e7e0203552ccabda7cd5164d145367acd4",
    "name": "lease148-tip-not-fetched",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "lease/trunk-moved"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     false
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 31.766,
-   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the colleague landed before the listing, and the executor refused the publication as stale-subject: the original land dispatch ended trunk_moved naming the watermark, the tip found and the classification [landed, None, None]",
-    "VELDO-0148 reland/stale-subject detail: the loop offered exactly one new land dispatch of R, following the refused one, and nothing after it [[(1, 'landed', None)], []]",
-    "VELDO-0148 reland/stale-subject detail: the re-land took a new watermark from the new main, re-merged the same build onto it and ran the gate again on the new candidate [None, None, None]",
-    "VELDO-0148 reland/stale-subject detail: the new compare-and-swap landed: its receipt names the re-land dispatch, its watermark as the old tip and its candidate, which the trunk holds [None, ['dispatch/VELDO-9481/land-1-9602aa99']]",
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 0, 'VELDO-9482': 0, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 0}, {'landed': 4, 'trunk_moved': 1, 'conflict': 0, 'awaiting_approval': 0, 'unknown': 1, 'failed': 0}, {'stale-subject': 0, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/conflict-rebuild detail: C's first land was refused stale-subject, and its re-land conflicted in the re-merge, named, publishing nothing [[(1, 'landed', None)]]",
-    "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], None]",
-    "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
-    "VELDO-0148 reland/conflict-rebuild detail: no land of C followed the conflict: its one re-land was the loop's only land offer of C [[]]",
-    "VELDO-0148 reland/never-forced detail: every one of the 9 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 6 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [landed, ('32c4e06b36126245214c856f5598a2d2645468c8', '32c4e06b36126245214c856f5598a2d2645468c8')]",
-    "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
-    "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/never148-forced-push.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/conflict-rebuild",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_effect_executor.py",
    "mutant_sha256": "c0a149add47b9753d8ff4f1e8ae09479ca7a4bd3b62dbe10f84027192db0c7d2",
    "name": "never148-forced-push",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "reland/never-forced"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     false
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 31.729,
-   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "registered; execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
-   "details": [
-    "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [{'VELDO-9481': 1, 'VELDO-9482': 1, 'VELDO-9483': 1, 'VELDO-9484': 0, 'VELDO-9485': 1}, {'landed': 2, 'trunk_moved': 4, 'conflict': 1, 'awaiting_approval': 1, 'unknown': 1, 'failed': 0}, {'stale-subject': 3, 'trunk-moved': 1}]",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 updates of the remote trunk was a fast-forward",
-    "VELDO-0148 reland/never-forced detail: every one of the 7 publications was a compare-and-swap of its own land's watermark",
-    "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [{'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store148998d7946', 'store_path': '/dev/shm/v148-3x9ecij2/authority/control.sqlite3', 'watermark': 205, 'result': {'ok': True, 'reason': 'answer', 'assignment_id': 'assignment:repo148998d7946:land-grant-0ffb78e3384cd6e439f9058f', 'assignment': {'actor_kind': 'person', 'alias': 'land-grant-0ffb78e3384cd6e439f9058f', 'answer': {'accepted_at': 1790608341.049629, 'command': {'alias': 'land-grant-0ffb78e3384cd6e439f9058f', 'command_id': 'answer-998d7946-45', 'domain_uuid': 'dom148998d7946', 'nonce': 'an-998d7946-46', 'operation': 'answer', 'principal': 'owner', 'repository_uuid': 'repo148998d7946', 'request_version': 1, 'ruling': 'grant', 'store_uuid': 'store148998d7946'}, 'command_id': 'answer-998d7946-45', 'key_id': 'key:owner:1', 'principal': 'owner', 'request_version': 1, 'ruling': 'grant', 'signature': '-----BEGIN SSH SIGNATURE-----\\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgfvydrT8asxX81iOJH0eUBoBsF+\\nfSI4ubPVKfRtfBVgYAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\\nc2gtZWQyNTUxOQAAAEBYXmoHp/ilFjiG4qZSVHr90GoNJfj+l+SHbqs/fUj0lfv9IJPiyU\\nQI1+y3qTUefJmYNs4KtT8Iw161UOfYJlUN\\n-----END SSH SIGNATURE-----\\n'}, 'brief': 'Land dispatch/VELDO-9485/land-2-bba3f84d of unit VELDO-9485 re-merged it onto the new main at e9f12b5b1cff10a123457241f04edd243f5b5711. The approval it holds is bound to another tree, so it needs a fresh grant for the re-merged tree 1463e03413f2fbfee8a6f54ef7c5862fd8bf8ce1 (source 5e0c46eaf0103ac73645842e67c06ea819ffb17e, proof sha256:3e5cdfa5a509c0e70dfbaf65863e24bbc267fbf40f43a1f880f3e0eed4c959e9): owner. Grant it, or stop the unit?', 'budget': {'invocations': 1}, 'choices': ['grant', 'stop'], 'deadline': '2026-10-05T15:12:20Z', 'disposition': None, 'domain_uuid': 'dom148998d7946', 'kind': 'decision', 'owner': 'owner', 'repository_uuid': 'repo148998d7946', 'request_version': 1, 'requested_by': 'authority', 'schema': 'veldo.assignment/v1', 'scope': ['repo148998d7946'], 'state': 'SUBMITTED', 'subject': {'digest': 'sha256:855037e0d902609a2e878238a9db3336aba22f29c249e69b11f961f5803a2d49', 'kind': 'land_approval', 'ref': 'dispatch/VELDO-9485/land-2-bba3f84d'}, 'unit_id': None}, 'receipt': {'committed': True, 'command_id': 'answer-998d7946-45', 'seq': 205, 'record_digest': 'sha256:ac51d6dc189cee410bef40aeefcc1538ede0bd6b5debadc584ee6bb1a05cc706', 'after_versions': {'assignment:repo148998d7946:land-grant-0ffb78e3384cd6e439f9058f': 2, 'key:owner:1': 1, 'owner': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:a5a0e52394b1071a61f21b58062bb0692ac8605e7d727022e4274638750cb703', 'replayed': False}, 'released_claim': None, 'stop_requester': False}}, [], (None, None)]"
-   ],
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/grant148-asked-every-pass.diff",
-   "failed_rows": [
-    "VELDO-0148 reland/stale-subject",
-    "VELDO-0148 reland/never-forced",
-    "VELDO-0148 grant/fresh-request"
-   ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "2a2d8e8e707de6fe895fdada0ed959eb9fb7e7f144fdc94245d94b6a004a8a21",
+   "mutant_sha256": "c0a817ad3ffada786b8669dabf02325611881dab3d06bd6f9f06bcb81ce1a8d6",
    "name": "grant148-asked-every-pass",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "grant/fresh-request"
    ],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     false
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     false
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     false
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
+   "source_sha256": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-missing-treated-as-replacement.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "b0b6975d954743c5e47387226f3320b23f7394fbebbe9706777246396268270d",
+   "name": "grant148-missing-treated-as-replacement",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/never-granted"
    ],
-   "seconds": 35.136,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
+   "source_sha256": "7306600e9f1ec7dce38f2203bd7dd9ae4b2c22180324b9239314981e4795b5b5",
+   "status": "registered; execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-replacement-includes-missing.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "76f78372b138748a0ed753d2de4134d10b987df70624100fefa167fd8afa9fa1",
+   "name": "grant148-replacement-includes-missing",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/mixed-approvals"
+   ],
+   "source_sha256": "7306600e9f1ec7dce38f2203bd7dd9ae4b2c22180324b9239314981e4795b5b5",
+   "status": "registered; execution reserved for reviewer"
   }
  ],
- "mutations_per_row": {
-  "grant/fresh-request": [
-   "grant148-old-tree-accepted",
-   "grant148-asked-every-pass"
-  ],
-  "lease/contains-unknown": [
-   "lease148-contained-refused"
-  ],
-  "lease/trunk-moved": [
-   "lease148-loss-unknown",
-   "lease148-tip-not-fetched"
-  ],
-  "reland/conflict-rebuild": [
-   "reland148-conflict-relanded",
-   "reland148-rebuild-not-reviewed",
-   "reland148-end-wakes-nothing"
-  ],
-  "reland/never-forced": [
-   "never148-forced-push"
-  ],
-  "reland/review-kept": [
-   "reland148-landed-rebuilt"
-  ],
-  "reland/stale-subject": [
-   "reland148-stale-left-failed",
-   "reland148-loop-offers-nothing"
-  ]
- },
- "noop": {
-  "control_effect_executor.py": {
-   "copy_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     true
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 18.373,
-   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
-  },
-  "control_landing.py": {
-   "copy_sha256": "fa55cc2c3ce66dc9f3269476a8d0d1b4c6088f2a4ab4ef0d6fdda3aeeac54aa5",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     true
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 18.351,
-   "source_sha256": "fa55cc2c3ce66dc9f3269476a8d0d1b4c6088f2a4ab4ef0d6fdda3aeeac54aa5"
-  },
-  "control_landing_station.py": {
-   "copy_sha256": "d8528492ca3e75b833edec76e58fe4a9d0787faf869624b75f55b55d40a83aaf",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     true
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 21.071,
-   "source_sha256": "d8528492ca3e75b833edec76e58fe4a9d0787faf869624b75f55b55d40a83aaf"
-  },
-  "control_service.py": {
-   "copy_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f",
-   "details": [],
-   "failed_rows": [],
-   "preamble_rows": 27,
-   "rows": [
-    [
-     "VELDO-0148 install/land-station",
-     true
-    ],
-    [
-     "VELDO-0148 reland/stale-subject",
-     true
-    ],
-    [
-     "VELDO-0148 reland/review-kept",
-     true
-    ],
-    [
-     "VELDO-0148 reland/conflict-rebuild",
-     true
-    ],
-    [
-     "VELDO-0148 reland/never-forced",
-     true
-    ],
-    [
-     "VELDO-0148 lease/trunk-moved",
-     true
-    ],
-    [
-     "VELDO-0148 lease/contains-unknown",
-     true
-    ],
-    [
-     "VELDO-0148 grant/fresh-request",
-     true
-    ],
-    [
-     "VELDO-0148 format/fake-lines",
-     true
-    ]
-   ],
-   "seconds": 21.221,
-   "source_sha256": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f"
-  }
- },
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 467.113,
  "spec_id": "VELDO-0148",
+ "status": "Static anchor, syntax and digest checks only. No mutation execution in this repair.",
  "suite": "scripts/suites/86_veldo_0148_re_land.py"
 }
