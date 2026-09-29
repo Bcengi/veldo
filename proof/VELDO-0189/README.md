@@ -68,7 +68,7 @@ nothing and restarts nothing.
 ## Rows (scripts/suites/86_veldo_0189_engine_upgrade.py)
 
 Each older engine is the whole `.veldo` of its commit exported once with `git archive`, committed in
-`older/`, checked against `older/manifest.json` before extraction, and set up by its own setup module on its own scratch host (state root, install root, unit directory, host trust, clone); a fresh host
+`older/`, checked against `older/digests.json` before extraction, and set up by its own setup module on its own scratch host (state root, install root, unit directory, host trust, clone); a fresh host
 is set up by the current setup with the same arguments. The authority unit's ExecStart is run by a user
 manager stand-in of the suite's own, whose invocation log the suite owns; the killed setups run in a
 process of their own whose systemctl calls reach that stand-in over a UNIX socket.
@@ -485,7 +485,7 @@ changed paths and none outside the declared footprint.
 ## History-independent suite inputs
 
 `older/generate.py` exports the exact `.veldo` trees of 8bc34e94 and 971186ac with Git archive,
-then compresses them with a fixed gzip timestamp. `older/manifest.json` records both full commit IDs,
+then compresses them with a fixed gzip timestamp. `older/digests.json` records both full commit IDs,
 the compressed and original archive SHA-256 digests, and the fixed census capture heads. Regenerating
 uses those heads, so the inputs remain reproducible after this branch advances. No fixture is synthesized
 from current engine code. The suite verifies the compressed bytes before extraction or parsing.

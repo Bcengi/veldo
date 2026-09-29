@@ -1,0 +1,23 @@
+{
+  "spec_id": "VELDO-0189",
+  "baseline": "fed739c7",
+  "historical_assertions_retained": 123,
+  "changed_assertion": "census ancestry uses the identical captured chain",
+  "added_assertions": 3,
+  "production_changes": [],
+  "engine_python_and_unit_copy_mismatches": [],
+  "paths_outside_task_footprint": [],
+  "mutations": {
+    "count": 46,
+    "status": "not run; reviewer reserved",
+    "registrations_unchanged": true,
+    "syntax_valid": true
+  },
+  "seam_audit": [
+    "suite older_engine reader and scratch module loader",
+    "historical census reader and production control_service install/layout writers",
+    "proof driver red runner",
+    "suite manifest and generated requires",
+    "mutation registry production anchors and materializer"
+  ]
+}

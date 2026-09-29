@@ -23,7 +23,7 @@ def read(*args, text=True, **kwargs):
 
 
 def main():
-    previous = HERE / 'manifest.json'
+    previous = HERE / 'digests.json'
     endpoints = json.loads(previous.read_text())['census_heads'] if previous.exists() else {
         name: read('rev-parse', name).strip() for name in ('HEAD', 'main')}
     manifest = {'schema': 'veldo.older-engines/v1', 'census_heads': endpoints, 'files': {}}

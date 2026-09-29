@@ -19,7 +19,7 @@ their own assertions (the suite records that against each row rather than raisin
     python3 -B proof/VELDO-0189/drive.py --red <pre-change commit>
     python3 -B proof/VELDO-0189/drive.py --cache <directory> [--budget <seconds>]   (resumable)
 """
-# Add --history-free to --red COMMIT to run the baseline suite without repository history.
+# Add --history-free to --red COMMIT to run the current suite against the baseline without repository history.
 # Add --runtime to --red COMMIT to assert the runtime budget against the original suite.
 import ast
 import contextlib
@@ -69,7 +69,7 @@ def _driver():
     return module
 
 
-def one(paths, root, original_suite=False):
+def one(paths, root):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
@@ -83,7 +83,7 @@ def one(paths, root, original_suite=False):
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
-        source = ((Path(root) if original_suite else ROOT) / 'scripts/suites' / SUITE).read_text()
+        source = (ROOT / 'scripts/suites' / SUITE).read_text()
         for module, path in paths.items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
             if source.count(anchor) != 1:
@@ -96,7 +96,7 @@ def one(paths, root, original_suite=False):
             'preamble_rows': len(rows) - len(mine)}
 
 
-def run(paths=None, root=None, original_suite=False):
+def run(paths=None, root=None):
     key = None
     if CACHE is not None:
         key = hashlib.sha256(json.dumps([_sha(ROOT / 'scripts/suites' / SUITE), str(root or ROOT),
@@ -107,8 +107,6 @@ def run(paths=None, root=None, original_suite=False):
             raise SystemExit('drive: the budget is spent; the finished runs are kept in %s, run it again' % CACHE)
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
-    if original_suite:
-        command.append('--original-suite')
     proc = subprocess.run(command, capture_output=True, text=True, timeout=900)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -133,7 +131,7 @@ def red(commit, history_free=False):
     with tempfile.TemporaryDirectory(prefix='v189-red-') as directory:
         tree = Path(directory) / 'tree'
         if history_free:
-            # Reproduce the harness defect using the baseline's own suite in an exported tree.
+            # Exercise the current assertions against a baseline export without fixtures or history.
             tree.mkdir()
             archive = _git_process.run(['git', '-C', str(ROOT), 'archive', '--format=tar', resolved],
                                        capture_output=True, check=True).stdout
@@ -145,9 +143,9 @@ def red(commit, history_free=False):
             _git_process.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True,
                              check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
-        observed = run({}, tree, original_suite=history_free)
+        observed = run({}, tree)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0189', suite='scripts/suites/' + SUITE, commit=resolved,
-                  tree=('baseline archive without .git, running its original suite' if history_free else
+                  tree=('baseline archive without .git, running the current suite' if history_free else
                         'a local clone checked out at %s, unchanged; the current suite file run against it' % resolved), modules=modules,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
@@ -173,7 +171,7 @@ def main():
             red(sys.argv[2], history_free='--history-free' in sys.argv[3:])
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], original_suite='--original-suite' in sys.argv[4:])))
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == FINDING]

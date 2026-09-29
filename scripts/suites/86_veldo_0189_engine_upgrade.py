@@ -656,7 +656,7 @@ def _v189_suite():
         """Verify committed historical bytes before any extraction or parsing."""
         directory = ROOT / 'proof/VELDO-0189/older'
         try:
-            manifest = json.loads((directory / 'manifest.json').read_text())
+            manifest = json.loads((directory / 'digests.json').read_text())
             data = (directory / name).read_bytes()
             valid = hashlib.sha256(data).hexdigest() == manifest['files'][name]['sha256']
         except (OSError, ValueError, KeyError, TypeError):
