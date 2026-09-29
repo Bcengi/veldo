@@ -519,5 +519,14 @@
  "spec_id": "VELDO-0189",
  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
  "registry": "scripts/check_teeth_mutations.py finding 189",
- "history_free_inputs": "Finding 189 registrations and falsifiers are unchanged. The suite now verifies committed historical fixtures before use. Execution remains reserved to the reviewer; see history-free-audit.json."
+ "history_free_inputs": "Finding 189 registrations and falsifiers are unchanged. The suite now verifies committed historical fixtures before use. Execution remains reserved to the reviewer; see history-free-audit.json.",
+ "runtime_inventory_review": {
+  "audit": "runtime-inventory-audit.json",
+  "strengthened_rows": [
+   "upgrade/from-8bc34e94",
+   "upgrade/from-971186ac"
+  ],
+  "other_same_cause_survivors": [],
+  "execution": "reviewer_pending"
+ }
 }

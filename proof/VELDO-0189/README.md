@@ -521,3 +521,49 @@ Verification for this repair is in `history-free-verification.json` and `history
   specs reports none outside, and this repair's diff from fed739c7 is wholly within VELDO-0189.
 - All 46 finding 189 registrations and their declared falsifiers remain unchanged, with valid anchors
   and syntax. Mutation execution and the full gate remain reviewer pending; no rejection is claimed.
+
+
+## Existing runtime inventory proof repair
+
+The lead's surviving `upgrade189-runtime-record-stale` mutation is a reachable defect. The exact
+8bc34e94 and 971186ac installers do not write `runtime_assets`. In upgrade inspection the mutated
+assignment produces an empty inventory, but the following missing-key update immediately replaces
+it with the fresh value. The existing fresh-equivalence assertions therefore correctly pass those
+historical journeys even under this mutation. The committed archives were not the cause.
+
+Each existing older-host row now also creates a runtime-bearing predecessor with real factory setup,
+using earlier bytes for the inert `runtime/nested/upgrade.json` fixture. It restores the current source
+bytes and calls real setup again. Five assertions establish that setup made the predecessor, its
+existing inventory differs from fresh and describes its installed bytes, upgrade reports the changed
+asset, the resulting record names the fresh inventory, and the installed runtime bytes match it.
+No installation record is fabricated, and all 127 previous check calls remain intact. The stale
+assignment now preserves an existing differing key, so the record equality assertion rejects it.
+Mutation execution remains reserved to the reviewer; this is a code-path conclusion, not an executed
+rejection claim.
+
+Reading all 46 finding 189 mutations found no other mutant masked by this same missing-key update.
+The other runtime mutations drop staged assets, omit recorded assets during inspection, change
+directory modes, prevent recursive cleanup, or bypass inventory type validation. Their observable
+file, outcome, mode or refusal differences are not repaired by filling a missing record key. Pin and
+engines-record mutations change pin presence or mode, record publication, validation or write reports.
+The remaining mutations address module completeness, configuration preservation, ownership, interruption
+and restart behavior. Their registrations and replacements remain unchanged. The registry comment
+now explains why these two rows need a predecessor whose runtime key already exists.
+
+`runtime-inventory-audit.json` records the historical installer hashes, every reviewed mutation,
+the assertion audit and byte-identical production mirrors. No production file or footprint changed.
+The suite remains registered and its requires file was regenerated without a content change.
+
+
+`runtime-inventory-verification.json` records 58 passing checks and zero failures for the selected
+suite ordinarily (55.44 seconds), under the requested empty environment (57.98 seconds), and in a
+Git archive with no `.git` (55.45 seconds). These partial runs exit 2 as designed and do not claim
+aggregate gate evidence. Validation passes; anchors report zero bad entries. The prescribed 0189-only
+footprint command still reports inherited 0171 paths relative to origin/main; both stacked specs cover
+them, and this repair's own paths all fit the existing 0189 footprint.
+
+The requested baseline driver ran against 16c8ed33 exported without Git metadata. Its result is
+`red-at-16c8ed33.json`: all 32 behavior rows pass, each reported once, with no raised failures.
+Production is unchanged in this test repair, so an all-red baseline record would be false. The new
+record equality check's rejection of the registered stale-inventory mutant is awaiting the reviewer,
+as required by the owner's prohibition on running mutation checks here. No mutation or full gate ran.

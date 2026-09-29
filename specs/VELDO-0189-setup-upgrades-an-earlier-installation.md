@@ -381,3 +381,13 @@ to differ, the changed asset to be reported, and the resulting record and instal
 fresh. No production change, acceptance criterion change or footprint extension is needed. Reading
 all finding 189 registrations found no other mutant masked by that missing-key fallback. Execution
 of the registered mutants remains reserved to the reviewer.
+
+
+2026-09-29, runtime inventory verification: all 58 selected checks pass normally, under the requested
+empty environment and in an archive without .git. The requested baseline drive at 16c8ed33 reports all
+32 behavior rows green, once each, because this repair changes proof coverage and leaves correct
+production unchanged; no all-red baseline claim is made. The new assertion targets the stale record
+mutant's existing-key branch, whose execution remains reviewer pending. Validation passes and anchors
+report zero bad entries. This repair fits the existing footprint; the prescribed origin/main comparison
+still needs both stacked specifications to cover inherited VELDO-0171 paths. Results and the static
+mutation audit are in proof/VELDO-0189/runtime-inventory-*.json.
