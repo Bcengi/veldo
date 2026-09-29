@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -445 +445 @@
+@@ -450 +450 @@
 -    outcome = restore_ownership(plan)
 +    outcome = 'restored'  # defect: the switch back skips the restore

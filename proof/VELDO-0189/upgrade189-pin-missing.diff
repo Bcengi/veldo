@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_engines.py
 +++ .veldo/control_factory_setup_engines.py
-@@ -84 +84 @@
+@@ -97 +97 @@
 -            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)
 +            pass

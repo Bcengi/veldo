@@ -1,6 +1,6 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -161 +161,2 @@
+@@ -162 +162,2 @@
 -        for name in sorted(set(found) | set(recorded)):
 +        installed = 'recorded'  # defect: an engine file edited by hand is overwritten without notice
 +        for name in []:

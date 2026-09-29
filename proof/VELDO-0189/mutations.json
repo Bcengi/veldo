@@ -10,8 +10,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "864cfca38d06acf8fad222fca69f5e4d0d38da6104f3315c928d1fe976119303"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "8cb1f5ac01cf27cdc77a68ba2cd8adec473c01b57b0197d6d4ca81ab2cedd47b"
   },
   {
    "name": "upgrade189-in-place-writes",
@@ -21,8 +21,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-in-place-writes.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "545546a4e37226b8198a7fff6fb3e2e7f71c53b6da8c40f65965fbf2dfc3bafa"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "7ba15cc33c80d50af415bbf6e337741bf90ede152456ef6611d06e4b064adc24"
   },
   {
    "name": "upgrade189-configs-written-fresh",
@@ -32,8 +32,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "1c44d00691122fadcf75503afb4c0583c8351f25e9012103fa8477da2488fb14"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "cf744bc4fc053e4696892a7270116170a59a0756f23d5d0c219088e82a24bcbc"
   },
   {
    "name": "upgrade189-restart-every-run",
@@ -43,8 +43,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-restart-every-run.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "d1531e2ec1793e72c84d0e3c341e460d13a9348009d9524ee470c37f3c323354"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "e6f0f9a5fee0af8d3f1512923a8a4565a46c0761b74d329f88240ca446670bae"
   },
   {
    "name": "upgrade189-edited-file-overwritten",
@@ -54,8 +54,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "246aca159ddc325401bd8aa183449e1d03c4d533f63745720690e38ec798f319"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "96c10f17c46677a2b08f930c8ee11fb86003812e0ad04f13d9a38e601b2078eb"
   },
   {
    "name": "upgrade189-removed-file-kept",
@@ -65,8 +65,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "34b08c33f6666e76d0ec13350bd276372ebe6b034f93b043255925e95082781c"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "d0784890e12f7cb84ca1de61e8bede81599945b655d5f90c2d74b6b927dc2aa7"
   },
   {
    "name": "upgrade189-no-switch-back",
@@ -76,8 +76,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-no-switch-back.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "219eb184374a5ca53df568cce25b35e6e98e11dec10b622141cebfbc283b764c"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "7360754217fbe00ec065effed468104c85209328ca8cfc3345ad87346edf1fc5"
   },
   {
    "name": "upgrade189-no-exchange-probe",
@@ -87,8 +87,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "3e449e73e2305733b28c196b933bdb62a247f0f659f4a5a45de9c7d7d0f8d1bf"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "741517447f90b44bda8d6c312fe6c83beb306f700b407ecd420435b1f3ceaaba"
   },
   {
    "name": "upgrade189-module-not-scaffolded",
@@ -131,8 +131,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-no-ownership-restore.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "965e7f9985bc1adf242ef46759148524ec4a091f24a863c267aa9bac2969e5e2"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "7941cc4de3acbc6cf60e52d6f04f828dbbe6697316efc544ae19245710126201"
   },
   {
    "name": "upgrade189-rebind-not-recorded",
@@ -164,8 +164,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-commit-not-sent.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "85b4b869175f1750adfb75515bd189bba36eb4d3de31dd9988a940318d6ba028"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "4954f1caa088cda91461bdba1dc773fc493105b560aa0d0c97ba9cfa74baf55f"
   },
   {
    "name": "upgrade189-last-begin-only",
@@ -175,8 +175,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-last-begin-only.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "1ee99ba480be8876fbc2b5b9917234a7c267cd6a6ff6c3e5875290407d19867c"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "b6ed56179e4d2f7a022d0eccaac35acf7f2411e2111424601cdb8961ef1c9a14"
   },
   {
    "name": "upgrade189-resumed-not-switched",
@@ -186,8 +186,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-resumed-not-switched.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "13c528f400b717c305146da3bf3f643e5c1ea59ebbec7487d855321075099e7f"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "f84341bd2c4ad9a9bad3e927dbef877d6f225f325fca51bd0a768d8b6ba5995a"
   },
   {
    "name": "upgrade189-resumed-units-forgotten",
@@ -197,8 +197,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-resumed-units-forgotten.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "7bd1e9f7ca225f9d6c99142c929b1fcbcd8404f3aa8751fc438527676855293b"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "6bd178e32a0433f0f22f8bc4cd3455277b53ca65b46c9fd9c7aa9b8185ca3153"
   },
   {
    "name": "upgrade189-switch-back-not-due",
@@ -208,8 +208,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-switch-back-not-due.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "ff01cd1a85eeb7c105a4dd5cc91acfd5132adcd76479f80a02622ff6364399f7"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "d412bbe504a7cf4eda61f909d4c005d180d058be5601feb15d86de8a01811911"
   },
   {
    "name": "upgrade189-recovery-holds-lock",
@@ -219,8 +219,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-recovery-holds-lock.diff",
-   "source_sha256": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a",
-   "mutant_sha256": "50e8f9c70c07bf19ff85bb20ccb400e9d8b9bf2d26ce28f4a09cba2a1f3619ba"
+   "source_sha256": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
+   "mutant_sha256": "824bd39c92793f7060725a428d2d9b48e42969cfd43175f55d9335d60297fd1b"
   },
   {
    "name": "upgrade189-stop-exit-ignored",
@@ -230,8 +230,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-stop-exit-ignored.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "6b4efcb9f3579c458a0c50a26a1d9e21e007a9208c8cb13d614109b0064665d6"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "17414ef9efc9020e160e414ab9f84b415c5420f713d6c3a5feac58597a816c85"
   },
   {
    "name": "upgrade189-restore-refusal-unreported",
@@ -241,8 +241,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-restore-refusal-unreported.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "2eb5d22ff68ddd1cdaf57be95f5c45c7c516da19c27706874143006804d46270"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "68bef92a3b7857dc6e7c79c90f532094b47086672602d939b419a00e0591c896"
   },
   {
    "name": "upgrade189-restore-only-first-blocker",
@@ -285,8 +285,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-restore-without-stop.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "5735245eb2e92ad6637dcfac41e87852ddc4d8b07bb245973a97c64292e58229"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "74a1f1787f4170249b8313a7930c84095f999455cb070b96daa3b77cb9af6f6a"
   },
   {
    "name": "upgrade189-runtime-unrecorded",
@@ -296,8 +296,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-unrecorded.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "ab1c195332f9e184fb1f17e5b8966e0540701acdea6e9efafa5b42cd291e9f14"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "ca18b7dc7be3d5c330153be44a1df30fb5abb64b5e29efeb9f7c743da3548fe7"
   },
   {
    "name": "upgrade189-runtime-not-staged",
@@ -307,8 +307,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-not-staged.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "644977109f758951f309ca0dde10e019d4b6eeea6c970ecce8e5e00702798c04"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "e994afafe60e92e4ed22f6e7f6c08ad5dc125ace5c5cfd20d9ee4b4efb54fed6"
   },
   {
    "name": "upgrade189-runtime-record-stale",
@@ -318,8 +318,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-record-stale.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "1d59a8706a4476a11ce135ed6831a89eb81b367f657d226b5590ebc7aa134b20"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "9b8dabe8ac2e82defe71d8e82bd5187a9a17543c7a6a357143ec709d1a320902"
   },
   {
    "name": "upgrade189-runtime-mode",
@@ -329,8 +329,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-mode.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "bc63bff74a66685ecc4ee36fd65a763b0007be20076c793f5cd3a05febf5c41b"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "f453d001301a154fa8cfdbbe0484068f9f7102a1a615ef60d62dd5504b3a0837"
   },
   {
    "name": "upgrade189-runtime-not-cleaned",
@@ -340,8 +340,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-not-cleaned.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "a96e40c1e1579edb2f69c50844f86658cfc20aab67f54461e6e2d5ccb5a2ab1f"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "96ee21d3cd49ac89a8178ea03047c0be7eff3c4a39211b1f869fca8d1bde1064"
   },
   {
    "name": "upgrade189-pin-missing",
@@ -351,8 +351,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-pin-missing.diff",
-   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
-   "mutant_sha256": "14b090fcb905fded728ad9b3fd6329a405b98821d852c6736438b269ee4c09d5"
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "2cbbe7cf6af186fa1eba55ec22ec7208bf3f8f155092fe73916b3ff14a04ff3f"
   },
   {
    "name": "upgrade189-engines-record-missing",
@@ -362,8 +362,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-engines-record-missing.diff",
-   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
-   "mutant_sha256": "5adf881eaeedd564407b418faf0f7820cb8ed3b15e368e672bdda6d702ca1585"
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "5bd164d82647115177c17346593f64d137a1742f5e0f7f18dead5e7c97dfc271"
   },
   {
    "name": "upgrade189-runs-moved",
@@ -373,8 +373,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runs-moved.diff",
-   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
-   "mutant_sha256": "12c30bb6f7613d6893a516999fd3a14cdcb97c3396af6e2b8dda1c23546e0e35"
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "2ced68f31de02c7dac3bcdd88f3aee6e54af9e223acf5932340454856e0b490d"
   },
   {
    "name": "upgrade189-existing-pin-rewritten",
@@ -384,8 +384,8 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-existing-pin-rewritten.diff",
-   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
-   "mutant_sha256": "bedd3f45ebab96921bd5608261de1d951bb306d3911f12124203915ac31a949b"
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "a19c416bce679d85fee3aafebcd821bef379f55bf7666ae286f0368cec248571"
   },
   {
    "name": "upgrade189-existing-record-rewritten",
@@ -395,11 +395,121 @@
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-existing-record-rewritten.diff",
-   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
-   "mutant_sha256": "77670c133d3b789dea77143ca1a6c33ed0b20531e2540f33bc9fca861b8b85ca"
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "80de8ccd288ccd58a9537986837b5a1d56051229c7245680b5b597ae6439dc5e"
+  },
+  {
+   "name": "upgrade189-record-in-place",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/atomic-record"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-record-in-place.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "d0f948378b393c0b28f54d83ac9cc786ea1410c2d75406daf4d3362c4d7b8b77"
+  },
+  {
+   "name": "upgrade189-unreadable-record-kept",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/repair-record"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-unreadable-record-kept.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "d4d9f5518f9985a5ea3efa8b0f57d82f3e2a3876f4490231b5de10a4bc031f04"
+  },
+  {
+   "name": "upgrade189-different-record-accepted",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/refuse-record"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-different-record-accepted.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "bcc9d46b0f932f25f2613651d8299122772ab1d68b5767e0cb1dbc6894f52499"
+  },
+  {
+   "name": "upgrade189-codex-refusal-differs",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/codex-refusal"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-codex-refusal-differs.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "fa49d2d2120e580d0ce296d029192d554f03ad06cd4e00c8df5a181aa2a192b4"
+  },
+  {
+   "name": "upgrade189-repair-reported-done",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "engines/repair-report"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-repair-reported-done.diff",
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "5f3d27d1fd04f40beff0eec90fbe9203b9ee5f2a15c9dc625da5a8bafd9307bc"
+  },
+  {
+   "name": "upgrade189-repair-count-hidden",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/repair-report"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-repair-count-hidden.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "1acf5aed64474a16fe997ff9c1f11faeff7b36b72d12a59a6833f8d7fa92294f"
+  },
+  {
+   "name": "upgrade189-repair-record-hidden",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "engines/repair-report"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-repair-record-hidden.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "bc73f243095e72e9facb184a7777f6a8153ea717827f80f11c2e9c8a146394d8"
+  },
+  {
+   "name": "upgrade189-runtime-type-unchecked",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/corrupt-runtime-record"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-type-unchecked.diff",
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "e45afbaf2d3928da6387e797b1f25711b5b44a08d275581cea5ee6b62ece1bb3"
+  },
+  {
+   "name": "upgrade189-receiver-store-unchecked",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/receiver-without-store"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-receiver-store-unchecked.diff",
+   "source_sha256": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "mutant_sha256": "13b2516f640d80b273a70c1640754ab9d7b92c8b430974925f10681ac7ff9a2a"
+  },
+  {
+   "name": "upgrade189-pin-wrong-mode",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-pin-wrong-mode.diff",
+   "source_sha256": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "mutant_sha256": "78f34cf561c85900597a461890aa31e7ad7bc064212b6c2a6bc06179094634c6"
   }
  ],
- "note": "Registry, unique anchors and mutant syntax checked. Mutation executions are reserved to the reviewer; no rejection is claimed for this tree.",
+ "note": "Registration, anchors and syntax checked. Execution reserved to the reviewer; no mutation rejection claimed for this tree.",
  "spec_id": "VELDO-0189",
  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
  "registry": "scripts/check_teeth_mutations.py finding 189"

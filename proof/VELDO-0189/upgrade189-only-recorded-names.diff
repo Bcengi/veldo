@@ -1,8 +1,8 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -288 +288 @@
+@@ -291 +291 @@
 -    for name, data in sorted(plan['fixed'].items()):
 +    for name, data in sorted((n, d) for n, d in plan['fixed'].items() if n in plan['recorded']):  # defect: only the names the record lists
-@@ -297 +297 @@
+@@ -300 +300 @@
 -    if installed_files(directory) != plan['current']:
 +    if installed_files(directory) != {n: d for n, d in plan['current'].items() if n in plan['recorded']}:

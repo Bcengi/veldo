@@ -1,0 +1,14 @@
+--- .veldo/control_factory_setup_engines.py
++++ .veldo/control_factory_setup_engines.py
+@@ -102,8 +102,3 @@
+-            fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)
+-            try:
+-                with os.fdopen(fd, 'w') as handle:
+-                    handle.write(json.dumps(engines, sort_keys=True) + '\n')
+-                os.replace(partial, record_path)
+-            finally:
+-                if os.path.exists(partial):
+-                    os.unlink(partial)
++            fd = os.open(record_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
++            with os.fdopen(fd, 'w') as handle:
++                handle.write(json.dumps(engines, sort_keys=True) + '\n')

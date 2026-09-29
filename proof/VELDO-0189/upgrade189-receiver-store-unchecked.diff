@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -188 +188 @@
+-        if held is not None and path in laid['receivers'] and not isinstance(held.get('store'), str):
++        if False:

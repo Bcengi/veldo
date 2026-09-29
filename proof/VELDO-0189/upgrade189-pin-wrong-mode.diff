@@ -1,5 +1,4 @@
 --- .veldo/control_factory_setup_engines.py
 +++ .veldo/control_factory_setup_engines.py
-@@ -100 +100 @@
--        if recorded is None:
-+        if False:
+@@ -97,0 +98 @@
++            os.chmod(target, 0o444)

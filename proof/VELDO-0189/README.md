@@ -26,7 +26,7 @@ the C library (ctypes), then removed; a filesystem or C library that cannot is
 **How it switches.** The current engine is written complete into `bin.upgrade` beside `bin` at the
 installer's modes (entry points 0500, other files 0400, every engine directory 0500) and read back against
 the current digests; one renameat2 exchange then puts it at `bin` and the previous engine at `bin.upgrade`.
-The absent qualified pin and host/engines.json are added next, at logged write points. Then, each written to a new file and renamed over the old one: a unit whose rendering from the current
+The absent qualified pin and any absent or unreadable host/engines.json are completed next, at logged write points. Then, each written to a new file and renamed over the old one: a unit whose rendering from the current
 template changed (the authority unit, and VELDO-0171's API unit when it exists), each installation
 configuration that lacks a key the current installer writes (with the value `layout` renders for the same
 arguments; over 8bc34e94 and 971186ac that is the receiver configuration's `host_trust`, which the current
@@ -277,8 +277,9 @@ its existing directory beside the store. Its configured runs value, when present
 runs field is a reasoned fresh-equivalence exception because fresh installations default to state_root/runs.
 
 After exchange and before the record and restart, setup pins Claude Code and writes host/engines.json,
-each only when absent, using the installed qualification records. Each addition has its own step-log
-write point, included in the existing kill census. An existing copy or record is left unchanged.
+using the installed qualification records. Each addition has its own step-log
+write point, included in the existing kill census. An existing pin is left unchanged. The recovery review
+below repairs unreadable engines records and refuses readable different bindings.
 
 Three amendment rows extend the existing production setup journeys:
 

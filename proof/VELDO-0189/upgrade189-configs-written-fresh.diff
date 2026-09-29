@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -190 +190 @@
+@@ -193 +193 @@
 -            writes.append(('configuration', path, _text(dict(held, **{k: v for k, v in fresh.items() if k not in held})),
 +            writes.append(('configuration', path, _text(fresh),  # defect: written as a fresh installation would

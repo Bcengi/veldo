@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -358 +358 @@
+@@ -363 +363 @@
 -    switched = (pending['switched'] or plan['state'] == 'resume') and os.path.isdir(plan['stage'])
 +    switched = plan['state'] == 'resume' and os.path.isdir(plan['stage'])

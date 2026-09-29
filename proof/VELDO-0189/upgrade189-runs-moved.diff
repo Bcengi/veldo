@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -188 +188 @@
+@@ -191 +191 @@
 -            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))
 +            fresh = dict(fresh)

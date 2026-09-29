@@ -1,6 +1,6 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -355,2 +355,13 @@
+@@ -360,2 +360,13 @@
 -        stage(plan, modes, bin_mode)
 -        point(log, {'point': 'staged', 'files': len(plan['fixed'])})
 +        os.chmod(plan['bin'], 0o700)  # defect: the new files are written over the installed ones in place
@@ -16,7 +16,7 @@
 +        for name in plan['removed']:
 +            os.unlink(os.path.join(plan['bin'], name))
 +        os.chmod(plan['bin'], bin_mode)
-@@ -366,2 +377 @@
+@@ -371,2 +382 @@
 -            exchange(plan['stage'], plan['bin'])
 -            switched = True
 +            switched = False

@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_engines.py
++++ .veldo/control_factory_setup_engines.py
+@@ -110 +110 @@
+-            report['engines_record'] = str(record_path)
++            report['engines_record'] = None

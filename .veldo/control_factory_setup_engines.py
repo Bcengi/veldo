@@ -98,6 +98,7 @@ def ensure(state_root, directory, plan, Refused, observe):
             report['pins_made'] = 1
             observe({'point': 'engine_pin', 'path': str(target)})
         if recorded is None:
+            claude.bind({'executable': {'version': version}}, state_root)
             fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)
             try:
                 with os.fdopen(fd, 'w') as handle:

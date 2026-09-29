@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -357 +357 @@
+@@ -362 +362 @@
 -    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups']]
 +    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups'] if not p.endswith('.service')]

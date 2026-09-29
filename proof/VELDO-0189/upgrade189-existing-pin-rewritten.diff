@@ -1,4 +1,4 @@
 --- .veldo/control_factory_setup_engines.py
 +++ .veldo/control_factory_setup_engines.py
-@@ -80,0 +81 @@
-+        os.chmod(target, 0o755)
+@@ -94,0 +95 @@
++            os.chmod(target, 0o755)

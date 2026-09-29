@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -337 +337 @@
+-        wrote = report.get('pins_made', 0) or report.get('engines_record')
++        wrote = False
