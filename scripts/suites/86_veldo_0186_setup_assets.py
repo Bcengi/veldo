@@ -72,6 +72,8 @@ def _v186_suite():
             self.calls.append(args)
             return 0, '', ''
 
+    TS = load('v186_tailscale', TREE / 'scripts/suites/support/v171_tailscale.py')
+    tailscale = TS.stand_in(TREE / 'proof/VELDO-0171/tailscale-capture.json', sys.executable)
     manager = Manager()
     owner_key = base / 'owner'
     subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(owner_key)],
@@ -94,7 +96,7 @@ def _v186_suite():
         git.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture'],
                 identity=('Fixture', 'fixture@example.invalid'), check=True, capture_output=True)
         kwargs = dict(host_trust=str(home / 'trust/host.json'), install_root=str(home / 'install'),
-                      unit_dir=str(home / 'units'), profile={}, writable=[], runner=manager)
+                      unit_dir=str(home / 'units'), profile={}, writable=[], runner=manager, tailscale=[tailscale.path])
         args = (str(state), 'owner', str(owner_key), str(workspace), 12345, str(token))
         return home, args, kwargs
 
@@ -127,7 +129,7 @@ def _v186_suite():
                   and config.get('runtime_assets', {}).get(name) == 'sha256:' + hashlib.sha256(target.read_bytes()).hexdigest())
         check('runtime/assets', 'reported assets and count', report.get('runtime_assets') == config.get('runtime_assets')
               and report.get('runtime_assets_installed') == len(expected))
-        check('runtime/assets', 'only daemon reload requested', manager.calls == [['daemon-reload']])
+        check('runtime/assets', 'only daemon reload requested', manager.calls == [['daemon-reload'], ['daemon-reload']])
 
         for name in ('runtime', 'runtime/nested'):
             target = installed / name
@@ -194,6 +196,7 @@ def _v186_suite():
                 check('metrics/binds', 'two refused engine binds counted',
                       sum(event.get('metrics', {}).get('binds_refused', 0) for event in events) == 2)
             finally:
+        tailscale.close()
                 worker.close()
 
 
@@ -202,7 +205,7 @@ def _v186_suite():
         missing_root = home / 'missing-install'
         _result, error = attempt(lambda: CS.install([args[3]], host_trust=kwargs['host_trust'],
             key_directory=str(Path(args[0]) / 'keys'), install_root=str(missing_root),
-            unit_dir=str(home / 'missing-units'), profile={}, writable=[], runner=manager))
+            unit_dir=str(home / 'missing-units'), profile={}, writable=[], runner=manager, tailscale=[tailscale.path]))
         check('runtime/missing', 'absent source named without installation: ' + str(error),
               error == 'missing_evidence:runtime_asset:runtime/future.json' and not missing_root.exists())
         _home, neg_args, neg_kwargs = fresh()

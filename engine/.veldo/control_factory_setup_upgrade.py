@@ -121,7 +121,10 @@ def installed_files(directory):
     for name in sorted(os.listdir(directory)):
         path = os.path.join(directory, name)
         info = os.lstat(path)
-        found[name] = digest(Path(path).read_bytes()) if stat.S_ISREG(info.st_mode) else None
+        if stat.S_ISDIR(info.st_mode):
+            found.update({name + '/' + child: value for child, value in installed_files(path).items()})
+        else:
+            found[name] = digest(Path(path).read_bytes()) if stat.S_ISREG(info.st_mode) else None
     return found
 
 
@@ -142,11 +145,13 @@ def inspect(laid, record, record_path, api_unit=None):
     'resume' (the engine is switched and the writes after it are unfinished); refused by name when the
     installed engine is not the recorded one."""
     home, bin_dir = laid['home'], laid['bin']
-    current = {name: digest(data) for name, data in laid['fixed'].items()}
+    fixed = dict(laid['fixed'], **laid['assets'])
+    current = {name: digest(data) for name, data in fixed.items()}
     template = laid['config']['template']
     recorded, recorded_template = record.get('closure'), record.get('template')
     if not isinstance(recorded, dict) or not isinstance(recorded_template, str):
         raise Refused('invalid_input:install_root:differs:' + str(record_path), 'the record names no installed engine')
+    recorded = dict(recorded, **record.get('runtime_assets', {}))
     found = installed_files(bin_dir)
     if found == recorded:
         installed = 'recorded'
@@ -179,10 +184,13 @@ def inspect(laid, record, record_path, api_unit=None):
             fresh_configs[os.path.join(laid['config_dir'], 'channel-ingress.json')] = json.loads(laid['ingress'])
     for path, fresh in sorted(fresh_configs.items()):
         held = _json_file(path)
+        if held is not None and path in laid['receivers'] and 'state_root' not in held:
+            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))
         if held is not None and any(key not in held for key in fresh):
             writes.append(('configuration', path, _text(dict(held, **{k: v for k, v in fresh.items() if k not in held})),
                            0o600))
-    upgraded = dict(record, closure=current, template=template)
+    upgraded = dict(record, closure=laid['config']['closure'],
+                    runtime_assets=laid['config']['runtime_assets'], template=template)
     upgraded.update({k: v for k, v in laid['config'].items() if k not in record})
     if upgraded != record:
         writes.append(('record', str(record_path), _text(upgraded), 0o600))
@@ -202,7 +210,7 @@ def inspect(laid, record, record_path, api_unit=None):
             'recorded_template': recorded_template, 'changed': changed, 'added': added, 'removed': removed,
             'previous_digest': engine_digest(recorded, recorded_template),
             'current_digest': engine_digest(current, template), 'writes': writes, 'restart_due': due,
-            'fixed': laid['fixed'], 'unit': laid['unit'], 'python': laid['config'].get('python'),
+            'fixed': fixed, 'unit': laid['unit'], 'python': laid['config'].get('python'),
             'config_path': str(record_path)}
 
 
@@ -252,6 +260,9 @@ def remove_engine_directory(path):
     os.chmod(path, 0o700)
     for name in sorted(os.listdir(path)):
         inner = os.path.join(path, name)
+        if stat.S_ISDIR(os.lstat(inner).st_mode):
+            remove_engine_directory(inner)
+            continue
         if not stat.S_ISREG(os.lstat(inner).st_mode):
             raise Refused('invalid_input:install_root:unrecorded:' + inner, 'not an engine file')
         os.unlink(inner)
@@ -276,11 +287,13 @@ def stage(plan, modes, bin_mode):
     os.mkdir(directory, 0o700)
     for name, data in sorted(plan['fixed'].items()):
         path = os.path.join(directory, name)
+        os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, modes(name))
         with os.fdopen(fd, 'wb') as handle:
             handle.write(data)
         os.chmod(path, modes(name))
-    os.chmod(directory, bin_mode)
+    for parent, _dirs, _files in os.walk(directory, topdown=False):
+        os.chmod(parent, bin_mode)
     if installed_files(directory) != plan['current']:
         raise Refused('invalid_input:install_root:differs:' + directory, 'the staged engine did not read back')
 
@@ -305,7 +318,7 @@ def announce(plan, active, running):
     return '%s; %s.' % (head, tail)
 
 
-def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, commit=None):
+def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, commit=None, prepare=None):
     """Carry the inspected plan out. Returns the engine_upgrade step of setup's answer. `commit()` asks the
     running service to drop its record of the previous ownership bindings once the previous engine is
     removed (True when it did)."""
@@ -316,6 +329,8 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
     active = is_active(unit)
     active = active or (plan['restart_due'] and pending['active'])
     if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:
+        if prepare is not None:
+            prepare()
         return dict(report, outcome='already_done', changed=[], added=[], removed=[], previous=plan['current_digest'])
     if plan['state'] == 'current':
         # The record already names the current engine: the upgrade ended after its record was written.
@@ -351,6 +366,8 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
             exchange(plan['stage'], plan['bin'])
             switched = True
             point(log, {'point': 'exchanged', 'bin': plan['bin'], 'previous': plan['stage']})
+        if prepare is not None:
+            prepare()
         units = False
         for kind, path, body, mode in plan['writes']:
             if not any(saved[0] == path for saved in replaced):

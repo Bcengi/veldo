@@ -47,6 +47,7 @@ def _v189_suite():
     PRODUCTION = {
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_factory_setup_upgrade.py': ROOT / ".veldo" / "control_factory_setup_upgrade.py",
+        'control_factory_setup_engines.py': ROOT / ".veldo" / "control_factory_setup_engines.py",
         'control_factory_setup_api.py': ROOT / ".veldo" / "control_factory_setup_api.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
         'control_store.py': ROOT / ".veldo" / "control_store.py",
@@ -60,6 +61,8 @@ def _v189_suite():
             'ownership/restore-reported', 'ownership/start-drops', 'ownership/commit-refused',
             'switch/stop-before-restore')
     IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC, RE, BK, ST, RP, SD, CR, BS = ROWS
+    EQ, RN, PF = 'upgrade/older-0186-equivalence', 'kept/runs', 'upgrade/fresh-0186'
+    ROWS += (EQ, RN, PF)
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -103,6 +106,10 @@ def _v189_suite():
             target.unlink()
         if Path(source).is_file():
             shutil.copyfile(source, target)
+    fixtures186 = load('v189_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
+    engines186 = fixtures186.install(ROOT, base, mods)
+    prior_path186 = os.environ.get('PATH', '')
+    os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v189_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
     TS = load('v189_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
     _git_process = load('v189_git', mods / 'git_process.py')
@@ -415,15 +422,15 @@ def _v189_suite():
     def digests(directory):
         """{name: (mode, sha256)} of every entry of an engine directory."""
         found = {}
-        for path in sorted(Path(directory).iterdir()):
+        for path in sorted(Path(directory).rglob('*')):
             info = os.lstat(str(path))
-            found[path.name] = (oct(stat.S_IMODE(info.st_mode)), hashlib.sha256(path.read_bytes()).hexdigest()
+            found[str(path.relative_to(directory))] = (oct(stat.S_IMODE(info.st_mode)), hashlib.sha256(path.read_bytes()).hexdigest()
                                 if stat.S_ISREG(info.st_mode) else 'not-a-file')
         return found
 
     def named(directory):
         """{name: 'sha256:...'} of an engine directory, as an installation record names its files."""
-        return {name: 'sha256:' + digest for name, (_mode, digest) in digests(directory).items()}
+        return {name: 'sha256:' + digest for name, (_mode, digest) in digests(directory).items() if digest != 'not-a-file'}
 
     def snapshot(*roots):
         """Every file, link and directory under `roots`: its mode and, for a file, its content digest."""
@@ -705,6 +712,8 @@ def _v189_suite():
             for field in listed.get(name, []):
                 value = without(value, field)
             found[name] = value
+        record = host.root / 'host' / 'engines.json'
+        found['host/engines.json'] = substituted(json.loads(record.read_text()), table) if record.is_file() else None
         return found
 
     def equals_fresh(row, host, fresh, label):
@@ -715,6 +724,11 @@ def _v189_suite():
                                            sorted(n for n in mine if n in theirs and mine[n] != theirs[n])[:4]),
               mine == theirs and oct(stat.S_IMODE(os.lstat(str(host.home / 'bin')).st_mode))
               == oct(stat.S_IMODE(os.lstat(str(fresh.home / 'bin')).st_mode)))
+        pin = Path('engines/claude_code') / engines186['version']
+        target, reference = host.root / pin, fresh.root / pin
+        check(row, label + ': qualified Claude pin equals fresh bytes and mode',
+              target.is_file() and reference.is_file() and target.read_bytes() == reference.read_bytes()
+              and stat.S_IMODE(target.stat().st_mode) == stat.S_IMODE(reference.stat().st_mode) == 0o555)
         a, b = rendering(host), rendering(fresh)
         differing = sorted(n for n in set(a) | set(b) if a.get(n) != b.get(n))
         detail = []
@@ -753,11 +767,12 @@ def _v189_suite():
                 configs[path.name] = json.loads(text)
             except ValueError:
                 configs[path.name] = text
-        return {'files': files, 'journal': journal(host.store), 'entities': entity_rows(host.store), 'configs': configs,
+        return {'runs': snapshot(host.root / 'authority' / 'runs'), 'files': files, 'journal': journal(host.store), 'entities': entity_rows(host.store), 'configs': configs,
                 'accounts': len(accounts)}
 
     def kept_after(row, host, before, owner_set, label):
         after = kept(host)
+        check(row, label + ': existing runs tree unchanged', after['runs'] == before['runs'])
         changed = sorted(p for p, data in before['files'].items() if after['files'].get(p) != data)
         check(row, '%s: every file under the key directory, the host trust and the files it names, the workspace '
               'binding, the token file and every registered account\'s profile directory (%d) is unchanged byte for '
@@ -778,7 +793,7 @@ def _v189_suite():
             now = after['configs'].get(name)
             if isinstance(value, dict) and isinstance(now, dict):
                 for key, held in value.items():
-                    if key in ('closure', 'template') and name == 'service.json':
+                    if key in ('closure', 'runtime_assets', 'template') and name == 'service.json':
                         continue
                     if now.get(key) != held and not (held is None and key in now):
                         lost.append('%s:%s' % (name, key))
@@ -830,11 +845,16 @@ def _v189_suite():
         # The fresh host, set up by the current setup with the same arguments, with the owner's same setting.
         fresh = Host('fresh')
         code, laid = fresh.setup()
-        owner_sets(fresh)
         if code != 0:
             for name in ROWS:
                 check(name, 'the current setup laid a fresh host down [%s]' % laid.get('reason'), False)
             raise StopIteration
+        owner_sets(fresh)
+        with section(PF):
+            before = snapshot(*fresh.trees())
+            code, report = fresh.setup()
+            check(PF, 'post-0186 re-run accepts recorded runtime directory: ' + str(report.get('reason')), code == 0)
+            check(PF, 'post-0186 re-run writes nothing', snapshot(*fresh.trees()) == before)
         current = named(fresh.home / 'bin')
         current_template = fresh.record()['template']
 
@@ -856,6 +876,12 @@ def _v189_suite():
                 # 8bc34e94 host with nothing running.
                 host.manager.start(host.unit)
             chosen = owner_sets(host)
+            launch = load('v189_runs_' + commit, mods / 'control_launch.py')
+            receivers = list(host.record()['receiver']['configs'].values())
+            runs_before = {p: launch.runs_root(json.loads(Path(p).read_text())) for p in receivers}
+            for place in runs_before.values():
+                (Path(place) / 'existing-run').mkdir(parents=True, mode=0o700)
+                private(Path(place) / 'existing-run' / 'evidence.json', '{"kept": true}\n')
             before_kept = kept(host)
             record = host.record()
             recorded = record['closure']
@@ -891,6 +917,16 @@ def _v189_suite():
                 check(row, 'nothing of the switch is left beside the engine directory [%s]'
                       % sorted(p.name for p in host.home.iterdir()),
                       sorted(p.name for p in host.home.iterdir()) == ['bin', 'config', 'state'])
+            with section(EQ):
+                equals_fresh(EQ, host, fresh, commit)
+            with section(RN):
+                for path, place in runs_before.items():
+                    held = json.loads(Path(path).read_text())
+                    check(RN, commit + ': state_root names the factory and runs keeps its previous resolution',
+                          held.get('state_root') == str(host.root) and held.get('runs') == place
+                          and launch.runs_root(held) == place)
+                check(RN, commit + ': existing runs contents and modes unchanged',
+                      kept(host)['runs'] == before_kept['runs'] and bool(before_kept['runs']))
             with section(KD):
                 kept_after(KD, host, before_kept, chosen, commit)
             with section(AN):
@@ -1513,7 +1549,7 @@ def _v189_suite():
                   not (fresh.home / 'bin' / dropped).exists() and dropped not in fresh.record()['closure']
                   and upgrade.get('removed') == [dropped])
             check(UR, 'the installed engine is exactly the fixture engine\'s files',
-                  named(fresh.home / 'bin') == fixture_engine == fresh.record()['closure'])
+                  named(fresh.home / 'bin') == fixture_engine == dict(fresh.record()['closure'], **fresh.record()['runtime_assets']))
             check(RS, 'with the service running outside its unit (the lock held, the unit inactive) setup restarted '
                   'nothing and names the one command to run [%s %s]' % (up, upgrade.get('next')),
                   up and upgrade.get('restart') == 'not_through_unit'
@@ -1525,6 +1561,7 @@ def _v189_suite():
     except StopIteration:
         pass
     finally:
+        os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         for bridge in bridges:
             bridge.close()

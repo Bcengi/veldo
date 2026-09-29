@@ -969,7 +969,8 @@ def inspect_engine(plan, installed, home, unit_dir, api_unit):
                          install_root=plan['install_root'], unit_dir=unit_dir, profile=plan['profile'],
                          writable=plan['writable'], principal=installed.get('principal') or JOURNAL_PRINCIPAL,
                          python=installed.get('python'),
-                         channel_ingress=os.path.join(plan['root'], HOST_DIR, 'ingress.json'), existing=True)
+                         channel_ingress=os.path.join(plan['root'], HOST_DIR, 'ingress.json'), existing=True,
+                         state_root=plan['root'])
     except CS.Refused as exc:
         raise Refused(exc.code, exc.detail) from None
     if laid['home'] != home:
@@ -1005,8 +1006,13 @@ def service_answers(plan):
 def upgrade_engine(plan, engine, runner, running):
     """Carry out the inspected upgrade; its step of setup's answer."""
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
+    def prepare():
+        engines = organ('control_factory_setup_engines')
+        engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
+                       lambda point: UP.point(engine['log'], point))
+
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),
-                               modes=CS.fixed_mode, bin_mode=CS.BIN_MODE,
+                               modes=CS.fixed_mode, bin_mode=CS.BIN_MODE, prepare=prepare,
                                is_active=lambda unit: API.service_running(runner, unit), stream=sys.stderr,
                                commit=service_request(plan, {'operation': CS.OWNERSHIP_COMMIT})))
 

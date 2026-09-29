@@ -1,5 +1,7 @@
 """Factory setup's qualified host engines. Reads bytes, never executes an engine."""
 import importlib.util
+import json
+import os
 from pathlib import Path
 import shutil
 
@@ -67,3 +69,28 @@ def count_pins(state_root, engines):
     directory = Path(state_root).resolve() / 'engines'
     paths = {Path(bound['path']) for bound in engines.values()}
     return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)
+
+
+def ensure(state_root, directory, plan, Refused, observe):
+    """Bring an older host to the fresh pin layout, preserving every existing pin and record."""
+    claude, codex = organ('control_engine_claude', directory), organ('control_engine_codex', directory)
+    version = plan['claude_code']['version']
+    target = claude.pinned_path(state_root, version)
+    record_path = Path(state_root) / 'host' / 'engines.json'
+    if os.path.lexists(target) and os.path.lexists(record_path):
+        return
+    try:
+        if not os.path.lexists(target):
+            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)
+            observe({'point': 'engine_pin', 'path': str(target)})
+        if not os.path.lexists(record_path):
+            pinned = claude.bind({'executable': {'version': version}}, state_root)
+            vendor = codex.bind({'executable': plan['codex']['executable']})
+            engines = {bound['engine']: {key: bound[key] for key in ('version', 'path', 'sha256')}
+                       for bound in (pinned, vendor)}
+            fd = os.open(record_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, 'w') as handle:
+                handle.write(json.dumps(engines, sort_keys=True) + '\n')
+            observe({'point': 'engines_record', 'path': str(record_path)})
+    except (claude.Refused, codex.Refused) as error:
+        raise Refused(error.code) from None

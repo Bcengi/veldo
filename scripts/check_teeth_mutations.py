@@ -8937,7 +8937,7 @@ def cases():
               "TAILSCALE_PATHS = ('/usr/bin/tailscale', ",
               "TAILSCALE_PATHS = ('tailscale', '/usr/bin/tailscale', ", 'tailscale/fixed-paths')
     setup_api('api171-entry-point-dropped', 'control_service.py',
-              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py')\n",
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')\n",
               "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')"
               "  # defect: the API process is not installed\n", 'api/unit')
     setup_api('api171-started-when-added', 'control_factory_setup.py', "        if running and not added:\n",
@@ -8979,6 +8979,7 @@ def cases():
             "        os.chmod(plan['bin'], 0o700)  # defect: the new files are written over the installed ones in place\n"
             "        for name, data in sorted(plan['fixed'].items()):\n"
             "            path = os.path.join(plan['bin'], name)\n"
+            "            os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)\n"
             "            with contextlib.suppress(FileNotFoundError):\n"
             "                os.chmod(path, 0o600)\n"
             "            with open(path, 'wb') as handle:\n"
@@ -9009,10 +9010,12 @@ def cases():
             "    else:\n        installed = 'recorded'  # defect: an engine file edited by hand is overwritten without notice\n"
             "        for name in []:\n", 'upgrade/refused-by-name')
     upgrade('upgrade189-removed-file-kept', 'control_factory_setup_upgrade.py',
-            "    os.chmod(directory, bin_mode)\n    if installed_files(directory) != plan['current']:\n",
+            "    for parent, _dirs, _files in os.walk(directory, topdown=False):\n"
+            "        os.chmod(parent, bin_mode)\n    if installed_files(directory) != plan['current']:\n",
             "    for name in plan['removed']:  # defect: a file the current engine no longer ships stays installed\n"
             "        __import__('shutil').copy2(os.path.join(plan['bin'], name), os.path.join(directory, name))\n"
-            "    os.chmod(directory, bin_mode)\n"
+            "    for parent, _dirs, _files in os.walk(directory, topdown=False):\n"
+            "        os.chmod(parent, bin_mode)\n"
             "    if {n: d for n, d in installed_files(directory).items() if n not in plan['removed']} != plan['current']:\n",
             'upgrade/removed-module')
     upgrade('upgrade189-no-switch-back', 'control_factory_setup_upgrade.py',
@@ -9162,6 +9165,38 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0189 owner-approved fresh equivalence amendment.
+    add(189, 'upgrade189-runtime-unrecorded', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "    recorded = dict(recorded, **record.get('runtime_assets', {}))",
+        '    recorded = dict(recorded)', ['upgrade/fresh-0186'], [])
+    add(189, 'upgrade189-runtime-not-staged', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "    fixed = dict(laid['fixed'], **laid['assets'])",
+        "    fixed = dict(laid['fixed'])", ['upgrade/older-0186-equivalence'], [])
+    add(189, 'upgrade189-runtime-record-stale', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "                    runtime_assets=laid['config']['runtime_assets'], template=template)",
+        "                    runtime_assets=record.get('runtime_assets', {}), template=template)", ['upgrade/older-0186-equivalence'], [])
+    add(189, 'upgrade189-runtime-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        '        os.chmod(parent, bin_mode)',
+        '        os.chmod(parent, 0o700)', ['upgrade/older-0186-equivalence'], [])
+    add(189, 'upgrade189-runtime-not-cleaned', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        '            remove_engine_directory(inner)\n            continue',
+        "            raise Refused('invalid_input:install_root:unrecorded:' + inner)", ['upgrade/removed-module'], [])
+    add(189, 'upgrade189-pin-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)",
+        '            pass', ['upgrade/older-0186-equivalence'], [])
+    add(189, 'upgrade189-engines-record-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        if not os.path.lexists(record_path):',
+        '        if False:', ['upgrade/older-0186-equivalence'], [])
+    add(189, 'upgrade189-runs-moved', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))",
+        '            fresh = dict(fresh)', ['kept/runs'], [])
+    add(189, 'upgrade189-existing-pin-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        return',
+        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        os.chmod(target, 0o755)\n        return', ['upgrade/fresh-0186'], [])
+    add(189, 'upgrade189-existing-record-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        return',
+        "    if os.path.lexists(target) and os.path.lexists(record_path):\n        record_path.write_text('{}\\n')\n        return", ['upgrade/fresh-0186'], [])
+
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', "        for name, data in laid['assets'].items():", '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])

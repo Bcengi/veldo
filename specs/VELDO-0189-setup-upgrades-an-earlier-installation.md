@@ -28,6 +28,8 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0189_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "scripts/suites/86_veldo_0186_setup_assets.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -60,14 +62,14 @@ acceptance_criteria:
       installation of the current engine would be, apart from the owner's data, keys and enrollments, which
       are kept. Set and completeness: The re-run, after VELDO-0171 AC4's argument checks and before any other
       step, reads the installation record (`<install root>/<service>/config/service.json`, VELDO-0047's
-      installer) and compares its `closure` (each installed engine file's name and sha256 digest) and
+      installer) and compares its `closure` and `runtime_assets` together (each installed engine file's name and sha256 digest) and
       `template` digest with the current engine's (control_service.closure(), with any file a later
       specification records the same way): the files whose digest differs are changed, the names only the
       current engine lists are new, and the names only the record lists are removed. Before it writes, every
       file in the installed `bin` directory must equal its recorded digest, and a file that differs or that
       the record does not name is refused by name, writing nothing. It works only from the record, which
       every installation since VELDO-0139 writes, so it has no code path per engine version. It writes the
-      changed and new files, leaves out the removed ones, rewrites the record's `closure` and `template`, adds
+      changed and new files, leaves out the removed ones, rewrites the record's `closure`, `runtime_assets` and `template`, adds
       a key the current installer writes that the record lacks with the value a fresh installation would
       write for the same arguments, and renders the authority unit and VELDO-0171's API unit from the current
       templates. The suite lays down two older engines, each as its own scratch host with its own state
@@ -75,7 +77,11 @@ acceptance_criteria:
       merge that landed VELDO-0139) and of commit 971186ac (the landing of VELDO-0155 and VELDO-0156), each
       taken with `git archive` and set up by its own setup module, and upgrades each with the current setup;
       a fresh scratch host is set up by the current setup with the same arguments. The installed engine
-      directories must be equal byte for byte in names, bytes and modes; the unit files, the record and every
+      directories, including runtime asset subdirectories, must be equal byte for byte in names, bytes and
+      installer modes. The upgrade pins the qualified Claude Code version under
+      `<state root>/engines/claude_code/<version>` and writes `host/engines.json`, each only when absent,
+      as a fresh installation would. These pinned bytes and modes and the engines record join the equality
+      set; the unit files, the record and every
       configuration file must be equal after each host's scratch root is substituted, apart from fields
       listed in proof/VELDO-0189/fresh-equivalence.json, each with its reason (a key id, an enrollment digest,
       the store and domain identities, the host identity), and any other difference fails the row. A third
@@ -120,7 +126,10 @@ acceptance_criteria:
       Claim: The upgrade keeps everything the owner or setup wrote other than the engine: every store,
       journal, key, enrollment, account profile and configuration value. Set and completeness: The upgrade
       writes only the engine directory, the record's engine keys, the keys the record lacks, and the two
-      unit files. Every file under the key directory, the host trust, the workspace binding, the token file
+      unit files, plus the pinned Claude Code copy under `<state root>/engines/claude_code/<version>` and
+      `host/engines.json`, each only when absent. A receiver configuration gaining `state_root` also gains
+      `runs` naming the directory it already resolves beside its store, preserving any explicit `runs`.
+      The runs directory joins the snapshot set. Every file under the key directory, the host trust, the workspace binding, the token file
       and every registered account's profile directory (VELDO-0160) is unchanged byte for byte; every
       journal row and entity row in the store before the upgrade is unchanged, in order and digest; and every
       value in every configuration file under the installation's `config` directory (service.json's values
@@ -190,8 +199,7 @@ graph. A draft: only the owner marks it ready.
 ## Out of scope
 
 Store schema migrations, which each specification that changes the store owns; downgrading to an older
-engine (the rollback is by hand); the Mac's installation (VELDO-0147); pins and runtime assets beyond the
-engine files the record names (VELDO-0186's setup step runs on every re-run).
+engine (the rollback is by hand); the Mac's installation (VELDO-0147); replacing an existing engine pin.
 
 ## What the reviewer judges
 
@@ -280,3 +288,11 @@ with every blocking declaration named and forward setup as recovery; restore rem
 The manual rollback instruction now includes the real restore-owners command. Seven additional rows
 cover resumed failures, rollback kills, stop refusal, restore reporting, serve cleanup, commit refusal
 and stop-before-restore. Finding 189 mutations cover each. No acceptance criterion or footprint changed.
+
+2026-09-29: implemented the owner-approved criteria amendment requested in Telegram 29385 and approved
+in 29386 (2026-09-28). AC1 compares and installs closure plus runtime assets, including subdirectory
+modes, and includes the qualified Claude Code pin and host/engines.json in fresh equivalence. AC3 permits
+those two additions only when absent and preserves the existing runs resolution when adding state_root;
+the runs tree is snapshotted. Removed the incorrect re-run claim from Out of scope. The footprint adds
+the 0171 and 0186 suites because the merged setup requires both engine fixtures and the Tailscale
+stand-in, and their existing installation assertions must cover the extended installation set.

@@ -114,6 +114,10 @@ def _v171_suite():
             target.unlink()
         if Path(source).is_file():
             shutil.copyfile(source, target)
+    fixtures186 = load('v171_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
+    engines186 = fixtures186.install(ROOT, base, mods)
+    prior_path186 = os.environ.get('PATH', '')
+    os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v171_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
     STAND_IN = ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py'
     TS = load('v171_tailscale', STAND_IN) if STAND_IN.is_file() else None
@@ -1205,7 +1209,7 @@ def _v171_suite():
                       all(now_held.get(k) == v for k, v in held.items()) and gained[os.path.basename(path)])
             now_config = json.loads((config_b / 'service.json').read_text())
             record_a = json.loads((install_a / home_a.name / 'config' / 'service.json').read_text())
-            engine_keys = ('closure', 'template')
+            engine_keys = ('closure', 'runtime_assets', 'template')
             check(OB, 'the service configuration kept every other value, names the current engine, gained the keys it '
                   'lacked and names the API configuration in the api_service key it held as null [%s]'
                   % sorted(set(now_config) - set(before_config)),
@@ -1219,15 +1223,18 @@ def _v171_suite():
                                                keys_b / (E.edge_key_id('api') + '.pub'), root_b / 'edge' / 'api-auth',
                                                root_b / 'edge' / 'api-auth.pub', config_b / 'api-service.json',
                                                config_b / 'api-process.json', units_b / api_unit_b,
-                                               units_b / (unit_b + '.wants'), units_b / (unit_b + '.wants') / api_unit_b))
+                                               units_b / (unit_b + '.wants'), units_b / (unit_b + '.wants') / api_unit_b,
+                                               host_b / 'engines.json', root_b / 'engines', root_b / 'engines/claude_code',
+                                               root_b / 'engines/claude_code' / engines186['version']))
             added_outside = [p for p in added if not p.startswith(bin_b + '/')]
             check(OB, 'the files it added outside the installed engine are exactly the API steps\' [%s]'
                   % sorted(set(added_outside) ^ set(expected))[:4],
                   added_outside == expected and not [p for p in removed if not p.startswith(bin_b + '/')])
 
             def engine_of(directory):
-                return {p.name: (oct(stat.S_IMODE(p.lstat().st_mode)), hashlib.sha256(p.read_bytes()).hexdigest())
-                        for p in sorted(Path(directory).iterdir())}
+                return {str(p.relative_to(directory)): (oct(stat.S_IMODE(p.lstat().st_mode)),
+                        hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else 'directory')
+                        for p in sorted(Path(directory).rglob('*'))}
             check(OB, 'the installed engine is now the current one, name for name, byte for byte and mode for mode',
                   engine_of(bin_b) == engine_of(install_a / home_a.name / 'bin')
                   and oct(stat.S_IMODE(os.lstat(bin_b).st_mode)) == '0o500')
@@ -1273,6 +1280,7 @@ def _v171_suite():
     except StopIteration:
         pass
     finally:
+        os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         capturing[0] = False
         for manager in managers:

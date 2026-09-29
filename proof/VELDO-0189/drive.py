@@ -39,7 +39,7 @@ SUITE = '86_veldo_0189_engine_upgrade.py'
 PREFIX = 'VELDO-0189 '
 FINDING = 189
 MODULES = ('control_factory_setup.py', 'control_factory_setup_upgrade.py', 'control_factory_setup_api.py',
-           'control_service.py', 'control_store.py', 'init_scaffold.py')
+           'control_service.py', 'control_store.py', 'init_scaffold.py', 'control_factory_setup_engines.py')
 # With `--cache DIR` each run's result is kept in DIR under the digest of the suite, the tree and every
 # substituted file, so a drive longer than one sitting is finished by running it again.
 CACHE = None
