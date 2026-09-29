@@ -54,6 +54,20 @@ before the first review repair: its two new approval rows fail by assertion; the
 behavior rows fail by assertion, with the existing behavior and format rows green.
 No exception counts as evidence. [drive.py](drive.py) records module digests and assertion details.
 
+[manual-failed-state-guard.json](manual-failed-state-guard.json) records the proof repair's
+manual experiment: copy the station module into a temporary tree, restore only the old
+state guard, then run this suite through drive.run's production-copy anchor. Only
+`grant/once-per-dispatch` fails, by assertion; the original production file is unchanged.
+The record carries the exact replacement, source, mutant and suite digests and failure detail.
+To replay, apply [the guard diff](grant148-failed-dispatch-accepted.diff) to a temporary
+copy and pass its absolute path as the `control_landing_station.py` entry to drive.run.
+
+[red-at-41340bc1.json](red-at-41340bc1.json) is the requested replay against the commit
+immediately before this proof repair. It has no red rows: that commit already has the
+correct production guard. It is a green control, not evidence of a production regression.
+The refreshed original ad916989 record supplies all 13 behavior rows red by assertion;
+the manual guard revert supplies the specific falsification for this repair.
+
 ## Mutations
 
 [mutations.json](mutations.json) records the lead's reported run at f59b3136: 14 of 14
@@ -102,6 +116,17 @@ two workers. The builder did not run that mutation mode or the mutation checker.
 
 ## Completion checks
 
+The proof repair at 41340bc1 changes only the suite, mutation registration and proof
+records within the existing footprint. Suite 86 passes in ordinary and empty gate
+environments, serially: 15 suite rows, 41 including the shared preamble, zero failures,
+expected subset exit 2. All 19 saved diffs were applied to disposable copies and their
+resulting SHA-256 digests checked against mutations.json. All eight engine copies match.
+The suite remains registered once and requires.json was regenerated unchanged. The
+supplied footprint and anchor checks report nothing outside and 0 bad anchors;
+validate.py all exits 0. The manual guard revert is the one new rejection demonstrated
+here. The 19 registered mutations await reviewer execution through the mutation checker;
+the lead's 14 earlier rejections remain historical evidence.
+
 The 2026-09-29 adaptation after main 82b185f2 adds only the runtime-directory copy to
 the suite fixture, matching VELDO-0186's suite 83 change. The fake Codex already has
 its production-generated qualification record and executable binding. No production
@@ -132,4 +157,4 @@ are recorded in the specification History. Both environments pass 15 suite rows 
 preamble), zero failures. The footprint check reports 46 paths, none outside; the anchor check
 reports 0 bad anchors and validation exits 0. Engine copies match their repository counterparts.
 The suite remains registered once and requires.json was regenerated. No other suites, full gate
-or mutation execution run in this repair.
+or mutation checker ran in this repair.

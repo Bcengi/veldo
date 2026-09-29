@@ -1,0 +1,92 @@
+{
+ "by_assertion": true,
+ "commit": "41340bc13d16e30984644b491a6b113d8d7132ab",
+ "details": [],
+ "failed_rows": [],
+ "modules": {
+  ".veldo/control_effect_executor.py": {
+   "at_commit": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "now": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+  },
+  ".veldo/control_landing.py": {
+   "at_commit": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "now": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475"
+  },
+  ".veldo/control_landing_station.py": {
+   "at_commit": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "now": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "now": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75"
+  },
+  ".veldo/lander.py": {
+   "at_commit": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6",
+   "now": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   true
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   true
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   true
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 20.434,
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "tree": "git archive 41340bc13d16e30984644b491a6b113d8d7132ab, unchanged; the current suite file run against it"
+}

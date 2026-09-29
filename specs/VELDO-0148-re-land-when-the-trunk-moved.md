@@ -179,6 +179,24 @@ records. The prior refresh claim was incorrect. No production, criterion or foot
 change. Ordinary suite 86 passes all 15 rows (41 with shared preamble, zero failures;
 expected subset exit 2). Remaining proof checks follow in the completion entry.
 
+2026-09-29, proof repair complete: ef9bbd13 also passes suite 86 in the requested
+empty gate environment (15 suite rows, 41 with preamble, zero failures, subset exit 2).
+The old state guard applied by hand to a temporary copy makes only
+grant/once-per-dispatch red by assertion; the real module remains unchanged. Saved
+manual-failed-state-guard.json with source, mutant and suite digests. The current
+suite replayed against ad916989 makes all 13 behavior rows red by assertion, with
+the format control green. The requested immediate baseline 41340bc1 stays green,
+as expected for a proof-only repair of already correct production; its replay is
+saved separately without claiming a red result. All 19 exact diffs apply and match
+current source and mutant digests, including the service offset now at line 1740.
+Names are unique and the supplied anchor check reports 0 bad anchors. The footprint
+check reports nothing outside, validation exits 0, all eight engine copies match,
+and requires.json regenerates unchanged with the suite registered once. Searched
+production readers and writers of land transitions, subjects and grants. No other
+suite, full gate or mutation checker ran. All 19 registry cases await reviewer
+execution; only the separate manual guard experiment is newly demonstrated here.
+No acceptance criterion or footprint change. Gate byproducts are excluded.
+
 2026-09-29, adaptation after main 82b185f2: copy the runtime assets into suite 86's
 temporary module tree, matching VELDO-0186's factory-loop fixture update. The existing
 fake Codex already supplies its production-generated qualification record and explicit
