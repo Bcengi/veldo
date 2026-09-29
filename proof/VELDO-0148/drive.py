@@ -9,6 +9,10 @@ every run. Writes proof/VELDO-0148/mutations.json and one exact applied diff per
 
     python3 -B proof/VELDO-0148/drive.py
 
+With `--wake-only` it applies just the wake no-op by hand to a temporary module
+copy and asserts that only reland/end-wakes-pass is red. This mode never imports
+the mutation checker.
+
 With `--red COMMIT` it instead runs the current suite once against the whole tree of COMMIT,
 extracted read-only with `git archive` into a temporary directory, and writes
 proof/VELDO-0148/red-at-COMMIT.json. Nothing in that tree is changed. Against the original base all behavior rows fail by assertion;

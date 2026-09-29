@@ -164,8 +164,9 @@ two workers. The builder did not run that mutation mode or the mutation checker.
 ## Current completion checks
 
 The repair from 7ee372ed changes no production bytes or acceptance criteria, and
-needs no footprint expansion. Normal, empty gate-environment and loaded runs each
-pass all 16 suite rows (42 including the shared preamble), with zero failures and
+needs no footprint expansion. [verification.json](verification.json) records the
+normal, empty gate-environment and loaded runs. Each of those runs
+passes all 16 suite rows (42 including the shared preamble), with zero failures and
 the expected subset exit 2. These are partial checks, not a full gate verdict.
 [verify_load.py](verify_load.py) owns one load process with 18 busy native threads
 on the 20 available cores, runs only suite 86, then terminates and reaps that exact
@@ -178,7 +179,11 @@ anchors and compiling mutants, and asserts that no other mutation target changed
 The manual wake experiment alone demonstrates a new rejection; the other 18 are
 registered for reviewer execution. The suite registry describes the new wake row,
 and requires.json was regenerated. Full gate and mutation checker execution remain
-reserved for the reviewer.
+reserved for the reviewer. The supplied footprint checker reports 55 paths with
+none outside; the anchor checker reports 0 bad anchors and no duplicate mutation
+names across findings. Validation exits 0 and all eight engine copies match.
+Production readers and writers of loop wakes, pass reports, signed requests and
+grant events were searched alongside their suite consumers.
 
 ## Earlier completion checks
 

@@ -1,4 +1,13 @@
 {
+ "audits": {
+  "bad_anchors": 0,
+  "duplicate_mutation_names": [],
+  "footprint_paths": 55,
+  "matching_engine_copies": 8,
+  "outside_footprint": [],
+  "requires_regenerated": true,
+  "validator_exit": 0
+ },
  "full_gate_run": false,
  "gate_environment": {
   "GIT_CONFIG_GLOBAL": "/dev/null",

@@ -168,6 +168,27 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-09-29, deterministic proof repair complete: 587af58f's suite bytes pass all
+16 rows in ordinary, empty gate-environment and artificial-load runs, serially
+(42 with the shared preamble, zero failures, expected subset exit 2). One owned
+process ran 18 busy threads on 20 CPUs during the load run, consumed 429.6 CPU-seconds
+and was terminated and reaped by its exact PID. The wake no-op applied by hand to
+a temporary control_service.py copy makes only reland/end-wakes-pass red by
+assertion. All four reported timing failures and the conflict row remain green.
+The immediate baseline 7ee372ed is a green control: its production already works.
+The current suite against original ad916989 makes all 14 behavior rows red by
+assertion, with the format control green. Saved both replays and manual-wake.json.
+Refreshed all 19 mutation digests and exact diffs from registry syntax; only the
+wake target changed, and no execution of the other 18 mutations is claimed.
+The supplied footprint check reports 55 paths, none outside; anchor_check reports
+0 bad anchors and no duplicate names across findings; validation exits 0. All
+eight engine copies match, the suite remains registered once, requires.json was
+regenerated, and the diff has no whitespace errors. Searched production writers
+and readers of wakes, pass reports, signed requests and grant events together
+with their suite consumers. No criterion, footprint or production changes. No
+other suite, full gate or mutation checker ran; those remain for the reviewer.
+Gate byproducts are restored before the final commit and excluded from this work.
+
 2026-09-29, deterministic proof repair from 7ee372ed: suite 86 now steps the
 installed Service and FactoryLoop through signed Authority requests and real
 receiver pipe events. Removed the shared 100-second budget, 20-second polling
