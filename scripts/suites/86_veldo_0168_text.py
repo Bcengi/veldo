@@ -389,6 +389,10 @@ def _v168_suite():
                 ('control_intake.py', 'Intake._ask', 'self.asker', 'send'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'presenter', '_send'),
                 ('control_client_api.py', 'ServiceAuthority._call', 'CC', 'send'),
+                # Setup and passkey commands use the local authority socket, not a Telegram renderer.
+                ('control_factory_setup.py', 'enroll_api_edge_through_service.send', 'CC', 'send'),
+                ('control_factory_setup.py', 'service_request.request', 'CC', 'send'),
+                ('control_factory_setup_api.py', 'passkey.send', 'CC', 'send'),
                 ('control_claim_client.py', 'Client.request', 'IPC', 'send'),
                 ('control_channel_activation.py', 'main.send', 'CC', 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),

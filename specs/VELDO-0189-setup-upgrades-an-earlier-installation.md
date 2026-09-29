@@ -30,6 +30,7 @@ footprint:
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
   - "scripts/suites/86_veldo_0186_setup_assets.py"
+  - "scripts/suites/86_veldo_0168_text.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -296,3 +297,8 @@ those two additions only when absent and preserves the existing runs resolution 
 the runs tree is snapshotted. Removed the incorrect re-run claim from Out of scope. The footprint adds
 the 0171 and 0186 suites because the merged setup requires both engine fixtures and the Tailscale
 stand-in, and their existing installation assertions must cover the extended installation set.
+
+2026-09-29, merge verification: the footprint also names the 0168 suite. Its exhaustive send census
+now lists the setup API, passkey and upgrade service_request calls as local authority socket transports;
+AC4 uses the last for inspect and ownership commitment. Telegram endpoints and rendering assertions stay
+the same. This resolves the census failure introduced by combining the two branches.
