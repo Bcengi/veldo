@@ -100,19 +100,22 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
         cfg['model_providers.loopback'] = {'name': 'loopback', 'base_url': 'http://127.0.0.1:%d/v1' % port,
                                           'wire_api': 'responses', 'supports_standalone_web_search': True,
                                           'request_max_retries': 0, 'stream_max_retries': 0}
-        def flattened(values, prefix=''):
-            for key, value in values.items():
-                if isinstance(value, dict):
-                    yield from flattened(value, prefix + key + '.')
+        def flattened(values, prefix='', cli=False):
+            for key, value in sorted(values.items()):
+                # CLI paths cannot quote literal feature dots; put the table
+                # before any individual overrides, as the production writer does.
+                if isinstance(value, dict) and not (cli and not prefix and key == 'features'):
+                    yield from flattened(value, prefix + key + '.', cli)
                 else:
-                    yield prefix + key, value
+                    name = json.dumps(key) if prefix == 'features.' and '.' in key else key
+                    yield prefix + name, value
         (profile / 'config.toml').write_text(''.join(k + ' = ' + X._toml(v) + '\n' for k, v in flattened(cfg)))
         env = {'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile), 'TMPDIR': temp,
                'LANG': 'C.UTF-8', 'HTTP_PROXY': 'http://127.0.0.1:9', 'HTTPS_PROXY': 'http://127.0.0.1:9',
                'ALL_PROXY': 'http://127.0.0.1:9', 'NO_PROXY': '127.0.0.1'}
         # The baseline's ignore-user-config option is replaced by the identical generated config file.
         args = [str(binary), 'exec', P + 'json', P + 'ignore-rules', P + 'disable', 'apps', P + 'skip-git-repo-check']
-        for key, value in flattened(cfg):
+        for key, value in flattened(cfg, cli=True):
             args += ['-c', key + '=' + X._toml(value)]
         if models:
             args = [str(binary), 'debug', 'models', P + 'bundled']

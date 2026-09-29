@@ -197,10 +197,16 @@ every listed feature outside the known non-tool set, including default-off tool
 sources. Mapped features follow the native grant regardless of their default;
 other features are false, while unknown default-on features still stop by name.
 Literal dots in feature names travel in an inline TOML table because CLI dotted
-paths cannot preserve them. AC3 and AC4 gain missing, empty and malformed listing
+paths cannot preserve them. The loopback proof serializer preserves those literal
+names in both its TOML file and CLI arguments. AC3 and AC4 gain missing, empty and malformed listing
 rows through qualification, binding and the real launch path. Each refusal row
 pairs its negative case with a valid-listing explicit-default-off launch control.
-Suite 89 passes its eleven rows; mutation execution is reserved for the reviewer.
+Suites 89, 88 and 87 pass 11, 25 and 176 rows in normal and clean gate
+environments. Suite 86 passes 25 offline rows in both and retains only the two
+stale live-capture failures. The unchanged 2234d205 archive is red by assertion
+on all eleven new paired rows. Three new mutations are registered; mutation
+execution is reserved for the reviewer. The validator passes, anchors report
+zero bad anchors, the footprint reports nothing outside, and engine copies match.
 The existing footprint covers all changes; no expansion is needed. Production
 digests changed, so the reviewer recaptures live proofs after this lands. This
 repair does not recapture them or claim a gate pass.

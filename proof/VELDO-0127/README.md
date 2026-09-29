@@ -7,6 +7,8 @@ non-tool set now has an explicit value, independent of its default. Mapped
 features follow the role grant; other features are false. Unknown default-on
 features retain their named stop. Literal dotted names use an inline TOML table
 because the pinned CLI treats dots in override paths as table separators.
+The loopback proof serializer retains the same literal names in its generated
+file and CLI arguments, including when replaying suite 86.
 No new native capability or footprint path is introduced.
 
 Suite 89 uses the signed role writer, the real qualification writer, binding and
@@ -38,6 +40,13 @@ default-off features, or withdraw the mapped clock grant when its recorded
 default is off. `mutations.json` and the exact diffs record all 72 registered
 finding-127 mutations against the current sources. They have not been executed
 here; execution and rejection are reserved for the reviewer.
+
+`listing-checks.json` records the final scoped runs: suites 89, 88 and 87 pass
+11, 25 and 176 rows respectively in both normal and clean gate environments.
+Suite 86 passes its 25 offline rows in both environments and retains only the
+two stale live-capture failures. The validator passes, anchors report zero bad
+anchors, the footprint reports nothing outside, requirements are regenerated,
+and the production engine copies are byte-identical.
 
 Live captures remain unchanged. The production digest changed, so the reviewer
 recaptures live proofs after this lands. Scoped checks do not claim a gate pass.
