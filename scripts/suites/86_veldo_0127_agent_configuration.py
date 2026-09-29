@@ -198,8 +198,9 @@ else:
         sys.exit(wire.forward(args, config))
     own['mcp_tools'] = {n: [t for t in server_tools(e) if t in e.get('enabled_tools',[])]
                        for n,e in config.get('mcp_servers',{}).items()}
-    own['model_catalog'] = json.loads(Path(config['model_catalog_json']).read_text())
-    own['wire'] = wire.capture(config)
+    # The stream-format probe has no bound role or generated model catalog.
+    own['model_catalog'] = json.loads(Path(config['model_catalog_json']).read_text()) if config.get('model_catalog_json') else {}
+    own['wire'] = wire.capture(config) if config.get('model_catalog_json') else {}
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     packet = json.loads(sys.stdin.read())
     if Path('.git').exists():

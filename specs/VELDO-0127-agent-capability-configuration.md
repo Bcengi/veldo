@@ -205,6 +205,11 @@ each grant and model, save refusals, empty controls and production stops. Existi
 footprint patterns cover every file; no expansion is needed. Production digests
 changed: the live capture must be redone by the reviewer after this lands on the
 branch. This repair does not recapture live proofs or claim a gate pass.
+The 176 new rows pass in normal and clean gate environments and are all red by
+assertion on the unchanged baseline archive. Suite 86 passes 25 offline rows in
+both environments and retains the two stale live-capture failures. The footprint,
+anchor and validator checks pass, and shared Python engine copies are identical.
+Mutations are registered with current diffs; only the reviewer executes them.
 
 2026-09-29, merged-tree Metering integration repair: add the VELDO-0166 usage-window
 suite to the footprint to align its receiver stand-in with AC2/AC4's launch contract.

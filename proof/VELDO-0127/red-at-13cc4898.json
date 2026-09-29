@@ -1,0 +1,1887 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 delivery/gpt-6-astra/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-6-astra/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-sol/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-terra/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-luna/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.5/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.4/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.4-mini/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.2/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/codex-auto-review/search-mcp",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "13cc48989cb4c7c45b3e147a2a3f663e67337c86",
+ "details": [
+  "VELDO-0127 delivery/gpt-6-astra/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/clock detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/request_user_input_async detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-6-astra/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-6-astra/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-6-astra/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-6-astra/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-6-astra/missing detail: None",
+  "VELDO-0127 stop/gpt-6-astra/extra detail: None",
+  "VELDO-0127 stop/gpt-6-astra/mcp detail: None",
+  "VELDO-0127 save/gpt-6-astra/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.6-sol/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.6-sol/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.6-sol/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.6-sol/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-5.6-sol/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-sol/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-sol/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.6-sol/missing detail: None",
+  "VELDO-0127 stop/gpt-5.6-sol/extra detail: None",
+  "VELDO-0127 stop/gpt-5.6-sol/mcp detail: None",
+  "VELDO-0127 save/gpt-5.6-sol/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.6-terra/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.6-terra/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.6-terra/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.6-terra/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-5.6-terra/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-terra/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-terra/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.6-terra/missing detail: None",
+  "VELDO-0127 stop/gpt-5.6-terra/extra detail: None",
+  "VELDO-0127 stop/gpt-5.6-terra/mcp detail: None",
+  "VELDO-0127 save/gpt-5.6-terra/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.6-luna/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.6-luna/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.6-luna/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.6-luna/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-5.6-luna/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.6-luna/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.6-luna/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.6-luna/missing detail: None",
+  "VELDO-0127 stop/gpt-5.6-luna/extra detail: None",
+  "VELDO-0127 stop/gpt-5.6-luna/mcp detail: None",
+  "VELDO-0127 save/gpt-5.6-luna/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/clock detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/missing detail: None",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/extra detail: None",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/mcp detail: None",
+  "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/clock detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/missing detail: None",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/extra detail: None",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/mcp detail: None",
+  "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.5/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.5/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.5/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.5/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/update_plan detail: (None, None, ['update_plan'])",
+  "VELDO-0127 delivery/gpt-5.5/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.5/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.5/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.5/missing detail: None",
+  "VELDO-0127 stop/gpt-5.5/extra detail: None",
+  "VELDO-0127 stop/gpt-5.5/mcp detail: None",
+  "VELDO-0127 save/gpt-5.5/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.4/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.4/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.4/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.4/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/update_plan detail: (None, None, ['update_plan'])",
+  "VELDO-0127 delivery/gpt-5.4/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.4/missing detail: None",
+  "VELDO-0127 stop/gpt-5.4/extra detail: None",
+  "VELDO-0127 stop/gpt-5.4/mcp detail: None",
+  "VELDO-0127 save/gpt-5.4/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.4-mini/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.4-mini/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.4-mini/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.4-mini/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/update_plan detail: (None, None, ['update_plan'])",
+  "VELDO-0127 delivery/gpt-5.4-mini/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.4-mini/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.4-mini/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.4-mini/missing detail: None",
+  "VELDO-0127 stop/gpt-5.4-mini/extra detail: None",
+  "VELDO-0127 stop/gpt-5.4-mini/mcp detail: None",
+  "VELDO-0127 save/gpt-5.4-mini/search-mcp detail: None",
+  "VELDO-0127 delivery/gpt-5.2/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/clock detail: None",
+  "VELDO-0127 delivery/gpt-5.2/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/request_user_input_async detail: None",
+  "VELDO-0127 delivery/gpt-5.2/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/tool_search detail: None",
+  "VELDO-0127 delivery/gpt-5.2/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/update_plan detail: (None, None, ['update_plan'])",
+  "VELDO-0127 delivery/gpt-5.2/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/gpt-5.2/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/gpt-5.2/jira detail: (None, None)",
+  "VELDO-0127 stop/gpt-5.2/missing detail: None",
+  "VELDO-0127 stop/gpt-5.2/extra detail: None",
+  "VELDO-0127 stop/gpt-5.2/mcp detail: None",
+  "VELDO-0127 save/gpt-5.2/search-mcp detail: None",
+  "VELDO-0127 delivery/codex-auto-review/none detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/apply_patch detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/apply_patch detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/clock detail: None",
+  "VELDO-0127 delivery/codex-auto-review/clock detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/multi_agent detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/multi_agent detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/request_user_input_async detail: None",
+  "VELDO-0127 delivery/codex-auto-review/request_user_input_async detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/shell detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/shell detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/sub_agents detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/sub_agents detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/tool_search detail: None",
+  "VELDO-0127 delivery/codex-auto-review/tool_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/update_plan detail: (None, None, ['exec', 'update_plan', 'wait'])",
+  "VELDO-0127 delivery/codex-auto-review/update_plan detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/view_image detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/view_image detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/web_search detail: ('unsupported_configuration:native_tools', None, [])",
+  "VELDO-0127 delivery/codex-auto-review/web_search detail: ungranted tool must be absent from the observed empty role",
+  "VELDO-0127 delivery/codex-auto-review/jira detail: (None, None)",
+  "VELDO-0127 stop/codex-auto-review/missing detail: None",
+  "VELDO-0127 stop/codex-auto-review/extra detail: None",
+  "VELDO-0127 stop/codex-auto-review/mcp detail: None",
+  "VELDO-0127 save/codex-auto-review/search-mcp detail: None"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 delivery/gpt-6-astra/none",
+  "VELDO-0127 delivery/gpt-6-astra/apply_patch",
+  "VELDO-0127 delivery/gpt-6-astra/clock",
+  "VELDO-0127 delivery/gpt-6-astra/multi_agent",
+  "VELDO-0127 delivery/gpt-6-astra/request_user_input_async",
+  "VELDO-0127 delivery/gpt-6-astra/shell",
+  "VELDO-0127 delivery/gpt-6-astra/sub_agents",
+  "VELDO-0127 delivery/gpt-6-astra/tool_search",
+  "VELDO-0127 delivery/gpt-6-astra/update_plan",
+  "VELDO-0127 delivery/gpt-6-astra/view_image",
+  "VELDO-0127 delivery/gpt-6-astra/web_search",
+  "VELDO-0127 delivery/gpt-6-astra/jira",
+  "VELDO-0127 stop/gpt-6-astra/missing",
+  "VELDO-0127 stop/gpt-6-astra/extra",
+  "VELDO-0127 stop/gpt-6-astra/mcp",
+  "VELDO-0127 save/gpt-6-astra/search-mcp",
+  "VELDO-0127 delivery/gpt-5.6-sol/none",
+  "VELDO-0127 delivery/gpt-5.6-sol/apply_patch",
+  "VELDO-0127 delivery/gpt-5.6-sol/clock",
+  "VELDO-0127 delivery/gpt-5.6-sol/multi_agent",
+  "VELDO-0127 delivery/gpt-5.6-sol/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.6-sol/shell",
+  "VELDO-0127 delivery/gpt-5.6-sol/sub_agents",
+  "VELDO-0127 delivery/gpt-5.6-sol/tool_search",
+  "VELDO-0127 delivery/gpt-5.6-sol/update_plan",
+  "VELDO-0127 delivery/gpt-5.6-sol/view_image",
+  "VELDO-0127 delivery/gpt-5.6-sol/web_search",
+  "VELDO-0127 delivery/gpt-5.6-sol/jira",
+  "VELDO-0127 stop/gpt-5.6-sol/missing",
+  "VELDO-0127 stop/gpt-5.6-sol/extra",
+  "VELDO-0127 stop/gpt-5.6-sol/mcp",
+  "VELDO-0127 save/gpt-5.6-sol/search-mcp",
+  "VELDO-0127 delivery/gpt-5.6-terra/none",
+  "VELDO-0127 delivery/gpt-5.6-terra/apply_patch",
+  "VELDO-0127 delivery/gpt-5.6-terra/clock",
+  "VELDO-0127 delivery/gpt-5.6-terra/multi_agent",
+  "VELDO-0127 delivery/gpt-5.6-terra/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.6-terra/shell",
+  "VELDO-0127 delivery/gpt-5.6-terra/sub_agents",
+  "VELDO-0127 delivery/gpt-5.6-terra/tool_search",
+  "VELDO-0127 delivery/gpt-5.6-terra/update_plan",
+  "VELDO-0127 delivery/gpt-5.6-terra/view_image",
+  "VELDO-0127 delivery/gpt-5.6-terra/web_search",
+  "VELDO-0127 delivery/gpt-5.6-terra/jira",
+  "VELDO-0127 stop/gpt-5.6-terra/missing",
+  "VELDO-0127 stop/gpt-5.6-terra/extra",
+  "VELDO-0127 stop/gpt-5.6-terra/mcp",
+  "VELDO-0127 save/gpt-5.6-terra/search-mcp",
+  "VELDO-0127 delivery/gpt-5.6-luna/none",
+  "VELDO-0127 delivery/gpt-5.6-luna/apply_patch",
+  "VELDO-0127 delivery/gpt-5.6-luna/clock",
+  "VELDO-0127 delivery/gpt-5.6-luna/multi_agent",
+  "VELDO-0127 delivery/gpt-5.6-luna/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.6-luna/shell",
+  "VELDO-0127 delivery/gpt-5.6-luna/sub_agents",
+  "VELDO-0127 delivery/gpt-5.6-luna/tool_search",
+  "VELDO-0127 delivery/gpt-5.6-luna/update_plan",
+  "VELDO-0127 delivery/gpt-5.6-luna/view_image",
+  "VELDO-0127 delivery/gpt-5.6-luna/web_search",
+  "VELDO-0127 delivery/gpt-5.6-luna/jira",
+  "VELDO-0127 stop/gpt-5.6-luna/missing",
+  "VELDO-0127 stop/gpt-5.6-luna/extra",
+  "VELDO-0127 stop/gpt-5.6-luna/mcp",
+  "VELDO-0127 save/gpt-5.6-luna/search-mcp",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/none",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/apply_patch",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/clock",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/multi_agent",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/request_user_input_async",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/shell",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/sub_agents",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/update_plan",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/view_image",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search",
+  "VELDO-0127 delivery/gpt-daybreak-blue-latest/jira",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/missing",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/extra",
+  "VELDO-0127 stop/gpt-daybreak-blue-latest/mcp",
+  "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/none",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/apply_patch",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/clock",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/multi_agent",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/request_user_input_async",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/shell",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/sub_agents",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/update_plan",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/view_image",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search",
+  "VELDO-0127 delivery/gpt-daybreak-red-latest/jira",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/missing",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/extra",
+  "VELDO-0127 stop/gpt-daybreak-red-latest/mcp",
+  "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp",
+  "VELDO-0127 delivery/gpt-5.5/none",
+  "VELDO-0127 delivery/gpt-5.5/apply_patch",
+  "VELDO-0127 delivery/gpt-5.5/clock",
+  "VELDO-0127 delivery/gpt-5.5/multi_agent",
+  "VELDO-0127 delivery/gpt-5.5/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.5/shell",
+  "VELDO-0127 delivery/gpt-5.5/sub_agents",
+  "VELDO-0127 delivery/gpt-5.5/tool_search",
+  "VELDO-0127 delivery/gpt-5.5/update_plan",
+  "VELDO-0127 delivery/gpt-5.5/view_image",
+  "VELDO-0127 delivery/gpt-5.5/web_search",
+  "VELDO-0127 delivery/gpt-5.5/jira",
+  "VELDO-0127 stop/gpt-5.5/missing",
+  "VELDO-0127 stop/gpt-5.5/extra",
+  "VELDO-0127 stop/gpt-5.5/mcp",
+  "VELDO-0127 save/gpt-5.5/search-mcp",
+  "VELDO-0127 delivery/gpt-5.4/none",
+  "VELDO-0127 delivery/gpt-5.4/apply_patch",
+  "VELDO-0127 delivery/gpt-5.4/clock",
+  "VELDO-0127 delivery/gpt-5.4/multi_agent",
+  "VELDO-0127 delivery/gpt-5.4/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.4/shell",
+  "VELDO-0127 delivery/gpt-5.4/sub_agents",
+  "VELDO-0127 delivery/gpt-5.4/tool_search",
+  "VELDO-0127 delivery/gpt-5.4/update_plan",
+  "VELDO-0127 delivery/gpt-5.4/view_image",
+  "VELDO-0127 delivery/gpt-5.4/web_search",
+  "VELDO-0127 delivery/gpt-5.4/jira",
+  "VELDO-0127 stop/gpt-5.4/missing",
+  "VELDO-0127 stop/gpt-5.4/extra",
+  "VELDO-0127 stop/gpt-5.4/mcp",
+  "VELDO-0127 save/gpt-5.4/search-mcp",
+  "VELDO-0127 delivery/gpt-5.4-mini/none",
+  "VELDO-0127 delivery/gpt-5.4-mini/apply_patch",
+  "VELDO-0127 delivery/gpt-5.4-mini/clock",
+  "VELDO-0127 delivery/gpt-5.4-mini/multi_agent",
+  "VELDO-0127 delivery/gpt-5.4-mini/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.4-mini/shell",
+  "VELDO-0127 delivery/gpt-5.4-mini/sub_agents",
+  "VELDO-0127 delivery/gpt-5.4-mini/tool_search",
+  "VELDO-0127 delivery/gpt-5.4-mini/update_plan",
+  "VELDO-0127 delivery/gpt-5.4-mini/view_image",
+  "VELDO-0127 delivery/gpt-5.4-mini/web_search",
+  "VELDO-0127 delivery/gpt-5.4-mini/jira",
+  "VELDO-0127 stop/gpt-5.4-mini/missing",
+  "VELDO-0127 stop/gpt-5.4-mini/extra",
+  "VELDO-0127 stop/gpt-5.4-mini/mcp",
+  "VELDO-0127 save/gpt-5.4-mini/search-mcp",
+  "VELDO-0127 delivery/gpt-5.2/none",
+  "VELDO-0127 delivery/gpt-5.2/apply_patch",
+  "VELDO-0127 delivery/gpt-5.2/clock",
+  "VELDO-0127 delivery/gpt-5.2/multi_agent",
+  "VELDO-0127 delivery/gpt-5.2/request_user_input_async",
+  "VELDO-0127 delivery/gpt-5.2/shell",
+  "VELDO-0127 delivery/gpt-5.2/sub_agents",
+  "VELDO-0127 delivery/gpt-5.2/tool_search",
+  "VELDO-0127 delivery/gpt-5.2/update_plan",
+  "VELDO-0127 delivery/gpt-5.2/view_image",
+  "VELDO-0127 delivery/gpt-5.2/web_search",
+  "VELDO-0127 delivery/gpt-5.2/jira",
+  "VELDO-0127 stop/gpt-5.2/missing",
+  "VELDO-0127 stop/gpt-5.2/extra",
+  "VELDO-0127 stop/gpt-5.2/mcp",
+  "VELDO-0127 save/gpt-5.2/search-mcp",
+  "VELDO-0127 delivery/codex-auto-review/none",
+  "VELDO-0127 delivery/codex-auto-review/apply_patch",
+  "VELDO-0127 delivery/codex-auto-review/clock",
+  "VELDO-0127 delivery/codex-auto-review/multi_agent",
+  "VELDO-0127 delivery/codex-auto-review/request_user_input_async",
+  "VELDO-0127 delivery/codex-auto-review/shell",
+  "VELDO-0127 delivery/codex-auto-review/sub_agents",
+  "VELDO-0127 delivery/codex-auto-review/tool_search",
+  "VELDO-0127 delivery/codex-auto-review/update_plan",
+  "VELDO-0127 delivery/codex-auto-review/view_image",
+  "VELDO-0127 delivery/codex-auto-review/web_search",
+  "VELDO-0127 delivery/codex-auto-review/jira",
+  "VELDO-0127 stop/codex-auto-review/missing",
+  "VELDO-0127 stop/codex-auto-review/extra",
+  "VELDO-0127 stop/codex-auto-review/mcp",
+  "VELDO-0127 save/codex-auto-review/search-mcp"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 delivery/gpt-6-astra/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-6-astra/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-6-astra/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-6-astra/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-sol/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-sol/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-sol/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-terra/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-terra/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-terra/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.6-luna/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.6-luna/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.6-luna/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-blue-latest/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-blue-latest/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-daybreak-red-latest/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-daybreak-red-latest/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.5/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.5/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.5/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.4/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.4-mini/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.4-mini/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.4-mini/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/gpt-5.2/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/gpt-5.2/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/gpt-5.2/search-mcp",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/none",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/apply_patch",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/clock",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/request_user_input_async",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/shell",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/tool_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/update_plan",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/web_search",
+   false
+  ],
+  [
+   "VELDO-0127 delivery/codex-auto-review/jira",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/missing",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/extra",
+   false
+  ],
+  [
+   "VELDO-0127 stop/codex-auto-review/mcp",
+   false
+  ],
+  [
+   "VELDO-0127 save/codex-auto-review/search-mcp",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/87_veldo_0127_codex_delivery.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

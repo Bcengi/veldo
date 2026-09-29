@@ -39,6 +39,17 @@ this lands on the branch. The prior live evidence is retained unchanged, and its
 digest checks remain enabled. No gate or aggregate selftest is run or claimed.
 Existing footprint patterns cover the changes; no expansion is needed.
 
+`delivery-checks.json` records the scoped runs. Suite 87 passes all 176 rows in
+both normal and clean gate environments. Suite 86 passes 25 offline rows in both
+environments and fails only `live/claude` and `live/codex`, the retained stale
+captures. The partial-suite runner deliberately returns a nonzero status even
+when every scoped row passes; these observations do not certify the gate.
+`red-at-13cc4898.json` records all 176 delivery rows red by assertion against the
+unchanged baseline archive, with no raised-row failures. The footprint check
+reports nothing outside, the anchor check reports zero bad anchors, and the
+repository validator passes. All 211 shared Python engine files match byte for
+byte, and the probed binary matches the shipped qualification digest.
+
 ## Usage-window integration repair, 2026-09-29
 
 The baseline is `ef1cd2fb`. The receiver constructor always defines `binding`;
