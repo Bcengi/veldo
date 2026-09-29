@@ -14,6 +14,8 @@ depends_on: [VELDO-0060, VELDO-0062, VELDO-0160]
 placement: [fleet, engine, metrics, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_accounts.py"
+  - ".veldo/control_accounts.py"
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "engine/.veldo/control_launch*.py"
@@ -134,3 +136,56 @@ They share the live run that found them and the account they touch, and each kee
 falsifier. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-27: implementation on build-veldo-0166 records every window an event reports: the named window
+with the event's own status, reset and utilization, every other unifiedWindows entry as reported with no
+status. The footprint adds control_accounts.py and its engine copy: the writer accepts an absent status,
+and such an observation never lifts a rejection still in force (VELDO-0160's blocking), found when the
+merged VELDO-0172 fake templates put zero-valued companions beside every fake rejection. Existing profile
+directories keep their mode. Proof driver at proof/VELDO-0166/drive.py. Status unchanged.
+
+2026-09-28: review fixes after merging local main at 9f1a0445. The named window uses each top-level
+field when present and otherwise its own unifiedWindows value. A later companion can fill a rejection's
+missing reset without lifting it before that reset. An unnamed allowed event records only its map and
+clears a stream rejection. Added counters and structured logs for window observations and account
+registration, with generated-fixture rows and mutations. No footprint expansion: control_launch.py and
+its engine copy are already declared. Only suite 0166 is run here; the reviewer owns the gate and
+mutation execution.
+
+2026-09-28: re-check repairs unnamed rejections: the Meter records the same unified window that its
+limit reports, so the pool blocks the account until the reset, or indefinitely without one. An unnamed
+allowed clear carries an explicit clearing signal for its reported companions, so both the Meter and
+store lift an active rejection, including one with no reset, without inventing a companion status or
+an extra unified observation. Two production rows and four finding-166 mutations pin these cases.
+All edits remain within the existing footprint.
+
+2026-09-28: VELDO-0160 follow-up ticket: add an expiry for rejections stored with no reset. A
+seven_day_opus, seven_day_sonnet or overage rejection without a unifiedWindows entry, or a result-text
+limit with no readable reset, currently blocks the account indefinitely. Pool expiry remains outside
+VELDO-0166.
+
+2026-09-29: re-check repairs the stored unnamed rejection after an explicit clear. The account writer
+lifts an existing unified rejection, including one from an earlier dispatch, without creating a unified
+window. A bare allowed event carries its clear signal even without reported windows. Three production
+rows cover no reset, a future reset and a bare clear; windows/clear retains the no-unified control.
+Finding-166 mutations drop the stored lift and the bare clear signal. No footprint expansion.
+
+2026-09-29: re-check at 75f45d77 treats unnamed allowed_warning as a clear in the Meter and
+account store, for a reported map or a bare signal. A stale companion now retains an already
+applied unified lift. The ordering row covers older, equal and newer clear timestamps relative
+to the unified rejection, while preserving the newer companion. Two new production rows are
+red by assertion on 75f45d77; five finding-166 mutations pin warning signals, stream clearing,
+bare warnings, retained lifts and the observed_at guard. No footprint expansion.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, named-window clear coverage: seven_day_opus,
+seven_day_sonnet or overage rejected then a real clear. The real clear map never lists these
+windows, so the store keeps their rejection until its reset or forever without one. This
+predates this branch and remains outside VELDO-0166.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, bare clear after named rejection: five_hour
+rejected then a bare allowed. The bare clear lifts only unified in the store. This predates
+this branch and remains outside VELDO-0166.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, multiple stream limits: unnamed rejected,
+then five_hour rejected, then five_hour allowed. The Meter tracks one limit. This predates
+this branch and remains outside VELDO-0166.

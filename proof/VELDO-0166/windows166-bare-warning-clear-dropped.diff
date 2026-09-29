@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1117 +1117 @@
+-            if not found and named is None and status in ('allowed', 'allowed_warning'):
++            if not found and named is None and status == 'allowed':

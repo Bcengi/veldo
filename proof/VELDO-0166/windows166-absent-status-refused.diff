@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -84 +84 @@
+-WINDOW_STATUSES = ('allowed', 'rejected', None)
++WINDOW_STATUSES = ('allowed', 'rejected')

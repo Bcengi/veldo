@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1973 +1973 @@
+-                self.window_counts[key] = self.window_counts.get(key, 0) + 1
++                self.window_counts[key] = self.window_counts.get(key, 0)

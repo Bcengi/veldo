@@ -1907,6 +1907,7 @@ class Metering:
         self.stop = False
         self.errors = []
         self.receipts = []
+        self.window_counts = {}
         self.start = None
         self.settled = False
         self.file = None
@@ -1959,12 +1960,22 @@ class Metering:
         self.receipts.append(observation['receipt'])
         now = time.time()
         try:
-            if observation['kind'] == 'window':
+            if observation['kind'] in ('window', 'clear_rejection'):
                 self.accounts.observe('window/%s/%s/%s' % (self.dispatch_id, observation['receipt'][7:23],
                                                            observation['window_id']),
                                       self.account, observation['window_id'], status=observation['status'],
                                       reset_at=observation['reset_at'], utilization=observation['utilization'],
-                                      source_dispatch=self.dispatch_id, now=now)
+                                      source_dispatch=self.dispatch_id, now=now,
+                                      clear_rejection=observation.get('clear_rejection', False))
+                if observation['kind'] == 'clear_rejection':
+                    return
+                key = (observation['window_id'], observation['status'])
+                self.window_counts[key] = self.window_counts.get(key, 0) + 1
+                self.receiver.emit(dict(event='window_observed', account=self.account,
+                                        dispatch_id=self.dispatch_id, invocation=self.invocation,
+                                        window=key[0], status=key[1], utilization=observation['utilization'],
+                                        reset_at=observation['reset_at'], receipt=observation['receipt'],
+                                        metrics={'window_observations': 1}))
                 return
             self.sequence += 1
             result = self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation,

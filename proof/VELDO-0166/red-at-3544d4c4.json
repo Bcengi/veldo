@@ -1,0 +1,96 @@
+{
+ "by_assertion": true,
+ "commit": "3544d4c400d0add73152b93c221699dce051ae95",
+ "details": [
+  "VELDO-0166 detail: windows/named-fallback: named map supplies both absent fields and the stream reset",
+  "VELDO-0166 detail: windows/named-precedence: reset: each explicit field wins independently",
+  "VELDO-0166 detail: windows/named-precedence: util: each explicit field wins independently",
+  "VELDO-0166 detail: windows/rejection-reset-filled: future: later companion fills an unknown reset",
+  "VELDO-0166 detail: windows/rejection-reset-filled: past: later companion fills an unknown reset",
+  "VELDO-0166 detail: windows/clear: clear updates only reported windows and lifts the stream rejection",
+  "VELDO-0166 detail: observability/counts-and-log: count each observation by window and reported status",
+  "VELDO-0166 detail: observability/counts-and-log: window logs join receipt, values, account and invocation",
+  "VELDO-0166 detail: observability/counts-and-log: account additions count both directory states and log only facts"
+ ],
+ "failed_rows": [
+  "VELDO-0166 windows/named-fallback",
+  "VELDO-0166 windows/named-precedence",
+  "VELDO-0166 windows/rejection-reset-filled",
+  "VELDO-0166 windows/clear",
+  "VELDO-0166 observability/counts-and-log"
+ ],
+ "modules": {
+  ".veldo/accounts.py": {
+   "at_commit": "0f18726856344bbac937a94e3ce271c79c5d7bf02cc98757266ba1103ba21a8c",
+   "now": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "61d51fd7c453d600ca0c934bfd4b0ab535ffc54b0d817005df974d9161bde6a2",
+   "now": "eb9d96f0c95a373d81de7e82805dffb69dfe55d100b20acfb227b6bb3474a452"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "c3e74fe3f6b1c1cae3ae5f362ad2fa79032e1b801d3a6095af8f6a616d85dfb0",
+   "now": "d63acc23df2d40b4faa3d7a66a76e4a39e15e13e1229cd202699fd24779a0ce0"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "187d191dc30a02e52d25532b5c1d18301015065e3adf1f25e2e91da0f17ecd55",
+   "now": "6aee082205b1ea0d2fdcfc2e270a3a82e4ca5b0a0b559a0d648d73597b3d450f"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0166 windows/five-hour",
+   true
+  ],
+  [
+   "VELDO-0166 windows/qualified-set",
+   true
+  ],
+  [
+   "VELDO-0166 windows/status-only-named",
+   true
+  ],
+  [
+   "VELDO-0166 windows/missing-reset-receipts",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-kept",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-fallback",
+   false
+  ],
+  [
+   "VELDO-0166 windows/named-precedence",
+   false
+  ],
+  [
+   "VELDO-0166 windows/rejection-reset-filled",
+   false
+  ],
+  [
+   "VELDO-0166 windows/clear",
+   false
+  ],
+  [
+   "VELDO-0166 observability/counts-and-log",
+   false
+  ],
+  [
+   "VELDO-0166 profiles/existing",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/created",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.447,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
+ "tree": "git archive 3544d4c400d0add73152b93c221699dce051ae95, unchanged; the current suite file run against it"
+}

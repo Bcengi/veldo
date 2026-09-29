@@ -1,0 +1,5 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -316 +316 @@
+-                    and unified.get('status') == 'rejected' and unified['observed_at'] <= params['now']):
++                    and unified.get('status') == 'rejected' ):

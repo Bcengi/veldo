@@ -1141,6 +1141,15 @@
    "requires_note": "Only shared ROOT and expect. Real Git (a scaffolded repository with its canonical gate, a disposable bare remote with its reflog, the enrolled, builder, publication and colleague clones, a pre-push hook of the publication clone armed for one push), the SQLite store with OpenSSH signatures, VELDO-0076 projects, VELDO-0031 claims, VELDO-0036 reservations, VELDO-0039 dispatches with real child processes, VELDO-0050 proof, the VELDO-0049 floor, the VELDO-0028 effect executor, the lander, VELDO-0058's installed gate, VELDO-0057's publication and receipt, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), the Runner and launch receiver processes, the trusted wrapper and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential."
   },
   {
+   "name": "83_veldo_0166_usage_windows",
+   "file": "83_veldo_0166_usage_windows.py",
+   "requires": [
+    "83_veldo_0166_usage_windows"
+   ],
+   "regions": "All qualified Claude Code windows through Metering and the account writer, unnamed allowed and allowed_warning clears, and observation ordering across dispatches; existing and new profile directories.",
+   "requires_note": "Only shared ROOT and expect. Real signed SQLite store, Metering receipts and account_add over generated profiles. No engine or login runs."
+  },
+  {
    "name": "86_veldo_0168_text",
    "file": "86_veldo_0168_text.py",
    "requires": [
