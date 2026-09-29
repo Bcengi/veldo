@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -33 +33 @@
+-                stats['escaped']['literal' if literal else category] += 1
++                pass  # defect: an escape is not counted

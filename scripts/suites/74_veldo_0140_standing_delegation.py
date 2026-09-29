@@ -79,6 +79,12 @@ def _v140_suite():
             target.unlink()
         if Path(source).is_file():
             shutil.copyfile(source, target)
+    # VELDO-0186: setup consumes runtime records and qualified inert host engines.
+    fixtures186 = load('v140_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
+    engines186 = fixtures186.install(ROOT, base, mods)
+    fake = engines186['fake']
+    compare_formats = load('v140_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    prior_path186 = os.environ.get('PATH', '')
     F = load('v140_setup', mods / 'control_factory_setup.py')
     CH = load('v140_channel', mods / 'control_service_channel.py')
     ACT = load('v140_activation', mods / 'control_channel_activation.py')
@@ -172,6 +178,7 @@ def _v140_suite():
         return 'v140-%s-%d' % (prefix, serial[0])
 
     try:
+        os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
         clone = base / 'clone'
         git.run(['git', 'init', '-q', str(clone)], check=True, capture_output=True)
         (clone / 'README').write_text('v140\n')
@@ -599,6 +606,11 @@ def _v140_suite():
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        os.environ['PATH'] = prior_path186
+        issues186, trace186 = compare_formats.conform_fake(locals(), '0140_standing_delegation')
+        expect('VELDO-0172 fake/capture:0140_standing_delegation', not issues186)
+        for line in compare_formats.describe('0140_standing_delegation', issues186, trace186):
+            print(line)
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         with contextlib.suppress(Exception):
             stop_api()

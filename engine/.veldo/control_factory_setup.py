@@ -27,7 +27,9 @@ already exist, in the order they depend on each other, checking each. It reimple
      it), naming the account's own 0600 bot token file, never a copy of the token;
  10. the VELDO-0047 authority service, installed with that ingress (control_service.install). It starts
      nothing: the service is started by the owner's explicit start and its channel is inert
-     (not_activated) until his VELDO-0138 qualify and activate.
+     (not_activated) until his VELDO-0138 qualify and activate;
+ 11. the qualified Claude Code copy under the state root (control_engine_claude.pin) and the qualified
+     Codex vendor binding, checked against the installed runtime records and recorded in host/engines.json.
 
 WHAT IS REFUSED, BY NAME, WITH NOTHING WRITTEN. Every check runs before the first write: a state root that
 is absent, a link, not a directory, not this account's, not 0700, on an unsupported filesystem or not
@@ -35,7 +37,9 @@ empty (a store, a trust or anything else already there); a host trust file that 
 workspace that is not a Git clone, is already enrolled, or overlaps the state root; an owner key that is
 not a readable private key that signs; a token file that is not this account's own 0600 file holding one
 token, or lies inside the workspace; a chat id that is not a Telegram user id; a key directory a worker
-could write; a worker profile this host does not qualify. Nothing is ever overwritten: every file is
+could write; a worker profile this host does not qualify; a missing runtime asset, an unlisted engine
+version or bytes whose digest is not qualified. Engines are located through PATH without executing them.
+Nothing is ever overwritten: every file is
 created exclusively.
 
 ROLLBACK. The setup never deletes. A step that fails after writing began is reported by name with the
@@ -276,11 +280,16 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         raise Refused(qualification['refusal'], 'the worker profile is not qualified on this host')
     if not isinstance(origin, str) or ACT.platform_of(origin) is None:
         raise Refused('invalid_input:origin', 'the Bot API origin is the Telegram service')
+    try:
+        CS.runtime_assets(CS.closure())
+        engines = organ('control_factory_setup_engines').check(Refused)
+    except CS.Refused as error:
+        raise Refused(error.code, str(error)) from None
     host_identity = re.sub(r'[^A-Za-z0-9._-]', '-', platform.node() or '') or 'veldo-host'
     return dict(root=root, owner=owner, owner_key=key, owner_public=owner_public, workspace=workspace, chat=chat,
                 token_file=token_file, host_trust=str(host_trust), install_root=install_root,
                 unit_dir=unit_dir, profile=profile, writable=writable, origin=origin, host_identity=host_identity,
-                keys=keys, store=store)
+                keys=keys, store=store, engines=engines)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -502,10 +511,14 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         with step('api_service_configuration'):
             api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
         with step('service_install'):
-            installed = CS.install([workspace], host_trust=plan['host_trust'], key_directory=keys,
+            installed = CS.install([workspace], state_root=root, host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
                                    api_service=api_service)
+        with step('engine_pins'):
+            engines = organ('control_factory_setup_engines').install(
+                root, Path(installed['home']) / 'bin', plan['engines'], Refused)
+            _private(os.path.join(host, 'engines.json'), json.dumps(engines, sort_keys=True) + '\n')
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
@@ -529,6 +542,9 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'binding_digest': binding.get('binding_digest'), 'chat_enrolled': True,
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
+            'engines': engines, 'runtime_assets': installed['runtime_assets'],
+            'runtime_assets_installed': installed['runtime_assets_installed'],
+            'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
             'steps': [{'step': name, 'outcome': 'done'} for name in done]
             + [{'step': 'api_start', 'outcome': 'deferred'}],

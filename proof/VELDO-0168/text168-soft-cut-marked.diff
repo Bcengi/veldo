@@ -1,0 +1,7 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -329,2 +329,2 @@
+-            pieces.append(prefix + text[:at])
+-            prefix = ''
++            pieces.append(prefix + text[:at] + TEXT.CUT)  # defect: a cut at whitespace is marked
++            prefix = TEXT.CONTINUED

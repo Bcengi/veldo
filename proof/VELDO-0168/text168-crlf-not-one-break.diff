@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -16 +16 @@
+-    text = str(text).replace('\r\n', '\n')
++    text = str(text)  # defect: a CRLF pair is not one break

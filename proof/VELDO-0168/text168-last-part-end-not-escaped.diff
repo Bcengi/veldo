@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -408 +408 @@
+-        pieces = _chunks(TEXT.edges(body, counted), room, counted) + [tail]
++        pieces = _chunks(body, room, counted) + [tail]  # defect: the last body part ends in a space

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_projection.py
++++ b/.veldo/control_channel_projection.py
+@@ -246 +246 @@
+-    return TEXT.message('\n'.join(lines), stats, free_text=False)
++    return '\n'.join(lines[:-1] + [TEXT.message(lines[-1], stats)])  # defect: only the brief escaped

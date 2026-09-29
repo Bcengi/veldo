@@ -86,6 +86,7 @@ def _v47_suite():
         base = Path(directory)
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
+        shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
         for source in sorted((ROOT / '.veldo').glob('*.py')):
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
@@ -536,15 +537,22 @@ def _v47_suite():
                 recorded = config.get('closure') if isinstance(config.get('closure'), dict) else {}
                 closure = sorted(recorded)
                 # The programs run by path, 0500; VELDO-0171 added the API process its API unit runs.
-                entry = {'control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py'}
+                entry = {'control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py'}
                 # The architecture validator the receiver's recheck runs from its own directory
                 # (control_eligibility.ValidatorSnapshot), by the files the eligibility module declares.
                 validator = {name for _role, name in EL.VALIDATOR_ROLES}
-                installed = sorted(p.name for p in bin_dir.iterdir()) if bin_dir.is_dir() else []
+                installed = sorted(p.name for p in bin_dir.iterdir() if p.name != 'runtime') if bin_dir.is_dir() else []
                 copies = bool(closure) and installed == closure and all(
                     (bin_dir / n).read_bytes() == (mods / n).read_bytes()
                     and recorded[n] == 'sha256:' + __import__('hashlib').sha256((bin_dir / n).read_bytes()).hexdigest()
                     and mode(bin_dir / n) == ('0o500' if n in entry else '0o400') for n in closure)
+                runtime = config.get('runtime_assets', {})
+                copies = copies and bool(runtime) and all(
+                    (bin_dir / n).read_bytes() == (mods / n).read_bytes()
+                    and runtime[n] == 'sha256:' + __import__('hashlib').sha256((bin_dir / n).read_bytes()).hexdigest()
+                    and mode(bin_dir / n) == '0o400' for n in runtime)
+                copies = copies and sorted(runtime) == sorted(
+                    str(p.relative_to(bin_dir)) for p in (bin_dir / 'runtime').rglob('*') if p.is_file())
                 executable = str(bin_dir / 'control_service.py')
                 exec_start = '%s -B %s serve %s' % (os.path.realpath(sys.executable), executable, config_path)
                 started = CS.start(unit) if unit else {}

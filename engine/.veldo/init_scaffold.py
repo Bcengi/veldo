@@ -217,6 +217,8 @@ _FILES = [
     ".veldo/control_channel_projection.py",
     # VELDO-0065: versioned presentation receipts and presentation-bound answers; no validator loads it.
     ".veldo/control_channel_presentation.py",
+    ".veldo/control_channel_presentation_text.py",
+    ".veldo/control_channel_presentation_v1.py",
     # VELDO-0066: canonical Telegram acquisition and sender attribution; no validator loads it.
     ".veldo/control_channel_attribution.py",
     # VELDO-0126: the one Telegram and API message intake for proposed work; no validator loads it.
@@ -278,6 +280,7 @@ _FILES = [
     # VELDO-0189: its engine upgrade of an installation an earlier engine laid down. An owner command too,
     # so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_upgrade.py",
+    ".veldo/control_factory_setup_engines.py",
     ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.
