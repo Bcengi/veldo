@@ -41,6 +41,9 @@ Results are retained in `red-at-2fb32ed8.json` and the
 `speed_repair_manual_checks` section of `mutations.json`. Timing and gate-environment
 results are retained in `speed-checks.json`.
 
+The archived replay took 132.391 seconds: `delivery/runtime` was red by
+assertion while all 176 original behavior rows stayed green.
+
 No footprint addition was needed. These selected-suite runs intentionally exit 2
 when all their assertions pass; they are partial runs and do not establish a gate
 pass, live qualification, landing approval or shipped status. The reviewer owns

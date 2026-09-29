@@ -31,6 +31,12 @@
  "original_delivery_rows": 176,
  "partial_run_note": "Exit 2 with zero failed assertions is the required partial-run status, not a gate pass.",
  "production_unchanged": true,
+ "repository_checks": {
+  "anchors": "0 bad anchors",
+  "footprint": "outside the footprint: none",
+  "requires_regenerated": true,
+  "validate_all_exit_code": 0
+ },
  "runtime_budget_seconds": 60,
  "spec_id": "VELDO-0127",
  "suites": [
