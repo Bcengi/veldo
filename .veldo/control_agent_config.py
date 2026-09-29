@@ -84,6 +84,28 @@ def validate(definition, kind=KINDS[0]):
                 valid = valid and (item['tools'] == 'all' or names(item['tools']))
             if not valid:
                 raise Refused('invalid_input:agent_' + field)
+    if definition['engine'] == 'codex':
+        codex_grants(definition)
+
+
+def codex_grants(definition):
+    """Refuse grants the qualified model cannot deliver, including deferred grants."""
+    model = definition['settings'].get('model')
+    if not model:
+        return
+    engine = organ('control_engine_codex')
+    catalog = engine.load_qualification()['model_catalog']
+    entry = next((m for m in catalog['models'] if m['slug'] == model), None)
+    if entry is None:
+        raise Refused('unsupported_configuration:codex_model:' + model)
+    grants = {i['name'] for i in definition['native_tools']}
+    for name, experimental in (('clock', 'clock'), ('request_user_input_async', 'send_user_message_async')):
+        if name in grants and experimental not in entry['experimental_supported_tools']:
+            raise Refused('unsupported_configuration:codex_tool:' + model + ':' + name)
+    # In 0.154 Code Mode omits the search tool itself. With MCP, either mode
+    # defers selected definitions, violating the role's exact launch set.
+    if 'tool_search' in grants and (entry.get('tool_mode') == 'code_mode_only' or definition['mcp']):
+        raise Refused('unsupported_configuration:codex_tool:' + model + ':tool_search')
 
 
 def read(conn, domain, repository, role, revision=None, kind=KINDS[0]):

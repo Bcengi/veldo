@@ -98,7 +98,8 @@ def capture(binary, configuration, *, models=False, catalog=None):
         thread.start()
         cfg.update(model_provider='loopback', check_for_update_on_startup=False)
         cfg['model_providers.loopback'] = {'name': 'loopback', 'base_url': 'http://127.0.0.1:%d/v1' % port,
-                                          'wire_api': 'responses', 'request_max_retries': 0, 'stream_max_retries': 0}
+                                          'wire_api': 'responses', 'supports_standalone_web_search': True,
+                                          'request_max_retries': 0, 'stream_max_retries': 0}
         def flattened(values, prefix=''):
             for key, value in values.items():
                 if isinstance(value, dict):

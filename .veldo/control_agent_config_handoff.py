@@ -1,11 +1,14 @@
 """Compile a bound role into engine inputs and compare the observed launch set."""
 import copy
+import http.server
 import json
 import os
 from pathlib import Path
 import re
 import selectors
 import subprocess
+import tempfile
+import threading
 import time
 import urllib.request
 
@@ -52,8 +55,7 @@ def materialize(conn, domain, repository, revision, roots):
     allowed = {'model'} if revision['engine'] == 'claude_code' else {'model', 'sandbox_mode', 'model_reasoning_effort'}
     if set(settings) - allowed or any(not isinstance(v, str) or not v for v in settings.values()):
         raise Refused('unsupported_configuration:engine_settings')
-    if revision['engine'] == 'codex' and (set(revision['native_tools']) - C.CODEX_CAPABILITIES
-                                        or 'update_plan' not in revision['native_tools']):
+    if revision['engine'] == 'codex' and set(revision['native_tools']) - C.CODEX_CAPABILITIES:
         raise Refused('unsupported_configuration:native_tools')
     skills = []
     for item in selected(revision, 'skills'):
@@ -291,7 +293,6 @@ def codex(configuration, capability, inventory, config, *, catalog=None):
         configuration['features.' + feature] = name in revision['native_tools']
     configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}
     configuration['tools.experimental_request_user_input'] = {'enabled': False}
-    configuration['features.sleep_tool'] = {'enabled': False}
     configuration['features.goals'] = False
     agents = bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})
     configuration['features.multi_agent'] = agents
@@ -331,6 +332,8 @@ def codex_request_tools(body):
 
 def codex_name(name):
     name = name.removeprefix('functions.')
+    if name == 'web__run':
+        return 'web_search'
     if name.startswith('mcp__'):
         name = name[:5] + name[5:].replace('.', '__', 1)
     return name
@@ -374,6 +377,69 @@ def codex_tool_difference(body, wanted):
     if set(actual) != set(expected_names):
         return 'configuration_stop:codex_missing_tool'
     return None
+
+
+def codex_observe(bound, extra, environment, config):
+    """Ask the pinned worker for its actual definitions before giving it the task.
+
+    The generated overrides and MCP connections are the worker's. Only the model
+    transport and provider login home are replaced. The loopback endpoint records
+    definitions and rejects the request, so no model or tool turn can execute.
+    Never retain the request's context, credentials, stdout or stderr.
+    """
+    observations = []
+
+    class Endpoint(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_POST(self):
+            try:
+                body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+                observations.append({'tools': codex_request_tools(body)})
+            except (ValueError, KeyError, Refused):
+                observations.append({})
+            self.send_response(400)
+            self.end_headers()
+
+    with tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config) as temp:
+        home = Path(temp)
+        profile = home / 'profile'
+        profile.mkdir(mode=0o700)
+        server = http.server.HTTPServer(('127.0.0.1', 0), Endpoint)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        provider = {'name': 'role-observation', 'base_url': 'http://127.0.0.1:%d/v1' % server.server_port,
+                    'wire_api': 'responses', 'supports_standalone_web_search': True,
+                    'request_max_retries': 0, 'stream_max_retries': 0}
+        args = [bound['path'], 'exec', OPTION + 'json', OPTION + 'skip-git-repo-check'] + extra['argv']
+        for key, value in {'model_provider': 'role_observation', 'model_providers.role_observation': provider,
+                           'check_for_update_on_startup': False}.items():
+            args += ['-c', key + '=' + X._toml(value)]
+        env = dict(PATH=environment.get('PATH', '/usr/bin:/bin'), HOME=temp, CODEX_HOME=str(profile),
+                   TMPDIR=temp, LANG='C.UTF-8')
+        env.update(extra['secrets'])
+        try:
+            subprocess.run(args, input='Report no output and use no tools.', text=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env, cwd=temp, timeout=45)
+        except (OSError, subprocess.SubprocessError):
+            raise Refused('configuration_stop:codex_observation') from None
+        finally:
+            server.shutdown()
+            thread.join()
+            server.server_close()
+    if not observations:
+        raise Refused('configuration_stop:codex_observation')
+    return observations
+
+
+def codex_check_launch(bound, extra, environment, config):
+    observations = codex_observe(bound, extra, environment, config)
+    for body in observations:
+        stop = codex_tool_difference(body, extra['expected'])
+        if stop:
+            raise Refused(stop)
+    return codex_tool_names(codex_request_tools(observations[0]))
 
 
 def codex_listing(bound, extra, environment, config):

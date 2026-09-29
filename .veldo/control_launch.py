@@ -1422,6 +1422,8 @@ class Receiver:
         try:
             if extra.get('expected') and engine.PROVIDER == 'codex':
                 listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
+                tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])
+                self.emit({'event': 'capability_tools', 'tools': tools})
                 self.emit({'event': 'capability_listing', 'listing': [
                     {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
         except (engine.Refused, HANDOFF.Refused) as error:
