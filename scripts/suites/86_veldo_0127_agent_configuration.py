@@ -316,7 +316,9 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 if engine == 'codex':
                     direct_role = f.role(engine)
                     direct_role['settings']['model'] = 'gpt-5.5'
-                    accepted = f.save(direct_role)
+                    f.save(direct_role)
+                    accepted = C.bind(f.writer, f.DOMAIN, f.REPOSITORY,
+                                      {'role': 'codex', 'revision': 1})['role_revision']
                     capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, accepted,
                                                       {'project': f.src, 'factory': base})
                     foreign = base / 'foreign'

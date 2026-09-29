@@ -1,5 +1,36 @@
 # VELDO-0127 role capability configuration
 
+## Lead check repairs, 2026-09-29
+
+The repair baseline is `c6f6b357`. Skill exclusion now uses the shared isolated
+Git boundary. The new AC4 row `review/skill-git-boundary` saves and binds a real
+role revision, materializes its skills, then stages them while GIT_DIR names a
+second fixture repository. Only the intended project's exclude file may change.
+The existing skill-commit row still proves staged links stay out of delivery commits.
+
+The VELDO-0061 installed-record comparison now asks the production writer to
+capture the bundled catalog offline, preserving every qualification field. Its
+suite is the sole footprint addition, required for AC2's complete qualification.
+The VELDO-0173 fake now answers the empty no-turn probe with init and a zero-turn
+result, then waits for the real prompt. Its bound-revision row still requires one
+engine to complete the dispatch with exactly the accepted tools.
+
+`red-at-c6f6b357.json` records the new skill-boundary row red by assertion on the
+unchanged baseline archive. That replay also reports the two stale live rows;
+only the changed skill-boundary behavior is claimed red. The earlier red records
+below retain their original behavior scope. Finding 127 adds `role127-skill-private-git`, which restores the
+private subprocess and must fail that row. Mutation execution remains reserved
+for the reviewer; this run claims no mutation rejections.
+
+`lead-check-repairs.json` records the requested scoped checks. Both normal and
+clean-environment VELDO-0127 runs pass 25 rows and fail only live/claude and
+live/codex. The handoff edit changed a production digest bound by both captures;
+the lead must recapture them. The captured observations and their checks remain
+unchanged. The four other requested suites pass. Engine copies match; footprint,
+anchor and validator checks pass. No aggregate selftest or gate was run.
+
+## Earlier qualification work
+
 Item 1 catalog repair from `0fbf6f09`, under owner Telegram 29393 and 29398: the accepted
 model stays unchanged and models that default to Code Mode keep Code Mode. The
 handoff now uses the pinned binary's bundled model catalog to remove ungranted
