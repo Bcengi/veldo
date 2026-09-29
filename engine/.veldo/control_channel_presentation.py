@@ -62,6 +62,8 @@ interrupted publication and lost-acknowledgement recovery (Release 2). The bot t
 by the caller's custody and never logged or stored. Standard library only.
 """
 import hashlib
+import importlib.util
+from pathlib import Path
 import http.client
 import json
 import sqlite3
@@ -69,6 +71,17 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+
+
+def _renderer_module(name):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+TEXT = _renderer_module('control_channel_presentation_text')
+LEGACY = _renderer_module('control_channel_presentation_v1')
 
 SCHEMA = 'veldo.channel_presentation/v1'
 HEAD_SCHEMA = 'veldo.channel_presentation_head/v1'
@@ -133,7 +146,7 @@ PLATFORM_FIELDS = ('chat_id', 'message_id', 'date', 'text', 'reply_to_message_id
 ATTRIBUTION_FIELDS = ('platform_message_id', 'sender_id', 'platform_timestamp', 'chat_id', 'reply_to_message_id')
 REFERENCE_FIELDS = ('presentation_id', 'presentation_digest', 'presentation_version')
 # Every named refusal and the error class it belongs to; unknown is never labeled success.
-REFUSALS = {'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_input',
+REFUSALS = {'unknown_renderer_version': 'missing_evidence', 'invalid_input': 'invalid_input', 'missing_rationale': 'invalid_input',
             'not_authorized': 'missing_authority', 'not_owner': 'missing_authority',
             'owner_not_current': 'missing_authority',
             'missing_authority': 'missing_authority',
@@ -293,33 +306,66 @@ def utf16_units(text):
     return len(text.encode('utf-16-le')) // 2
 
 
-def _chunks(text, room):
-    """`text` cut into pieces of at most `room` UTF-16 units, at whitespace where there is any in
-    reach. Only the whitespace at a cut is dropped: nothing is truncated."""
-    pieces = []
-    while utf16_units(text) > room:
+def _chunks(text, room, stats=None):
+    """`text` cut into pieces of at most `room` UTF-16 units, nothing dropped or truncated. A soft cut
+    is made at the start of the last whitespace run in reach, so the run opens the next piece and no
+    piece ends in whitespace the platform would trim. With no whitespace in reach (or only a run the
+    piece begins with), the cut is inside the token: the piece ends with the CUT marker and the next
+    begins with the CONTINUED marker, both inside `room`."""
+    pieces, prefix = [], ''
+    while utf16_units(prefix + text) > room:
+        available = room - utf16_units(prefix)
         used, cut = 0, 0
         for i, ch in enumerate(text):
             used += utf16_units(ch)
-            if used > room:
+            if used > available:
                 break
             cut = i + 1
         space = max(text.rfind(' ', 0, cut), text.rfind('\n', 0, cut))
-        at = space if space > 0 else cut
-        pieces.append(text[:at].rstrip())
-        text = text[at:].lstrip()
-    pieces.append(text)
+        while space > 0 and text[space - 1] in ' \n':
+            space -= 1
+        if space > 0:
+            at = space
+            pieces.append(prefix + text[:at])
+            prefix = ''
+        else:
+            available -= utf16_units(TEXT.CUT)
+            used, at = 0, 0
+            for ch in text:
+                if used + utf16_units(ch) > available:
+                    break
+                used += utf16_units(ch)
+                at += 1
+            # Every escape is one visible atom, including an escaped literal opener.
+            opener = text.rfind('<U+', 0, at)
+            if opener >= 0 and text.find('>', opener) >= at:
+                at = opener
+            if at == 0:
+                raise ValueError('presentation_too_long')
+            pieces.append(prefix + text[:at] + TEXT.CUT)
+            prefix = TEXT.CONTINUED
+            if stats is not None:
+                stats['hard_cuts'] += 1
+        text = text[at:]
+    pieces.append(prefix + text)
     return pieces
 
 
-def render(record):
+def render(record, version=TEXT.VERSION, stats=None):
     """The exact bytes shown, as the list of Telegram messages that show them, from the receipt's
     own bound fields: plain text, no markup. A presentation that fits one message is one message.
     A longer one is consecutive messages, each within the platform limit and numbered, the whole
     brief in order across them, and the last carrying the choices and how to answer. Nothing is
     truncated or replaced by a link: the owner reads decisions on Telegram and cannot open links
     there. Raises ValueError when the choices and answer instruction alone do not fit one part."""
-    c = record['request']
+    if type(version) is not int:
+        raise ValueError('unknown_renderer_version')
+    if version == 1:
+        return LEGACY.render(record)
+    if version != TEXT.VERSION:
+        raise ValueError('unknown_renderer_version')
+    c = dict(record['request'])
+    c['brief'] = TEXT.lines(c['brief'])
     budget = ', '.join('%s=%s' % (unit, c['budget'][unit]) for unit in sorted(c['budget']))
     head = ['Veldo needs your %s' % c['kind'].replace('_', ' '),
             'Request: %s' % record['request_id'],
@@ -339,22 +385,28 @@ def render(record):
              'Deadline: %s' % c['deadline'],
              'Budget: %s' % budget,
              'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
-             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),
+             'Risk (stated by %s): %s' % (record['framed_by'], TEXT.lines(record['risk_statement'])),
              'Authority: %s' % record['authority_statement']]
-    body = '\n'.join(line.rstrip() for line in head + ['', _words(c['brief'])])
+    body = TEXT.visible('\n'.join(head + ['', c['brief']]), stats)
     tail = '\n'.join(['Choices: %s' % ' | '.join(record['choices']),
                       'Answer by replying to this message: <choice>: <your reason>'])
+    tail = TEXT.visible(tail, stats)
     whole = body + '\n\n' + tail
     if utf16_units(whole) <= MESSAGE_LIMIT:
         return [whole]
     room = MESSAGE_LIMIT - PART_LINE_ROOM
     if utf16_units(tail) > room:
         raise ValueError('presentation_too_long')
-    pieces = _chunks(body, room)
+    counted = TEXT.counters()
+    pieces = _chunks(body, room, counted)
     if utf16_units(pieces[-1] + '\n\n' + tail) <= room:
         pieces[-1] = pieces[-1] + '\n\n' + tail
     else:
-        pieces.append(tail)
+        # The last piece of the body ends a message of its own: the whitespace it ends with is shown
+        # escaped, since the platform would trim it.
+        counted = TEXT.counters()
+        pieces = _chunks(TEXT.edges(body, counted), room, counted) + [tail]
+    TEXT.add(stats, counted)
     return ['Part %d of %d, presentation version %d\n%s' % (i + 1, len(pieces), record['presentation_version'], piece)
             for i, piece in enumerate(pieces)]
 
@@ -370,6 +422,9 @@ def receipt_problems(receipt, platform=None, retrieved=True):
     missing = [f for f in INTENT_FIELDS + ('outcome', 'external_id', 'published_at') if f not in receipt]
     if missing:
         return ['receipt lacks %s' % f for f in missing]
+    version = receipt.get('renderer_version', 1)
+    if type(version) is not int or version not in (1, TEXT.VERSION):
+        return ['unknown_renderer_version']
     problems = []
     try:
         if receipt['channel'] != CHANNEL or receipt['schema'] != SCHEMA:
@@ -382,7 +437,7 @@ def receipt_problems(receipt, platform=None, retrieved=True):
             problems.append('choices are not the request choices')
         if receipt['rulings'] != [ruling_of(c) for c in receipt['choices']]:
             problems.append('rulings are not the contract rulings of the choices')
-        if receipt['rendered'] != render(receipt):
+        if receipt['rendered'] != render(receipt, version=version):
             problems.append('rendered bytes are not the rendering of the bound fields')
         if receipt['brief_digest'] != bytes_digest(_canonical(receipt['rendered'])):
             problems.append('presentation digest is not the digest of the rendered bytes')
@@ -514,7 +569,7 @@ def _record_transition(params, before, notice_kind):
     current = before.get(pid, {}).get('data')
     if phase == 'intent':
         record = params.get('record')
-        if not isinstance(record, dict) or set(record) != set(INTENT_FIELDS) or record['presentation_id'] != pid:
+        if not isinstance(record, dict) or set(record) != set(INTENT_FIELDS) | {'renderer_version', 'render_stats'} or record['presentation_id'] != pid:
             raise ValueError('an intent carries exactly the presentation it binds')
         if current is not None and current.get('outcome') not in RETRYABLE:
             raise ValueError('a receipt is immutable; only a definite refusal is attempted again')
@@ -739,6 +794,11 @@ class Presenter:
     def _observe(self, operation, request, versions, outcome, reason, **extra):
         accepted = outcome in ('accepted', 'published', 'already_presented', 'answered')
         self.counts['accepted' if accepted else 'refused'] += 1
+        receipt = self.receipt(extra['presentation_id']) if extra.get('presentation_id') else None
+        if receipt is not None:
+            extra.update(renderer_version=receipt.get('renderer_version', 1),
+                         render_stats=receipt.get('render_stats', TEXT.counters()),
+                         parts=list(range(1, len(receipt['rendered']) + 1)))
         self.observations.append(dict(self.ids, operation=operation, channel=CHANNEL, request_id=request,
                                       accepted_versions=versions, outcome=outcome, reason=reason,
                                       error_class=None if accepted else 'unknown_outcome' if outcome == 'unknown_outcome'
@@ -830,7 +890,8 @@ class Presenter:
                 or command.get('operation') != 'frame' or not _is_str(command.get('alias'))
                 or self.inbox_request(command['alias']) != request
                 or command.get('request_version') != data.get('request_version')
-                or _words(command.get('risk_statement', '')) != data.get('risk_statement')
+                or (command.get('risk_statement', '') if data.get('renderer_version') == TEXT.VERSION
+                    else _words(command.get('risk_statement', ''))) != data.get('risk_statement')
                 or command.get('command_id') != data.get('command_id')
                 or any(command.get(k) != v for k, v in self.ids.items())
                 or not isinstance(data.get('expected_versions'), dict)):
@@ -943,7 +1004,8 @@ class Presenter:
                         self.membership.VERSIONS_ENTITY: seen.get(self.membership.VERSIONS_ENTITY, {}).get('version', 0),
                         REVOCATION_LEDGER: seen.get(REVOCATION_LEDGER, {}).get('version', 0)}
             framing = {'schema': FRAMING_SCHEMA, 'request_id': request, 'request_version': c['request_version'],
-                       'risk_statement': _words(command['risk_statement']), 'framed_by': principal,
+                       'risk_statement': command['risk_statement'], 'framed_by': principal,
+                       'renderer_version': TEXT.VERSION,
                        'command_id': command['command_id'], 'key_id': key['key_id'], 'expected_versions': versions,
                        'signed': {'command': command, 'signature': packet['signature']}}
             self.store.execute(self.conn, dict(command_id=command['command_id'], principal=principal,
@@ -1005,6 +1067,10 @@ class Presenter:
         versions[hid] = head['entity_version'] if head else 0
         prior = self.receipt(head['current']) if head else None
         if prior is not None and not binding_mismatches(prior, b):
+            problems = receipt_problems(prior, retrieved=False)
+            if problems:
+                reason = 'unknown_renderer_version' if 'unknown_renderer_version' in problems else 'presentation_mismatch'
+                return reason, None, versions
             return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
@@ -1022,7 +1088,9 @@ class Presenter:
                                     'chat_id': prior['chat_id'], 'message_id': prior['message_id']}
             record['reply_to'] = prior['message_id'] if prior['chat_id'] == b['enrolled_chat'] else None
         try:
-            record['rendered'] = render(record)
+            record['renderer_version'] = TEXT.VERSION
+            record['render_stats'] = TEXT.counters()
+            record['rendered'] = render(record, stats=record['render_stats'])
         except ValueError:
             return 'presentation_too_long', None, versions
         record['brief_digest'] = bytes_digest(_canonical(record['rendered']))
@@ -1154,6 +1222,7 @@ class Presenter:
         """A short plain reply to the owner's own message when it cannot count as an answer, so a
         reply is never met with silence. It grants nothing. It is recorded by the inbound message's
         platform identity before it is sent, so a redelivered message is never told twice."""
+        text = TEXT.message(text, free_text=False)
         tid = tell_id(ev['chat_id'], ev['platform_message_id'])
         if self._entity(tid) is not None:
             return
@@ -1208,15 +1277,16 @@ class Presenter:
             first = 'I took your message as new work, not as an answer to a request.'
             how = ('To answer a waiting request, press Reply on the request message itself and write '
                    '<choice>: <your reason>.')
-        lines = ([lead, ''] if lead else []) + [first, how, 'Waiting for your answer:']
+        lines = ([TEXT.visible(TEXT.lines(lead)), ''] if lead else []) + [first, how, 'Waiting for your answer:']
         named = []
         for r in receipts:
             line = 'Request: %s (version %d), choices %s' % (r['request_id'], r['request_version'], ' | '.join(r['choices']))
+            line = TEXT.visible(line)
             if utf16_units('\n'.join(lines + [line])) > MESSAGE_LIMIT:
                 break
             lines.append(line)
             named.append(r)
-        return ('\n'.join(lines), named) if named else (None, [])
+        return (TEXT.edges('\n'.join(lines)), named) if named else (None, [])
 
     def hint_owner(self, message, taken=None, lead=None, remember=False):
         """Tell the owner, once, how to answer, when his attributed message replies to no presentation
@@ -1486,7 +1556,7 @@ class Presenter:
                 unpresented[refusal] = unpresented.get(refusal, 0) + 1
         rows = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECEIPT_KIND,))]
         hints = [json.loads(r[0]).get('outcome') for r in self.conn.execute('SELECT data FROM entities WHERE kind=?', (HINT_KIND,))]
-        return dict(self.counts, pending=pending, unpresented_by_reason=unpresented,
+        return dict(self.counts, rendering=TEXT.totals(rows, 'published'), pending=pending, unpresented_by_reason=unpresented,
                     unknown=sum(1 for r in rows if r.get('outcome') in ('pending', 'unknown_outcome')),
                     anomalies=sum(1 for r in rows if r.get('outcome') == 'anomaly'),
                     hints_sent=hints.count('sent'), hints_not_sent=len(hints) - hints.count('sent'))

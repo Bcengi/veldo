@@ -523,6 +523,7 @@ class Channel:
         verb = 'expired on' if standing['status'] == 'expired' else 'expires on'
         text = ('Your delegation for answering here %s %s. Renew it with veldo channel delegate --principal %s '
                 '--key <your enrolled key>.' % (verb, self._day(standing['expires_at']), owner))
+        text = V.TEXT.message(text, free_text=False)
         told = {'schema': 'veldo.presentation_tell/v1', 'channel': CHANNEL, 'request_id': None,
                 'chat_id': chat['data'].get('chat_id'), 'message_id': None, 'text': text,
                 'delegation_id': standing['delegation_id'], 'expires_at': standing['expires_at']}

@@ -14,6 +14,8 @@ depends_on: [VELDO-0064, VELDO-0065, VELDO-0128]
 placement: [contracts, tracker, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_service_channel.py"
+  - ".veldo/control_service_channel.py"
   - "engine/.veldo/control_channel_presentation*.py"
   - ".veldo/control_channel_presentation*.py"
   - "engine/.veldo/control_channel_projection*.py"
@@ -160,3 +162,26 @@ longer collapses runs of spaces, which would make two values differing by a doub
 The non-breaking space and every other Zs space but U+0020 are escaped. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-28: built. One renderer module (`control_channel_presentation_text`) serves the four send paths
+the criteria name: the decision presentation, the inbox presentation, the reports and the intake
+question prompt. Line breaks and runs of spaces are kept, a CRLF pair is one break, and every character
+of the categories AC2 names is shown as `<U+XXXX>` from the running Python's category table, with a
+literal `<U+` shown as `<U+003C>U+`. New framings keep the risk statement as written and name renderer
+version 2; framings recorded before keep their collapsed text and their old check. A hard cut inside a
+token carries both markers inside the limit. New receipts name renderer version 2 and carry rendering
+counters; a receipt naming none rechecks with the retained renderer 1 (`control_channel_presentation_v1`),
+and a version this engine does not know is refused as `unknown_renderer_version`, distinct from a
+content mismatch. One decision beyond the criteria text, since Telegram trims the whitespace at both ends
+of a message and the receipt binds the exact bytes: a soft cut is made at the start of a whitespace run,
+so no part ends in whitespace, and whitespace that begins or ends a whole message is shown escaped.
+Suite `86_veldo_0168_text`, 32 mutations under finding 168, proof in `proof/VELDO-0168/`. Criteria text
+unchanged. Status unchanged.
+
+2026-09-28: review fixes. Refusal replies and request hints use the renderer, and the inventory traces
+all engine sends and Presenter._send callers. The footprint gains control_service_channel.py in both
+copies because that trace found its delegation renewal notice, another AC1 send. Escape atoms stay
+whole at hard cuts; typed cut markers escape their opener; CRLF normalization is limited to free text.
+Composition rechecks and strict integer renderer versions have dedicated rows and finding 168 mutants.
+
+2026-09-28: follow-up: split inbox items, reports and intake prompts that exceed 4096 after escaping.

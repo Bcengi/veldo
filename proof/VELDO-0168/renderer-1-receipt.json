@@ -1,0 +1,90 @@
+{
+ "anomalies": [],
+ "assignment_version": 1,
+ "attempt": 1,
+ "authority_statement": "Only owner answers this, as a person member (admission_authority, priority_authority, project_owner, technical_authority) for scope *. An answer names this presentation and settles request assignment:activation-repository:text-13 version 1 once.",
+ "brief_digest": "sha256:9072ffb4f77f9623b30faa9dcf65e5982ddcfa2352b14ace2ae5c733f6b792f8",
+ "channel": "telegram_chat",
+ "chat_id": 55168,
+ "choices": [
+  "accept",
+  "reject"
+ ],
+ "enrolled_chat": 55168,
+ "enrollment_id": "channel-enrollment:telegram_chat:owner",
+ "enrollment_version": 1,
+ "external_id": "55168:9001",
+ "framed_by": "pm",
+ "framing_id": "presentation-framing:assignment:activation-repository:text-13",
+ "framing_version": 1,
+ "message_id": 9001,
+ "message_ids": [
+  9001
+ ],
+ "outcome": "published",
+ "owner": "owner",
+ "platform_parts": [
+  {
+   "chat_id": 55168,
+   "date": 1791000001,
+   "message_id": 9001,
+   "reply_to_message_id": null,
+   "text": "Veldo needs your decision\nRequest: assignment:activation-repository:text-13\nRequest version: 1\nRequest digest: sha256:5a97b7ad10e169a468c4fcdde14d537d72f88492f17ee1b574d9d5798e483f59\nPresentation version: 1\nOwner: owner\nScope: project-a\nDeadline: 2026-10-01T17:00:00Z\nBudget: owner_minutes=1\nSubject: artifact subject sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nRisk (stated by pm): first line second line third line\nAuthority: Only owner answers this, as a person member (admission_authority, priority_authority, project_owner, technical_authority) for scope *. An answer names this presentation and settles request assignment:activation-repository:text-13 version 1 once.\n\nfirst line second line third line\n\nChoices: accept | reject\nAnswer by replying to this message: <choice>: <your reason>"
+  }
+ ],
+ "platform_texts": [
+  "Veldo needs your decision\nRequest: assignment:activation-repository:text-13\nRequest version: 1\nRequest digest: sha256:5a97b7ad10e169a468c4fcdde14d537d72f88492f17ee1b574d9d5798e483f59\nPresentation version: 1\nOwner: owner\nScope: project-a\nDeadline: 2026-10-01T17:00:00Z\nBudget: owner_minutes=1\nSubject: artifact subject sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nRisk (stated by pm): first line second line third line\nAuthority: Only owner answers this, as a person member (admission_authority, priority_authority, project_owner, technical_authority) for scope *. An answer names this presentation and settles request assignment:activation-repository:text-13 version 1 once.\n\nfirst line second line third line\n\nChoices: accept | reject\nAnswer by replying to this message: <choice>: <your reason>"
+ ],
+ "presentation_id": "presentation:telegram_chat:assignment:activation-repository:text-13:1:9072ffb4f77f9623b30faa9dcf65e5982ddcfa2352b14ace2ae5c733f6b792f8",
+ "presentation_version": 1,
+ "published_at": 1791000001,
+ "refusal": null,
+ "rendered": [
+  "Veldo needs your decision\nRequest: assignment:activation-repository:text-13\nRequest version: 1\nRequest digest: sha256:5a97b7ad10e169a468c4fcdde14d537d72f88492f17ee1b574d9d5798e483f59\nPresentation version: 1\nOwner: owner\nScope: project-a\nDeadline: 2026-10-01T17:00:00Z\nBudget: owner_minutes=1\nSubject: artifact subject sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nRisk (stated by pm): first line second line third line\nAuthority: Only owner answers this, as a person member (admission_authority, priority_authority, project_owner, technical_authority) for scope *. An answer names this presentation and settles request assignment:activation-repository:text-13 version 1 once.\n\nfirst line second line third line\n\nChoices: accept | reject\nAnswer by replying to this message: <choice>: <your reason>"
+ ],
+ "reply_linked": false,
+ "reply_to": null,
+ "reply_to_message_id": null,
+ "request": {
+  "brief": "first  \tline\r\nsecond line\nthird  line",
+  "budget": {
+   "owner_minutes": 1
+  },
+  "choices": [
+   "accept",
+   "reject"
+  ],
+  "deadline": "2026-10-01T17:00:00Z",
+  "kind": "decision",
+  "owner": "owner",
+  "requested_by": "pm",
+  "scope": [
+   "project-a"
+  ],
+  "subject": {
+   "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "kind": "artifact",
+   "ref": "subject"
+  },
+  "unit_id": null
+ },
+ "request_digest": "sha256:5a97b7ad10e169a468c4fcdde14d537d72f88492f17ee1b574d9d5798e483f59",
+ "request_id": "assignment:activation-repository:text-13",
+ "request_version": 1,
+ "retry_not_before": null,
+ "risk_statement": "first line second line third line",
+ "rulings": [
+  "approve",
+  "reject"
+ ],
+ "schema": "veldo.channel_presentation/v1",
+ "subject_digests": [
+  {
+   "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "kind": "artifact",
+   "ref": "subject"
+  }
+ ],
+ "supersedes": null,
+ "entity_version": 2
+}

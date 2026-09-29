@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -348 +348 @@
+-                stats['hard_cuts'] += 1
++                pass  # defect: a hard cut is not counted

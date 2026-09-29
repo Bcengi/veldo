@@ -1269,6 +1269,11 @@ class Receiver:
             return None
         try:
             bound = module.bind(adapter, self.config.get('state_root'))
+        except module.Refused as error:
+            self.emit({'event': 'engine_bind_refused', 'engine': module.PROVIDER, 'refusal': error.code,
+                       'metrics': {'binds_refused': 1}})
+            return error.code
+        try:
             argv = module.command(bound, adapter)
             settings = module.environment(bound)
         except module.Refused as error:

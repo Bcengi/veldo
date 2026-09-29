@@ -28,6 +28,11 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
           'binding_digest', 'authority_generation')
 
 
+RENDERER_LOADERS = ('control_channel_presentation.py', 'control_channel_projection.py', 'control_intake.py',
+                    'control_telegram_report.py')
+RENDERER_COMPANIONS = ('control_channel_presentation_text.py', 'control_channel_presentation_v1.py')
+
+
 def cases():
     result = []
 
@@ -2149,7 +2154,7 @@ def cases():
                  "BOUND_FIELDS = ('request_id', 'request_version', 'request_digest', 'subject_digests', 'risk_statement',\n",
                  "BOUND_FIELDS = ('subject_digests', 'risk_statement',\n", 'presentation/revision-identity')
     presentation('render-omits-risk',
-                 "             'Risk (stated by %s): %s' % (record['framed_by'], _words(record['risk_statement'])),\n", "",
+                 "             'Risk (stated by %s): %s' % (record['framed_by'], TEXT.lines(record['risk_statement'])),\n", "",
                  'presentation/receipt-binds-shown-content')
     presentation('framing-signature-unchecked',
                  "                or not self._framing_signed(request, framing, state, c)):\n",
@@ -9130,6 +9135,237 @@ def cases():
         "'probe':document.get('probe')", "'probe':None", ['review/probe-terminal'])
     result[-1]['dir'] = '.'
 
+    # VELDO-0186: installed runtime assets and qualified factory engine pins.
+    # targets() matches the final word of each reported row, without the spec prefix.
+    add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
+    add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
+    add(186, 'setup186-missing-runtime-ignored', '86_veldo_0186_setup_assets.py', 'control_service.py', "            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None", '            continue', ['runtime/missing'], [])
+    add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + version)", "            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
+    add(186, 'setup186-codex-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + str(manifest.get('version')))", "            raise Refused('stale_subject:engine_version')", ['engines/unlisted'], [])
+    add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
+    add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
+
+    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root}), 0o600)", "                                'adapters': adapters, 'state_root': None}), 0o600)", ['bind/engines'], [])
+
+    add(186, 'setup186-skip-setup-asset-check', '86_veldo_0186_setup_assets.py', 'control_factory_setup.py', '        CS.runtime_assets(CS.closure())', '        pass', ['runtime/setup-missing'], [])
+    add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '                os.chmod(directory, 0o500)', '                os.chmod(directory, 0o700)', ['runtime/modes'], [])
+    add(186, 'setup186-filename-as-version', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "    if not claude.VERSION_TEXT.fullmatch(version):\n        raise Refused('missing_evidence:engine_version:claude_code')\n", '', ['engines/version'], [])
+    add(186, 'setup186-constant-pin-count', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', '    return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)', '    return 1', ['metrics/pins'], [])
+    add(186, 'setup186-unmeasured-bind-refusal', '86_veldo_0186_setup_assets.py', 'control_launch.py', "                       'metrics': {'binds_refused': 1}})", "                       'metrics': {'binds_refused': 0}})", ['metrics/binds'], [])
+
+    # VELDO-0168: Telegram text keeps its line breaks and spacing, shows invisible and direction
+    # characters escaped one to one, marks a cut inside a token, and rechecks each receipt with the
+    # renderer version it names. Each criterion's declared falsifier first (AC1 to AC4), then the
+    # seams the rows rest on: the four send paths, the category set, the part ends Telegram trims,
+    # the markers, the legacy renderer, the counters and the send inventory.
+    def text168(name, module, old, new, rows, also=()):
+        add(168, 'text168-' + name, '86_veldo_0168_text.py', module, old, new, rows, also)
+
+    # AC1, declared: the whole-text whitespace collapse restored in the decision presentation's brief.
+    text168('decision-brief-collapsed', 'control_channel_presentation.py',
+            "    body = TEXT.visible('\\n'.join(head + ['', c['brief']]), stats)\n",
+            "    body = TEXT.visible('\\n'.join(head + ['', ' '.join(c['brief'].split())]), stats)  # defect: brief collapsed\n",
+            ['lines/decision'])
+    # A new framing stores the risk statement collapsed again, and its check agrees with it.
+    text168('risk-collapsed-at-framing', 'control_channel_presentation.py',
+            "                       'risk_statement': command['risk_statement'], 'framed_by': principal,\n",
+            "                       'risk_statement': _words(command['risk_statement']), 'framed_by': principal,  # defect\n",
+            ['lines/decision'],
+            also=[("                or (command.get('risk_statement', '') if data.get('renderer_version') == TEXT.VERSION\n"
+                   "                    else _words(command.get('risk_statement', ''))) != data.get('risk_statement')\n",
+                   "                or _words(command.get('risk_statement', '')) != data.get('risk_statement')\n")])
+    text168('inbox-brief-collapsed', 'control_channel_projection.py',
+            "        c['brief'],\n",
+            "        ' '.join(c['brief'].split()),  # defect: the inbox brief collapsed\n",
+            ['lines/inbox'])
+    text168('report-brief-collapsed', 'control_telegram_report.py',
+            "_shown(data.get('requested_by')), str(data.get('brief') or UNAVAILABLE)),\n",
+            "_shown(data.get('requested_by')), ' '.join(str(data.get('brief') or UNAVAILABLE).split())),  # defect\n",
+            ['lines/report'])
+    text168('prompt-collapsed', 'control_intake.py',
+            "    return TEXT.message(prompt)\n",
+            "    return ' '.join(str(prompt).split())  # defect: the question prompt collapsed and unescaped\n",
+            ['lines/prompt', 'intake/delivery'])
+    # A carriage return and line feed pair shown as an escaped carriage return and a break.
+    text168('crlf-not-one-break', 'control_channel_presentation_text.py',
+            "    text = str(text).replace('\\r\\n', '\\n')\n",
+            "    text = str(text)  # defect: a CRLF pair is not one break\n",
+            ['lines/decision', 'lines/inbox', 'lines/report', 'lines/prompt'])
+    # The soft cut drops the whitespace at the cut, as the renderer before this change did.
+    text168('soft-cut-drops-whitespace', 'control_channel_presentation.py',
+            "        text = text[at:]\n    pieces.append(prefix + text)\n",
+            "        text = text[at:].lstrip(' \\n')  # defect: the whitespace at a cut is dropped\n    pieces.append(prefix + text)\n",
+            ['cuts/words'])
+    # The part ends Telegram trims: a soft cut after the whitespace run leaves it ending the part.
+    text168('soft-cut-after-whitespace', 'control_channel_presentation.py',
+            "        while space > 0 and text[space - 1] in ' \\n':\n            space -= 1\n        if space > 0:\n            at = space\n",
+            "        if space >= 0:\n            at = space + 1  # defect: the part ends with the whitespace run\n",
+            ['lines/edges'])
+    text168('message-end-not-escaped', 'control_channel_presentation_text.py',
+            "    return edges(visible(lines(text) if free_text else text, stats), stats)\n",
+            "    return visible(lines(text) if free_text else text, stats)  # defect: the whitespace ending a message is left for Telegram to trim\n",
+            ['lines/edges'])
+    text168('last-part-end-not-escaped', 'control_channel_presentation.py',
+            "        pieces = _chunks(TEXT.edges(body, counted), room, counted) + [tail]\n",
+            "        pieces = _chunks(body, room, counted) + [tail]  # defect: the last body part ends in a space\n",
+            ['lines/edges'])
+    # AC2, declared: U+200B passed through unescaped.
+    text168('zero-width-passed', 'control_channel_presentation_text.py',
+            "        invisible = (category in ('Cf', 'Zl', 'Zp') or",
+            "        invisible = ch != '\\u200b' and (category in ('Cf', 'Zl', 'Zp') or",
+            ['escape/zero-width'])
+    text168('direction-passed', 'control_channel_presentation_text.py',
+            "        invisible = (category in ('Cf', 'Zl', 'Zp') or",
+            "        invisible = ch not in '\\u202e\\u2066' and (category in ('Cf', 'Zl', 'Zp') or",
+            ['escape/direction'])
+    text168('no-break-space-passed', 'control_channel_presentation_text.py',
+            "                     or category == 'Zs' and ch != ' ')\n",
+            "                     or category == 'Zs' and ch not in ' \\u00a0')  # defect\n",
+            ['escape/whitespace'])
+    text168('tab-passed', 'control_channel_presentation_text.py',
+            "        invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch != '\\n'\n",
+            "        invisible = (category in ('Cf', 'Zl', 'Zp') or category == 'Cc' and ch not in '\\n\\t'  # defect\n",
+            ['escape/whitespace', 'lines/decision'])
+    text168('literal-prefix-passed', 'control_channel_presentation_text.py',
+            "        literal = text.startswith('<U+', i)\n",
+            "        literal = False  # defect: written escape text looks like the character it names\n",
+            ['escape/literal', 'intake/delivery'])
+    # A hand-kept list of the well-known format and separator characters in place of the category table.
+    text168('hand-kept-list', 'control_channel_presentation_text.py',
+            "        invisible = (category in ('Cf', 'Zl', 'Zp') or",
+            "        invisible = (ch in '\\u200b\\u200c\\u200d\\ufeff\\u202a\\u202b\\u202c\\u202d\\u202e"
+            "\\u2066\\u2067\\u2068\\u2069\\u2028\\u2029' or",
+            ['escape/categories'])
+    text168('decision-choices-unescaped', 'control_channel_presentation.py',
+            "    tail = TEXT.visible(tail, stats)\n",
+            "    tail = tail  # defect: the choices are shown unescaped\n",
+            ['escape/fields'])
+    text168('inbox-fields-unescaped', 'control_channel_projection.py',
+            "    return TEXT.message('\\n'.join(lines), stats, free_text=False)\n",
+            "    return '\\n'.join(lines[:-1] + [TEXT.message(lines[-1], stats)])  # defect: only the brief escaped\n",
+            ['escape/fields'])
+    # AC3, declared: the marker dropped at a hard cut; then the continuation marker, the room kept for
+    # the marker, and a marker at a cut that is at whitespace.
+    text168('hard-cut-unmarked', 'control_channel_presentation.py',
+            "            pieces.append(prefix + text[:at] + TEXT.CUT)\n",
+            "            pieces.append(prefix + text[:at])  # defect: a hard cut looks like the token's end\n",
+            ['cuts/long-token'])
+    text168('continuation-unmarked', 'control_channel_presentation.py',
+            "            prefix = TEXT.CONTINUED\n",
+            "            prefix = ''  # defect: the next part does not say it continues a token\n",
+            ['cuts/long-token'])
+    text168('marker-room-not-kept', 'control_channel_presentation.py',
+            "            available -= utf16_units(TEXT.CUT)\n",
+            "            available -= 0  # defect: the marker is not counted inside the limit\n",
+            ['cuts/long-token'])
+    text168('soft-cut-marked', 'control_channel_presentation.py',
+            "            pieces.append(prefix + text[:at])\n            prefix = ''\n",
+            "            pieces.append(prefix + text[:at] + TEXT.CUT)  # defect: a cut at whitespace is marked\n"
+            "            prefix = TEXT.CONTINUED\n",
+            ['cuts/words'])
+    # AC4, declared: every receipt rechecked with the new renderer.
+    text168('recheck-with-new-renderer', 'control_channel_presentation.py',
+            "        if receipt['rendered'] != render(receipt, version=version):\n",
+            "        if receipt['rendered'] != render(receipt):  # defect: the receipt's own version is ignored\n",
+            ['receipts/earlier'])
+    text168('legacy-version-renders-new', 'control_channel_presentation.py',
+            "    if version == 1:\n        return LEGACY.render(record)\n",
+            "    if version == 1:\n        version = TEXT.VERSION  # defect: renderer 1 is the new renderer\n",
+            ['receipts/earlier'])
+    # The retained renderer 1 is not what cut the earlier parts: it cuts at the limit, not at whitespace.
+    text168('legacy-chunker-changed', 'control_channel_presentation_v1.py',
+            "        at = space if space > 0 else cut\n",
+            "        at = cut  # defect: renderer 1 no longer cuts at whitespace as it did\n",
+            ['receipts/earlier'])
+    text168('unknown-version-not-named', 'control_channel_presentation.py',
+            "    if type(version) is not int or version not in (1, TEXT.VERSION):\n        return ['unknown_renderer_version']\n",
+            "    if False:  # defect: an unknown renderer version reads as a content mismatch\n        return ['unknown_renderer_version']\n",
+            ['receipts/unknown'])
+    text168('new-receipt-names-renderer-1', 'control_channel_presentation.py',
+            "            record['renderer_version'] = TEXT.VERSION\n",
+            "            record['renderer_version'] = 1  # defect: a new receipt names the old renderer\n",
+            ['receipts/new'])
+    # Observability: the counters of hard cuts and escapes, and the version on the observation.
+    text168('hard-cuts-uncounted', 'control_channel_presentation.py',
+            "                stats['hard_cuts'] += 1\n",
+            "                pass  # defect: a hard cut is not counted\n",
+            ['observability/counters'])
+    text168('escapes-uncounted', 'control_channel_presentation_text.py',
+            "                stats['escaped']['literal' if literal else category] += 1\n",
+            "                pass  # defect: an escape is not counted\n",
+            ['observability/counters'])
+    text168('observation-unversioned', 'control_channel_presentation.py',
+            "            extra.update(renderer_version=receipt.get('renderer_version', 1),\n",
+            "            extra.update(renderer_version=None,  # defect: the observation names no renderer\n",
+            ['observability/counters'])
+    # Outside the original four modules, a new edge send must still be inventoried.
+    text168('unlisted-send', 'control_service_channel.py',
+            "    def tell_renewal(self, record):\n",
+            "    def raw_notice(self, presenter, chat, text):\n"
+            "        return presenter.edge.send(chat, text)  # defect: unlisted edge send\n\n"
+            "    def tell_renewal(self, record):\n",
+            ['inventory/sends-and-assets'])
+    text168('unlisted-presenter-send', 'control_channel_presentation.py',
+            "    def _tell(self, ev, receipt, text):\n",
+            "    def raw_text(self, chat, text):\n"
+            "        return self._send(chat, text, None)  # defect: unlisted raw text caller\n\n"
+            "    def _tell(self, ev, receipt, text):\n",
+            ['inventory/sends-and-assets'])
+    text168('refusal-unescaped', 'control_channel_presentation.py',
+            "        text = TEXT.message(text, free_text=False)\n",
+            "        text = text  # defect: refusal choices bypass rendering\n",
+            ['replies/refused', 'inventory/sends-and-assets'])
+    text168('hint-unescaped', 'control_channel_presentation.py',
+            "            line = TEXT.visible(line)\n",
+            "            line = line  # defect: hint choices and ids bypass rendering\n",
+            ['replies/hint', 'inventory/sends-and-assets'])
+    text168('renewal-unescaped', 'control_service_channel.py',
+            "        text = V.TEXT.message(text, free_text=False)\n",
+            "        text = text  # defect: renewal text bypasses rendering\n",
+            ['inventory/sends-and-assets'])
+    text168('hint-lead-double-escaped', 'control_intake.py',
+            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
+            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)  # defect: already rendered\n",
+            ['intake/delivery'])
+    text168('escape-split-at-cut', 'control_channel_presentation.py',
+            "            if opener >= 0 and text.find('>', opener) >= at:\n",
+            "            if False:  # defect: hard cut splits an escape atom\n",
+            ['cuts/escape-boundary'])
+    text168('typed-marker-unescaped', 'control_channel_presentation_text.py',
+            "        literal = literal or text.startswith((CUT, CONTINUED), i)\n",
+            "        literal = literal  # defect: a typed cut marker looks inserted\n",
+            ['escape/markers'])
+    text168('decision-field-crlf-collapsed', 'control_channel_presentation.py',
+            "    body = TEXT.visible('\\n'.join(head + ['', c['brief']]), stats)\n",
+            "    body = TEXT.visible(TEXT.lines('\\n'.join(head + ['', c['brief']])), stats)  # defect: field CR lost\n",
+            ['escape/field-crlf'])
+    text168('inbox-field-crlf-collapsed', 'control_channel_projection.py',
+            "    return TEXT.message('\\n'.join(lines), stats, free_text=False)\n",
+            "    return TEXT.message('\\n'.join(lines), stats)  # defect: field CR lost\n",
+            ['escape/field-crlf'])
+    text168('compose-recheck-ignored', 'control_channel_presentation.py',
+            "            problems = receipt_problems(prior, retrieved=False)\n",
+            "            problems = []  # defect: a current receipt is never rechecked\n",
+            ['receipts/compose-recheck'])
+    text168('compose-unknown-misnamed', 'control_channel_presentation.py',
+            "                reason = 'unknown_renderer_version' if 'unknown_renderer_version' in problems else 'presentation_mismatch'\n",
+            "                reason = 'presentation_mismatch'  # defect: unknown version mislabeled\n",
+            ['receipts/compose-recheck'])
+    text168('version-type-unchecked', 'control_channel_presentation.py',
+            "    if type(version) is not int or version not in (1, TEXT.VERSION):\n",
+            "    if version not in (1, TEXT.VERSION):  # defect: bool and float are version numbers\n",
+            ['receipts/version-type'])
+    text168('unlisted-endpoint', 'control_telegram_report.py',
+            "SCHEMA = 'veldo.telegram_report/v1'\n",
+            "DIRECT = 'https://api.telegram.org/bot%s/sendMessage'  # defect: a send the inventory does not name\n"
+            "SCHEMA = 'veldo.telegram_report/v1'\n",
+            ['inventory/sends-and-assets'])
+    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
+    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
+    for case in result:
+        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
+                and not case.get('fixture') and not case.get('siblings')):
+            case['companions'] = list(RENDERER_COMPANIONS)
     return result
 
 
@@ -9183,6 +9419,9 @@ def materialize(case, mode, directory, root=ROOT):
             mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
+        for name in case.get('companions', ()):
+            # A module that loads a named sibling by its own path runs beside an unchanged copy of it.
+            shutil.copyfile(base / name, target.parent / name)
         target.write_bytes(before if mode == 'noop' else mutated)
         after = target.read_bytes()
     return dict(source=source, mutant=mutant, replacement_count=count,

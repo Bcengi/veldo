@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -332 +332 @@
+-            available -= utf16_units(TEXT.CUT)
++            available -= 0  # defect: the marker is not counted inside the limit

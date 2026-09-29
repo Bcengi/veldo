@@ -1,0 +1,65 @@
+{
+ "checks": {
+  "anchors": "0 bad anchors",
+  "engine_copies": {
+   "control_factory_setup.py": "8f24bcd54eb6e2857205691280932d059cfb6c8c1f84dee236aaed705daecaa9",
+   "control_factory_setup_engines.py": "ff36643357152b6ab06b666571d6d99ef453b1ab63f3d767e02eb4f15235a402",
+   "control_launch.py": "8865932b5acce977195377470efc8bef19bb07023cfc7b39cc2d35ab6f4c7845",
+   "control_service.py": "27f00f443e833a08ab938aa23a329dfa5e70e7dc9735a0913a5319d36c1e7106",
+   "init_scaffold.py": "34db300408b751b006155f94b58685ae5104c6a1ac561f84f4470054ccbfbd48"
+  },
+  "fixture_path": "AST confirms try-protected assignment and restoration first in finally for suites 73, 74 and 86",
+  "footprint": "changed 27, outside the footprint: none",
+  "mutation_contract_static": "13 unique mutation names and edit anchors; unique production-copy anchors; targets cover all 10 behavior rows",
+  "requires": "run_scope: wrote scripts/suites/requires.json (132 suites)",
+  "validate_all": {
+   "exit_code": 0,
+   "log_sha256": "9e6883992332a14ccb14ff6d4feda4c4a02827ce810cfcf2b3a092bb613ac117"
+  }
+ },
+ "clean": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo186-review-home",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "exit_code": 2,
+  "failed": 0,
+  "log_sha256": "337fe24833a067e6cc254e586ed4a9ec1505908237fd2739ad4c218cb37caf0a",
+  "partial": true,
+  "passed": 37,
+  "seconds": 14.8
+ },
+ "command": "python3 scripts/selftest.py --suite 86_veldo_0186_setup_assets",
+ "implementation_commit": "a4318281",
+ "normal": {
+  "exit_code": 2,
+  "failed": 0,
+  "log_sha256": "c6377da11a0915b808ba982075c5f41bfc322fe0d25f6edccc51440f671f63b2",
+  "partial": true,
+  "passed": 37,
+  "seconds": 14.09
+ },
+ "not_run": [
+  "other suites",
+  "whole selftest",
+  "gate",
+  "teeth mutations",
+  "gate mutations"
+ ],
+ "red_records": [
+  "red-at-9f1a0445.json",
+  "red-at-aa85e4a2.json"
+ ],
+ "spec_id": "VELDO-0186",
+ "suite_sha256": "63df8e22fe1e7a8086c7844b029b0684e0c54d2ec05a7f5d7650767037c2d483"
+}

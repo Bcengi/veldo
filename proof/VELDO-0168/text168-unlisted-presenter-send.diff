@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -1219,0 +1220,3 @@
++
++    def raw_text(self, chat, text):
++        return self._send(chat, text, None)  # defect: unlisted raw text caller

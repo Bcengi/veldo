@@ -114,6 +114,7 @@ def _v154_suite():
     try:
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
+        shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
         for source in sorted((ROOT / '.veldo').glob('*.py')):
             shutil.copyfile(source, mods / source.name)
         for source in sorted((ROOT / '.veldo' / 'services').iterdir()):
