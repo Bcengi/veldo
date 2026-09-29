@@ -346,3 +346,11 @@ including runtime asset names, bytes and modes, the runtime inventory in service
 pin and host/engines.json. No mutation edit or behavior assertion changed. The separate equivalence
 row remains. Audit every finding 189 and 171 target using the checker's final-word matching rule.
 The footprint is unchanged; mutation execution stays with the reviewer.
+
+2026-09-29, registration proof: all 63 finding 189 and 171 targets match one passing row;
+all mutation names are globally unique and the anchor checker reports zero bad anchors. Both
+selected suites pass normally and in the empty gate environment (58 and 44 checks). The requested
+baseline drive at 7f38b201 observes all 32 upgrade rows passing, including the disputed equivalence
+row, so no all-red behavior claim is made for this registration-only repair. Exact row lists,
+matching results and the inherited origin/main footprint discrepancy are in
+proof/VELDO-0189/registration-audit.json. Mutation execution remains reviewer pending.

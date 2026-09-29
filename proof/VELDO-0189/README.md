@@ -457,3 +457,27 @@ record and pin mode mutants now name both `upgrade/from-8bc34e94` and
 The production replacements and every suite assertion are unchanged. The separate equivalence
 row still exists at the supplied baseline 7f38b201; the reported missing-row condition has not
 been reproduced here. Finding 189 mutation execution remains reviewer pending.
+
+[registration-audit.json](registration-audit.json) lists all 32 upgrade and 18 API setup
+row names and compares every target of all 46 finding 189 and 17 finding 171 registrations with
+the checker's final-word rule. Each target matches exactly one passing row. The six retargeted
+mutants preserve their production replacements byte for byte. Static mutation sources compile;
+all anchors are unique, all mutation names are globally unique, and the affected engine copies match.
+`requires.json` was regenerated without a diff; both suites remain registered in the manifest.
+
+Selected selftests passed normally and in the requested empty environment: upgrade 58 checks
+(54.39s and 56.47s), API setup 44 checks (10.29s and 10.30s). Each partial runner exits 2 by design.
+These are selected-suite results, not an aggregate gate claim. No mutation checker or gate ran.
+
+The requested `drive.py --red 7f38b201` result is preserved in
+[red-at-7f38b201.json](red-at-7f38b201.json): all 32 behavior rows pass, including the disputed
+equivalence row. Thus the lead's missing-row result is not reproduced at this baseline, and no
+all-red record is claimed for this registration-only repair. Earlier behavior red records remain
+unchanged. Mutant rejection after this repair remains the reviewer's check.
+
+The supplied footprint checker measures against origin/main and reports inherited setup API files
+and gate stamps in this stacked branch. The repair itself, measured from 7f38b201 including its
+proof records, is wholly inside VELDO-0189's existing footprint. No protected path was changed.
+
+`python3 .veldo/validate.py all` passes (exit 0). The repair footprint check finds six
+changed paths and none outside the declared footprint.
