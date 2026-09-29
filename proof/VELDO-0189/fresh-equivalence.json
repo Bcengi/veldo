@@ -1,6 +1,6 @@
 {
  "schema": "veldo.fresh_equivalence/v1",
- "note": "What VELDO-0189 AC1's rows leave out when they compare an upgraded host with a fresh one set up by the current setup with the same arguments (scripts/suites/86_veldo_0189_engine_upgrade.py). Each host is its own scratch host, so its paths and identities are its own: each is substituted by the placeholder below before the unit files, the record and every configuration file are compared, and the fields below are then removed. Any other difference fails the row. The installed engine directories are compared byte for byte, with no substitution.",
+ "note": "The upgraded and fresh hosts are compared on engine names, bytes and modes including runtime subdirectories, the qualified Claude Code pin bytes and mode, host/engines.json, unit files, the installation record and all configuration files. Each scratch root and identity uses the listed substitution. Only the fields listed below may differ, each for its stated reason. Any other difference fails the row.",
  "substituted": [
   {
    "placeholder": "@STATE_ROOT@",

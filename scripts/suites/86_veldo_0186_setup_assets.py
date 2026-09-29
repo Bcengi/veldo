@@ -16,6 +16,7 @@ def _v186_suite():
     import shutil
     import stat
     import subprocess
+    import sys
     import tempfile
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
@@ -196,7 +197,6 @@ def _v186_suite():
                 check('metrics/binds', 'two refused engine binds counted',
                       sum(event.get('metrics', {}).get('binds_refused', 0) for event in events) == 2)
             finally:
-        tailscale.close()
                 worker.close()
 
 
@@ -205,7 +205,7 @@ def _v186_suite():
         missing_root = home / 'missing-install'
         _result, error = attempt(lambda: CS.install([args[3]], host_trust=kwargs['host_trust'],
             key_directory=str(Path(args[0]) / 'keys'), install_root=str(missing_root),
-            unit_dir=str(home / 'missing-units'), profile={}, writable=[], runner=manager, tailscale=[tailscale.path]))
+            unit_dir=str(home / 'missing-units'), profile={}, writable=[], runner=manager))
         check('runtime/missing', 'absent source named without installation: ' + str(error),
               error == 'missing_evidence:runtime_asset:runtime/future.json' and not missing_root.exists())
         _home, neg_args, neg_kwargs = fresh()
@@ -262,6 +262,7 @@ def _v186_suite():
         for row in ROWS:
             check(row, 'section raised ' + type(error).__name__ + ': ' + str(error)[:160], False)
     finally:
+        tailscale.close()
         os.environ['PATH'] = original_path
         issues, trace = compare_formats.conform_fake(locals(), '0186_setup_assets')
         expect('VELDO-0172 fake/capture:0186_setup_assets', not issues)

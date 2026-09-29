@@ -8938,7 +8938,7 @@ def cases():
               "TAILSCALE_PATHS = ('tailscale', '/usr/bin/tailscale', ", 'tailscale/fixed-paths')
     setup_api('api171-entry-point-dropped', 'control_service.py',
               "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')\n",
-              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')"
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py')"
               "  # defect: the API process is not installed\n", 'api/unit')
     setup_api('api171-started-when-added', 'control_factory_setup.py', "        if running and not added:\n",
               "        if running:  # defect: the service is not restarted, but the API is started anyway\n", 'api/start-rules')

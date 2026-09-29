@@ -855,10 +855,15 @@ def _v189_suite():
             raise StopIteration
         owner_sets(fresh)
         with section(PF):
+            # Reading the journal establishes SQLite's read-side WAL files before the file snapshot.
+            head = journal(fresh.store)
             before = snapshot(*fresh.trees())
             code, report = fresh.setup()
             check(PF, 'post-0186 re-run accepts recorded runtime directory: ' + str(report.get('reason')), code == 0)
-            check(PF, 'post-0186 re-run writes nothing', snapshot(*fresh.trees()) == before)
+            after = snapshot(*fresh.trees())
+            changed = changes(before, after)
+            check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
+            check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
         current = named(fresh.home / 'bin')
         current_template = fresh.record()['template']
 
@@ -1512,11 +1517,11 @@ def _v189_suite():
             shutil.copytree(str(mods), str(fixture))
             dropped = 'control_keys_custody.py'
             text = (fixture / 'control_service.py').read_text()
-            seeds = "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py')"
+            seeds = "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')"
             check(UR, 'the fixture engine is the current one with %s no longer an entry point and absent' % dropped,
                   text.count(seeds) == 1 and dropped in current)
             (fixture / 'control_service.py').write_text(
-                text.replace(seeds, "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_client_api.py')"))
+                text.replace(seeds, "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_client_api.py', 'control_runtime.py')"))
             (fixture / dropped).unlink()
             FX = load('v189_setup_fixture', fixture / 'control_factory_setup.py')
             config = fresh.record_path
