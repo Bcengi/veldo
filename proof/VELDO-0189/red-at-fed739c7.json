@@ -1,0 +1,231 @@
+{
+ "by_assertion": true,
+ "commit": "fed739c7ba2d10b788dc7df3a58a80693065391c",
+ "details": [
+  "VELDO-0189 upgrade/from-8bc34e94 detail: committed fixture exists and matches its recorded digest: 8bc34e94.tar.gz",
+  "VELDO-0189 upgrade/from-8bc34e94 detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 upgrade/from-971186ac detail: committed fixture exists and matches its recorded digest: 971186ac.tar.gz",
+  "VELDO-0189 upgrade/from-971186ac detail: the setup of 971186ac laid a host down [None]",
+  "VELDO-0189 upgrade/removed-module detail: no check ran",
+  "VELDO-0189 upgrade/census detail: committed fixture exists and matches its recorded digest: census.json.gz",
+  "VELDO-0189 upgrade/census detail: 8bc34e94 is on the captured first-parent history of this engine [0 commits]",
+  "VELDO-0189 upgrade/census detail: each of the 0 first-parent commits from 8bc34e94 on (0 distinct installers) writes the record's closure (each file's digest) and template digest [[]]",
+  "VELDO-0189 upgrade/refused-by-name detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 upgrade/refused-by-name detail: the setup of 8bc34e94 laid the kill host down [None]",
+  "VELDO-0189 switch/kill-points detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 switch/kill-points detail: the setup of 8bc34e94 laid the kill host down [None]",
+  "VELDO-0189 switch/failed-restart detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 switch/failed-restart detail: the setup of 8bc34e94 laid the kill host down [None]",
+  "VELDO-0189 kept/owner-data detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 kept/owner-data detail: the setup of 971186ac laid a host down [None]",
+  "VELDO-0189 announce/before-first-write detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 announce/before-first-write detail: the setup of 971186ac laid a host down [None]",
+  "VELDO-0189 restart/rules detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 restart/rules detail: the setup of 971186ac laid a host down [None]",
+  "VELDO-0189 second-run/changes-nothing detail: the setup of 8bc34e94 laid a host down [None]",
+  "VELDO-0189 second-run/changes-nothing detail: the setup of 971186ac laid a host down [None]",
+  "VELDO-0189 switch/failed-after-start detail: the setup of 8bc34e94 laid the kill host down [None]",
+  "VELDO-0189 ownership/restore-differs detail: no check ran",
+  "VELDO-0189 ownership/committed detail: the setup of 8bc34e94 laid the kill host down [None]",
+  "VELDO-0189 switch/resumed-failure detail: no check ran",
+  "VELDO-0189 switch/rollback-kills detail: no check ran",
+  "VELDO-0189 switch/stop-refused detail: no check ran",
+  "VELDO-0189 ownership/restore-reported detail: no check ran",
+  "VELDO-0189 ownership/start-drops detail: no check ran",
+  "VELDO-0189 ownership/commit-refused detail: no check ran",
+  "VELDO-0189 switch/stop-before-restore detail: no check ran",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: no check ran",
+  "VELDO-0189 kept/runs detail: no check ran"
+ ],
+ "failed_rows": [
+  "VELDO-0189 upgrade/from-8bc34e94",
+  "VELDO-0189 upgrade/from-971186ac",
+  "VELDO-0189 upgrade/removed-module",
+  "VELDO-0189 upgrade/census",
+  "VELDO-0189 upgrade/refused-by-name",
+  "VELDO-0189 switch/kill-points",
+  "VELDO-0189 switch/failed-restart",
+  "VELDO-0189 kept/owner-data",
+  "VELDO-0189 announce/before-first-write",
+  "VELDO-0189 restart/rules",
+  "VELDO-0189 second-run/changes-nothing",
+  "VELDO-0189 switch/failed-after-start",
+  "VELDO-0189 ownership/restore-differs",
+  "VELDO-0189 ownership/committed",
+  "VELDO-0189 switch/resumed-failure",
+  "VELDO-0189 switch/rollback-kills",
+  "VELDO-0189 switch/stop-refused",
+  "VELDO-0189 ownership/restore-reported",
+  "VELDO-0189 ownership/start-drops",
+  "VELDO-0189 ownership/commit-refused",
+  "VELDO-0189 switch/stop-before-restore",
+  "VELDO-0189 upgrade/older-0186-equivalence",
+  "VELDO-0189 kept/runs"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
+   "now": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_engines.py": {
+   "at_commit": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "now": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "now": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "now": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829",
+   "now": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   false
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   false
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   false
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   false
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   false
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   false
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   false
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   false
+  ],
+  [
+   "VELDO-0189 switch/resumed-failure",
+   false
+  ],
+  [
+   "VELDO-0189 switch/rollback-kills",
+   false
+  ],
+  [
+   "VELDO-0189 switch/stop-refused",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/restore-reported",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/start-drops",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/commit-refused",
+   false
+  ],
+  [
+   "VELDO-0189 switch/stop-before-restore",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/older-0186-equivalence",
+   false
+  ],
+  [
+   "VELDO-0189 kept/runs",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/fresh-0186",
+   true
+  ],
+  [
+   "VELDO-0189 engines/atomic-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/repair-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/refuse-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/codex-refusal",
+   true
+  ],
+  [
+   "VELDO-0189 engines/repair-report",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/corrupt-runtime-record",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/receiver-without-store",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 9.429,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "baseline archive without .git, running the current suite"
+}

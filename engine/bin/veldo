@@ -25,7 +25,10 @@ this file and see only argument routing plus wiring.
                             delegate renews his standing answer delegation, VELDO-0140)
     veldo factory setup      -> .veldo/control_factory_setup.py (the owner's one setup of a real
                             factory on this host from the existing pieces and his own signed
-                            commands, VELDO-0139)
+                            commands, VELDO-0139; a re-run with the same arguments completes
+                            it and adds the API behind Tailscale Serve, VELDO-0171)
+    veldo factory passkey    -> the same module (lists the API's pending passkey registrations, and
+                            signs the one the owner names by its fingerprint, VELDO-0171)
     veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
                             company-managed Jira project into the live board -
                             detect + provision the lifecycle statuses/workflow
@@ -377,7 +380,8 @@ def route(argv):
             return _channel().main(rest)
         if cmd == "factory":
             # forward verbatim to the setup module's own command surface (VELDO-0139): the owner's
-            # one setup of a real factory on this host, ordering and checking the existing pieces.
+            # one setup of a real factory on this host, ordering and checking the existing pieces, and
+            # (VELDO-0171) his passkey command, which signs the one registration he names.
             return _factory().main(rest)
         if cmd == "mirror":
             # the opt-in, off-by-default live mirror runner (PLAN-0010 W5): one reconcile pass that

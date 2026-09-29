@@ -1,7 +1,10 @@
 """Factory setup's qualified host engines. Reads bytes, never executes an engine."""
 import importlib.util
+import json
+import os
 from pathlib import Path
 import shutil
+import tempfile
 
 
 def organ(name, directory=None):
@@ -67,3 +70,46 @@ def count_pins(state_root, engines):
     directory = Path(state_root).resolve() / 'engines'
     paths = {Path(bound['path']) for bound in engines.values()}
     return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)
+
+
+def ensure(state_root, directory, plan, Refused, observe):
+    """Complete the fresh pin layout, repairing unreadable records and refusing different ones."""
+    claude, codex = organ('control_engine_claude', directory), organ('control_engine_codex', directory)
+    version = plan['claude_code']['version']
+    target = claude.pinned_path(state_root, version)
+    record_path = Path(state_root) / 'host' / 'engines.json'
+    try:
+        vendor = codex.bind({'executable': plan['codex']['executable']})
+        engines = {'claude_code': {'version': version, 'path': str(target),
+                                  'sha256': claude.qualified(version)['sha256']},
+                   'codex': {key: vendor[key] for key in ('version', 'path', 'sha256')}}
+        try:
+            recorded = json.loads(record_path.read_text())
+        except (OSError, ValueError):
+            recorded = None
+        else:
+            if recorded != engines:
+                raise Refused('invalid_input:state_root:differs:' + str(record_path))
+        report = {'pins_made': 0, 'engines_record': None, 'engines': engines}
+        if os.path.lexists(target) and recorded is not None:
+            return report
+        if not os.path.lexists(target):
+            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)
+            report['pins_made'] = 1
+            observe({'point': 'engine_pin', 'path': str(target)})
+        if recorded is None:
+            claude.bind({'executable': {'version': version}}, state_root)
+            fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)
+            try:
+                with os.fdopen(fd, 'w') as handle:
+                    handle.write(json.dumps(engines, sort_keys=True) + '\n')
+                os.replace(partial, record_path)
+            finally:
+                if os.path.exists(partial):
+                    os.unlink(partial)
+            report['engines_record'] = str(record_path)
+            observe({'point': 'engines_record', 'path': str(record_path)})
+        return report
+    except (claude.Refused, codex.Refused) as error:
+        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
+        raise Refused(code) from None

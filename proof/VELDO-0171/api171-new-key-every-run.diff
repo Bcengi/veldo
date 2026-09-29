@@ -1,0 +1,8 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -824 +824,4 @@
+-        if edge == 'absent':
++        for stale in (api['key'], api['key'] + '.pub', api['connection_key'], api['connection_key'] + '.pub'):  # defect: a new api edge key on every run
++            if os.path.lexists(stale):
++                os.unlink(stale)
++        if True:

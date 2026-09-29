@@ -89,6 +89,11 @@ so a revocation committed here ends the API's sessions and closes their open str
 new instance sends that hint to every API a previous instance had subscribed (`announce_api`), so an
 API whose service restarted reconciles by itself. An API that cannot be constructed leaves the service
 serving everything else, its refusal reported by name.
+The owner's enroll_channel_edge of the API's own edge (channel "api"), which veldo factory setup sends
+while this service holds the store's lock (VELDO-0171), is admitted by control_channel_enrollment on this
+instance's connection; no other channel's enrollment is taken here. The API process's program
+(control_client_api.py) is an entry point of the fixed executable, so the API unit setup installs runs the
+installation's own copy.
 
 THE FACTORY LOOP (VELDO-0154). An installation given --work copies that veldo.factory_work/v1 configuration
 (each served repository's builder and reviewers: identity, engine adapter, configuration, payload and seconds;
@@ -163,6 +168,8 @@ C = L.C
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
+# VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
+EDGE = _organ('control_channel_enrollment')
 API_SERVICE = 'api-service.json'
 # VELDO-0154: the factory loop's organs: the person inbox its questions go to (VELDO-0064), the entity contract
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
@@ -176,10 +183,9 @@ WORK = 'work.json'
 MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 
 # The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
-# with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
+# with its trusted wrapper, the key custody wrapper, and the API process (VELDO-0171's API unit). The rest of the fixed executable is derived
 # from what these and the architecture validator load (closure()), never listed by hand.
-# Include the runtime qualification entry point and the records its module reads.
-ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py')
+ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')
 # The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
 LOADER = 'spec_from_file_location'
 
@@ -196,6 +202,10 @@ ASK_SECONDS = 7 * 86400
 ACCEPT_SECONDS = 0.25
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
+# VELDO-0189: the previous engine an upgrade keeps beside `bin` until its restart succeeded
+# (control_factory_setup_upgrade.STAGE), and the one request that commits its ownership record.
+PREVIOUS_ENGINE = 'bin.upgrade'
+OWNERSHIP_COMMIT = 'ownership_commit'
 DEFAULT_KEY_ROOT = '/var/lib/veldo/keys'
 JOURNAL_KEY = 'journal'
 EXIT_LOCK_HELD = 75
@@ -226,6 +236,7 @@ NAMED = {
     'read_only_handle': 'unavailable_service', 'incomplete_transaction': 'unknown_outcome',
     'unowned': 'stale_subject', 'not_owner': 'missing_authority', 'stale_generation': 'stale_subject',
     'capability': 'missing_authority', 'parked': 'stale_subject', 'ownership_uncertain': 'unknown_outcome',
+    'ownership_restore_differs': 'stale_subject',
 }
 
 
@@ -780,6 +791,89 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
     runner = runner or Systemctl()
+    laid = layout(workspaces, host_trust=host_trust, key_directory=key_directory, install_root=install_root,
+                  unit_dir=unit_dir, profile=profile, adapters=adapters, writable=writable, principal=principal,
+                  receiver_principal=receiver_principal, python=python, channel_ingress=channel_ingress,
+                  api_service=api_service, work=work, state_root=state_root)
+    first, root, home, unit_dir, unit_path = laid['first'], laid['root'], laid['home'], laid['unit_dir'], laid['unit_path']
+    service, unit, journal, keys, config = laid['service'], laid['unit'], laid['journal'], laid['keys'], laid['config']
+    bin_dir, config_dir, state_dir, config_path = laid['bin'], laid['config_dir'], laid['state'], laid['config_path']
+    fixed, text, values, repositories = laid['fixed'], laid['text'], laid['values'], laid['repositories']
+    ingress, api, lines = laid['ingress'], laid['api'], laid['lines']
+
+    created, generated = [], False
+    try:
+        os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
+        os.makedirs(root, exist_ok=True)
+        os.mkdir(home, 0o700)
+        created.append(home)
+        for directory in (bin_dir, config_dir, state_dir):
+            os.mkdir(directory, 0o700)
+        for name, data in fixed.items():
+            _write(os.path.join(bin_dir, name), data, fixed_mode(name))
+        for name, data in laid['assets'].items():
+            target = os.path.join(bin_dir, name)
+            os.makedirs(os.path.dirname(target), mode=0o700, exist_ok=True)
+            _write(target, data, 0o400)
+        for directory, _dirs, _files in os.walk(bin_dir, topdown=False):
+            os.chmod(directory, BIN_MODE)
+        if not os.path.lexists(journal):
+            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
+                            '-f', journal], check=True, capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
+            generated = True
+            os.chmod(journal, 0o600)
+        _write(os.path.join(config_dir, 'enrollment_signers'), laid['signers'], 0o600)
+        if ingress is not None:
+            _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
+        if api is not None:
+            _write(os.path.join(config_dir, API_SERVICE), api, 0o600)
+        if lines is not None:
+            _write(os.path.join(config_dir, WORK), lines, 0o600)
+        for path, record in laid['receivers'].items():
+            _write(path, _json(record), 0o600)
+        _write(config_path, _json(config), 0o600)
+        os.makedirs(unit_dir, exist_ok=True)
+        _write(unit_path, text, 0o644)
+        created.append(unit_path)
+    except BaseException:
+        for path in reversed(created):
+            with contextlib.suppress(OSError):
+                if os.path.isdir(path):
+                    _remove_tree(path)
+                else:
+                    os.unlink(path)
+        if generated:
+            for path in (journal, journal + '.pub'):
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
+        raise
+    reload_rc, _out, _err = runner.run(['daemon-reload'])
+    return {'service': service, 'unit': unit, 'unit_path': unit_path, 'home': home, 'config': config_path,
+            'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
+            'journal_key': journal, 'journal_key_generated': generated, 'profile': laid['qualification'],
+            'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
+            'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
+            'runtime_assets': config['runtime_assets'], 'runtime_assets_installed': len(laid['assets']),
+            'daemon_reload_rc': reload_rc, 'started': False}
+
+
+# The installer's modes: the fixed executable's entry points run, every other module is only read, and
+# the engine directory itself is read-only.
+BIN_MODE = 0o500
+
+
+def fixed_mode(name):
+    return 0o500 if name in ENTRY_POINTS else 0o400
+
+
+def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None, profile=None,
+           adapters=None, writable=None, principal='authority', receiver_principal='launch-receiver', python=None,
+           channel_ingress=None, api_service=None, work=None, existing=False, state_root=None):
+    """Everything install() writes for these arguments, checked and rendered, nothing written: the fixed
+    executable's files (closure()), the unit text, the installation's service configuration and every
+    receiver configuration. install() writes exactly this; a re-run of factory setup (VELDO-0189) renders it
+    for an installation laid down before (`existing`, so an installed home is expected, not refused) and
+    takes from it the current engine and the keys an earlier installer did not write."""
     python = os.path.realpath(python or sys.executable)
     trust_path = host_trust or EL.host_trust_path()
     try:
@@ -834,7 +928,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     if not isinstance(adapters, dict) or not all(isinstance(v, dict) and isinstance(v.get('argv'), list)
                                                  for v in adapters.values()):
         raise Refused('invalid_input:adapters', 'adapters map each name to {argv: [...]}')
-    for path in (home, unit_path):
+    for path in (() if existing else (home, unit_path)):
         if os.path.lexists(path):
             raise Refused('invalid_input:already_installed', path,
                           'stop and uninstall it first: python3 control_service.py uninstall %s' % unit)
@@ -868,86 +962,36 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     text = unit_text(values)
     fixed = {name: (HERE / name).read_bytes() for name in closure()}
     assets = runtime_assets(fixed)
-
-    created, generated = [], False
-    try:
-        os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
-        os.makedirs(root, exist_ok=True)
-        os.mkdir(home, 0o700)
-        created.append(home)
-        for directory in (bin_dir, config_dir, state_dir):
-            os.mkdir(directory, 0o700)
-        for name, data in fixed.items():
-            _write(os.path.join(bin_dir, name), data, 0o500 if name in ENTRY_POINTS else 0o400)
-        for name, data in assets.items():
-            target = os.path.join(bin_dir, name)
-            os.makedirs(os.path.dirname(target), mode=0o700, exist_ok=True)
-            _write(target, data, 0o400)
-        for directory, _dirs, _files in os.walk(bin_dir, topdown=False):
-            if directory != bin_dir:
-                os.chmod(directory, 0o500)
-        os.chmod(bin_dir, 0o500)
-        if not os.path.lexists(journal):
-            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
-                            '-f', journal], check=True, capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
-            generated = True
-            os.chmod(journal, 0o600)
-        _write(os.path.join(config_dir, 'enrollment_signers'), signers, 0o600)
-        if ingress is not None:
-            _write(os.path.join(config_dir, CHANNEL_INGRESS), ingress, 0o600)
-        if api is not None:
-            _write(os.path.join(config_dir, API_SERVICE), api, 0o600)
-        if lines is not None:
-            _write(os.path.join(config_dir, WORK), lines, 0o600)
-        receivers = {}
-        for repository, members in sorted(repositories.items()):
-            path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
-            _write(path, _json({'store': first['store_path'], 'journal_key': journal, 'principal': receiver_principal,
+    receivers = {}
+    for repository, members in sorted(repositories.items()):
+        path = os.path.join(config_dir, 'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
+        receivers[path] = dict({'store': first['store_path'], 'journal_key': journal, 'principal': receiver_principal,
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
-                                'adapters': adapters, 'state_root': state_root}), 0o600)
-            receivers[repository] = path
-        config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
-                  'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
-                  'socket': CC.socket_path_for(first), 'lock': os.path.join(os.path.dirname(first['store_path']), LOCK_NAME),
-                  'host_identity': trust.host_identity, 'authority_generation': first['authority_generation'],
-                  'repositories': repositories, 'enrollments': {w: E.binding_digest(b) for w, b in bindings.items()},
-                  'enrollment_signers': os.path.join(config_dir, 'enrollment_signers'), 'principal': principal,
-                  'journal_key': journal, 'key_directory': keys,
-                  'observations': os.path.join(state_dir, 'observations.jsonl'),
-                  'executable': values['EXECUTABLE'], 'python': python,
-                  'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
-                  'closure': {name: _digest(data) for name, data in fixed.items()},
-                  'runtime_assets': {name: _digest(data) for name, data in assets.items()},
-                  'template': _digest(TEMPLATE.read_bytes()),
-                  'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
-                  'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
-                  'work': os.path.join(config_dir, WORK) if lines is not None else None}
-        _write(config_path, _json(config), 0o600)
-        os.makedirs(unit_dir, exist_ok=True)
-        _write(unit_path, text, 0o644)
-        created.append(unit_path)
-    except BaseException:
-        for path in reversed(created):
-            with contextlib.suppress(OSError):
-                if os.path.isdir(path):
-                    _remove_tree(path)
-                else:
-                    os.unlink(path)
-        if generated:
-            for path in (journal, journal + '.pub'):
-                with contextlib.suppress(OSError):
-                    os.unlink(path)
-        raise
-    reload_rc, _out, _err = runner.run(['daemon-reload'])
-    return {'service': service, 'unit': unit, 'unit_path': unit_path, 'home': home, 'config': config_path,
-            'executable': values['EXECUTABLE'], 'closure': sorted(fixed), 'receiver': config['receiver'], 'key_directory': keys,
-            'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
-            'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
-            'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
-            'runtime_assets': config['runtime_assets'], 'runtime_assets_installed': len(assets),
-            'daemon_reload_rc': reload_rc, 'started': False}
+                                'adapters': adapters, 'state_root': state_root})
+    config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
+              'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
+              'socket': CC.socket_path_for(first), 'lock': os.path.join(os.path.dirname(first['store_path']), LOCK_NAME),
+              'host_identity': trust.host_identity, 'authority_generation': first['authority_generation'],
+              'repositories': repositories, 'enrollments': {w: E.binding_digest(b) for w, b in bindings.items()},
+              'enrollment_signers': os.path.join(config_dir, 'enrollment_signers'), 'principal': principal,
+              'journal_key': journal, 'key_directory': keys,
+              'observations': os.path.join(state_dir, 'observations.jsonl'),
+              'executable': values['EXECUTABLE'], 'python': python,
+              'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': {
+                  record['repository']: path for path, record in receivers.items()}},
+              'closure': {name: _digest(data) for name, data in fixed.items()},
+              'runtime_assets': {name: _digest(data) for name, data in assets.items()},
+              'template': _digest(TEMPLATE.read_bytes()),
+              'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
+              'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
+              'work': os.path.join(config_dir, WORK) if lines is not None else None}
+    return {'first': first, 'root': root, 'home': home, 'unit_dir': unit_dir, 'unit_path': unit_path, 'service': service,
+            'unit': unit, 'journal': journal, 'keys': keys, 'qualification': qualification, 'bin': bin_dir,
+            'config_dir': config_dir, 'state': state_dir, 'config_path': config_path, 'values': values, 'text': text,
+            'fixed': fixed, 'assets': assets, 'signers': signers, 'ingress': ingress, 'api': api, 'lines': lines,
+            'receivers': receivers, 'config': config, 'repositories': repositories}
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
@@ -1123,12 +1167,16 @@ class Service:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
+            elif isinstance(packet, dict) and packet.get('operation') == OWNERSHIP_COMMIT and 'command' not in packet:
+                result = self.commit_ownership()
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
+            elif command.get('operation') == EDGE.ENROLL and 'envelope' in packet:
+                result = self.api_edge(packet, repository, observation)
             elif command.get('operation') == CH.AUTHORIZE:
                 result = self.channel_command(packet, repository, observation)
             elif command.get('operation') in CH.DELEGATION_OPERATIONS:
@@ -1200,6 +1248,23 @@ class Service:
         except (SA.AUTH.MC.Refused, SA.AUTH.CV.Refused) as error:
             return {'ok': False, 'reason': error.code}
         return {'ok': True, 'reason': command['operation'], 'result': result}
+
+    def api_edge(self, packet, repository, observation):
+        """The owner's enroll_channel_edge of the API's own edge (channel "api", VELDO-0171), signed at the host
+        with the edge key's possession co-signature and sent by veldo factory setup while this service holds
+        the store's lock; admitted by control_channel_enrollment on this instance's connection. No other
+        channel's enrollment is taken here."""
+        params = (packet.get('command') or {}).get('parameters')
+        if not isinstance(params, dict) or params.get('channel') not in EDGE.API_CHANNELS:
+            raise Refused('forbidden_command', 'the service enrolls only the API\'s own edge')
+        writer = EDGE.Enrollment(S, self.conn, {'domain_uuid': self.domain, 'store_uuid': self.store,
+                                                'repository_uuid': repository},
+                                 self.principal, self.sign, authority_generation=self.generation)
+        observed = writer.admit(packet.get('envelope'), packet.get('command'), packet.get('signature'),
+                                packet.get('possession'))
+        observation['accepted_versions'] = dict(observed.get('accepted_versions') or {})
+        return {'ok': observed.get('outcome') == 'accepted', 'reason': observed.get('refusal'),
+                'seq': observed.get('seq')}
 
     def api_credential(self, packet, observation):
         """A steward's enroll_api_credential or revoke_api_credential, signed at the host."""
@@ -1342,6 +1407,19 @@ class Service:
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
                 'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status()}
 
+    def commit_ownership(self):
+        """VELDO-0189: the upgrade committed (setup removed the previous engine after this service answered),
+        so the store's record of the previous bindings is dropped; refused while a previous engine is still
+        installed beside this one, which a switch back could still need."""
+        previous = previous_engine(self.config)
+        if previous is None:
+            raise Refused('invalid_input:ownership:not_installed', 'this service is not its installation\'s executable')
+        if os.path.lexists(previous):
+            raise Refused('invalid_input:ownership:previous_engine_installed', previous)
+        dropped = S.drop_previous_owners(self.conn, observe=lambda rows: observe_ownership(
+            self.config, 'ownership_commit', rows))
+        return {'ok': True, 'reason': OWNERSHIP_COMMIT, 'dropped': len(dropped)}
+
     def pending(self):
         claims = sum(1 for (data,) in self.conn.execute("SELECT data FROM entities WHERE kind='claim'")
                      if json.loads(data).get('state') not in (None, 'released'))
@@ -1358,7 +1436,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') in ('channel', 'api', 'loop'):
+        if observation.get('kind') in ('channel', 'api', 'loop', 'ownership'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
@@ -1369,9 +1447,23 @@ class Service:
         self._log(observation)
 
     def _log(self, observation):
-        fd = os.open(self.config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
-        with os.fdopen(fd, 'a') as handle:
-            handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
+        append_observation(self.config, observation)
+
+
+def append_observation(config, observation):
+    """One line of the installation's observation log."""
+    fd = os.open(config['observations'], os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
+    with os.fdopen(fd, 'a') as handle:
+        handle.write(json.dumps(observation, sort_keys=True, default=str) + '\n')
+
+
+def observe_ownership(config, operation, rows):
+    """VELDO-0189: a rebinding, restore or commit of the store's ownership declarations, observed inside its
+    store transaction before the commit, so a change that lands always has its line."""
+    append_observation(config, {'kind': 'ownership', 'operation': operation, 'at': time.time(),
+                                'domain_uuid': config.get('domain_uuid'), 'bindings': [
+                                    {'selector': r[0], 'value': r[1], 'module': r[2], 'previous': r[3], 'digest': r[4]}
+                                    for r in rows]})
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1795,6 +1887,48 @@ def open_loop(config, service):
         return None, 'unavailable_service:loop:' + type(error).__name__
 
 
+def installed_engine(config):
+    """{resolved path: digest} of the installed engine this process runs, as its installation record's
+    closure names it (VELDO-0189), or {} when this module is not the record's executable (a checkout's
+    copy serving an installed configuration rebinds nothing)."""
+    executable, recorded = config.get('executable'), config.get('closure')
+    if (not isinstance(executable, str) or not isinstance(recorded, dict)
+            or os.path.realpath(__file__) != os.path.realpath(executable)):
+        return {}
+    bin_dir = os.path.dirname(os.path.realpath(executable))
+    return {os.path.join(bin_dir, name): value for name, value in recorded.items()
+            if isinstance(name, str) and isinstance(value, str) and os.path.basename(name) == name}
+
+
+def previous_engine(config):
+    """The directory an upgrade keeps the previous engine in beside this installed engine (VELDO-0189), or
+    None when this module is not the installation record's executable."""
+    executable = config.get('executable')
+    if not isinstance(executable, str) or os.path.realpath(__file__) != os.path.realpath(executable):
+        return None
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(executable))), PREVIOUS_ENGINE)
+
+
+def restore_owners(config_path):
+    """veldo's switch back (VELDO-0189), run from the new engine's directory before the previous engine
+    starts: every declaration this engine's rebinding moved is bound again to the previous engine's bytes,
+    the store checking that each file has them. Takes the lock, so it runs only while no service does."""
+    config = load_config(config_path)
+    lock = acquire(config['lock'], config)
+    try:
+        store = S.open_store(config['store_path'])
+        try:
+            try:
+                restored = S.restore_owners(store, observe=lambda rows: observe_ownership(config, 'ownership_restore', rows))
+            except S.StoreRefused as error:
+                raise Refused(error.code, error.detail)
+        finally:
+            store.close()
+    finally:
+        os.close(lock)
+    return {'restored': len(restored)}
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
@@ -1803,6 +1937,16 @@ def serve(config_path):
     try:
         conn = S.open_store(config['store_path'])
         try:
+            # VELDO-0189: an upgraded engine's owning modules carry the store's ownership declarations
+            # to their installed bytes before anything attaches, recording the previous bindings while the
+            # previous engine is still installed beside this one (a switch back restores them), and a record
+            # no previous engine remains for is dropped.
+            previous = previous_engine(config)
+            keep = previous is not None and os.path.lexists(previous)
+            S.rebind_owners(conn, installed_engine(config), keep_previous=keep,
+                            observe=lambda rows: observe_ownership(config, 'ownership_rebind', rows))
+            if previous is not None and not keep:
+                S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
@@ -1882,6 +2026,11 @@ def main(argv=None):
             if len(argv) != 2:
                 raise Refused('invalid_input:usage', 'serve <installed service.json>')
             serve(argv[1])
+            return 0
+        if argv[:1] == ['restore-owners']:
+            if len(argv) != 2:
+                raise Refused('invalid_input:usage', 'restore-owners <installed service.json>')
+            print(json.dumps(restore_owners(argv[1]), sort_keys=True))
             return 0
         import argparse
         parser = argparse.ArgumentParser(prog='control_service.py', description=__doc__.split('\n\n')[0])

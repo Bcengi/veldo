@@ -1,0 +1,744 @@
+{
+ "schema": "veldo.registration-audit/v1",
+ "baseline": "7f38b20126e4d8c52fac8cca82d1367168159d70",
+ "implementation_commit": "0bd58f24",
+ "findings": {
+  "189": {
+   "suite": "86_veldo_0189_engine_upgrade.py",
+   "reported_row_names": [
+    "VELDO-0189 install/assets",
+    "VELDO-0189 upgrade/from-8bc34e94",
+    "VELDO-0189 upgrade/from-971186ac",
+    "VELDO-0189 upgrade/removed-module",
+    "VELDO-0189 upgrade/census",
+    "VELDO-0189 upgrade/refused-by-name",
+    "VELDO-0189 switch/kill-points",
+    "VELDO-0189 switch/failed-restart",
+    "VELDO-0189 kept/owner-data",
+    "VELDO-0189 announce/before-first-write",
+    "VELDO-0189 restart/rules",
+    "VELDO-0189 second-run/changes-nothing",
+    "VELDO-0189 switch/failed-after-start",
+    "VELDO-0189 ownership/restore-differs",
+    "VELDO-0189 ownership/committed",
+    "VELDO-0189 switch/resumed-failure",
+    "VELDO-0189 switch/rollback-kills",
+    "VELDO-0189 switch/stop-refused",
+    "VELDO-0189 ownership/restore-reported",
+    "VELDO-0189 ownership/start-drops",
+    "VELDO-0189 ownership/commit-refused",
+    "VELDO-0189 switch/stop-before-restore",
+    "VELDO-0189 upgrade/older-0186-equivalence",
+    "VELDO-0189 kept/runs",
+    "VELDO-0189 upgrade/fresh-0186",
+    "VELDO-0189 engines/atomic-record",
+    "VELDO-0189 engines/repair-record",
+    "VELDO-0189 engines/refuse-record",
+    "VELDO-0189 engines/codex-refusal",
+    "VELDO-0189 engines/repair-report",
+    "VELDO-0189 upgrade/corrupt-runtime-record",
+    "VELDO-0189 upgrade/receiver-without-store"
+   ],
+   "registration_count": 46,
+   "matches": [
+    {
+     "mutation": "upgrade189-only-recorded-names",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-in-place-writes",
+     "targets": {
+      "switch/kill-points": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-configs-written-fresh",
+     "targets": {
+      "kept/owner-data": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-restart-every-run",
+     "targets": {
+      "second-run/changes-nothing": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-edited-file-overwritten",
+     "targets": {
+      "upgrade/refused-by-name": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-removed-file-kept",
+     "targets": {
+      "upgrade/removed-module": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-no-switch-back",
+     "targets": {
+      "switch/failed-restart": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-no-exchange-probe",
+     "targets": {
+      "upgrade/refused-by-name": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-module-not-scaffolded",
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-ownership-not-carried",
+     "targets": {
+      "switch/kill-points": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-rebind-any-digest",
+     "targets": {
+      "switch/kill-points": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-no-ownership-restore",
+     "targets": {
+      "switch/failed-after-start": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-rebind-not-recorded",
+     "targets": {
+      "switch/failed-after-start": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-restore-any-bytes",
+     "targets": {
+      "ownership/restore-differs": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-commit-not-sent",
+     "targets": {
+      "ownership/committed": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-last-begin-only",
+     "targets": {
+      "switch/resumed-failure": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-resumed-not-switched",
+     "targets": {
+      "switch/resumed-failure": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-resumed-units-forgotten",
+     "targets": {
+      "switch/resumed-failure": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-switch-back-not-due",
+     "targets": {
+      "switch/rollback-kills": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-recovery-holds-lock",
+     "targets": {
+      "switch/rollback-kills": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-stop-exit-ignored",
+     "targets": {
+      "switch/stop-refused": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-restore-refusal-unreported",
+     "targets": {
+      "ownership/restore-reported": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-restore-only-first-blocker",
+     "targets": {
+      "ownership/restore-reported": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-serve-keeps-previous-bindings",
+     "targets": {
+      "ownership/start-drops": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-commit-with-previous-engine",
+     "targets": {
+      "ownership/commit-refused": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-restore-without-stop",
+     "targets": {
+      "switch/stop-before-restore": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-unrecorded",
+     "targets": {
+      "upgrade/fresh-0186": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-not-staged",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-record-stale",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-mode",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-not-cleaned",
+     "targets": {
+      "upgrade/removed-module": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-pin-missing",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-engines-record-missing",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runs-moved",
+     "targets": {
+      "kept/runs": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-existing-pin-rewritten",
+     "targets": {
+      "upgrade/fresh-0186": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-existing-record-rewritten",
+     "targets": {
+      "upgrade/fresh-0186": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-record-in-place",
+     "targets": {
+      "engines/atomic-record": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-unreadable-record-kept",
+     "targets": {
+      "engines/repair-record": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-different-record-accepted",
+     "targets": {
+      "engines/refuse-record": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-codex-refusal-differs",
+     "targets": {
+      "engines/codex-refusal": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-repair-reported-done",
+     "targets": {
+      "engines/repair-report": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-repair-count-hidden",
+     "targets": {
+      "engines/repair-report": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-repair-record-hidden",
+     "targets": {
+      "engines/repair-report": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-runtime-type-unchecked",
+     "targets": {
+      "upgrade/corrupt-runtime-record": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-receiver-store-unchecked",
+     "targets": {
+      "upgrade/receiver-without-store": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "upgrade189-pin-wrong-mode",
+     "targets": {
+      "upgrade/from-8bc34e94": [
+       true
+      ],
+      "upgrade/from-971186ac": [
+       true
+      ]
+     }
+    }
+   ],
+   "observation_source": "proof/VELDO-0189/red-at-7f38b201.json: actual expect calls captured by drive.py",
+   "suite_sha256": "f2bdada5a3171968140c2a53ada3719a4c97ee6a1f50132cf1fd5b98f93fca0e"
+  },
+  "171": {
+   "suite": "85_veldo_0171_setup_api.py",
+   "reported_row_names": [
+    "VELDO-0171 install/assets",
+    "VELDO-0171 tailscale/capture",
+    "VELDO-0171 tailscale/fixed-paths",
+    "VELDO-0171 tailscale/refusals",
+    "VELDO-0171 tailscale/serve-bg",
+    "VELDO-0171 api-edge/enrolled-by-owner",
+    "VELDO-0171 api/service-configuration",
+    "VELDO-0171 api/unit",
+    "VELDO-0171 rerun/changes-nothing",
+    "VELDO-0171 rerun/arguments-compared",
+    "VELDO-0171 rerun/differs-refused",
+    "VELDO-0171 api-edge/installed-api-call",
+    "VELDO-0171 api/loopback-only",
+    "VELDO-0171 passkey/first-enrollment",
+    "VELDO-0171 api/content-security-policy",
+    "VELDO-0171 api-edge/running-service",
+    "VELDO-0171 rerun/over-0139-host",
+    "VELDO-0171 api/start-rules"
+   ],
+   "registration_count": 17,
+   "matches": [
+    {
+     "mutation": "api171-edge-not-enrolled",
+     "targets": {
+      "api-edge/installed-api-call": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-funnel-in-place-of-serve",
+     "targets": {
+      "tailscale/serve-bg": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-origin-loopback",
+     "targets": {
+      "passkey/first-enrollment": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-new-key-every-run",
+     "targets": {
+      "rerun/changes-nothing": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-store-written-while-running",
+     "targets": {
+      "api-edge/running-service": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-projection-not-republished",
+     "targets": {
+      "api-edge/running-service": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-listens-beyond-loopback",
+     "targets": {
+      "api/loopback-only": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-operator-unchecked",
+     "targets": {
+      "tailscale/refusals": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-cli-location-not-fixed",
+     "targets": {
+      "tailscale/fixed-paths": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-entry-point-dropped",
+     "targets": {
+      "api/unit": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-started-when-added",
+     "targets": {
+      "api/start-rules": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-fingerprint-ignored",
+     "targets": {
+      "passkey/first-enrollment": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-policy-omitted",
+     "targets": {
+      "api/content-security-policy": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-policy-unsafe-inline",
+     "targets": {
+      "api/content-security-policy": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-chat-not-compared",
+     "targets": {
+      "rerun/arguments-compared": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-differing-file-accepted",
+     "targets": {
+      "rerun/differs-refused": [
+       true
+      ]
+     }
+    },
+    {
+     "mutation": "api171-module-not-scaffolded",
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    }
+   ],
+   "observation_source": "ordinary selected selftest: timing row keys equal declared ROWS; final reporting loop emits exactly one expect per key; 18 behavior rows passed, 44 total, zero failed",
+   "suite_sha256": "02881a85f86fb97811f420c77858f3b7334b75368bc98d91c37af2ed1e315ae1"
+  }
+ },
+ "static": {
+  "findings": {
+   "171": 17,
+   "189": 46
+  },
+  "unique_names_across_all_findings": true,
+  "production_edits_unchanged": true,
+  "all_mutant_sources_compile": true,
+  "identical_engine_copies": [
+   "control_api.py",
+   "control_factory_setup.py",
+   "control_factory_setup_api.py",
+   "control_factory_setup_engines.py",
+   "control_factory_setup_upgrade.py",
+   "control_service.py",
+   "control_store.py",
+   "init_scaffold.py"
+  ],
+  "changed_targets": [
+   {
+    "name": "upgrade189-runtime-not-staged",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   },
+   {
+    "name": "upgrade189-runtime-record-stale",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   },
+   {
+    "name": "upgrade189-runtime-mode",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   },
+   {
+    "name": "upgrade189-pin-missing",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   },
+   {
+    "name": "upgrade189-engines-record-missing",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   },
+   {
+    "name": "upgrade189-pin-wrong-mode",
+    "before": [
+     "upgrade/older-0186-equivalence"
+    ],
+    "after": [
+     "upgrade/from-8bc34e94",
+     "upgrade/from-971186ac"
+    ]
+   }
+  ]
+ },
+ "selftest": [
+  {
+   "finding": 189,
+   "environment": "ordinary",
+   "passed": 58,
+   "failed": 0,
+   "seconds": 54.39,
+   "exit_code": 2,
+   "scope": "selected suite only; not aggregate verification"
+  },
+  {
+   "finding": 189,
+   "environment": "empty environment",
+   "passed": 58,
+   "failed": 0,
+   "seconds": 56.47,
+   "exit_code": 2,
+   "scope": "selected suite only; not aggregate verification"
+  },
+  {
+   "finding": 171,
+   "environment": "ordinary",
+   "passed": 44,
+   "failed": 0,
+   "seconds": 10.29,
+   "exit_code": 2,
+   "scope": "selected suite only; not aggregate verification"
+  },
+  {
+   "finding": 171,
+   "environment": "empty environment",
+   "passed": 44,
+   "failed": 0,
+   "seconds": 10.3,
+   "exit_code": 2,
+   "scope": "selected suite only; not aggregate verification"
+  }
+ ],
+ "matching_rule": "For each target label, collect conditions for reported names whose final whitespace-separated word equals the label; require exactly [true].",
+ "baseline_proof": {
+  "path": "proof/VELDO-0189/red-at-7f38b201.json",
+  "failed_rows": [],
+  "conclusion": "The requested baseline run is green, including the disputed row. No production or suite behavior changes in this repair; an all-red behavior record is not claimed."
+ },
+ "mutation_execution": "Not run, reserved to the reviewer. Static anchor, syntax, target and uniqueness checks do not establish mutant rejection.",
+ "requires": "Regenerated with scripts/run_scope.py; unchanged.",
+ "anchors": "0 bad anchors; no duplicate names across all findings.",
+ "footprint": {
+  "supplied_checker": "changed 123, outside the footprint: ['.veldo/control_api.py', '.veldo/events.jsonl', '.veldo/last_verify', 'engine/.veldo/control_api.py', 'proof/VELDO-0171/README.md', 'proof/VELDO-0171/api171-chat-not-compared.diff', 'proof/VELDO-0171/api171-cli-location-not-fixed.diff', 'proof/VELDO-0171/api171-differing-file-accepted.diff', 'proof/VELDO-0171/api171-edge-not-enrolled.diff', 'proof/VELDO-0171/api171-entry-point-dropped.diff', 'proof/VELDO-0171/api171-fingerprint-ignored.diff', 'proof/VELDO-0171/api171-funnel-in-place-of-serve.diff', 'proof/VELDO-0171/api171-listens-beyond-loopback.diff', 'proof/VELDO-0171/api171-module-not-scaffolded.diff', 'proof/VELDO-0171/api171-new-key-every-run.diff', 'proof/VELDO-0171/api171-operator-unchecked.diff', 'proof/VELDO-0171/api171-origin-loopback.diff', 'proof/VELDO-0171/api171-policy-omitted.diff', 'proof/VELDO-0171/api171-policy-unsafe-inline.diff', 'proof/VELDO-0171/api171-projection-not-republished.diff', 'proof/VELDO-0171/api171-started-when-added.diff', 'proof/VELDO-0171/api171-store-written-while-running.diff', 'proof/VELDO-0171/drive.py', 'proof/VELDO-0171/mutations.json', 'proof/VELDO-0171/performance.json', 'proof/VELDO-0171/red-at-7851ae9b.json', 'proof/VELDO-0171/runtime-red-at-5730a17e.json', 'proof/VELDO-0171/scrub_tailscale.py', 'proof/VELDO-0171/tailscale-capture.json', 'scripts/suites/66_veldo_0047_authority.py', 'scripts/suites/74_veldo_0140_standing_delegation.py', 'scripts/suites/support/v171_tailscale.py', 'specs/VELDO-0171-setup-lays-down-the-api.md']",
+  "repair_scope": "All files changed since 7f38b201 are within VELDO-0189. The supplied checker measures the stacked branch against origin/main and reports inherited VELDO-0171 paths and gate stamps. No footprint expansion.",
+  "repair_paths": [
+   "proof/VELDO-0189/README.md",
+   "proof/VELDO-0189/mutations.json",
+   "proof/VELDO-0189/red-at-7f38b201.json",
+   "proof/VELDO-0189/registration-audit.json",
+   "scripts/check_teeth_mutations.py",
+   "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md"
+  ],
+  "repair_outside": []
+ },
+ "validator": {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0
+ }
+}

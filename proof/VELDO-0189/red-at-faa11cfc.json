@@ -1,0 +1,114 @@
+{
+ "by_assertion": true,
+ "commit": "faa11cfc08f6c230261246dac59dd94002160364",
+ "details": [
+  "VELDO-0189 install/assets detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 upgrade/from-8bc34e94 detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 upgrade/from-971186ac detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 upgrade/removed-module detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 upgrade/census detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 upgrade/refused-by-name detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 switch/kill-points detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 switch/failed-restart detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 kept/owner-data detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 announce/before-first-write detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 restart/rules detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist",
+  "VELDO-0189 second-run/changes-nothing detail: the setup upgrade module, the installer's layout and the Tailscale stand-in exist"
+ ],
+ "failed_rows": [
+  "VELDO-0189 install/assets",
+  "VELDO-0189 upgrade/from-8bc34e94",
+  "VELDO-0189 upgrade/from-971186ac",
+  "VELDO-0189 upgrade/removed-module",
+  "VELDO-0189 upgrade/census",
+  "VELDO-0189 upgrade/refused-by-name",
+  "VELDO-0189 switch/kill-points",
+  "VELDO-0189 switch/failed-restart",
+  "VELDO-0189 kept/owner-data",
+  "VELDO-0189 announce/before-first-write",
+  "VELDO-0189 restart/rules",
+  "VELDO-0189 second-run/changes-nothing"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e",
+   "now": "498387aeca525a80c01e5e12e2cd20d69bc6e5919b3381958c05b2acbc97a81e"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": null,
+   "now": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "7172af58e53dedbfa27d4c36837a1d612c8bfff37dba6e2aeceba050a41dab89",
+   "now": "167aeb508b22844df11d15eb30e2abbc487ba261f223fad4fc468aa20e1a3357"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "9352b605c7970fa11a42a80f0937103e4bf64e057c419996636fa8f2ae2d1cf7",
+   "now": "59671a934add15a58e7cfb6928c6a199a9a3c778195a457e7692e75445c5043c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "8ec86452cd9799f454db8e46a274c21fb942e03de136cb748fd6cb969d32a833",
+   "now": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   false
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   false
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   false
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   false
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   false
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   false
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.017,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "git archive faa11cfc08f6c230261246dac59dd94002160364, unchanged; the current suite file run against it"
+}

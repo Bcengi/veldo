@@ -1,0 +1,22 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -360,2 +360,13 @@
+-        stage(plan, modes, bin_mode)
+-        point(log, {'point': 'staged', 'files': len(plan['fixed'])})
++        os.chmod(plan['bin'], 0o700)  # defect: the new files are written over the installed ones in place
++        for name, data in sorted(plan['fixed'].items()):
++            path = os.path.join(plan['bin'], name)
++            os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
++            with contextlib.suppress(FileNotFoundError):
++                os.chmod(path, 0o600)
++            with open(path, 'wb') as handle:
++                handle.write(data)
++            os.chmod(path, modes(name))
++            point(log, {'point': 'wrote', 'file': name})
++        for name in plan['removed']:
++            os.unlink(os.path.join(plan['bin'], name))
++        os.chmod(plan['bin'], bin_mode)
+@@ -371,2 +382 @@
+-            exchange(plan['stage'], plan['bin'])
+-            switched = True
++            switched = False

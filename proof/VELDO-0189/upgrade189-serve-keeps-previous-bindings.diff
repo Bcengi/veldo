@@ -1,0 +1,5 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1948 +1948 @@
+-            if previous is not None and not keep:
++            if False:

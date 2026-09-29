@@ -1,0 +1,213 @@
+{
+ "by_assertion": true,
+ "commit": "be94c9197c909294fed763ee306d2e35c0f0b23f",
+ "details": [
+  "VELDO-0189 engines/atomic-record detail: opened: destination absent or complete",
+  "VELDO-0189 engines/atomic-record detail: opened: rerun leaves complete record",
+  "VELDO-0189 engines/atomic-record detail: partial: destination absent or complete",
+  "VELDO-0189 engines/atomic-record detail: partial: rerun leaves complete record",
+  "VELDO-0189 engines/atomic-record detail: complete: stopped the real writer",
+  "VELDO-0189 engines/atomic-record detail: renamed: stopped the real writer",
+  "VELDO-0189 engines/repair-record detail: unreadable record repaired: b''",
+  "VELDO-0189 engines/repair-record detail: repair reported",
+  "VELDO-0189 engines/repair-record detail: unreadable record repaired: b'{'",
+  "VELDO-0189 engines/repair-record detail: repair reported",
+  "VELDO-0189 engines/repair-record detail: unreadable record repaired: b'\\xff'",
+  "VELDO-0189 engines/repair-record detail: repair reported",
+  "VELDO-0189 engines/refuse-record detail: different readable record refused by path: {'action': 'setup', 'api': {'listen': '127.0.0.1:33851', 'origin': 'https://factory.invalid', 'port': 33851, 'process_config': '/dev/shm/b189-swn_998v/install-fresh/dbbac64909f3802a/config/api-process.json', 'service_config': '/dev/shm/b189-swn_998v/state-fresh/host/api-service.json', 'store_write_through_service': False, 'tailnet_name': 'factory.invalid', 'unit': 'veldo-api-dbbac64909f3802a.service', 'unit_path': '/dev/shm/b189-swn_998v/units-fresh/veldo-api-dbbac64909f3802a.service'}, 'authority_ids': {'domain_uuid': '9df643a9-808f-4c5d-b38c-5d60c9e8827e', 'repository_uuid': '16f4437b-db7e-479c-8634-054992746718', 'store_uuid': 'efbecfde-8b0f-47df-94df-ec907f569261'}, 'home': '/dev/shm/b189-swn_998v/install-fresh/dbbac64909f3802a', 'host_trust': '/dev/shm/b189-swn_998v/xdg-fresh/veldo/host_trust.json', 'ingress': '/dev/shm/b189-swn_998v/state-fresh/host/ingress.json', 'next': 'start it explicitly: systemctl --user start veldo-authority-dbbac64909f3802a.service (the API unit veldo-api-dbbac64909f3802a.service starts with it)', 'outcome': 'already_set_up', 'owner': 'dmitry', 'schema': 'veldo.factory_setup/v1', 'service_running': False, 'started': False, 'state_root': '/dev/shm/b189-swn_998v/state-fresh', 'steps': [{'added': [], 'changed': [], 'current': 'sha256:a4785c538303dcbb7388ad41fbb59b7470bd2666a8b7d1128c13c34e86e409c8', 'outcome': 'already_done', 'previous': 'sha256:a4785c538303dcbb7388ad41fbb59b7470bd2666a8b7d1128c13c34e86e409c8', 'removed': [], 'step': 'engine_upgrade'}, {'outcome': 'already_done', 'step': 'directories'}, {'outcome': 'already_done', 'step': 'keys'}, {'outcome': 'already_done', 'step': 'store'}, {'outcome': 'already_done', 'step': 'owner_bootstrap'}, {'outcome': 'already_done', 'step': 'chat_enrollment'}, {'outcome': 'already_done', 'step': 'edge_enrollment'}, {'outcome': 'already_done', 'step': 'delegation'}, {'outcome': 'already_done', 'step': 'requester_enrollment'}, {'outcome': 'already_done', 'step': 'host_trust'}, {'outcome': 'already_done', 'step': 'workspace_enrollment'}, {'outcome': 'already_done', 'step': 'ingress_configuration'}, {'outcome': 'already_done', 'step': 'service_install'}, {'outcome': 'already_done', 'step': 'api_edge_key'}, {'outcome': 'already_done', 'step': 'api_edge_enrollment', 'through_service': False}, {'outcome': 'already_done', 'step': 'api_service_configuration'}, {'outcome': 'already_done', 'step': 'api_service_install'}, {'outcome': 'already_done', 'step': 'api_process_configuration'}, {'outcome': 'already_done', 'step': 'api_unit'}, {'outcome': 'deferred', 'step': 'api_start'}, {'outcome': 'already_done', 'step': 'tailscale_serve'}], 'store': '/dev/shm/b189-swn_998v/state-fresh/authority/control.sqlite3', 'token_file': '/dev/shm/b189-swn_998v/person/bot-token', 'unit': 'veldo-authority-dbbac64909f3802a.service', 'unit_path': '/dev/shm/b189-swn_998v/units-fresh/veldo-authority-dbbac64909f3802a.service', 'workspace': '/dev/shm/b189-swn_998v/clone-fresh'}",
+  "VELDO-0189 engines/refuse-record detail: different readable record refused by path: {'action': 'setup', 'api': {'listen': '127.0.0.1:33851', 'origin': 'https://factory.invalid', 'port': 33851, 'process_config': '/dev/shm/b189-swn_998v/install-fresh/dbbac64909f3802a/config/api-process.json', 'service_config': '/dev/shm/b189-swn_998v/state-fresh/host/api-service.json', 'store_write_through_service': False, 'tailnet_name': 'factory.invalid', 'unit': 'veldo-api-dbbac64909f3802a.service', 'unit_path': '/dev/shm/b189-swn_998v/units-fresh/veldo-api-dbbac64909f3802a.service'}, 'authority_ids': {'domain_uuid': '9df643a9-808f-4c5d-b38c-5d60c9e8827e', 'repository_uuid': '16f4437b-db7e-479c-8634-054992746718', 'store_uuid': 'efbecfde-8b0f-47df-94df-ec907f569261'}, 'home': '/dev/shm/b189-swn_998v/install-fresh/dbbac64909f3802a', 'host_trust': '/dev/shm/b189-swn_998v/xdg-fresh/veldo/host_trust.json', 'ingress': '/dev/shm/b189-swn_998v/state-fresh/host/ingress.json', 'next': 'start it explicitly: systemctl --user start veldo-authority-dbbac64909f3802a.service (the API unit veldo-api-dbbac64909f3802a.service starts with it)', 'outcome': 'already_set_up', 'owner': 'dmitry', 'schema': 'veldo.factory_setup/v1', 'service_running': False, 'started': False, 'state_root': '/dev/shm/b189-swn_998v/state-fresh', 'steps': [{'added': [], 'changed': [], 'current': 'sha256:a4785c538303dcbb7388ad41fbb59b7470bd2666a8b7d1128c13c34e86e409c8', 'outcome': 'already_done', 'previous': 'sha256:a4785c538303dcbb7388ad41fbb59b7470bd2666a8b7d1128c13c34e86e409c8', 'removed': [], 'step': 'engine_upgrade'}, {'outcome': 'already_done', 'step': 'directories'}, {'outcome': 'already_done', 'step': 'keys'}, {'outcome': 'already_done', 'step': 'store'}, {'outcome': 'already_done', 'step': 'owner_bootstrap'}, {'outcome': 'already_done', 'step': 'chat_enrollment'}, {'outcome': 'already_done', 'step': 'edge_enrollment'}, {'outcome': 'already_done', 'step': 'delegation'}, {'outcome': 'already_done', 'step': 'requester_enrollment'}, {'outcome': 'already_done', 'step': 'host_trust'}, {'outcome': 'already_done', 'step': 'workspace_enrollment'}, {'outcome': 'already_done', 'step': 'ingress_configuration'}, {'outcome': 'already_done', 'step': 'service_install'}, {'outcome': 'already_done', 'step': 'api_edge_key'}, {'outcome': 'already_done', 'step': 'api_edge_enrollment', 'through_service': False}, {'outcome': 'already_done', 'step': 'api_service_configuration'}, {'outcome': 'already_done', 'step': 'api_service_install'}, {'outcome': 'already_done', 'step': 'api_process_configuration'}, {'outcome': 'already_done', 'step': 'api_unit'}, {'outcome': 'deferred', 'step': 'api_start'}, {'outcome': 'already_done', 'step': 'tailscale_serve'}], 'store': '/dev/shm/b189-swn_998v/state-fresh/authority/control.sqlite3', 'token_file': '/dev/shm/b189-swn_998v/person/bot-token', 'unit': 'veldo-authority-dbbac64909f3802a.service', 'unit_path': '/dev/shm/b189-swn_998v/units-fresh/veldo-authority-dbbac64909f3802a.service', 'workspace': '/dev/shm/b189-swn_998v/clone-fresh'}",
+  "VELDO-0189 engines/refuse-record detail: different record refused before writes",
+  "VELDO-0189 engines/codex-refusal detail: same changed Codex bytes have the fresh refusal: ('binding_mismatch:engine_digest', 'stale_subject:engine_digest')",
+  "VELDO-0189 engines/repair-report detail: repair is reported as a write",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: completed rerun reports no new writes",
+  "VELDO-0189 engines/repair-report detail: repair is reported as a write",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: completed rerun reports no new writes",
+  "VELDO-0189 engines/repair-report detail: repair is reported as a write",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: actual pin count and record reported",
+  "VELDO-0189 engines/repair-report detail: completed rerun reports no new writes",
+  "VELDO-0189 upgrade/corrupt-runtime-record detail: runtime inventory refused by path: {'raised': 'TypeError'}",
+  "VELDO-0189 upgrade/corrupt-runtime-record detail: runtime inventory refused by path: {'raised': 'TypeError'}",
+  "VELDO-0189 upgrade/corrupt-runtime-record detail: runtime inventory refused by path: {'raised': 'TypeError'}",
+  "VELDO-0189 upgrade/receiver-without-store detail: receiver refused by path: {'raised': 'KeyError'}"
+ ],
+ "failed_rows": [
+  "VELDO-0189 engines/atomic-record",
+  "VELDO-0189 engines/repair-record",
+  "VELDO-0189 engines/refuse-record",
+  "VELDO-0189 engines/codex-refusal",
+  "VELDO-0189 engines/repair-report",
+  "VELDO-0189 upgrade/corrupt-runtime-record",
+  "VELDO-0189 upgrade/receiver-without-store"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a",
+   "now": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_engines.py": {
+   "at_commit": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+   "now": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "now": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "now": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829",
+   "now": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   true
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   true
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   true
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   true
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   true
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   true
+  ],
+  [
+   "VELDO-0189 switch/resumed-failure",
+   true
+  ],
+  [
+   "VELDO-0189 switch/rollback-kills",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-refused",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-reported",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/start-drops",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/commit-refused",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-before-restore",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/older-0186-equivalence",
+   true
+  ],
+  [
+   "VELDO-0189 kept/runs",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/fresh-0186",
+   true
+  ],
+  [
+   "VELDO-0189 engines/atomic-record",
+   false
+  ],
+  [
+   "VELDO-0189 engines/repair-record",
+   false
+  ],
+  [
+   "VELDO-0189 engines/refuse-record",
+   false
+  ],
+  [
+   "VELDO-0189 engines/codex-refusal",
+   false
+  ],
+  [
+   "VELDO-0189 engines/repair-report",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/corrupt-runtime-record",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/receiver-without-store",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 470.417,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "a local clone checked out at be94c9197c909294fed763ee306d2e35c0f0b23f, unchanged; the current suite file run against it"
+}

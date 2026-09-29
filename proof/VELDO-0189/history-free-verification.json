@@ -1,0 +1,58 @@
+{
+  "spec_id": "VELDO-0189",
+  "suite": "86_veldo_0189_engine_upgrade",
+  "runs": [
+    {
+      "environment": "normal",
+      "passed": 58,
+      "failed": 0,
+      "seconds": 54.48,
+      "exit_code": 2,
+      "log_sha256": "f94f7065e75619c3e2d9f5f78144b75987873f9b2a471bd6d98a52f7aa6f9cc8"
+    },
+    {
+      "environment": "copy_without_git",
+      "passed": 58,
+      "failed": 0,
+      "seconds": 56.47,
+      "exit_code": 2,
+      "log_sha256": "6209219407ae9236acc4ee16f64ba0e640cb8c5b2a39604ec71b1ec87070345f"
+    },
+    {
+      "environment": "gate_environment",
+      "passed": 58,
+      "failed": 0,
+      "seconds": 59.43,
+      "exit_code": 2,
+      "log_sha256": "05c7fd52ed5acbe9c3cfc0cd22f725d2e12b644f2a2c275b32f2e721afcba8b8"
+    }
+  ],
+  "exit_note": "Exit 2 is the required successful partial-run result; no aggregate gate or landing claim.",
+  "copy": {
+    "method": "shutil.copytree of repository tree, excluding .git and bytecode caches",
+    "git_metadata_present": false
+  },
+  "gate_environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/dev/shm/veldo189-gate-home",
+    "TMPDIR": "/dev/shm",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONHASHSEED": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "red": {
+    "baseline": "fed739c7ba2d10b788dc7df3a58a80693065391c",
+    "by_assertion": true,
+    "failed": 23,
+    "total": 32,
+    "note": "23 fixture-dependent rows red; 9 unrelated production rows remain green. No all-red claim."
+  },
+  "mutation_execution": "Not run, reserved to reviewer. All 46 finding 189 registrations unchanged.",
+  "gate_execution": "Not run, prohibited by task instructions."
+}

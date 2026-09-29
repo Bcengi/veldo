@@ -1,0 +1,4 @@
+--- .veldo/init_scaffold.py
++++ .veldo/init_scaffold.py
+@@ -282 +281,0 @@
+-    ".veldo/control_factory_setup_upgrade.py",

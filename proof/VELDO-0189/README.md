@@ -1,0 +1,569 @@
+# VELDO-0189 proof: re-running factory setup upgrades an earlier installation's engine in place
+
+## The design as built
+
+**Where it runs.** `veldo factory setup` over a state root that holds a store is VELDO-0171's re-run
+(`.veldo/control_factory_setup.py`). After its argument checks and the other read-only checks, and before
+any other step writes, the re-run inspects the installed engine and, when it is not the current one,
+upgrades it (`.veldo/control_factory_setup_upgrade.py`); the answer's first step is `engine_upgrade`. There
+is no other command.
+
+**What it compares.** Only the installation's record, `<install root>/<service>/config/service.json`: its
+`closure` and `runtime_assets` together (each installed file's name and sha256 digest), and `template` digest. The current side is
+what the current installer would lay down for this installation's arguments: `control_service.layout`, the
+pure half of `install()` (install now calls it and writes exactly what it returns), with `existing=True` so
+an installed home is expected. Its engine files are `control_service.closure()` plus `runtime_assets`, including nested directories. A digest that differs is
+a changed file, a name only the current engine lists is new, a name only the record lists is removed. No
+code path per engine version exists.
+
+**What is refused, writing nothing.** Every file in the installed `bin` must equal its recorded digest: an
+edited one is `invalid_input:install_root:differs:<path>`, one the record does not name is
+`invalid_input:install_root:unrecorded:<path>`. Before the first write the upgrade probes the install
+root's filesystem: two empty directories beside `bin` exchanged with renameat2 and RENAME_EXCHANGE through
+the C library (ctypes), then removed; a filesystem or C library that cannot is
+`unavailable_service:install_root:exchange`.
+
+**How it switches.** The current engine is written complete into `bin.upgrade` beside `bin` at the
+installer's modes (entry points 0500, other files 0400, every engine directory 0500) and read back against
+the current digests; one renameat2 exchange then puts it at `bin` and the previous engine at `bin.upgrade`.
+The absent qualified pin and any absent or unreadable host/engines.json are completed next, at logged write points. Then, each written to a new file and renamed over the old one: a unit whose rendering from the current
+template changed (the authority unit, and VELDO-0171's API unit when it exists), each installation
+configuration that lacks a key the current installer writes (with the value `layout` renders for the same
+arguments; over 8bc34e94 and 971186ac that is the receiver configuration's `host_trust`, which the current
+launch receiver needs), and last the record: its `closure`, `runtime_assets` and `template` and the keys it lacks (`work`,
+null, over both older engines). The record is written last, so a record naming the current engine means
+every other write is done. Then the restart (AC4), and only after it succeeds is `bin.upgrade`, now the
+previous engine, removed.
+
+**Failure and kill.** A failure setup sees after the exchange exchanges the directories back, puts back
+every record and unit any run replaced (their original bytes and modes are kept in the prepared step-log entry), plus configurations replaced by this run and refuses by name; a
+failed restart (`unavailable_service:authority:upgrade_start`) also restarts the service once on the
+previous engine, after stopping it and running the current engine's own restore of the ownership
+declarations (below), so a current engine that came up and then failed leaves nothing bound to its bytes. A re-run finds its state from the files and the step log across every begin: `bin` equal to the record with
+`bin.upgrade` beside it is a staged engine left by an interrupted run, removed before starting again; `bin`
+equal to the current engine with the record not yet rewritten is an upgrade killed after its switch, whose
+writes are finished and whose restart is due; `bin` and the record both current with the step log showing
+the exchange and no restart after it is a restart still due.
+
+**The step log.** `<home>/state/engine-upgrade.jsonl`, 0600, one line after each write (each line is a
+write point): `begin` (the installed and current engine digests and the files changed, added and
+removed), `removed_stage`, `staged`, `prepared` (the original record and units, and whether the unit was active), `exchanged`, `engine_pin`, `engines_record`, `unit` and `configuration` (each path), `record`,
+`restart` (its outcome), `switched_back` (its reason), `stopped`, `ownership_restore` (its outcome),
+`removed_previous`, `committed` (whether the running service dropped its record of previous bindings),
+`done`. It never carries a key,
+a token or a store row. The staged directory is one write point: it is not installed until the exchange,
+and a kill anywhere inside it leaves a staged directory the re-run removes.
+
+**What the owner is told (AC4).** Before the first write setup prints one line to its standard error, for
+example `Upgrading the installed factory engine: 17 files change, 18 are new, 0 are removed; the authority
+service will restart once.` The JSON answer's `engine_upgrade` step names the previous and current engine
+digests (sha256 of the canonical JSON of the closure and template) and the files changed, added and
+removed, or `already_done`. When the authority unit is active setup restarts it once through
+control_service's Systemctl and waits for the service to answer an inspect over its socket; when the
+service runs outside its unit (the store lock held, the unit inactive) it restarts nothing, starts no API
+unit beside it (the re-run's `api_start` is deferred), and names the command; when nothing runs it starts
+nothing and says the next start runs the current engine. A second run over the upgraded host writes
+nothing and restarts nothing.
+
+## Rows (scripts/suites/86_veldo_0189_engine_upgrade.py)
+
+Each older engine is the whole `.veldo` of its commit exported once with `git archive`, committed in
+`older/`, checked against `older/digests.json` before extraction, and set up by its own setup module on its own scratch host (state root, install root, unit directory, host trust, clone); a fresh host
+is set up by the current setup with the same arguments. The authority unit's ExecStart is run by a user
+manager stand-in of the suite's own, whose invocation log the suite owns; the killed setups run in a
+process of their own whose systemctl calls reach that stand-in over a UNIX socket.
+
+- `upgrade/from-8bc34e94`, `upgrade/from-971186ac` (AC1): each older host upgraded; its engine directory
+  equals the fresh one's in names, bytes and modes and holds control_client_api.py, which the older
+  engine lacked; its units, record and every configuration file equal the fresh host's after the
+  substitutions and apart from the fields in `fresh-equivalence.json` (service.json's `enrollments`, each host's own binding digest, and an older receiver's explicit `runs` preserving its data location); the record names the current engine; nothing is left
+  beside `bin`. The 8bc34e94 host upgrades with nothing running, the 971186ac host with its service
+  running through its unit.
+- `upgrade/removed-module` (AC1): the fresh host upgraded to a fixture engine (the current one with
+  control_keys_custody.py no longer an entry point and absent): that file gone from `bin` and the record,
+  named removed, `bin` exactly the fixture's files.
+- `upgrade/census` (AC1): every captured first-parent commit from 8bc34e94 on (of HEAD, and of main when present),
+  each distinct `.veldo/control_service.py` parsed: its installer writes `closure` as a digest per file and
+  `template` as a digest.
+- `upgrade/refused-by-name` (AC1, AC2): an edited engine file, a planted file and a C library whose
+  renameat2 fails with EINVAL, each refused by name with nothing written, the store's rows unchanged and
+  nothing printed.
+- `switch/kill-points` (AC2): over the 8bc34e94 host, with its authority running through its unit, a whole
+  upgrade names its write points; for each one a fresh copy of the host is restored, setup is SIGKILLed
+  right after that point, the engine directory must equal exactly one engine's digests, the installed
+  serve (started through the unit) must answer an inspect, a second run must be accepted and end as AC1
+  requires, the service is restarted once across both runs, and a kill after the exchange and before its
+  restart must have the second run restart it (the second run is accepted only because the upgraded service
+  carried the ownership declarations, so its channel is available and the api edge enrollment goes through
+  it); afterwards every declaration naming an installed engine file names the digest the record holds, and
+  on a copy of the store a digest the file's bytes do not have rebinds nothing.
+- `switch/failed-restart` (AC2): the stand-in fails the restart once; setup refuses
+  `unavailable_service:authority:upgrade_start`, the previous engine is back, the record restored byte for
+  byte, the service restarted once more on the previous engine and answering, and the step log records
+  the switch back with its reason.
+- `switch/failed-after-start` (AC2, the review of 2026-09-28): over the 8bc34e94 host and the 971186ac host,
+  each as its own setup laid it down with its authority running on its own engine (its channel available
+  first), the stand-in's restart brings the unit up on the current engine and stops it before failing.
+  Setup refuses `unavailable_service:authority:upgrade_start`; the previous engine and its record are back;
+  where the upgrade changed an owning module (8bc34e94), the current engine's one `ownership_rebind`
+  observation names those declarations and the switch back's one `ownership_restore` names exactly them;
+  the step log ends `switched_back`, `ownership_restore` restored, `restart` on the previous engine; the
+  previous engine's channel is available with no refusal, every declaration binds the bytes its file has now,
+  and no previous binding is left recorded.
+- `ownership/restore-differs`: on a scratch store, a rebinding with the previous engine kept records the
+  previous binding and is observed before its commit (a second connection still reads the previous digest
+  inside the observation); a restore whose file has neither engine's bytes is refused
+  `ownership_restore_differs` naming the file, leaving the new binding and the record; with the previous
+  bytes back the restore binds the previous digest, clears the record and is observed before its commit.
+- `ownership/committed`: right after the kill host's whole upgrade, the upgraded service's one rebinding and
+  the commit's one drop name the same bindings, the step log ends `removed_previous`, `committed`, `done`,
+  and the store holds no recorded previous binding.
+- `kept/owner-data` (AC3): before each older host's upgrade the suite sets its receiver configuration's
+  adapters as the owner could; afterwards every file under the key directory, the host trust and the two
+  signer files it names, the binding, the token file and every registered account's profile directory is
+  byte for byte the same (no account is registered on these hosts: the 8bc34e94 engine has no account
+  pool, and an account registered from the suite's copy would bind the store to that copy's code), every
+  journal row the store held is unchanged in order and digest, every entity row is unchanged but those
+  the API steps' own new journal records wrote (VELDO-0171's api edge enrollment), and every configuration
+  value keeps what was there, with the owner-set adapters kept.
+- `announce/before-first-write` (AC4): one line on standard error, observed when written, with nothing
+  written yet; its words; the `engine_upgrade` step's digests and file lists against the suite's own.
+- `restart/rules` (AC4): active (971186ac): one `restart` in the invocation log and a new service process
+  answering; outside its unit (the fresh host's installed serve started by hand, then upgraded to the
+  fixture engine): nothing started or restarted and the command named; nothing running (8bc34e94): nothing
+  started and the next start named.
+- `second-run/changes-nothing` (AC4): over the upgraded 971186ac host at rest (authority and API running),
+  every file under the state root, install root, unit directory, host trust and binding is the same, the
+  journal head unchanged and the invocation log shows no restart, start or stop.
+- `install/assets`: the module is scaffolded (not substrate), engine copies identical, and no connection
+  beyond loopback was attempted.
+
+## Ownership declarations across an upgrade
+
+control_store's ownership declarations (`entity_owners`) bind each owned command to one module file and
+the sha256 of its bytes when the service first attached it. The 8bc34e94 service declares
+`channel_activation` and `channel_qualification` bound to `bin/control_channel_activation.py`, whose bytes
+changed at 7fefdb9a (VELDO-0140), so without a re-declaration path the upgraded service's channel ingress
+is refused `ownership_conflict` at attach, and VELDO-0171's enrollment of the api edge through the running
+service, which reads the authority versions from the channel status, is refused
+`invalid_input:state_root:service_running:api_edge_enrollment`. Any installation whose service ran on an
+engine older than an owning module's current bytes hits it, and a fresh installation's store would name
+the current bytes, so AC1 ("the host ends as a fresh installation of the current engine would be") needs
+the declarations carried.
+
+They are carried where the store is written by the engine it binds, never by setup: `control_service.serve`,
+right after it opens the store and before anything attaches, passes `control_store.rebind_owners` the
+installed engine as its installation record's `closure` names it (each `bin` file's resolved path and
+digest), and only when the running module is the record's own `executable` (a checkout's copy serving an
+installed configuration rebinds nothing). The store rebinds a declaration only when it names one of those
+files by path, its digest differs, and the file's bytes have the recorded digest now; the selector, value,
+owner and commands never change, and a store with nothing to rebind is not written. So an installed file
+edited by hand (bytes not the record's), and a service started mid-upgrade on the new files with the old
+record, keep their declarations and are refused at attach as before; the next start after the record is
+written carries them. The service logs each rebinding to its observation log (`ownership_rebind`, the
+selector, value, module and both digests), inside the store transaction before its commit, so a rebinding
+that lands always has its line.
+
+**Switching back after the current engine served.** While the previous engine directory is beside `bin`
+(`control_service.PREVIOUS_ENGINE`, the upgrade's `bin.upgrade`), the rebinding's transaction also replaces
+the store's record of previous bindings (`entity_owner_previous`: each rebound declaration's selector,
+value, module path, previous digest and new digest). AC2's switch back, after it exchanges the directories
+back and puts back the record and units, stops the unit and runs the current engine's own entry point from
+its directory beside `bin`, `bin.upgrade/control_service.py restore-owners <home>/config/service.json`
+(setup still never opens the store): it takes the store lock, and `control_store.restore_owners` binds
+each recorded declaration to its previous digest only when the file at its path has those bytes now, then
+clears the record, all in one transaction observed (`ownership_restore`) before its commit; a file whose
+bytes are not the previous ones is refused `ownership_restore_differs` by name, and the new bindings and
+the record stay. Then the previous engine restarts with every owned command available. The step log's
+`ownership_restore` line carries the outcome. The record never outlives the previous engine: when the
+upgrade commits (the previous engine removed after a restart that answered), setup asks the running service
+over its socket, signed by the owner, to drop it (`ownership_commit`, refused while a previous engine
+directory is still installed), and a service that starts with no previous engine beside it drops any record
+left by a kill between the removal and that request (observed `ownership_commit`). Setup still writes only what AC3 lists; the journal and entity
+rows are untouched, and the declarations are not part of the journal (control_store's stated limit).
+
+**The limit this leaves.** An engine that predates rebind_owners (8bc34e94, 971186ac) cannot attach its
+owners to a store that a later engine rebound unless the restore ran first: its own declaration names the
+older bytes. AC2's automatic switch back always runs it. The spec's rollback by hand (while the previous
+engine directory is still beside `bin`) leaves the previous engine's owned commands refused
+`ownership_conflict` unless the owner also runs `<home>/bin.upgrade/control_service.py restore-owners
+<home>/config/service.json` (the directory holding the current engine after his exchange) before he starts
+the previous engine; the rollback instruction now includes this command.
+
+## Evidence files
+
+- `fresh-equivalence.json`: the substitutions and the listed fields of AC1's comparison, each with its
+  reason; the suite checks the file names exactly the placeholders it substitutes.
+- `drive.py`: `python3 -B proof/VELDO-0189/drive.py` drives every finding-189 mutation (mutations.json and
+  one diff per mutation); `--red <commit>` runs the current suite against that commit's whole tree.
+  `--cache <directory> [--budget <seconds>]` keeps each finished run, so a drive longer than one sitting is
+  finished by running it again.
+- `red-at-faa11cfc.json`: the red record at the commit before this change: every row red by assertion.
+- `red-at-33385ae4.json`: the red record of the review fix at the commit before it: the three new rows red by
+  assertion (the previous engine's channel refused `ownership_conflict` after the switch back; the store
+  keeps no record of previous bindings).
+- `mutations.json`, `*.diff`: the drive's record.
+
+
+## Follow-up recovery review
+
+The step log is authoritative across all setup runs. A begin never hides an exchange or an outstanding
+restart. The prepared entry precedes exchange and contains the original installation record and units
+(no key contents, tokens or store rows); a resumed failure restores those original bytes. A switch back
+without a successful restart remains due, including when its stop left the unit inactive. Setup releases
+its own authority lock during that recovery. Stop failure refuses upgrade_stop without attempting restore;
+a refused restore names ownership_restore_differs and every blocking declaration in the setup answer,
+keeps the entire transaction unchanged, and asks the owner to re-run setup forward.
+
+Additional rows, each reported once:
+
+- `switch/resumed-failure` (AC2): kill after unit and record writes, kill the resumed begin again, then fail
+  the current engine's restart after it served. The original engine, record and every original unit return,
+  its channel answers, and another setup succeeds.
+- `switch/rollback-kills` (AC2): kill at every logged switch-back point, including stopped and ownership
+  restore, then re-run setup. The service answers before stage cleanup.
+- `switch/stop-refused` (AC2): a running current engine refuses stop; setup names upgrade_stop, never attempts
+  restore, and a later setup recovers.
+- `ownership/restore-reported` (AC2, AC4): two declarations blocked by changed previous-engine bytes are both
+  named to the owner with forward recovery; every binding and previous record stays intact. Once the edited
+  fixture bytes are put back, setup forward restores available owned commands.
+- `ownership/start-drops` (AC2): kill setup after removal of the previous engine but before commit; a real
+  installed serve drops the remaining previous bindings on its next start.
+- `ownership/commit-refused` (AC2): the owner's signed request over the real socket refuses commitment while
+  the previous engine is installed and preserves every previous binding.
+- `switch/stop-before-restore` (AC2): a failed restart leaves the current service alive; setup must stop it
+  before restore can take the lock, and the previous engine's channel answers afterwards.
+
+The new defect rows are red against the merged pre-fix tree in `red-at-ed93984c.json`. The three rows for
+already-existing defenses (serve drop, commit refusal and stop before restore) are expected green there;
+their named finding 189 mutations remove those defenses. Mutation execution is reserved to the reviewer
+in this job; new mutation results are marked pending, never inferred from anchor checks.
+
+
+The footprint checker compares this stacked branch with origin/main. VELDO-0189 alone therefore lists
+inherited VELDO-0171 paths; the check with both VELDO-0189 and VELDO-0171 reports none outside. The follow-up
+changes themselves remain entirely within VELDO-0189. `mutations-before-followup.json` retains the earlier
+executed evidence; `mutations.json` lists the current registered mutants as reviewer_pending.
+
+
+For the kill host, the older installer's unit template has a harmless extra comment before that installer
+runs. Its installed engine files remain exactly the older commit's bytes. This makes a real unit write
+part of the upgrade, so resuming after that write tests restoration of the older unit. The two AC1 older
+hosts use their unmodified archived templates.
+
+The follow-up red run completed with 22 rows: the four defect rows above failed by assertion and all
+other rows passed. The ordinary suite run completed with 48 assertions passed and zero failed (22
+VELDO-0189 rows plus the shared preamble). Validation passes, mutation anchors report zero bad anchors,
+and the acceptance-criteria block is byte-identical to the pre-fix commit.
+
+
+The suite also passed under the requested empty environment with its generated HOME and TMPDIR in
+/dev/shm: 48 reported checks passed, zero failed, all 22 behavior rows green. Both selected-suite runs
+exit 2 by the harness's partial-run contract; neither is an aggregate gate stamp. `verification.json`
+records the two runs, source digests, environment and check results. The gate and mutation executions
+were not run, as instructed; mutation rejection remains for the reviewer.
+
+
+## Owner-approved fresh installation equivalence amendment
+
+Telegram 29385 requested the amendment and 29386 approved it on 2026-09-28. The merge baseline is
+3fa0d77b, which combines local main with the setup API and ownership recovery implementation.
+
+The upgraded engine now includes both closure and runtime assets. Comparison descends into runtime
+subdirectories; staging writes every recorded asset at installer modes; service.json records the two
+inventories separately; stage and previous-engine removal handles subdirectories. The installer layout
+receives the factory state root. When an older receiver gains that field, it also gains runs pointing to
+its existing directory beside the store. Its configured runs value, when present, is kept. The explicit
+runs field is a reasoned fresh-equivalence exception because fresh installations default to state_root/runs.
+
+After exchange and before the record and restart, setup pins Claude Code and writes host/engines.json,
+using the installed qualification records. Each addition has its own step-log
+write point, included in the existing kill census. An existing pin is left unchanged. The recovery review
+below repairs unreadable engines records and refuses readable different bindings.
+
+Three amendment rows extend the existing production setup journeys:
+
+- upgrade/older-0186-equivalence: both archived older installers produce real hosts; after upgrade each
+  matches a fresh host on nested runtime files and modes, configurations, units, pin bytes and mode, and
+  host/engines.json. Every allowed field difference has a reason in fresh-equivalence.json.
+- kept/runs: both older hosts gain state_root while their real runs_root reader resolves the original
+  runs directory, whose existing files and modes remain unchanged.
+- upgrade/fresh-0186: a fresh host is rerun through setup, accepts its recorded runtime directory, and
+  changes no snapshotted bytes or modes, including its existing pin and engines record.
+
+Finding 189 includes the four original criterion falsifiers and ten amendment mutants. The registry's
+anchors and generated mutant syntax are checked locally. Executing mutations is reserved to the reviewer;
+mutations.json therefore records reviewer_pending, with refreshed source digests and diffs.
+
+The amendment-only footprint check against merge commit 3fa0d77b has no outside paths. The supplied
+standalone checker compares origin/main with this entire stacked branch and therefore reports inherited
+0171 paths and checkout gate stamps. Those paths are not added to the 0189 footprint to hide the stack.
+Gate byproducts are not staged or committed by this work.
+
+
+## Amendment verification
+
+`red-at-3fa0d77b.json` runs the amended suite against the merge before the amendment: all three new
+behavior rows are red by assertion, as are six existing rows that now exercise the extended set.
+No row raised. Existing defenses that the amendment does not change remain green on that baseline;
+the earlier red records above cover their original implementations.
+
+`verification-amendment.json` records ten ordinary selected suites, all green: 0189 engine upgrade,
+0171 setup API, 0139 factory setup, 0186 setup assets, 0047 authority, 0140 standing delegation,
+0130 API, 0138 channel service, 0154 factory loop, and 0168 text. It also records 0189 and 0171 under
+the requested empty environment, both green. The upgrade suite reports 51 passing checks in each
+run, including 25 behavior rows; the API suite reports 44. Selected-suite success exits 2 by contract.
+The 0168 census explicitly classifies the three merged setup/passkey sends as local authority socket
+calls, retaining its exhaustive endpoint and renderer checks.
+
+The spec validator passes; every registered mutation has a unique valid anchor; all 36 finding 189
+mutants compile. Mutation execution and the aggregate gate remain the reviewer's work, and no mutation
+rejection is claimed for this tree. Engine copies match. The amendment footprint is clean against
+3fa0d77b; the stacked checker lists only the two inherited gate stamps outside 0171 plus 0189.
+
+## Setup recovery review at be94c919
+
+The review fixes complete the existing AC1, AC2 and AC4 behavior within the existing footprint.
+Seven added rows start with the real installer's host and bindings; corrupted inputs are edits to those
+production outputs. Each row emits one result, and expected production crashes are captured as values
+so refusal assertions can fail without a row raising.
+
+- `engines/atomic-record`: kills the production engine-record writer at open, partial write, completed
+  write and rename; the published record is absent or complete, and setup retry completes it at 0600.
+- `engines/repair-record`: empty, truncated and undecodable records are repaired and the write reported.
+- `engines/refuse-record`: a readable different binding is refused by its record path before pin or engines-record writes,
+  including when its pin is missing.
+- `engines/codex-refusal`: changed generated Codex bytes after preflight get the same digest refusal in
+  the real fresh installer helper and upgrade helper; no binding record is written.
+- `engines/repair-report`: each combination of missing pin and record reports set_up, a done upgrade
+  step, the actual pins_made count, the engines bindings and engines_record path when written. Another
+  retry reports no new writes.
+- `upgrade/corrupt-runtime-record`: non-dictionary runtime inventories are refused by the installation
+  record path before writes.
+- `upgrade/receiver-without-store`: each real installed receiver with store removed is refused by its
+  configuration path before writes.
+
+The new pin-mode mutant changes only a newly pinned copy to 0444. The existing
+`upgrade/older-0186-equivalence` row compares identical bytes and requires 0555, so this isolates its
+mode check. That defense already exists at the review baseline; the seven defect rows are the new red
+record's required failures. Mutation execution is reserved to the reviewer; registered mutants are
+pending until that execution, never claimed rejected on the strength of anchors alone.
+
+`red-at-be94c919.json` records all seven new defect rows red by assertion against the exact pre-fix
+commit. The other 25 rows remain green, including the pre-existing pin-mode defense. No row raised,
+and each row name appears once. The first selected-suite run on the fixes passed all 32 behavior rows
+and 58 checks overall; final-source verification is recorded separately in verification-review.json.
+
+
+The final source passes the selected 0189 suite in both the normal environment (334.85 seconds) and the
+requested empty environment (474.05 seconds): 58 checks passed, zero failed, including all 32 behavior
+rows. Each run exits 2 under the partial-run contract and supplies no aggregate gate stamp.
+`verification-review.json` records the source digests, environment, summaries and log digests. The
+validator passes, all engine copies match, requires.json was regenerated without content changes, and
+all mutation anchors are unique and valid. All 46 finding 189 mutants compile; execution is still
+reviewer_pending, including the ten new review mutants.
+
+The review diff from be94c919 has no paths outside VELDO-0189. The supplied footprint checker compares
+this entire stacked branch with origin/main and still lists inherited VELDO-0171 paths and the two
+historical gate stamps. With both specs it lists only those stamps. This review changes neither the
+inherited paths nor the footprint to hide them. The checkout's gate byproducts are restored before the
+final commit; the gate and mutation executions were not run.
+
+## Runtime review, 2026-09-29
+
+The original suite at 5730a17e still passes its behavioral assertions but fails the new runtime
+limit. [The runtime red record](runtime-red-at-5730a17e.json) runs that original suite with timing
+observations only. Reproduce it with `python3 proof/VELDO-0189/drive.py --red 5730a17e --runtime`.
+The existing behavioral red records remain historical product evidence; this change adds no
+production behavior. [The comparison](performance.json) records the final runs and assertion audit.
+
+| Run | Seconds | Passing checks |
+| --- | ---: | ---: |
+| Baseline | 345.246 | 58 |
+| Optimized | 53.37 | 58 |
+| Empty gate environment | 56.98 | 58 |
+
+The target is 60 seconds for the selected suite. Both final runs have zero failed checks.
+All 124 existing check sites remain, and the kill-loop bodies are identical to the baseline.
+The suite still emits one report per behavior row.
+
+The shared support file caches Python compilation and successful real installer engine-census
+results for this run. Its keys include source bytes and filenames, declared seeds, call arguments
+and runtime asset bytes. Compiled code retains its original source filename for ownership checks.
+The cache lives outside the host fixture tree, preserving the complete no-write witnesses, and
+is removed after the suite. Each historical engine and host is laid down once; saved host trees
+are restored for recovery cases. Setup, service restarts and all kill points still run.
+
+Authority startup waits for its real READY notification; API startup waits for the real inet
+listen event or that child's exit, with a five-second deadline. A stop wakes the authority socket
+after SIGTERM. These replace fixed sleeps and readiness polling.
+
+Row times charge elapsed work between observations to the row consuming it. Shared setup is
+charged to its first observation; final cleanup is included in the total.
+
+| Row | Before (s) | After (s) | Gate (s) |
+| --- | ---: | ---: | ---: |
+| install/assets | 0.208 | 0.212 | 0.218 |
+| upgrade/from-8bc34e94 | 4.534 | 1.538 | 1.551 |
+| upgrade/from-971186ac | 5.945 | 2.151 | 2.204 |
+| upgrade/removed-module | 4.257 | 2.384 | 2.482 |
+| upgrade/census | 0.362 | 0.300 | 0.279 |
+| upgrade/refused-by-name | 9.709 | 0.792 | 0.842 |
+| switch/kill-points | 113.491 | 15.647 | 16.724 |
+| switch/failed-restart | 4.547 | 0.893 | 0.978 |
+| kept/owner-data | 0.005 | 0.005 | 0.005 |
+| announce/before-first-write | 0.000 | 0.000 | 0.000 |
+| restart/rules | 0.025 | 0.025 | 0.023 |
+| second-run/changes-nothing | 4.342 | 0.687 | 0.718 |
+| switch/failed-after-start | 11.345 | 2.092 | 2.227 |
+| ownership/restore-differs | 0.002 | 0.003 | 0.002 |
+| ownership/committed | 5.498 | 1.092 | 1.155 |
+| switch/resumed-failure | 32.941 | 4.680 | 5.103 |
+| switch/rollback-kills | 44.936 | 7.547 | 7.977 |
+| switch/stop-refused | 9.193 | 1.584 | 1.686 |
+| ownership/restore-reported | 8.884 | 1.482 | 1.554 |
+| ownership/start-drops | 5.364 | 0.756 | 0.805 |
+| ownership/commit-refused | 4.656 | 0.646 | 0.678 |
+| switch/stop-before-restore | 5.326 | 0.997 | 1.028 |
+| upgrade/older-0186-equivalence | 0.017 | 0.016 | 0.016 |
+| kept/runs | 0.005 | 0.005 | 0.005 |
+| upgrade/fresh-0186 | 6.627 | 2.333 | 2.418 |
+| engines/atomic-record | 13.423 | 1.253 | 1.399 |
+| engines/repair-record | 9.708 | 0.868 | 0.974 |
+| engines/refuse-record | 6.623 | 0.596 | 0.664 |
+| engines/codex-refusal | 0.024 | 0.005 | 0.004 |
+| engines/repair-report | 19.805 | 1.733 | 1.922 |
+| upgrade/corrupt-runtime-record | 9.726 | 0.688 | 0.733 |
+| upgrade/receiver-without-store | 3.330 | 0.244 | 0.258 |
+
+The diagnostic [profile](runtime-profile-before.json) includes profiler overhead and is separate
+from the unprofiled table. Repeated AST traversal dominated it (519.955 cumulative seconds in
+ast.walk); the setup subprocess driver accounted for 96.273 seconds over 25 invocations. History
+archives and saved hosts were already reused. Memoizing the unchanged engine derivations removes
+the repeated AST work in both the parent and killed setup interpreters.
+
+The existing 46 finding-189 mutants remain registered, with unique names and zero bad anchors.
+Their execution and the full gate are reserved to the reviewer. The manifest already registers
+this suite; requires.json was regenerated without a content change. The validator passes and
+production engine copies are unchanged. The footprint checker reports only the two gate stamps
+already present in the branch before this work; this change commits neither.
+
+## Mutation target registration review
+
+The six runtime staging, runtime inventory, runtime directory mode, missing pin, missing engines
+record and pin mode mutants now name both `upgrade/from-8bc34e94` and
+`upgrade/from-971186ac`. Both rows call `equals_fresh`, the same assertion helper used by
+`upgrade/older-0186-equivalence`, so both archived hosts still have to reject each defect.
+The production replacements and every suite assertion are unchanged. The separate equivalence
+row still exists at the supplied baseline 7f38b201; the reported missing-row condition has not
+been reproduced here. Finding 189 mutation execution remains reviewer pending.
+
+[registration-audit.json](registration-audit.json) lists all 32 upgrade and 18 API setup
+row names and compares every target of all 46 finding 189 and 17 finding 171 registrations with
+the checker's final-word rule. Each target matches exactly one passing row. The six retargeted
+mutants preserve their production replacements byte for byte. Static mutation sources compile;
+all anchors are unique, all mutation names are globally unique, and the affected engine copies match.
+`requires.json` was regenerated without a diff; both suites remain registered in the manifest.
+
+Selected selftests passed normally and in the requested empty environment: upgrade 58 checks
+(54.39s and 56.47s), API setup 44 checks (10.29s and 10.30s). Each partial runner exits 2 by design.
+These are selected-suite results, not an aggregate gate claim. No mutation checker or gate ran.
+
+The requested `drive.py --red 7f38b201` result is preserved in
+[red-at-7f38b201.json](red-at-7f38b201.json): all 32 behavior rows pass, including the disputed
+equivalence row. Thus the lead's missing-row result is not reproduced at this baseline, and no
+all-red record is claimed for this registration-only repair. Earlier behavior red records remain
+unchanged. Mutant rejection after this repair remains the reviewer's check.
+
+The supplied footprint checker measures against origin/main and reports inherited setup API files
+and gate stamps in this stacked branch. The repair itself, measured from 7f38b201 including its
+proof records, is wholly inside VELDO-0189's existing footprint. No protected path was changed.
+
+`python3 .veldo/validate.py all` passes (exit 0). The repair footprint check finds six
+changed paths and none outside the declared footprint.
+
+## History-independent suite inputs
+
+`older/generate.py` exports the exact `.veldo` trees of 8bc34e94 and 971186ac with Git archive,
+then compresses them with a fixed gzip timestamp. `older/digests.json` records both full commit IDs,
+the compressed and original archive SHA-256 digests, and the fixed census capture heads. Regenerating
+uses those heads, so the inputs remain reproducible after this branch advances. No fixture is synthesized
+from current engine code. The suite verifies the compressed bytes before extraction or parsing.
+
+The census fixture retains all 244 commits and all 14 distinct installers from the same HEAD and main
+first-parent walks the previous suite read. Its existing AST assertion still checks each installer;
+the current production installer is checked too. The suite itself never consults repository history.
+Scratch Git repositories used by real setup interfaces remain part of the proof.
+
+The spec footprint explicitly names `proof/VELDO-0189/older/*` because AC1 needs these committed inputs
+and their reproducible exporter. All existing behavior rows, production interfaces and finding 189
+mutations are retained. The registered suite and regenerated requires file retain the same suite name.
+
+Verification for this repair is in `history-free-verification.json` and `history-free-audit.json`:
+
+- Selected suite: 58 checks pass normally (54.48 seconds), in a copy without `.git` (56.47 seconds),
+  and under the requested empty gate environment (59.43 seconds). The 32 behavior rows retain their
+  names, assertions and real production writers. Exit 2 is selftest's required partial-run result.
+- AC1 retains both older-host upgrades, fresh equivalence, module removal, refusal and installer census;
+  AC2 retains interruption, rollback and ownership recovery; AC3 retains owner data and runs;
+  AC4 retains announcements, restart rules and second-run idempotence.
+- `python3 proof/VELDO-0189/drive.py --red fed739c7 --history-free` runs the current suite against the
+  untouched baseline exported without Git metadata. `red-at-fed739c7.json` records 23 of 32 rows red
+  by assertion, including both older-host rows and the census. Nine unrelated rows pass because this
+  repair changes proof inputs, not production behavior. No all-red behavior claim is made. Running the
+  baseline's original suite without history also reproduced its missing older-engine load exception.
+- Both decompressed archives exactly equal Git archive output for their recorded commits. Regeneration
+  is byte-identical. The 123 unchanged check calls and the census ancestry assertion adapted to captured
+  history are audited; digest and census coverage assertions are added. Engine Python and unit copies
+  match. The requires file was regenerated without a content change.
+- Validation exits 0; the supplied anchor checker reports 0 bad anchors. The prescribed VELDO-0189-only
+  footprint check against origin/main still lists inherited VELDO-0171 paths. The check with both stacked
+  specs reports none outside, and this repair's diff from fed739c7 is wholly within VELDO-0189.
+- All 46 finding 189 registrations and their declared falsifiers remain unchanged, with valid anchors
+  and syntax. Mutation execution and the full gate remain reviewer pending; no rejection is claimed.
+
+
+## Existing runtime inventory proof repair
+
+The lead's surviving `upgrade189-runtime-record-stale` mutation is a reachable defect. The exact
+8bc34e94 and 971186ac installers do not write `runtime_assets`. In upgrade inspection the mutated
+assignment produces an empty inventory, but the following missing-key update immediately replaces
+it with the fresh value. The existing fresh-equivalence assertions therefore correctly pass those
+historical journeys even under this mutation. The committed archives were not the cause.
+
+Each existing older-host row now also creates a runtime-bearing predecessor with real factory setup,
+using earlier bytes for the inert `runtime/nested/upgrade.json` fixture. It restores the current source
+bytes and calls real setup again. Five assertions establish that setup made the predecessor, its
+existing inventory differs from fresh and describes its installed bytes, upgrade reports the changed
+asset, the resulting record names the fresh inventory, and the installed runtime bytes match it.
+No installation record is fabricated, and all 127 previous check calls remain intact. The stale
+assignment now preserves an existing differing key, so the record equality assertion rejects it.
+Mutation execution remains reserved to the reviewer; this is a code-path conclusion, not an executed
+rejection claim.
+
+Reading all 46 finding 189 mutations found no other mutant masked by this same missing-key update.
+The other runtime mutations drop staged assets, omit recorded assets during inspection, change
+directory modes, prevent recursive cleanup, or bypass inventory type validation. Their observable
+file, outcome, mode or refusal differences are not repaired by filling a missing record key. Pin and
+engines-record mutations change pin presence or mode, record publication, validation or write reports.
+The remaining mutations address module completeness, configuration preservation, ownership, interruption
+and restart behavior. Their registrations and replacements remain unchanged. The registry comment
+now explains why these two rows need a predecessor whose runtime key already exists.
+
+`runtime-inventory-audit.json` records the historical installer hashes, every reviewed mutation,
+the assertion audit and byte-identical production mirrors. No production file or footprint changed.
+The suite remains registered and its requires file was regenerated without a content change.
+
+
+`runtime-inventory-verification.json` records 58 passing checks and zero failures for the selected
+suite ordinarily (55.44 seconds), under the requested empty environment (57.98 seconds), and in a
+Git archive with no `.git` (55.45 seconds). These partial runs exit 2 as designed and do not claim
+aggregate gate evidence. Validation passes; anchors report zero bad entries. The prescribed 0189-only
+footprint command still reports inherited 0171 paths relative to origin/main; both stacked specs cover
+them, and this repair's own paths all fit the existing 0189 footprint.
+
+The requested baseline driver ran against 16c8ed33 exported without Git metadata. Its result is
+`red-at-16c8ed33.json`: all 32 behavior rows pass, each reported once, with no raised failures.
+Production is unchanged in this test repair, so an all-red baseline record would be false. The new
+record equality check's rejection of the registered stale-inventory mutant is awaiting the reviewer,
+as required by the owner's prohibition on running mutation checks here. No mutation or full gate ran.

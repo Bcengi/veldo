@@ -14,10 +14,13 @@ depends_on: [VELDO-0047, VELDO-0139]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/support/setup_runtime.py"
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "engine/.veldo/services/*"
   - ".veldo/services/*"
   - "engine/.veldo/init_scaffold.py"
@@ -26,12 +29,16 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0189_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "scripts/suites/86_veldo_0186_setup_assets.py"
+  - "scripts/suites/86_veldo_0168_text.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md"
   - "specs/index.md"
   - "proof/VELDO-0189/*"
+  - "proof/VELDO-0189/older/*"
 behavior_bearing: true
 observability:
   logs: >
@@ -58,28 +65,32 @@ acceptance_criteria:
       installation of the current engine would be, apart from the owner's data, keys and enrollments, which
       are kept. Set and completeness: The re-run, after VELDO-0171 AC4's argument checks and before any other
       step, reads the installation record (`<install root>/<service>/config/service.json`, VELDO-0047's
-      installer) and compares its `closure` (each installed engine file's name and sha256 digest) and
-      `template` digest with the current engine's (control_service.closure(), with any file a later
+      installer) and compares its `closure` and `runtime_assets` together (each installed engine file's name and sha256 digest) and
+      `template` digest with the current engine's (control_service.closure() and runtime_assets(), with any file a later
       specification records the same way): the files whose digest differs are changed, the names only the
       current engine lists are new, and the names only the record lists are removed. Before it writes, every
       file in the installed `bin` directory must equal its recorded digest, and a file that differs or that
       the record does not name is refused by name, writing nothing. It works only from the record, which
       every installation since VELDO-0139 writes, so it has no code path per engine version. It writes the
-      changed and new files, leaves out the removed ones, rewrites the record's `closure` and `template`, adds
+      changed and new files, leaves out the removed ones, rewrites the record's `closure`, `runtime_assets` and `template`, adds
       a key the current installer writes that the record lacks with the value a fresh installation would
       write for the same arguments, and renders the authority unit and VELDO-0171's API unit from the current
       templates. The suite lays down two older engines, each as its own scratch host with its own state
       root, install root, unit directory, host trust and clone: the whole `.veldo` of commit 8bc34e94 (the
       merge that landed VELDO-0139) and of commit 971186ac (the landing of VELDO-0155 and VELDO-0156), each
-      taken with `git archive` and set up by its own setup module, and upgrades each with the current setup;
+      exported once with `git archive`, committed as a digest-verified fixture, and set up by its own setup module, and upgrades each with the current setup;
       a fresh scratch host is set up by the current setup with the same arguments. The installed engine
-      directories must be equal byte for byte in names, bytes and modes; the unit files, the record and every
+      directories, including runtime asset subdirectories, must be equal byte for byte in names, bytes and
+      installer modes. The upgrade pins the qualified Claude Code version under
+      `<state root>/engines/claude_code/<version>` and writes `host/engines.json`, each only when absent,
+      as a fresh installation would. These pinned bytes and modes and the engines record join the equality
+      set; the unit files, the record and every
       configuration file must be equal after each host's scratch root is substituted, apart from fields
       listed in proof/VELDO-0189/fresh-equivalence.json, each with its reason (a key id, an enrollment digest,
       the store and domain identities, the host identity), and any other difference fails the row. A third
       row upgrades a current installation to a fixture engine derived from the current one without one module
-      it installs, and requires that file gone. A census row reads every first-parent commit of main from
-      8bc34e94 on and requires each one's installer to write the `closure` and `template` keys the upgrade
+      it installs, and requires that file gone. A census row reads a digest-verified committed capture of every first-parent commit of main from
+      8bc34e94 through the recorded capture head and requires each one's installer to write the `closure` and `template` keys the upgrade
       reads. Falsifier: Write only the files whose names the installed record already lists, and the 8bc34e94
       row must fail on the upgraded engine directory lacking control_client_api.py.
     falsified_by: >
@@ -118,7 +129,10 @@ acceptance_criteria:
       Claim: The upgrade keeps everything the owner or setup wrote other than the engine: every store,
       journal, key, enrollment, account profile and configuration value. Set and completeness: The upgrade
       writes only the engine directory, the record's engine keys, the keys the record lacks, and the two
-      unit files. Every file under the key directory, the host trust, the workspace binding, the token file
+      unit files, plus the pinned Claude Code copy under `<state root>/engines/claude_code/<version>` and
+      `host/engines.json`, each only when absent. A receiver configuration gaining `state_root` also gains
+      `runs` naming the directory it already resolves beside its store, preserving any explicit `runs`.
+      The runs directory joins the snapshot set. Every file under the key directory, the host trust, the workspace binding, the token file
       and every registered account's profile directory (VELDO-0160) is unchanged byte for byte; every
       journal row and entity row in the store before the upgrade is unchanged, in order and digest; and every
       value in every configuration file under the installation's `config` directory (service.json's values
@@ -156,8 +170,9 @@ acceptance_criteria:
 required_evidence: [unit, integration]
 rollback: >
   While the previous engine directory is still beside `bin`, stop the service, exchange the two by hand and
-  put back the previous service.json and units; the store, keys, enrollments and every configuration value
-  are never changed by the upgrade. No automatic rollback beyond AC2's switch back is authorized, and a
+  put back the previous service.json and units. Run bin.upgrade/control_service.py restore-owners
+  <config>/service.json from the current engine directory before starting the previous engine; this restores
+  its ownership declarations. The store rows, keys, enrollments and every configuration value are kept. No automatic rollback beyond AC2's switch back is authorized, and a
   downgrade after the previous engine is removed is out of scope.
 ---
 
@@ -187,8 +202,7 @@ graph. A draft: only the owner marks it ready.
 ## Out of scope
 
 Store schema migrations, which each specification that changes the store owns; downgrading to an older
-engine (the rollback is by hand); the Mac's installation (VELDO-0147); pins and runtime assets beyond the
-engine files the record names (VELDO-0186's setup step runs on every re-run).
+engine (the rollback is by hand); the Mac's installation (VELDO-0147); replacing an existing engine pin.
 
 ## What the reviewer judges
 
@@ -219,3 +233,168 @@ switch at once.
 a specification ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-09-28, build: built on build-veldo-0171 with VELDO-0171, one row short of green. The upgrade is
+.veldo/control_factory_setup_upgrade.py, run by control_factory_setup's re-run after every read-only check
+and before any other write; the current installer's rendering of an installation's arguments is
+control_service.layout, the pure half of install(), which install() now writes. The staged engine is one
+write point of the step log (<home>/state/engine-upgrade.jsonl), since it is not installed until the
+exchange. Over 8bc34e94 and 971186ac the receiver configuration lacks the host_trust key the current launch
+receiver needs, so the upgrade adds it (AC3's "the only change being a key the file lacked"), and VELDO-0171
+AC4's row over the 7fefdb9a host accepts that added key too. A service running outside its unit is not
+restarted, and VELDO-0171's re-run then starts no API unit beside it. Proof in suite
+86_veldo_0189_engine_upgrade and proof/VELDO-0189/. Blocked: switch/kill-points is red over the 8bc34e94 host
+because the store's ownership declarations bind control_channel_activation.py to the bytes the 8bc34e94
+service first attached (changed at 7fefdb9a), so the upgraded service's channel is refused
+ownership_conflict and the API edge enrollment through it is refused. Carrying ownership across an upgrade
+is a store write that AC3 and the rollback rule out, and a control_store change outside this footprint: the
+owner decides. Over a 971186ac kill host every row is green and every mutation is rejected.
+
+2026-09-28, build: the blocker fixed. A fresh installation's store names the current bytes of every owning
+module, so AC1 needs the ownership declarations carried to the upgraded engine; they are carried by the
+engine that holds them, not by setup, so AC3's list of what the upgrade writes stands. control_store gains
+rebind_owners, its one re-declaration path, and the footprint gains .veldo/control_store.py and its engine
+copy for it: a declaration naming an installed engine file by path is rebound to the digest the
+installation record holds, only when the file's bytes have that digest now; selector, value, owner and
+commands never change. control_service.serve calls it with the record's closure right after it opens the
+store and before anything attaches, only when the running module is the record's executable, and logs each
+rebinding (ownership_rebind). An edited file, or a service started on the new files before the record is
+rewritten, keeps its declaration and is refused at attach as before. switch/kill-points is green over the
+8bc34e94 host, and two mutations (the carry removed; a digest the file does not have taken) are rejected
+on it. The limit this leaves, stated in control_store: an engine that predates rebind_owners cannot attach
+its owners to a store a later engine rebound, so the rollback by hand to such an engine after the current
+one has served leaves its owned commands refused ownership_conflict (a rollback to an engine with
+rebind_owners carries them back from the restored record).
+
+2026-09-28, review fix: the review found that a restart which brings the current engine up and then fails
+switched back to a previous engine whose owned commands were refused ownership_conflict, because the current
+engine had rebound the declarations to its bytes (AC2 and the rollback). The lead's decision, as built: while
+the previous engine directory is beside `bin`, the rebinding records each rebound declaration's previous
+digest in the same store transaction; the switch back stops the unit and, before the previous engine
+starts, runs the current engine's own `restore-owners` from its directory beside `bin` (setup never opens
+the store), which binds each recorded declaration to its previous digest only when the file at its path has
+those bytes (ownership_restore_differs by name otherwise, the new bindings kept) and clears the record; a
+committed upgrade has setup ask the running service, signed, to drop the record, and a service that starts
+with no previous engine beside it drops any left. Rebind, restore and drop are each observed
+(ownership_rebind, ownership_restore, ownership_commit) inside their transaction before the commit. New rows
+switch/failed-after-start (over both older hosts), ownership/restore-differs and ownership/committed, and four
+finding 189 mutations. The rollback by hand still needs the restore run before the previous engine starts,
+which the rollback text does not say: the owner's decision.
+
+
+2026-09-28, follow-up review: recovery reads exchanges and successful restarts across every begin in the
+step log. A prepared entry keeps the original record and unit renderings before exchange, so resumed
+failures restore every unit written across runs. An interrupted switch back completes its stop, ownership
+restore and previous-engine restart before removing a directory; setup releases its own store lock for
+that recovery and reacquires it afterwards. Stop failures and restore refusals are named to the owner,
+with every blocking declaration named and forward setup as recovery; restore remains all or nothing.
+The manual rollback instruction now includes the real restore-owners command. Seven additional rows
+cover resumed failures, rollback kills, stop refusal, restore reporting, serve cleanup, commit refusal
+and stop-before-restore. Finding 189 mutations cover each. No acceptance criterion or footprint changed.
+
+2026-09-29: implemented the owner-approved criteria amendment requested in Telegram 29385 and approved
+in 29386 (2026-09-28). AC1 compares and installs closure plus runtime assets, including subdirectory
+modes, and includes the qualified Claude Code pin and host/engines.json in fresh equivalence. AC3 permits
+those two additions only when absent and preserves the existing runs resolution when adding state_root;
+the runs tree is snapshotted. Removed the incorrect re-run claim from Out of scope. The footprint adds
+the 0171 and 0186 suites because the merged setup requires both engine fixtures and the Tailscale
+stand-in, and their existing installation assertions must cover the extended installation set.
+
+2026-09-29, merge verification: the footprint also names the 0168 suite. Its exhaustive send census
+now lists the setup API, passkey and upgrade service_request calls as local authority socket transports;
+AC4 uses the last for inspect and ownership commitment. Telegram endpoints and rendering assertions stay
+the same. This resolves the census failure introduced by combining the two branches.
+
+2026-09-29, amendment proof: the three new rows are red by assertion against merged baseline 3fa0d77b;
+the current upgrade suite passes all 51 checks in both ordinary and empty gate environments. All ten
+selected integration suites pass, and 0171 also passes in the empty environment. Finding 189 has 36
+registered mutants with valid anchors and syntax; their execution and the aggregate gate are reserved
+to the reviewer. Verification and the baseline red record are in proof/VELDO-0189/.
+
+2026-09-29, setup recovery review at be94c919: AC1 and AC2 now cover publishing host/engines.json
+through a sibling temporary file and rename, repairing an unreadable record on retry, and refusing a
+readable different record by path before pin or engines-record writes. AC1 uses the fresh setup's Codex digest refusal on
+upgrade too. AC4 reports actual pin and record writes even when the engine is already current. AC1's
+inspection refuses malformed runtime inventories and receivers missing store by path before any write.
+Seven new behavior rows exercise the real setup and engine writer over a host the current installer
+made. Finding 189 gains their falsifiers and a wrong pin mode mutant against the existing equivalence
+row, isolating its mode assertion. The acceptance criteria and footprint are unchanged. Mutation runs
+and the aggregate gate remain the reviewer's work under the owner's run restrictions.
+
+
+2026-09-29, recovery review proof: red-at-be94c919.json has all seven new defect rows red by assertion,
+with the other 25 behavior rows green. The final source passes the selected 0189 suite normally and in
+the requested empty environment: 58 checks, zero failures in each. The validator passes; all engine
+copies match; finding 189 has 46 mutants with valid unique anchors and syntax, ten added for this review.
+Their execution remains reserved to the reviewer. The review diff stays within this footprint; the
+supplied origin/main checker still reports inherited stacked paths and historical gate stamps.
+
+2026-09-29, suite runtime review: retain every behavior row and kill point while reusing
+content-keyed engine derivations within one suite run and waiting on service readiness or exit.
+The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
+same isolated computation cache and process event waits. No production contract or gate budget changes.
+
+2026-09-29, runtime proof: the unprofiled baseline at 5730a17e passes its behavior checks but
+fails the 60-second runtime assertion at 345.246 seconds. The final selected suite passes 58 checks
+in 53.37 seconds ordinarily and 56.98 seconds in the empty gate environment, with no failures.
+Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
+assertion audit are in proof/VELDO-0189/performance.json and its companion records. Finding 189
+mutations remain registered; their execution and the full gate are reserved to the reviewer.
+
+2026-09-29, mutation registration review: six fresh-equivalence mutants now name both
+upgrade/from-8bc34e94 and upgrade/from-971186ac directly. Each row already calls equals_fresh,
+including runtime asset names, bytes and modes, the runtime inventory in service.json, the qualified
+pin and host/engines.json. No mutation edit or behavior assertion changed. The separate equivalence
+row remains. Audit every finding 189 and 171 target using the checker's final-word matching rule.
+The footprint is unchanged; mutation execution stays with the reviewer.
+
+2026-09-29, registration proof: all 63 finding 189 and 171 targets match one passing row;
+all mutation names are globally unique and the anchor checker reports zero bad anchors. Both
+selected suites pass normally and in the empty gate environment (58 and 44 checks). The requested
+baseline drive at 7f38b201 observes all 32 upgrade rows passing, including the disputed equivalence
+row, so no all-red behavior claim is made for this registration-only repair. Exact row lists,
+matching results and the inherited origin/main footprint discrepancy are in
+proof/VELDO-0189/registration-audit.json. Mutation execution remains reviewer pending.
+
+2026-09-29, history-independent proof inputs: the two older engines are exact committed archives of
+their commits' .veldo trees, each digest checked before extraction. The installer census likewise
+captures the same first-parent histories and all 14 distinct installers through fed739c7 and the
+recorded main head, and still checks every captured installer plus the current production installer.
+The footprint explicitly adds proof/VELDO-0189/older/* for the archives, census, digest manifest and
+reproducible exporter required by AC1. The suite reads no repository history. Existing production
+interfaces, behavior rows, kill points and finding 189 falsifiers are retained.
+
+2026-09-29, history-independent verification: suite 86_veldo_0189_engine_upgrade passes all 58 checks
+normally, in a copied tree without .git, and under the requested empty gate environment. The baseline
+fed739c7 red record has 23 fixture-dependent rows red by assertion and nine unrelated rows green.
+Both archived engines match their historical .veldo trees exactly; regeneration is byte-identical.
+Validation passes and anchors report zero bad entries. Finding 189's 46 mutations remain unchanged and
+reviewer pending. This repair stays inside the footprint; the origin/main comparison with only 0189
+still reports inherited 0171 paths, while both stacked specifications cover the branch changes.
+
+2026-09-29, runtime inventory mutation review: the stale-record mutant is reachable when the
+installed record already has runtime_assets. Both historical installers omit that key, so the
+missing-key backfill repairs the mutant's stale assignment on those hosts. Keep the exact historical
+journeys and add a runtime-bearing predecessor to each named older-host row, installed by real setup
+with different inert asset bytes. Real setup upgrades it, and assertions require the prior inventory
+to differ, the changed asset to be reported, and the resulting record and installed bytes to match
+fresh. No production change, acceptance criterion change or footprint extension is needed. Reading
+all finding 189 registrations found no other mutant masked by that missing-key fallback. Execution
+of the registered mutants remains reserved to the reviewer.
+
+
+2026-09-29, runtime inventory verification: all 58 selected checks pass normally, under the requested
+empty environment and in an archive without .git. The requested baseline drive at 16c8ed33 reports all
+32 behavior rows green, once each, because this repair changes proof coverage and leaves correct
+production unchanged; no all-red baseline claim is made. The new assertion targets the stale record
+mutant's existing-key branch, whose execution remains reviewer pending. Validation passes and anchors
+report zero bad entries. This repair fits the existing footprint; the prescribed origin/main comparison
+still needs both stacked specifications to cover inherited VELDO-0171 paths. Results and the static
+mutation audit are in proof/VELDO-0189/runtime-inventory-*.json.
+
+2026-09-29, mutation-safe review fixtures: suite 86 captures the real installer's host, engine record
+and template before the fresh-host re-run, then restores that baseline for the review rows. Missing
+or unusable initial record fields fail checks instead of raising. The unmutated selected suite passes
+all 58 checks. Applying upgrade189-existing-record-rewritten by hand to a copied module in a temporary
+tree completes with 53 checks passing and five failing, including upgrade/fresh-0186 on its
+writes-nothing assertion, with no traceback. No production module changed.

@@ -536,7 +536,8 @@ def _v47_suite():
                 # What the installer recorded it copied, each file with its digest.
                 recorded = config.get('closure') if isinstance(config.get('closure'), dict) else {}
                 closure = sorted(recorded)
-                entry = {'control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py'}
+                # The programs run by path, 0500; VELDO-0171 added the API process its API unit runs.
+                entry = {'control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py'}
                 # The architecture validator the receiver's recheck runs from its own directory
                 # (control_eligibility.ValidatorSnapshot), by the files the eligibility module declares.
                 validator = {name for _role, name in EL.VALIDATOR_ROLES}

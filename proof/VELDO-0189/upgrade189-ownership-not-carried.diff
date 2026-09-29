@@ -1,0 +1,5 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1946 +1946 @@
+-            S.rebind_owners(conn, installed_engine(config), keep_previous=keep,
++            (lambda *args, **kwargs: [])(conn, installed_engine(config), keep_previous=keep,  # defect: the declarations keep the previous engine's digests

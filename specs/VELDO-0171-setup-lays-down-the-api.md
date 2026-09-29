@@ -14,6 +14,7 @@ depends_on: [VELDO-0130, VELDO-0139, VELDO-0189]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/support/setup_runtime.py"
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
@@ -320,3 +321,23 @@ archive`, not only its setup module, so the host holds the older engine and the 
 1dbf0b88, with these changes. Back to draft: the owner must re-mark it ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-09-28, build of the amendment: the rows over a VELDO-0139 host lay it down from the whole .veldo of
+7fefdb9a with git archive and its own setup module; the re-run upgrades that engine first (VELDO-0189,
+restarting the running service once) and then runs the API steps, and rerun/over-0139-host,
+api-edge/running-service and api/start-rules go green through the upgrade. Outside the installed engine
+the files that change are service.json (its engine keys, the work key it lacked and api_service), the
+receiver configuration (only the host_trust key it lacked, added by the upgrade) and the key projection.
+The re-run's first step is engine_upgrade.
+
+2026-09-29, suite runtime review: retain every behavior row and kill point while reusing
+content-keyed engine derivations within one suite run and waiting on service readiness or exit.
+The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
+same isolated computation cache and process event waits. No production contract or gate budget changes.
+
+2026-09-29, runtime proof: the unprofiled baseline at 5730a17e passes its behavior checks but
+fails the 30-second runtime assertion at 79.550 seconds. The final selected suite passes 44 checks
+in 10.31 seconds ordinarily and 10.30 seconds in the empty gate environment, with no failures.
+Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
+assertion audit are in proof/VELDO-0171/performance.json and its companion records. Finding 171
+mutations remain registered; their execution and the full gate are reserved to the reviewer.

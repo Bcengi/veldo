@@ -1,0 +1,5 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1417 +1417 @@
+-        if os.path.lexists(previous):
++        if False:

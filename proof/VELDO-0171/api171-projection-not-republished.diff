@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -833 +833 @@
+-                API.republish(S, CM, K, plan['store'], projection)
++                pass  # defect: the key projection is not republished

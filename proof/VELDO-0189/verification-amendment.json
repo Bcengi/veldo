@@ -1,0 +1,236 @@
+{
+ "amendment_rows_red": [
+  "VELDO-0189 kept/runs",
+  "VELDO-0189 upgrade/fresh-0186",
+  "VELDO-0189 upgrade/older-0186-equivalence"
+ ],
+ "clean_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo-0171-gate-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "footprint": {
+  "amendment": {
+   "base": "3fa0d77b",
+   "outside": [],
+   "paths": [
+    ".veldo/control_factory_setup.py",
+    ".veldo/control_factory_setup_engines.py",
+    ".veldo/control_factory_setup_upgrade.py",
+    "engine/.veldo/control_factory_setup.py",
+    "engine/.veldo/control_factory_setup_engines.py",
+    "engine/.veldo/control_factory_setup_upgrade.py",
+    "proof/VELDO-0189/README.md",
+    "proof/VELDO-0189/drive.py",
+    "proof/VELDO-0189/fresh-equivalence.json",
+    "proof/VELDO-0189/mutations.json",
+    "proof/VELDO-0189/upgrade189-commit-not-sent.diff",
+    "proof/VELDO-0189/upgrade189-commit-with-previous-engine.diff",
+    "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
+    "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
+    "proof/VELDO-0189/upgrade189-engines-record-missing.diff",
+    "proof/VELDO-0189/upgrade189-existing-pin-rewritten.diff",
+    "proof/VELDO-0189/upgrade189-existing-record-rewritten.diff",
+    "proof/VELDO-0189/upgrade189-in-place-writes.diff",
+    "proof/VELDO-0189/upgrade189-last-begin-only.diff",
+    "proof/VELDO-0189/upgrade189-module-not-scaffolded.diff",
+    "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
+    "proof/VELDO-0189/upgrade189-no-ownership-restore.diff",
+    "proof/VELDO-0189/upgrade189-no-switch-back.diff",
+    "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
+    "proof/VELDO-0189/upgrade189-ownership-not-carried.diff",
+    "proof/VELDO-0189/upgrade189-pin-missing.diff",
+    "proof/VELDO-0189/upgrade189-rebind-any-digest.diff",
+    "proof/VELDO-0189/upgrade189-rebind-not-recorded.diff",
+    "proof/VELDO-0189/upgrade189-recovery-holds-lock.diff",
+    "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
+    "proof/VELDO-0189/upgrade189-restart-every-run.diff",
+    "proof/VELDO-0189/upgrade189-restore-any-bytes.diff",
+    "proof/VELDO-0189/upgrade189-restore-only-first-blocker.diff",
+    "proof/VELDO-0189/upgrade189-restore-refusal-unreported.diff",
+    "proof/VELDO-0189/upgrade189-restore-without-stop.diff",
+    "proof/VELDO-0189/upgrade189-resumed-not-switched.diff",
+    "proof/VELDO-0189/upgrade189-resumed-units-forgotten.diff",
+    "proof/VELDO-0189/upgrade189-runs-moved.diff",
+    "proof/VELDO-0189/upgrade189-runtime-mode.diff",
+    "proof/VELDO-0189/upgrade189-runtime-not-cleaned.diff",
+    "proof/VELDO-0189/upgrade189-runtime-not-staged.diff",
+    "proof/VELDO-0189/upgrade189-runtime-record-stale.diff",
+    "proof/VELDO-0189/upgrade189-runtime-unrecorded.diff",
+    "proof/VELDO-0189/upgrade189-serve-keeps-previous-bindings.diff",
+    "proof/VELDO-0189/upgrade189-stop-exit-ignored.diff",
+    "proof/VELDO-0189/upgrade189-switch-back-not-due.diff",
+    "scripts/check_teeth_mutations.py",
+    "scripts/suites/85_veldo_0171_setup_api.py",
+    "scripts/suites/86_veldo_0168_text.py",
+    "scripts/suites/86_veldo_0186_setup_assets.py",
+    "scripts/suites/86_veldo_0189_engine_upgrade.py",
+    "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md"
+   ]
+  },
+  "stacked_checker": "changed 103, outside the footprint: ['.veldo/events.jsonl', '.veldo/last_verify']",
+  "standalone_checker": "changed 103, outside the footprint: ['.veldo/control_api.py', '.veldo/events.jsonl', '.veldo/last_verify', 'engine/.veldo/control_api.py', 'proof/VELDO-0171/README.md', 'proof/VELDO-0171/api171-chat-not-compared.diff', 'proof/VELDO-0171/api171-cli-location-not-fixed.diff', 'proof/VELDO-0171/api171-differing-file-accepted.diff', 'proof/VELDO-0171/api171-edge-not-enrolled.diff', 'proof/VELDO-0171/api171-entry-point-dropped.diff', 'proof/VELDO-0171/api171-fingerprint-ignored.diff', 'proof/VELDO-0171/api171-funnel-in-place-of-serve.diff', 'proof/VELDO-0171/api171-listens-beyond-loopback.diff', 'proof/VELDO-0171/api171-module-not-scaffolded.diff', 'proof/VELDO-0171/api171-new-key-every-run.diff', 'proof/VELDO-0171/api171-operator-unchecked.diff', 'proof/VELDO-0171/api171-origin-loopback.diff', 'proof/VELDO-0171/api171-policy-omitted.diff', 'proof/VELDO-0171/api171-policy-unsafe-inline.diff', 'proof/VELDO-0171/api171-projection-not-republished.diff', 'proof/VELDO-0171/api171-started-when-added.diff', 'proof/VELDO-0171/api171-store-written-while-running.diff', 'proof/VELDO-0171/drive.py', 'proof/VELDO-0171/mutations.json', 'proof/VELDO-0171/red-at-7851ae9b.json', 'proof/VELDO-0171/scrub_tailscale.py', 'proof/VELDO-0171/tailscale-capture.json', 'scripts/suites/66_veldo_0047_authority.py', 'scripts/suites/74_veldo_0140_standing_delegation.py', 'scripts/suites/support/v171_tailscale.py', 'specs/VELDO-0171-setup-lays-down-the-api.md']"
+ },
+ "gate": "not run, reserved to reviewer",
+ "merge_baseline": "3fa0d77b",
+ "mutations": {
+  "anchors": "0 bad anchors",
+  "execution": "reviewer_pending",
+  "registered": 36,
+  "syntax": "all generated finding 189 mutants compile"
+ },
+ "red_record": "red-at-3fa0d77b.json",
+ "schema": "veldo.verification/v1",
+ "source_commit": "80bde405094c823d176edabea5d41524f83897d3",
+ "source_sha256": {
+  ".veldo/control_factory_setup.py": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a",
+  ".veldo/control_factory_setup_engines.py": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+  ".veldo/control_factory_setup_upgrade.py": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+  "engine/.veldo/control_factory_setup.py": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a",
+  "engine/.veldo/control_factory_setup_engines.py": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+  "engine/.veldo/control_factory_setup_upgrade.py": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+  "proof/VELDO-0189/drive.py": "102a1ece51dcfa11ee4bbb51841b7807957a4aa73af6f0731601b5cab434617d",
+  "scripts/check_teeth_mutations.py": "34f15c07980f5c0f4f9bc2e1a0e1011523aa7626f8f32e7632776fb40cbcc5c6",
+  "scripts/suites/85_veldo_0171_setup_api.py": "3a475240c2262f3ce297e4a1223c7ed820906f61559ddc87032e56fe592a8eab",
+  "scripts/suites/86_veldo_0168_text.py": "aec0fd5a45d47a0ab4cce55bb2c5ea8f4bd4677992a915e9bdd9e54ee06f4d3a",
+  "scripts/suites/86_veldo_0186_setup_assets.py": "1476ad8dab3b76bfa274f92d3282b9dfa0a673286466a39c0d2493fc9b387dbe",
+  "scripts/suites/86_veldo_0189_engine_upgrade.py": "751653167939e96ec949231874141feec9fcf9e26371a11d2dc2d10eda71cbdb"
+ },
+ "spec_id": "VELDO-0189",
+ "stacked_with": "VELDO-0171",
+ "suites": [
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "7b79d3c746f18e5fefd7ab405e648e7c84e08bd793342682cec6ca596b713e56",
+   "seconds": 79.27,
+   "suite": "85_veldo_0171_setup_api",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 44 passed, 0 failed in 79.17s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "ca6aab991c1bc6bb43e9f391dcd08db86e096c8cc98d3fb0c92bbe30fa2ea728",
+   "seconds": 24.2,
+   "suite": "73_veldo_0139_factory_setup",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 43 passed, 0 failed in 24.13s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "2ca19d26964e0d50e3fd91f9984d214e6f12da7dd9866a2720d454fa35159d2a",
+   "seconds": 14.74,
+   "suite": "86_veldo_0186_setup_assets",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 37 passed, 0 failed in 14.67s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "17752a6a371e07fdcc59615f58af9a39c376e8c1b4467d15cb3fcb391b599ac9",
+   "seconds": 13.11,
+   "suite": "66_veldo_0047_authority",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 56 passed, 0 failed in 13.04s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "6d9e6e28d50b44ee1a3c6b99ad26fe3b0287df45e1a4a21728e3bf29ab8125c6",
+   "seconds": 11.58,
+   "suite": "74_veldo_0140_standing_delegation",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 35 passed, 0 failed in 11.50s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "2e4a2fe0a104c040563d7cd855b517bc9703fa1c3c2ec394de430e7d205bbf1a",
+   "seconds": 19.25,
+   "suite": "71_veldo_0130_api",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 68 passed, 0 failed in 19.18s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "8f55b179ba72ecf55c72f1ed1cbfdddebb09926e60ab5d91d93a353195931f7e",
+   "seconds": 29.92,
+   "suite": "71_veldo_0138_channel_service",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 39 passed, 0 failed in 29.85s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "9e383dfacc8d27eb1fcdf80d96d36082b3345c7c2f375651a62aa87f718e20c1",
+   "seconds": 63.08,
+   "suite": "83_veldo_0154_factory_loop",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 39 passed, 0 failed in 63.00s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "5faa1c7054b476ac486b1897c9c824a27b8240ca59f9881ea5037dcb9b43d0a8",
+   "seconds": 3.2,
+   "suite": "86_veldo_0168_text",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 52 passed, 0 failed in 3.14s"
+   ]
+  },
+  {
+   "clean_environment": false,
+   "exit": 2,
+   "log_sha256": "f68919a0e8b2b5c35ac11ae907c359ee1b92159aa5b3aa7e1a5e8dbb9c43e699",
+   "seconds": 275.49,
+   "suite": "86_veldo_0189_engine_upgrade",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 51 passed, 0 failed in 275.41s"
+   ]
+  },
+  {
+   "clean_environment": true,
+   "exit": 2,
+   "log_sha256": "da5a9fd19e37dcb3b291448caacd1ee8c0c143889a7a101314d48cc23ca210ea",
+   "seconds": 382.5,
+   "suite": "86_veldo_0189_engine_upgrade",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 51 passed, 0 failed in 382.42s"
+   ]
+  },
+  {
+   "clean_environment": true,
+   "exit": 2,
+   "log_sha256": "a84b5d548a5165a6c675b91235518c3882bbd9086b06277d496d5ed4fae52756",
+   "seconds": 76.41,
+   "suite": "85_veldo_0171_setup_api",
+   "summary": [
+    "selftest (PARTIAL, 1 of 135 suites): 44 passed, 0 failed in 76.30s"
+   ]
+  }
+ ],
+ "validation": {
+  "command": "python3 .veldo/validate.py all",
+  "exit": 0
+ }
+}

@@ -1,0 +1,145 @@
+{
+ "by_assertion": true,
+ "commit": "ed93984cc62a856c27a985b918f3f3ac4bee4f53",
+ "details": [
+  "VELDO-0189 switch/resumed-failure detail: unit: every original unit restored across runs",
+  "VELDO-0189 switch/resumed-failure detail: record: previous engine and original record restored",
+  "VELDO-0189 switch/resumed-failure detail: record: every original unit restored across runs",
+  "VELDO-0189 switch/resumed-failure detail: record: forward re-run answers before removing previous engine",
+  "VELDO-0189 switch/rollback-kills detail: switch back exposes the stop as a kill point",
+  "VELDO-0189 switch/rollback-kills detail: resume after switched_back restarts and answers",
+  "VELDO-0189 switch/rollback-kills detail: resume after ownership_restore restarts and answers",
+  "VELDO-0189 switch/stop-refused detail: stop failure is refused by name in the owner answer",
+  "VELDO-0189 switch/stop-refused detail: stop failure does not attempt ownership restore",
+  "VELDO-0189 ownership/restore-reported detail: restore refusal and forward recovery are in the owner answer",
+  "VELDO-0189 ownership/restore-reported detail: every blocked ownership row is named in the answer"
+ ],
+ "failed_rows": [
+  "VELDO-0189 switch/resumed-failure",
+  "VELDO-0189 switch/rollback-kills",
+  "VELDO-0189 switch/stop-refused",
+  "VELDO-0189 ownership/restore-reported"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "99fa58b1c2a2ed038b4ad5be8e3304216f7c8f753e79aac744bf6798b85466e1",
+   "now": "fe64f27f643f3bd9874fbe3f24f0b81d8831f3f880967a07ed482cbafb2a3733"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d",
+   "now": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
+   "now": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77",
+   "now": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
+   "now": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   true
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   true
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   true
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   true
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   true
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   true
+  ],
+  [
+   "VELDO-0189 switch/resumed-failure",
+   false
+  ],
+  [
+   "VELDO-0189 switch/rollback-kills",
+   false
+  ],
+  [
+   "VELDO-0189 switch/stop-refused",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/restore-reported",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/start-drops",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/commit-refused",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-before-restore",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 237.489,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "a local clone checked out at ed93984cc62a856c27a985b918f3f3ac4bee4f53, unchanged; the current suite file run against it"
+}

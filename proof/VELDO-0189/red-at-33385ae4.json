@@ -1,0 +1,119 @@
+{
+ "by_assertion": true,
+ "commit": "33385ae40d7773cd5f83b3668efe1349d4db706b",
+ "details": [
+  "VELDO-0189 install/assets detail: the service names the previous engine directory the upgrade keeps beside bin [None bin.upgrade]",
+  "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the current engine came up and rebound the 2 declarations of the owning modules it changed, and the switch back restored exactly those [[0] []]",
+  "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the step log records the switch back and the restore before the previous engine's restart [[('configuration', None), ('record', None), ('switched_back', None), ('restart', 'previous_engine_restarted')]]",
+  "VELDO-0189 switch/failed-after-start detail: 8bc34e94: the previous engine's channel is available [{'available': False, 'refusal': 'ownership_conflict'}]",
+  "VELDO-0189 switch/failed-after-start detail: 8bc34e94: every owned command is available: each of the 8 declarations binds the bytes its file has now, the previous engine's [[('channel_activation', 'control_channel_activation.py'), ('channel_qualification', 'control_channel_activation.py')]]",
+  "VELDO-0189 switch/failed-after-start detail: 8bc34e94: no previous binding is left recorded [no record kept]",
+  "VELDO-0189 switch/failed-after-start detail: 971186ac: the step log records the switch back and the restore before the previous engine's restart [[('configuration', None), ('record', None), ('switched_back', None), ('restart', 'previous_engine_restarted')]]",
+  "VELDO-0189 switch/failed-after-start detail: 971186ac: no previous binding is left recorded [no record kept]",
+  "VELDO-0189 ownership/restore-differs detail: the store rebinds keeping the previous bindings, restores them and lists them [['restore_owners', 'previous_owners']]",
+  "VELDO-0189 ownership/committed detail: the upgraded service rebound the declarations of the owning modules the upgrade changed [[0]]",
+  "VELDO-0189 ownership/committed detail: the commit dropped exactly the previous bindings that rebinding recorded [[]]",
+  "VELDO-0189 ownership/committed detail: the step log records the commit after the previous engine was removed [['record', 'restart', 'removed_previous', 'done']]",
+  "VELDO-0189 ownership/committed detail: a committed upgrade has no recorded previous bindings [no record kept]"
+ ],
+ "failed_rows": [
+  "VELDO-0189 install/assets",
+  "VELDO-0189 switch/failed-after-start",
+  "VELDO-0189 ownership/restore-differs",
+  "VELDO-0189 ownership/committed"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "498387aeca525a80c01e5e12e2cd20d69bc6e5919b3381958c05b2acbc97a81e",
+   "now": "99fa58b1c2a2ed038b4ad5be8e3304216f7c8f753e79aac744bf6798b85466e1"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "b50948de8ad287424e0bab6d33975aae6784486e245d2490625067dcc8e64a05",
+   "now": "331203de4991d4064b769b252beae1542dac50e75ae53fe6cc8727d2b390345d"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "167aeb508b22844df11d15eb30e2abbc487ba261f223fad4fc468aa20e1a3357",
+   "now": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "59671a934add15a58e7cfb6928c6a199a9a3c778195a457e7692e75445c5043c",
+   "now": "c5def9584609ac4700e0587e02df13bda48b9e3d31783620931deabdb307fa77"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
+   "now": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   true
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   true
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   true
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   true
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   true
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   false
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 118.824,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "a local clone checked out at 33385ae40d7773cd5f83b3668efe1349d4db706b, unchanged; the current suite file run against it"
+}

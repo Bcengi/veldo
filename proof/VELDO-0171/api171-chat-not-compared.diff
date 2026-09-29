@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -738 +738 @@
+-    if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:
++    if False:  # defect: the chat is not compared

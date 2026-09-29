@@ -1,0 +1,172 @@
+{
+ "by_assertion": true,
+ "commit": "16c8ed3357a58c62e4232031853c26c3cefe2c36",
+ "details": [],
+ "failed_rows": [],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
+   "now": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_engines.py": {
+   "at_commit": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043",
+   "now": "6888021321a85efcca8f74002049217e3ed9e4d22388beda1ecd1ec4f4e1c043"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "now": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "now": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829",
+   "now": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   true
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   true
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   true
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   true
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   true
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   true
+  ],
+  [
+   "VELDO-0189 switch/resumed-failure",
+   true
+  ],
+  [
+   "VELDO-0189 switch/rollback-kills",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-refused",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-reported",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/start-drops",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/commit-refused",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-before-restore",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/older-0186-equivalence",
+   true
+  ],
+  [
+   "VELDO-0189 kept/runs",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/fresh-0186",
+   true
+  ],
+  [
+   "VELDO-0189 engines/atomic-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/repair-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/refuse-record",
+   true
+  ],
+  [
+   "VELDO-0189 engines/codex-refusal",
+   true
+  ],
+  [
+   "VELDO-0189 engines/repair-report",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/corrupt-runtime-record",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/receiver-without-store",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 60.125,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "baseline archive without .git, running the current suite"
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -385 +385 @@
+-             if CR.describe(record).get('fingerprint') == fingerprint]
++             if live]  # defect: the fingerprint the owner named is not compared
