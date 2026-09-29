@@ -80,7 +80,8 @@ PROFILES = dict(_helper().PROFILE_ENV)
 STRIP_PREFIXES = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_')
 REFUSED_PREFIXES = ('CLAUDE_CODE_USE_',)
 STATUSES = ('active', 'paused', 'disabled')
-WINDOW_STATUSES = ('allowed', 'rejected')
+# None means this window was reported without a status (VELDO-0166).
+WINDOW_STATUSES = ('allowed', 'rejected', None)
 # Who may register or change an account (the owner) and who records what a CLI reported (the
 # trusted launch receiver's service membership).
 OWNER_ROLES = ('project_owner', 'operations_authority')
@@ -275,15 +276,17 @@ class Accounts:
             raise Refused('invalid_input', 'status is one of ' + ', '.join(STATUSES))
         return self._run(command_id, dict(action='status', account=account, status=status, now=now))
 
-    def observe(self, command_id, account, window_id, *, status, reset_at, utilization, source_dispatch, now):
-        """Record one rate-limit window exactly as the account's CLI reported it."""
-        if (not _text(window_id) or status not in WINDOW_STATUSES or (reset_at is not None and not _number(reset_at))
+    def observe(self, command_id, account, window_id, *, status, reset_at, utilization, source_dispatch, now,
+                clear_rejection=False):
+        """Record a window or, with no window id, an explicit clear of a stored unified rejection."""
+        if ((not _text(window_id) and not (window_id is None and clear_rejection))
+                or status not in WINDOW_STATUSES or (reset_at is not None and not _number(reset_at))
                 or (utilization is not None and (not _number(utilization) or utilization < 0))
                 or not _text(source_dispatch)):
             raise Refused('invalid_input', 'a window id, status, reset, utilization and source dispatch')
         return self._run(command_id, dict(action='observe', account=account, window_id=window_id, status=status,
                                           reset_at=reset_at, utilization=utilization,
-                                          source_dispatch=source_dispatch, now=now))
+                                          source_dispatch=source_dispatch, now=now, clear_rejection=clear_rejection))
 
     def _in_transaction(self, conn, params, before):
         if self.authorize(conn, self._command) is not True:
@@ -308,9 +311,25 @@ class Accounts:
         elif action == 'status':
             value = dict(current, status=params['status'])
         elif action == 'observe':
+            unified = current['windows'].get('unified')
+            if (params.get('clear_rejection') and unified is not None
+                    and unified.get('status') == 'rejected' and unified['observed_at'] <= params['now']):
+                # The clear applies to the account, including a rejection from an earlier dispatch.
+                current['windows']['unified'] = dict(unified, status='allowed', observed_at=params['now'],
+                                                     source_dispatch=params['source_dispatch'])
+            if params['window_id'] is None:
+                return {target: {'kind': KIND, 'data': current}}
             prior = current['windows'].get(params['window_id'])
             if prior is not None and prior['observed_at'] > params['now']:
-                return {}  # An older observation never replaces a newer one.
+                # Keep any unified lift while leaving the newer companion unchanged.
+                return {target: {'kind': KIND, 'data': current}}
+            if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
+                # VELDO-0166: keep a rejection, but let a later report supply its missing reset.
+                # The account then remains blocked only until that reported time.
+                if prior.get('reset_at') is None and params['reset_at'] is not None:
+                    params = dict(params, status='rejected')
+                else:
+                    return {}
             value = current
             value['windows'][params['window_id']] = {
                 'status': params['status'], 'reset_at': params['reset_at'], 'utilization': params['utilization'],

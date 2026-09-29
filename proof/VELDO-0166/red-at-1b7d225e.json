@@ -1,0 +1,98 @@
+{
+ "by_assertion": true,
+ "commit": "1b7d225ee60b677c1e1cb7ca0fc4beb19d0408f4",
+ "details": [
+  "VELDO-0166 detail: windows/unnamed-rejection: no-reset: the stream limit is stored with its receipt",
+  "VELDO-0166 detail: windows/unnamed-rejection: no-reset: the real pool refuses until reset or indefinitely",
+  "VELDO-0166 detail: windows/unnamed-rejection: reset: the stream limit is stored with its receipt",
+  "VELDO-0166 detail: windows/unnamed-rejection: reset: the real pool refuses until reset or indefinitely",
+  "VELDO-0166 detail: windows/clear-active-rejection: no-reset: Meter and pool both reopen on a clear event",
+  "VELDO-0166 detail: windows/clear-active-rejection: future-reset: Meter and pool both reopen on a clear event"
+ ],
+ "failed_rows": [
+  "VELDO-0166 windows/unnamed-rejection",
+  "VELDO-0166 windows/clear-active-rejection"
+ ],
+ "modules": {
+  ".veldo/accounts.py": {
+   "at_commit": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918",
+   "now": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "eb9d96f0c95a373d81de7e82805dffb69dfe55d100b20acfb227b6bb3474a452",
+   "now": "eb9d96f0c95a373d81de7e82805dffb69dfe55d100b20acfb227b6bb3474a452"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "d63acc23df2d40b4faa3d7a66a76e4a39e15e13e1229cd202699fd24779a0ce0",
+   "now": "d63acc23df2d40b4faa3d7a66a76e4a39e15e13e1229cd202699fd24779a0ce0"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "6aee082205b1ea0d2fdcfc2e270a3a82e4ca5b0a0b559a0d648d73597b3d450f",
+   "now": "6aee082205b1ea0d2fdcfc2e270a3a82e4ca5b0a0b559a0d648d73597b3d450f"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0166 windows/five-hour",
+   true
+  ],
+  [
+   "VELDO-0166 windows/qualified-set",
+   true
+  ],
+  [
+   "VELDO-0166 windows/status-only-named",
+   true
+  ],
+  [
+   "VELDO-0166 windows/missing-reset-receipts",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-kept",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-fallback",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-precedence",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-reset-filled",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear",
+   true
+  ],
+  [
+   "VELDO-0166 windows/unnamed-rejection",
+   false
+  ],
+  [
+   "VELDO-0166 windows/clear-active-rejection",
+   false
+  ],
+  [
+   "VELDO-0166 observability/counts-and-log",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/existing",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/created",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.587,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
+ "tree": "git archive 1b7d225ee60b677c1e1cb7ca0fc4beb19d0408f4, unchanged; the current suite file run against it"
+}

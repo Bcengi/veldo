@@ -1,0 +1,113 @@
+{
+ "by_assertion": true,
+ "commit": "9cca776694b4bacba46803198242e657e3637a90",
+ "details": [
+  "VELDO-0166 detail: windows/clear-unified-no-reset: clear-unified-no-reset-same: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-no-reset: clear-unified-no-reset-later: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-reset: clear-unified-reset-same: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-reset: clear-unified-reset-later: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-bare: clear-unified-bare-same: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-bare: clear-unified-bare-same: only reported windows counted, clear receipt retained",
+  "VELDO-0166 detail: windows/clear-unified-bare: clear-unified-bare-later: clear reopens the persisted account immediately",
+  "VELDO-0166 detail: windows/clear-unified-bare: clear-unified-bare-later: only reported windows counted, clear receipt retained"
+ ],
+ "failed_rows": [
+  "VELDO-0166 windows/clear-unified-no-reset",
+  "VELDO-0166 windows/clear-unified-reset",
+  "VELDO-0166 windows/clear-unified-bare"
+ ],
+ "modules": {
+  ".veldo/accounts.py": {
+   "at_commit": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918",
+   "now": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "da361158b83692c4f873fca4b1c0ea0af070de018009e0f83dca6cadad374ffd",
+   "now": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "860ed6d331f4c3084d2e2cee8d2ee3e0fa114414dec7ad6c72a01e4e5bd09efc",
+   "now": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "0a948f57ecdea5941e5c2ce37f9aee16fdf341ca3794a9165379c39924640309",
+   "now": "6aa98475884133fa323fc0edd067d52bccaf01ea02543e2f98a94aa000cccd0b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0166 windows/five-hour",
+   true
+  ],
+  [
+   "VELDO-0166 windows/qualified-set",
+   true
+  ],
+  [
+   "VELDO-0166 windows/status-only-named",
+   true
+  ],
+  [
+   "VELDO-0166 windows/missing-reset-receipts",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-kept",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-fallback",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-precedence",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-reset-filled",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear",
+   true
+  ],
+  [
+   "VELDO-0166 windows/unnamed-rejection",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-active-rejection",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-no-reset",
+   false
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-reset",
+   false
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-bare",
+   false
+  ],
+  [
+   "VELDO-0166 observability/counts-and-log",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/existing",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/created",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.588,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
+ "tree": "git archive 9cca776694b4bacba46803198242e657e3637a90, unchanged; the current suite file run against it"
+}

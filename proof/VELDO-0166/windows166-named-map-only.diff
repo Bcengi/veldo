@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1092 +1092 @@
+-            values = {field: info.get(field) if info.get(field) is not None else own.get(field)
++            values = {field: own.get(field)

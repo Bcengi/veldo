@@ -1,0 +1,5 @@
+--- a/.veldo/accounts.py
++++ b/.veldo/accounts.py
+@@ -174 +174 @@
+-            os.chmod(cdir, 0o700)  # Only the profile we created belongs to this helper.
++            os.chmod(cdir, 0o755)  # Only the profile we created belongs to this helper.
