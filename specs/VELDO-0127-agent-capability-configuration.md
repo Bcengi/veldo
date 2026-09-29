@@ -192,6 +192,19 @@ not tests run by this writing revision.
 
 ## History
 
+2026-09-29, recorded feature repair from 2234d205: AC2 and AC4 explicitly set
+every listed feature outside the known non-tool set, including default-off tool
+sources. Mapped features follow the native grant regardless of their default;
+other features are false, while unknown default-on features still stop by name.
+Literal dots in feature names travel in an inline TOML table because CLI dotted
+paths cannot preserve them. AC3 and AC4 gain missing, empty and malformed listing
+rows through qualification, binding and the real launch path. Each refusal row
+pairs its negative case with a valid-listing explicit-default-off launch control.
+Suite 89 passes its eleven rows; mutation execution is reserved for the reviewer.
+The existing footprint covers all changes; no expansion is needed. Production
+digests changed, so the reviewer recaptures live proofs after this lands. This
+repair does not recapture them or claim a gate pass.
+
 2026-09-29, default feature repair from d72da222: AC2, AC3 and AC4 classify
 the complete pinned binary feature listing retained at qualification. Each
 default-on tool source is explicitly disabled unless its existing native grant

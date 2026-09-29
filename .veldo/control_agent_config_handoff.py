@@ -287,7 +287,7 @@ def codex_model(bound, revision):
 
 
 def codex_features(listing, grants):
-    """Classify every enabled binary default, including login-dependent tool sources.
+    """Control every listed feature, including login-dependent tool sources.
 
     The complete features-list output belongs to the digest-bound qualification.
     An unknown enabled feature is potentially a tool source and refuses launch.
@@ -324,14 +324,18 @@ def codex_features(listing, grants):
         defaults[match[1]] = match[3] == 'true'
     configuration = {}
     for feature, enabled in defaults.items():
-        if not enabled:
+        if feature in non_tools:
             continue
+        key = 'features.' + feature
         if feature in mapped:
-            configuration['features.' + feature] = bool(mapped[feature].intersection(grants))
-        elif feature in ungranted:
-            configuration['features.' + feature] = False
-        elif feature not in non_tools:
+            configuration[key] = bool(mapped[feature].intersection(grants))
+        elif enabled and feature not in ungranted:
             raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
+        else:
+            configuration[key] = False
+        if '.' in feature:
+            # CLI dotted paths cannot quote a literal dot; use an inline table.
+            configuration.setdefault('features', {})[feature] = configuration.pop(key)
     return configuration
 
 

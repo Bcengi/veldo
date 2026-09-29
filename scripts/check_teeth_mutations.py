@@ -9264,15 +9264,34 @@ def cases():
     mapped127 = ['mapped/' + n for n in ('shell', 'clock', 'view_image', 'multi_agent', 'sub_agents')]
     for feature in ('image_generation', 'browser_use', 'computer_use', 'tool_suggest', 'skill_search'):
         add(127, 'role127-default-omitted-' + feature, defaults127, 'control_agent_config_handoff.py',
-            "            configuration['features.' + feature] = False",
+            "            configuration[key] = False",
             "            if feature != " + repr(feature) + ":\n"
-            "                configuration['features.' + feature] = False",
+            "                configuration[key] = False",
             ['defaults/' + feature] + mapped127, [])
     add(127, 'role127-default-clock-grant-lost', defaults127, 'control_agent_config_handoff.py',
         "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['mapped/clock'], [])
     add(127, 'role127-default-unknown-accepted', defaults127, 'control_agent_config_handoff.py',
         "            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)",
         "            pass", ['defaults/unknown'], [])
+
+    listing127 = '89_veldo_0127_feature_listing.py'
+    add(127, 'role127-feature-listing-ignored', listing127, 'control_agent_config_handoff.py',
+        "    if not isinstance(listing, str) or not listing.strip():\n"
+        "        raise Refused('configuration_stop:codex_feature_listing')",
+        "    if not isinstance(listing, str) or not listing.strip():\n"
+        "        return {}", ['listing/missing', 'listing/empty', 'listing/malformed'], [(
+        "        if not match or match[1] in defaults:\n"
+        "            raise Refused('configuration_stop:codex_feature_listing')",
+        "        if not match or match[1] in defaults:\n"
+        "            return {}")])
+    add(127, 'role127-feature-default-off-skipped', listing127, 'control_agent_config_handoff.py',
+        "        if feature in non_tools:", "        if feature in non_tools or not enabled:",
+        ['explicit/' + n for n in ('memories', 'recommended_plugins', 'request_permissions_tool',
+         'standalone_web_search', 'enable_mcp_apps', 'guardianv2.thread_context',
+         'mapped-default-off', 'unknown-default-off')] +
+        ['listing/missing', 'listing/empty', 'listing/malformed'], [])
+    add(127, 'role127-feature-off-clock-grant-lost', listing127, 'control_agent_config_handoff.py',
+        "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['explicit/mapped-default-off'], [])
 
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
