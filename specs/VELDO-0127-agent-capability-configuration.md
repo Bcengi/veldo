@@ -93,6 +93,7 @@ acceptance_criteria:
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
       Restore mixed dotted feature keys and an inline features table; the profile parse row must fail.
+      Restore the loopback server's default shutdown polling delay; the delivery runtime row must fail.
   - id: AC3
     text: >
       Claim: The dispatch records the configuration revision actually used and refuses an
