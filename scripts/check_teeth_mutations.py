@@ -9305,7 +9305,7 @@ def cases():
               ['reland/review-kept'])
     reland148('reland148-end-wakes-nothing', 'control_service.py',
               "            self.loop.wake('run_end', record['dispatch_id'])\n",
-              "            pass  # defect: a land's end wakes no pass\n", ['reland/conflict-rebuild'])
+              "            pass  # defect: a land's end wakes no pass\n", ['reland/end-wakes-pass'])
     # The executor: a tip that contains the candidate judged moved; the moved tip never fetched; the push forced.
     reland148('lease148-contained-refused', 'control_effect_executor.py',
               "            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode == 1\n",

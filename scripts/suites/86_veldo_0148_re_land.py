@@ -14,9 +14,8 @@ reservations, VELDO-0039 build and review dispatches whose real child processes 
 and sign the review, VELDO-0050's accepted proof, VELDO-0049's floor to its handoff, the VELDO-0028 effect
 executor, the lander's disposable candidate, VELDO-0058's installed gate and the authority's CandidatePolicy,
 VELDO-0057's exact-tip publication and receipt, control_service.install laying the instance down with its
-work configuration's land station, and the INSTALLED service process (its ExecStart run as a child of this
-suite; the installer's daemon-reload goes to a recording stand-in) whose factory loop re-lands, rebuilds and
-asks. Each unit's first land runs through the suite's own land station, the production interface; another
+work configuration's land station, and the INSTALLED service and factory loop stepped synchronously through their production interfaces
+(the installer's daemon-reload goes to a recording stand-in). Its real receiver children rebuild and review. Each unit's first land runs through the suite's own land station, the production interface; another
 pusher moves the trunk before the executor's listing (inside the executor adapter the station is handed) or
 between the listing and the push (a pre-push hook of the publication clone, armed for one push). The rebuild
 and its review run a fake `codex` laid out as the vendor package, printing VELDO-0172's shared constructors;
@@ -35,7 +34,7 @@ def _v148_suite():
     from pathlib import Path
     import re
     import shutil
-    import signal
+    import select
     import socket
     import sqlite3
     import subprocess
@@ -56,7 +55,7 @@ def _v148_suite():
         'lander.py': ROOT / ".veldo" / "lander.py",
     }
     ROWS = ('install/land-station', 'reland/stale-subject', 'reland/review-kept', 'reland/conflict-rebuild',
-            'reland/never-forced', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
+            'reland/never-forced', 'reland/end-wakes-pass', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
             'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
@@ -93,16 +92,14 @@ def _v148_suite():
     live_step = fake_formats.live_step
 
     started = time.monotonic()
-    # THE BUDGET. Every wait has a bound of its own inside the suite's, and once a wait for a pass the scenario
-    # needs comes back empty every later wait returns at once, so a defect that stops the loop reds its rows by
-    # assertion promptly, never by raising and never by running to a bound. A pass comes within about a second
-    # of its wake (a land's gate included), so each wait's own bound is several times that.
-    BUDGET, WAIT = 100.0, 20.0
-    deadline = time.time() + BUDGET
+    # Bounds only stop stuck child I/O. No shared scenario deadline or polling cadence
+    # decides whether a state has been reached: the installed loop is stepped below.
+    CHILD_WAIT = 600
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='v148-', dir=fast))
     run_id = os.urandom(4).hex()
-    connections, service = [], {'proc': None, 'stalled': False}
+    connections, service = [], None
+    loop = None
     fake_capture = (['the suite did not reach its teardown'], [])
     try:
         mods = base / 'src' / '.veldo'
@@ -152,7 +149,7 @@ def _v148_suite():
 
         def git(repo, *args, who=OWNER_ID, ok=(0,)):
             r = GP.run(['git', '-C', str(repo), *args], capture_output=True, text=True, identity=who,
-                       stdin=subprocess.DEVNULL, timeout=120)
+                       stdin=subprocess.DEVNULL, timeout=CHILD_WAIT)
             if ok is not None and r.returncode not in ok:
                 raise RuntimeError('git %s: %s' % (' '.join(args[:3]), r.stderr.strip()[:300]))
             return r.stdout.strip()
@@ -174,7 +171,7 @@ def _v148_suite():
         os.chmod(str(keys), 0o700)
         for folder, who in ((private, 'owner'), (private, 'landing'), (private, REVIEWER), (keys, 'journal')):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', who, '-f', str(folder / who)],
-                           check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                           check=True, capture_output=True, timeout=CHILD_WAIT, stdin=subprocess.DEVNULL)
         os.chmod(str(keys / 'journal'), 0o600)
         public = {'owner': (private / 'owner.pub').read_text().strip(),
                   'authority': (keys / 'journal.pub').read_text().strip(),
@@ -231,7 +228,7 @@ def _v148_suite():
                 'protected_paths: []', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
                 'required_evidence: [unit]', 'rollback: git revert', '---', '', '## Intent', '', 'Fixture.', '']))
         subprocess.run([sys.executable, '-B', 'scripts/update_index.py'], cwd=str(seed), check=True,
-                       capture_output=True, timeout=60, env=clean)
+                       capture_output=True, timeout=CHILD_WAIT, env=clean)
         git(seed, 'add', '-A')
         git(seed, 'commit', '-q', '-m', 'Fixture repository')
         SEED = git(seed, 'rev-parse', 'HEAD')
@@ -418,6 +415,7 @@ sys.stdout.write(json.dumps({'commit': git('rev-parse', 'HEAD'), 'implementation
 ''')
         reviewer_engine = base / 'reviewer_engine.py'
         reviewer_engine.write_text('''import json, subprocess, sys
+CHILD_WAIT = 600
 signing, principal = sys.argv[1], sys.argv[2]
 assignment = json.loads(sys.stdin.read() or '{}')
 body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment.get('assignment'), 'unit': assignment.get('unit'),
@@ -425,7 +423,7 @@ body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment.get('assig
         'proof': (assignment.get('proof') or {}).get('digest'), 'verdict': 'pass', 'findings': []}
 message = json.dumps(body, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
 signature = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', signing, '-n', 'veldo-review'], input=message,
-                           capture_output=True, check=True, timeout=20).stdout.decode()
+                           capture_output=True, check=True, timeout=CHILD_WAIT).stdout.decode()
 sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=True, separators=(',', ':')))
 ''')
         station_gate = EL.Gate(S, setup, domain_uuid=DOMAIN, repository_uuid=REPO, workspace=str(caller))
@@ -450,7 +448,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process = L.process_identity(child.pid)
             receiver.run(did, digest, process, now=time.time())
-            out, err = child.communicate(given, timeout=120)
+            out, err = child.communicate(given, timeout=CHILD_WAIT)
             receiver.exit(did, digest, process, {'returncode': child.returncode, 'signal': None, 'output_digest': sha(out),
                                                  'output_bytes': len(out), 'deadline_stop': False}, now=time.time())
             if child.returncode:
@@ -464,7 +462,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             generations[sid] = g = claim(sid)
             contract = runner.prepare(sid, 'build', holder=BUILDER, source=str(builder_repo), revision=SEED,
                                       payload={'unit': sid}, adapter='builder-engine', configuration=CONFIG,
-                                      deadline=time.time() + 600, context={'generation': g})
+                                      deadline=time.time() + CHILD_WAIT, context={'generation': g})
             made = json.loads(dispatched(contract, [sys.executable, '-B', str(engine), str(mods / 'git_process.py'),
                                                     str(builder_repo), SEED, BUILDER], json.dumps({'unit': sid}).encode()))
             git(caller, 'fetch', '-q', str(builder_repo), '+build/%s:refs/heads/build/%s' % (sid, sid))
@@ -479,7 +477,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             assignment = floor.assign_review(sid, REVIEWER)
             contract = runner.prepare(sid, 'review', holder=BUILDER, source=str(caller), revision=commit,
                                       payload=assignment, adapter=REVIEWER, configuration=CONFIG,
-                                      deadline=time.time() + 600, context={'reviewer': REVIEWER})
+                                      deadline=time.time() + CHILD_WAIT, context={'reviewer': REVIEWER})
             printed = dispatched(contract, [sys.executable, '-B', str(reviewer_engine), str(private / REVIEWER), REVIEWER],
                                  json.dumps(assignment).encode())
             floor.record_review(sid, assignment['assignment'], {'dispatch': contract['dispatch_id'], 'output': printed.decode()})
@@ -706,7 +704,7 @@ sys.exit(chosen['code'])
 
         install_root, unit_dir = base / 'install', base / 'units'
         wrapper_bin = install_root / CS.CC.service_id(binding) / 'bin'
-        ROLE = dict(adapter='codex', configuration={'tools': ['Read', 'Edit']}, seconds=240)
+        ROLE = dict(adapter='codex', configuration={'tools': ['Read', 'Edit']}, seconds=CHILD_WAIT)
         ADAPTERS = {'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
                               'executable': str(vendored), 'qualification': str(qualification),
                               'argv': [sys.executable, '-B', str(wrapper_bin / 'control_launch.py'), 'exec', str(vendored)]
@@ -738,21 +736,22 @@ sys.exit(chosen['code'])
                                   fields['profiles'], concurrency=1, now=time.time())
         observations = Path(config.get('observations') or base / 'no-observations.jsonl')
 
-        # The installed service: the unit's ExecStart, run on its installed configuration.
+        # Load the actual installed closure and construct the production service as serve()
+        # does. Drive its scheduling boundary synchronously; receiver children remain real.
+        # Transport authentication uses Authority.judge and a signed build_request.
+        authority, loop = None, None
         if installed is not None:
-            environment = {k: v for k, v in os.environ.items() if k != 'NOTIFY_SOCKET'}
-            with open(str(base / 'service.err'), 'wb') as err:
-                service['proc'] = subprocess.Popen([config['python'], config['executable'], 'serve', installed['config']],
-                                                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=err,
-                                                   env=environment)
-
-        def live():
-            return service['proc'] is not None and service['proc'].poll() is None
-
-        def bounded(timeout):
-            if service['stalled'] or not live():
-                return 0.0
-            return max(0.0, min(timeout, deadline - time.time()))
+            installed_cs = load('v148_installed_service', wrapper_bin / 'control_service.py')
+            conn = installed_cs.S.open_store(config['store_path'])
+            connections.append(conn)
+            installed_cs.S.rebind_owners(conn, installed_cs.installed_engine(config), keep_previous=False)
+            service = installed_cs.Service(config, conn)
+            service.loop, service.loop_refusal = installed_cs.open_loop(config, service)
+            loop = service.loop
+            authority = installed_cs.CC.Authority(
+                config['store_uuid'], config['domain_uuid'], config['store_path'], installed_cs.E,
+                service.verify, config['host_identity'], service.apply, watermark=service.watermark,
+                minimum_generation=config['authority_generation'], context=True)
 
         def passes():
             found = []
@@ -771,21 +770,36 @@ sys.exit(chosen['code'])
             found = passes()
             return found[-1]['pass'] if found else 0
 
-        def wait_until(predicate, timeout=WAIT):
-            end = time.time() + bounded(timeout)
-            while time.time() < end and live():
-                if predicate():
+        def step():
+            return loop.run() if loop is not None else None
+
+        def finish_workers():
+            """Consume actual launch-pipe events, then finish their production passes.
+
+            No sleep or pass-count race: without a pipe there is nothing to await.
+            The generous per-child bound is only a stuck receiver escape hatch.
+            """
+            end = time.monotonic() + CHILD_WAIT
+            while loop is not None:
+                pipes = loop.pipes()
+                if not pipes:
                     return True
-                time.sleep(0.05)
-            if predicate():
-                return True
-            service['stalled'] = True
+                ready = select.select(sorted(pipes), [], [], max(0, end - time.monotonic()))[0]
+                if not ready:
+                    return False
+                for fd in ready:
+                    loop.readable(pipes[fd])
+                step()
             return False
 
         def send(payload):
             try:
-                return CC.send(str(caller), payload, E, verify_packet, owner_sign, HOST_ID,
-                               timeout=max(1.0, min(30.0, deadline - time.time())))
+                if authority is None:
+                    return {'refused': 'service_not_installed'}
+                request = CC.build_request(str(caller), E.read_binding(str(caller)), payload, owner_sign)
+                response = authority.judge(request, os.getuid())
+                service.observe_response(response)
+                return response
             except Exception as error:  # noqa: BLE001 - a refused request is data for the row
                 return {'refused': getattr(error, 'reason', type(error).__name__)}
 
@@ -817,23 +831,34 @@ sys.exit(chosen['code'])
                     and ((dig(a, 'subject', 'kind') or dig(a, 'content', 'subject', 'kind') or '') == 'land_approval'
                          or 'land-grant-' in str(a.get('alias')))]
 
-        wait_until(lambda: os.path.exists(config.get('socket') or str(base / 'no-socket')), 10)
-        mark = last_pass()
-        woke = note()
-        # The loop re-lands R and M, re-merges C into a conflict and G into a tree its grant does not cover; the
-        # next passes send C back to its builder and ask the owner about G; C's rebuild ends, and its review is
-        # offered.
-        wait_until(lambda: all(lands(s)[-1:] and lands(s)[-1].get('attempt') == 2 and lands(s)[-1].get('state') != 'running'
-                               for s in (R, C, M, G)))
-        wait_until(lambda: bool(grant_items()) and bool(all_offered(C, 'build')))
-        wait_until(lambda: [r['state'] for r in dispatch_records(C, 'build')][-1:] == ['exited'])
-        wait_until(lambda: bool(all_offered(C, 'review')))
+        note()
+        first_pass = step()
+        # No select, timer check, clock advance or signed command between these calls.
+        # Only the real land station can have queued these land-dispatch wakes.
+        wake_pass = step()
+        with region('reland/end-wakes-pass'):
+            ended = [r for r in (first_pass or {}).get('lands', [])
+                     if r.get('state') in ('trunk_moved', 'awaiting_approval', 'conflict')]
+            wakes = (wake_pass or {}).get('wakes', [])
+            check('reland/end-wakes-pass', 'a real conflict and approval land ended in the first pass',
+                  {r['unit'] for r in ended} >= {C, G})
+            check('reland/end-wakes-pass', 'land end alone starts the immediate next pass with each dispatch wake',
+                  bool(ended) and wake_pass is not None
+                  and wake_pass['pass'] == first_pass['pass'] + 1
+                  and wake_pass['sources'] == ['run_end']
+                  and all(any(w.get('source') == 'run_end' and w.get('detail') == r['dispatch_id']
+                              for w in wakes) for r in ended))
+
+        # Independent rows get an explicit journal-driven pass even when the land wake
+        # is broken. Each synchronous pass has completed before its records are read.
+        note()
+        step()
+        workers_finished = finish_workers()
         grant_before = {'items': grant_items(), 'lands': lands(G), 'tip': tip(), 'effects': effect((lands(G)[-1:] or [{}])[0]
                                                                                                    .get('dispatch_id'))}
         # One more journal wake before his answer: nothing is published for G and nothing is asked again.
-        mark_quiet = last_pass()
         note()
-        wait_until(lambda: last_pass() > mark_quiet)
+        step()
         quiet = {'items': grant_items(), 'lands': lands(G), 'tip': tip()}
         scoped_before = {sid: grant_items(sid) for sid in (N, X, P, V)}
         # Answer any request the old implementation incorrectly sent for N too: the row observes
@@ -848,8 +873,9 @@ sys.exit(chosen['code'])
             scoped_answers[sid] = answer(item, 'grant') if item else None
         item = (grant_before['items'] or [{}])[0]
         answered = answer(item, 'grant') if item else None
-        wait_until(lambda: lands(G)[-1:] and lands(G)[-1].get('attempt') == 3 and lands(G)[-1].get('state') != 'running')
-        wait_until(lambda: [r['state'] for r in dispatch_records(C, 'review')][-1:] == ['exited'])
+        note()
+        step()
+        workers_finished = finish_workers() and workers_finished
         # A replay of the very same accepted answer cannot write or emit accepted a second time.
         repeat_before = len(land_events)
         repeated = []
@@ -878,7 +904,8 @@ sys.exit(chosen['code'])
         for unused in range(3):
             mark_extra = last_pass()
             note()
-            extra_passes.append(wait_until(lambda: last_pass() > mark_extra))
+            step()
+            extra_passes.append(last_pass() > mark_extra)
         stable_after = grant_counts()
         final_passes = passes()
         final_tip = tip()
@@ -1040,7 +1067,7 @@ sys.exit(chosen['code'])
             reviews = all_offered(C, 'review')
             check('reland/conflict-rebuild', 'once that build ended, its review was offered, following it, to an '
                   'independent reviewer [%s]' % [(o['dispatch_id'], o['follows'], o['identity']) for o in reviews],
-                  rebuilt and len(reviews) == 1 and reviews[0]['follows'] == rebuilt[0]['dispatch_id']
+                  workers_finished and rebuilt and len(reviews) == 1 and reviews[0]['follows'] == rebuilt[0]['dispatch_id']
                   and reviews[0]['identity'] == REVIEWER and rebuilt[0]['state'] == 'exited')
             check('reland/conflict-rebuild', 'no land of C followed the conflict: its one re-land was the loop\'s only '
                   'land offer of C [%s]' % [(o['dispatch_id'], o['follows']) for o in all_offered(C, 'land')],
@@ -1236,25 +1263,18 @@ sys.exit(chosen['code'])
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        proc = service['proc']
-        if proc is not None and proc.poll() is None:
-            proc.send_signal(signal.SIGTERM)
-            try:
-                proc.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                proc.wait(timeout=10)
-        with contextlib.suppress(Exception):
-            text = (base / 'service.err').read_text()[-1500:]
-            if text.strip():
-                print('  VELDO-0148 service stderr: %s' % text.replace('\n', ' | '))
+        if loop is not None:
+            for line in loop.lines.values():
+                for launch in list(line.runner.launches.values()):
+                    with contextlib.suppress(Exception):
+                        launch.stop('suite teardown')
+                        launch.wait(timeout=30)
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()
         # VELDO-0172: this suite's own fake/capture observation, once its service has stopped.
         if 'fake_engine' in locals():
             fake_capture = conform_formats.conform_fake(locals(), '0148_re_land')
-        time.sleep(0.2)
         for directory, _dirs, _files in os.walk(str(base)):
             with contextlib.suppress(OSError):
                 os.chmod(directory, 0o700)

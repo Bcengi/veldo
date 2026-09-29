@@ -168,6 +168,17 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-09-29, deterministic proof repair from 7ee372ed: suite 86 now steps the
+installed Service and FactoryLoop through signed Authority requests and real
+receiver pipe events. Removed the shared 100-second budget, 20-second polling
+waits, shared stalled flag and teardown sleep. Completed passes precede every
+state snapshot. Independent journal-driven passes prepare the behavior rows;
+reland/end-wakes-pass separately asserts that real land ends start the immediate
+next pass with their dispatch wakes, without a timer or another command. Retargeted
+only reland148-end-wakes-nothing to that row. Production, criteria and footprint
+are unchanged. Initial ordinary run: 16 suite rows, 42 including the preamble,
+zero failures. Proof refresh and further checks follow in the completion entry.
+
 2026-09-29, proof repair at 41340bc1: the once-per-dispatch row now persists a
 new failed land through the station's signed open/end writer, retaining G's real
 replacement subject and eligible prior grant. It asserts refusal without an approval
