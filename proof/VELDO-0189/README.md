@@ -348,3 +348,8 @@ The new pin-mode mutant changes only a newly pinned copy to 0444. The existing
 mode check. That defense already exists at the review baseline; the seven defect rows are the new red
 record's required failures. Mutation execution is reserved to the reviewer; registered mutants are
 pending until that execution, never claimed rejected on the strength of anchors alone.
+
+`red-at-be94c919.json` records all seven new defect rows red by assertion against the exact pre-fix
+commit. The other 25 rows remain green, including the pre-existing pin-mode defense. No row raised,
+and each row name appears once. The first selected-suite run on the fixes passed all 32 behavior rows
+and 58 checks overall; final-source verification is recorded separately in verification-review.json.
