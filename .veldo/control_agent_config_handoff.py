@@ -370,6 +370,12 @@ def codex(configuration, capability, inventory, config, *, catalog=None, feature
             for skill in capability['skills']]
         for skill in capability['skills']:
             files['role-skills/' + skill['name'] + '/SKILL.md'] = skill['body'].encode()
+    # Serialize one table in both the profile and CLI, after every grant override.
+    # Literal feature dots remain quoted table keys, not TOML path separators.
+    features = configuration.setdefault('features', {})
+    for key in list(configuration):
+        if key.startswith('features.'):
+            features[key[len('features.'):]] = configuration.pop(key)
     return files
 
 

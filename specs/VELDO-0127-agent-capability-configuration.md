@@ -192,6 +192,17 @@ not tests run by this writing revision.
 
 ## History
 
+2026-09-29, generated profile repair from 9233e1b4: AC2 and AC4 require
+one features table after all handoff assignments, preserving every existing
+feature value and literal dotted name. The generated config.toml must parse
+with tomllib, and the pinned binary must accept that exact profile and the
+receiver arguments on a credential-free loopback stand-in, with the expected
+first-request tool set. Falsifier: restore the mixed table and dotted-key form;
+the profile parse row must fail by assertion. A dropped later grant must fail
+the pinned tool comparison. The existing footprint covers this repair.
+Live proofs are not recaptured here; the reviewer recaptures them after this
+lands because the production digest changes.
+
 2026-09-29, recorded feature repair from 2234d205: AC2 and AC4 explicitly set
 every listed feature outside the known non-tool set, including default-off tool
 sources. Mapped features follow the native grant regardless of their default;
