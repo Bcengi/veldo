@@ -16,6 +16,8 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
   - "engine/.veldo/control_engine_claude*.py"
@@ -30,6 +32,11 @@ footprint:
   - "engine/bin/veldo"
   - "scripts/suites/*_veldo_0186_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/66_veldo_0047_authority.py"
+  - "scripts/suites/71_veldo_0138_channel_service.py"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "scripts/suites/83_veldo_0154_factory_loop.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -136,3 +143,31 @@ and control_accounts are. Still a draft.
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
 
 2026-09-28: Out of scope now names VELDO-0189 as the owner of replacing installed engine files (owner, Telegram 29307, 29313); criteria and status unchanged.
+
+
+2026-09-28: implemented on build-veldo-0186. The service census installs runtime literals with digests,
+including the runtime qualification entry point and its LangGraph record. Factory setup checks host
+engine versions and digests, pins Claude Code through the existing writer, binds both against the installed
+records and records their paths, versions and digests. Suite 86 covers installed assets, missing source,
+installed receiver bindings, unlisted versions and digest mismatches. Proof lives in proof/VELDO-0186/.
+The footprint also names suites 66 (0047), 71 (0130 and 0138) and 83 (0154): AC1 changes their
+installer input from Python-only fixture trees to complete source trees with runtime assets. Their
+production calls remain unchanged. The scaffold includes the new setup helper. Status remains ready
+for independent review.
+
+2026-09-28: review repair. Finding 186 mutation targets now use the final row labels that the
+checker matches, preserving the suite's single report per exact behavior row. Added suite 74
+(0140) to the footprint because AC1 and AC2 require its real factory setup fixture to carry
+runtime records and qualified inert engine bytes, using the existing 0186 fixture writer.
+Audited setup and service installer callers across suites and shared helpers; the other installer
+fixtures already carry these inputs. Production refusals and the selftest scope contract are unchanged.
+
+2026-09-28: review repair adds setup missing-source preflight proof, fixed runtime directory modes,
+exception-safe fixture PATH restoration, explicit unknown Claude version refusal, measured pin counts
+and receiver bind-refusal metrics. AC2 observability requires control_launch.py and its engine copy,
+now named in the footprint because the receiver owns the binding refusal and event stream.
+
+2026-09-28: VELDO-0189 inputs: older installs acquiring pins and host/engines.json; acquiring
+bin/runtime and state_root; moving the runs directory when state_root is added.
+
+2026-09-28, re-check of the review fix: a fourth VELDO-0189 input. VELDO-0189 AC3 says the upgrade writes only the engine directory, the record's engine keys, the keys the record lacks and the two unit files; once this specification lands that list must also name the Claude Code pin under <state root>/engines, host/engines.json, bin/runtime and the receiver configuration's state_root. Release 2 notes from the same re-check: binds_refused counts only refusals from module.bind, not the later refusals in _bind; the error taxonomy does not yet list missing_evidence:engine_version:claude_code; the engine_bind_refused event carries no dispatch_id.

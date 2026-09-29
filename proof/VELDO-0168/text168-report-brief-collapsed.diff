@@ -1,0 +1,5 @@
+--- a/.veldo/control_telegram_report.py
++++ b/.veldo/control_telegram_report.py
+@@ -418 +418 @@
+-                           _shown(data.get('requested_by')), str(data.get('brief') or UNAVAILABLE)),
++                           _shown(data.get('requested_by')), ' '.join(str(data.get('brief') or UNAVAILABLE).split())),  # defect

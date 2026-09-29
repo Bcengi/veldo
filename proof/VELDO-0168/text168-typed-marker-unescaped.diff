@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -29 +29 @@
+-        literal = literal or text.startswith((CUT, CONTINUED), i)
++        literal = literal  # defect: a typed cut marker looks inserted
