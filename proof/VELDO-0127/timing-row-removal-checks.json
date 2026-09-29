@@ -1,0 +1,49 @@
+{
+ "baseline_commit": "20bc8548",
+ "gate_environment": {
+  "behavior_rows_passed": 176,
+  "delivery_seconds": 19.289,
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo0127-timing-home-548ercuk",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "exit_code": 2,
+  "failed": 0,
+  "log_sha256": "8581c57dd9b2d54b261cdde17cb8c32997618e244b73f36a9ae0631ba7c75320",
+  "total_passed": 202,
+  "wall_seconds": 19.362
+ },
+ "implementation_commit": "befff264",
+ "mutations": "Timing mutation and diff removed; behavioral registrations and historical results retained. No mutation checks executed in this follow-up.",
+ "normal": {
+  "behavior_rows_passed": 176,
+  "delivery_seconds": 48.312,
+  "exit_code": 2,
+  "failed": 0,
+  "log_sha256": "ce6dde92c1a538c8c26137591235e08a530701380ec00df930108e2b1a96a498",
+  "total_passed": 202,
+  "wall_seconds": 48.38
+ },
+ "red_record": "Timing-only record removed. No new behavior row; no new red replay applies. Existing profile red record and its earlier driver retained.",
+ "scope": "Selected suite runs only; no full gate, live qualification, or landing claim.",
+ "suite": "87_veldo_0127_codex_delivery",
+ "timing": "informational only; no elapsed-time pass/fail row",
+ "validation": {
+  "delivery_engine_copies": "4 of 4 byte-identical",
+  "footprint": "nothing outside",
+  "mutation_anchors": "0 bad anchors; no duplicate names",
+  "removed_timing_references": 0,
+  "requires_regenerated": true,
+  "validate_all_exit_code": 0
+ }
+}

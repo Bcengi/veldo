@@ -15,8 +15,13 @@ behavior replay against `20bc8548` is not applicable. The old timing-only red
 record is removed rather than retained as behavioral evidence. Existing
 behavioral mutation records remain; no mutation execution is claimed here.
 
-The two suite 87 runs and scoped validation results are recorded in
-`timing-row-removal-checks.json`. Selected-suite exit 2 means partial coverage,
+Both suite 87 runs pass all 176 delivery rows (202 including the preamble).
+Normal measured delivery time is 48.312 seconds (48.380 overall); the empty gate
+environment measures 19.289 seconds (19.362 overall). Requirements are regenerated,
+the footprint has nothing outside, anchors report zero bad anchors, validation
+passes, and all four delivery production modules match their engine copies.
+Results are recorded in `timing-row-removal-checks.json`.
+Selected-suite exit 2 means partial coverage,
 not an assertion failure or a full gate pass. The reviewer runs the full gate
 and mutation checks.
 
