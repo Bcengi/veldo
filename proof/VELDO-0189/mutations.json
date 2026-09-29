@@ -1,5 +1,5 @@
 {
- "schema": "veldo.mutations/v1",
+ "schema": "veldo.proof-mutations/v1",
  "finding": 189,
  "mutants": [
   {
@@ -399,5 +399,8 @@
    "mutant_sha256": "77670c133d3b789dea77143ca1a6c33ed0b20531e2540f33bc9fca861b8b85ca"
   }
  ],
- "note": "Registry, unique anchors and mutant syntax checked. Mutation executions are reserved to the reviewer; no rejection is claimed for this tree."
+ "note": "Registry, unique anchors and mutant syntax checked. Mutation executions are reserved to the reviewer; no rejection is claimed for this tree.",
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "registry": "scripts/check_teeth_mutations.py finding 189"
 }

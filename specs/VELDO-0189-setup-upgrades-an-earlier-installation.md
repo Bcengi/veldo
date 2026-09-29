@@ -302,3 +302,9 @@ stand-in, and their existing installation assertions must cover the extended ins
 now lists the setup API, passkey and upgrade service_request calls as local authority socket transports;
 AC4 uses the last for inspect and ownership commitment. Telegram endpoints and rendering assertions stay
 the same. This resolves the census failure introduced by combining the two branches.
+
+2026-09-29, amendment proof: the three new rows are red by assertion against merged baseline 3fa0d77b;
+the current upgrade suite passes all 51 checks in both ordinary and empty gate environments. All ten
+selected integration suites pass, and 0171 also passes in the empty environment. Finding 189 has 36
+registered mutants with valid anchors and syntax; their execution and the aggregate gate are reserved
+to the reviewer. Verification and the baseline red record are in proof/VELDO-0189/.

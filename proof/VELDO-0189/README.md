@@ -298,3 +298,24 @@ The amendment-only footprint check against merge commit 3fa0d77b has no outside 
 standalone checker compares origin/main with this entire stacked branch and therefore reports inherited
 0171 paths and checkout gate stamps. Those paths are not added to the 0189 footprint to hide the stack.
 Gate byproducts are not staged or committed by this work.
+
+
+## Amendment verification
+
+`red-at-3fa0d77b.json` runs the amended suite against the merge before the amendment: all three new
+behavior rows are red by assertion, as are six existing rows that now exercise the extended set.
+No row raised. Existing defenses that the amendment does not change remain green on that baseline;
+the earlier red records above cover their original implementations.
+
+`verification-amendment.json` records ten ordinary selected suites, all green: 0189 engine upgrade,
+0171 setup API, 0139 factory setup, 0186 setup assets, 0047 authority, 0140 standing delegation,
+0130 API, 0138 channel service, 0154 factory loop, and 0168 text. It also records 0189 and 0171 under
+the requested empty environment, both green. The upgrade suite reports 51 passing checks in each
+run, including 25 behavior rows; the API suite reports 44. Selected-suite success exits 2 by contract.
+The 0168 census explicitly classifies the three merged setup/passkey sends as local authority socket
+calls, retaining its exhaustive endpoint and renderer checks.
+
+The spec validator passes; every registered mutation has a unique valid anchor; all 36 finding 189
+mutants compile. Mutation execution and the aggregate gate remain the reviewer's work, and no mutation
+rejection is claimed for this tree. Engine copies match. The amendment footprint is clean against
+3fa0d77b; the stacked checker lists only the two inherited gate stamps outside 0171 plus 0189.
