@@ -12,7 +12,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-SUITE = '86_veldo_0127_agent_configuration.py'
+SUITE = '87_veldo_0127_codex_delivery.py'
 P = '-' * 2
 
 
@@ -54,14 +54,13 @@ def main():
     with tempfile.TemporaryDirectory(prefix='v127-red-') as temp:
         archive = git.run(['git','-C',str(ROOT),'archive',commit], capture_output=True,check=True).stdout
         subprocess.run(['tar','-x','-C',temp],input=archive,check=True)
-        result = subprocess.run([sys.executable,'-B',__file__,P+'one',temp],capture_output=True,text=True,timeout=120)
+        result = subprocess.run([sys.executable,'-B',__file__,P+'one',temp],capture_output=True,text=True,timeout=600)
         if result.returncode:
             raise SystemExit('Red replay did not finish: ' + result.stderr[-1000:])
         observed = json.loads(result.stdout)
-    behavior = [r for r in observed['rows'] if r[0] in {
-        'VELDO-0127 review/skill-git-boundary'}]
+    behavior = observed['rows']
     observed['behavior_rows'] = behavior
-    observed['every_changed_behavior_row_red'] = len(behavior) == 1 and all(not ok for _, ok in behavior)
+    observed['every_changed_behavior_row_red'] = len(behavior) == 176 and all(not ok for _, ok in behavior)
     report = dict(schema='veldo.proof-red/v1',spec_id='VELDO-0127',commit=commit,
                   suite='scripts/suites/'+SUITE,tree='unchanged git archive; current suite and proof helper',**observed)
     path = HERE / ('red-at-' + sys.argv[2] + '.json')

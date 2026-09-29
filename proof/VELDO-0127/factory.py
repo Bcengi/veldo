@@ -216,6 +216,7 @@ for raw in sys.stdin:
         vendored.chmod(0o700)
     codex_qualification = base / 'codex-qualification.json'
     codex_qualification.write_text(json.dumps(X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))))
+    shutil.copyfile(codex_qualification, mods / 'runtime/codex-qualification.json')
     config = base / 'receiver.json'
     wrapper = []
     slice_name = 'veldo0127-' + str(os.getpid()) + '.slice'

@@ -190,50 +190,16 @@ if engine == 'claude':
     else: sys.exit(0)
 else:
     own['configuration'] = config
-    native = (['exec_command', 'write_stdin'] if config.get('features', {}).get('shell_tool') else [])
-    if config.get('tools', {}).get('update_plan', {}).get('enabled'): native.append('update_plan')
-    own['wire'] = {'tools': [{'type':'function', 'name':n, 'parameters':{}} for n in native]}
-
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('wire_fixture', WIRE_FIXTURE)
+    wire = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wire)
+    if config.get('model_provider') in ('loopback', 'role_observation'):
+        sys.exit(wire.forward(args, config))
     own['mcp_tools'] = {n: [t for t in server_tools(e) if t in e.get('enabled_tools',[])]
                        for n,e in config.get('mcp_servers',{}).items()}
-    own['wire']['tools'] += [{'type':'namespace', 'name':'mcp__' + n,
-                              'tools':[{'type':'function', 'name':t, 'parameters':{}} for t in ts]}
-                             for n,ts in own['mcp_tools'].items()]
-    path = config.get('model_catalog_json')
-    catalog = json.loads(Path(path).read_text()) if path else {'models': []}
-    entry = next((m for m in catalog['models'] if m['slug'] == config.get('model')), {})
-    own['model_catalog'] = catalog
-    nested = list(native)
-    if entry.get('apply_patch_tool_type', 'freeform'):
-        nested.append('apply_patch')
-    if config.get('mcp_servers'):
-        nested += ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
-    if entry.get('supports_search_tool', True):
-        nested.append('tool_search')
-    else:
-        nested += ['mcp__' + n + '__' + t for n, ts in own['mcp_tools'].items() for t in ts]
-    if 'clock' in entry.get('experimental_supported_tools', []): nested.append('clock__curr_time')
-    tools = []
-    if entry.get('tool_mode') == 'code_mode_only':
-        tools = [{'type':'namespace', 'name':'functions', 'tools':[
-            {'type':'function', 'name':'exec', 'description':chr(10).join('### `' + n + '`' for n in nested)},
-            {'type':'function', 'name':'wait'}]}]
-    else:
-        tools = [{'type':'function', 'function':{'name':n.replace('__jira__', '__jira.'), 'parameters':{}}} for n in nested]
-    if entry.get('multi_agent_version'):
-        tools.append({'type':'namespace','name':'collaboration','tools':[{'type':'function','name':n}
-                     for n in ('followup_task','interrupt_agent','list_agents','send_message','spawn_agent','wait_agent')]})
-    if 'send_user_message_async' in entry.get('experimental_supported_tools', []):
-        tools.append({'type':'function','name':'functions.request_user_input_async'})
-    if 'clock' in entry.get('experimental_supported_tools', []): tools.append({'type':'function','name':'clock.sleep'})
-    own['wire'] = {'tools': tools}
-    if config.get('model_provider') == 'loopback':
-        import urllib.request
-        target = config['model_providers']['loopback']['base_url'] + '/responses'
-        with urllib.request.urlopen(urllib.request.Request(target, data=json.dumps(own['wire']).encode(),
-                                    headers={'Content-Type':'application/json'}), timeout=10) as response:
-            response.read()
-        sys.exit(0)
+    own['model_catalog'] = json.loads(Path(config['model_catalog_json']).read_text())
+    own['wire'] = wire.capture(config)
     (markers / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
     packet = json.loads(sys.stdin.read())
     if Path('.git').exists():
@@ -250,7 +216,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
 '''
     fake = ff.embed(fake.replace('PYTHON', sys.executable))
     def fake_engine(name):
-        return fake.replace('CATALOG_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/catalog-fixture.json'))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
+        return fake.replace('WIRE_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/wire_fixture.py'))).replace('CATALOG_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/catalog-fixture.json'))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
     @live_step
     def c_msg(mid, inp, out):
         return {'line': {'type': 'assistant', 'message': {'id': mid, 'usage': {'input_tokens': inp, 'output_tokens': out}}}}
@@ -537,6 +503,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 definition['native_tools'] += [{'name':n, 'load':'always'} for n in grants]
                 _, save_error = attempt(lambda: f.save(definition))
                 _, rec, own, _ = run('codex', name, {'role':name}) if save_error is None else (None, {}, {}, None)
+                if 'tool_search' in grants:
+                    check('catalog/grants', name + ': undeliverable search grant is refused at save',
+                          save_error == 'unsupported_configuration:codex_tool:gpt-6-astra:tool_search')
+                    continue
                 entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
                 original = next((m for m in catalog.get('models', []) if m['slug'] == 'gpt-6-astra'), {})
                 wanted_entry = copy.deepcopy(original)

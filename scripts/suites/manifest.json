@@ -1166,6 +1166,15 @@
    ],
    "regions": "Runtime asset census and missing source refusal; setup pins Claude Code and records Codex, installed receiver bindings, unknown versions and digest mismatches; setup missing-source refusal leaves an empty state root; nested runtime directories are 0500; unknown Claude version names version evidence; real pin counts exclude vendor bindings; installed receiver emits binds_refused once per failed engine bind",
    "requires_note": "Only shared ROOT and expect. Real setup, service installer, keys, store, enrollment and installed engine bindings. Inert engine bytes with shared constructors, no engine executes; containment host qualification and daemon reload are fixture seams."
+  },
+  {
+   "name": "87_veldo_0127_codex_delivery",
+   "file": "87_veldo_0127_codex_delivery.py",
+   "requires": [
+    "87_veldo_0127_codex_delivery"
+   ],
+   "regions": "Each grantable Codex tool on every qualified model, exact empty-role and MCP controls, save refusals, and production missing or extra tool stops.",
+   "requires_note": "Only ROOT and expect. Accepted signed role writes and Receiver._baseline; pinned binary against loopback with an empty generated profile and network guard. No login or model."
   }
  ]
 }

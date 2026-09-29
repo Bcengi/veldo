@@ -192,6 +192,20 @@ not tests run by this writing revision.
 
 ## History
 
+2026-09-29, Codex grant delivery repair from 13cc4898: AC1 and AC3 refuse
+model-specific clock and async-input grants absent from the pinned catalog, and
+tool-search combinations that cannot expose the exact selected definitions.
+AC2 preserves clock sleep, permits an empty native grant set, and normalizes the
+Code Mode web search declaration. The loopback transport advertises the same
+standalone web search support as the production provider. AC4 now observes the
+pinned binary's built-in and MCP definitions through an empty-profile loopback
+preflight and refuses missing or extra tools before the task can launch. Suite 86
+uses real wire observations instead of catalog-derived fake tools; suite 87 drives
+each grant and model, save refusals, empty controls and production stops. Existing
+footprint patterns cover every file; no expansion is needed. Production digests
+changed: the live capture must be redone by the reviewer after this lands on the
+branch. This repair does not recapture live proofs or claim a gate pass.
+
 2026-09-29, merged-tree Metering integration repair: add the VELDO-0166 usage-window
 suite to the footprint to align its receiver stand-in with AC2/AC4's launch contract.
 Every production Receiver defines binding, and the engine path binds a dictionary

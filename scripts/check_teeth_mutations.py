@@ -9238,6 +9238,28 @@ def cases():
     result[-1]['dir'] = '.'
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
+    delivery127 = '87_veldo_0127_codex_delivery.py'
+    add(127, 'role127-delivery-sleep-disabled', delivery127, 'control_agent_config_handoff.py',
+        "    configuration['features.goals'] = False",
+        "    configuration['features.sleep_tool'] = {'enabled': False}\n"
+        "    configuration['features.goals'] = False", ['delivery/gpt-6-astra/clock'], [])
+    add(127, 'role127-delivery-web-dropped', delivery127, 'control_agent_config_handoff.py',
+        "    configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'",
+        "    configuration['web_search'] = 'disabled'", ['delivery/gpt-6-astra/web_search'], [])
+    add(127, 'role127-delivery-comparison-skipped', delivery127, 'control_launch.py',
+        "                tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])",
+        "                tools = []", ['stop/gpt-6-astra/missing', 'stop/gpt-6-astra/extra', 'stop/gpt-6-astra/mcp'], [])
+    add(127, 'role127-delivery-unsupported-accepted', delivery127, 'control_agent_config.py',
+        "        codex_grants(definition)", "        pass", ['delivery/gpt-5.5/clock',
+        'delivery/gpt-5.5/request_user_input_async', 'save/gpt-5.5/search-mcp'], [])
+    add(127, 'role127-delivery-mcp-dropped', delivery127, 'control_agent_config_handoff.py',
+        "configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']",
+        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['delivery/gpt-6-astra/jira'], [])
+    add(127, 'role127-delivery-default-tool', delivery127, 'control_agent_config_handoff.py',
+        "configuration['features.' + feature] = name in revision['native_tools']",
+        "configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']",
+        ['delivery/gpt-6-astra/none'], [])
+
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
