@@ -38,6 +38,7 @@ footprint:
   - "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md"
   - "specs/index.md"
   - "proof/VELDO-0189/*"
+  - "proof/VELDO-0189/older/*"
 behavior_bearing: true
 observability:
   logs: >
@@ -77,7 +78,7 @@ acceptance_criteria:
       templates. The suite lays down two older engines, each as its own scratch host with its own state
       root, install root, unit directory, host trust and clone: the whole `.veldo` of commit 8bc34e94 (the
       merge that landed VELDO-0139) and of commit 971186ac (the landing of VELDO-0155 and VELDO-0156), each
-      taken with `git archive` and set up by its own setup module, and upgrades each with the current setup;
+      exported once with `git archive`, committed as a digest-verified fixture, and set up by its own setup module, and upgrades each with the current setup;
       a fresh scratch host is set up by the current setup with the same arguments. The installed engine
       directories, including runtime asset subdirectories, must be equal byte for byte in names, bytes and
       installer modes. The upgrade pins the qualified Claude Code version under
@@ -88,8 +89,8 @@ acceptance_criteria:
       listed in proof/VELDO-0189/fresh-equivalence.json, each with its reason (a key id, an enrollment digest,
       the store and domain identities, the host identity), and any other difference fails the row. A third
       row upgrades a current installation to a fixture engine derived from the current one without one module
-      it installs, and requires that file gone. A census row reads every first-parent commit of main from
-      8bc34e94 on and requires each one's installer to write the `closure` and `template` keys the upgrade
+      it installs, and requires that file gone. A census row reads a digest-verified committed capture of every first-parent commit of main from
+      8bc34e94 through the recorded capture head and requires each one's installer to write the `closure` and `template` keys the upgrade
       reads. Falsifier: Write only the files whose names the installed record already lists, and the 8bc34e94
       row must fail on the upgraded engine directory lacking control_client_api.py.
     falsified_by: >
@@ -354,3 +355,11 @@ baseline drive at 7f38b201 observes all 32 upgrade rows passing, including the d
 row, so no all-red behavior claim is made for this registration-only repair. Exact row lists,
 matching results and the inherited origin/main footprint discrepancy are in
 proof/VELDO-0189/registration-audit.json. Mutation execution remains reviewer pending.
+
+2026-09-29, history-independent proof inputs: the two older engines are exact committed archives of
+their commits' .veldo trees, each digest checked before extraction. The installer census likewise
+captures the same first-parent histories and all 14 distinct installers through fed739c7 and the
+recorded main head, and still checks every captured installer plus the current production installer.
+The footprint explicitly adds proof/VELDO-0189/older/* for the archives, census, digest manifest and
+reproducible exporter required by AC1. The suite reads no repository history. Existing production
+interfaces, behavior rows, kill points and finding 189 falsifiers are retained.

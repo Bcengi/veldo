@@ -67,8 +67,8 @@ nothing and restarts nothing.
 
 ## Rows (scripts/suites/86_veldo_0189_engine_upgrade.py)
 
-Each older engine is the whole `.veldo` of its commit taken with `git archive` and set up by its own setup
-module on its own scratch host (state root, install root, unit directory, host trust, clone); a fresh host
+Each older engine is the whole `.veldo` of its commit exported once with `git archive`, committed in
+`older/`, checked against `older/manifest.json` before extraction, and set up by its own setup module on its own scratch host (state root, install root, unit directory, host trust, clone); a fresh host
 is set up by the current setup with the same arguments. The authority unit's ExecStart is run by a user
 manager stand-in of the suite's own, whose invocation log the suite owns; the killed setups run in a
 process of their own whose systemctl calls reach that stand-in over a UNIX socket.
@@ -82,7 +82,7 @@ process of their own whose systemctl calls reach that stand-in over a UNIX socke
 - `upgrade/removed-module` (AC1): the fresh host upgraded to a fixture engine (the current one with
   control_keys_custody.py no longer an entry point and absent): that file gone from `bin` and the record,
   named removed, `bin` exactly the fixture's files.
-- `upgrade/census` (AC1): every first-parent commit from 8bc34e94 on (of HEAD, and of main when present),
+- `upgrade/census` (AC1): every captured first-parent commit from 8bc34e94 on (of HEAD, and of main when present),
   each distinct `.veldo/control_service.py` parsed: its installer writes `closure` as a digest per file and
   `template` as a digest.
 - `upgrade/refused-by-name` (AC1, AC2): an edited engine file, a planted file and a C library whose
@@ -481,3 +481,20 @@ proof records, is wholly inside VELDO-0189's existing footprint. No protected pa
 
 `python3 .veldo/validate.py all` passes (exit 0). The repair footprint check finds six
 changed paths and none outside the declared footprint.
+
+## History-independent suite inputs
+
+`older/generate.py` exports the exact `.veldo` trees of 8bc34e94 and 971186ac with Git archive,
+then compresses them with a fixed gzip timestamp. `older/manifest.json` records both full commit IDs,
+the compressed and original archive SHA-256 digests, and the fixed census capture heads. Regenerating
+uses those heads, so the inputs remain reproducible after this branch advances. No fixture is synthesized
+from current engine code. The suite verifies the compressed bytes before extraction or parsing.
+
+The census fixture retains all 244 commits and all 14 distinct installers from the same HEAD and main
+first-parent walks the previous suite read. Its existing AST assertion still checks each installer;
+the current production installer is checked too. The suite itself never consults repository history.
+Scratch Git repositories used by real setup interfaces remain part of the proof.
+
+The spec footprint explicitly names `proof/VELDO-0189/older/*` because AC1 needs these committed inputs
+and their reproducible exporter. All existing behavior rows, production interfaces and finding 189
+mutations are retained. The registered suite and regenerated requires file retain the same suite name.

@@ -19,6 +19,7 @@ their own assertions (the suite records that against each row rather than raisin
     python3 -B proof/VELDO-0189/drive.py --red <pre-change commit>
     python3 -B proof/VELDO-0189/drive.py --cache <directory> [--budget <seconds>]   (resumable)
 """
+# Add --history-free to --red COMMIT to run the baseline suite without repository history.
 # Add --runtime to --red COMMIT to assert the runtime budget against the original suite.
 import ast
 import contextlib
@@ -27,6 +28,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import tarfile
 from pathlib import Path
 import subprocess
 import sys
@@ -67,7 +69,7 @@ def _driver():
     return module
 
 
-def one(paths, root):
+def one(paths, root, original_suite=False):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
@@ -81,7 +83,7 @@ def one(paths, root):
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
-        source = (ROOT / 'scripts/suites' / SUITE).read_text()
+        source = ((Path(root) if original_suite else ROOT) / 'scripts/suites' / SUITE).read_text()
         for module, path in paths.items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
             if source.count(anchor) != 1:
@@ -94,7 +96,7 @@ def one(paths, root):
             'preamble_rows': len(rows) - len(mine)}
 
 
-def run(paths=None, root=None):
+def run(paths=None, root=None, original_suite=False):
     key = None
     if CACHE is not None:
         key = hashlib.sha256(json.dumps([_sha(ROOT / 'scripts/suites' / SUITE), str(root or ROOT),
@@ -105,6 +107,8 @@ def run(paths=None, root=None):
             raise SystemExit('drive: the budget is spent; the finished runs are kept in %s, run it again' % CACHE)
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
+    if original_suite:
+        command.append('--original-suite')
     proc = subprocess.run(command, capture_output=True, text=True, timeout=900)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -122,21 +126,29 @@ def _raised(observed):
     return any('ran to its end' in d for d in observed['details'])
 
 
-def red(commit):
+def red(commit, history_free=False):
     """Run the current suite once against the whole tree of COMMIT, in a local clone checked out at it."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
     with tempfile.TemporaryDirectory(prefix='v189-red-') as directory:
-        # A local clone checked out at COMMIT, so the suite finds the older engines and the history its census
-        # reads (a bare archive has no repository, and the rows over the older hosts would raise instead).
         tree = Path(directory) / 'tree'
-        _git_process.run(['git', 'clone', '-q', '--no-checkout', str(ROOT), str(tree)], capture_output=True, check=True)
-        _git_process.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True,
-                         check=True)
+        if history_free:
+            # Reproduce the harness defect using the baseline's own suite in an exported tree.
+            tree.mkdir()
+            archive = _git_process.run(['git', '-C', str(ROOT), 'archive', '--format=tar', resolved],
+                                       capture_output=True, check=True).stdout
+            with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
+                bundle.extractall(tree, filter='data')
+            assert not (tree / '.git').exists()
+        else:
+            _git_process.run(['git', 'clone', '-q', '--no-checkout', str(ROOT), str(tree)], capture_output=True, check=True)
+            _git_process.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True,
+                             check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
-        observed = run({}, tree)
+        observed = run({}, tree, original_suite=history_free)
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0189', suite='scripts/suites/' + SUITE, commit=resolved,
-                  tree='a local clone checked out at %s, unchanged; the current suite file run against it' % resolved, modules=modules,
+                  tree=('baseline archive without .git, running its original suite' if history_free else
+                        'a local clone checked out at %s, unchanged; the current suite file run against it' % resolved), modules=modules,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
@@ -158,10 +170,10 @@ def main():
             support = _load('setup_runtime', ROOT / 'scripts/suites/support/setup_runtime.py')
             support.runtime_red(ROOT, HERE, SUITE, sys.argv[2], 60, _git_process)
         else:
-            red(sys.argv[2])
+            red(sys.argv[2], history_free='--history-free' in sys.argv[3:])
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], original_suite='--original-suite' in sys.argv[4:])))
         return
     ctm = _driver()
     cases = [c for c in ctm.cases() if c['finding'] == FINDING]

@@ -6,7 +6,7 @@ Only shared ROOT and expect are consumed. One temporary tree holds the .veldo co
 current installer copies its fixed executable from, so a registered mutation of a production file (the setup
 module, its upgrade and API steps, the service installer, the scaffolder) reaches every run. The older
 engines are the whole .veldo of commit 8bc34e94 (the merge that landed VELDO-0139) and of commit 971186ac
-(the landing of VELDO-0155 and VELDO-0156), each taken from the repository's history with `git archive` and
+(the landing of VELDO-0155 and VELDO-0156), each read from a digest-verified committed archive and
 set up by its own setup module; each is its own scratch host with its own state root, install root, unit
 directory, host trust and clone. Every path setup writes is scratch. Real: the owner's OpenSSH key made here,
 Git clones, 0600 token files, the setup modules' own command surface (main), the installed authority unit's
@@ -23,6 +23,7 @@ is printed.
 
 def _v189_suite():
     import contextlib
+    import gzip
     import hashlib
     import importlib.util
     import io
@@ -651,15 +652,26 @@ def _v189_suite():
         def answers(self):
             return bool(self.send({'operation': 'inspect', 'entity_ids': []}).get('accepted'))
 
-    def older_engine(commit):
-        """The whole .veldo of `commit`, from the repository's history with `git archive`, and its setup module."""
+    def fixture(name, row):
+        """Verify committed historical bytes before any extraction or parsing."""
+        directory = ROOT / 'proof/VELDO-0189/older'
+        try:
+            manifest = json.loads((directory / 'manifest.json').read_text())
+            data = (directory / name).read_bytes()
+            valid = hashlib.sha256(data).hexdigest() == manifest['files'][name]['sha256']
+        except (OSError, ValueError, KeyError, TypeError):
+            data, valid = None, False
+        check(row, 'committed fixture exists and matches its recorded digest: ' + name, valid)
+        return data if valid else None
+
+    def older_engine(commit, row):
+        """The exact archived .veldo of `commit`, verified before its setup module is loaded."""
+        shipped = fixture(commit + '.tar.gz', row)
+        if shipped is None:
+            return None
         directory = base / ('engine-' + commit)
         directory.mkdir()
-        shipped = _git_process.run(['git', '-C', str(ROOT), 'archive', '--format=tar', commit, '.veldo'],
-                                   capture_output=True)
-        if shipped.returncode or not shipped.stdout:
-            return None
-        with tarfile.open(fileobj=io.BytesIO(shipped.stdout)) as archive:
+        with tarfile.open(fileobj=io.BytesIO(shipped), mode='r:gz') as archive:
             archive.extractall(str(directory), filter='data')
         return load('v189_setup_' + commit, directory / '.veldo' / 'control_factory_setup.py')
 
@@ -1054,7 +1066,7 @@ def _v189_suite():
         # AC1 and AC3 and AC4, over each older engine's host.
         hosts, laid_down = {}, {}
         for commit, row in zip(OLDER, (U8, U9)):
-            old = older_engine(commit)
+            old = older_engine(commit, row)
             host = Host('h' + commit)
             code, laid = host.setup(module=old) if old else (None, {})
             if code != 0 or laid.get('outcome') != 'set_up':
@@ -1194,21 +1206,19 @@ def _v189_suite():
         # AC1: every installer from 8bc34e94 on writes the closure and template keys the upgrade reads.
         with section(CN):
             import ast
-            chain = _git_process.run(['git', '-C', str(ROOT), 'rev-list', '--first-parent', 'HEAD'], capture_output=True,
-                                     text=True).stdout.split()
-            anchor = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', '8bc34e94^{commit}'],
-                                      capture_output=True, text=True).stdout.strip()
-            check(CN, '8bc34e94 is on the first-parent history of this engine [%d commits]' % len(chain), anchor in chain)
+            data = fixture('census.json.gz', CN)
+            census = json.loads(gzip.decompress(data)) if data is not None else {}
+            chain = census.get('chain', [])
+            anchor = census.get('anchor')
+            check(CN, '8bc34e94 is on the captured first-parent history of this engine [%d commits]' % len(chain),
+                  bool(anchor) and anchor.startswith(OLDER[0]) and anchor in chain)
             commits = chain[:chain.index(anchor) + 1] if anchor in chain else []
-            main = _git_process.run(['git', '-C', str(ROOT), 'rev-list', '--first-parent', 'main'], capture_output=True,
-                                    text=True).stdout.split()
+            main = census.get('main', [])
             if anchor in main:
                 commits += [c for c in main[:main.index(anchor) + 1] if c not in commits]
-            batch = _git_process.run(['git', '-C', str(ROOT), 'cat-file', '--batch-check'], capture_output=True, text=True,
-                                     input=''.join('%s:.veldo/control_service.py\n' % c for c in commits)).stdout.splitlines()
-            blobs = {}
-            for commit, line in zip(commits, batch):
-                blobs.setdefault(line.split()[0], []).append(commit)
+            blobs = census.get('blobs', {})
+            check(CN, 'the census includes exactly every captured commit',
+                  sorted(c for item in blobs.values() for c in item['commits']) == sorted(commits))
 
             def writes_engine_keys(source):
                 tree = ast.parse(source)
@@ -1227,11 +1237,12 @@ def _v189_suite():
                             return True
                 return False
             lacking = []
-            for blob, found in sorted(blobs.items()):
-                source = _git_process.run(['git', '-C', str(ROOT), 'cat-file', 'blob', blob], capture_output=True,
-                                          text=True).stdout if blob != 'missing' else ''
+            for blob, item in sorted(blobs.items()):
+                source, found = item['source'], item['commits']
                 if not source or not writes_engine_keys(source):
                     lacking += found
+            check(CN, 'the current production installer still writes the same engine keys',
+                  writes_engine_keys(PRODUCTION['control_service.py'].read_text()))
             check(CN, 'each of the %d first-parent commits from 8bc34e94 on (%d distinct installers) writes the record\'s '
                   'closure (each file\'s digest) and template digest [%s]' % (len(commits), len(blobs), lacking[:3]),
                   len(commits) > 1 and not lacking)
