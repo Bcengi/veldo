@@ -1,0 +1,16 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -316,11 +316,11 @@
+     }
+     defaults = {}
+     if not isinstance(listing, str) or not listing.strip():
+-        raise Refused('configuration_stop:codex_feature_listing')
++        return {}
+     for line in listing.splitlines():
+         match = re.fullmatch(r'([a-z0-9_.]+)\s+([a-z ]+?)\s+(true|false)\s*', line)
+         if not match or match[1] in defaults:
+-            raise Refused('configuration_stop:codex_feature_listing')
++            return {}
+         defaults[match[1]] = match[3] == 'true'
+     configuration = {}
+     for feature, enabled in defaults.items():

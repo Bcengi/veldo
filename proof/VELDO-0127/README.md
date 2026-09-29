@@ -1,5 +1,47 @@
 # VELDO-0127 role capability configuration
 
+## Recorded feature repair, 2026-09-29
+
+This repair starts at `2234d205`. Every recorded feature outside the known
+non-tool set now has an explicit value, independent of its default. Mapped
+features follow the role grant; other features are false. Unknown default-on
+features retain their named stop. Literal dotted names use an inline TOML table
+because the pinned CLI treats dots in override paths as table separators.
+No new native capability or footprint path is introduced.
+
+Suite 89 uses the signed role writer, the real qualification writer, binding and
+Receiver._baseline. Its wrapper forwards the actual generated arguments to the
+pinned binary only on guarded loopback, with an empty generated profile and no
+login or model. The rows cover:
+
+- AC2 and AC4: six `explicit/*` source rows observe false values for memories,
+  recommended plugins, permission requests, standalone web search, MCP apps and
+  the literal dotted feature name in the arguments received by the binary.
+- AC2 and AC4: `explicit/mapped-default-off` changes sleep's recorded default to
+  false, then observes both absent and present clock grants in the arguments and
+  wire definitions. `explicit/unknown-default-off` explicitly disables a new
+  default-off feature. Suite 88 retains the unknown default-on refusal.
+- AC3 and AC4: `listing/missing`, `listing/empty` and `listing/malformed` require
+  `configuration_stop:codex_feature_listing` with no preflight arguments or tool
+  event. Records originate at the qualification writer; the missing-field case
+  deletes only that field, and the other cases change the binary-output fixture.
+  Each row also requires a successful valid-listing launch with standalone web
+  search explicitly false. That positive control is the changed behavior; the
+  invalid-listing refusal itself already existed at the baseline.
+
+`red-at-2234d205.json` records all eleven paired behavior rows red by assertion
+against the unchanged baseline archive. There is exactly one report per row.
+The red driver does not alter the archived production code. AC1 is unchanged.
+
+Three new mutations return an empty configuration for invalid listings, skip
+default-off features, or withdraw the mapped clock grant when its recorded
+default is off. `mutations.json` and the exact diffs record all 72 registered
+finding-127 mutations against the current sources. They have not been executed
+here; execution and rejection are reserved for the reviewer.
+
+Live captures remain unchanged. The production digest changed, so the reviewer
+recaptures live proofs after this lands. Scoped checks do not claim a gate pass.
+
 ## Default feature repair, 2026-09-29
 
 This repair starts at `d72da222`. `features-fixture.json` retains the complete

@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -352,7 +352,7 @@
+@@ -356,7 +356,7 @@
      configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
      configuration['developer_instructions'] = capability['instructions']
      for server, entry in inventory.items():

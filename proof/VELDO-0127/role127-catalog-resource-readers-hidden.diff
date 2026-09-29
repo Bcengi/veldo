@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -404,7 +404,7 @@
+@@ -408,7 +408,7 @@
          if name == 'exec':
              names.extend(codex_name(n) for n in re.findall(r'^### `([^`]+)`\s*$',
                                                           definition.get('description', ''), re.M))

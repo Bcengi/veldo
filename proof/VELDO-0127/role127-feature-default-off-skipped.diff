@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -324,7 +324,7 @@
+         defaults[match[1]] = match[3] == 'true'
+     configuration = {}
+     for feature, enabled in defaults.items():
+-        if feature in non_tools:
++        if feature in non_tools or not enabled:
+             continue
+         key = 'features.' + feature
+         if feature in mapped:

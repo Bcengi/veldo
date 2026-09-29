@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -345,6 +345,7 @@
+@@ -349,6 +349,7 @@
          configuration['features.' + feature] = name in revision['native_tools']
      configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}
      configuration['tools.experimental_request_user_input'] = {'enabled': False}

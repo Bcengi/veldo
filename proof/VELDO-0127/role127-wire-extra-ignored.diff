@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -425,7 +425,7 @@
+@@ -429,7 +429,7 @@
      except Refused as error:
          return error.code
      if set(actual) - set(expected_names):

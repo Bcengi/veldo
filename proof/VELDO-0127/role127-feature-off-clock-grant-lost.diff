@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -295,7 +295,7 @@
+     mapped = {
+         'shell_tool': {'shell'}, 'unified_exec': {'shell'}, 'unified_exec_tty': {'shell'},
+         'view_image': {'view_image'}, 'multi_agent': {'multi_agent', 'sub_agents'},
+-        'sleep_tool': {'clock'},
++        'sleep_tool': set(),
+     }
+     ungranted = {
+         'apps', 'browser_use', 'browser_use_external', 'browser_use_full_cdp_access',

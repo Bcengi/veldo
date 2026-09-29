@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -508,7 +508,7 @@
+@@ -512,7 +512,7 @@
      home = Path(config) / 'listing-home'
      home.mkdir(mode=0o700)
      env = dict(environment, **extra['environment'], **extra['secrets'])
