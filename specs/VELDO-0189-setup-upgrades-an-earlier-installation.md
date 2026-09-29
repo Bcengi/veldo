@@ -63,7 +63,7 @@ acceptance_criteria:
       are kept. Set and completeness: The re-run, after VELDO-0171 AC4's argument checks and before any other
       step, reads the installation record (`<install root>/<service>/config/service.json`, VELDO-0047's
       installer) and compares its `closure` and `runtime_assets` together (each installed engine file's name and sha256 digest) and
-      `template` digest with the current engine's (control_service.closure(), with any file a later
+      `template` digest with the current engine's (control_service.closure() and runtime_assets(), with any file a later
       specification records the same way): the files whose digest differs are changed, the names only the
       current engine lists are new, and the names only the record lists are removed. Before it writes, every
       file in the installed `bin` directory must equal its recorded digest, and a file that differs or that

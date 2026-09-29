@@ -294,3 +294,8 @@ Three amendment rows extend the existing production setup journeys:
 Finding 189 includes the four original criterion falsifiers and ten amendment mutants. The registry's
 anchors and generated mutant syntax are checked locally. Executing mutations is reserved to the reviewer;
 mutations.json therefore records reviewer_pending, with refreshed source digests and diffs.
+
+The amendment-only footprint check against merge commit 3fa0d77b has no outside paths. The supplied
+standalone checker compares origin/main with this entire stacked branch and therefore reports inherited
+0171 paths and checkout gate stamps. Those paths are not added to the 0189 footprint to hide the stack.
+Gate byproducts are not staged or committed by this work.
