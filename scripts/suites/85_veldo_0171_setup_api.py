@@ -100,6 +100,8 @@ def _v171_suite():
                 return value
             time.sleep(0.15)
 
+    prior_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
     mods = base / 'src' / '.veldo'
@@ -1280,6 +1282,7 @@ def _v171_suite():
     except StopIteration:
         pass
     finally:
+        sys.dont_write_bytecode = prior_bytecode
         os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         capturing[0] = False

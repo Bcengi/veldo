@@ -24,13 +24,13 @@ the C library (ctypes), then removed; a filesystem or C library that cannot is
 `unavailable_service:install_root:exchange`.
 
 **How it switches.** The current engine is written complete into `bin.upgrade` beside `bin` at the
-installer's modes (entry points 0500, every other module 0400, the directory 0500) and read back against
+installer's modes (entry points 0500, other files 0400, every engine directory 0500) and read back against
 the current digests; one renameat2 exchange then puts it at `bin` and the previous engine at `bin.upgrade`.
-Then, each written to a new file and renamed over the old one: a unit whose rendering from the current
+The absent qualified pin and host/engines.json are added next, at logged write points. Then, each written to a new file and renamed over the old one: a unit whose rendering from the current
 template changed (the authority unit, and VELDO-0171's API unit when it exists), each installation
 configuration that lacks a key the current installer writes (with the value `layout` renders for the same
 arguments; over 8bc34e94 and 971186ac that is the receiver configuration's `host_trust`, which the current
-launch receiver needs), and last the record: its `closure` and `template` and the keys it lacks (`work`,
+launch receiver needs), and last the record: its `closure`, `runtime_assets` and `template` and the keys it lacks (`work`,
 null, over both older engines). The record is written last, so a record naming the current engine means
 every other write is done. Then the restart (AC4), and only after it succeeds is `bin.upgrade`, now the
 previous engine, removed.
@@ -47,7 +47,7 @@ the exchange and no restart after it is a restart still due.
 
 **The step log.** `<home>/state/engine-upgrade.jsonl`, 0600, one line after each write (each line is a
 write point): `begin` (the installed and current engine digests and the files changed, added and
-removed), `removed_stage`, `staged`, `prepared` (the original record and units, and whether the unit was active), `exchanged`, `unit` and `configuration` (each path), `record`,
+removed), `removed_stage`, `staged`, `prepared` (the original record and units, and whether the unit was active), `exchanged`, `engine_pin`, `engines_record`, `unit` and `configuration` (each path), `record`,
 `restart` (its outcome), `switched_back` (its reason), `stopped`, `ownership_restore` (its outcome),
 `removed_previous`, `committed` (whether the running service dropped its record of previous bindings),
 `done`. It never carries a key,
@@ -76,8 +76,7 @@ process of their own whose systemctl calls reach that stand-in over a UNIX socke
 - `upgrade/from-8bc34e94`, `upgrade/from-971186ac` (AC1): each older host upgraded; its engine directory
   equals the fresh one's in names, bytes and modes and holds control_client_api.py, which the older
   engine lacked; its units, record and every configuration file equal the fresh host's after the
-  substitutions and apart from the fields in `fresh-equivalence.json` (the one field: service.json's
-  `enrollments`, each host's own binding digest); the record names the current engine; nothing is left
+  substitutions and apart from the fields in `fresh-equivalence.json` (service.json's `enrollments`, each host's own binding digest, and an older receiver's explicit `runs` preserving its data location); the record names the current engine; nothing is left
   beside `bin`. The 8bc34e94 host upgrades with nothing running, the 971186ac host with its service
   running through its unit.
 - `upgrade/removed-module` (AC1): the fresh host upgraded to a fixture engine (the current one with
@@ -193,7 +192,7 @@ the previous engine; the rollback instruction now includes this command.
 
 ## Evidence files
 
-- `fresh-equivalence.json`: the substitutions and the one listed field of AC1's comparison, each with its
+- `fresh-equivalence.json`: the substitutions and the listed fields of AC1's comparison, each with its
   reason; the suite checks the file names exactly the placeholders it substitutes.
 - `drive.py`: `python3 -B proof/VELDO-0189/drive.py` drives every finding-189 mutation (mutations.json and
   one diff per mutation); `--red <commit>` runs the current suite against that commit's whole tree.
