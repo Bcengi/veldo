@@ -1,0 +1,120 @@
+{
+ "by_assertion": true,
+ "commit": "75f45d77a8098b68d8e2c3ffa75a3f98a2403a2b",
+ "details": [
+  "VELDO-0166 detail: windows/clear-warning: warning-None-False-False: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-warning: warning-None-False-True: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-warning: warning-None-True-False: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-warning: warning-None-True-True: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-warning: warning-five_hour-False-False: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-warning: warning-five_hour-False-True: warning reopens stream and pool with receipts",
+  "VELDO-0166 detail: windows/clear-observation-order: ordered-clear-100: preserve newer companion and order unified clear",
+  "VELDO-0166 detail: windows/clear-observation-order: ordered-clear-200: preserve newer companion and order unified clear"
+ ],
+ "failed_rows": [
+  "VELDO-0166 windows/clear-warning",
+  "VELDO-0166 windows/clear-observation-order"
+ ],
+ "modules": {
+  ".veldo/accounts.py": {
+   "at_commit": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918",
+   "now": "4ba8be80a21417cfa30aecb485034494c402768bce3215c74b4f513bc8a81918"
+  },
+  ".veldo/control_accounts.py": {
+   "at_commit": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "now": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354"
+  },
+  ".veldo/control_engine_claude.py": {
+   "at_commit": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "now": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "6aa98475884133fa323fc0edd067d52bccaf01ea02543e2f98a94aa000cccd0b",
+   "now": "6aa98475884133fa323fc0edd067d52bccaf01ea02543e2f98a94aa000cccd0b"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0166 windows/five-hour",
+   true
+  ],
+  [
+   "VELDO-0166 windows/qualified-set",
+   true
+  ],
+  [
+   "VELDO-0166 windows/status-only-named",
+   true
+  ],
+  [
+   "VELDO-0166 windows/missing-reset-receipts",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-kept",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-fallback",
+   true
+  ],
+  [
+   "VELDO-0166 windows/named-precedence",
+   true
+  ],
+  [
+   "VELDO-0166 windows/rejection-reset-filled",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear",
+   true
+  ],
+  [
+   "VELDO-0166 windows/unnamed-rejection",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-active-rejection",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-no-reset",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-reset",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-unified-bare",
+   true
+  ],
+  [
+   "VELDO-0166 windows/clear-warning",
+   false
+  ],
+  [
+   "VELDO-0166 windows/clear-observation-order",
+   false
+  ],
+  [
+   "VELDO-0166 observability/counts-and-log",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/existing",
+   true
+  ],
+  [
+   "VELDO-0166 profiles/created",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.701,
+ "spec_id": "VELDO-0166",
+ "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
+ "tree": "git archive 75f45d77a8098b68d8e2c3ffa75a3f98a2403a2b, unchanged; the current suite file run against it"
+}

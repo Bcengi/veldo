@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1114 +1114 @@
+-                                  clear_rejection=named is None and status in ('allowed', 'allowed_warning'),
++                                  clear_rejection=False,

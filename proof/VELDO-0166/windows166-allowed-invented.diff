@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1113 +1113 @@
+-                                  status=('rejected' if status == 'rejected' else 'allowed') if rated else None,
++                                  status=('rejected' if status == 'rejected' else 'allowed') if rated else 'allowed',

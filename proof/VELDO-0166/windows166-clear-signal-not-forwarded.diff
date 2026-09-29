@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1969 +1969 @@
+-                                      clear_rejection=observation.get('clear_rejection', False))
++                                      clear_rejection=False)

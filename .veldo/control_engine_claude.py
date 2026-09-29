@@ -946,7 +946,8 @@ class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
     {'kind': 'window', 'window_id', 'status', 'reset_at', 'utilization'}, each with its `line` and
-    `receipt`. `final()` is the conclusive total, without tokens when the result had no readable
+    `receipt`. A bare allowed or allowed_warning event emits kind `clear_rejection` with no window id.
+    `final()` is the conclusive total, without tokens when the result had no readable
     modelUsage and empty when the CLI reported no result. `clock` and `zone` are the engine's clock
     and local time zone, for a CLI that states times in local time (this one does not)."""
 
@@ -1081,19 +1082,43 @@ class Meter:
             status = info.get('status')
             if not isinstance(status, str):
                 return []
-            reset = info.get('resetsAt')
-            utilization = info.get('utilization')
+            named = info.get('rateLimitType')
+            companions = info.get('unifiedWindows')
+            companions = companions if isinstance(companions, dict) else {}
+            own = companions.get(named)
+            own = own if isinstance(own, dict) else {}
+            # The reset header may be absent: top-level fields take precedence when present,
+            # otherwise the named window supplies its own reported values.
+            values = {field: info.get(field) if info.get(field) is not None else own.get(field)
+                      for field in ('resetsAt', 'utilization')}
+            reset = values['resetsAt']
             if status == 'rejected':
                 # VELDO-0160: the stream reports its window exhausted.
-                self.limited = {'window': str(info.get('rateLimitType') or LIMIT_WINDOW),
+                self.limited = {'window': str(named or LIMIT_WINDOW),
                                 'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
-            elif (self.limited or {}).get('signal') == 'stream' and self.limited['window'] == str(
-                    info.get('rateLimitType') or LIMIT_WINDOW):
-                self.limited = None  # The same window reported open again: the run is no longer at its limit.
-            return [dict(seen, kind='window', window_id=str(info.get('rateLimitType') or 'unified'),
-                         status='rejected' if status == 'rejected' else 'allowed',
-                         reset_at=reset if _number(reset) else None,
-                         utilization=utilization if _number(utilization) and utilization >= 0 else None)]
+            elif (self.limited or {}).get('signal') == 'stream' and (
+                    self.limited['window'] == str(named or LIMIT_WINDOW)
+                    or (named is None and status in ('allowed', 'allowed_warning'))):
+                self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.
+            # Unnamed rejections use the stream limit's window; clear events still report only the map.
+            rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)
+            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items() if window != rated_window]
+            found = []
+            for window, values in windows:
+                if not isinstance(values, dict):
+                    continue  # An unreadable entry, unlike a readable window reported without a reset.
+                reset, utilization = values.get('resetsAt'), values.get('utilization')
+                rated = window == rated_window
+                found.append(dict(seen, kind='window', window_id=str(window),
+                                  status=('rejected' if status == 'rejected' else 'allowed') if rated else None,
+                                  clear_rejection=named is None and status in ('allowed', 'allowed_warning'),
+                                  reset_at=reset if _number(reset) else None,
+                                  utilization=utilization if _number(utilization) and utilization >= 0 else None))
+            if not found and named is None and status in ('allowed', 'allowed_warning'):
+                # Carry a bare clear to the store without inventing a window observation.
+                found.append(dict(seen, kind='clear_rejection', window_id=None, status=None,
+                                  reset_at=None, utilization=None, clear_rejection=True))
+            return found
         return []
 
 

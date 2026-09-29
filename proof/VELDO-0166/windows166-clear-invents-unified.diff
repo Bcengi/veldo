@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_claude.py
++++ b/.veldo/control_engine_claude.py
+@@ -1085 +1085 @@
+-            named = info.get('rateLimitType')
++            named = info.get('rateLimitType') or 'unified'

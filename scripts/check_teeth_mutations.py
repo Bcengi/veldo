@@ -6973,7 +6973,7 @@ def cases():
          "            if False:  # defect: a rejected window is not the account's limit\n",
          ['limit/stream-exhausted'])
     pool('limit-reopened-window-kept', 'control_engine_claude.py',
-         "                self.limited = None  # The same window reported open again: the run is no longer at its limit.\n",
+         "                self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.\n",
          "                pass  # defect: a window reported open again still counts as the run's limit\n",
          ['limit/stream-exhausted'])
     pool('limit-every-failure', 'control_accounts.py',
@@ -8686,6 +8686,104 @@ def cases():
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
         "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
         "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
+    # VELDO-0166: each declared falsifier first, then the reported values carried beside it, the status
+    # kept to the named window, a rejection in force kept, and a new profile kept private.
+    def windows166(name, module, old, new, rows, suite='83_veldo_0166_usage_windows.py'):
+        add(166, 'windows166-' + name, suite, module, old, new, rows)
+
+    ALL166 = "            windows = ([(rated_window, values)] if rated_window else []) + [(window, values) for window, values in companions.items() if window != rated_window]"
+    windows166('named-only', 'control_engine_claude.py', ALL166, "            windows = [(rated_window, values)] if rated_window else []",
+               ['windows/five-hour', 'windows/qualified-set'])
+    windows166('named-only-journey', 'control_engine_claude.py', ALL166, "            windows = [(rated_window, values)] if rated_window else []",
+               ['attribution/stored-account'], suite='75_veldo_0062_accounts.py')
+    windows166('existing-chmod', 'accounts.py',
+               "        if not existing:\n            os.chmod(cdir, 0o700)",
+               "        if True:\n            os.chmod(cdir, 0o700)", ['profiles/existing'])
+    windows166('status-spills', 'control_engine_claude.py',
+               "if rated else None,", "if True else None,", ['windows/status-only-named'])
+    windows166('allowed-invented', 'control_engine_claude.py',
+               "if rated else None,", "if rated else 'allowed',", ['windows/status-only-named'])
+    windows166('named-twice', 'control_engine_claude.py',
+               "companions.items() if window != rated_window]", "companions.items()]",
+               ['windows/qualified-set', 'windows/status-only-named'])
+    windows166('reset-borrowed', 'control_engine_claude.py',
+               "reset, utilization = values.get('resetsAt'), values.get('utilization')",
+               "reset, utilization = info.get('resetsAt'), values.get('utilization')",
+               ['windows/five-hour', 'windows/qualified-set', 'windows/missing-reset-receipts'])
+    windows166('utilization-borrowed', 'control_engine_claude.py',
+               "reset, utilization = values.get('resetsAt'), values.get('utilization')",
+               "reset, utilization = values.get('resetsAt'), info.get('utilization')",
+               ['windows/five-hour', 'windows/qualified-set'])
+    windows166('absent-status-refused', 'control_accounts.py',
+               "WINDOW_STATUSES = ('allowed', 'rejected', None)", "WINDOW_STATUSES = ('allowed', 'rejected')",
+               ['windows/five-hour', 'windows/status-only-named'])
+    windows166('rejection-lifted', 'control_accounts.py',
+               "            if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking(",
+               "            if False and blocking(", ['windows/rejection-kept'])
+    windows166('rejection-kept-forever', 'control_accounts.py',
+               "blocking({'windows': {'w': prior}}, params['now']):", "prior.get('status') == 'rejected':",
+               ['windows/rejection-kept'])
+    windows166('new-profile-public', 'accounts.py',
+               "            os.chmod(cdir, 0o700)  # Only", "            os.chmod(cdir, 0o755)  # Only",
+               ['profiles/created'])
+    windows166('named-top-only', 'control_engine_claude.py',
+               "info.get(field) if info.get(field) is not None else own.get(field)",
+               "info.get(field)", ['windows/named-fallback'])
+    windows166('named-map-only', 'control_engine_claude.py',
+               "info.get(field) if info.get(field) is not None else own.get(field)",
+               "own.get(field)", ['windows/named-precedence'])
+    windows166('reset-fill-dropped', 'control_accounts.py',
+               "if prior.get('reset_at') is None and params['reset_at'] is not None:",
+               "if False:", ['windows/rejection-reset-filled'])
+    windows166('clear-invents-unified', 'control_engine_claude.py',
+               "named = info.get('rateLimitType')", "named = info.get('rateLimitType') or 'unified'",
+               ['windows/clear'])
+    windows166('clear-keeps-stream-limit', 'control_engine_claude.py',
+               "or (named is None and status in ('allowed', 'allowed_warning'))", "or False", ['windows/clear'])
+    windows166('unnamed-rejection-dropped', 'control_engine_claude.py',
+               "rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)",
+               "rated_window = named", ['windows/unnamed-rejection'])
+    windows166('clear-signal-dropped', 'control_engine_claude.py',
+               "clear_rejection=named is None and status in ('allowed', 'allowed_warning'),",
+               "clear_rejection=False,", ['windows/clear-active-rejection'])
+    windows166('clear-signal-not-forwarded', 'control_launch.py',
+               "clear_rejection=observation.get('clear_rejection', False)",
+               "clear_rejection=False", ['windows/clear-active-rejection'])
+    windows166('clear-store-keeps-rejection', 'control_accounts.py',
+               "not params.get('clear_rejection') and params['status'] is None",
+               "params['status'] is None", ['windows/clear-active-rejection'])
+    windows166('clear-unified-lift-dropped', 'control_accounts.py',
+               "params.get('clear_rejection') and unified is not None",
+               "False and unified is not None", ['windows/clear-unified-no-reset', 'windows/clear-unified-reset', 'windows/clear-unified-bare'])
+    windows166('bare-clear-dropped', 'control_engine_claude.py',
+               "if not found and named is None and status in ('allowed', 'allowed_warning'):",
+               "if False:", ['windows/clear-unified-bare'])
+    windows166('warning-clear-signal-dropped', 'control_engine_claude.py',
+               "clear_rejection=named is None and status in ('allowed', 'allowed_warning'),",
+               "clear_rejection=named is None and status == 'allowed',", ['windows/clear-warning'])
+    windows166('warning-stream-clear-dropped', 'control_engine_claude.py',
+               "or (named is None and status in ('allowed', 'allowed_warning'))",
+               "or (named is None and status == 'allowed')", ['windows/clear-warning'])
+    windows166('bare-warning-clear-dropped', 'control_engine_claude.py',
+               "if not found and named is None and status in ('allowed', 'allowed_warning'):",
+               "if not found and named is None and status == 'allowed':", ['windows/clear-warning'])
+    windows166('stale-companion-discards-lift', 'control_accounts.py',
+               "# Keep any unified lift while leaving the newer companion unchanged.\n                return {target: {'kind': KIND, 'data': current}}",
+               "# Discard the clear with the stale companion.\n                return {}", ['windows/clear-observation-order'])
+    windows166('older-clear-lifts-newer-rejection', 'control_accounts.py',
+               "and unified['observed_at'] <= params['now']", "",
+               ['windows/clear-observation-order'])
+    windows166('window-count-omitted', 'control_launch.py',
+               "self.window_counts[key] = self.window_counts.get(key, 0) + 1",
+               "self.window_counts[key] = self.window_counts.get(key, 0)", ['observability/counts-and-log'])
+    windows166('window-log-omitted', 'control_launch.py',
+               "self.receiver.emit(dict(event='window_observed', account=self.account,",
+               "dict(dict(event='window_observed', account=self.account,", ['observability/counts-and-log'])
+    windows166('account-count-omitted', 'accounts.py',
+               "ADDED_COUNTS[state] += 1", "ADDED_COUNTS[state] += 0", ['observability/counts-and-log'])
+    windows166('account-log-mislabels-directory', 'accounts.py',
+               '"directory_state": state, "metrics": {"accounts_added": 1}',
+               '"directory_state": "created", "metrics": {"accounts_added": 1}', ['observability/counts-and-log'])
     def formats172(name, directory, module, old, new, row, suite='82_veldo_0172_live_formats.py'):
         # A fake engine's own defect reds the `fake/capture:<suite>` row the suite that embeds it reports
         # (the suite is its own mutated module); the table, scrub and census defects red 0172's rows.

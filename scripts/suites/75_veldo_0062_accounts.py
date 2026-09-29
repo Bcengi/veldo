@@ -710,6 +710,17 @@ sys.exit(payload.get('code', 0))
             return {'line': {'type': 'rate_limit_event', 'rate_limit_info': info, 'uuid': str(uuid.uuid4()),
                              'session_id': SESSION}}
 
+        @live_step
+        def c_live_rate():
+            # VELDO-0166: the Claude Code 2.1.281 rate_limit_event line of the live run of 2026-09-26, verbatim
+            # (its spec's Notes): seven_day named, five_hour and seven_day both in unifiedWindows.
+            return {'line': json.loads('{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", '
+                                       '"resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, '
+                                       '"isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, '
+                                       '"resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, '
+                                       '"uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", '
+                                       '"session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}')}
+
         # Codex 0.154.0's exec JSON and its usage-limit message.
         def x_thread(thread=None):
             return {'line': {'type': 'thread.started', 'thread_id': thread or 'thread-62-' + os.urandom(4).hex()}}
@@ -1433,7 +1444,7 @@ sys.exit(payload.get('code', 0))
                            CODEX_HOME=profiles['acct-x2'])
             journey = {}
             for account, adapter, script in (
-                    ('acct-c1', 'claude', [c_init(), c_rate('allowed', time.time() + 3600, 'seven_day', 0.25),
+                    ('acct-c1', 'claude', [c_init(), c_live_rate(),
                                            c_msg('j1', 11, 7), c_result(11, 7, 1)]),
                     ('acct-c2', 'claude', [c_init(), c_rate('allowed_warning', time.time() + 3600, 'seven_day', 0.5),
                                            c_msg('j2', 13, 5), c_result(13, 5, 1)]),
@@ -1466,6 +1477,12 @@ sys.exit(payload.get('code', 0))
                       % (account, header.get('account'), stored.get('source_dispatch') == dispatch_id),
                       header.get('account') == account == recorded
                       and stored.get('source_dispatch') == dispatch_id and stored.get('status') == 'allowed')
+            live = ((shown['account'].get('acct-c1') or {}).get('windows') or {})
+            check('attribution/stored-account', 'VELDO-0166: the live line\'s five-hour window reached acct-c1 through the '
+                  'receiver as reported, with no status [%s]' % live.get('five_hour'),
+                  {k: (live.get('five_hour') or {}).get(k) for k in ('status', 'reset_at', 'utilization', 'source_dispatch')}
+                  == {'status': None, 'reset_at': 1790487000, 'utilization': 0.3, 'source_dispatch': journey['acct-c1']}
+                  and (live.get('seven_day') or {}).get('utilization') == 0.7)
             ambient_windows = [w for account in ('acct-c3', 'acct-x2')
                                for w in (account_record(account).get('windows') or {}).values()
                                if w.get('source_dispatch') in journey.values()]
