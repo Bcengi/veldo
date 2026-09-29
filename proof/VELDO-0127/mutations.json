@@ -946,5 +946,123 @@
    "status": "registered; execution reserved for reviewer",
    "suite": "87_veldo_0127_codex_delivery.py"
   }
- ]
+ ],
+ "speed_repair_manual_checks": {
+  "base": "2fb32ed8",
+  "checker_executed": false,
+  "completed": true,
+  "executed": true,
+  "mutants": [
+   {
+    "by_assertion": true,
+    "details": [
+     "VELDO-0127 delivery/gpt-5.6-sol/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-6-astra/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-5.6-luna/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-5.6-terra/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])",
+     "VELDO-0127 delivery/gpt-5.4/web_search detail: ('configuration_stop:codex_missing_tool', None, ['web_search'])",
+     "VELDO-0127 delivery/gpt-5.5/web_search detail: ('configuration_stop:codex_missing_tool', None, ['web_search'])",
+     "VELDO-0127 delivery/gpt-5.2/web_search detail: ('configuration_stop:codex_missing_tool', None, ['web_search'])",
+     "VELDO-0127 delivery/gpt-5.4-mini/web_search detail: ('configuration_stop:codex_missing_tool', None, ['web_search'])",
+     "VELDO-0127 delivery/codex-auto-review/web_search detail: ('configuration_stop:codex_missing_tool', None, ['exec', 'wait', 'web_search'])"
+    ],
+    "failed_rows": [
+     "VELDO-0127 delivery/gpt-6-astra/web_search",
+     "VELDO-0127 delivery/gpt-5.6-terra/web_search",
+     "VELDO-0127 delivery/gpt-daybreak-blue-latest/web_search",
+     "VELDO-0127 delivery/gpt-5.5/web_search",
+     "VELDO-0127 delivery/gpt-5.4-mini/web_search",
+     "VELDO-0127 delivery/codex-auto-review/web_search",
+     "VELDO-0127 delivery/gpt-5.6-sol/web_search",
+     "VELDO-0127 delivery/gpt-5.6-luna/web_search",
+     "VELDO-0127 delivery/gpt-daybreak-red-latest/web_search",
+     "VELDO-0127 delivery/gpt-5.4/web_search",
+     "VELDO-0127 delivery/gpt-5.2/web_search"
+    ],
+    "module": ".veldo/control_agent_config_handoff.py",
+    "mutant_sha256": "b0b90c60d9071744722b1a112755f8a9aa2e4dd6786a7b7aa0dabd73bd534ef8",
+    "name": "role127-delivery-web-dropped",
+    "named_observations": {
+     "delivery/gpt-6-astra/web_search": [
+      false
+     ]
+    },
+    "named_rows": [
+     "delivery/gpt-6-astra/web_search"
+    ],
+    "rejected": true,
+    "seconds": 51.349,
+    "source_sha256": "b73d425b7f6b6422640da4ce56d133cbf96c8f180968d8a61d89daef011c0df8",
+    "suite": "87_veldo_0127_codex_delivery.py"
+   },
+   {
+    "by_assertion": true,
+    "details": [
+     "VELDO-0127 delivery/gpt-5.6-sol/tool_search detail: None",
+     "VELDO-0127 delivery/gpt-6-astra/tool_search detail: None",
+     "VELDO-0127 save/gpt-5.6-sol/search-mcp detail: None",
+     "VELDO-0127 save/gpt-6-astra/search-mcp detail: None",
+     "VELDO-0127 delivery/gpt-5.6-luna/tool_search detail: None",
+     "VELDO-0127 delivery/gpt-5.6-terra/tool_search detail: None",
+     "VELDO-0127 save/gpt-5.6-luna/search-mcp detail: None",
+     "VELDO-0127 save/gpt-5.6-terra/search-mcp detail: None",
+     "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search detail: None",
+     "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search detail: None",
+     "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp detail: None",
+     "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp detail: None",
+     "VELDO-0127 delivery/gpt-5.4/tool_search detail: None",
+     "VELDO-0127 delivery/gpt-5.5/tool_search detail: None",
+     "VELDO-0127 save/gpt-5.4/search-mcp detail: None",
+     "VELDO-0127 save/gpt-5.5/search-mcp detail: None",
+     "VELDO-0127 delivery/gpt-5.2/tool_search detail: None",
+     "VELDO-0127 delivery/gpt-5.4-mini/tool_search detail: None",
+     "VELDO-0127 save/gpt-5.2/search-mcp detail: None",
+     "VELDO-0127 save/gpt-5.4-mini/search-mcp detail: None",
+     "VELDO-0127 delivery/codex-auto-review/tool_search detail: None",
+     "VELDO-0127 save/codex-auto-review/search-mcp detail: None"
+    ],
+    "failed_rows": [
+     "VELDO-0127 delivery/gpt-6-astra/tool_search",
+     "VELDO-0127 save/gpt-6-astra/search-mcp",
+     "VELDO-0127 delivery/gpt-5.6-terra/tool_search",
+     "VELDO-0127 save/gpt-5.6-terra/search-mcp",
+     "VELDO-0127 delivery/gpt-daybreak-blue-latest/tool_search",
+     "VELDO-0127 save/gpt-daybreak-blue-latest/search-mcp",
+     "VELDO-0127 delivery/gpt-5.5/tool_search",
+     "VELDO-0127 save/gpt-5.5/search-mcp",
+     "VELDO-0127 delivery/gpt-5.4-mini/tool_search",
+     "VELDO-0127 save/gpt-5.4-mini/search-mcp",
+     "VELDO-0127 delivery/codex-auto-review/tool_search",
+     "VELDO-0127 save/codex-auto-review/search-mcp",
+     "VELDO-0127 delivery/gpt-5.6-sol/tool_search",
+     "VELDO-0127 save/gpt-5.6-sol/search-mcp",
+     "VELDO-0127 delivery/gpt-5.6-luna/tool_search",
+     "VELDO-0127 save/gpt-5.6-luna/search-mcp",
+     "VELDO-0127 delivery/gpt-daybreak-red-latest/tool_search",
+     "VELDO-0127 save/gpt-daybreak-red-latest/search-mcp",
+     "VELDO-0127 delivery/gpt-5.4/tool_search",
+     "VELDO-0127 save/gpt-5.4/search-mcp",
+     "VELDO-0127 delivery/gpt-5.2/tool_search",
+     "VELDO-0127 save/gpt-5.2/search-mcp"
+    ],
+    "module": ".veldo/control_agent_config.py",
+    "mutant_sha256": "679df08ce09f07638e4774f426c4e73de1268ae19e2f0f13d4df6a6d29e503b2",
+    "name": "role127-search-unsupported-accepted",
+    "named_observations": {
+     "delivery/gpt-5.5/tool_search": [
+      false
+     ]
+    },
+    "named_rows": [
+     "delivery/gpt-5.5/tool_search"
+    ],
+    "rejected": true,
+    "seconds": 51.249,
+    "source_sha256": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
+    "suite": "87_veldo_0127_codex_delivery.py"
+   }
+  ]
+ }
 }

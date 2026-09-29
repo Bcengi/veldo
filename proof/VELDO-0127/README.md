@@ -44,6 +44,12 @@ results are retained in `speed-checks.json`.
 The archived replay took 132.391 seconds: `delivery/runtime` was red by
 assertion while all 176 original behavior rows stayed green.
 
+Both manually applied registered mutations were rejected by their named
+assertions: `role127-search-unsupported-accepted` on
+`delivery/gpt-5.5/tool_search`, and `role127-delivery-web-dropped` on
+`delivery/gpt-6-astra/web_search`. Each used a temporary module copy and completed
+within the 120 second worker limit. The mutation checker itself was not run.
+
 No footprint addition was needed. These selected-suite runs intentionally exit 2
 when all their assertions pass; they are partial runs and do not establish a gate
 pass, live qualification, landing approval or shipped status. The reviewer owns

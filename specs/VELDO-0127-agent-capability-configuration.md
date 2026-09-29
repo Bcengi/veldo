@@ -463,3 +463,6 @@ the existing digest-bound live captures.
 No row is renamed and no footprint expansion is needed. Timings and the unchanged
 behavior checks are retained in proof/VELDO-0127. This is a speed repair only;
 no gate, live qualification or shipped-status claim is made.
+Suite 87 fell from 128.89 to 51.41 seconds, and took 19.28 seconds in the
+empty gate environment. All 176 existing delivery rows remain; the runtime row
+alone is red on the unchanged 2fb32ed8 archive (132.39 seconds).
