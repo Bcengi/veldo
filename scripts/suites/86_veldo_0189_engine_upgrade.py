@@ -920,10 +920,24 @@ def _v189_suite():
             for name in ROWS:
                 check(name, 'the current setup laid a fresh host down [%s]' % laid.get('reason'), False)
             raise StopIteration
-        owner_sets(fresh)
-        with section(PF):
-            # Reading the journal establishes SQLite's read-side WAL files before the file snapshot.
+        # Capture the real installer's baseline before a mutated re-run can damage it.
+        try:
+            owner_sets(fresh)
+            engine_record = fresh.root / 'host' / 'engines.json'
+            expected_engines = json.loads(engine_record.read_text())
+            pinned = Path(expected_engines['claude_code']['path'])
+            # The refusal row changes this version; validate its input before any re-run.
+            if not isinstance(expected_engines['codex']['version'], str):
+                raise ValueError('the Codex version must be a string')
+            current_template = fresh.record()['template']
+            # Establish SQLite's read-side WAL files before saving the baseline.
             head = journal(fresh.store)
+            saved_fresh = save(fresh.root, fresh.install, fresh.units, fresh.trust.parent, fresh.binding().parent)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            for name in ROWS:
+                check(name, 'the fresh installer records are usable [%s: %s]' % (type(error).__name__, error), False)
+            raise StopIteration
+        with section(PF):
             before = snapshot(*fresh.trees())
             code, report = fresh.setup()
             check(PF, 'post-0186 re-run accepts recorded runtime directory: ' + str(report.get('reason')), code == 0)
@@ -932,10 +946,7 @@ def _v189_suite():
             check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
             check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
         # Review rows start from the real installer's host and record, restored between cases.
-        saved_fresh = save(fresh.root, fresh.install, fresh.units, fresh.trust.parent, fresh.binding().parent)
-        engine_record = fresh.root / 'host' / 'engines.json'
-        expected_engines = json.loads(engine_record.read_text())
-        pinned = Path(expected_engines['claude_code']['path'])
+        restore(saved_fresh)
         engines_helper = load('v189_engines_review', mods / 'control_factory_setup_engines.py')
         engine_plan = engines_helper.check(F.Refused)
 
@@ -1096,7 +1107,6 @@ def _v189_suite():
         restore(saved_fresh)
 
         current = named(fresh.home / 'bin')
-        current_template = fresh.record()['template']
 
         # AC1 and AC3 and AC4, over each older engine's host.
         hosts, laid_down = {}, {}

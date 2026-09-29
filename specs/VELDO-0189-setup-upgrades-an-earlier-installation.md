@@ -391,3 +391,10 @@ mutant's existing-key branch, whose execution remains reviewer pending. Validati
 report zero bad entries. This repair fits the existing footprint; the prescribed origin/main comparison
 still needs both stacked specifications to cover inherited VELDO-0171 paths. Results and the static
 mutation audit are in proof/VELDO-0189/runtime-inventory-*.json.
+
+2026-09-29, mutation-safe review fixtures: suite 86 captures the real installer's host, engine record
+and template before the fresh-host re-run, then restores that baseline for the review rows. Missing
+or unusable initial record fields fail checks instead of raising. The unmutated selected suite passes
+all 58 checks. Applying upgrade189-existing-record-rewritten by hand to a copied module in a temporary
+tree completes with 53 checks passing and five failing, including upgrade/fresh-0186 on its
+writes-nothing assertion, with no traceback. No production module changed.
