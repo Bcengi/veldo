@@ -168,6 +168,14 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-09-29, adaptation after main 82b185f2: copy the runtime assets into suite 86's
+temporary module tree, matching VELDO-0186's factory-loop fixture update. The existing
+fake Codex already supplies its production-generated qualification record and explicit
+executable binding. All 15 rows pass in the ordinary environment (41 with the shared
+preamble, zero failures; expected subset exit 2). No assertion, acceptance criterion,
+production module or footprint changes are needed. Empty-environment verification and
+proof audits follow in the completion record.
+
 2026-09-28, re-check at f59b3136: the owner resolved the contradictory mixed-case brief.
 A replacement question is allowed only when every approval problem is a tree-only binding
 mismatch for a prior grant at this revision. Missing, revoked and proof-mismatched approvals
