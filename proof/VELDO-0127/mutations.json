@@ -639,6 +639,18 @@
    "source_sha256": "7bcf488164ea8f00256b8e8ade7ccbf6d856b476168ce085ee8623c19ee707a2",
    "status": "registered; execution reserved for reviewer",
    "suite": "86_veldo_0127_agent_configuration.py"
+  },
+  {
+   "diff": "role127-skill-private-git.diff",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "mutant_sha256": "f7bab1f3aec34dee1c1d9f2cbf8df7232ba93938d1d61ec24812da3204d77670",
+   "name": "role127-skill-private-git",
+   "named_rows": [
+    "review/skill-git-boundary"
+   ],
+   "source_sha256": "a723dcdb828fb83630e348385034cb91265935afbab50a71cf9fe808da116934",
+   "status": "registered; execution reserved for reviewer",
+   "suite": "86_veldo_0127_agent_configuration.py"
   }
  ],
  "mutations_rejected_this_run": 0

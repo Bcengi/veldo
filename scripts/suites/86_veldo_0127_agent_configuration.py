@@ -21,7 +21,7 @@ def _v127_suite():
     LIVE_PATH = ROOT / "." / "proof/VELDO-0127/live.py"
     ROWS = ('revision/history', 'handoff/claude', 'handoff/codex', 'dispatch/binding', 'dispatch/refusal',
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
-            'review/skill-commit', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
+            'review/skill-commit', 'review/skill-git-boundary', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
             'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server')
     rows = {name: [] for name in ROWS}
@@ -316,7 +316,27 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 if engine == 'codex':
                     direct_role = f.role(engine)
                     direct_role['settings']['model'] = 'gpt-5.5'
-                    f.save(direct_role)
+                    accepted = f.save(direct_role)
+                    capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, accepted,
+                                                      {'project': f.src, 'factory': base})
+                    foreign = base / 'foreign'
+                    f.GP.run(['git', 'init', '-q', str(foreign)], check=True, capture_output=True)
+                    prior_git_dir = os.environ.get('GIT_DIR')
+                    try:
+                        os.environ['GIT_DIR'] = str(foreign / '.git')
+                        links, stage_error = attempt(lambda: L.HANDOFF.stage_skills(capability, base))
+                    finally:
+                        if prior_git_dir is None:
+                            os.environ.pop('GIT_DIR', None)
+                        else:
+                            os.environ['GIT_DIR'] = prior_git_dir
+                    rule = '/.agents/skills/inspect'
+                    check('review/skill-git-boundary', 'skill exclusion stays in the project despite ambient Git selectors',
+                          stage_error is None and bool(links)
+                          and rule in (f.src / '.git/info/exclude').read_text()
+                          and rule not in (foreign / '.git/info/exclude').read_text())
+                    for link in links or []:
+                        link.unlink()
                     # The account profile's own MCP server, which exec never loads (--ignore-user-config): the
                     # listing must read exactly the table exec is handed, never this profile's config.toml.
                     profile = Path(f.HELPER.resolve('acct-x1', root=str(f.helper_root)))

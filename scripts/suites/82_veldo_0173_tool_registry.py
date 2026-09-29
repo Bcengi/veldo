@@ -244,8 +244,13 @@ def stream_input():
                       'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
             emit(complete_event(answer))
-            if '--mcp-config' in sys.argv: emit(own['init'])
         elif message.get('type') == 'user':
+            if message.get('shouldQuery') is False:
+                emit(own['init'])
+                emit(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False,
+                                     'num_turns': 0, 'result': '',
+                                     'usage': {'input_tokens': 0, 'output_tokens': 0}}))
+                continue
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
 narrowed, named = option(('--tools',))

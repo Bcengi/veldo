@@ -30,6 +30,7 @@ footprint:
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0127_*.py"
   - "scripts/suites/82_veldo_0173_tool_registry.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -347,3 +348,12 @@ present readers in the second fail exact equality. The native mapping and qualif
 record retain this rule; direct and Code Mode loopback captures qualify both cases.
 The prior resource-reader case (c) table becomes history. The existing footprint
 covers the production mapping, comparison, suite and proof files; no paths added.
+
+2026-09-29, lead check repairs: AC4 skill staging uses the shared isolated Git
+boundary so ambient selectors cannot redirect its exclude file. AC2 qualification
+equality invokes the production writer with offline bundled-catalog capture, retaining
+the catalog, digest, model modes and native mapping. AC3 and AC4 registry fixtures
+answer the no-turn probe before accepting the real prompt. Add the VELDO-0061 suite
+to the footprint for that qualification comparison; no other footprint expansion.
+The production handoff edit invalidates both digest-bound live captures; the lead
+must recapture them. No acceptance check or live evidence binding is relaxed.

@@ -776,7 +776,7 @@ sys.exit(payload.get('code', 0))
 
         with region('pin/qualified-record'):
             installed = json.loads(INSTALLED_QUALIFICATION.read_text()) if INSTALLED_QUALIFICATION.is_file() else {}
-            fresh, error = attempt(lambda: X.qualification(REAL))
+            fresh, error = attempt(lambda: X.qualification(REAL, catalog=True))
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
                   'the installed vendor binary now [%s]' % error, installed and fresh == installed)
             check('pin/qualified-record', 'it names Codex 0.154.0, the vendor path inside @openai/codex, the digest both '

@@ -18,6 +18,9 @@ Refused = C.Refused
 _wire_spec = spec_from_file_location('handoff_codex', Path(__file__).with_name('control_engine_codex.py'))
 X = module_from_spec(_wire_spec)
 _wire_spec.loader.exec_module(X)
+_git_spec = spec_from_file_location('handoff_git_process', Path(__file__).with_name('git_process.py'))
+_git_process = module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 OPTION = '-' * 2
 CODEX_NATIVE = {'shell': 'shell_tool', 'apply_patch': 'apply_patch_freeform',
                 'view_image': 'view_image', 'multi_agent': 'multi_agent'}
@@ -422,7 +425,7 @@ def stage_skills(capability, config):
             link = root / skill['name']
             if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
                 continue
-            exclude = subprocess.run(['git', '-C', str(capability['project']), 'rev-parse',
+            exclude = _git_process.run(['git', '-C', str(capability['project']), 'rev-parse',
                                       OPTION + 'git-path', 'info/exclude'], check=True, capture_output=True, text=True)
             path = Path(exclude.stdout.strip())
             if not path.is_absolute():

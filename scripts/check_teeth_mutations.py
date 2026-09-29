@@ -9102,6 +9102,10 @@ def cases():
         '    ".veldo/control_agent_config.py",\n    ".veldo/control_agent_config_handoff.py",\n', '',
         ['authority/installed-assets'])
 
+    add(127, 'role127-skill-private-git', suite127, 'control_agent_config_handoff.py',
+        "            exclude = _git_process.run(['git',",
+        "            exclude = subprocess.run(['git',", ['review/skill-git-boundary'])
+
     add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
         "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
         "                handle.write('\\n')", ['review/skill-commit'])

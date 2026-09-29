@@ -59,10 +59,9 @@ def main():
             raise SystemExit('Red replay did not finish: ' + result.stderr[-1000:])
         observed = json.loads(result.stdout)
     behavior = [r for r in observed['rows'] if r[0] in {
-        'VELDO-0127 wire/resources', 'VELDO-0127 wire/no-server',
-        'VELDO-0127 review/codex-tools', 'VELDO-0127 wire/normalization'}]
+        'VELDO-0127 review/skill-git-boundary'}]
     observed['behavior_rows'] = behavior
-    observed['every_changed_behavior_row_red'] = len(behavior) == 4 and all(not ok for _, ok in behavior)
+    observed['every_changed_behavior_row_red'] = len(behavior) == 1 and all(not ok for _, ok in behavior)
     report = dict(schema='veldo.proof-red/v1',spec_id='VELDO-0127',commit=commit,
                   suite='scripts/suites/'+SUITE,tree='unchanged git archive; current suite and proof helper',**observed)
     path = HERE / ('red-at-' + sys.argv[2] + '.json')
