@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -195 +195 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -197,7 +197,7 @@
+     """The named stop for an init event whose launch set differs from `wanted` in either direction, else None.
+     `builtin` names the engine's own built-in commands (its initialize answer marks them): typed commands the
+     model is not offered, left out of the slash commands only; every skill the model is offered is compared."""
 -    for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):
 +    for field in ('tools', 'mcp_servers', 'slash_commands', 'plugins'):
+         value = event.get(field)
+         if not isinstance(value, list):
+             return 'configuration_stop:' + field

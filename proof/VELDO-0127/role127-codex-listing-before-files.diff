@@ -1,0 +1,22 @@
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py
+@@ -1408,6 +1408,10 @@
+             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
+                 self.metering.login_guard.expected = extra['expected']
+                 self.metering.terminal.hold_prompt()
++            if extra.get('expected') and engine.PROVIDER == 'codex':
++                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
++                self.emit({'event': 'capability_listing', 'listing': [
++                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
+         except (engine.Refused, HANDOFF.Refused) as error:
+             # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
+             raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
+@@ -1420,7 +1424,7 @@
+                            'wb') as handle:
+                 handle.write(data)
+         try:
+-            if extra.get('expected') and engine.PROVIDER == 'codex':
++            if False:  # defect: the listing ran before the files it loads were written
+                 listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
+                 tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])
+                 self.emit({'event': 'capability_tools', 'tools': tools})

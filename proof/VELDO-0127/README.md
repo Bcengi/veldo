@@ -1,5 +1,44 @@
 # VELDO-0127 role capability configuration
 
+## Exact Codex grant delivery repair, 2026-09-29
+
+This repair starts at `13cc4898`. Production now runs the pinned binary with the
+generated role overrides and configured MCP servers against a loopback endpoint
+before releasing the task. The endpoint retains only tool definitions and rejects
+the request; it cannot supply a model turn. A fresh temporary HOME and CODEX_HOME
+exclude the provider login. Both missing and extra built-in or MCP tools produce
+named configuration stops. Only tool names enter the receiver event.
+
+Clock keeps its sleep operation. Code Mode's `web__run` normalizes to web search;
+the observation provider advertises standalone search support, as the production
+provider does. The pinned catalog only supplies clock and async input on
+gpt-6-astra, so other models refuse those grants at save. Tool search is refused
+on all pinned models: it is absent without MCP, Code Mode omits search itself,
+and with MCP the selected definitions are deferred. No accepted grant is reduced.
+
+Suite 87 drives the signed configuration writer, binding, materialization,
+credential resolver, generated baseline and Receiver._baseline. Its 176 rows cover
+all ten native grant names on all eleven qualified models, empty native controls,
+selected Jira definitions, unsupported saves, and production stops for a missing
+native tool, an extra native tool and a missing MCP tool. The fault adapter changes
+the real binary's arguments; it never invents tool definitions. Suite 86 also uses
+real wire observations where its old fake assembled tools from catalog fields.
+The catalog fixture now retains the complete shipped catalog so the real binary
+can parse it. The binary only runs against 127.0.0.1 with empty generated profiles;
+the fixture additionally restricts TCP to the stand-in port.
+
+The new falsifiers restore the unconditional sleep disable, drop web search, skip
+the production comparison, accept unsupported grants, drop a selected MCP tool,
+and add an ungranted default tool. The former granted-search catalog mutation is
+replaced by an unsupported-search acceptance mutation because no pinned model can
+deliver that grant exactly. `mutations.json` records current anchors and diffs.
+No mutation execution or rejection is claimed; those runs belong to the reviewer.
+
+Production digests changed. The live capture must be redone by the reviewer after
+this lands on the branch. The prior live evidence is retained unchanged, and its
+digest checks remain enabled. No gate or aggregate selftest is run or claimed.
+Existing footprint patterns cover the changes; no expansion is needed.
+
 ## Usage-window integration repair, 2026-09-29
 
 The baseline is `ef1cd2fb`. The receiver constructor always defines `binding`;

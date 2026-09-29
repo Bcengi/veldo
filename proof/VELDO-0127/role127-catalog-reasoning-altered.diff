@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -270 +270 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -272,7 +272,7 @@
+         if bound.get('model_tool_modes', {}).get(model) == 'code_mode_only':
+             raise Refused('configuration_stop:codex_code_mode_model')
+         raise Refused('configuration_stop:codex_model_catalog')
 -    selected = copy.deepcopy(entry)
 +    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')
+     grants = set(revision['native_tools'])
+     if not grants.intersection({'sub_agents', 'multi_agent'}):
+         selected.pop('multi_agent_version', None)

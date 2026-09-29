@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -242 +242 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -244,7 +244,7 @@
+         extra['argv'] += [OPTION + 'append-system-prompt-file', str(config / 'role-instructions.md')]
+     # `--disable-slash-commands` also withdraws the Skill tool, so a role granting it, or listing a skill, runs
+     # without it; the generated settings above keep the engine's own skills off either way.
 -    if capability['skills'] or 'Skill' in revision['native_tools']:
 +    if capability['skills']:
+         extra['argv'].remove(OPTION + 'disable-slash-commands')
+     if capability['skills']:
+         extra['argv'] += [OPTION + 'plugin-dir', str(config / 'role-plugin')]

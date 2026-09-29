@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -432 +432 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -498,7 +498,7 @@
+                 path = Path(capability['project']) / path
+             path.parent.mkdir(parents=True, exist_ok=True)
+             with path.open('a') as handle:
 -                handle.write('\n/.agents/skills/' + skill['name'] + '\n')
 +                handle.write('\n')
+             link.symlink_to(config / 'role-skills' / skill['name'], target_is_directory=True)
+             staged.append(link)
+     return staged

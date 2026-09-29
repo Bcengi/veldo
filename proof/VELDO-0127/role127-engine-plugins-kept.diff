@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -233 +233 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -235,7 +235,7 @@
+     if SETTINGS_FILE not in extra['files']:
+         raise Refused('missing_evidence:engine_settings')
+     settings = json.loads(extra['files'][SETTINGS_FILE])
 -    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,
 +    settings.update(disableBundledSkills=True,
+                     skillOverrides={name: 'off' for name in CLAUDE_ENGINE_SKILLS})
+     extra['files'][SETTINGS_FILE] = (json.dumps(settings, sort_keys=True) + '\n').encode()
+     extra['argv'] += [OPTION + 'debug-file', str(config / 'role-debug.log')]

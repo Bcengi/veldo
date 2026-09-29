@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -275 +275 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -277,7 +277,7 @@
+     if not grants.intersection({'sub_agents', 'multi_agent'}):
+         selected.pop('multi_agent_version', None)
+     if 'apply_patch' not in grants:
 -        selected['apply_patch_tool_type'] = None
 +        pass
+     experimental = {'send_user_message_async': 'request_user_input_async', 'clock': 'clock'}
+     selected['experimental_supported_tools'] = [n for n in entry['experimental_supported_tools']
+                                                 if experimental.get(n, n) in grants]

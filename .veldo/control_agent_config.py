@@ -102,9 +102,10 @@ def codex_grants(definition):
     for name, experimental in (('clock', 'clock'), ('request_user_input_async', 'send_user_message_async')):
         if name in grants and experimental not in entry['experimental_supported_tools']:
             raise Refused('unsupported_configuration:codex_tool:' + model + ':' + name)
-    # In 0.154 Code Mode omits the search tool itself. With MCP, either mode
-    # defers selected definitions, violating the role's exact launch set.
-    if 'tool_search' in grants and (entry.get('tool_mode') == 'code_mode_only' or definition['mcp']):
+    # In 0.154 search is absent without MCP and Code Mode omits search itself.
+    # With MCP, selected definitions are deferred in either mode. No combination
+    # delivers the complete grant, so refuse it until the binary is qualified.
+    if 'tool_search' in grants:
         raise Refused('unsupported_configuration:codex_tool:' + model + ':tool_search')
 
 

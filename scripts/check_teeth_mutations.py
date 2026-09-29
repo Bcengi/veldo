@@ -9072,8 +9072,8 @@ def cases():
         "    if 'apply_patch' not in grants:", "    if True:", ['catalog/grants'])
     add(127, 'role127-catalog-granted-experiments-lost', catalog_suite, 'control_agent_config_handoff.py',
         "if experimental.get(n, n) in grants]", "if False]", ['catalog/grants'])
-    add(127, 'role127-catalog-granted-search-lost', catalog_suite, 'control_agent_config_handoff.py',
-        "    if 'tool_search' not in grants:", "    if True:", ['catalog/grants'])
+    add(127, 'role127-search-unsupported-accepted', '87_veldo_0127_codex_delivery.py', 'control_agent_config.py',
+        "    if 'tool_search' in grants:", "    if False:", ['delivery/gpt-5.5/tool_search'])
     add(127, 'role127-catalog-reasoning-altered', catalog_suite, 'control_agent_config_handoff.py',
         "    selected = copy.deepcopy(entry)",
         "    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')", ['catalog/fields'])

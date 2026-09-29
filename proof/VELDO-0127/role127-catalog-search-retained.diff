@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -280 +280 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -282,7 +282,7 @@
+     selected['experimental_supported_tools'] = [n for n in entry['experimental_supported_tools']
+                                                 if experimental.get(n, n) in grants]
+     if 'tool_search' not in grants:
 -        selected['supports_search_tool'] = False
 +        pass
+     return dict(copy.deepcopy(catalog), models=[selected])
+ 
+ 

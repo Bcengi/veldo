@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -407 +407 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -473,7 +473,7 @@
+     if any(i.get('enabled') is not True for i in listing):
+         raise Refused('configuration_stop:mcp_servers')
+     for item in listing:
 -        server = ask(['get', item['name']])
 +        server = dict(item)
+         tools = [t.split('__', 2)[2] for t in extra['expected']['tools'] if t.startswith('mcp__' + item['name'] + '__')]
+         if (not isinstance(server, dict) or server.get('name') != item['name'] or server.get('enabled') is not True
+                 or not isinstance(server.get('enabled_tools'), list) or sorted(server['enabled_tools']) != sorted(tools)):

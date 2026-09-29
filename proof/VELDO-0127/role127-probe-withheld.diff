@@ -1,6 +1,12 @@
---- a/.veldo/control_engine_claude.py
-+++ b/.veldo/control_engine_claude.py
-@@ -1584,2 +1584 @@
+--- .veldo/control_engine_claude.py
++++ .veldo/control_engine_claude.py
+@@ -1606,8 +1606,7 @@
+         if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
+             if self.probed:
+                 return None
 -            self.probed = True
 -            return (json.dumps(PROBE) + '\n').encode()
 +            return None  # defect: the prompt waits for an init the engine reports only for a message
+         self.released = True
+         message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
+                    'parent_tool_use_id': None}

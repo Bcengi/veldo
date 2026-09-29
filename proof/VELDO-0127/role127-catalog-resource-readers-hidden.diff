@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -349 +349 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -352,7 +352,7 @@
+         if name == 'exec':
+             names.extend(codex_name(n) for n in re.findall(r'^### `([^`]+)`\s*$',
+                                                          definition.get('description', ''), re.M))
 -    return sorted(names)
 +    return sorted(n for n in names if n not in ('list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource'))
+ 
+ 
+ def codex_expected_tools(wanted, body):

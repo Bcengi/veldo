@@ -1,5 +1,11 @@
---- a/.veldo/control_launch.py
-+++ b/.veldo/control_launch.py
-@@ -1890 +1890 @@
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py
+@@ -1909,7 +1909,7 @@
+                         recorder.feed('stderr', chunk)
+         feeder.join(timeout=1)
+         if (metering is not None and getattr(metering.terminal, 'require_prompt', False)
 -                and (input_failed.is_set() or not metering.terminal.prompt_written)):
 +                and False):
+             metering.login_stop = metering.login_stop or 'configuration_stop:prompt_write_failed'
+             cause = cause or 'configuration_stop'
+         if recorder is not None:

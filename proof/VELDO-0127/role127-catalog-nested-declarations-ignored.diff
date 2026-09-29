@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -346 +346 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -349,7 +349,7 @@
+         definition = tool.get('function') if isinstance(tool.get('function'), dict) else tool
+         name = codex_name(namespace + definition.get('name', tool.get('type', '')))
+         names.append(name)
 -        if name == 'exec':
 +        if False:
+             names.extend(codex_name(n) for n in re.findall(r'^### `([^`]+)`\s*$',
+                                                          definition.get('description', ''), re.M))
+     return sorted(names)

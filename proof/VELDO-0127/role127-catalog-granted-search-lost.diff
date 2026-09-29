@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -279 +279 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -281,7 +281,7 @@
+     experimental = {'send_user_message_async': 'request_user_input_async', 'clock': 'clock'}
+     selected['experimental_supported_tools'] = [n for n in entry['experimental_supported_tools']
+                                                 if experimental.get(n, n) in grants]
 -    if 'tool_search' not in grants:
 +    if True:
+         selected['supports_search_tool'] = False
+     return dict(copy.deepcopy(catalog), models=[selected])
+ 

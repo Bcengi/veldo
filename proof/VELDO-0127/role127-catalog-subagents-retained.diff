@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -273 +273 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -275,7 +275,7 @@
+     selected = copy.deepcopy(entry)
+     grants = set(revision['native_tools'])
+     if not grants.intersection({'sub_agents', 'multi_agent'}):
 -        selected.pop('multi_agent_version', None)
 +        pass
+     if 'apply_patch' not in grants:
+         selected['apply_patch_tool_type'] = None
+     experimental = {'send_user_message_async': 'request_user_input_async', 'clock': 'clock'}

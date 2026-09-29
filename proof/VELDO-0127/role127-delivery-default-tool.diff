@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -290,7 +290,7 @@
+     revision = capability['revision']
+     configuration.update(revision['settings'])
+     for name, feature in CODEX_NATIVE.items():
+-        configuration['features.' + feature] = name in revision['native_tools']
++        configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']
+     configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}
+     configuration['tools.experimental_request_user_input'] = {'enabled': False}
+     configuration['features.goals'] = False

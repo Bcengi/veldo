@@ -88,7 +88,7 @@ def _v127_delivery():
                     # Independent pinned-model support expectation, never computed
                     # from the production refusal under test.
                     unsupported = ((tool in ('clock', 'request_user_input_async') and model != 'gpt-6-astra')
-                                   or (tool == 'tool_search' and X.MODEL_TOOL_MODES[model] == 'code_mode_only'))
+                                   or tool == 'tool_search')
                     if unsupported:
                         check(row, accepted is None and save_error ==
                               'unsupported_configuration:codex_tool:' + model + ':' + tool, str(save_error))

@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -200 +200 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -202,7 +202,7 @@
+         if not isinstance(value, list):
+             return 'configuration_stop:' + field
+         if field == 'slash_commands':
 -            value = [v for v in value if v not in set(builtin)]
 +            value = list(value)
+         if field in ('mcp_servers', 'plugins'):
+             if not all(isinstance(v, dict) and isinstance(v.get('name'), str) for v in value):
+                 return 'configuration_stop:' + field

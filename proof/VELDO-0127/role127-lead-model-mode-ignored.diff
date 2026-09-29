@@ -1,5 +1,11 @@
---- a/proof/VELDO-0127/live.py
-+++ b/proof/VELDO-0127/live.py
-@@ -52 +52 @@
+--- proof/VELDO-0127/live.py
++++ proof/VELDO-0127/live.py
+@@ -61,7 +61,7 @@
+ 
+ def codex_model(model, engine):
+     modes = engine.MODEL_TOOL_MODES
 -    if model not in modes:
 +    if False:
+         raise SystemExit('A qualified codex-model is required: ' + model)
+     return model
+ 

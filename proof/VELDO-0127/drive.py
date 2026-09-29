@@ -66,7 +66,11 @@ def main():
     path = HERE / ('red-at-' + sys.argv[2] + '.json')
     path.write_text(json.dumps(report,indent=1,sort_keys=True)+'\n')
     print(json.dumps({'failed_rows':len(report['failed_rows']),'rows':len(report['rows']),
-                      'by_assertion':report['by_assertion'],'record':str(path.relative_to(ROOT))}))
+                      'by_assertion':report['by_assertion'],
+                      'every_changed_behavior_row_red': report['every_changed_behavior_row_red'],
+                      'record':str(path.relative_to(ROOT))}))
+    if not report['by_assertion'] or not report['every_changed_behavior_row_red']:
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

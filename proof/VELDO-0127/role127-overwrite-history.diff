@@ -1,6 +1,12 @@
---- a/.veldo/control_agent_config.py
-+++ b/.veldo/control_agent_config.py
-@@ -160,0 +161,3 @@
+--- .veldo/control_agent_config.py
++++ .veldo/control_agent_config.py
+@@ -181,6 +181,9 @@
+             self.observe(dict(about, outcome='refused', refusal=error.code))
+             raise Refused(error.code) from None
+         self.observe(dict(about, outcome='saved', role=name, revision=result['revision'], digest=result['digest']))
 +        if base and kind == KINDS[0]:
 +            self.conn.execute("UPDATE entities SET data=? WHERE id=?",
 +                (json.dumps(result), identity(self.domain, self.repository, kind, name, base)))
+         return result
+ 
+ 

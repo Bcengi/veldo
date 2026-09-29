@@ -1,5 +1,11 @@
---- a/proof/VELDO-0127/live.py
-+++ b/proof/VELDO-0127/live.py
-@@ -131 +131 @@
+--- proof/VELDO-0127/live.py
++++ proof/VELDO-0127/live.py
+@@ -140,7 +140,7 @@
+     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
+             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
+             'builtin_commands':builtin, 'probe':document.get('probe'),
 -            'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire, 'wire_tools':wire_tools,
 +            'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire, 'wire_tools':[],
+             'model_catalog':catalog if engine == 'codex' else None,
+             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,
+             'credential_sources':cred.get('credentials'), 'record_commitment':record.get('execution_record'),

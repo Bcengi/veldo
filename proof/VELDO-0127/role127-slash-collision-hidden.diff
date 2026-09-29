@@ -1,5 +1,11 @@
---- a/.veldo/control_agent_config_handoff.py
-+++ b/.veldo/control_agent_config_handoff.py
-@@ -188 +188 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -190,7 +190,7 @@
+     for command in commands if isinstance(commands, list) else []:
+         if isinstance(command, dict) and isinstance(command.get('name'), str):
+             entries.setdefault(command['name'], []).append(command.get('builtin') is True)
 -    return tuple(sorted(name for name, flags in entries.items() if all(flags)))
 +    return tuple(sorted(name for name, flags in entries.items() if any(flags)))
+ 
+ 
+ def difference(event, wanted, builtin=()):
