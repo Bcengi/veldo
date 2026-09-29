@@ -1,5 +1,50 @@
 # VELDO-0127 role capability configuration
 
+## Generated feature profile repair, 2026-09-29
+
+This repair starts at `9233e1b4`. After all recorded feature, native grant and
+other feature assignments, the handoff collapses them into one features table.
+The profile serializer and CLI serializer consume that same table. Literal
+dotted names remain quoted keys, and every existing feature value is preserved.
+The existing footprint covers all changed files; no expansion is needed.
+
+Suite 90 adds exactly two behavior reports, driven through the qualification
+writer, signed role writer, binding, materialization and Receiver._baseline:
+
+- AC2, `profile/parse-values`: tomllib parses the actual generated config.toml
+  and compares its entire features table to independently enumerated expected
+  values for the recorded listing, including `guardianv2.thread_context`.
+  Cases cover empty grants, shell, combined grants, and direct and Code Mode
+  models. The comparison includes later native and multi_agent_v2 assignments.
+- AC4, `profile/pinned-tools`: verifies the binary digest against the retained
+  listing, checks exactly one complete CLI features override, and starts the
+  pinned binary with the receiver argv and byte-identical generated profile in
+  CODEX_HOME. A second start removes only user-config suppression so the binary
+  also reads that file. Each first request must expose exactly the accepted
+  tool set, proving that feature settings survive the remaining argv options.
+  The stand-in returns HTTP 400 before any model or tool turn. Each run has an
+  empty temporary HOME and generated-only profile with the TCP guard restricted
+  to the loopback endpoint; no login or live provider is used.
+
+`red-at-9233e1b4.json` records both rows red by assertion on the unchanged
+pre-change archive. The driver uses the current suite and proof fixtures and
+never edits the archived production sources. AC1 and AC3 behavior is unchanged.
+
+Two new mutations are registered under finding 127 with exact diffs: restoring
+the mixed feature representation targets both rows; wiping the CLI feature
+table targets the pinned-tools row. Their current source and mutant digests
+are appended to `mutations.json`; earlier entries retain their historical
+source bindings. Mutation execution and rejection remain for the reviewer.
+
+Suite 90 passes both rows in normal and clean gate environments. Suites 87,
+88 and 89 pass 176, 25 and 11 rows. Suite 86 passes 25 offline rows; only its
+two stale live-capture rows fail. The validator passes, anchors report zero
+bad anchors, the footprint reports nothing outside, requirements are regenerated
+and engine copies match. `profile-checks.json` retains the scoped results.
+These partial suites are not a gate pass. Live proofs are unchanged; the
+reviewer recaptures them after this lands because the production digest changed.
+
+
 ## Recorded feature repair, 2026-09-29
 
 This repair starts at `2234d205`. Every recorded feature outside the known

@@ -1,5 +1,6 @@
 """The complete generated feature table is valid TOML and accepted by pinned Codex."""
 def _v127_feature_profile():
+    import hashlib
     import importlib.util
     import json
     from pathlib import Path
@@ -49,6 +50,8 @@ def _v127_feature_profile():
         fault = base / 'fault'
         fault.write_text('')
         recorded = json.loads((TREE / 'proof/VELDO-0127/features-fixture.json').read_text())
+        check('profile/pinned-tools', 'sha256:' + hashlib.sha256(wire.BINARY.read_bytes()).hexdigest()
+              == recorded['executable_digest'], 'binary differs from the retained feature listing')
         catalog = base / 'catalog-fixture.json'
         catalog.write_bytes((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_bytes())
         listing_path = base / 'features-fixture.json'

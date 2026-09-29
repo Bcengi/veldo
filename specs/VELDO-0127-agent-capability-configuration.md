@@ -80,10 +80,15 @@ acceptance_criteria:
       as an ordinary tool, with no special factory channel. Verify each server authenticates
       using exactly its configured credential delivery, including the Atlassian catalog server's
       keystore credential, without gaining another server's credentials.
-      Compare redacted credential-source identities, never secret values. Falsifier: Remove one configured MCP
+      Compare redacted credential-source identities, never secret values. Generated Codex config.toml
+      parses with tomllib and retains every assigned feature value, including literal dotted names,
+      in one features table after all handoff assignments. Falsifier: Restore mixed dotted feature
+      keys and an inline features table; the profile parse and value row must fail by assertion.
+      Falsifier: Remove one configured MCP
       tool while allowing launch; the exact-handoff comparison must fail.
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
+      Restore mixed dotted feature keys and an inline features table; the profile parse row must fail.
   - id: AC3
     text: >
       Claim: The dispatch records the configuration revision actually used and refuses an
@@ -103,7 +108,11 @@ acceptance_criteria:
       Code, compare the init event's `tools`, `mcp_servers`, `slash_commands`, `skills` and
       `plugins` with the set the dispatch recorded, in both directions, and stop the run by name on
       any difference before its first turn; for Codex, compare its own MCP listing and the generated
-      configuration where its stream reports less. Listed instruction files reach Claude Code joined
+      configuration where its stream reports less. The pinned Codex binary accepts the exact generated
+      profile in an empty CODEX_HOME and the receiver's argv against a loopback stand-in, and its first
+      request has exactly the expected tools. One features override preserves all earlier and later
+      handoff values. Falsifier: Wipe the CLI features table; the pinned tool row must fail by assertion.
+      Listed instruction files reach Claude Code joined
       into one generated file for the `append-system-prompt-file` option and Codex through developer
       instructions. Because the init event names no loaded instruction files, plant a marker
       CLAUDE.md in the clone and in the account profile with discovery turned off, and compare the
@@ -116,6 +125,7 @@ acceptance_criteria:
     falsified_by: >
       Pass the in-run list as `tools` whatever revision is bound; the PushNotification row must fail.
       Let the engine load a skill the role does not list; the launch-set comparison must fail.
+      Wipe the CLI features table; the pinned tool row must fail by assertion.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern while preserving accepted records, configuration
@@ -202,6 +212,14 @@ the profile parse row must fail by assertion. A dropped later grant must fail
 the pinned tool comparison. The existing footprint covers this repair.
 Live proofs are not recaptured here; the reviewer recaptures them after this
 lands because the production digest changes.
+Suite 90 passes both rows in normal and clean gate environments; the unchanged
+9233e1b4 archive is red by assertion on both. Suites 87, 88 and 89 pass 176,
+25 and 11 rows. Suite 86 passes 25 offline rows and retains only its two stale
+live-capture failures. Two new mutations are registered with exact diffs and
+named rows; execution and rejection remain reserved for the reviewer. The
+validator passes, anchors report zero bad anchors, the footprint has nothing
+outside, requirements are regenerated and engine copies match. No gate pass
+or live recapture is claimed.
 
 2026-09-29, recorded feature repair from 2234d205: AC2 and AC4 explicitly set
 every listed feature outside the known non-tool set, including default-off tool
