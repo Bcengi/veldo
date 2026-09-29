@@ -311,10 +311,18 @@ to the reviewer. Verification and the baseline red record are in proof/VELDO-018
 
 2026-09-29, setup recovery review at be94c919: AC1 and AC2 now cover publishing host/engines.json
 through a sibling temporary file and rename, repairing an unreadable record on retry, and refusing a
-readable different record by path before writing. AC1 uses the fresh setup's Codex digest refusal on
+readable different record by path before pin or engines-record writes. AC1 uses the fresh setup's Codex digest refusal on
 upgrade too. AC4 reports actual pin and record writes even when the engine is already current. AC1's
 inspection refuses malformed runtime inventories and receivers missing store by path before any write.
 Seven new behavior rows exercise the real setup and engine writer over a host the current installer
 made. Finding 189 gains their falsifiers and a wrong pin mode mutant against the existing equivalence
 row, isolating its mode assertion. The acceptance criteria and footprint are unchanged. Mutation runs
 and the aggregate gate remain the reviewer's work under the owner's run restrictions.
+
+
+2026-09-29, recovery review proof: red-at-be94c919.json has all seven new defect rows red by assertion,
+with the other 25 behavior rows green. The final source passes the selected 0189 suite normally and in
+the requested empty environment: 58 checks, zero failures in each. The validator passes; all engine
+copies match; finding 189 has 46 mutants with valid unique anchors and syntax, ten added for this review.
+Their execution remains reserved to the reviewer. The review diff stays within this footprint; the
+supplied origin/main checker still reports inherited stacked paths and historical gate stamps.

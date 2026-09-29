@@ -331,7 +331,7 @@ so refusal assertions can fail without a row raising.
 - `engines/atomic-record`: kills the production engine-record writer at open, partial write, completed
   write and rename; the published record is absent or complete, and setup retry completes it at 0600.
 - `engines/repair-record`: empty, truncated and undecodable records are repaired and the write reported.
-- `engines/refuse-record`: a readable different binding is refused by its record path before any write,
+- `engines/refuse-record`: a readable different binding is refused by its record path before pin or engines-record writes,
   including when its pin is missing.
 - `engines/codex-refusal`: changed generated Codex bytes after preflight get the same digest refusal in
   the real fresh installer helper and upgrade helper; no binding record is written.
@@ -353,3 +353,18 @@ pending until that execution, never claimed rejected on the strength of anchors 
 commit. The other 25 rows remain green, including the pre-existing pin-mode defense. No row raised,
 and each row name appears once. The first selected-suite run on the fixes passed all 32 behavior rows
 and 58 checks overall; final-source verification is recorded separately in verification-review.json.
+
+
+The final source passes the selected 0189 suite in both the normal environment (334.85 seconds) and the
+requested empty environment (474.05 seconds): 58 checks passed, zero failed, including all 32 behavior
+rows. Each run exits 2 under the partial-run contract and supplies no aggregate gate stamp.
+`verification-review.json` records the source digests, environment, summaries and log digests. The
+validator passes, all engine copies match, requires.json was regenerated without content changes, and
+all mutation anchors are unique and valid. All 46 finding 189 mutants compile; execution is still
+reviewer_pending, including the ten new review mutants.
+
+The review diff from be94c919 has no paths outside VELDO-0189. The supplied footprint checker compares
+this entire stacked branch with origin/main and still lists inherited VELDO-0171 paths and the two
+historical gate stamps. With both specs it lists only those stamps. This review changes neither the
+inherited paths nor the footprint to hide them. The checkout's gate byproducts are restored before the
+final commit; the gate and mutation executions were not run.
