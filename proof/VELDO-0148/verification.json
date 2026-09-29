@@ -1,0 +1,47 @@
+{
+ "full_gate_run": false,
+ "gate_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo148-gate-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "gate_environment_started_empty": true,
+ "mutation_checker_run": false,
+ "runs": {
+  "cpu_load": {
+   "expected_subset_exit": 2,
+   "failed": 0,
+   "log_sha256": "e8a61e3167d5e010302a7457604eb0ae64cc8745d71bdeb634780c46f3e6db0a",
+   "seconds": 25.15,
+   "suite_rows_passed": 16,
+   "with_preamble_passed": 42
+  },
+  "gate_environment": {
+   "expected_subset_exit": 2,
+   "failed": 0,
+   "log_sha256": "43b55c06b08206342fa732f2eed52db40e7854d0ca7fb95e00d538d9545318b6",
+   "seconds": 20.54,
+   "suite_rows_passed": 16,
+   "with_preamble_passed": 42
+  },
+  "ordinary": {
+   "expected_subset_exit": 2,
+   "failed": 0,
+   "log_sha256": "d47c563ea012c590b39adc46f895210ebe06907cfd10df3ffa0085a89b37c09b",
+   "seconds": 18.11,
+   "suite_rows_passed": 16,
+   "with_preamble_passed": 42
+  }
+ },
+ "spec_id": "VELDO-0148",
+ "suite_sha256": "3efa86a7f7b37d654726f0066b357233cb62861b40112b259baeb8eeda13b79b"
+}

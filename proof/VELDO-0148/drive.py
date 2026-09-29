@@ -121,7 +121,33 @@ def red(commit):
                       'written': name}))
 
 
+def wake_only():
+    """Apply only the wake no-op by hand to a temporary copy; never load the mutation checker."""
+    source = ROOT / '.veldo/control_service.py'
+    old = "            self.loop.wake('run_end', record['dispatch_id'])\n"
+    new = "            pass  # defect: a land's end wakes no pass\n"
+    body = source.read_text()
+    assert body.count(old) == 1
+    with tempfile.TemporaryDirectory(prefix='v148-wake-') as directory:
+        target = Path(directory) / 'control_service.py'
+        target.write_text(body.replace(old, new))
+        observed = run({'control_service.py': str(target)})
+        report = dict(schema='veldo.manual-mutation/v1', spec_id='VELDO-0148',
+                      name='reland148-end-wakes-nothing', source_sha256=_sha(source),
+                      mutant_sha256=_sha(target), suite_sha256=_sha(ROOT / 'scripts/suites' / SUITE),
+                      old=old, new=new, by_assertion=not _raised(observed),
+                      named_rows=['reland/end-wakes-pass'], **observed)
+    report['only_named_row_red'] = observed['failed_rows'] == [PREFIX + 'reland/end-wakes-pass']
+    assert source.read_text() == body
+    (HERE / 'manual-wake.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    print(json.dumps(report))
+    assert report['by_assertion'] and report['only_named_row_red']
+
+
 def main():
+    if sys.argv[1:] == ['--wake-only']:
+        wake_only()
+        return
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
         red(sys.argv[2])
         return

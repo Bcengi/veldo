@@ -12,8 +12,10 @@ station rechecks every prior grant before writing any replacement.
 Suite: `scripts/suites/86_veldo_0148_re_land.py`, registered with its own prerequisite closure.
 It drives real Git repositories and a disposable bare remote, the SQLite store and signed
 production writers, build and review child processes, the floor and proof services, the lander,
-installed candidate gate, effect executor and publication receipts. The authority service runs
-from its installed executable. Another local clone moves the remote before listing or in the
+installed candidate gate, effect executor and publication receipts. The authority service and
+factory loop load from the installed executable closure and are stepped synchronously through
+their production interfaces. Signed requests use Authority.judge; real receiver children still
+run the installed launch executable. Another local clone moves the remote before listing or in the
 publication clone's pre-push hook. Engine output comes from a generated fake; no real model,
 login, external service or real credential is used. Each row reports once.
 
@@ -25,6 +27,7 @@ login, external service or real credential is used. Each row reports once.
 | AC1 | `reland/stale-subject` | A stale-subject refusal ends the original dispatch without another attempt under it. Exactly one new dispatch follows, takes the new watermark, re-merges unchanged build evidence, re-gates and lands with its own receipt. Status counts dispatches and refusals. |
 | AC1 | `reland/review-kept` | A clean re-merge retains the review of the unchanged evidence commit and the existing floor record, without another build or review. |
 | AC1 | `reland/conflict-rebuild` | A real merge conflict publishes nothing, names the conflicting path and offers one new build instructed to merge the new main, followed by that build's review. |
+| AC1 | `reland/end-wakes-pass` | Actual conflict and approval land ends queue their dispatch wakes. An immediate second loop call consumes those wakes and starts the next pass without a timer, pipe event or added journal command. |
 | AC1 | `reland/never-forced` | Every recorded remote update is a fast-forward and every publication uses the exact watermark of its own land as its lease. |
 | AC2 | `lease/trunk-moved` | A push between listing and publication loses the lease; the executor fetches the moved tip, refuses as trunk-moved and the service re-lands under a new dispatch. |
 | AC2 | `lease/contains-unknown` | A moved tip containing the candidate remains unknown, judged at the push URL; its named stop leaves no receipt, retry or re-land. |
@@ -44,10 +47,45 @@ CandidatePolicy accepts and before Landing publishes. This reaches the final app
 though a missing approval already present at the earlier policy check stops there. These rows use
 the signed store writer, real land station, installed service inbox and signed owner answers.
 
+## Deterministic scheduling repair
+
+At 7ee372ed, setup and every wait shared a 100-second wall-clock deadline. Socket
+startup had 10 seconds; state waits had 20 seconds and polled every 50 milliseconds.
+The first missed wait set a shared stalled flag, making every later wait return
+immediately. A land end could be visible before its pass report was appended, and
+waiting for any later pass did not establish that the desired action had completed.
+
+The four reported failures shared the unfinished approval journey:
+
+* `reland/stale-subject` also checks final station metrics, including G's third land
+  and its resulting outcome. An unanswered approval leaves those counts incomplete.
+* `reland/never-forced` checks at least eight publications and trunk updates. G's
+  final publication supplies part of that evidence, so a stalled journey missed it.
+* `grant/fresh-request` needs the pass after G's second land to open its question,
+  then an answered question and a completed third land before comparing trees.
+* `grant/once-per-dispatch` needs that replacement grant before replaying it and
+  comparing accepted events and approvals across three completed later passes.
+
+The suite now finishes each production pass before taking snapshots. An explicit
+signed journal command drives the pass needed by the behavior rows independently
+of the land-end wake. Actual launch-pipe events drive rebuild and review completion;
+no pipe means there is no child event left to await. The wake row is isolated before
+that explicit command and checks the real queued dispatch identities and next pass.
+The original behavior assertions remain, including the metrics and minimum counts.
+
+There is no scenario deadline, stalled flag, sleep or polling-count verdict.
+Subprocess I/O bounds (formerly 20, 60 or 120 seconds) are 600 seconds. Build/review
+dispatch deadlines and the installed runtime bound are 600 seconds; the installed
+role allowance was increased from 240 to 600. Launch-pipe waiting has a monotonic
+600-second stuck-child bound. Teardown requests stop and waits for each owned launch
+with a 30-second bound. Time readings otherwise supply real production timestamps
+and elapsed-time reporting. Two grant replays and three extra passes are explicit
+behavior checks, not polling attempts. No production timeout or code changed.
+
 ## Red record
 
 [red-at-ad916989.json](red-at-ad916989.json) replays the current suite against an unchanged archive
-of the original pre-concern commit: all 13 behavior rows fail by assertion and the format control
+of the original pre-concern commit: all 14 behavior rows fail by assertion and the format control
 stays green. [red-at-b33e82f8.json](red-at-b33e82f8.json) preserves the earlier suite replay against the commit
 before the first review repair: its two new approval rows fail by assertion; the existing rows stay green.
 [red-at-f59b3136.json](red-at-f59b3136.json) records this re-check: all four changed or new
@@ -65,8 +103,17 @@ copy and pass its absolute path as the `control_landing_station.py` entry to dri
 [red-at-41340bc1.json](red-at-41340bc1.json) is the requested replay against the commit
 immediately before this proof repair. It has no red rows: that commit already has the
 correct production guard. It is a green control, not evidence of a production regression.
-The refreshed original ad916989 record supplies all 13 behavior rows red by assertion;
+The refreshed original ad916989 record supplies all 14 behavior rows red by assertion;
 the manual guard revert supplies the specific falsification for this repair.
+
+[red-at-7ee372ed.json](red-at-7ee372ed.json) records the current suite against the
+immediate pre-repair commit. It is green: this is a proof-only repair and that commit
+already implements all production behavior. Making every behavior row red there
+would misrepresent this change. The original implementation baseline above supplies
+the complete red record. [manual-wake.json](manual-wake.json) supplies this repair's
+specific falsification: only `reland/end-wakes-pass` is red, by assertion; every other
+finding-148 row stays green, including all four reported timing failures.
+Replay the isolated copy experiment with the proof driver's `--wake-only` option.
 
 ## Mutations
 
@@ -74,7 +121,7 @@ the manual guard revert supplies the specific falsification for this repair.
 mutations rejected. This is attributed evidence supplied in the owner's brief, not a builder run.
 It separately records all 19 current finding-148 registrations, source and mutant digests, exact
 applied diffs and named rows. Their anchors and syntax are statically checked; execution on this
-repair is pending for all 19. The manual state-guard experiment is recorded separately;
+repair is pending for all 19. The manual wake and historical state-guard experiments are recorded separately;
 no mutation-checker rejection is claimed for this repair.
 [mutations-before-review.json](mutations-before-review.json) preserves the earlier builder's
 12 rejections as historical evidence.
@@ -92,7 +139,7 @@ question, allow a proof mismatch, reapply a grant and overwrite a revoked approv
 | `reland148-conflict-relanded` | `reland/conflict-rebuild` |
 | `reland148-rebuild-not-reviewed` | `reland/conflict-rebuild` |
 | `reland148-landed-rebuilt` | `reland/review-kept` |
-| `reland148-end-wakes-nothing` | `reland/conflict-rebuild` |
+| `reland148-end-wakes-nothing` | `reland/end-wakes-pass` |
 | `lease148-contained-refused` | `lease/contains-unknown` |
 | `lease148-tip-not-fetched` | `lease/trunk-moved` |
 | `never148-forced-push` | `reland/never-forced` |
@@ -114,7 +161,26 @@ re-check with `python3 -B proof/VELDO-0148/drive.py --red f59b3136`.
 For reviewer use, `python3 -B proof/VELDO-0148/drive.py` regenerates mutation evidence with at most
 two workers. The builder did not run that mutation mode or the mutation checker.
 
-## Completion checks
+## Current completion checks
+
+The repair from 7ee372ed changes no production bytes or acceptance criteria, and
+needs no footprint expansion. Normal, empty gate-environment and loaded runs each
+pass all 16 suite rows (42 including the shared preamble), with zero failures and
+the expected subset exit 2. These are partial checks, not a full gate verdict.
+[verify_load.py](verify_load.py) owns one load process with 18 busy native threads
+on the 20 available cores, runs only suite 86, then terminates and reaps that exact
+PID. [cpu-load.json](cpu-load.json) records 429.6 CPU-seconds of artificial load
+during the 25.15-second suite run and confirms the process was reaped.
+
+[refresh_mutations.py](refresh_mutations.py) reads the registry as syntax without
+executing it. It refreshes all 19 exact diffs and source/mutant hashes, checks unique
+anchors and compiling mutants, and asserts that no other mutation target changed.
+The manual wake experiment alone demonstrates a new rejection; the other 18 are
+registered for reviewer execution. The suite registry describes the new wake row,
+and requires.json was regenerated. Full gate and mutation checker execution remain
+reserved for the reviewer.
+
+## Earlier completion checks
 
 The proof repair at 41340bc1 changes only the suite, mutation registration and proof
 records within the existing footprint. Suite 86 passes in ordinary and empty gate

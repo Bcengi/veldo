@@ -37,7 +37,7 @@
     "reland/stale-subject"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -50,7 +50,7 @@
     "lease/trunk-moved"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -63,7 +63,7 @@
     "grant/fresh-request"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -76,7 +76,7 @@
     "reland/stale-subject"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -89,7 +89,7 @@
     "reland/conflict-rebuild"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -102,7 +102,7 @@
     "reland/conflict-rebuild"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -115,7 +115,7 @@
     "reland/review-kept"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -125,10 +125,10 @@
    "name": "reland148-end-wakes-nothing",
    "named_row_red": null,
    "named_rows": [
-    "reland/conflict-rebuild"
+    "reland/end-wakes-pass"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -141,7 +141,7 @@
     "lease/contains-unknown"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -154,7 +154,7 @@
     "lease/trunk-moved"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -167,7 +167,7 @@
     "reland/never-forced"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -180,7 +180,7 @@
     "grant/fresh-request"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -193,7 +193,7 @@
     "grant/never-granted"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -206,7 +206,7 @@
     "grant/mixed-approvals"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -219,7 +219,7 @@
     "grant/mixed-approvals"
    ],
    "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -232,7 +232,7 @@
     "grant/mixed-proof"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -245,7 +245,7 @@
     "grant/once-per-dispatch"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -258,7 +258,7 @@
     "grant/once-per-dispatch"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -271,12 +271,13 @@
     "grant/revoked-before-answer"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run by the mutation checker on this repair"
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   }
  ],
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "Lead reported 14 of 14 rejected at f59b3136. All 19 current registrations have refreshed digests and exact applied diffs, with anchors and syntax checked. Mutation checker execution is reserved for the reviewer. The manual failed-state guard experiment is recorded separately.",
- "suite": "scripts/suites/86_veldo_0148_re_land.py"
+ "status": "All 19 registrations statically refreshed. Only the wake target changed. Manual wake rejection is recorded separately in manual-wake.json. Mutation checker execution remains reserved for the reviewer.",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "suite_sha256": "3efa86a7f7b37d654726f0066b357233cb62861b40112b259baeb8eeda13b79b"
 }

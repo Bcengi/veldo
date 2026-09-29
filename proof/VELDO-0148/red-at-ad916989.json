@@ -3,7 +3,7 @@
  "commit": "ad91698948dd1d894c0f6af4702b8a4b93c9694e",
  "details": [
   "VELDO-0148 install/land-station detail: each engine copy is byte-identical to its .veldo copy [{'control_landing.py': True, 'lander.py': True, 'control_effect_executor.py': True, 'control_service.py': True, 'control_verification.py': True, 'init_scaffold.py': True}]",
-  "VELDO-0148 install/land-station detail: the installation lays down the work configuration with its land station and the fixed executable carries the station's organs [invalid_input:work:roles repo1482ee0a0c0 names one builder and its reviewers, ['control_landing_station.py', 'control_landing.py', 'lander.py', 'claim.py', 'control_verification.py', 'control_proof.py', 'control_effect_executor.py', 'control_effects.py']]",
+  "VELDO-0148 install/land-station detail: the installation lays down the work configuration with its land station and the fixed executable carries the station's organs [invalid_input:work:roles repo14833d04479 names one builder and its reviewers, ['control_landing_station.py', 'control_landing.py', 'lander.py', 'claim.py', 'control_verification.py', 'control_proof.py', 'control_effect_executor.py', 'control_effects.py']]",
   "VELDO-0148 install/land-station detail: the scaffold lays the land station down in an adopter's tree [False]",
   "VELDO-0148 install/land-station detail: a land station configuration missing a field, naming an empty one or an identity that is not a name and an email is refused by name at installation [{'fields': 'invalid_input:work:roles', 'text': 'invalid_input:work:roles', 'identity': 'invalid_input:work:roles'}]",
   "VELDO-0148 install/land-station detail: the service ran its passes, each from a wake source [[]]",
@@ -20,12 +20,14 @@
   "VELDO-0148 reland/conflict-rebuild detail: no land of C followed the conflict: its one re-land was the loop's only land offer of C [[]]",
   "VELDO-0148 reland/never-forced detail: every one of the 0 updates of the remote trunk was a fast-forward",
   "VELDO-0148 reland/never-forced detail: every one of the 0 publications was a compare-and-swap of its own land's watermark",
+  "VELDO-0148 reland/end-wakes-pass detail: a real conflict and approval land ended in the first pass",
+  "VELDO-0148 reland/end-wakes-pass detail: land end alone starts the immediate next pass with each dispatch wake",
   "VELDO-0148 lease/trunk-moved detail: the colleague landed between the listing and the push, and the executor recorded the lost lease as a refused publication, trunk-moved, not unknown [None, None]",
   "VELDO-0148 lease/trunk-moved detail: the tip it judged was fetched into the publication clone, and the land dispatch ended trunk_moved naming the watermark, that tip and the classification [None, []]",
   "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[]]",
   "VELDO-0148 lease/contains-unknown detail: the colleague's commit contains K's candidate, and the publication stayed unknown with its stop owed, judged at its one push URL [None, None, []]",
   "VELDO-0148 lease/contains-unknown detail: its land dispatch stopped unknown, by name, and the loop offered nothing after it: no new attempt and no re-land [None, None]",
-  "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [None, (None, '4eb58ad50849adc9ae605fc09ff46031db168f31')]",
+  "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [None, (None, '4f64b13aa2c5f54abf4a12fded2f9ac2a650ce21')]",
   "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
   "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
   "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]",
@@ -48,6 +50,7 @@
   "VELDO-0148 reland/review-kept",
   "VELDO-0148 reland/conflict-rebuild",
   "VELDO-0148 reland/never-forced",
+  "VELDO-0148 reland/end-wakes-pass",
   "VELDO-0148 lease/trunk-moved",
   "VELDO-0148 lease/contains-unknown",
   "VELDO-0148 grant/fresh-request",
@@ -102,6 +105,10 @@
    false
   ],
   [
+   "VELDO-0148 reland/end-wakes-pass",
+   false
+  ],
+  [
    "VELDO-0148 lease/trunk-moved",
    false
   ],
@@ -139,7 +146,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 5.438,
+ "seconds": 5.376,
  "spec_id": "VELDO-0148",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
  "tree": "git archive ad91698948dd1d894c0f6af4702b8a4b93c9694e, unchanged; the current suite file run against it"
