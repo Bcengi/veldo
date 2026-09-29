@@ -118,3 +118,44 @@ def wake_authority(config):
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as wake:
             wake.settimeout(0.2)
             wake.connect(address)
+
+
+def runtime_red(root, here, suite, commit, limit, git):
+    """Measure the old suite itself; the new claim is runtime, not changed behavior."""
+    import subprocess
+    import tempfile
+
+    resolved = git.run(['git', '-C', str(root), 'rev-parse', commit + '^{commit}'],
+                       capture_output=True, text=True, check=True).stdout.strip()
+    with tempfile.TemporaryDirectory(prefix='setup-runtime-red-') as scratch:
+        tree = Path(scratch) / 'tree'
+        git.run(['git', 'clone', '-q', '--no-checkout', str(root), str(tree)], capture_output=True, check=True)
+        git.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True, check=True)
+        path = tree / 'scripts/suites' / suite
+        source = path.read_text()
+        # Add observations only. The baseline's original setup, waits and assertions run.
+        source = source.replace('    def check(row, label, condition):',
+                                '    timings = {name: 0.0 for name in ROWS}\n'
+                                '    last_check = [time.monotonic()]\n'
+                                '    def check(row, label, condition):\n'
+                                '        now = time.monotonic()\n'
+                                '        timings[row] += now - last_check[0]\n'
+                                '        last_check[0] = now')
+        timing = Path(scratch) / 'rows.json'
+        source = source.replace('    for name, observed in rows.items():',
+                                '    Path(%r).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started)))\n'
+                                '    for name, observed in rows.items():' % str(timing))
+        path.write_text(source)
+        log = Path(scratch) / 'suite.log'
+        with log.open('w') as output:
+            result = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', Path(suite).stem],
+                                    cwd=tree, stdout=output, stderr=subprocess.STDOUT)
+        measured = json.loads(timing.read_text())
+        report = dict(commit=resolved, suite=suite, limit_seconds=limit, **measured,
+                      behavior_checks_pass=result.returncode == 2,
+                      by_assertion=result.returncode == 2,
+                      runtime_row=['runtime/suite-budget', measured['seconds'] < limit],
+                      note='The baseline suite, with timing observations only. Existing behavior stays green; the runtime claim is red.')
+        destination = Path(here) / ('runtime-red-at-%s.json' % commit)
+        destination.write_text(json.dumps(report, indent=2) + '\n')
+        print(json.dumps({k: report[k] for k in ('seconds', 'behavior_checks_pass', 'runtime_row')}))

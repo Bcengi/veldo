@@ -17,6 +17,7 @@ assertion (the suite records that against each row rather than raising).
 
     python3 -B proof/VELDO-0171/drive.py --red <pre-change commit>
 """
+# Add --runtime to --red COMMIT to assert the runtime budget against the original suite.
 import ast
 import contextlib
 import difflib
@@ -63,6 +64,7 @@ def one(paths, root):
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
     ns = {'__file__': str(shared),
+          '__setup_support__': str(ROOT / 'scripts/suites/support/setup_runtime.py'),
           '__observe__': lambda name, condition: rows.append([name.split(':', 1)[0], bool(condition)])}
     tree = ast.parse(shared.read_text(), str(shared))
     for node in tree.body:
@@ -123,7 +125,11 @@ def red(commit):
 
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
-        red(sys.argv[2])
+        if '--runtime' in sys.argv[3:]:
+            support = _load('setup_runtime', ROOT / 'scripts/suites/support/setup_runtime.py')
+            support.runtime_red(ROOT, HERE, SUITE, sys.argv[2], 30, _git_process)
+        else:
+            red(sys.argv[2])
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
         print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))

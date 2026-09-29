@@ -103,20 +103,13 @@ def _v171_suite():
         import cProfile
         profiler = cProfile.Profile()
         profiler.enable()
-    budget = started + 300
-
-    def wait(predicate, seconds=20):
-        until = min(time.monotonic() + seconds, budget)
-        while True:
-            value = predicate()
-            if value or time.monotonic() >= until:
-                return value
-            time.sleep(0.15)
-
     prior_bytecode = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
+    support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
+    runtime = load('v171_runtime', support_path)
+    close_runtime = runtime.install(base)
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -211,6 +204,15 @@ def _v171_suite():
         '    with open(_armed, "a") as handle:\n'
         '        handle.write("%d\\n" % os.getpid())\n')
 
+    with (guard_dir / 'sitecustomize.py').open('a') as handle:
+        handle.write(
+            '\nimport importlib.util\n'
+            's = importlib.util.spec_from_file_location("setup_runtime", %r)\n'
+            'r = importlib.util.module_from_spec(s); s.loader.exec_module(r)\n'
+            'r.install(%r)\n'
+            'if os.environ.get("VELDO_LISTEN_EVENT"): r.notify_listen(os.environ["VELDO_LISTEN_EVENT"])\n'
+            % (str(support_path), str(base)))
+
     # Every store connection this process opens, recorded while `capturing` is set (the running-service row).
     connects, capturing = [], [False]
 
@@ -228,7 +230,7 @@ def _v171_suite():
     class Manager:
         """A stand-in for the owner's systemd user manager answering the systemctl calls setup and the
         service's lifecycle make: start runs a unit's ExecStart (Type=notify waits for READY=1, Type=simple
-        for the process to stay up) and then starts every unit its .wants directory links; a unit whose
+        for its real inet listen event or its exit) and then starts every unit its .wants directory links; a unit whose
         BindsTo names an inactive unit does not start; stop stops every unit bound to or part of it first,
         with SIGTERM; show reports the unit's state; daemon-reload is recorded."""
 
@@ -281,12 +283,10 @@ def _v171_suite():
                        'VELDO_V171_GUARD_ARMED': str(guard_armed)}
                 if os.environ.get('XDG_RUNTIME_DIR'):
                     env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
-                listener, notify = None, None
-                if kind == 'notify':
-                    notify = base / ('n%d.sock' % len(self.logs))
-                    listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-                    listener.bind(str(notify))
-                    env['NOTIFY_SOCKET'] = str(notify)
+                notify = base / ('n%d.sock' % len(self.logs))
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                listener.bind(str(notify))
+                env['NOTIFY_SOCKET' if kind == 'notify' else 'VELDO_LISTEN_EVENT'] = str(notify)
                 log = base / ('unit-%d-%s.log' % (len(self.logs), unit[:18]))
                 self.logs.append(log)
                 with open(log, 'wb') as out:
@@ -294,20 +294,11 @@ def _v171_suite():
                                             stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT,
                                             preexec_fn=child_setup)
                 self.procs[unit] = proc
-                ready = False
                 try:
-                    if listener is not None:
-                        deadline = time.monotonic() + 30
-                        while not ready and proc.poll() is None and time.monotonic() < deadline:
-                            if select.select([listener], [], [], 0.2)[0]:
-                                ready = b'READY=1' in listener.recv(4096)
-                    else:
-                        time.sleep(0.3)
-                        ready = proc.poll() is None
+                    ready = runtime.ready(proc, listener, b'READY=1' if kind == 'notify' else b'LISTEN')
                 finally:
-                    if listener is not None:
-                        listener.close()
-                        notify.unlink()
+                    listener.close()
+                    notify.unlink()
                 if not ready:
                     return 1, '', 'the unit did not start'
             wants = self.unit_dir / (unit + '.wants')
@@ -323,6 +314,7 @@ def _v171_suite():
             proc = self.procs.get(unit)
             if proc is not None and proc.poll() is None:
                 proc.send_signal(signal.SIGTERM)
+                runtime.wake_authority(shlex.split(self._field(unit, 'ExecStart')[0])[-1])
                 try:
                     proc.wait(15)
                 except subprocess.TimeoutExpired:
@@ -529,7 +521,7 @@ def _v171_suite():
         if cookie:
             headers['Cookie'] = '__Host-veldo-session=' + cookie
         try:
-            conn = http.client.HTTPConnection('127.0.0.1', port, timeout=30)
+            conn = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
             conn.request(method, path, body=json.dumps(body).encode() if body is not None else None, headers=headers)
             answer = conn.getresponse()
             raw = answer.read()
@@ -877,7 +869,9 @@ def _v171_suite():
 
         # The fresh host's service is started by the owner: the API unit starts with it.
         began = CS.start(unit_a, manager_a)
-        api_pid = wait(lambda: manager_a.pid(api_unit_a) if listening(manager_a.pid(api_unit_a) or 0) else None, 20)
+        api_pid = manager_a.pid(api_unit_a)
+        check(LB, 'the API reached its listen event before exiting or the bounded startup deadline',
+              api_pid is not None and bool(listening(api_pid)))
         with section(UN):
             check(UN, 'starting the authority unit starts the API unit it wants [%s %s]'
                   % (began.get('ActiveState'), manager_a.alive(api_unit_a)),
@@ -936,7 +930,9 @@ def _v171_suite():
             check(PK, 'a fingerprint no pending registration has is refused by name, signing nothing [%s]'
                   % unknown.get('reason'), code == 1 and unknown.get('reason') == 'invalid_input:passkey:unknown'
                   and journal(store_a) == head)
-            code, signed = passkey(root_a, '--sign', phone_print)
+            # A failed listener still exercises the real command with this browser's fingerprint;
+            # it must refuse by assertion, not pass None to argparse and abort the row.
+            code, signed = passkey(root_a, '--sign', phone_print or W.fingerprint(phone.public_key()))
             enrolled = (signed.get('enrolled') or {})
             check(PK, 'the owner signs the ONE registration he names, and the running service admits it [%s %s]'
                   % (signed.get('outcome'), signed.get('reason')),
@@ -1277,7 +1273,7 @@ def _v171_suite():
                   'systemctl --user restart %s' % unit_b in str(report_b.get('next')))
             CS.stop(unit_b, manager_b)
             CS.start(unit_b, manager_b)
-            up = wait(lambda: listening(manager_b.pid(api_unit_b) or 0), 20)
+            up = listening(manager_b.pid(api_unit_b) or 0)
             check(SR, 'after that restart the API unit runs with the authority service [%s]' % up,
                   manager_b.alive(unit_b) and up == [('127.0.0.1', port)])
             manager_b.stop(api_unit_b)
@@ -1285,7 +1281,7 @@ def _v171_suite():
             code, third = setup(root_b, clone_b, trust_b, install_b, units_b, manager_b)
             calls = manager_b.calls[calls_before:]
             steps = {s.get('step'): s.get('outcome') for s in third.get('steps') or []}
-            up = wait(lambda: listening(manager_b.pid(api_unit_b) or 0), 20)
+            up = listening(manager_b.pid(api_unit_b) or 0)
             check(SR, 'with the installation naming the API and the authority running, setup starts the API unit '
                   'itself [%s %s %s]' % (third.get('reason'), steps.get('api_start'), [c[0] for c in calls]),
                   code == 0 and steps.get('api_start') == 'done' and ['start', api_unit_b] in calls
@@ -1295,6 +1291,7 @@ def _v171_suite():
     except StopIteration:
         pass
     finally:
+        close_runtime()
         sys.dont_write_bytecode = prior_bytecode
         os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
