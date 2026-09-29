@@ -84,6 +84,10 @@ acceptance_criteria:
       parses with tomllib and retains every assigned feature value, including literal dotted names,
       in one features table after all handoff assignments. Falsifier: Restore mixed dotted feature
       keys and an inline features table; the profile parse and value row must fail by assertion.
+      The delivery suite retains every per-model singleton-grant, empty-role and refusal claim
+      from the pinned binary requests and completes in under 60 seconds with at most two workers.
+      Falsifier: Restore the loopback server's default shutdown polling delay; the delivery runtime
+      row must fail by assertion.
       Falsifier: Remove one configured MCP
       tool while allowing launch; the exact-handoff comparison must fail.
     falsified_by: >
@@ -448,3 +452,11 @@ answer the no-turn probe before accepting the real prompt. Add the VELDO-0061 su
 to the footprint for that qualification comparison; no other footprint expansion.
 The production handoff edit invalidates both digest-bound live captures; the lead
 must recapture them. No acceptance check or live evidence binding is relaxed.
+
+2026-09-29, delivery proof speed repair from 2fb32ed8: AC2 retains all existing
+per-model wire assertions and adds the delivery runtime budget. Two isolated
+factories run disjoint model groups with at most two workers. The stand-in shutdown
+poll interval is shortened without changing request capture, comparison or refusal.
+No row is renamed and no footprint expansion is needed. Timings and the unchanged
+behavior checks are retained in proof/VELDO-0127. This is a speed repair only;
+no gate, live qualification or shipped-status claim is made.
