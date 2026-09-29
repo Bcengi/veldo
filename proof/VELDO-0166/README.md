@@ -1,6 +1,7 @@
 # VELDO-0166 proof
 
-This re-check repairs the stored unified clear regression at `9cca7766` on `build-veldo-0166`.
+Implementation commit `73ab391a` repairs the stored unified clear regression at `9cca7766`
+on `build-veldo-0166`.
 The preceding implementation was `7f54fdfe`, fixing the re-check at `1b7d225e`.
 The earlier implementation was `2c4f250c`, after the local main merge at `3544d4c4`.
 Veldo records every reported Claude Code usage window against the account and preserves an
@@ -88,23 +89,24 @@ new unified-clear rows. Changed mutation anchors were refreshed without changing
 The driver's register-only option refreshes this inventory and parses every mutant without
 executing suites. Mutation execution is reserved for the reviewer under this run's instructions.
 No mutation rejection is claimed for this revision. The default driver still supports execution
-for a reviewer authorized to run it, including its existing suite-75 journey case.
+for a reviewer authorized to run it, including its existing suite-75 journey case. Neither the default driver nor any mutation worker
+was executed for this repair.
 
 ## Verification
 
-The ordinary and isolated gate-environment runs of suite 0166 each passed: 14 behavior rows,
-40 assertions including the shared preamble, zero failures. The isolated run used Python's
+The ordinary and isolated gate-environment runs of suite 0166 each passed: 17 behavior rows,
+43 assertions including the shared preamble, zero failures. The isolated run used Python's
 `/usr/bin` directory first on PATH, an empty environment, HOME and TMPDIR in /dev/shm, UTC,
 C.UTF-8 and the requested Python and Git isolation settings. Selftest returns exit 2 for a
 successful partial run; these are partial suite results, not gate or landing evidence.
 
 requires.json was regenerated and remained current. The anchor check reports 0 bad anchors.
-Validation of all specifications exits 0. On implementation commit `7f54fdfe`, the footprint
-check reports 40 changed files, none outside the footprint. All four production modules match
+Validation of all specifications exits 0. On implementation commit `73ab391a`, the footprint
+check reports 48 changed files, none outside the footprint. All four production modules match
 their engine copies. All mutation names are unique across findings. The existing suite manifest
 registration and proof driver were reused. Searches covered the Meter observation producers,
-Metering forwarding, account observation writer, blocking readers in the reservation service
-and pool, and their suite callers. No footprint expansion was needed.
+Metering forwarding and receipt handling, account observation writer and authorization, blocking
+and usage readers in the reservation service and pool, and their suite callers. No footprint expansion was needed.
 
 The gate, whole selftest, other suites and mutation execution were not run, as instructed.
 Mutation registration parsed all 27 mutant sources; no mutation rejection is claimed for this

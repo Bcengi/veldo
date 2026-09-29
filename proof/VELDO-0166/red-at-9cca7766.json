@@ -23,11 +23,11 @@
   },
   ".veldo/control_accounts.py": {
    "at_commit": "da361158b83692c4f873fca4b1c0ea0af070de018009e0f83dca6cadad374ffd",
-   "now": "10d160d0acd68524874a473fa1f7570d08273aa6219fdeb70fe31b298a85ca89"
+   "now": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631"
   },
   ".veldo/control_engine_claude.py": {
    "at_commit": "860ed6d331f4c3084d2e2cee8d2ee3e0fa114414dec7ad6c72a01e4e5bd09efc",
-   "now": "2fa4450643740a3ab4621ef675e88d3c4fa4143a8ccbadc934f5db3495bfc7dd"
+   "now": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949"
   },
   ".veldo/control_launch.py": {
    "at_commit": "0a948f57ecdea5941e5c2ce37f9aee16fdf341ca3794a9165379c39924640309",
@@ -106,7 +106,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.563,
+ "seconds": 0.588,
  "spec_id": "VELDO-0166",
  "suite": "scripts/suites/83_veldo_0166_usage_windows.py",
  "tree": "git archive 9cca776694b4bacba46803198242e657e3637a90, unchanged; the current suite file run against it"
