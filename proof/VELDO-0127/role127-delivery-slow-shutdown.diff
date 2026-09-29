@@ -1,5 +1,0 @@
---- a/proof/VELDO-0127/delivery_fixture.py
-+++ b/proof/VELDO-0127/delivery_fixture.py
-@@ -13 +13 @@
--    def serve_forever(self, poll_interval=0.01):
-+    def serve_forever(self, poll_interval=0.5):

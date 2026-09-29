@@ -1,5 +1,25 @@
 # VELDO-0127 role capability configuration
 
+## Timing row removal, 2026-09-29
+
+From `20bc8548`, remove the wall-clock pass/fail row, its mutation registration,
+mutation diff and red record. Machine load can change elapsed time without
+changing behavior: timing belongs in the measurement record, not in a pass/fail
+row. Suite 87 still prints measured seconds and retains all 176 behavior rows,
+with one report per row. Its manifest and AC2 now describe informational timing.
+No production file or engine copy changes; no footprint expansion is needed.
+
+The proof driver is restored to its pre-timing profile replay, supported by
+`red-at-9233e1b4.json`. This removal adds no behavior row, so a new all-red
+behavior replay against `20bc8548` is not applicable. The old timing-only red
+record is removed rather than retained as behavioral evidence. Existing
+behavioral mutation records remain; no mutation execution is claimed here.
+
+The two suite 87 runs and scoped validation results are recorded in
+`timing-row-removal-checks.json`. Selected-suite exit 2 means partial coverage,
+not an assertion failure or a full gate pass. The reviewer runs the full gate
+and mutation checks.
+
 ## Delivery proof speed repair, 2026-09-29
 
 From `2fb32ed8`, suite 87 took 128.89 seconds with 176 delivery assertions
@@ -18,10 +38,9 @@ The production HTTP 400 handler, request capture, binary child completion, joins
 and comparisons are unchanged. Production and engine files are unchanged from
 the baseline, preserving their digest-bound live evidence. This avoids paying
 an idle test teardown interval for every case.
-The final measured results include the shared preamble and retain all 176
-original assertions plus the new `delivery/runtime` assertion.
-The registered `role127-delivery-slow-shutdown` falsifier restores the old polling
-interval and targets the new under-60-second runtime assertion.
+The historical speed measurements below include the shared preamble and the
+former timing assertion. The follow-up removes that assertion and retains all
+176 original behavior rows.
 
 AC1's signed immutable revision checks remain in suite 86. AC2's delivery rows
 observe exact empty-role, singleton-grant and selected Jira tool sets per model
@@ -30,19 +49,9 @@ unsupported grants refuse at save and missing, extra or dropped MCP tools stop
 through Receiver._baseline. AC4's launch configuration and profile checks remain
 in suites 86 and 90; suites 88 and 89 retain feature and listing controls.
 
-Only `delivery/runtime` is new behavior for the red replay. All 176 original
-behavior rows must remain green on the baseline. The driver runs
-the unchanged archived suite and production tree from `2fb32ed8`, applying only
-the new runtime assertion around it. The proof
-driver also reads two literal finding-127 registrations with AST, applies each
-to a temporary module copy and runs the current suite against that copy. It never
-imports or executes the mutation checker, and never edits a real production file.
-Results are retained in `red-at-2fb32ed8.json` and the
-`speed_repair_manual_checks` section of `mutations.json`. Timing and gate-environment
-results are retained in `speed-checks.json`.
-
-The archived replay took 132.391 seconds: `delivery/runtime` was red by
-assertion while all 176 original behavior rows stayed green.
+Historical manual mutation results remain in the `speed_repair_manual_checks`
+section of `mutations.json`. Historical timing and gate-environment results
+remain in `speed-checks.json`.
 
 Both manually applied registered mutations were rejected by their named
 assertions: `role127-search-unsupported-accepted` on

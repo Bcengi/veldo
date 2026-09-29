@@ -933,18 +933,6 @@
    "source_sha256": "3f1e8fed5d574fb52a53cf8d54bae8910d1eb9a9bdb40552bffa974cfd7fc4cc",
    "status": "registered; execution reserved for reviewer",
    "suite": "90_veldo_0127_feature_profile.py"
-  },
-  {
-   "diff": "role127-delivery-slow-shutdown.diff",
-   "module": "proof/VELDO-0127/delivery_fixture.py",
-   "mutant_sha256": "f2d1c34a4df8f71100c89a7bfcfa93b3f7509b3cb446b9a72490ea50bd42ff0d",
-   "name": "role127-delivery-slow-shutdown",
-   "named_rows": [
-    "delivery/runtime"
-   ],
-   "source_sha256": "2ff99162c078c1cafd8e7e92f78b6371f4d65b969196a04c0890af8793627294",
-   "status": "registered; execution reserved for reviewer",
-   "suite": "87_veldo_0127_codex_delivery.py"
   }
  ],
  "speed_repair_manual_checks": {

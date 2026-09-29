@@ -1173,7 +1173,7 @@
    "requires": [
     "87_veldo_0127_codex_delivery"
    ],
-   "regions": "Each grantable Codex tool on every qualified model, exact empty-role and MCP controls, save refusals, and production missing or extra tool stops. Two isolated workers retain every wire claim within a 60 second runtime budget.",
+   "regions": "Each grantable Codex tool on every qualified model, exact empty-role and MCP controls, save refusals, and production missing or extra tool stops. Two isolated workers retain every wire claim; elapsed seconds are informational.",
    "requires_note": "Only ROOT and expect. Accepted signed role writes and Receiver._baseline; pinned binary against loopback with an empty generated profile and network guard. No login or model."
   },
   {

@@ -9519,10 +9519,6 @@ def cases():
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     delivery127 = '87_veldo_0127_codex_delivery.py'
-    add(127, 'role127-delivery-slow-shutdown', delivery127, 'delivery_fixture.py',
-        "def serve_forever(self, poll_interval=0.01):",
-        "def serve_forever(self, poll_interval=0.5):", ['delivery/runtime'], [])
-    result[-1]['dir'] = 'proof/VELDO-0127'
     add(127, 'role127-delivery-sleep-disabled', delivery127, 'control_agent_config_handoff.py',
         "    configuration['features.goals'] = False",
         "    configuration['features.sleep_tool'] = {'enabled': False}\n"

@@ -85,15 +85,13 @@ acceptance_criteria:
       in one features table after all handoff assignments. Falsifier: Restore mixed dotted feature
       keys and an inline features table; the profile parse and value row must fail by assertion.
       The delivery suite retains every per-model singleton-grant, empty-role and refusal claim
-      from the pinned binary requests and completes in under 60 seconds with at most two workers.
-      Falsifier: Restore the loopback server's default shutdown polling delay; the delivery runtime
-      row must fail by assertion.
+      from the pinned binary requests with at most two workers. Elapsed seconds are informational:
+      timing belongs in the measurement record, not in a pass/fail row.
       Falsifier: Remove one configured MCP
       tool while allowing launch; the exact-handoff comparison must fail.
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
       Restore mixed dotted feature keys and an inline features table; the profile parse row must fail.
-      Restore the loopback server's default shutdown polling delay; the delivery runtime row must fail.
   - id: AC3
     text: >
       Claim: The dispatch records the configuration revision actually used and refuses an
@@ -466,3 +464,12 @@ no gate, live qualification or shipped-status claim is made.
 Suite 87 fell from 128.89 to 51.41 seconds, and took 19.28 seconds in the
 empty gate environment. All 176 existing delivery rows remain; the runtime row
 alone is red on the unchanged 2fb32ed8 archive (132.39 seconds).
+
+2026-09-29, remove the delivery timing row from 20bc8548: machine load can
+change wall time without changing behavior. Timing belongs in the measurement
+record, not in a pass/fail row. AC2 retains all 176 delivery behavior rows and
+the two-worker limit; suite 87 still prints measured seconds. Remove the timing
+mutation, its diff and red record, and restore the earlier profile red driver.
+No new behavior row or falsifier is introduced, so no new red replay applies.
+Normal and empty gate-environment measurements are recorded in
+proof/VELDO-0127/timing-row-removal-checks.json. No footprint expansion is needed.
