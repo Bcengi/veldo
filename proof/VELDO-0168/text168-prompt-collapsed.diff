@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -153 +153 @@
+-    return TEXT.message(prompt)
++    return ' '.join(str(prompt).split())  # defect: the question prompt collapsed and unescaped

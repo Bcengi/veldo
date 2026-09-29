@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -440 +440 @@
+-        if receipt['rendered'] != render(receipt, version=version):
++        if receipt['rendered'] != render(receipt):  # defect: the receipt's own version is ignored

@@ -13,10 +13,11 @@ under this host's installed trust (control_eligibility.load_host_trust, the Host
 entry point uses) and then lays down, under <install root>/<service id>:
 
   bin/     the FIXED EXECUTABLE: the entry points (this module, the launch receiver and the key
-           custody wrapper), the architecture validator the receiver's recheck runs, and every module
+           custody wrapper and runtime qualifier), the architecture validator the receiver's recheck runs, and every module
            these load, derived from the engine at installation (closure()), never listed by hand,
-           copied byte for byte and read-only (0400, the three entry points 0500, the
-           directory 0500). The unit runs this copy, never a repository's.
+           copied byte for byte and read-only (0400, the entry points 0500, the directory 0500).
+           Runtime files named by those modules are copied beside them with their digests recorded.
+           The unit runs this copy, never a repository's.
   config/  the PROTECTED CONFIGURATION (0700): service.json (0600), a copy of the enrollment signers
            this host trusted at installation (0600), and one launch receiver configuration per
            repository (receiver-<repository>.json, 0600) naming this host's QUALIFIED linux-systemd
@@ -177,7 +178,8 @@ MUTATIONS = tuple(sorted(S.COMMAND_REGISTRY))
 # The programs an installation runs by path: the service (the unit's ExecStart), the launch receiver
 # with its trusted wrapper, and the key custody wrapper. The rest of the fixed executable is derived
 # from what these and the architecture validator load (closure()), never listed by hand.
-ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py')
+# Include the runtime qualification entry point and the records its module reads.
+ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py')
 # The one way an engine module loads a sibling: importlib.util.spec_from_file_location.
 LOADER = 'spec_from_file_location'
 
@@ -502,6 +504,42 @@ def closure():
         return sorted(members)
 
 
+def runtime_assets(members):
+    """Read the runtime literals named by the same modules as the executable census.
+
+    Accept runtime/file literals and Path(...).with_name('runtime') / 'file' expressions.
+    The engine keeps assets beside .veldo; an adopted repository keeps them inside it.
+    """
+    def literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if (isinstance(node, ast.Call) and _callee(node) == 'with_name'
+                and len(node.args) == 1 and literal(node.args[0]) == 'runtime'):
+            return 'runtime'
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+            left, right = literal(node.left), literal(node.right)
+            if left is not None and right is not None:
+                return left + '/' + right
+        return None
+
+    names = set()
+    for member in members:
+        tree = ast.parse((HERE / member).read_bytes(), member)
+        for node in ast.walk(tree):
+            value = literal(node)
+            if (value and value.startswith('runtime/') and not any(c.isspace() for c in value)
+                    and all(part not in ('', '.', '..') for part in value.split('/'))):
+                names.add(value)
+    assets = {}
+    source = HERE if (HERE / 'runtime').is_dir() else HERE.parent
+    for name in sorted(names):
+        try:
+            assets[name] = (source / name).read_bytes()
+        except OSError:
+            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None
+    return assets
+
+
 # ---------------------------------------------------------------------------------------------
 # The key directory: outside every directory a worker writes into directly
 # ---------------------------------------------------------------------------------------------
@@ -737,7 +775,7 @@ def installable_work(path, repositories, adapters):
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
             receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None,
-            work=None):
+            work=None, state_root=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down."""
@@ -829,6 +867,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
               'PYTHON': python, 'EXECUTABLE': os.path.join(bin_dir, 'control_service.py'), 'CONFIG': config_path}
     text = unit_text(values)
     fixed = {name: (HERE / name).read_bytes() for name in closure()}
+    assets = runtime_assets(fixed)
 
     created, generated = [], False
     try:
@@ -840,6 +879,13 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             os.mkdir(directory, 0o700)
         for name, data in fixed.items():
             _write(os.path.join(bin_dir, name), data, 0o500 if name in ENTRY_POINTS else 0o400)
+        for name, data in assets.items():
+            target = os.path.join(bin_dir, name)
+            os.makedirs(os.path.dirname(target), mode=0o700, exist_ok=True)
+            _write(target, data, 0o400)
+        for directory, _dirs, _files in os.walk(bin_dir, topdown=False):
+            if directory != bin_dir:
+                os.chmod(directory, 0o500)
         os.chmod(bin_dir, 0o500)
         if not os.path.lexists(journal):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
@@ -860,7 +906,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
-                                'adapters': adapters}), 0o600)
+                                'adapters': adapters, 'state_root': state_root}), 0o600)
             receivers[repository] = path
         config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
                   'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
@@ -873,6 +919,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
                   'executable': values['EXECUTABLE'], 'python': python,
                   'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': receivers},
                   'closure': {name: _digest(data) for name, data in fixed.items()},
+                  'runtime_assets': {name: _digest(data) for name, data in assets.items()},
                   'template': _digest(TEMPLATE.read_bytes()),
                   'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
                   'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
@@ -899,6 +946,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             'journal_key': journal, 'journal_key_generated': generated, 'profile': qualification,
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
             'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
+            'runtime_assets': config['runtime_assets'], 'runtime_assets_installed': len(assets),
             'daemon_reload_rc': reload_rc, 'started': False}
 
 

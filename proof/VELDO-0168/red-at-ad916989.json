@@ -1,0 +1,204 @@
+{
+ "by_assertion": true,
+ "commit": "ad91698948dd1d894c0f6af4702b8a4b93c9694e",
+ "details": [
+  "VELDO-0168 detail: lines/decision: brief and signed risk preserve three lines and spacing",
+  "VELDO-0168 detail: lines/inbox: actual inbox send preserves three lines",
+  "VELDO-0168 detail: lines/report: journal-derived report send preserves brief",
+  "VELDO-0168 detail: lines/prompt: the question send renderer preserves its input lines",
+  "VELDO-0168 detail: escape/zero-width: all four renderers distinguish each invisible or literal escape",
+  "VELDO-0168 detail: escape/direction: all four renderers distinguish each invisible or literal escape",
+  "VELDO-0168 detail: escape/whitespace: all four renderers distinguish each invisible or literal escape",
+  "VELDO-0168 detail: escape/literal: all four renderers distinguish each invisible or literal escape",
+  "VELDO-0168 detail: escape/categories: entire running unicodedata category set, all renderers",
+  "VELDO-0168 detail: escape/fields: writer-accepted choices, scopes and subject references keep their distinctions",
+  "VELDO-0168 detail: cuts/long-token: every hard cut is marked on both sides within UTF-16 platform limits",
+  "VELDO-0168 detail: cuts/words: soft cuts keep original spaces and carry no hard-cut marker",
+  "VELDO-0168 detail: receipts/earlier: renderer-1-receipt.json rechecks with its old bytes while the current rendering differs",
+  "VELDO-0168 detail: receipts/earlier: renderer-1-parts-receipt.json rechecks with its old bytes while the current rendering differs",
+  "VELDO-0168 detail: receipts/new: new receipts name version 2 and bind retrieved platform bytes",
+  "VELDO-0168 detail: receipts/unknown: unknown version is distinct from mismatched content",
+  "VELDO-0168 detail: observability/counters: versions, escaped categories, hard cuts and part numbers are recorded",
+  "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
+  "VELDO-0168 detail: inventory/sends-and-assets: complete endpoint and send inventory; new renderer assets installed identically",
+  "VELDO-0168 detail: lines/edges: an inbox item ending its message with whitespace shows it escaped",
+  "VELDO-0168 detail: lines/edges: a body part that ends its own message shows its final space escaped",
+  "VELDO-0168 detail: replies/refused: refusal writer records and sends distinct escaped choices",
+  "VELDO-0168 detail: replies/hint: hint writer sends escaped choices and ids and renders raw lead once",
+  "VELDO-0168 detail: cuts/escape-boundary: 600 zero-width characters stay whole across every hard cut",
+  "VELDO-0168 detail: escape/markers: typed markers are distinct from inserted markers in every renderer",
+  "VELDO-0168 detail: escape/field-crlf: CRLF in choice scope and subject keeps the CR, free text normalizes it",
+  "VELDO-0168 detail: receipts/compose-recheck: compose refuses an otherwise current receipt failing its own recheck",
+  "VELDO-0168 detail: receipts/version-type: bool and float versions are unknown even when equal to integers"
+ ],
+ "failed_rows": [
+  "VELDO-0168 lines/decision",
+  "VELDO-0168 lines/inbox",
+  "VELDO-0168 lines/report",
+  "VELDO-0168 lines/prompt",
+  "VELDO-0168 escape/zero-width",
+  "VELDO-0168 escape/direction",
+  "VELDO-0168 escape/whitespace",
+  "VELDO-0168 escape/literal",
+  "VELDO-0168 escape/categories",
+  "VELDO-0168 escape/fields",
+  "VELDO-0168 cuts/long-token",
+  "VELDO-0168 cuts/words",
+  "VELDO-0168 receipts/earlier",
+  "VELDO-0168 receipts/new",
+  "VELDO-0168 receipts/unknown",
+  "VELDO-0168 observability/counters",
+  "VELDO-0168 intake/delivery",
+  "VELDO-0168 inventory/sends-and-assets",
+  "VELDO-0168 lines/edges",
+  "VELDO-0168 replies/refused",
+  "VELDO-0168 replies/hint",
+  "VELDO-0168 cuts/escape-boundary",
+  "VELDO-0168 escape/markers",
+  "VELDO-0168 escape/field-crlf",
+  "VELDO-0168 receipts/compose-recheck",
+  "VELDO-0168 receipts/version-type"
+ ],
+ "modules": {
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "f1a19cf5763994a036aefaf1b7b78d4a682aa6c9baf07b80be5ebcac385188f8",
+   "now": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af"
+  },
+  ".veldo/control_channel_presentation_text.py": {
+   "at_commit": null,
+   "now": "818fa244c08d6b3e554d86875360c0148088695cc62a317816145176951caab5"
+  },
+  ".veldo/control_channel_presentation_v1.py": {
+   "at_commit": null,
+   "now": "78ef4ccfdcc5975d6ae6facb4501eed72e8a080cefca5e9773a4e2cc96db1cb7"
+  },
+  ".veldo/control_channel_projection.py": {
+   "at_commit": "6996bc7df22e34ae0b71b7b02ad4c689111551d353f6d8083d824948a9146c0a",
+   "now": "87d836af10ee4ba4396f66c1007ce59922cf0adec290f726f7ebb79c86036b5d"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "773999aa87976d31eeb4d696016f93e9cff5f8acbdef87cdb551023c0e48dcc4",
+   "now": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "801c9b586f84bb0916630cbb20c310fb4ba8acf16b3f0ec0cc214f41412ea784",
+   "now": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae"
+  },
+  ".veldo/control_telegram_report.py": {
+   "at_commit": "d86d21566f47572f83e5c3c020ed08918ae53191ca6dea691d1c267f37e50eeb",
+   "now": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0168 lines/decision",
+   false
+  ],
+  [
+   "VELDO-0168 lines/inbox",
+   false
+  ],
+  [
+   "VELDO-0168 lines/report",
+   false
+  ],
+  [
+   "VELDO-0168 lines/prompt",
+   false
+  ],
+  [
+   "VELDO-0168 escape/zero-width",
+   false
+  ],
+  [
+   "VELDO-0168 escape/direction",
+   false
+  ],
+  [
+   "VELDO-0168 escape/whitespace",
+   false
+  ],
+  [
+   "VELDO-0168 escape/literal",
+   false
+  ],
+  [
+   "VELDO-0168 escape/categories",
+   false
+  ],
+  [
+   "VELDO-0168 escape/fields",
+   false
+  ],
+  [
+   "VELDO-0168 cuts/long-token",
+   false
+  ],
+  [
+   "VELDO-0168 cuts/words",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/earlier",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/new",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/unknown",
+   false
+  ],
+  [
+   "VELDO-0168 observability/counters",
+   false
+  ],
+  [
+   "VELDO-0168 intake/delivery",
+   false
+  ],
+  [
+   "VELDO-0168 inventory/sends-and-assets",
+   false
+  ],
+  [
+   "VELDO-0168 lines/edges",
+   false
+  ],
+  [
+   "VELDO-0168 replies/refused",
+   false
+  ],
+  [
+   "VELDO-0168 replies/hint",
+   false
+  ],
+  [
+   "VELDO-0168 cuts/escape-boundary",
+   false
+  ],
+  [
+   "VELDO-0168 escape/markers",
+   false
+  ],
+  [
+   "VELDO-0168 escape/field-crlf",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/compose-recheck",
+   false
+  ],
+  [
+   "VELDO-0168 receipts/version-type",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.169,
+ "spec_id": "VELDO-0168",
+ "suite": "scripts/suites/86_veldo_0168_text.py",
+ "tree": "git archive ad91698948dd1d894c0f6af4702b8a4b93c9694e, unchanged; the current suite file run against it"
+}

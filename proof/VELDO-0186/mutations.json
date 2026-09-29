@@ -1,0 +1,127 @@
+{
+ "finding": 186,
+ "mutants": [
+  {
+   "module": "control_service.py",
+   "name": "setup186-python-only",
+   "rows": [
+    "runtime/assets",
+    "bind/engines"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-skip-claude-pin",
+   "rows": [
+    "bind/engines"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_service.py",
+   "name": "setup186-missing-runtime-ignored",
+   "rows": [
+    "runtime/missing"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-claude-unlisted-taxonomy",
+   "rows": [
+    "engines/unlisted"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-codex-unlisted-taxonomy",
+   "rows": [
+    "engines/unlisted"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-claude-digest-unchecked",
+   "rows": [
+    "engines/digest"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-codex-digest-unchecked",
+   "rows": [
+    "engines/digest"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_service.py",
+   "name": "setup186-receiver-without-state-root",
+   "rows": [
+    "bind/engines"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup.py",
+   "name": "setup186-skip-setup-asset-check",
+   "rows": [
+    "runtime/setup-missing"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_service.py",
+   "name": "setup186-writable-runtime",
+   "rows": [
+    "runtime/modes"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-filename-as-version",
+   "rows": [
+    "engines/version"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_factory_setup_engines.py",
+   "name": "setup186-constant-pin-count",
+   "rows": [
+    "metrics/pins"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  },
+  {
+   "module": "control_launch.py",
+   "name": "setup186-unmeasured-bind-refusal",
+   "rows": [
+    "metrics/binds"
+   ],
+   "status": "pending_reviewer",
+   "suite": "86_veldo_0186_setup_assets.py"
+  }
+ ],
+ "reason": "Owner reserves mutation execution for the reviewer.",
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0186",
+ "status": "registered_not_run"
+}

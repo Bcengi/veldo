@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -341 +341 @@
+-            if opener >= 0 and text.find('>', opener) >= at:
++            if False:  # defect: hard cut splits an escape atom

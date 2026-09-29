@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_channel.py
++++ b/.veldo/control_service_channel.py
+@@ -526 +526 @@
+-        text = V.TEXT.message(text, free_text=False)
++        text = text  # defect: renewal text bypasses rendering

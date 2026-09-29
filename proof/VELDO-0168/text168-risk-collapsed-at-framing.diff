@@ -1,0 +1,9 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -893,2 +893 @@
+-                or (command.get('risk_statement', '') if data.get('renderer_version') == TEXT.VERSION
+-                    else _words(command.get('risk_statement', ''))) != data.get('risk_statement')
++                or _words(command.get('risk_statement', '')) != data.get('risk_statement')
+@@ -1007 +1006 @@
+-                       'risk_statement': command['risk_statement'], 'framed_by': principal,
++                       'risk_statement': _words(command['risk_statement']), 'framed_by': principal,  # defect

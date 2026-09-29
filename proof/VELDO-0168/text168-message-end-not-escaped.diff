@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation_text.py
++++ b/.veldo/control_channel_presentation_text.py
+@@ -61 +61 @@
+-    return edges(visible(lines(text) if free_text else text, stats), stats)
++    return visible(lines(text) if free_text else text, stats)  # defect: the whitespace ending a message is left for Telegram to trim
