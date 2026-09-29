@@ -31,6 +31,7 @@ footprint:
   - "scripts/suites/*_veldo_0127_*.py"
   - "scripts/suites/82_veldo_0173_tool_registry.py"
   - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/83_veldo_0166_usage_windows.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -190,6 +191,13 @@ platform, engine or host behavior. Required evidence labels describe future impl
 not tests run by this writing revision.
 
 ## History
+
+2026-09-29, merged-tree Metering integration repair: add the VELDO-0166 usage-window
+suite to the footprint to align its receiver stand-in with AC2/AC4's launch contract.
+Every production Receiver defines binding, and the engine path binds a dictionary
+before constructing Metering. Supply that dictionary in the window-only fixture;
+keep every window, receipt and profile assertion unchanged. Production modules and
+their engine copies are unchanged, so this repair does not invalidate live captures.
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 4, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this

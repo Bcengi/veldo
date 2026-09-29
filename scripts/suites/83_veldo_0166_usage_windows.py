@@ -86,8 +86,9 @@ def _v166_suite():
                 contract = dict(dispatch_id=dispatch or 'dispatch/' + name, unit='unit/' + name,
                                 reservation=dict(account=name, project='project'))
                 events = []
+                # Receiver._bind supplies a dictionary before Metering; no role is bound in this fixture.
                 receiver = SimpleNamespace(login={'engine': C}, config={'store': str(base / 'store.sqlite3')},
-                                           emit=events.append, events=events)
+                                           binding={}, emit=events.append, events=events)
                 reservations = L.D.RES.Reservations(S, conn, domain='domain', repository='repo',
                                                    principal='receiver', signer='receiver', sign=sign,
                                                    authorize=L.D.RES.service_authority)
