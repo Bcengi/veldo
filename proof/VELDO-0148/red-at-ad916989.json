@@ -3,7 +3,7 @@
  "commit": "ad91698948dd1d894c0f6af4702b8a4b93c9694e",
  "details": [
   "VELDO-0148 install/land-station detail: each engine copy is byte-identical to its .veldo copy [{'control_landing.py': True, 'lander.py': True, 'control_effect_executor.py': True, 'control_service.py': True, 'control_verification.py': True, 'init_scaffold.py': True}]",
-  "VELDO-0148 install/land-station detail: the installation lays down the work configuration with its land station and the fixed executable carries the station's organs [invalid_input:work:roles repo14872396b47 names one builder and its reviewers, ['control_landing_station.py', 'control_landing.py', 'lander.py', 'claim.py', 'control_verification.py', 'control_proof.py', 'control_effect_executor.py', 'control_effects.py']]",
+  "VELDO-0148 install/land-station detail: the installation lays down the work configuration with its land station and the fixed executable carries the station's organs [invalid_input:work:roles repo148b0d39b1c names one builder and its reviewers, ['control_landing_station.py', 'control_landing.py', 'lander.py', 'claim.py', 'control_verification.py', 'control_proof.py', 'control_effect_executor.py', 'control_effects.py']]",
   "VELDO-0148 install/land-station detail: the scaffold lays the land station down in an adopter's tree [False]",
   "VELDO-0148 install/land-station detail: a land station configuration missing a field, naming an empty one or an identity that is not a name and an email is refused by name at installation [{'fields': 'invalid_input:work:roles', 'text': 'invalid_input:work:roles', 'identity': 'invalid_input:work:roles'}]",
   "VELDO-0148 install/land-station detail: the service ran its passes, each from a wake source [[]]",
@@ -25,7 +25,7 @@
   "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[]]",
   "VELDO-0148 lease/contains-unknown detail: the colleague's commit contains K's candidate, and the publication stayed unknown with its stop owed, judged at its one push URL [None, None, []]",
   "VELDO-0148 lease/contains-unknown detail: its land dispatch stopped unknown, by name, and the loop offered nothing after it: no new attempt and no re-land [None, None]",
-  "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [None, (None, '7a493ad564bfcbdabbbfec3129caec0050cc201f')]",
+  "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [None, (None, '1ca7e34af7ee543e01f18be9a2684ceb952c992c')]",
   "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
   "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
   "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]",
@@ -71,7 +71,7 @@
   },
   ".veldo/control_service.py": {
    "at_commit": "d6e33fa41fb7fbb0599a5bd9bf573854e77fc487658a79e635a55c3eb78e607c",
-   "now": "b32ed0900c0070a25c490872febfc4f523716bb5512b0a049e84e85d4df15353"
+   "now": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c"
   },
   ".veldo/lander.py": {
    "at_commit": "ee1623a28b20c5e3bd101ecb0123e69ed929cedd8a070faceae972405a4808ae",
@@ -138,7 +138,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 6.684,
+ "seconds": 5.539,
  "spec_id": "VELDO-0148",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
  "tree": "git archive ad91698948dd1d894c0f6af4702b8a4b93c9694e, unchanged; the current suite file run against it"

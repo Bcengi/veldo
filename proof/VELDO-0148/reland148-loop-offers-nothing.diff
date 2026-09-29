@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1528 +1528 @@
+@@ -1576 +1576 @@
 -            return self.reland(unit, last, report)
 +            return None  # defect: no land is offered after the trunk moved

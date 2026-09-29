@@ -176,6 +176,20 @@ preamble, zero failures; expected subset exit 2). No assertion, acceptance crite
 production module or footprint changes are needed. Empty-environment verification and
 proof audits follow in the completion record.
 
+2026-09-29, adaptation proof complete: b3e40a45 passes all 15 suite rows in the
+requested empty gate environment as well (41 with shared preamble, zero failures,
+expected subset exit 2). The current suite replayed against the original pre-implementation
+ad916989 makes all 13 behavior rows red by assertion, with the format control green.
+All 18 finding-148 mutations retain their named rows and have valid anchors and syntax;
+seven control_service.py source and mutant digests and diff offsets were refreshed for
+main. No mutation execution or new rejection is claimed. Searched runtime-asset writers
+and readers, including scaffold, installer, setup, engine qualification and receiver
+binding. All eight production modules match their engine copies. Suite registration
+is unchanged and requires.json regenerated unchanged. The supplied footprint check
+reports 46 paths, none outside; anchor_check reports 0 bad anchors; validation passes.
+No other suite, full gate or mutation runner ran. Gate byproducts are restored before
+the final commit. No criterion or footprint changes.
+
 2026-09-28, re-check at f59b3136: the owner resolved the contradictory mixed-case brief.
 A replacement question is allowed only when every approval problem is a tree-only binding
 mismatch for a prior grant at this revision. Missing, revoked and proof-mismatched approvals

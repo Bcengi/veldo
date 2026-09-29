@@ -100,6 +100,24 @@ two workers. The builder did not run that mutation mode or the mutation checker.
 
 ## Completion checks
 
+The 2026-09-29 adaptation after main 82b185f2 adds only the runtime-directory copy to
+the suite fixture, matching VELDO-0186's suite 83 change. The fake Codex already has
+its production-generated qualification record and executable binding. No production
+module, assertion, acceptance criterion or footprint changed. Repair commit b3e40a45
+passes all 15 suite rows in both ordinary and empty gate environments, serially
+(41 with the shared preamble, zero failures, expected subset exit 2).
+
+The current suite was replayed against the original pre-implementation ad916989:
+all 13 behavior rows fail by assertion, with the format control green. This is the
+original implementation's red baseline; bf035770 already contains that behavior
+and this adaptation repairs its fixture. All 18 mutation registrations have valid
+anchors and syntax. Seven source and mutant digests and their diff offsets were
+refreshed for main's changes to control_service.py. No mutations were executed;
+the recorded 14 rejections remain historical. All eight production modules match
+their engine copies, requires.json was regenerated unchanged, the supplied footprint
+check reports 46 paths and none outside, and the anchor check reports 0 bad anchors.
+Validation passes. Full gate and mutation execution remain with the reviewer.
+
 This re-check runs only suite `86_veldo_0148_re_land`, serially, in the ordinary environment
 and the requested empty gate environment. These are partial checks, not a full gate verdict;
 subset mode intentionally exits 2. Final counts and the footprint, anchor and validation results
