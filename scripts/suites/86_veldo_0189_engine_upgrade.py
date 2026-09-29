@@ -108,6 +108,10 @@ def _v189_suite():
             shutil.copyfile(source, target)
     fixtures186 = load('v189_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
     engines186 = fixtures186.install(ROOT, base, mods)
+    with (mods / 'control_engine_claude.py').open('a') as handle:
+        handle.write("\n_UPGRADE_ASSET = 'runtime/nested/upgrade.json'\n")
+    (mods / 'runtime/nested').mkdir()
+    (mods / 'runtime/nested/upgrade.json').write_text('{"upgrade": true}\n')
     prior_path186 = os.environ.get('PATH', '')
     os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v189_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')

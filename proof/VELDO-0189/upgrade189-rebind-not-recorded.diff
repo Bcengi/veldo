@@ -1,5 +1,5 @@
---- a/.veldo/control_store.py
-+++ b/.veldo/control_store.py
+--- .veldo/control_store.py
++++ .veldo/control_store.py
 @@ -874 +874 @@
 -        if keep_previous and rebound:
 +        if False:  # defect: the rebinding does not record the previous bindings

@@ -1,5 +1,5 @@
---- a/.veldo/control_factory_setup_upgrade.py
-+++ b/.veldo/control_factory_setup_upgrade.py
-@@ -423 +423 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -440 +440 @@
 -    code, _out, err = runner.run(['stop', plan['unit']])
 +    code, _out, err = 0, '', ''

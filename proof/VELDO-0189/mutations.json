@@ -1,295 +1,403 @@
 {
+ "schema": "veldo.mutations/v1",
  "finding": 189,
  "mutants": [
   {
-   "diff": "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "471463d94d8beaa2e700948d70797640dc098d1097a699c8d24abb637a6b27f0",
    "name": "upgrade189-only-recorded-names",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "upgrade/from-8bc34e94"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-only-recorded-names.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "864cfca38d06acf8fad222fca69f5e4d0d38da6104f3315c928d1fe976119303"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-in-place-writes.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "1aa6298acd67a9a07abba0d6a8490eb47d162b893d6c3a6938980729aff3f136",
    "name": "upgrade189-in-place-writes",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/kill-points"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-in-place-writes.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "545546a4e37226b8198a7fff6fb3e2e7f71c53b6da8c40f65965fbf2dfc3bafa"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "af9d6d467adb598126b846d7a1d78a06bca0820c9a1d52939c493d6dce6bbb90",
    "name": "upgrade189-configs-written-fresh",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "kept/owner-data"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-configs-written-fresh.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "1c44d00691122fadcf75503afb4c0583c8351f25e9012103fa8477da2488fb14"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-restart-every-run.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "85649065078421be89d4ad8ffda1f9aa3d6106d761d1859996a9999ce8d7c408",
    "name": "upgrade189-restart-every-run",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "second-run/changes-nothing"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-restart-every-run.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "d1531e2ec1793e72c84d0e3c341e460d13a9348009d9524ee470c37f3c323354"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "66c4f5ca42476c2f9955c959939652bced2031f8b633f992255b06c6e8857424",
    "name": "upgrade189-edited-file-overwritten",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "upgrade/refused-by-name"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-edited-file-overwritten.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "246aca159ddc325401bd8aa183449e1d03c4d533f63745720690e38ec798f319"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "219291977b2a0c2a01edbe2df1ca5bb460764f4d33e7eede5d78657d5c6442b8",
    "name": "upgrade189-removed-file-kept",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "upgrade/removed-module"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-removed-file-kept.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "34b08c33f6666e76d0ec13350bd276372ebe6b034f93b043255925e95082781c"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-no-switch-back.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "0c758b68441a7f05c90d7fff6736a892e63171b036bcf4ca2e0072dcbcd77e60",
    "name": "upgrade189-no-switch-back",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/failed-restart"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-no-switch-back.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "219eb184374a5ca53df568cce25b35e6e98e11dec10b622141cebfbc283b764c"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "afe244881534be6fe1621864d13507a58d112e3490d76ba208c18467bb449988",
    "name": "upgrade189-no-exchange-probe",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "upgrade/refused-by-name"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-no-exchange-probe.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "3e449e73e2305733b28c196b933bdb62a247f0f659f4a5a45de9c7d7d0f8d1bf"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-module-not-scaffolded.diff",
-   "module": ".veldo/init_scaffold.py",
-   "mutant_sha256": "a75d208363f825bfff993a5187c9f1ffd951dad9f964651974557663ff7fdcb8",
    "name": "upgrade189-module-not-scaffolded",
+   "module": ".veldo/init_scaffold.py",
    "named_rows": [
     "install/assets"
    ],
-   "source_sha256": "cd6721f747fc22c5af7e33604f360ecf35e240398996343781c8da647b886dbb",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-module-not-scaffolded.diff",
+   "source_sha256": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829",
+   "mutant_sha256": "af859a4c53562ec0d9b4ca988f844fcfce3919a46229ef5faa44558c7e916b61"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-ownership-not-carried.diff",
-   "module": ".veldo/control_service.py",
-   "mutant_sha256": "3d19bd6e86bd660f1b453971c75eb210a32073bfe79d64187750e9de78fe6eb8",
    "name": "upgrade189-ownership-not-carried",
+   "module": ".veldo/control_service.py",
    "named_rows": [
     "switch/kill-points"
    ],
-   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-ownership-not-carried.diff",
+   "source_sha256": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "mutant_sha256": "e2095a24fceb02848fb6c3291163a0c9f19292d239bed88cc5839e48c09f5d07"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-rebind-any-digest.diff",
-   "module": ".veldo/control_store.py",
-   "mutant_sha256": "3c55fc7f20678391ecffd3d820103845a9dee0b0ae52b2909c47c97ceec84501",
    "name": "upgrade189-rebind-any-digest",
+   "module": ".veldo/control_store.py",
    "named_rows": [
     "switch/kill-points"
    ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-rebind-any-digest.diff",
    "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
-   "status": "reviewer_pending"
+   "mutant_sha256": "3c55fc7f20678391ecffd3d820103845a9dee0b0ae52b2909c47c97ceec84501"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-no-ownership-restore.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "ee20510e87255e27783f8c183b16e13327a1ffa5b2d338dd79737b469c70eebe",
    "name": "upgrade189-no-ownership-restore",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/failed-after-start"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-no-ownership-restore.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "965e7f9985bc1adf242ef46759148524ec4a091f24a863c267aa9bac2969e5e2"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-rebind-not-recorded.diff",
-   "module": ".veldo/control_store.py",
-   "mutant_sha256": "84a2a5c1a409355c7d0cf21cefcaf4ec0c39a987e21c20706bbd18b3c348c01a",
    "name": "upgrade189-rebind-not-recorded",
+   "module": ".veldo/control_store.py",
    "named_rows": [
     "switch/failed-after-start"
    ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-rebind-not-recorded.diff",
    "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
-   "status": "reviewer_pending"
+   "mutant_sha256": "84a2a5c1a409355c7d0cf21cefcaf4ec0c39a987e21c20706bbd18b3c348c01a"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-restore-any-bytes.diff",
-   "module": ".veldo/control_store.py",
-   "mutant_sha256": "8ffc4ed338a28db480db83d7a676dca18c2787f67c2a74a9b13bc9b430c8b381",
    "name": "upgrade189-restore-any-bytes",
+   "module": ".veldo/control_store.py",
    "named_rows": [
     "ownership/restore-differs"
    ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-restore-any-bytes.diff",
    "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
-   "status": "reviewer_pending"
+   "mutant_sha256": "8ffc4ed338a28db480db83d7a676dca18c2787f67c2a74a9b13bc9b430c8b381"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-commit-not-sent.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "54809dac9cbf358966c6765819dcd268290584735748c4b351de91360b1b689f",
    "name": "upgrade189-commit-not-sent",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "ownership/committed"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-commit-not-sent.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "85b4b869175f1750adfb75515bd189bba36eb4d3de31dd9988a940318d6ba028"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-last-begin-only.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "07d10198414048372bbdfb9a3a0a5761002dadaaee0bc761396ba669a7ad22d0",
    "name": "upgrade189-last-begin-only",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/resumed-failure"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-last-begin-only.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "1ee99ba480be8876fbc2b5b9917234a7c267cd6a6ff6c3e5875290407d19867c"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-resumed-not-switched.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "b4c8db3c7e1752b5f473b1898f05a930ae10afeca0df5f2139baf02f493f35a4",
    "name": "upgrade189-resumed-not-switched",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/resumed-failure"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-resumed-not-switched.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "13c528f400b717c305146da3bf3f643e5c1ea59ebbec7487d855321075099e7f"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-resumed-units-forgotten.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "c2e62eb8da33482b17653648f669ad62483254dd7835a6977579c78ffccbb159",
    "name": "upgrade189-resumed-units-forgotten",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/resumed-failure"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-resumed-units-forgotten.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "7bd1e9f7ca225f9d6c99142c929b1fcbcd8404f3aa8751fc438527676855293b"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-switch-back-not-due.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "ecb2240accefead67b07f7e7e9f54ce42eaa98d1434c2ff9b152c63acce6545f",
    "name": "upgrade189-switch-back-not-due",
-   "named_rows": [
-    "switch/rollback-kills"
-   ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
-  },
-  {
-   "diff": "proof/VELDO-0189/upgrade189-recovery-holds-lock.diff",
-   "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "afd702e74e0591c6fddc4231d3308b8aa6f21ab3ad1df9cdde524f758f82e6e2",
-   "name": "upgrade189-recovery-holds-lock",
-   "named_rows": [
-    "switch/rollback-kills"
-   ],
-   "source_sha256": "fe64f27f643f3bd9874fbe3f24f0b81d8831f3f880967a07ed482cbafb2a3733",
-   "status": "reviewer_pending"
-  },
-  {
-   "diff": "proof/VELDO-0189/upgrade189-stop-exit-ignored.diff",
    "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "bbdbb5deab63c988160c1849f7d2b6472e61c054f04338c88153024de26940f1",
+   "named_rows": [
+    "switch/rollback-kills"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-switch-back-not-due.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "ff01cd1a85eeb7c105a4dd5cc91acfd5132adcd76479f80a02622ff6364399f7"
+  },
+  {
+   "name": "upgrade189-recovery-holds-lock",
+   "module": ".veldo/control_factory_setup.py",
+   "named_rows": [
+    "switch/rollback-kills"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-recovery-holds-lock.diff",
+   "source_sha256": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a",
+   "mutant_sha256": "50e8f9c70c07bf19ff85bb20ccb400e9d8b9bf2d26ce28f4a09cba2a1f3619ba"
+  },
+  {
    "name": "upgrade189-stop-exit-ignored",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/stop-refused"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-stop-exit-ignored.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "6b4efcb9f3579c458a0c50a26a1d9e21e007a9208c8cb13d614109b0064665d6"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-restore-refusal-unreported.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "2d9de076e024664cff3eb0e8c226b2a625fc5c3e55983ebaa9bd4f03956dab3c",
    "name": "upgrade189-restore-refusal-unreported",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "ownership/restore-reported"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-restore-refusal-unreported.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "2eb5d22ff68ddd1cdaf57be95f5c45c7c516da19c27706874143006804d46270"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-restore-only-first-blocker.diff",
-   "module": ".veldo/control_store.py",
-   "mutant_sha256": "6ededa3abe396402de26bad76e4b3fab7d951619a85a04e98b3b44babbec158e",
    "name": "upgrade189-restore-only-first-blocker",
+   "module": ".veldo/control_store.py",
    "named_rows": [
     "ownership/restore-reported"
    ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-restore-only-first-blocker.diff",
    "source_sha256": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
-   "status": "reviewer_pending"
+   "mutant_sha256": "6ededa3abe396402de26bad76e4b3fab7d951619a85a04e98b3b44babbec158e"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-serve-keeps-previous-bindings.diff",
-   "module": ".veldo/control_service.py",
-   "mutant_sha256": "c9d1902e2792ce9207bb7cc58e61676f2e02efa79d1175a3ba4f9d236b710be8",
    "name": "upgrade189-serve-keeps-previous-bindings",
+   "module": ".veldo/control_service.py",
    "named_rows": [
     "ownership/start-drops"
    ],
-   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-serve-keeps-previous-bindings.diff",
+   "source_sha256": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "mutant_sha256": "9bfee691bd2ef030336f4c438dfe9b8cf4673268e2a5dc82b23ddd5598ccfb6f"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-commit-with-previous-engine.diff",
-   "module": ".veldo/control_service.py",
-   "mutant_sha256": "9599f3110c608a44c0b047f970cf96667e0b0954acd4e59974c0993b788107de",
    "name": "upgrade189-commit-with-previous-engine",
+   "module": ".veldo/control_service.py",
    "named_rows": [
     "ownership/commit-refused"
    ],
-   "source_sha256": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-commit-with-previous-engine.diff",
+   "source_sha256": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "mutant_sha256": "b36bdea8ae2e04d702b1dba2b2e673602edbddd67a3de29bd76fac1653a42115"
   },
   {
-   "diff": "proof/VELDO-0189/upgrade189-restore-without-stop.diff",
-   "module": ".veldo/control_factory_setup_upgrade.py",
-   "mutant_sha256": "9262b2f21d05a02470634baec3a475a53ed74e44b09c12b5dee41eb90b5a5c4d",
    "name": "upgrade189-restore-without-stop",
+   "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
     "switch/stop-before-restore"
    ],
-   "source_sha256": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
-   "status": "reviewer_pending"
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-restore-without-stop.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "5735245eb2e92ad6637dcfac41e87852ddc4d8b07bb245973a97c64292e58229"
+  },
+  {
+   "name": "upgrade189-runtime-unrecorded",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/fresh-0186"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-unrecorded.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "ab1c195332f9e184fb1f17e5b8966e0540701acdea6e9efafa5b42cd291e9f14"
+  },
+  {
+   "name": "upgrade189-runtime-not-staged",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-not-staged.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "644977109f758951f309ca0dde10e019d4b6eeea6c970ecce8e5e00702798c04"
+  },
+  {
+   "name": "upgrade189-runtime-record-stale",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-record-stale.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "1d59a8706a4476a11ce135ed6831a89eb81b367f657d226b5590ebc7aa134b20"
+  },
+  {
+   "name": "upgrade189-runtime-mode",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-mode.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "bc63bff74a66685ecc4ee36fd65a763b0007be20076c793f5cd3a05febf5c41b"
+  },
+  {
+   "name": "upgrade189-runtime-not-cleaned",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "upgrade/removed-module"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runtime-not-cleaned.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "a96e40c1e1579edb2f69c50844f86658cfc20aab67f54461e6e2d5ccb5a2ab1f"
+  },
+  {
+   "name": "upgrade189-pin-missing",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-pin-missing.diff",
+   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+   "mutant_sha256": "14b090fcb905fded728ad9b3fd6329a405b98821d852c6736438b269ee4c09d5"
+  },
+  {
+   "name": "upgrade189-engines-record-missing",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "upgrade/older-0186-equivalence"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-engines-record-missing.diff",
+   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+   "mutant_sha256": "5adf881eaeedd564407b418faf0f7820cb8ed3b15e368e672bdda6d702ca1585"
+  },
+  {
+   "name": "upgrade189-runs-moved",
+   "module": ".veldo/control_factory_setup_upgrade.py",
+   "named_rows": [
+    "kept/runs"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-runs-moved.diff",
+   "source_sha256": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549",
+   "mutant_sha256": "12c30bb6f7613d6893a516999fd3a14cdcb97c3396af6e2b8dda1c23546e0e35"
+  },
+  {
+   "name": "upgrade189-existing-pin-rewritten",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "upgrade/fresh-0186"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-existing-pin-rewritten.diff",
+   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+   "mutant_sha256": "bedd3f45ebab96921bd5608261de1d951bb306d3911f12124203915ac31a949b"
+  },
+  {
+   "name": "upgrade189-existing-record-rewritten",
+   "module": ".veldo/control_factory_setup_engines.py",
+   "named_rows": [
+    "upgrade/fresh-0186"
+   ],
+   "status": "reviewer_pending",
+   "diff": "proof/VELDO-0189/upgrade189-existing-record-rewritten.diff",
+   "source_sha256": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb",
+   "mutant_sha256": "77670c133d3b789dea77143ca1a6c33ed0b20531e2540f33bc9fca861b8b85ca"
   }
  ],
- "previous_evidence": "proof/VELDO-0189/mutations-before-followup.json",
- "reason": "The owner reserves mutation execution to the reviewer. Anchors and mutant syntax checked only.",
- "spec_id": "VELDO-0189",
- "status": "reviewer_pending"
+ "note": "Registry, unique anchors and mutant syntax checked. Mutation executions are reserved to the reviewer; no rejection is claimed for this tree."
 }

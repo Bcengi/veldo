@@ -1,5 +1,5 @@
---- a/.veldo/control_store.py
-+++ b/.veldo/control_store.py
+--- .veldo/control_store.py
++++ .veldo/control_store.py
 @@ -924 +924 @@
 -            raise StoreRefused("ownership_restore_differs", "; ".join(blocked))
 +            raise StoreRefused("ownership_restore_differs", blocked[0])

@@ -1,5 +1,5 @@
 --- .veldo/control_factory_setup_upgrade.py
 +++ .veldo/control_factory_setup_upgrade.py
-@@ -441 +441 @@
--    if code:
-+    if False:
+@@ -296 +296 @@
+-        os.chmod(parent, bin_mode)
++        os.chmod(parent, 0o700)

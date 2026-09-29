@@ -1,0 +1,6 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -264,2 +264 @@
+-            remove_engine_directory(inner)
+-            continue
++            raise Refused('invalid_input:install_root:unrecorded:' + inner)

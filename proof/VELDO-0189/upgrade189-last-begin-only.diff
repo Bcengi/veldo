@@ -1,4 +1,4 @@
---- a/.veldo/control_factory_setup_upgrade.py
-+++ b/.veldo/control_factory_setup_upgrade.py
-@@ -214,0 +215 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -222,0 +223 @@
 +    entries = entries[max((i for i, e in enumerate(entries) if e.get('point') == 'begin'), default=0):]

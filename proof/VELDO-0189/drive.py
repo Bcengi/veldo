@@ -103,7 +103,7 @@ def run(paths=None, root=None):
             raise SystemExit('drive: the budget is spent; the finished runs are kept in %s, run it again' % CACHE)
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
-    proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
+    proc = subprocess.run(command, capture_output=True, text=True, timeout=900)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
     result = dict(json.loads(proc.stdout), seconds=round(time.monotonic() - started, 3))

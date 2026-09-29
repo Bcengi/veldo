@@ -9,10 +9,10 @@ upgrades it (`.veldo/control_factory_setup_upgrade.py`); the answer's first step
 is no other command.
 
 **What it compares.** Only the installation's record, `<install root>/<service>/config/service.json`: its
-`closure` (each installed engine file's name and sha256 digest) and `template` digest. The current side is
+`closure` and `runtime_assets` together (each installed file's name and sha256 digest), and `template` digest. The current side is
 what the current installer would lay down for this installation's arguments: `control_service.layout`, the
 pure half of `install()` (install now calls it and writes exactly what it returns), with `existing=True` so
-an installed home is expected. Its `fixed` files are `control_service.closure()`. A digest that differs is
+an installed home is expected. Its engine files are `control_service.closure()` plus `runtime_assets`, including nested directories. A digest that differs is
 a changed file, a name only the current engine lists is new, a name only the record lists is removed. No
 code path per engine version exists.
 
@@ -263,3 +263,34 @@ The suite also passed under the requested empty environment with its generated H
 exit 2 by the harness's partial-run contract; neither is an aggregate gate stamp. `verification.json`
 records the two runs, source digests, environment and check results. The gate and mutation executions
 were not run, as instructed; mutation rejection remains for the reviewer.
+
+
+## Owner-approved fresh installation equivalence amendment
+
+Telegram 29385 requested the amendment and 29386 approved it on 2026-09-28. The merge baseline is
+3fa0d77b, which combines local main with the setup API and ownership recovery implementation.
+
+The upgraded engine now includes both closure and runtime assets. Comparison descends into runtime
+subdirectories; staging writes every recorded asset at installer modes; service.json records the two
+inventories separately; stage and previous-engine removal handles subdirectories. The installer layout
+receives the factory state root. When an older receiver gains that field, it also gains runs pointing to
+its existing directory beside the store. Its configured runs value, when present, is kept. The explicit
+runs field is a reasoned fresh-equivalence exception because fresh installations default to state_root/runs.
+
+After exchange and before the record and restart, setup pins Claude Code and writes host/engines.json,
+each only when absent, using the installed qualification records. Each addition has its own step-log
+write point, included in the existing kill census. An existing copy or record is left unchanged.
+
+Three amendment rows extend the existing production setup journeys:
+
+- upgrade/older-0186-equivalence: both archived older installers produce real hosts; after upgrade each
+  matches a fresh host on nested runtime files and modes, configurations, units, pin bytes and mode, and
+  host/engines.json. Every allowed field difference has a reason in fresh-equivalence.json.
+- kept/runs: both older hosts gain state_root while their real runs_root reader resolves the original
+  runs directory, whose existing files and modes remain unchanged.
+- upgrade/fresh-0186: a fresh host is rerun through setup, accepts its recorded runtime directory, and
+  changes no snapshotted bytes or modes, including its existing pin and engines record.
+
+Finding 189 includes the four original criterion falsifiers and ten amendment mutants. The registry's
+anchors and generated mutant syntax are checked locally. Executing mutations is reserved to the reviewer;
+mutations.json therefore records reviewer_pending, with refreshed source digests and diffs.
