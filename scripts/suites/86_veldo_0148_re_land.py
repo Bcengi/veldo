@@ -1183,12 +1183,27 @@ sys.exit(chosen['code'])
                   and all(isinstance(result, list) and result == [granted_g[0]['_id']] for result in repeated))
             check('grant/once-per-dispatch', 'three later loop passes grow neither accepted events, refused entries nor approvals',
                   all(extra_passes) and stable_before == stable_after and stable_after == (1, 0, 3))
+            # Isolate the state guard: keep G's real replacement subject and eligible prior
+            # grant, but persist a new FAILED dispatch through the station's signed writer.
+            # X has no subject, so using X here would also refuse with the state guard removed.
+            failed = None
+            subject = (second_g or {}).get('subject')
+            if station is not None and isinstance(subject, dict):
+                dispatch = next_id('failed-grant')
+                station._run('open', G, dispatch, {'record': {'evidence': builds[G]['evidence']}})
+                station._run('end', G, dispatch, {'outcome': LS.FAILED, 'end': {'subject': subject}})
+                failed = station.record(dispatch)
+            check('grant/once-per-dispatch', 'the production writer persisted a failed dispatch with G\'s real grant subject',
+                  failed is not None and failed.get('state') == 'failed' and failed.get('unit') == G
+                  and failed.get('subject') == subject and bool((subject or {}).get('approvals')))
+            approvals_before, events_before = entities('approval'), list(land_events)
             try:
-                failed_result = station.grant(X, first[X], owner='owner', basis={}) if station else None
+                failed_result = station.grant(G, failed, owner='owner', basis={}) if station else None
             except Exception as error:
                 failed_result = getattr(error, 'code', type(error).__name__)
-            check('grant/once-per-dispatch', 'a failed dispatch can never be granted directly',
-                  failed_result == 'invalid_input:grant')
+            check('grant/once-per-dispatch', 'a failed dispatch with an eligible subject cannot be granted or write an approval',
+                  failed_result == 'invalid_input:grant' and entities('approval') == approvals_before
+                  and land_events == events_before)
 
         with region('grant/revoked-before-answer'):
             one = first[V] or {}

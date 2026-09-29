@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing_station.py
++++ b/.veldo/control_landing_station.py
+@@ -386 +386 @@
+-        if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)
++        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)

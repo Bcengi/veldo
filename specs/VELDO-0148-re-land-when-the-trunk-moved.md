@@ -168,6 +168,17 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-09-29, proof repair at 41340bc1: the once-per-dispatch row now persists a
+new failed land through the station's signed open/end writer, retaining G's real
+replacement subject and eligible prior grant. It asserts refusal without an approval
+write or accepted event, isolating the state guard previously masked by X's missing
+subject. Registered grant148-failed-dispatch-accepted against that row. Regenerated
+all 19 mutation records from current production bytes using the registry's exact
+replacements and zero-context diffs, including the seven stale control_service.py
+records. The prior refresh claim was incorrect. No production, criterion or footprint
+change. Ordinary suite 86 passes all 15 rows (41 with shared preamble, zero failures;
+expected subset exit 2). Remaining proof checks follow in the completion entry.
+
 2026-09-29, adaptation after main 82b185f2: copy the runtime assets into suite 86's
 temporary module tree, matching VELDO-0186's factory-loop fixture update. The existing
 fake Codex already supplies its production-generated qualification record and explicit

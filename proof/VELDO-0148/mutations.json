@@ -37,7 +37,7 @@
     "reland/stale-subject"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -50,7 +50,7 @@
     "lease/trunk-moved"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -63,72 +63,72 @@
     "grant/fresh-request"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-loop-offers-nothing.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "e1db71b44fb28d8473a2cde89a0b8d1423f303d920e529d8b22d554095ac5a55",
+   "mutant_sha256": "5d0d1eb788bdfb4f5d29b92c3b8b7fdd34a31c1698b59f24b0e142133cf7cbb8",
    "name": "reland148-loop-offers-nothing",
    "named_row_red": null,
    "named_rows": [
     "reland/stale-subject"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-conflict-relanded.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "45bc112bdcb0fd4e2a8081008b1687084caa2d1ac77545bd51271aab77bd6f20",
+   "mutant_sha256": "80c05fa5e9b3560121a80f62c0ce7f4fa62952fa74be4e98a78c7bf4430411ec",
    "name": "reland148-conflict-relanded",
    "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-rebuild-not-reviewed.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "7633ea645eed797b7c744f4af7cd3edf90b690788738449b07a6195255acff5e",
+   "mutant_sha256": "98d64f0fcf3d5a1c8fd04d147e86a2cb62232fc4ffad8dd020595d040788ef97",
    "name": "reland148-rebuild-not-reviewed",
    "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-landed-rebuilt.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "d5c64d2a3b8eadb4a7ef556683d6c945f1ead09da7b7f5e66c65a38809700452",
+   "mutant_sha256": "b876afcdb765a13e3702dfbf9bd9c18263b36c2f232865dbc89f1e60962fb341",
    "name": "reland148-landed-rebuilt",
    "named_row_red": null,
    "named_rows": [
     "reland/review-kept"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-end-wakes-nothing.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "e50c08633ddd15d1c0690f7e74439f16cf1562f4db6435e76f276f098a78ee56",
+   "mutant_sha256": "32241743c85e27c17e6e0007e2cd83679cc89a6d4a85747a86c5312738a2ab27",
    "name": "reland148-end-wakes-nothing",
    "named_row_red": null,
    "named_rows": [
     "reland/conflict-rebuild"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -141,7 +141,7 @@
     "lease/contains-unknown"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -154,7 +154,7 @@
     "lease/trunk-moved"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -167,20 +167,20 @@
     "reland/never-forced"
    ],
    "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/grant148-asked-every-pass.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "4680b7976a2fe884f0e4440c50a24b032ff098943e278f328f3241a2c83a0614",
+   "mutant_sha256": "d492c58754e8a4e059898564b8d421cc92e9b34418f9787d394deaa47e3fefa6",
    "name": "grant148-asked-every-pass",
    "named_row_red": null,
    "named_rows": [
     "grant/fresh-request"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -193,7 +193,7 @@
     "grant/never-granted"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -206,20 +206,20 @@
     "grant/mixed-approvals"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/grant148-mixed-question-restored.diff",
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "a9bb2334ae19fefd4d324e8a39cb12a21e325799e19f8218c6744200d8d382a1",
+   "mutant_sha256": "8673bbc946d54e75e12b0de3a5c682a5cac3d3af7198e94a7e451eb606b0514a",
    "name": "grant148-mixed-question-restored",
    "named_row_red": null,
    "named_rows": [
     "grant/mixed-approvals"
    ],
-   "source_sha256": "412dccb3407c519095581c3a6becd8a357e4b12f76d9f30cf0d96b153337f09c",
-   "status": "registered, not yet run on this repair"
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -232,7 +232,7 @@
     "grant/mixed-proof"
    ],
    "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -245,7 +245,20 @@
     "grant/once-per-dispatch"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-failed-dispatch-accepted.diff",
+   "module": ".veldo/control_landing_station.py",
+   "mutant_sha256": "4b67d78b3d560f6124729fecf6341ad86ce57a90fb4b19e1e899cd63a6135276",
+   "name": "grant148-failed-dispatch-accepted",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/once-per-dispatch"
+   ],
+   "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "status": "registered, not yet run by the mutation checker on this repair"
   },
   {
    "by_assertion": null,
@@ -258,12 +271,12 @@
     "grant/revoked-before-answer"
    ],
    "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
-   "status": "registered, not yet run on this repair"
+   "status": "registered, not yet run by the mutation checker on this repair"
   }
  ],
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "Lead reported 14 of 14 rejected at f59b3136. Current registrations are statically checked, not executed in this repair.",
+ "status": "Lead reported 14 of 14 rejected at f59b3136. All 19 current registrations have refreshed digests and exact applied diffs, with anchors and syntax checked. Mutation checker execution is reserved for the reviewer. The manual failed-state guard experiment is recorded separately.",
  "suite": "scripts/suites/86_veldo_0148_re_land.py"
 }

@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1610 +1610 @@
+@@ -1702 +1702 @@
 -            self.loop.wake('run_end', record['dispatch_id'])
 +            pass  # defect: a land's end wakes no pass

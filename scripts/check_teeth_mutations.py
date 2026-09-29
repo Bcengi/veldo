@@ -9351,6 +9351,10 @@ def cases():
               '        if applied:\n            return applied\n',
               '        if False and applied:\n            return applied\n',
               ['grant/once-per-dispatch'])
+    reland148('grant148-failed-dispatch-accepted', 'control_landing_station.py',
+              "        if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)\n",
+              "        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)\n",
+              ['grant/once-per-dispatch'])
     reland148('grant148-revoked-overwritten', 'control_landing_station.py',
               "            if not any(isinstance(data.get('subject'), dict)\n",
               "            if False and not any(isinstance(data.get('subject'), dict)\n",

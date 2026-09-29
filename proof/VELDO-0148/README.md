@@ -31,7 +31,7 @@ login, external service or real credential is used. Each row reports once.
 | AC3 | `grant/never-granted` | A never-granted security approval is refused by name, sends no owner question and writes no approval or publication. |
 | AC3 | `grant/mixed-approvals` | A mismatched owner grant and missing security approval stay failed with both named reasons, no subject, question, approval write or loop action. |
 | AC3 | `grant/mixed-proof` | An owner tree mismatch together with a security proof-only mismatch stays failed with both reasons and no subject, question or grant. |
-| AC3 | `grant/once-per-dispatch` | Replaying an applied grant emits no accepted event and writes nothing. Three extra loop passes grow neither accepted events, refused entries nor approvals. A direct grant on a failed dispatch is refused. |
+| AC3 | `grant/once-per-dispatch` | Replaying an applied grant emits no accepted event and writes nothing. Three extra loop passes grow neither accepted events, refused entries nor approvals. A failed dispatch persisted through the station writer with G's real replacement subject and eligible prior grant refuses a direct grant without an approval write or accepted event. |
 | AC3 | `grant/revoked-before-answer` | The owner answers a real question after security is revoked. The station refuses security by name before writing any replacement, including the still-valid owner grant. |
 | AC3 | `grant/fresh-request` | The old tree's grant is refused by name for the re-merged tree without publishing. One owner request survives repeated passes; answering creates an exact-tree grant and the next dispatch lands that tree. |
 
@@ -58,9 +58,10 @@ No exception counts as evidence. [drive.py](drive.py) records module digests and
 
 [mutations.json](mutations.json) records the lead's reported run at f59b3136: 14 of 14
 mutations rejected. This is attributed evidence supplied in the owner's brief, not a builder run.
-It separately records all 18 current finding-148 registrations, source and mutant digests, exact
+It separately records all 19 current finding-148 registrations, source and mutant digests, exact
 applied diffs and named rows. Their anchors and syntax are statically checked; execution on this
-repair is pending for all 18, including the four added here. No current rejection is claimed.
+repair is pending for all 19. The manual state-guard experiment is recorded separately;
+no mutation-checker rejection is claimed for this repair.
 [mutations-before-review.json](mutations-before-review.json) preserves the earlier builder's
 12 rejections as historical evidence.
 
@@ -87,6 +88,7 @@ question, allow a proof mismatch, reapply a grant and overwrite a revoked approv
 | `grant148-mixed-question-restored` | `grant/mixed-approvals` |
 | `grant148-proof-mismatch-replaceable` | `grant/mixed-proof` |
 | `grant148-applied-again` | `grant/once-per-dispatch` |
+| `grant148-failed-dispatch-accepted` | `grant/once-per-dispatch` |
 | `grant148-revoked-overwritten` | `grant/revoked-before-answer` |
 
 ## Replay
@@ -111,8 +113,13 @@ The current suite was replayed against the original pre-implementation ad916989:
 all 13 behavior rows fail by assertion, with the format control green. This is the
 original implementation's red baseline; bf035770 already contains that behavior
 and this adaptation repairs its fixture. All 18 mutation registrations have valid
-anchors and syntax. Seven source and mutant digests and their diff offsets were
-refreshed for main's changes to control_service.py. No mutations were executed;
+anchors and syntax. That adaptation claimed to refresh seven service digests and
+diff offsets, but left stale records. The proof repair at 41340bc1 regenerates all
+19 registrations from current production bytes: the registry's ordered replacements,
+SHA-256 of source and mutant bytes, and difflib.unified_diff with n=0, following
+drive.py and the recent VELDO-0169 proof. The seven control_service.py entries now
+bind source digest e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75.
+No mutation checker was executed;
 the recorded 14 rejections remain historical. All eight production modules match
 their engine copies, requires.json was regenerated unchanged, the supplied footprint
 check reports 46 paths and none outside, and the anchor check reports 0 bad anchors.

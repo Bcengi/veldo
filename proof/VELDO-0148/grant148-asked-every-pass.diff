@@ -1,8 +1,8 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1648 +1648 @@
+@@ -1740 +1740 @@
 -        alias = 'land-grant-' + hashlib.sha256(last['dispatch_id'].encode()).hexdigest()[:24]
 +        alias = 'land-grant-' + os.urandom(12).hex()  # defect: a new question on every pass
-@@ -1663 +1663 @@
+@@ -1755 +1755 @@
 -                                                'digest': S.digest_of(subject)}, 'loop-grant/' + last['dispatch_id'])
 +                                                'digest': S.digest_of(subject)}, 'loop-grant/' + alias)
