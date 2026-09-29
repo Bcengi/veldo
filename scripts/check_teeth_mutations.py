@@ -9166,27 +9166,29 @@ def cases():
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
     # VELDO-0189 owner-approved fresh equivalence amendment.
+    # Both older-host rows call equals_fresh: asset bytes/modes, runtime record and pin.
+    # Name those behavior rows directly, retaining both hosts for every equivalence defect.
     add(189, 'upgrade189-runtime-unrecorded', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "    recorded = dict(recorded, **record.get('runtime_assets', {}))",
         '    recorded = dict(recorded)', ['upgrade/fresh-0186'], [])
     add(189, 'upgrade189-runtime-not-staged', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "    fixed = dict(laid['fixed'], **laid['assets'])",
-        "    fixed = dict(laid['fixed'])", ['upgrade/older-0186-equivalence'], [])
+        "    fixed = dict(laid['fixed'])", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
     add(189, 'upgrade189-runtime-record-stale', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "                    runtime_assets=laid['config']['runtime_assets'], template=template)",
-        "                    runtime_assets=record.get('runtime_assets', {}), template=template)", ['upgrade/older-0186-equivalence'], [])
+        "                    runtime_assets=record.get('runtime_assets', {}), template=template)", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
     add(189, 'upgrade189-runtime-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         '        os.chmod(parent, bin_mode)',
-        '        os.chmod(parent, 0o700)', ['upgrade/older-0186-equivalence'], [])
+        '        os.chmod(parent, 0o700)', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
     add(189, 'upgrade189-runtime-not-cleaned', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         '            remove_engine_directory(inner)\n            continue',
         "            raise Refused('invalid_input:install_root:unrecorded:' + inner)", ['upgrade/removed-module'], [])
     add(189, 'upgrade189-pin-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
         "            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)",
-        '            pass', ['upgrade/older-0186-equivalence'], [])
+        '            pass', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
     add(189, 'upgrade189-engines-record-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
         '        if recorded is None:',
-        '        if False:', ['upgrade/older-0186-equivalence'], [])
+        '        if False:', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
     add(189, 'upgrade189-runs-moved', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))",
         '            fresh = dict(fresh)', ['kept/runs'], [])
@@ -9227,7 +9229,7 @@ def cases():
         '        if False:', ['upgrade/receiver-without-store'], [])
     add(189, 'upgrade189-pin-wrong-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
         "            report['pins_made'] = 1",
-        "            os.chmod(target, 0o444)\n            report['pins_made'] = 1", ['upgrade/older-0186-equivalence'], [])
+        "            os.chmod(target, 0o444)\n            report['pins_made'] = 1", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     # targets() matches the final word of each reported row, without the spec prefix.

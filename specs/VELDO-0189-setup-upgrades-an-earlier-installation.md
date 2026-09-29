@@ -339,3 +339,10 @@ in 53.37 seconds ordinarily and 56.98 seconds in the empty gate environment, wit
 Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
 assertion audit are in proof/VELDO-0189/performance.json and its companion records. Finding 189
 mutations remain registered; their execution and the full gate are reserved to the reviewer.
+
+2026-09-29, mutation registration review: six fresh-equivalence mutants now name both
+upgrade/from-8bc34e94 and upgrade/from-971186ac directly. Each row already calls equals_fresh,
+including runtime asset names, bytes and modes, the runtime inventory in service.json, the qualified
+pin and host/engines.json. No mutation edit or behavior assertion changed. The separate equivalence
+row remains. Audit every finding 189 and 171 target using the checker's final-word matching rule.
+The footprint is unchanged; mutation execution stays with the reviewer.

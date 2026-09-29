@@ -447,3 +447,13 @@ Their execution and the full gate are reserved to the reviewer. The manifest alr
 this suite; requires.json was regenerated without a content change. The validator passes and
 production engine copies are unchanged. The footprint checker reports only the two gate stamps
 already present in the branch before this work; this change commits neither.
+
+## Mutation target registration review
+
+The six runtime staging, runtime inventory, runtime directory mode, missing pin, missing engines
+record and pin mode mutants now name both `upgrade/from-8bc34e94` and
+`upgrade/from-971186ac`. Both rows call `equals_fresh`, the same assertion helper used by
+`upgrade/older-0186-equivalence`, so both archived hosts still have to reject each defect.
+The production replacements and every suite assertion are unchanged. The separate equivalence
+row still exists at the supplied baseline 7f38b201; the reported missing-row condition has not
+been reproduced here. Finding 189 mutation execution remains reviewer pending.

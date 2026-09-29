@@ -303,7 +303,8 @@
    "name": "upgrade189-runtime-not-staged",
    "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-not-staged.diff",
@@ -314,7 +315,8 @@
    "name": "upgrade189-runtime-record-stale",
    "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-record-stale.diff",
@@ -325,7 +327,8 @@
    "name": "upgrade189-runtime-mode",
    "module": ".veldo/control_factory_setup_upgrade.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-runtime-mode.diff",
@@ -347,7 +350,8 @@
    "name": "upgrade189-pin-missing",
    "module": ".veldo/control_factory_setup_engines.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-pin-missing.diff",
@@ -358,7 +362,8 @@
    "name": "upgrade189-engines-record-missing",
    "module": ".veldo/control_factory_setup_engines.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-engines-record-missing.diff",
@@ -501,7 +506,8 @@
    "name": "upgrade189-pin-wrong-mode",
    "module": ".veldo/control_factory_setup_engines.py",
    "named_rows": [
-    "upgrade/older-0186-equivalence"
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
    ],
    "status": "reviewer_pending",
    "diff": "proof/VELDO-0189/upgrade189-pin-wrong-mode.diff",
