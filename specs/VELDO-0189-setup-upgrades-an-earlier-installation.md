@@ -363,3 +363,11 @@ recorded main head, and still checks every captured installer plus the current p
 The footprint explicitly adds proof/VELDO-0189/older/* for the archives, census, digest manifest and
 reproducible exporter required by AC1. The suite reads no repository history. Existing production
 interfaces, behavior rows, kill points and finding 189 falsifiers are retained.
+
+2026-09-29, history-independent verification: suite 86_veldo_0189_engine_upgrade passes all 58 checks
+normally, in a copied tree without .git, and under the requested empty gate environment. The baseline
+fed739c7 red record has 23 fixture-dependent rows red by assertion and nine unrelated rows green.
+Both archived engines match their historical .veldo trees exactly; regeneration is byte-identical.
+Validation passes and anchors report zero bad entries. Finding 189's 46 mutations remain unchanged and
+reviewer pending. This repair stays inside the footprint; the origin/main comparison with only 0189
+still reports inherited 0171 paths, while both stacked specifications cover the branch changes.

@@ -498,3 +498,26 @@ Scratch Git repositories used by real setup interfaces remain part of the proof.
 The spec footprint explicitly names `proof/VELDO-0189/older/*` because AC1 needs these committed inputs
 and their reproducible exporter. All existing behavior rows, production interfaces and finding 189
 mutations are retained. The registered suite and regenerated requires file retain the same suite name.
+
+Verification for this repair is in `history-free-verification.json` and `history-free-audit.json`:
+
+- Selected suite: 58 checks pass normally (54.48 seconds), in a copy without `.git` (56.47 seconds),
+  and under the requested empty gate environment (59.43 seconds). The 32 behavior rows retain their
+  names, assertions and real production writers. Exit 2 is selftest's required partial-run result.
+- AC1 retains both older-host upgrades, fresh equivalence, module removal, refusal and installer census;
+  AC2 retains interruption, rollback and ownership recovery; AC3 retains owner data and runs;
+  AC4 retains announcements, restart rules and second-run idempotence.
+- `python3 proof/VELDO-0189/drive.py --red fed739c7 --history-free` runs the current suite against the
+  untouched baseline exported without Git metadata. `red-at-fed739c7.json` records 23 of 32 rows red
+  by assertion, including both older-host rows and the census. Nine unrelated rows pass because this
+  repair changes proof inputs, not production behavior. No all-red behavior claim is made. Running the
+  baseline's original suite without history also reproduced its missing older-engine load exception.
+- Both decompressed archives exactly equal Git archive output for their recorded commits. Regeneration
+  is byte-identical. The 123 unchanged check calls and the census ancestry assertion adapted to captured
+  history are audited; digest and census coverage assertions are added. Engine Python and unit copies
+  match. The requires file was regenerated without a content change.
+- Validation exits 0; the supplied anchor checker reports 0 bad anchors. The prescribed VELDO-0189-only
+  footprint check against origin/main still lists inherited VELDO-0171 paths. The check with both stacked
+  specs reports none outside, and this repair's diff from fed739c7 is wholly within VELDO-0189.
+- All 46 finding 189 registrations and their declared falsifiers remain unchanged, with valid anchors
+  and syntax. Mutation execution and the full gate remain reviewer pending; no rejection is claimed.

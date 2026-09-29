@@ -518,5 +518,6 @@
  "note": "Registration, anchors and syntax checked. Execution reserved to the reviewer; no mutation rejection claimed for this tree.",
  "spec_id": "VELDO-0189",
  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
- "registry": "scripts/check_teeth_mutations.py finding 189"
+ "registry": "scripts/check_teeth_mutations.py finding 189",
+ "history_free_inputs": "Finding 189 registrations and falsifiers are unchanged. The suite now verifies committed historical fixtures before use. Execution remains reserved to the reviewer; see history-free-audit.json."
 }

@@ -17,6 +17,10 @@ every row fails by its own assertion; at the commit before the review fix the ro
 their own assertions (the suite records that against each row rather than raising).
 
     python3 -B proof/VELDO-0189/drive.py --red <pre-change commit>
+
+Add --history-free to export the baseline without Git metadata and run the current suite against it.
+For the fixture-only repair this records the rows that require the absent fixtures as assertion failures;
+unrelated production rows may pass. The baseline is not modified or supplied with current fixtures.
     python3 -B proof/VELDO-0189/drive.py --cache <directory> [--budget <seconds>]   (resumable)
 """
 # Add --history-free to --red COMMIT to run the current suite against the baseline without repository history.
