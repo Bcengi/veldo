@@ -1,8 +1,8 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -290,7 +290,7 @@
-     revision = capability['revision']
-     configuration.update(revision['settings'])
+@@ -342,7 +342,7 @@
+         feature_listing = X.load_qualification().get('feature_listing', '')
+     configuration.update(codex_features(feature_listing, set(revision['native_tools'])))
      for name, feature in CODEX_NATIVE.items():
 -        configuration['features.' + feature] = name in revision['native_tools']
 +        configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']

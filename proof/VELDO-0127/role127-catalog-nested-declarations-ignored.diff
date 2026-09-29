@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -349,7 +349,7 @@
+@@ -401,7 +401,7 @@
          definition = tool.get('function') if isinstance(tool.get('function'), dict) else tool
          name = codex_name(namespace + definition.get('name', tool.get('type', '')))
          names.append(name)

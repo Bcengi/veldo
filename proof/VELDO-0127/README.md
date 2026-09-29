@@ -1,5 +1,48 @@
 # VELDO-0127 role capability configuration
 
+## Default feature repair, 2026-09-29
+
+This repair starts at `d72da222`. `features-fixture.json` retains the complete
+140-row output of the pinned 0.154 binary's feature listing, including its 48
+enabled defaults and binary digest. Capture used an empty temporary profile,
+a loopback provider and the existing TCP guard; no login or model was used.
+The qualification writer records that listing beside the binary digest. Binding
+passes it to the role handoff, which explicitly controls each default-on tool
+source and rejects an unclassified enabled feature with
+`configuration_stop:codex_unknown_default_feature:<name>`.
+
+The six mapped feature names preserve shell, image viewing, collaboration and
+clock sleep grants. The other 17 tool sources stay explicitly off, including
+image generation, all three browser switches, computer use, skill search and
+tool suggestion. The remaining 25 defaults have a finite classification for
+protocol, UI, transport or execution behavior that does not register another
+tool. An absent or malformed listing also stops configuration. No new native
+grant is introduced.
+
+AC2 and AC4: suite 88's 19 `defaults/*` feature rows observe the added explicit
+false values in the actual arguments forwarded to the pinned binary. The five
+`mapped/*` rows check exact feature values for a granted capability and all
+ungranted sources, and require its real definitions from the wire. Existing
+shell, image, collaboration and goals switches are included in these comparisons.
+AC3 and AC4: `defaults/unknown` changes the installed fixture binary's listing,
+uses the real qualification writer and binding, and requires the named stop
+before any worker preflight arguments or tool report exist. All roles are saved
+through the production signed writer and launched through Receiver._baseline.
+AC1 is unchanged.
+
+`red-at-d72da222.json` records all 25 rows red by assertion against the unchanged
+baseline archive. Suite 88 passes all 25 rows in ordinary and clean gate
+environments. Suite 87's ordinary run preserves all 176 delivery rows.
+The partial runner intentionally exits nonzero even with no failures; these
+scoped results are not a gate claim. `feature-checks.json` records final checks.
+
+Seven new mutations omit an image, browser, computer, suggestion or skill-search
+override, withdraw granted sleep, or silently accept an unknown enabled feature.
+Their exact named rows and current source diffs are in `mutations.json`.
+Mutation execution and rejection remain reserved for the reviewer. Live proofs
+are retained unchanged; the reviewer recaptures them after this lands on the
+branch because the production digests changed. No footprint expansion is needed.
+
 ## Exact Codex grant delivery repair, 2026-09-29
 
 This repair starts at `13cc4898`. Production now runs the pinned binary with the

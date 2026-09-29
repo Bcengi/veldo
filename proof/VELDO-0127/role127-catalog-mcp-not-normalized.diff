@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -335,7 +335,7 @@
+@@ -387,7 +387,7 @@
      if name == 'web__run':
          return 'web_search'
      if name.startswith('mcp__'):

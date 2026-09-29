@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -297,7 +297,7 @@
+@@ -349,7 +349,7 @@
      agents = bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})
      configuration['features.multi_agent'] = agents
      configuration['features.multi_agent_v2'] = {'enabled': agents}

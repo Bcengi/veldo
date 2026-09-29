@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -361,7 +361,7 @@
+@@ -413,7 +413,7 @@
          names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])
      # Runner presence is determined by the accepted model, not by an untrusted tool list.
      if X.MODEL_TOOL_MODES.get(wanted.get('model')) == 'code_mode_only':

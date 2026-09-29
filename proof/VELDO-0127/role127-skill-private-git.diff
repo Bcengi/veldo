@@ -1,6 +1,6 @@
 --- .veldo/control_agent_config_handoff.py
 +++ .veldo/control_agent_config_handoff.py
-@@ -491,7 +491,7 @@
+@@ -543,7 +543,7 @@
              link = root / skill['name']
              if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
                  continue

@@ -1,0 +1,12 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -329,7 +329,8 @@
+         if feature in mapped:
+             configuration['features.' + feature] = bool(mapped[feature].intersection(grants))
+         elif feature in ungranted:
+-            configuration['features.' + feature] = False
++            if feature != 'image_generation':
++                configuration['features.' + feature] = False
+         elif feature not in non_tools:
+             raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
+     return configuration

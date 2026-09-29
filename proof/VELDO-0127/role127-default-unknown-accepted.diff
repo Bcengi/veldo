@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -331,7 +331,7 @@
+         elif feature in ungranted:
+             configuration['features.' + feature] = False
+         elif feature not in non_tools:
+-            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
++            pass
+     return configuration
+ 
+ 

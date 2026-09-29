@@ -104,7 +104,7 @@ def _v127_feature_defaults():
                 enabled = set(features)
                 controlled = set(added) | {'shell_tool', 'view_image', 'multi_agent', 'goals'}
                 exact = all(flags.get(n) is (n in enabled) for n in controlled)
-                delivered = set(X.NATIVE_TOOL_MAPPING[grant]) <= set(tools or [])
+                delivered = set(X.NATIVE_TOOL_MAPPING.get(grant, [grant])) <= set(tools or [])
                 check('mapped/' + grant, error is None and exact and delivered,
                       str((error, exact, delivered)))
             # The real qualification writer reads an installed binary's feature

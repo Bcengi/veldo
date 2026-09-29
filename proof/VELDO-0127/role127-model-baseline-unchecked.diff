@@ -1,6 +1,6 @@
 --- .veldo/control_engine_codex.py
 +++ .veldo/control_engine_codex.py
-@@ -711,7 +711,7 @@
+@@ -729,7 +729,7 @@
      record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
      if not isinstance(record.get('session_environment'), list):
          raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
