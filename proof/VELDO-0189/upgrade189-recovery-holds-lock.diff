@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -832 +832 @@
+-        released = lock is not None and lock != -1 and engine['restart_due']
++        released = False

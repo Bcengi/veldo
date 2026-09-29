@@ -5531,7 +5531,7 @@ def cases():
             "    if held and held[0] != 'store':  # defect: an existing store is set up over\n", 'refuse/existing-store')
     factory('state-root-mode-unchecked', "    if stat.S_IMODE(info.st_mode) != 0o700:\n",
             "    if False:  # defect: a state root open to others is accepted\n", 'refuse/writes-nothing')
-    factory('host-trust-overwritten', "    if os.path.lexists(host_trust):\n",
+    factory('host-trust-overwritten', "    if not rerun and os.path.lexists(host_trust):\n",
             "    if False:  # defect: an existing host trust is not refused before writing\n", 'refuse/writes-nothing')
     factory('host-directory-open', "            os.chmod(os.path.join(root, name), 0o700)\n",
             "            os.chmod(os.path.join(root, name), 0o755 if name == HOST_DIR else 0o700)  # defect: open to others\n",
@@ -5552,8 +5552,8 @@ def cases():
     factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
             "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
             'chat/enrolled')
-    factory('setup-starts-service', "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n",
-            "                                   writable=plan['writable'], runner=runner, channel_ingress=ingress)\n"
+    factory('setup-starts-service', "                                   api_service=api_service)\n",
+            "                                   api_service=api_service)\n"
             "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
             'service/starts-inert')
     # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
@@ -5574,7 +5574,11 @@ def cases():
     factory('requester-projection-stale',
             "            K.publish(S, conn, projection)\n            os.chmod(projection, 0o600)\n        with step('host_trust'):\n",
             "            os.chmod(projection, 0o600)  # defect: the projection is not republished\n        with step('host_trust'):\n",
-            'journey/qualified-and-active')
+            'journey/qualified-and-active',
+            # VELDO-0171's api edge enrollment republishes the projection after this step too, so the defect
+            # is the projection never republished after the requester's enrollment.
+            also=[("    observed = E.Enrollment(S, conn, ids, journal[0], journal[1], projection=projection).admit(\n",
+                   "    observed = E.Enrollment(S, conn, ids, journal[0], journal[1], projection=None).admit(\n")])
     factory('qualification-request-not-opened',
             "        if self.requester is None:\n            return self._opened(run, None, 'skipped', 'no_requester')\n",
             "        if True:  # defect: the service never opens the qualification request\n"
@@ -5592,8 +5596,8 @@ def cases():
             'qualification/one-request-across-restart', module='control_service_channel.py')
     # Review 1, filed and fixed with it.
     factory('rerun-blocked-by-kept-directory',
-            "    if E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace)):\n",
-            "    if E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace))):"
+            "    if not rerun and (E.read_binding(workspace) is not None or os.path.lexists(E.binding_path(workspace))):\n",
+            "    if not rerun and (E.read_binding(workspace) is not None or os.path.lexists(os.path.dirname(E.binding_path(workspace)))):"
             "  # defect: a directory the rollback keeps blocks a second setup\n", 'rollback/rerun')
     factory('store-world-readable',
             "os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600))\n            os.chmod(plan['store'], 0o600)\n",
@@ -8981,6 +8985,215 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+    # VELDO-0171: setup lays the API down behind Tailscale Serve and a re-run changes nothing. Each criterion's
+    # declared falsifier first, then the threat model's other shapes.
+    def setup_api(name, module, old, new, row, also=()):
+        add(171, name, '85_veldo_0171_setup_api.py', module, old, new, [row], also)
+
+    # AC1 (declared falsifier): the api edge's enrollment is left out of setup, its key kept.
+    setup_api('api171-edge-not-enrolled', 'control_factory_setup.py',
+              "            enroll_api_edge(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)\n",
+              "            (lambda *a: None)(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id,"
+              " projection)  # defect: the api edge is not enrolled\n", 'api-edge/installed-api-call')
+    # AC2 (declared falsifier): setup runs `tailscale funnel` in place of `tailscale serve`.
+    setup_api('api171-funnel-in-place-of-serve', 'control_factory_setup_api.py',
+              "    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % HTTPS_PORT, target(port)])\n",
+              "    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % HTTPS_PORT, target(port)])"
+              "  # defect: Funnel publishes the API\n", 'tailscale/serve-bg')
+    # AC3 (declared falsifier): the API's origin is written as the loopback address, not the tailnet name.
+    setup_api('api171-origin-loopback', 'control_factory_setup_api.py',
+              "            'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],\n",
+              "            'api': {'origin': target(port), 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],"
+              "  # defect: the loopback address as the origin\n", 'passkey/first-enrollment',
+              also=[("            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],\n",
+                     "            'origin': target(PORT), 'workflows_repository': ids['repository_uuid'],"
+                     "  # defect: the loopback address as the origin\n")])
+    # AC4 (declared falsifier): a new api edge key is generated on every run.
+    setup_api('api171-new-key-every-run', 'control_factory_setup.py',
+              "        if edge == 'absent':\n            API.generate_keys(api['key'], api['connection_key'])\n",
+              "        for stale in (api['key'], api['key'] + '.pub', api['connection_key'], api['connection_key'] + '.pub'):"
+              "  # defect: a new api edge key on every run\n"
+              "            if os.path.lexists(stale):\n                os.unlink(stale)\n"
+              "        if True:\n            API.generate_keys(api['key'], api['connection_key'])\n", 'rerun/changes-nothing')
+    # AC1: setup writes the store while the running service holds its lock.
+    setup_api('api171-store-written-while-running', 'control_factory_setup.py', "    running = lock is None\n",
+              "    running = False  # defect: the running service's lock is ignored\n", 'api-edge/running-service')
+    setup_api('api171-projection-not-republished', 'control_factory_setup.py',
+              "                API.republish(S, CM, K, plan['store'], projection)\n",
+              "                pass  # defect: the key projection is not republished\n", 'api-edge/running-service')
+    # AC2: the API listens beyond loopback, the operator setting is not checked, the CLI is found on PATH, the
+    # API process is not in the installed executable.
+    setup_api('api171-listens-beyond-loopback', 'control_factory_setup_api.py',
+              "            'listen': {'host': LOOPBACK, 'port': port},\n",
+              "            'listen': {'host': '0.0.0.0', 'port': port},  # defect: every interface\n", 'api/loopback-only')
+    setup_api('api171-operator-unchecked', 'control_factory_setup_api.py',
+              "    if os.getuid() != 0 and not (isinstance(prefs.get('OperatorUser'), str) and prefs['OperatorUser'].strip()):\n",
+              "    if False:  # defect: the operator setting is not checked\n", 'tailscale/refusals')
+    # (A mutant that searches PATH would run the host's real CLI wherever a row names no location, so the
+    # falsifier is a location list that is not the fixed system paths; every row names its CLI explicitly.)
+    setup_api('api171-cli-location-not-fixed', 'control_factory_setup_api.py',
+              "TAILSCALE_PATHS = ('/usr/bin/tailscale', ",
+              "TAILSCALE_PATHS = ('tailscale', '/usr/bin/tailscale', ", 'tailscale/fixed-paths')
+    setup_api('api171-entry-point-dropped', 'control_service.py',
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')\n",
+              "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_runtime.py')"
+              "  # defect: the API process is not installed\n", 'api/unit')
+    setup_api('api171-started-when-added', 'control_factory_setup.py', "        if running and not added:\n",
+              "        if running:  # defect: the service is not restarted, but the API is started anyway\n", 'api/start-rules')
+    # AC3: the host command signs whichever registration comes first; the policy is left out.
+    setup_api('api171-fingerprint-ignored', 'control_factory_setup_api.py',
+              "             if CR.describe(record).get('fingerprint') == fingerprint]\n",
+              "             if live]  # defect: the fingerprint the owner named is not compared\n", 'passkey/first-enrollment')
+    setup_api('api171-policy-omitted', 'control_api.py',
+              "            self.send_header('Content-Security-Policy', CSP)\n",
+              "            pass  # defect: no content security policy\n", 'api/content-security-policy')
+    setup_api('api171-policy-unsafe-inline', 'control_api.py', "CSP = (\"default-src 'self'; script-src 'self'; ",
+              "CSP = (\"default-src 'self'; script-src 'self' 'unsafe-inline'; ", 'api/content-security-policy')
+    # AC4: an argument is not compared; an existing differing file is taken as equal; the module is not scaffolded.
+    setup_api('api171-chat-not-compared', 'control_factory_setup.py',
+              "    if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:\n",
+              "    if False:  # defect: the chat is not compared\n", 'rerun/arguments-compared')
+    setup_api('api171-differing-file-accepted', 'control_factory_setup_api.py',
+              "            or Path(path).read_text() != data):\n",
+              "            or False):  # defect: a file that would differ is taken as equal\n", 'rerun/differs-refused')
+    setup_api('api171-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_api.py",\n', '',
+              'install/assets')
+    # VELDO-0189: a re-run of setup upgrades an earlier installation's engine in place. Each criterion's declared
+    # falsifier first, then the threat model's other shapes. The suite runs setup many times (about a minute).
+    def upgrade(name, module, old, new, row, also=()):
+        add(189, name, '86_veldo_0189_engine_upgrade.py', module, old, new, [row], also)
+        result[-1]['timeout'] = 900
+
+    # AC1 (declared falsifier): only the files whose names the installed record already lists are written.
+    upgrade('upgrade189-only-recorded-names', 'control_factory_setup_upgrade.py',
+            "    for name, data in sorted(plan['fixed'].items()):\n",
+            "    for name, data in sorted((n, d) for n, d in plan['fixed'].items() if n in plan['recorded']):"
+            "  # defect: only the names the record lists\n", 'upgrade/from-8bc34e94',
+            also=[("    if installed_files(directory) != plan['current']:\n",
+                   "    if installed_files(directory) != {n: d for n, d in plan['current'].items() if n in plan['recorded']}:\n")])
+    # AC2 (declared falsifier): the new files are written over the installed ones in place, one by one.
+    upgrade('upgrade189-in-place-writes', 'control_factory_setup_upgrade.py',
+            "        stage(plan, modes, bin_mode)\n        point(log, {'point': 'staged', 'files': len(plan['fixed'])})\n",
+            "        os.chmod(plan['bin'], 0o700)  # defect: the new files are written over the installed ones in place\n"
+            "        for name, data in sorted(plan['fixed'].items()):\n"
+            "            path = os.path.join(plan['bin'], name)\n"
+            "            os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)\n"
+            "            with contextlib.suppress(FileNotFoundError):\n"
+            "                os.chmod(path, 0o600)\n"
+            "            with open(path, 'wb') as handle:\n"
+            "                handle.write(data)\n"
+            "            os.chmod(path, modes(name))\n"
+            "            point(log, {'point': 'wrote', 'file': name})\n"
+            "        for name in plan['removed']:\n"
+            "            os.unlink(os.path.join(plan['bin'], name))\n"
+            "        os.chmod(plan['bin'], bin_mode)\n", 'switch/kill-points',
+            also=[("            exchange(plan['stage'], plan['bin'])\n            switched = True\n",
+                   "            switched = False\n")])
+    # AC3 (declared falsifier): each configuration file is written as a fresh installation would.
+    upgrade('upgrade189-configs-written-fresh', 'control_factory_setup_upgrade.py',
+            "            writes.append(('configuration', path, _text(dict(held, **{k: v for k, v in fresh.items() if k not in held})),\n",
+            "            writes.append(('configuration', path, _text(fresh),  # defect: written as a fresh installation would\n",
+            'kept/owner-data')
+    # AC4 (declared falsifier): the authority unit restarts on every run.
+    upgrade('upgrade189-restart-every-run', 'control_factory_setup_upgrade.py',
+            "    if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:\n",
+            "    if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:\n"
+            "        if active:\n"
+            "            runner.run(['restart', unit])  # defect: the authority unit restarts on every run\n",
+            'second-run/changes-nothing')
+    # The threat model: an engine file edited by hand overwritten without notice; a file the current engine no
+    # longer ships left installed; an engine half old and half new after a failure; no exchange probe.
+    upgrade('upgrade189-edited-file-overwritten', 'control_factory_setup_upgrade.py',
+            "    else:\n        for name in sorted(set(found) | set(recorded)):\n",
+            "    else:\n        installed = 'recorded'  # defect: an engine file edited by hand is overwritten without notice\n"
+            "        for name in []:\n", 'upgrade/refused-by-name')
+    upgrade('upgrade189-removed-file-kept', 'control_factory_setup_upgrade.py',
+            "    for parent, _dirs, _files in os.walk(directory, topdown=False):\n"
+            "        os.chmod(parent, bin_mode)\n    if installed_files(directory) != plan['current']:\n",
+            "    for name in plan['removed']:  # defect: a file the current engine no longer ships stays installed\n"
+            "        __import__('shutil').copy2(os.path.join(plan['bin'], name), os.path.join(directory, name))\n"
+            "    for parent, _dirs, _files in os.walk(directory, topdown=False):\n"
+            "        os.chmod(parent, bin_mode)\n"
+            "    if {n: d for n, d in installed_files(directory).items() if n not in plan['removed']} != plan['current']:\n",
+            'upgrade/removed-module')
+    upgrade('upgrade189-no-switch-back', 'control_factory_setup_upgrade.py',
+            "        if switched:\n            switch_back(plan, replaced, runner, reason, restart_again=restart == 'failed', answers=answers)\n",
+            "        if False:  # defect: a failure after the exchange leaves the current engine installed\n"
+            "            switch_back(plan, replaced, runner, reason, restart_again=restart == 'failed', answers=answers)\n",
+            'switch/failed-restart')
+    upgrade('upgrade189-no-exchange-probe', 'control_factory_setup_upgrade.py',
+            "        probe(plan['home'])\n",
+            "        pass  # defect: the filesystem is not probed before the first write\n", 'upgrade/refused-by-name')
+    upgrade('upgrade189-module-not-scaffolded', 'init_scaffold.py', '    ".veldo/control_factory_setup_upgrade.py",\n', '',
+            'install/assets')
+    # An upgraded owning module (control_channel_activation.py changed at 7fefdb9a) is refused ownership_conflict
+    # unless the upgraded service carries the store's declarations to its installed bytes; a digest the file's
+    # bytes do not have is never taken.
+    upgrade('upgrade189-ownership-not-carried', 'control_service.py',
+            "            S.rebind_owners(conn, installed_engine(config), keep_previous=keep,\n",
+            "            (lambda *args, **kwargs: [])(conn, installed_engine(config), keep_previous=keep,"
+            "  # defect: the declarations keep the previous engine's digests\n", 'switch/kill-points')
+    upgrade('upgrade189-rebind-any-digest', 'control_store.py',
+            "                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]\n",
+            "                if r[4] in installed and r[5] != installed[r[4]]]  # defect: any digest is taken\n",
+            'switch/kill-points')
+    # The review of 2026-09-28: a restart that came up on the current engine (which rebound the declarations to its
+    # bytes) and then failed switches back with the previous engine's owned commands refused, unless the rebinding
+    # recorded the previous bindings and the switch back restores them, the store checking each file's bytes; and a
+    # committed upgrade keeps no record.
+    upgrade('upgrade189-no-ownership-restore', 'control_factory_setup_upgrade.py',
+            "    outcome = restore_ownership(plan)\n",
+            "    outcome = 'restored'"
+            "  # defect: the switch back skips the restore\n", 'switch/failed-after-start')
+    upgrade('upgrade189-rebind-not-recorded', 'control_store.py',
+            "        if keep_previous and rebound:\n            _record_previous(conn, rebound)\n",
+            "        if False:  # defect: the rebinding does not record the previous bindings\n"
+            "            _record_previous(conn, rebound)\n", 'switch/failed-after-start')
+    upgrade('upgrade189-restore-any-bytes', 'control_store.py',
+            "            if module_digest(module) != previous:\n",
+            "            if False:  # defect: the restore does not check the file has the previous bytes\n",
+            'ownership/restore-differs')
+    upgrade('upgrade189-commit-not-sent', 'control_factory_setup_upgrade.py',
+            "        if active and commit is not None:\n",
+            "        if False:  # defect: the committed upgrade leaves the previous bindings recorded\n",
+            'ownership/committed')
+
+    # Follow-up review: recovery spans begins, rollback kill points and named all-or-nothing refusals.
+    upgrade('upgrade189-last-begin-only', 'control_factory_setup_upgrade.py',
+            "    for entry in entries:\n",
+            "    entries = entries[max((i for i, e in enumerate(entries) if e.get('point') == 'begin'), default=0):]\n"
+            "    for entry in entries:\n", 'switch/resumed-failure')
+    upgrade('upgrade189-resumed-not-switched', 'control_factory_setup_upgrade.py',
+            "    switched = (pending['switched'] or plan['state'] == 'resume') and os.path.isdir(plan['stage'])\n",
+            "    switched = plan['state'] == 'resume' and os.path.isdir(plan['stage'])\n", 'switch/resumed-failure')
+    upgrade('upgrade189-resumed-units-forgotten', 'control_factory_setup_upgrade.py',
+            "    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups']]\n",
+            "    replaced = [(p, body.encode(), mode) for p, body, mode in pending['backups'] if not p.endswith('.service')]\n",
+            'switch/resumed-failure')
+    upgrade('upgrade189-switch-back-not-due', 'control_factory_setup_upgrade.py',
+            "            held.update(switched=False, due=True, back=True)\n",
+            "            held.update(switched=False, due=False, back=False)\n", 'switch/rollback-kills')
+    upgrade('upgrade189-recovery-holds-lock', 'control_factory_setup.py',
+            "        released = lock is not None and lock != -1 and engine['restart_due']\n",
+            "        released = False\n", 'switch/rollback-kills')
+    upgrade('upgrade189-stop-exit-ignored', 'control_factory_setup_upgrade.py',
+            "    if code:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n",
+            "    if False:\n        raise Refused('unavailable_service:authority:upgrade_stop',\n", 'switch/stop-refused')
+    upgrade('upgrade189-restore-refusal-unreported', 'control_factory_setup_upgrade.py',
+            "    if outcome != 'restored':\n",
+            "    if False:\n", 'ownership/restore-reported')
+    upgrade('upgrade189-restore-only-first-blocker', 'control_store.py',
+            'raise StoreRefused("ownership_restore_differs", "; ".join(blocked))',
+            'raise StoreRefused("ownership_restore_differs", blocked[0])', 'ownership/restore-reported')
+    upgrade('upgrade189-serve-keeps-previous-bindings', 'control_service.py',
+            "            if previous is not None and not keep:\n",
+            "            if False:\n", 'ownership/start-drops')
+    upgrade('upgrade189-commit-with-previous-engine', 'control_service.py',
+            "        if os.path.lexists(previous):\n",
+            "        if False:\n", 'ownership/commit-refused')
+    upgrade('upgrade189-restore-without-stop', 'control_factory_setup_upgrade.py',
+            "    code, _out, err = runner.run(['stop', plan['unit']])\n",
+            "    code, _out, err = 0, '', ''\n", 'switch/stop-before-restore')
 
     # VELDO-0158: each Linux run's credentials, delivered from the keystore and added to the run's set. Each
     # criterion's declared falsifier first, then the threat model's other routes.
@@ -9142,9 +9355,77 @@ def cases():
               "            if not any(isinstance(data.get('subject'), dict)\n",
               "            if False and not any(isinstance(data.get('subject'), dict)\n",
               ['grant/revoked-before-answer'])
+    # VELDO-0189 owner-approved fresh equivalence amendment.
+    # Both older-host rows call equals_fresh: asset bytes/modes, runtime record and pin.
+    # They also install an earlier runtime inventory through setup and then upgrade it:
+    # the historical records lack runtime_assets, so missing-key backfill masks stale assignment there.
+    # Name those behavior rows directly, retaining both hosts for every equivalence defect.
+    add(189, 'upgrade189-runtime-unrecorded', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "    recorded = dict(recorded, **record.get('runtime_assets', {}))",
+        '    recorded = dict(recorded)', ['upgrade/fresh-0186'], [])
+    add(189, 'upgrade189-runtime-not-staged', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "    fixed = dict(laid['fixed'], **laid['assets'])",
+        "    fixed = dict(laid['fixed'])", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+    add(189, 'upgrade189-runtime-record-stale', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "                    runtime_assets=laid['config']['runtime_assets'], template=template)",
+        "                    runtime_assets=record.get('runtime_assets', {}), template=template)", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+    add(189, 'upgrade189-runtime-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        '        os.chmod(parent, bin_mode)',
+        '        os.chmod(parent, 0o700)', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+    add(189, 'upgrade189-runtime-not-cleaned', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        '            remove_engine_directory(inner)\n            continue',
+        "            raise Refused('invalid_input:install_root:unrecorded:' + inner)", ['upgrade/removed-module'], [])
+    add(189, 'upgrade189-pin-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)",
+        '            pass', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+    add(189, 'upgrade189-engines-record-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        if recorded is None:',
+        '        if False:', ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+    add(189, 'upgrade189-runs-moved', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))",
+        '            fresh = dict(fresh)', ['kept/runs'], [])
+    add(189, 'upgrade189-existing-pin-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        if os.path.lexists(target) and recorded is not None:\n            return report',
+        '        if os.path.lexists(target) and recorded is not None:\n            os.chmod(target, 0o755)\n            return report', ['upgrade/fresh-0186'], [])
+    add(189, 'upgrade189-existing-record-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        if os.path.lexists(target) and recorded is not None:\n            return report',
+        "        if os.path.lexists(target) and recorded is not None:\n            record_path.write_text('{}\\n')\n            return report", ['upgrade/fresh-0186'], [])
+
+    # VELDO-0189 review: record recovery, consistent refusals and honest write reports.
+    add(189, 'upgrade189-record-in-place', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)\n            try:\n                with os.fdopen(fd, 'w') as handle:\n                    handle.write(json.dumps(engines, sort_keys=True) + '\\n')\n                os.replace(partial, record_path)\n            finally:\n                if os.path.exists(partial):\n                    os.unlink(partial)\n",
+        "            fd = os.open(record_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)\n            with os.fdopen(fd, 'w') as handle:\n                handle.write(json.dumps(engines, sort_keys=True) + '\\n')\n", ['engines/atomic-record'], [])
+    add(189, 'upgrade189-unreadable-record-kept', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        except (OSError, ValueError):\n            recorded = None',
+        '        except (OSError, ValueError):\n            recorded = engines if os.path.lexists(record_path) else None', ['engines/repair-record'], [])
+    add(189, 'upgrade189-different-record-accepted', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '            if recorded != engines:',
+        '            if False:', ['engines/refuse-record'], [])
+    add(189, 'upgrade189-codex-refusal-differs', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code\n        raise Refused(code) from None",
+        '        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None', ['engines/codex-refusal'], [])
+    add(189, 'upgrade189-repair-reported-done', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        wrote = report.get('pins_made', 0) or report.get('engines_record')",
+        '        wrote = False', ['engines/repair-report'], [])
+    add(189, 'upgrade189-repair-count-hidden', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['pins_made'] = 1",
+        "            report['pins_made'] = 0", ['engines/repair-report'], [])
+    add(189, 'upgrade189-repair-record-hidden', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['engines_record'] = str(record_path)",
+        "            report['engines_record'] = None", ['engines/repair-report'], [])
+    add(189, 'upgrade189-runtime-type-unchecked', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "            or not isinstance(record.get('runtime_assets', {}), dict)):",
+        '            or False):', ['upgrade/corrupt-runtime-record'], [])
+    add(189, 'upgrade189-receiver-store-unchecked', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        if held is not None and path in laid['receivers'] and not isinstance(held.get('store'), str):",
+        '        if False:', ['upgrade/receiver-without-store'], [])
+    add(189, 'upgrade189-pin-wrong-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['pins_made'] = 1",
+        "            os.chmod(target, 0o444)\n            report['pins_made'] = 1", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
+
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     # targets() matches the final word of each reported row, without the spec prefix.
-    add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
+    add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', "        for name, data in laid['assets'].items():", '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
     add(186, 'setup186-missing-runtime-ignored', '86_veldo_0186_setup_assets.py', 'control_service.py', "            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None", '            continue', ['runtime/missing'], [])
     add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + version)", "            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
@@ -9152,10 +9433,10 @@ def cases():
     add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
     add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
 
-    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root}), 0o600)", "                                'adapters': adapters, 'state_root': None}), 0o600)", ['bind/engines'], [])
+    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root})", "                                'adapters': adapters, 'state_root': None})", ['bind/engines'], [])
 
     add(186, 'setup186-skip-setup-asset-check', '86_veldo_0186_setup_assets.py', 'control_factory_setup.py', '        CS.runtime_assets(CS.closure())', '        pass', ['runtime/setup-missing'], [])
-    add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '                os.chmod(directory, 0o500)', '                os.chmod(directory, 0o700)', ['runtime/modes'], [])
+    add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '            os.chmod(directory, BIN_MODE)', '            os.chmod(directory, 0o700)', ['runtime/modes'], [])
     add(186, 'setup186-filename-as-version', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "    if not claude.VERSION_TEXT.fullmatch(version):\n        raise Refused('missing_evidence:engine_version:claude_code')\n", '', ['engines/version'], [])
     add(186, 'setup186-constant-pin-count', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', '    return sum(path.is_file() and not path.is_symlink() and directory in path.parents for path in paths)', '    return 1', ['metrics/pins'], [])
     add(186, 'setup186-unmeasured-bind-refusal', '86_veldo_0186_setup_assets.py', 'control_launch.py', "                       'metrics': {'binds_refused': 1}})", "                       'metrics': {'binds_refused': 0}})", ['metrics/binds'], [])

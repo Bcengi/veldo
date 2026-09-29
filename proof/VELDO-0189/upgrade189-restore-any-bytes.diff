@@ -1,0 +1,5 @@
+--- .veldo/control_store.py
++++ .veldo/control_store.py
+@@ -920 +920 @@
+-            if module_digest(module) != previous:
++            if False:  # defect: the restore does not check the file has the previous bytes

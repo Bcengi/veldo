@@ -1,0 +1,51 @@
+{
+ "acceptance_criteria_unchanged": true,
+ "bad_anchors": 0,
+ "clean_environment": {
+  "behavior_rows": 22,
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo189-gate-build0171",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "exit_code": 2,
+  "failed": 0,
+  "passed": 48,
+  "seconds": 305.88
+ },
+ "engine_copies_identical": true,
+ "footprint": "No follow-up changes outside VELDO-0189. The origin/main comparison is clean for VELDO-0189 plus stacked VELDO-0171; VELDO-0189 alone lists inherited VELDO-0171 files.",
+ "gate_run": false,
+ "mutation_count": 26,
+ "mutation_execution": "reserved to reviewer",
+ "ordinary": {
+  "behavior_rows": 22,
+  "exit_code": 2,
+  "failed": 0,
+  "passed": 48,
+  "seconds": 158.44
+ },
+ "partial_run_note": "The selected suite exits 2 even with zero failures; it does not verify the aggregate or write a gate stamp.",
+ "red_by_assertion": true,
+ "red_defect_rows": 4,
+ "red_record": "proof/VELDO-0189/red-at-ed93984c.json",
+ "source_commit": "9d2bb928e6abe324ddcd7a0cf2bb6fd646809436",
+ "source_sha256": {
+  "control_factory_setup.py": "fe64f27f643f3bd9874fbe3f24f0b81d8831f3f880967a07ed482cbafb2a3733",
+  "control_factory_setup_upgrade.py": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+  "control_service.py": "b8e2e76301050c7aa9a3b7691b7904d9fa3d4e17f27401e9d550e00eacf4e502",
+  "control_store.py": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+ },
+ "spec_id": "VELDO-0189",
+ "suite": "86_veldo_0189_engine_upgrade",
+ "validate_all_exit": 0
+}

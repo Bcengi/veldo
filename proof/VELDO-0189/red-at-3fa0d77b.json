@@ -1,0 +1,182 @@
+{
+ "by_assertion": true,
+ "commit": "3fa0d77bc9c2e0b44024ec620e951d9ba91a331e",
+ "details": [
+  "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: the installed engine directory equals the fresh one in names, bytes and modes [missing ['runtime', 'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/langgraph-records.json'], extra [], differing []]",
+  "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: qualified Claude pin equals fresh bytes and mode",
+  "VELDO-0189 upgrade/from-8bc34e94 detail: 8bc34e94: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['state_root']\", 'host/engines.json']]",
+  "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the installed engine directory equals the fresh one in names, bytes and modes [missing ['runtime', 'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/langgraph-records.json'], extra [], differing []]",
+  "VELDO-0189 upgrade/from-971186ac detail: 971186ac: qualified Claude pin equals fresh bytes and mode",
+  "VELDO-0189 upgrade/from-971186ac detail: 971186ac: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['state_root']\", 'host/engines.json']]",
+  "VELDO-0189 upgrade/removed-module detail: the re-run from the fixture engine is accepted and upgrades [refused invalid_input:install_root:unrecorded:/dev/shm/b189-4ya539ga/install-fresh/11a822f0752d53f5/bin/runtime]",
+  "VELDO-0189 upgrade/removed-module detail: the removed module is gone from the installed engine and from the record, and the upgrade names it removed [None]",
+  "VELDO-0189 upgrade/removed-module detail: the installed engine is exactly the fixture engine's files",
+  "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the installed engine directory equals the fresh one in names, bytes and modes [missing ['runtime', 'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/langgraph-records.json'], extra [], differing []]",
+  "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: qualified Claude pin equals fresh bytes and mode",
+  "VELDO-0189 switch/kill-points detail: killed at 1 (begin), then run again: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['state_root']\", 'host/engines.json']]",
+  "VELDO-0189 switch/kill-points detail: the kill rows stopped at the first point that failed, before point 2",
+  "VELDO-0189 announce/before-first-write detail: 8bc34e94: the line names what will change and what the service will do [Upgrading the installed factory engine: 20 files change, 27 are new, 0 are removed; the authority service is not running, so its next start runs the current engine.]",
+  "VELDO-0189 announce/before-first-write detail: 8bc34e94: the engine_upgrade step names the previous and current engine digests and the files changed, added and removed [20 27 0]",
+  "VELDO-0189 announce/before-first-write detail: 971186ac: the line names what will change and what the service will do [Upgrading the installed factory engine: 22 files change, 18 are new, 0 are removed; the authority service will restart once.]",
+  "VELDO-0189 announce/before-first-write detail: 971186ac: the engine_upgrade step names the previous and current engine digests and the files changed, added and removed [22 18 0]",
+  "VELDO-0189 restart/rules detail: with the service running outside its unit (the lock held, the unit inactive) setup restarted nothing and names the one command to run [True None]",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 8bc34e94: the installed engine directory equals the fresh one in names, bytes and modes [missing ['runtime', 'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/langgraph-records.json'], extra [], differing []]",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 8bc34e94: qualified Claude pin equals fresh bytes and mode",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 8bc34e94: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['state_root']\", 'host/engines.json']]",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 971186ac: the installed engine directory equals the fresh one in names, bytes and modes [missing ['runtime', 'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/langgraph-records.json'], extra [], differing []]",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 971186ac: qualified Claude pin equals fresh bytes and mode",
+  "VELDO-0189 upgrade/older-0186-equivalence detail: 971186ac: the unit files, the record and every configuration file equal the fresh host's after each host's scratch root and identities are substituted, apart from the listed fields [[\"config/receiver-@RECEIVER@.json: ['state_root']\", 'host/engines.json']]",
+  "VELDO-0189 kept/runs detail: 8bc34e94: state_root names the factory and runs keeps its previous resolution",
+  "VELDO-0189 kept/runs detail: 971186ac: state_root names the factory and runs keeps its previous resolution",
+  "VELDO-0189 upgrade/fresh-0186 detail: post-0186 re-run accepts recorded runtime directory: invalid_input:install_root:unrecorded:/dev/shm/b189-4ya539ga/install-fresh/11a822f0752d53f5/bin/runtime"
+ ],
+ "failed_rows": [
+  "VELDO-0189 upgrade/from-8bc34e94",
+  "VELDO-0189 upgrade/from-971186ac",
+  "VELDO-0189 upgrade/removed-module",
+  "VELDO-0189 switch/kill-points",
+  "VELDO-0189 announce/before-first-write",
+  "VELDO-0189 restart/rules",
+  "VELDO-0189 upgrade/older-0186-equivalence",
+  "VELDO-0189 kept/runs",
+  "VELDO-0189 upgrade/fresh-0186"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "87df8b7a1f6429c37d40006ea0c5b5ad1c4000253b7dd3eb79ec26db610eb9c0",
+   "now": "4c172296517b2fd9d30d4761955afacdbd98aed53810d084758832b0a0b6dc8a"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890",
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_factory_setup_engines.py": {
+   "at_commit": "ff36643357152b6ab06b666571d6d99ef453b1ab63f3d767e02eb4f15235a402",
+   "now": "d8b49a223a511a7d4c56235141a7b09a59b3f5b1d74534814a39420399ce41bb"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "602e372a2fd05fb3fda8ac611b49ac0d39847afccba42adaf24ac57dcae9d6f0",
+   "now": "75038e07e94c2ec1e2bed505e3f583a61ef2a41eb9cad164ad58541f49747549"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728"
+  },
+  ".veldo/control_store.py": {
+   "at_commit": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7",
+   "now": "3261fc7e796c3ba89087975936115ca0c1c9a4f76ff733898938fff8b0ed69d7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829",
+   "now": "c538433acffd65feae10ea1de5e2f153f97ac70499f8cc6f2030849311163829"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0189 install/assets",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/from-8bc34e94",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/from-971186ac",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/removed-module",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/census",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/refused-by-name",
+   true
+  ],
+  [
+   "VELDO-0189 switch/kill-points",
+   false
+  ],
+  [
+   "VELDO-0189 switch/failed-restart",
+   true
+  ],
+  [
+   "VELDO-0189 kept/owner-data",
+   true
+  ],
+  [
+   "VELDO-0189 announce/before-first-write",
+   false
+  ],
+  [
+   "VELDO-0189 restart/rules",
+   false
+  ],
+  [
+   "VELDO-0189 second-run/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0189 switch/failed-after-start",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-differs",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/committed",
+   true
+  ],
+  [
+   "VELDO-0189 switch/resumed-failure",
+   true
+  ],
+  [
+   "VELDO-0189 switch/rollback-kills",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-refused",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/restore-reported",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/start-drops",
+   true
+  ],
+  [
+   "VELDO-0189 ownership/commit-refused",
+   true
+  ],
+  [
+   "VELDO-0189 switch/stop-before-restore",
+   true
+  ],
+  [
+   "VELDO-0189 upgrade/older-0186-equivalence",
+   false
+  ],
+  [
+   "VELDO-0189 kept/runs",
+   false
+  ],
+  [
+   "VELDO-0189 upgrade/fresh-0186",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 238.42,
+ "spec_id": "VELDO-0189",
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "tree": "a local clone checked out at 3fa0d77bc9c2e0b44024ec620e951d9ba91a331e, unchanged; the current suite file run against it"
+}

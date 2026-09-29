@@ -197,6 +197,8 @@ _FILES = [
     # validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_service.py",
     ".veldo/services/veldo-authority.service",
+    # VELDO-0171: the API unit template veldo factory setup renders beside the authority unit.
+    ".veldo/services/veldo-api.service",
     # VELDO-0138: the service's Telegram channel, which runs the VELDO-0073 ingress and applies the
     # owner's activation commands; loaded by control_service.py, so part of its fixed executable.
     ".veldo/control_service_channel.py",
@@ -276,6 +278,12 @@ _FILES = [
     # and checks the pieces above. An owner command, not loaded by the service or any validator, so not
     # REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup.py",
+    # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
+    # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
+    ".veldo/control_factory_setup_api.py",
+    # VELDO-0189: its engine upgrade of an installation an earlier engine laid down. An owner command too,
+    # so not REQUIRED_SUBSTRATE.
+    ".veldo/control_factory_setup_upgrade.py",
     ".veldo/control_factory_setup_engines.py",
     ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset

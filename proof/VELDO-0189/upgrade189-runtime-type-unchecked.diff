@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_upgrade.py
++++ .veldo/control_factory_setup_upgrade.py
+@@ -153 +153 @@
+-            or not isinstance(record.get('runtime_assets', {}), dict)):
++            or False):

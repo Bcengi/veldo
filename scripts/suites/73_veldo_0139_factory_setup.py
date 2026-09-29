@@ -97,6 +97,8 @@ def _v139_suite():
     for source in sorted((ROOT / '.veldo').glob('*.py')):
         shutil.copyfile(source, mods / source.name)
     shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-authority.service', mods / 'services' / 'veldo-authority.service')
+    if (ROOT / '.veldo' / 'services' / 'veldo-api.service').is_file():
+        shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-api.service', mods / 'services' / 'veldo-api.service')
     for name, source in PRODUCTION.items():
         target = mods / name
         if target.exists():
@@ -110,6 +112,10 @@ def _v139_suite():
     compare_formats = load('v139_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
     prior_path186 = os.environ.get('PATH', '')
     H = load('v139_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
+    # VELDO-0171: setup reads Tailscale; this suite's setups read the stand-in replaying the scrubbed capture,
+    # never the host's real CLI.
+    TS = load('v139_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
+    tailscale = TS.stand_in(ROOT / 'proof' / 'VELDO-0171' / 'tailscale-capture.json', sys.executable)
     git = load('v139_git', mods / 'git_process.py')
     CS = load('v139_service', mods / 'control_service.py')
     CC = load('v139_client', mods / 'control_client.py')
@@ -340,6 +346,9 @@ def _v139_suite():
                'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
     manager = Manager(base / 'units')
     unit, home, conn, ing = None, None, None, None
+    ts_overrides = {'tailscale': [tailscale.path], 'api_port': TS.free_port()}
+    if F is None or 'tailscale' not in __import__('inspect').signature(F.setup).parameters:
+        ts_overrides = {}
 
     def setup(tag, state_root, workspace, host_trust, **replace):
         """veldo factory setup through the module's own command surface, into this run's scratch, with the
@@ -351,7 +360,7 @@ def _v139_suite():
         with contextlib.redirect_stdout(out):
             code = F.main(['setup'] + [x for pair in argv.items() for x in pair], host_trust=str(host_trust),
                           install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile,
-                          writable=[], runner=manager, origin=url)
+                          writable=[], runner=manager, origin=url, **ts_overrides)
         try:
             shown = json.loads(out.getvalue().strip().splitlines()[-1])
         except (ValueError, IndexError):
@@ -522,8 +531,9 @@ def _v139_suite():
             got, shown = setup('again', state_root, second, base / 'xdg-again' / 'veldo' / 'host_trust.json')
             after = snapshot(base)
             changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
-            check(ES, 'setup over a state root that holds a store is refused by name [%s]' % shown.get('reason'),
-                  got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_store')
+            check(ES, 'setup over a state root that holds a store laid down for another workspace is refused by name '
+                  '(VELDO-0171\'s re-run takes only the same arguments) [%s]' % shown.get('reason'),
+                  got == 1 and shown.get('reason') == 'invalid_input:state_root:holds_workspace')
             check(ES, 'the existing store is byte-identical and nothing else was written [%s]' % changed[:3],
                   store.read_bytes() == kept and not changed and CEN.read_binding(str(second)) is None)
 
@@ -576,8 +586,9 @@ def _v139_suite():
 
         # AC2: the service starts inert, and setup itself started nothing.
         with section(SI):
-            check(SI, 'setup started nothing: the user manager was asked only to reload [%s]' % manager.calls,
-                  manager.calls == ['daemon-reload'] and not manager.procs)
+            check(SI, 'setup started nothing: the user manager was asked only to reload (after the authority unit and, '
+                  'VELDO-0171, the API unit) [%s]' % manager.calls,
+                  manager.calls and set(manager.calls) == {'daemon-reload'} and not manager.procs)
         began = CS.start(unit, manager)
         verify = trust.verifier(owner, str(workspace))
 
@@ -791,7 +802,7 @@ def _v139_suite():
                 F.setup(str(broken), owner, str(owner_key), str(clone('w-store-fault')), owner_user['id'], str(token_file),
                         host_trust=str(base / 'xdg-store-fault' / 'veldo' / 'host_trust.json'),
                         install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile, writable=[],
-                        runner=manager, origin=url)
+                        runner=manager, origin=url, **ts_overrides)
                 code = 'set_up'
             except F.Refused as exc:
                 # The refusal is held while the process's descriptors are read: a connection the setup
@@ -858,6 +869,7 @@ def _v139_suite():
                 CS.stop(unit, manager)
         manager.close()
         stop_api()
+        tailscale.close()
         for handle in (getattr(ing, 'conn', None), conn):
             with contextlib.suppress(Exception):
                 handle.close()

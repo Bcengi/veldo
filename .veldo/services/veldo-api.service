@@ -1,0 +1,23 @@
+# veldo.api_unit/v1: the Veldo authenticated factory API process (VELDO-0130), laid down by veldo factory
+# setup (VELDO-0171) beside its authority service. This file is a TEMPLATE: setup fills every field named
+# between at signs and writes the result into the owner's systemd user unit directory as
+# veldo-api-<service id>.service, with the link <authority unit>.wants/veldo-api-<service id>.service, so
+# the API starts when the authority service starts. BindsTo and PartOf stop and restart it with the
+# authority service; it never runs without it. It listens on a loopback address only and is reached only
+# through Tailscale Serve on the host's tailnet name. No Restart=, as for the authority service: automatic
+# recovery is Release 2.
+[Unit]
+Description=Veldo authenticated factory API for @AUTHORITY@
+BindsTo=@AUTHORITY@
+PartOf=@AUTHORITY@
+After=@AUTHORITY@
+
+[Service]
+Type=simple
+ExecStart=@PYTHON@ -B @EXECUTABLE@ serve @CONFIG@
+Restart=no
+UMask=0077
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=@AUTHORITY@

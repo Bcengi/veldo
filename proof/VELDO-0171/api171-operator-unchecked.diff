@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -178 +178 @@
+-    if os.getuid() != 0 and not (isinstance(prefs.get('OperatorUser'), str) and prefs['OperatorUser'].strip()):
++    if False:  # defect: the operator setting is not checked

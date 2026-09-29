@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_engines.py
++++ .veldo/control_factory_setup_engines.py
+@@ -89 +89 @@
+-            recorded = None
++            recorded = engines if os.path.lexists(record_path) else None

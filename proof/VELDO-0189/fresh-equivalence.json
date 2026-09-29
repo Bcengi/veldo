@@ -1,0 +1,65 @@
+{
+ "schema": "veldo.fresh_equivalence/v1",
+ "note": "The upgraded and fresh hosts are compared on engine names, bytes and modes including runtime subdirectories, the qualified Claude Code pin bytes and mode, host/engines.json, unit files, the installation record and all configuration files. Each scratch root and identity uses the listed substitution. Only the fields listed below may differ, each for its stated reason. Any other difference fails the row.",
+ "substituted": [
+  {
+   "placeholder": "@STATE_ROOT@",
+   "reason": "the host's own scratch state root"
+  },
+  {
+   "placeholder": "@INSTALL_ROOT@",
+   "reason": "the host's own scratch install root"
+  },
+  {
+   "placeholder": "@UNIT_DIR@",
+   "reason": "the host's own scratch unit directory"
+  },
+  {
+   "placeholder": "@HOST_TRUST_DIR@",
+   "reason": "the directory of the host's own scratch host trust"
+  },
+  {
+   "placeholder": "@CLONE@",
+   "reason": "the host's own workspace clone"
+  },
+  {
+   "placeholder": "@DOMAIN@",
+   "reason": "the store and domain identities: each host's domain uuid, made by its own setup"
+  },
+  {
+   "placeholder": "@STORE@",
+   "reason": "the store and domain identities: each host's store uuid, made by its own setup"
+  },
+  {
+   "placeholder": "@REPOSITORY@",
+   "reason": "the store and domain identities: each host's repository uuid, made by its own setup"
+  },
+  {
+   "placeholder": "@SERVICE@",
+   "reason": "the store and domain identities: the service id, derived from the host's domain and store"
+  },
+  {
+   "placeholder": "@RECEIVER@",
+   "reason": "the store and domain identities: the receiver configuration's name, derived from the host's repository uuid"
+  }
+ ],
+ "fields": [
+  {
+   "file": "config/service.json",
+   "field": "enrollments",
+   "reason": "an enrollment digest: the digest of each host's own workspace binding, which the owner signed over that host's own store and domain identities"
+  },
+  {
+   "file": "config/receiver-@RECEIVER@.json",
+   "field": "runs",
+   "reason": "An older receiver keeps its existing runs directory beside its store. A fresh 0186 receiver defaults to state_root/runs; both retain their own data location."
+  }
+ ],
+ "equality_set": [
+  "bin names, bytes and modes including subdirectories",
+  "unit files",
+  "config files",
+  "engines/claude_code/<qualified version> bytes and mode",
+  "host/engines.json"
+ ]
+}

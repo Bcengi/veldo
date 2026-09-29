@@ -47,8 +47,18 @@ SQL on the file, a copy of this module from before the rule, and deleting entity
 owned entities, and code that deliberately compiles a function under the declared file name, or
 patches the owning module's globals in the same process, passes the origin check. The declaration
 names one file and its bytes, so the owning service runs only from that copy as it was when it
-first attached: an upgraded module, or the same module attached from another checkout's copy, is
-refused ownership_conflict at attach, and Release 1 has no re-declaration path (Release 2).
+first attached: an edited module, or the same module attached from another checkout's copy, is
+refused ownership_conflict at attach. The one re-declaration path is rebind_owners, for an engine
+upgrade (VELDO-0189): the installed authority service, before anything attaches, names each file of
+its installed engine with the digest its installation record holds, and every declaration naming one
+of those files by path is rebound to that digest when the file's bytes have it now; the selector,
+value, owner and commands never change. While the previous engine is still installed beside the
+new one, the same transaction records each rebound declaration's previous digest; a switch back runs
+restore_owners from the new engine before the previous one starts, which binds each one again to
+its previous digest when the file at its path has those bytes (ownership_restore_differs by name
+otherwise, the new bindings kept), and the record is dropped when the upgrade commits. An engine
+that predates the path cannot attach its owners to a store a later engine rebound unless that
+restore ran first (its own declaration names the older bytes, refused ownership_conflict).
 Declarations and repository bindings are not part of the journal, so a store rebuilt from its
 journal carries neither (Release 2 recovery).
 A declaration is immutable: the same declaration again is a no-op, a different one for a declared
@@ -125,7 +135,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
             "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
-            "ownership_conflict", "repository_binding_conflict", "foreign_transition")
+            "ownership_conflict", "repository_binding_conflict", "foreign_transition", "ownership_restore_differs")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
 # VELDO-0169: the record kind that hands out work, and the eligibility Gate that decides whether its
@@ -247,6 +257,13 @@ OWNERS_TABLE = "entity_owners"
 _OWNERS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owners (selector TEXT NOT NULL CHECK (selector IN ('kind', 'prefix')), "
                "value TEXT NOT NULL, owner TEXT NOT NULL, commands TEXT NOT NULL, module TEXT NOT NULL, "
                "module_digest TEXT NOT NULL, PRIMARY KEY (selector, value))")
+
+
+# The previous bindings an engine upgrade's rebinding replaced (VELDO-0189), created by the first rebinding
+# that keeps them and cleared by a restore or once the upgrade commits.
+PREVIOUS_TABLE = "entity_owner_previous"
+_PREVIOUS_DDL = ("CREATE TABLE IF NOT EXISTS entity_owner_previous (selector TEXT NOT NULL, value TEXT NOT NULL, "
+                 "module TEXT NOT NULL, previous_digest TEXT NOT NULL, digest TEXT NOT NULL, PRIMARY KEY (selector, value))")
 
 
 # Accepted repositories (see the module docstring), created by the first binding like entity_owners.
@@ -822,6 +839,123 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
             conn.execute("ROLLBACK")
         raise
     return rows
+
+
+def rebind_owners(conn, installed, keep_previous=False, observe=None):
+    """Rebind, for an engine upgrade (VELDO-0189), every declaration whose module is a key of
+    `installed` ({resolved module path: sha256 digest}, the installed engine as its installation
+    record names it) and whose digest differs, to that digest, when the file's bytes have it now. A
+    file whose bytes are not the recorded ones (edited, or mid-upgrade) keeps its declaration, so its
+    service is refused ownership_conflict at attach as before. With `keep_previous` (the previous
+    engine is still installed beside the new one), the same transaction replaces the store's record of
+    previous bindings with each rebound declaration's module and the digest it held, which
+    restore_owners puts back on a switch back. `observe(rebound)` is called inside the transaction,
+    before its commit, so a rebinding that lands always has its observation. Returns the rebound
+    declarations as (selector, value, module, previous digest, digest); a store with nothing to rebind
+    is not written."""
+    if not isinstance(installed, dict) or not all(_is_str(k) and _is_str(v) for k, v in installed.items()):
+        raise StoreRefused("malformed_command", "an ownership rebinding names each installed module file and its digest")
+    installed = {os.path.realpath(k): v for k, v in installed.items()}
+
+    def due():
+        return [(r[0], r[1], r[4], r[5], installed[r[4]]) for r in entity_owners(conn)
+                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]
+    if not due():
+        return []
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot rebind ownership (%s)" % e)
+    try:
+        rebound = due()
+        for selector, value, module, previous, digest in rebound:
+            conn.execute("UPDATE entity_owners SET module_digest=? WHERE selector=? AND value=? AND module=? AND module_digest=?",
+                         (digest, selector, value, module, previous))
+        if keep_previous and rebound:
+            _record_previous(conn, rebound)
+        if observe is not None and rebound:
+            observe(rebound)
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return rebound
+
+
+def _record_previous(conn, rebound):
+    """The record of previous bindings, replaced by the ones this rebinding replaced."""
+    conn.execute(_PREVIOUS_DDL)
+    conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
+    for selector, value, module, previous, digest in rebound:
+        conn.execute("INSERT INTO %s (selector, value, module, previous_digest, digest) VALUES (?,?,?,?,?)"
+                     % PREVIOUS_TABLE, (selector, value, module, previous, digest))
+
+
+def previous_owners(conn):
+    """The recorded previous bindings as (selector, value, module, previous digest, digest), or []."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (PREVIOUS_TABLE,)).fetchone():
+        return []
+    return [tuple(r) for r in conn.execute("SELECT selector, value, module, previous_digest, digest FROM %s "
+                                           "ORDER BY selector, value" % PREVIOUS_TABLE)]
+
+
+def restore_owners(conn, observe=None):
+    """Put back, on a switch back to the previous engine (VELDO-0189), every recorded previous binding:
+    each declaration the last rebinding moved is bound again to the digest it held, only when the file
+    at its path has those bytes now, and the record is cleared, all in one transaction. A file whose
+    bytes are not the previous ones is refused ownership_restore_differs by name, and the new bindings
+    and the record stay. `observe(restored)` is called before the commit. Returns the restored bindings;
+    a store with no record is not written."""
+    if not previous_owners(conn):
+        return []
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot restore ownership (%s)" % e)
+    try:
+        restored = previous_owners(conn)
+        blocked = []
+        for selector, value, module, previous, digest in restored:
+            if module_digest(module) != previous:
+                blocked.append("%s does not have the previous bytes %s (%s %r)"
+                               % (module, previous, selector, value))
+        if blocked:
+            raise StoreRefused("ownership_restore_differs", "; ".join(blocked))
+        for selector, value, module, previous, digest in restored:
+            conn.execute("UPDATE entity_owners SET module_digest=? WHERE selector=? AND value=? AND module=? AND module_digest=?",
+                         (previous, selector, value, module, digest))
+        conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
+        if observe is not None:
+            observe(restored)
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return restored
+
+
+def drop_previous_owners(conn, observe=None):
+    """Drop the recorded previous bindings once no previous engine remains to switch back to (the
+    upgrade committed); `observe(dropped)` before the commit. A store with no record is not written."""
+    if not previous_owners(conn):
+        return []
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        raise StoreRefused("read_only_handle", "this handle cannot drop the previous bindings (%s)" % e)
+    try:
+        dropped = previous_owners(conn)
+        conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
+        if observe is not None:
+            observe(dropped)
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return dropped
 
 
 def bound_repository(conn, domain_uuid, repository_uuid):

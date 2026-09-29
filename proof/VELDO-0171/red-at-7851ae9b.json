@@ -1,0 +1,146 @@
+{
+ "by_assertion": true,
+ "commit": "7851ae9bef69c2d9d8e54a0b95a823110113b1ef",
+ "details": [
+  "VELDO-0171 install/assets detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 tailscale/capture detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 tailscale/fixed-paths detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 tailscale/refusals detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 tailscale/serve-bg detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api-edge/enrolled-by-owner detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api/service-configuration detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api/unit detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 rerun/changes-nothing detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 rerun/arguments-compared detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 rerun/differs-refused detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api-edge/installed-api-call detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api/loopback-only detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 passkey/first-enrollment detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api/content-security-policy detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api-edge/running-service detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 rerun/over-0139-host detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)",
+  "VELDO-0171 api/start-rules detail: veldo factory setup lays the API down (.veldo/control_factory_setup_api.py, setup takes the Tailscale CLI's system paths, and the capture and its stand-in exist)"
+ ],
+ "failed_rows": [
+  "VELDO-0171 install/assets",
+  "VELDO-0171 tailscale/capture",
+  "VELDO-0171 tailscale/fixed-paths",
+  "VELDO-0171 tailscale/refusals",
+  "VELDO-0171 tailscale/serve-bg",
+  "VELDO-0171 api-edge/enrolled-by-owner",
+  "VELDO-0171 api/service-configuration",
+  "VELDO-0171 api/unit",
+  "VELDO-0171 rerun/changes-nothing",
+  "VELDO-0171 rerun/arguments-compared",
+  "VELDO-0171 rerun/differs-refused",
+  "VELDO-0171 api-edge/installed-api-call",
+  "VELDO-0171 api/loopback-only",
+  "VELDO-0171 passkey/first-enrollment",
+  "VELDO-0171 api/content-security-policy",
+  "VELDO-0171 api-edge/running-service",
+  "VELDO-0171 rerun/over-0139-host",
+  "VELDO-0171 api/start-rules"
+ ],
+ "modules": {
+  ".veldo/control_api.py": {
+   "at_commit": "6713c71b1adbc1adaf0b682c7fd4de6653232ac6177b99e92c5291cd497a2f02",
+   "now": "d85b6fb7d853247a5a1e2b036691ed71d9fa72af3b41fc32143d678afe268200"
+  },
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "acd3cd06643f8b68b6615859296806f4c2163081df78f403722fd804f0075b6a",
+   "now": "77beb004cc2f1c31bc155e4b793c703e0722c3cf413ef63f7a33890691e4a75e"
+  },
+  ".veldo/control_factory_setup_api.py": {
+   "at_commit": null,
+   "now": "5e3495502b6caf3e18c0ce1142d6d64be8dde7a9af2b547f0c749eeb0a862890"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "a4351854eb6d280821634e616fb8d841ac7dcb197f6f65baf423d7382f4a1f9a",
+   "now": "7172af58e53dedbfa27d4c36837a1d612c8bfff37dba6e2aeceba050a41dab89"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "889cd0168b6269ea53b2a51af555b60c97424ecd65a0c24e19d1184cdd97aa2f",
+   "now": "8ec86452cd9799f454db8e46a274c21fb942e03de136cb748fd6cb969d32a833"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0171 install/assets",
+   false
+  ],
+  [
+   "VELDO-0171 tailscale/capture",
+   false
+  ],
+  [
+   "VELDO-0171 tailscale/fixed-paths",
+   false
+  ],
+  [
+   "VELDO-0171 tailscale/refusals",
+   false
+  ],
+  [
+   "VELDO-0171 tailscale/serve-bg",
+   false
+  ],
+  [
+   "VELDO-0171 api-edge/enrolled-by-owner",
+   false
+  ],
+  [
+   "VELDO-0171 api/service-configuration",
+   false
+  ],
+  [
+   "VELDO-0171 api/unit",
+   false
+  ],
+  [
+   "VELDO-0171 rerun/changes-nothing",
+   false
+  ],
+  [
+   "VELDO-0171 rerun/arguments-compared",
+   false
+  ],
+  [
+   "VELDO-0171 rerun/differs-refused",
+   false
+  ],
+  [
+   "VELDO-0171 api-edge/installed-api-call",
+   false
+  ],
+  [
+   "VELDO-0171 api/loopback-only",
+   false
+  ],
+  [
+   "VELDO-0171 passkey/first-enrollment",
+   false
+  ],
+  [
+   "VELDO-0171 api/content-security-policy",
+   false
+  ],
+  [
+   "VELDO-0171 api-edge/running-service",
+   false
+  ],
+  [
+   "VELDO-0171 rerun/over-0139-host",
+   false
+  ],
+  [
+   "VELDO-0171 api/start-rules",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.196,
+ "spec_id": "VELDO-0171",
+ "suite": "scripts/suites/85_veldo_0171_setup_api.py",
+ "tree": "git archive 7851ae9bef69c2d9d8e54a0b95a823110113b1ef, unchanged; the current suite file run against it"
+}

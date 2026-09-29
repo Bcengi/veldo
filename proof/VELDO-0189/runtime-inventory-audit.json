@@ -1,0 +1,91 @@
+{
+  "schema": "veldo.runtime-inventory-audit/v1",
+  "baseline": "16c8ed33",
+  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+  "historical_installers": {
+    "8bc34e94": {
+      "service_contains_runtime_assets": false,
+      "service_sha256": "730f33d939067e289295d9bdf0aa198d4ca2360fa9184b69e3e66b6707d79d9b"
+    },
+    "971186ac": {
+      "service_contains_runtime_assets": false,
+      "service_sha256": "f78c6381e0626316c36db8db01d44d58a1850b4967f4f52e2bac76ee8e69430e"
+    }
+  },
+  "root_cause": "Historical records omit runtime_assets. inspect's missing-key update replaces the mutated empty inventory with fresh; an existing stale key prevents that backfill.",
+  "affected_mutation": "upgrade189-runtime-record-stale",
+  "named_rows": [
+    "upgrade/from-8bc34e94",
+    "upgrade/from-971186ac"
+  ],
+  "fixture": "Each row retains its exact historical journey and adds an installation made by current setup with an earlier inert runtime asset. Setup writes the existing inventory; setup upgrades it after the current asset bytes are restored.",
+  "new_assertions": [
+    "Earlier setup succeeds",
+    "Existing inventory differs from fresh and describes installed bytes",
+    "Upgrade succeeds and reports changed asset",
+    "Record equals fresh inventory",
+    "Installed assets match fresh digests"
+  ],
+  "existing_assertions_retained": true,
+  "old_check_calls": 127,
+  "new_check_calls": 132,
+  "reviewed_mutations": [
+    "upgrade189-only-recorded-names",
+    "upgrade189-in-place-writes",
+    "upgrade189-configs-written-fresh",
+    "upgrade189-restart-every-run",
+    "upgrade189-edited-file-overwritten",
+    "upgrade189-removed-file-kept",
+    "upgrade189-no-switch-back",
+    "upgrade189-no-exchange-probe",
+    "upgrade189-module-not-scaffolded",
+    "upgrade189-ownership-not-carried",
+    "upgrade189-rebind-any-digest",
+    "upgrade189-no-ownership-restore",
+    "upgrade189-rebind-not-recorded",
+    "upgrade189-restore-any-bytes",
+    "upgrade189-commit-not-sent",
+    "upgrade189-last-begin-only",
+    "upgrade189-resumed-not-switched",
+    "upgrade189-resumed-units-forgotten",
+    "upgrade189-switch-back-not-due",
+    "upgrade189-recovery-holds-lock",
+    "upgrade189-stop-exit-ignored",
+    "upgrade189-restore-refusal-unreported",
+    "upgrade189-restore-only-first-blocker",
+    "upgrade189-serve-keeps-previous-bindings",
+    "upgrade189-commit-with-previous-engine",
+    "upgrade189-restore-without-stop",
+    "upgrade189-runtime-unrecorded",
+    "upgrade189-runtime-not-staged",
+    "upgrade189-runtime-record-stale",
+    "upgrade189-runtime-mode",
+    "upgrade189-runtime-not-cleaned",
+    "upgrade189-pin-missing",
+    "upgrade189-engines-record-missing",
+    "upgrade189-runs-moved",
+    "upgrade189-existing-pin-rewritten",
+    "upgrade189-existing-record-rewritten",
+    "upgrade189-record-in-place",
+    "upgrade189-unreadable-record-kept",
+    "upgrade189-different-record-accepted",
+    "upgrade189-codex-refusal-differs",
+    "upgrade189-repair-reported-done",
+    "upgrade189-repair-count-hidden",
+    "upgrade189-repair-record-hidden",
+    "upgrade189-runtime-type-unchecked",
+    "upgrade189-receiver-store-unchecked",
+    "upgrade189-pin-wrong-mode"
+  ],
+  "other_same_cause_survivors": [],
+  "review_reason": "Only runtime-record-stale substitutes a previous value for a key absent from the historical records and later backfilled. Other runtime, pin, record and mode mutants alter staged bytes, modes, presence, validation or write reports; those checks do not get repaired by missing-key backfill. Recovery, preservation, restart and ownership mutants use different seams.",
+  "engine_copies_identical": {
+    ".veldo/control_factory_setup.py": true,
+    ".veldo/control_factory_setup_engines.py": true,
+    ".veldo/control_factory_setup_upgrade.py": true,
+    ".veldo/control_service.py": true,
+    ".veldo/control_store.py": true,
+    ".veldo/init_scaffold.py": true
+  },
+  "mutation_execution": "reviewer pending; no mutants executed"
+}

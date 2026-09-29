@@ -1,0 +1,5 @@
+--- .veldo/control_store.py
++++ .veldo/control_store.py
+@@ -862 +862 @@
+-                if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]
++                if r[4] in installed and r[5] != installed[r[4]]]  # defect: any digest is taken

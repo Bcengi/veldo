@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -209 +209 @@
+-            or Path(path).read_text() != data):
++            or False):  # defect: a file that would differ is taken as equal

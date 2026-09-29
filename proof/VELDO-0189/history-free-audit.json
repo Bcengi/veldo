@@ -1,0 +1,73 @@
+{
+  "spec_id": "VELDO-0189",
+  "baseline": "fed739c7",
+  "historical_assertions_retained": 123,
+  "changed_assertion": "census ancestry uses the identical captured chain",
+  "added_assertions": 3,
+  "production_changes": [],
+  "engine_python_and_unit_copy_mismatches": [],
+  "paths_outside_task_footprint": [],
+  "mutations": {
+    "count": 46,
+    "status": "not run; reviewer reserved",
+    "registrations_unchanged": true,
+    "syntax_valid": true
+  },
+  "seam_audit": [
+    "suite older_engine reader and scratch module loader",
+    "historical census reader and production control_service install/layout writers",
+    "proof driver red runner",
+    "suite manifest and generated requires",
+    "mutation registry production anchors and materializer"
+  ],
+  "supplied_footprint_check": {
+    "base": "origin/main",
+    "specs": [
+      "VELDO-0189"
+    ],
+    "outside_inherited_paths": [
+      ".veldo/control_api.py",
+      "engine/.veldo/control_api.py",
+      "proof/VELDO-0171/README.md",
+      "proof/VELDO-0171/api171-chat-not-compared.diff",
+      "proof/VELDO-0171/api171-cli-location-not-fixed.diff",
+      "proof/VELDO-0171/api171-differing-file-accepted.diff",
+      "proof/VELDO-0171/api171-edge-not-enrolled.diff",
+      "proof/VELDO-0171/api171-entry-point-dropped.diff",
+      "proof/VELDO-0171/api171-fingerprint-ignored.diff",
+      "proof/VELDO-0171/api171-funnel-in-place-of-serve.diff",
+      "proof/VELDO-0171/api171-listens-beyond-loopback.diff",
+      "proof/VELDO-0171/api171-module-not-scaffolded.diff",
+      "proof/VELDO-0171/api171-new-key-every-run.diff",
+      "proof/VELDO-0171/api171-operator-unchecked.diff",
+      "proof/VELDO-0171/api171-origin-loopback.diff",
+      "proof/VELDO-0171/api171-policy-omitted.diff",
+      "proof/VELDO-0171/api171-policy-unsafe-inline.diff",
+      "proof/VELDO-0171/api171-projection-not-republished.diff",
+      "proof/VELDO-0171/api171-started-when-added.diff",
+      "proof/VELDO-0171/api171-store-written-while-running.diff",
+      "proof/VELDO-0171/drive.py",
+      "proof/VELDO-0171/mutations.json",
+      "proof/VELDO-0171/performance.json",
+      "proof/VELDO-0171/red-at-7851ae9b.json",
+      "proof/VELDO-0171/runtime-red-at-5730a17e.json",
+      "proof/VELDO-0171/scrub_tailscale.py",
+      "proof/VELDO-0171/tailscale-capture.json",
+      "scripts/suites/66_veldo_0047_authority.py",
+      "scripts/suites/74_veldo_0140_standing_delegation.py",
+      "scripts/suites/support/v171_tailscale.py",
+      "specs/VELDO-0171-setup-lays-down-the-api.md"
+    ]
+  },
+  "stacked_footprint_check": {
+    "specs": [
+      "VELDO-0189",
+      "VELDO-0171"
+    ],
+    "result": "changed 128, outside the footprint: none"
+  },
+  "anchors": "0 bad anchors",
+  "fixture_integrity": "Both archives are byte-identical to git archive of their exact .veldo trees; all fixture digests valid.",
+  "fixture_regeneration": "Byte-identical to the staged fixtures; no diff.",
+  "validator_exit": 0
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -245 +245 @@
+-            'listen': {'host': LOOPBACK, 'port': port},
++            'listen': {'host': '0.0.0.0', 'port': port},  # defect: every interface

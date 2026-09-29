@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -499 +499 @@
+-            enroll_api_edge(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)
++            (lambda *a: None)(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)  # defect: the api edge is not enrolled

@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -801 +801 @@
+-    running = lock is None
++    running = False  # defect: the running service's lock is ignored

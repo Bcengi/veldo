@@ -1,0 +1,59 @@
+{
+  "schema": "veldo.selected-suite-verification/v1",
+  "spec_id": "VELDO-0189",
+  "baseline": "16c8ed33",
+  "implementation_commit": "f5ce0555",
+  "runs": [
+    {
+      "name": "ordinary",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+      "environment": "inherited environment",
+      "exit_code": 2,
+      "passed": 58,
+      "failed": 0,
+      "seconds": 55.44,
+      "log_sha256": "5623bdad474e8c7277249260ddcfb11ad3384f6f7689877a603b38f81ecdb818"
+    },
+    {
+      "name": "empty-environment",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+      "environment": "env -i; PATH=/usr/local/bin:/usr/bin:/bin; HOME=/dev/shm/veldo189-home; TMPDIR=/dev/shm; LANG=LC_ALL=C.UTF-8; TZ=UTC; PYTHONDONTWRITEBYTECODE=PYTHONNOUSERSITE=1; PYTHONHASHSEED=0; GIT_CONFIG_NOSYSTEM=1; GIT_CONFIG_GLOBAL=/dev/null; GIT_TERMINAL_PROMPT=0",
+      "exit_code": 2,
+      "passed": 58,
+      "failed": 0,
+      "seconds": 57.98,
+      "log_sha256": "0c9d160cac76563380a9f6fef8c65166f11f16195c7a4045e82bd6b06552efed"
+    },
+    {
+      "name": "without-git",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+      "environment": "temporary git archive of f5ce0555, no .git exists",
+      "exit_code": 2,
+      "passed": 58,
+      "failed": 0,
+      "seconds": 55.45,
+      "log_sha256": "aa2995dea25d0c05293555877f37562d51ae646ce2632a9613ca6a9886cfb6a4"
+    }
+  ],
+  "suite_sha256": "86f6bc1bdbe9ae00a4f57e052b223d459baa3732e131f184923f2e755393557c",
+  "registered_suite": "86_veldo_0189_engine_upgrade",
+  "requires": "regenerated without a content change",
+  "anchors": "0 bad anchors",
+  "footprint_0189_origin_main": "changed 131, outside the footprint: ['.veldo/control_api.py', 'engine/.veldo/control_api.py', 'proof/VELDO-0171/README.md', 'proof/VELDO-0171/api171-chat-not-compared.diff', 'proof/VELDO-0171/api171-cli-location-not-fixed.diff', 'proof/VELDO-0171/api171-differing-file-accepted.diff', 'proof/VELDO-0171/api171-edge-not-enrolled.diff', 'proof/VELDO-0171/api171-entry-point-dropped.diff', 'proof/VELDO-0171/api171-fingerprint-ignored.diff', 'proof/VELDO-0171/api171-funnel-in-place-of-serve.diff', 'proof/VELDO-0171/api171-listens-beyond-loopback.diff', 'proof/VELDO-0171/api171-module-not-scaffolded.diff', 'proof/VELDO-0171/api171-new-key-every-run.diff', 'proof/VELDO-0171/api171-operator-unchecked.diff', 'proof/VELDO-0171/api171-origin-loopback.diff', 'proof/VELDO-0171/api171-policy-omitted.diff', 'proof/VELDO-0171/api171-policy-unsafe-inline.diff', 'proof/VELDO-0171/api171-projection-not-republished.diff', 'proof/VELDO-0171/api171-started-when-added.diff', 'proof/VELDO-0171/api171-store-written-while-running.diff', 'proof/VELDO-0171/drive.py', 'proof/VELDO-0171/mutations.json', 'proof/VELDO-0171/performance.json', 'proof/VELDO-0171/red-at-7851ae9b.json', 'proof/VELDO-0171/runtime-red-at-5730a17e.json', 'proof/VELDO-0171/scrub_tailscale.py', 'proof/VELDO-0171/tailscale-capture.json', 'scripts/suites/66_veldo_0047_authority.py', 'scripts/suites/74_veldo_0140_standing_delegation.py', 'scripts/suites/support/v171_tailscale.py', 'specs/VELDO-0171-setup-lays-down-the-api.md']",
+  "footprint_stacked_origin_main": "changed 131, outside the footprint: none",
+  "footprint_repair": "No changed path since 16c8ed33 is outside the existing VELDO-0189 footprint.",
+  "validation": "python3 .veldo/validate.py all passed",
+  "limits": [
+    "Selected suites are partial runs, not aggregate gate evidence.",
+    "No mutation execution or rejection claimed; reviewer pending.",
+    "Production is unchanged, so all-red against the pre-repair production tree is not expected."
+  ],
+  "baseline_record": {
+    "file": "red-at-16c8ed33.json",
+    "passed": 32,
+    "failed": 0,
+    "by_assertion": true,
+    "one_report_per_row": true,
+    "explanation": "This repair adds proof coverage without changing production. The unchanged correct baseline passes; an all-red claim would be false. Registered mutant execution remains reviewer pending."
+  }
+}

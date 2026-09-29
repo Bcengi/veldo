@@ -1,0 +1,8 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -237 +237 @@
+-            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],
++            'origin': target(PORT), 'workflows_repository': ids['repository_uuid'],  # defect: the loopback address as the origin
+@@ -246 +246 @@
+-            'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],
++            'api': {'origin': target(port), 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],  # defect: the loopback address as the origin

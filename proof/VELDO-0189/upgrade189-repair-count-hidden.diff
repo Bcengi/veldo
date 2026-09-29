@@ -1,0 +1,5 @@
+--- .veldo/control_factory_setup_engines.py
++++ .veldo/control_factory_setup_engines.py
+@@ -98 +98 @@
+-            report['pins_made'] = 1
++            report['pins_made'] = 0

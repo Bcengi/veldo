@@ -16,6 +16,7 @@ def _v186_suite():
     import shutil
     import stat
     import subprocess
+    import sys
     import tempfile
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
@@ -72,6 +73,8 @@ def _v186_suite():
             self.calls.append(args)
             return 0, '', ''
 
+    TS = load('v186_tailscale', TREE / 'scripts/suites/support/v171_tailscale.py')
+    tailscale = TS.stand_in(TREE / 'proof/VELDO-0171/tailscale-capture.json', sys.executable)
     manager = Manager()
     owner_key = base / 'owner'
     subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(owner_key)],
@@ -94,7 +97,7 @@ def _v186_suite():
         git.run(['git', '-C', str(workspace), '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture'],
                 identity=('Fixture', 'fixture@example.invalid'), check=True, capture_output=True)
         kwargs = dict(host_trust=str(home / 'trust/host.json'), install_root=str(home / 'install'),
-                      unit_dir=str(home / 'units'), profile={}, writable=[], runner=manager)
+                      unit_dir=str(home / 'units'), profile={}, writable=[], runner=manager, tailscale=[tailscale.path])
         args = (str(state), 'owner', str(owner_key), str(workspace), 12345, str(token))
         return home, args, kwargs
 
@@ -127,7 +130,7 @@ def _v186_suite():
                   and config.get('runtime_assets', {}).get(name) == 'sha256:' + hashlib.sha256(target.read_bytes()).hexdigest())
         check('runtime/assets', 'reported assets and count', report.get('runtime_assets') == config.get('runtime_assets')
               and report.get('runtime_assets_installed') == len(expected))
-        check('runtime/assets', 'only daemon reload requested', manager.calls == [['daemon-reload']])
+        check('runtime/assets', 'only daemon reload requested', manager.calls == [['daemon-reload'], ['daemon-reload']])
 
         for name in ('runtime', 'runtime/nested'):
             target = installed / name
@@ -259,6 +262,7 @@ def _v186_suite():
         for row in ROWS:
             check(row, 'section raised ' + type(error).__name__ + ': ' + str(error)[:160], False)
     finally:
+        tailscale.close()
         os.environ['PATH'] = original_path
         issues, trace = compare_formats.conform_fake(locals(), '0186_setup_assets')
         expect('VELDO-0172 fake/capture:0186_setup_assets', not issues)

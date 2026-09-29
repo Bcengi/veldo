@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_api.py
++++ b/.veldo/control_factory_setup_api.py
+@@ -191 +191 @@
+-    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % HTTPS_PORT, target(port)])
++    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % HTTPS_PORT, target(port)])  # defect: Funnel publishes the API
