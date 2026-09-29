@@ -953,6 +953,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'ingress': os.path.join(host, 'ingress.json'), 'token_file': plan['token_file'],
             'unit': authority_unit, 'unit_path': os.path.join(unit_dir, authority_unit), 'home': home,
             'started': started, 'service_running': running, 'steps': outcomes,
+            'pins_made': upgraded.get('pins_made', 0), 'engines': upgraded.get('engines', {}),
+            'engines_record': upgraded.get('engines_record'),
             'api': api_report(name, port, api, through), 'next': next_step or upgraded.get('next')}
 
 
@@ -1008,7 +1010,7 @@ def upgrade_engine(plan, engine, runner, running):
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
     def prepare():
         engines = organ('control_factory_setup_engines')
-        engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
+        return engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
                        lambda point: UP.point(engine['log'], point))
 
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),

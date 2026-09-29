@@ -149,7 +149,8 @@ def inspect(laid, record, record_path, api_unit=None):
     current = {name: digest(data) for name, data in fixed.items()}
     template = laid['config']['template']
     recorded, recorded_template = record.get('closure'), record.get('template')
-    if not isinstance(recorded, dict) or not isinstance(recorded_template, str):
+    if (not isinstance(recorded, dict) or not isinstance(recorded_template, str)
+            or not isinstance(record.get('runtime_assets', {}), dict)):
         raise Refused('invalid_input:install_root:differs:' + str(record_path), 'the record names no installed engine')
     recorded = dict(recorded, **record.get('runtime_assets', {}))
     found = installed_files(bin_dir)
@@ -184,6 +185,8 @@ def inspect(laid, record, record_path, api_unit=None):
             fresh_configs[os.path.join(laid['config_dir'], 'channel-ingress.json')] = json.loads(laid['ingress'])
     for path, fresh in sorted(fresh_configs.items()):
         held = _json_file(path)
+        if held is not None and path in laid['receivers'] and not isinstance(held.get('store'), str):
+            raise Refused('invalid_input:install_root:differs:' + str(path), 'the receiver names no store')
         if held is not None and path in laid['receivers'] and 'state_root' not in held:
             fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))
         if held is not None and any(key not in held for key in fresh):
@@ -330,8 +333,10 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
     active = active or (plan['restart_due'] and pending['active'])
     if plan['state'] == 'current' and not plan['restart_due'] and not plan['stage_left']:
         if prepare is not None:
-            prepare()
-        return dict(report, outcome='already_done', changed=[], added=[], removed=[], previous=plan['current_digest'])
+            report.update(prepare() or {})
+        wrote = report.get('pins_made', 0) or report.get('engines_record')
+        return dict(report, outcome='done' if wrote else 'already_done',
+                    changed=[], added=[], removed=[], previous=plan['current_digest'])
     if plan['state'] == 'current':
         # The record already names the current engine: the upgrade ended after its record was written.
         report.update(outcome='done', changed=[], added=[], removed=[], previous=plan['current_digest'])
@@ -367,7 +372,7 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
             switched = True
             point(log, {'point': 'exchanged', 'bin': plan['bin'], 'previous': plan['stage']})
         if prepare is not None:
-            prepare()
+            report.update(prepare() or {})
         units = False
         for kind, path, body, mode in plan['writes']:
             if not any(saved[0] == path for saved in replaced):

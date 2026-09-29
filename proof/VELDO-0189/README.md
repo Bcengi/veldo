@@ -319,3 +319,31 @@ The spec validator passes; every registered mutation has a unique valid anchor; 
 mutants compile. Mutation execution and the aggregate gate remain the reviewer's work, and no mutation
 rejection is claimed for this tree. Engine copies match. The amendment footprint is clean against
 3fa0d77b; the stacked checker lists only the two inherited gate stamps outside 0171 plus 0189.
+
+## Setup recovery review at be94c919
+
+The review fixes complete the existing AC1, AC2 and AC4 behavior within the existing footprint.
+Seven added rows start with the real installer's host and bindings; corrupted inputs are edits to those
+production outputs. Each row emits one result, and expected production crashes are captured as values
+so refusal assertions can fail without a row raising.
+
+- `engines/atomic-record`: kills the production engine-record writer at open, partial write, completed
+  write and rename; the published record is absent or complete, and setup retry completes it at 0600.
+- `engines/repair-record`: empty, truncated and undecodable records are repaired and the write reported.
+- `engines/refuse-record`: a readable different binding is refused by its record path before any write,
+  including when its pin is missing.
+- `engines/codex-refusal`: changed generated Codex bytes after preflight get the same digest refusal in
+  the real fresh installer helper and upgrade helper; no binding record is written.
+- `engines/repair-report`: each combination of missing pin and record reports set_up, a done upgrade
+  step, the actual pins_made count, the engines bindings and engines_record path when written. Another
+  retry reports no new writes.
+- `upgrade/corrupt-runtime-record`: non-dictionary runtime inventories are refused by the installation
+  record path before writes.
+- `upgrade/receiver-without-store`: each real installed receiver with store removed is refused by its
+  configuration path before writes.
+
+The new pin-mode mutant changes only a newly pinned copy to 0444. The existing
+`upgrade/older-0186-equivalence` row compares identical bytes and requires 0555, so this isolates its
+mode check. That defense already exists at the review baseline; the seven defect rows are the new red
+record's required failures. Mutation execution is reserved to the reviewer; registered mutants are
+pending until that execution, never claimed rejected on the strength of anchors alone.

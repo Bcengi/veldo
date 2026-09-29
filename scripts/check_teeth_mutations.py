@@ -9185,17 +9185,49 @@ def cases():
         "            claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)",
         '            pass', ['upgrade/older-0186-equivalence'], [])
     add(189, 'upgrade189-engines-record-missing', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
-        '        if not os.path.lexists(record_path):',
+        '        if recorded is None:',
         '        if False:', ['upgrade/older-0186-equivalence'], [])
     add(189, 'upgrade189-runs-moved', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "            fresh = dict(fresh, runs=held.get('runs') or os.path.join(os.path.dirname(held['store']), 'runs'))",
         '            fresh = dict(fresh)', ['kept/runs'], [])
     add(189, 'upgrade189-existing-pin-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
-        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        return',
-        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        os.chmod(target, 0o755)\n        return', ['upgrade/fresh-0186'], [])
+        '        if os.path.lexists(target) and recorded is not None:\n            return report',
+        '        if os.path.lexists(target) and recorded is not None:\n            os.chmod(target, 0o755)\n            return report', ['upgrade/fresh-0186'], [])
     add(189, 'upgrade189-existing-record-rewritten', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
-        '    if os.path.lexists(target) and os.path.lexists(record_path):\n        return',
-        "    if os.path.lexists(target) and os.path.lexists(record_path):\n        record_path.write_text('{}\\n')\n        return", ['upgrade/fresh-0186'], [])
+        '        if os.path.lexists(target) and recorded is not None:\n            return report',
+        "        if os.path.lexists(target) and recorded is not None:\n            record_path.write_text('{}\\n')\n            return report", ['upgrade/fresh-0186'], [])
+
+    # VELDO-0189 review: record recovery, consistent refusals and honest write reports.
+    add(189, 'upgrade189-record-in-place', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)\n            try:\n                with os.fdopen(fd, 'w') as handle:\n                    handle.write(json.dumps(engines, sort_keys=True) + '\\n')\n                os.replace(partial, record_path)\n            finally:\n                if os.path.exists(partial):\n                    os.unlink(partial)\n",
+        "            fd = os.open(record_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)\n            with os.fdopen(fd, 'w') as handle:\n                handle.write(json.dumps(engines, sort_keys=True) + '\\n')\n", ['engines/atomic-record'], [])
+    add(189, 'upgrade189-unreadable-record-kept', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '        except (OSError, ValueError):\n            recorded = None',
+        '        except (OSError, ValueError):\n            recorded = engines if os.path.lexists(record_path) else None', ['engines/repair-record'], [])
+    add(189, 'upgrade189-different-record-accepted', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        '            if recorded != engines:',
+        '            if False:', ['engines/refuse-record'], [])
+    add(189, 'upgrade189-codex-refusal-differs', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code\n        raise Refused(code) from None",
+        '        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None', ['engines/codex-refusal'], [])
+    add(189, 'upgrade189-repair-reported-done', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        wrote = report.get('pins_made', 0) or report.get('engines_record')",
+        '        wrote = False', ['engines/repair-report'], [])
+    add(189, 'upgrade189-repair-count-hidden', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['pins_made'] = 1",
+        "            report['pins_made'] = 0", ['engines/repair-report'], [])
+    add(189, 'upgrade189-repair-record-hidden', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['engines_record'] = str(record_path)",
+        "            report['engines_record'] = None", ['engines/repair-report'], [])
+    add(189, 'upgrade189-runtime-type-unchecked', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "            or not isinstance(record.get('runtime_assets', {}), dict)):",
+        '            or False):', ['upgrade/corrupt-runtime-record'], [])
+    add(189, 'upgrade189-receiver-store-unchecked', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        if held is not None and path in laid['receivers'] and not isinstance(held.get('store'), str):",
+        '        if False:', ['upgrade/receiver-without-store'], [])
+    add(189, 'upgrade189-pin-wrong-mode', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
+        "            report['pins_made'] = 1",
+        "            os.chmod(target, 0o444)\n            report['pins_made'] = 1", ['upgrade/older-0186-equivalence'], [])
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     # targets() matches the final word of each reported row, without the spec prefix.

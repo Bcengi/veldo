@@ -62,7 +62,10 @@ def _v189_suite():
             'switch/stop-before-restore')
     IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC, RE, BK, ST, RP, SD, CR, BS = ROWS
     EQ, RN, PF = 'upgrade/older-0186-equivalence', 'kept/runs', 'upgrade/fresh-0186'
-    ROWS += (EQ, RN, PF)
+    AT, ER, EM = 'engines/atomic-record', 'engines/repair-record', 'engines/refuse-record'
+    CD, WR = 'engines/codex-refusal', 'engines/repair-report'
+    RT, RC = 'upgrade/corrupt-runtime-record', 'upgrade/receiver-without-store'
+    ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -842,7 +845,8 @@ def _v189_suite():
             check(IA, 'the service names the previous engine directory the upgrade keeps beside bin [%s %s]'
                   % (getattr(CS, 'PREVIOUS_ENGINE', None), UP.STAGE), getattr(CS, 'PREVIOUS_ENGINE', None) == UP.STAGE)
             for rel in ('.veldo/control_factory_setup.py', '.veldo/control_factory_setup_upgrade.py',
-                        '.veldo/control_service.py', '.veldo/control_store.py', '.veldo/init_scaffold.py'):
+                        '.veldo/control_service.py', '.veldo/control_store.py', '.veldo/init_scaffold.py',
+                        '.veldo/control_factory_setup_engines.py'):
                 engine = ROOT / 'engine' / rel
                 check(IA, rel + ' engine copy identical', engine.is_file() and engine.read_bytes() == (ROOT / rel).read_bytes())
 
@@ -864,6 +868,170 @@ def _v189_suite():
             changed = changes(before, after)
             check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
             check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
+        # Review rows start from the real installer's host and record, restored between cases.
+        saved_fresh = save(fresh.root, fresh.install, fresh.units, fresh.trust.parent, fresh.binding().parent)
+        engine_record = fresh.root / 'host' / 'engines.json'
+        expected_engines = json.loads(engine_record.read_text())
+        pinned = Path(expected_engines['claude_code']['path'])
+        engines_helper = load('v189_engines_review', mods / 'control_factory_setup_engines.py')
+        engine_plan = engines_helper.check(F.Refused)
+
+        def setup_result():
+            # A crash is an observed result, never an exception standing in for a red assertion.
+            try:
+                return fresh.setup()
+            except Exception as error:
+                return None, {'raised': type(error).__name__}
+
+        atomic_driver = base / 'atomic_record.py'
+        atomic_driver.write_text(
+            'import importlib.util, json, os, signal, sys\n'
+            'from pathlib import Path\n'
+            'module, root, directory, plan, point = sys.argv[1:]\n'
+            'spec = importlib.util.spec_from_file_location("engine_record_writer", module)\n'
+            'E = importlib.util.module_from_spec(spec); spec.loader.exec_module(E)\n'
+            'fdopen, replace = os.fdopen, os.replace\n'
+            'def die(): os.kill(os.getpid(), signal.SIGKILL)\n'
+            'class Handle:\n'
+            '    def __init__(self, fd, mode): self.inner = fdopen(fd, mode)\n'
+            '    def __enter__(self):\n'
+            '        if point == "opened": die()\n'
+            '        return self\n'
+            '    def write(self, text):\n'
+            '        if point == "partial":\n'
+            '            self.inner.write(text[:len(text)//2]); self.inner.flush(); die()\n'
+            '        return self.inner.write(text)\n'
+            '    def __exit__(self, *args): self.inner.close()\n'
+            'def replacing(source, target):\n'
+            '    if point == "complete": die()\n'
+            '    replace(source, target)\n'
+            '    if point == "renamed": die()\n'
+            'os.fdopen, os.replace = Handle, replacing\n'
+            'E.ensure(root, directory, json.loads(plan), RuntimeError, lambda event: None)\n')
+        with section(AT):
+            for point in ('opened', 'partial', 'complete', 'renamed'):
+                restore(saved_fresh)
+                engine_record.unlink()
+                proc = subprocess.run([sys.executable, '-B', str(atomic_driver), str(mods / 'control_factory_setup_engines.py'),
+                                       str(fresh.root), str(fresh.home / 'bin'), json.dumps(engine_plan), point],
+                                      capture_output=True, timeout=30, env=child_env())
+                check(AT, point + ': stopped the real writer', proc.returncode == -signal.SIGKILL)
+                try:
+                    visible = json.loads(engine_record.read_text()) if engine_record.exists() else None
+                except (OSError, ValueError):
+                    visible = 'unreadable'
+                check(AT, point + ': destination absent or complete', visible in (None, expected_engines))
+                code, answer = setup_result()
+                try:
+                    repaired = json.loads(engine_record.read_text())
+                except (OSError, ValueError):
+                    repaired = None
+                check(AT, point + ': rerun leaves complete record', code == 0 and repaired == expected_engines)
+                check(AT, point + ': record mode', stat.S_IMODE(engine_record.stat().st_mode) == 0o600)
+        restore(saved_fresh)
+
+        with section(ER):
+            for broken in (b'', b'{', bytes([255])):
+                restore(saved_fresh)
+                engine_record.write_bytes(broken)
+                code, answer = setup_result()
+                try:
+                    repaired = json.loads(engine_record.read_text())
+                except (OSError, ValueError):
+                    repaired = None
+                check(ER, 'unreadable record repaired: ' + repr(broken), code == 0 and repaired == expected_engines)
+                check(ER, 'repair reported', answer.get('engines_record') == str(engine_record))
+        restore(saved_fresh)
+
+        with section(EM):
+            for missing_pin in (False, True):
+                restore(saved_fresh)
+                changed_record = json.loads(engine_record.read_text())
+                changed_record['codex']['version'] += '.different'
+                engine_record.write_text(json.dumps(changed_record))
+                if missing_pin:
+                    pinned.unlink()
+                before = snapshot(*fresh.trees())
+                code, answer = setup_result()
+                check(EM, 'different readable record refused by path: ' + str(answer), code == 1 and
+                      answer.get('reason') == 'invalid_input:state_root:differs:' + str(engine_record))
+                check(EM, 'different record refused before writes', snapshot(*fresh.trees()) == before)
+        restore(saved_fresh)
+
+        with section(CD):
+            vendor = engines186['vendor']
+            vendor_bytes = vendor.read_bytes()
+            engine_record.unlink()
+            vendor.write_bytes(vendor_bytes + b'changed after preflight\n')
+            def refusal(call):
+                try:
+                    call()
+                except F.Refused as error:
+                    return error.code
+                except Exception as error:
+                    return type(error).__name__
+                return None
+            try:
+                installed = refusal(lambda: engines_helper.install(str(fresh.root), fresh.home / 'bin', engine_plan, F.Refused))
+                upgraded = refusal(lambda: engines_helper.ensure(str(fresh.root), fresh.home / 'bin', engine_plan,
+                                                                 F.Refused, lambda event: None))
+                check(CD, 'same changed Codex bytes have the fresh refusal: ' + str((installed, upgraded)),
+                      installed == upgraded == 'binding_mismatch:engine_digest')
+                check(CD, 'no record of refused binding', not engine_record.exists())
+            finally:
+                vendor.write_bytes(vendor_bytes)
+        restore(saved_fresh)
+
+        with section(WR):
+            for missing_pin, missing_record in ((True, False), (False, True), (True, True)):
+                restore(saved_fresh)
+                if missing_pin:
+                    pinned.unlink()
+                if missing_record:
+                    engine_record.unlink()
+                code, answer = setup_result()
+                step = next((one for one in answer.get('steps', []) if one.get('step') == 'engine_upgrade'), {})
+                check(WR, 'repair is reported as a write', code == 0 and answer.get('outcome') == 'set_up'
+                      and step.get('outcome') == 'done')
+                for report in (step, answer):
+                    check(WR, 'actual pin count and record reported', report.get('pins_made') == int(missing_pin)
+                          and report.get('engines_record') == (str(engine_record) if missing_record else None)
+                          and report.get('engines') == expected_engines)
+                code, answer = setup_result()
+                check(WR, 'completed rerun reports no new writes', code == 0 and answer.get('outcome') == 'already_set_up'
+                      and answer.get('pins_made') == 0 and answer.get('engines_record') is None)
+        restore(saved_fresh)
+
+        with section(RT):
+            for bad in ([], None, 'corrupt'):
+                restore(saved_fresh)
+                record = fresh.record()
+                record['runtime_assets'] = bad
+                fresh.record_path.write_text(json.dumps(record))
+                before = snapshot(*fresh.trees())
+                code, answer = setup_result()
+                check(RT, 'runtime inventory refused by path: ' + str(answer), code == 1 and
+                      answer.get('reason') == 'invalid_input:install_root:differs:' + str(fresh.record_path))
+                check(RT, 'corrupt inventory refused before writes', snapshot(*fresh.trees()) == before)
+        restore(saved_fresh)
+
+        with section(RC):
+            receivers = [path for path in sorted((fresh.home / 'config').glob('*.json'))
+                         if path.name.startswith('receiver-')]
+            check(RC, 'real installer wrote receiver configurations', bool(receivers))
+            for path in receivers:
+                restore(saved_fresh)
+                held = json.loads(path.read_text())
+                held.pop('state_root', None)
+                held.pop('store', None)
+                path.write_text(json.dumps(held))
+                before = snapshot(*fresh.trees())
+                code, answer = setup_result()
+                check(RC, 'receiver refused by path: ' + str(answer), code == 1 and
+                      answer.get('reason') == 'invalid_input:install_root:differs:' + str(path))
+                check(RC, 'receiver refused before writes', snapshot(*fresh.trees()) == before)
+        restore(saved_fresh)
+
         current = named(fresh.home / 'bin')
         current_template = fresh.record()['template']
 

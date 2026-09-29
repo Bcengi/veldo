@@ -308,3 +308,13 @@ the current upgrade suite passes all 51 checks in both ordinary and empty gate e
 selected integration suites pass, and 0171 also passes in the empty environment. Finding 189 has 36
 registered mutants with valid anchors and syntax; their execution and the aggregate gate are reserved
 to the reviewer. Verification and the baseline red record are in proof/VELDO-0189/.
+
+2026-09-29, setup recovery review at be94c919: AC1 and AC2 now cover publishing host/engines.json
+through a sibling temporary file and rename, repairing an unreadable record on retry, and refusing a
+readable different record by path before writing. AC1 uses the fresh setup's Codex digest refusal on
+upgrade too. AC4 reports actual pin and record writes even when the engine is already current. AC1's
+inspection refuses malformed runtime inventories and receivers missing store by path before any write.
+Seven new behavior rows exercise the real setup and engine writer over a host the current installer
+made. Finding 189 gains their falsifiers and a wrong pin mode mutant against the existing equivalence
+row, isolating its mode assertion. The acceptance criteria and footprint are unchanged. Mutation runs
+and the aggregate gate remain the reviewer's work under the owner's run restrictions.

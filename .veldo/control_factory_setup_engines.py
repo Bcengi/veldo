@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import tempfile
 
 
 def organ(name, directory=None):
@@ -72,25 +73,42 @@ def count_pins(state_root, engines):
 
 
 def ensure(state_root, directory, plan, Refused, observe):
-    """Bring an older host to the fresh pin layout, preserving every existing pin and record."""
+    """Complete the fresh pin layout, repairing unreadable records and refusing different ones."""
     claude, codex = organ('control_engine_claude', directory), organ('control_engine_codex', directory)
     version = plan['claude_code']['version']
     target = claude.pinned_path(state_root, version)
     record_path = Path(state_root) / 'host' / 'engines.json'
-    if os.path.lexists(target) and os.path.lexists(record_path):
-        return
     try:
+        vendor = codex.bind({'executable': plan['codex']['executable']})
+        engines = {'claude_code': {'version': version, 'path': str(target),
+                                  'sha256': claude.qualified(version)['sha256']},
+                   'codex': {key: vendor[key] for key in ('version', 'path', 'sha256')}}
+        try:
+            recorded = json.loads(record_path.read_text())
+        except (OSError, ValueError):
+            recorded = None
+        else:
+            if recorded != engines:
+                raise Refused('invalid_input:state_root:differs:' + str(record_path))
+        report = {'pins_made': 0, 'engines_record': None, 'engines': engines}
+        if os.path.lexists(target) and recorded is not None:
+            return report
         if not os.path.lexists(target):
             claude.pin(version, versions=plan['claude_code']['versions'], state_root=state_root)
+            report['pins_made'] = 1
             observe({'point': 'engine_pin', 'path': str(target)})
-        if not os.path.lexists(record_path):
-            pinned = claude.bind({'executable': {'version': version}}, state_root)
-            vendor = codex.bind({'executable': plan['codex']['executable']})
-            engines = {bound['engine']: {key: bound[key] for key in ('version', 'path', 'sha256')}
-                       for bound in (pinned, vendor)}
-            fd = os.open(record_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            with os.fdopen(fd, 'w') as handle:
-                handle.write(json.dumps(engines, sort_keys=True) + '\n')
+        if recorded is None:
+            fd, partial = tempfile.mkstemp(prefix='.engines.', suffix='.partial', dir=record_path.parent)
+            try:
+                with os.fdopen(fd, 'w') as handle:
+                    handle.write(json.dumps(engines, sort_keys=True) + '\n')
+                os.replace(partial, record_path)
+            finally:
+                if os.path.exists(partial):
+                    os.unlink(partial)
+            report['engines_record'] = str(record_path)
             observe({'point': 'engines_record', 'path': str(record_path)})
+        return report
     except (claude.Refused, codex.Refused) as error:
-        raise Refused(error.code) from None
+        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
+        raise Refused(code) from None
