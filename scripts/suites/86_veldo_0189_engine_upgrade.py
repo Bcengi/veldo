@@ -70,7 +70,15 @@ def _v189_suite():
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
 
+    # Attribute elapsed work between observations to the row that consumes it.
+    timing_path = os.environ.get('VELDO_ROW_TIMINGS')
+    timings = {name: 0.0 for name in ROWS}
+    last_check = [time.monotonic()]
+
     def check(row, label, condition):
+        now = time.monotonic()
+        timings[row] += now - last_check[0]
+        last_check[0] = now
         rows[row].append((label, bool(condition)))
 
     class section:
@@ -95,8 +103,16 @@ def _v189_suite():
         return module
 
     started = time.monotonic()
+    profiler = None
+    if os.environ.get('VELDO_SUITE_PROFILE'):
+        import cProfile
+        profiler = cProfile.Profile()
+        profiler.enable()
     fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     base = Path(tempfile.mkdtemp(prefix='b189-', dir=fast))
+    support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
+    runtime = load('v189_runtime', support_path)
+    close_runtime = runtime.install(base)
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -186,6 +202,15 @@ def _v189_suite():
         '    socket.socket.connect, socket.socket.connect_ex, socket.socket.sendto = connect, connect_ex, sendto\n'
         '    socket.getaddrinfo = getaddrinfo\n')
 
+    with (guard_dir / 'sitecustomize.py').open('a') as handle:
+        handle.write(
+            '\nimport importlib.util\n'
+            's = importlib.util.spec_from_file_location("setup_runtime", %r)\n'
+            'r = importlib.util.module_from_spec(s); s.loader.exec_module(r)\n'
+            'r.install(%r)\n'
+            'if os.environ.get("VELDO_LISTEN_EVENT"): r.notify_listen(os.environ["VELDO_LISTEN_EVENT"])\n'
+            % (str(support_path), str(base)))
+
     def child_env():
         env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
                'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1',
@@ -269,34 +294,23 @@ def _v189_suite():
             if not self.alive(unit):
                 kind = (self._field(unit, 'Type') or ['simple'])[0]
                 env = child_env()
-                listener, notify = None, None
-                if kind == 'notify':
-                    notify = base / ('n%d.sock' % os.getpid())
-                    with contextlib.suppress(FileNotFoundError):
-                        notify.unlink()
-                    listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-                    listener.bind(str(notify))
-                    env['NOTIFY_SOCKET'] = str(notify)
+                notify = base / ('n%d.sock' % os.getpid())
+                with contextlib.suppress(FileNotFoundError):
+                    notify.unlink()
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                listener.bind(str(notify))
+                env['NOTIFY_SOCKET' if kind == 'notify' else 'VELDO_LISTEN_EVENT'] = str(notify)
                 log = base / ('unit-%s.log' % unit[:24])
                 with open(log, 'ab') as out:
                     proc = subprocess.Popen(shlex.split(self._field(unit, 'ExecStart')[0]), env=env,
                                             stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT,
                                             preexec_fn=child_setup)
                 self.procs[unit] = proc
-                ready = False
                 try:
-                    if listener is not None:
-                        deadline = time.monotonic() + 30
-                        while not ready and proc.poll() is None and time.monotonic() < deadline:
-                            if select.select([listener], [], [], 0.2)[0]:
-                                ready = b'READY=1' in listener.recv(4096)
-                    else:
-                        time.sleep(0.3)
-                        ready = proc.poll() is None
+                    ready = runtime.ready(proc, listener, b'READY=1' if kind == 'notify' else b'LISTEN')
                 finally:
-                    if listener is not None:
-                        listener.close()
-                        notify.unlink()
+                    listener.close()
+                    notify.unlink()
                 if not ready:
                     return 1, '', 'the unit did not start'
             wants = self.unit_dir / (unit + '.wants')
@@ -312,6 +326,7 @@ def _v189_suite():
             proc = self.procs.get(unit)
             if proc is not None and proc.poll() is None:
                 proc.send_signal(signal.SIGTERM)
+                runtime.wake_authority(shlex.split(self._field(unit, 'ExecStart')[0])[-1])
                 try:
                     proc.wait(15)
                 except subprocess.TimeoutExpired:
@@ -1693,15 +1708,14 @@ def _v189_suite():
             (fixture / dropped).unlink()
             FX = load('v189_setup_fixture', fixture / 'control_factory_setup.py')
             config = fresh.record_path
+            notification = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            notification.bind(str(base / 'manual.sock'))
+            manual_env = dict(child_env(), NOTIFY_SOCKET=str(base / 'manual.sock'))
             manual = subprocess.Popen([fresh.record()['python'], '-B', str(fresh.home / 'bin' / 'control_service.py'),
-                                       'serve', str(config)], env=child_env(), stdin=subprocess.DEVNULL,
+                                       'serve', str(config)], env=manual_env, stdin=subprocess.DEVNULL,
                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=child_setup)
             try:
-                until = time.monotonic() + 20
-                up = fresh.answers()
-                while not up and manual.poll() is None and time.monotonic() < until:
-                    time.sleep(0.2)
-                    up = fresh.answers()
+                up = runtime.ready(manual, notification, b'READY=1') and fresh.answers()
                 calls = len(fresh.manager.calls)
                 out = io.StringIO()
                 with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
@@ -1709,7 +1723,9 @@ def _v189_suite():
                 report = json.loads(out.getvalue().strip().splitlines()[-1]) if out.getvalue().strip() else {}
                 ran = fresh.manager.calls[calls:]
             finally:
+                notification.close()
                 manual.send_signal(signal.SIGTERM)
+                runtime.wake_authority(config)
                 with contextlib.suppress(subprocess.TimeoutExpired):
                     manual.wait(15)
                 if manual.poll() is None:
@@ -1738,6 +1754,7 @@ def _v189_suite():
     except StopIteration:
         pass
     finally:
+        close_runtime()
         os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         for bridge in bridges:
@@ -1749,6 +1766,12 @@ def _v189_suite():
         if ts is not None:
             ts.close()
         remove(base)
+
+    if profiler is not None:
+        profiler.disable()
+        profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
+    if timing_path:
+        Path(timing_path).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started), indent=2) + '\n')
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)

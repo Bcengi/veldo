@@ -14,6 +14,7 @@ depends_on: [VELDO-0130, VELDO-0139, VELDO-0189]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/support/setup_runtime.py"
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
@@ -328,3 +329,8 @@ api-edge/running-service and api/start-rules go green through the upgrade. Outsi
 the files that change are service.json (its engine keys, the work key it lacked and api_service), the
 receiver configuration (only the host_trust key it lacked, added by the upgrade) and the key projection.
 The re-run's first step is engine_upgrade.
+
+2026-09-29, suite runtime review: retain every behavior row and kill point while reusing
+content-keyed engine derivations within one suite run and waiting on service readiness or exit.
+The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
+same isolated computation cache and process event waits. No production contract or gate budget changes.

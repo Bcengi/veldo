@@ -65,7 +65,15 @@ def _v171_suite():
     # The setup module as VELDO-0139 (with VELDO-0140's delegation) shipped it, before this change.
     BEFORE = '7fefdb9a'
 
+    # Attribute elapsed work between observations to the row that consumes it.
+    timing_path = os.environ.get('VELDO_ROW_TIMINGS')
+    timings = {name: 0.0 for name in ROWS}
+    last_check = [time.monotonic()]
+
     def check(row, label, condition):
+        now = time.monotonic()
+        timings[row] += now - last_check[0]
+        last_check[0] = now
         rows[row].append((label, bool(condition)))
 
     class section:
@@ -90,6 +98,11 @@ def _v171_suite():
         return module
 
     started = time.monotonic()
+    profiler = None
+    if os.environ.get('VELDO_SUITE_PROFILE'):
+        import cProfile
+        profiler = cProfile.Profile()
+        profiler.enable()
     budget = started + 300
 
     def wait(predicate, seconds=20):
@@ -1296,6 +1309,12 @@ def _v171_suite():
             with contextlib.suppress(OSError):
                 os.chmod(directory, 0o700)
         shutil.rmtree(str(base), ignore_errors=True)
+
+    if profiler is not None:
+        profiler.disable()
+        profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
+    if timing_path:
+        Path(timing_path).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started), indent=2) + '\n')
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)

@@ -14,6 +14,7 @@ depends_on: [VELDO-0047, VELDO-0139]
 placement: [engine, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/support/setup_runtime.py"
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
   - "engine/.veldo/control_service.py"
@@ -326,3 +327,8 @@ the requested empty environment: 58 checks, zero failures in each. The validator
 copies match; finding 189 has 46 mutants with valid unique anchors and syntax, ten added for this review.
 Their execution remains reserved to the reviewer. The review diff stays within this footprint; the
 supplied origin/main checker still reports inherited stacked paths and historical gate stamps.
+
+2026-09-29, suite runtime review: retain every behavior row and kill point while reusing
+content-keyed engine derivations within one suite run and waiting on service readiness or exit.
+The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
+same isolated computation cache and process event waits. No production contract or gate budget changes.
