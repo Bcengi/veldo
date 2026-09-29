@@ -8735,12 +8735,12 @@ def cases():
                "named = info.get('rateLimitType')", "named = info.get('rateLimitType') or 'unified'",
                ['windows/clear'])
     windows166('clear-keeps-stream-limit', 'control_engine_claude.py',
-               "or (named is None and status == 'allowed')", "or False", ['windows/clear'])
+               "or (named is None and status in ('allowed', 'allowed_warning'))", "or False", ['windows/clear'])
     windows166('unnamed-rejection-dropped', 'control_engine_claude.py',
                "rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)",
                "rated_window = named", ['windows/unnamed-rejection'])
     windows166('clear-signal-dropped', 'control_engine_claude.py',
-               "clear_rejection=named is None and status == 'allowed',",
+               "clear_rejection=named is None and status in ('allowed', 'allowed_warning'),",
                "clear_rejection=False,", ['windows/clear-active-rejection'])
     windows166('clear-signal-not-forwarded', 'control_launch.py',
                "clear_rejection=observation.get('clear_rejection', False)",
@@ -8752,8 +8752,23 @@ def cases():
                "params.get('clear_rejection') and unified is not None",
                "False and unified is not None", ['windows/clear-unified-no-reset', 'windows/clear-unified-reset', 'windows/clear-unified-bare'])
     windows166('bare-clear-dropped', 'control_engine_claude.py',
-               "if not found and named is None and status == 'allowed':",
+               "if not found and named is None and status in ('allowed', 'allowed_warning'):",
                "if False:", ['windows/clear-unified-bare'])
+    windows166('warning-clear-signal-dropped', 'control_engine_claude.py',
+               "clear_rejection=named is None and status in ('allowed', 'allowed_warning'),",
+               "clear_rejection=named is None and status == 'allowed',", ['windows/clear-warning'])
+    windows166('warning-stream-clear-dropped', 'control_engine_claude.py',
+               "or (named is None and status in ('allowed', 'allowed_warning'))",
+               "or (named is None and status == 'allowed')", ['windows/clear-warning'])
+    windows166('bare-warning-clear-dropped', 'control_engine_claude.py',
+               "if not found and named is None and status in ('allowed', 'allowed_warning'):",
+               "if not found and named is None and status == 'allowed':", ['windows/clear-warning'])
+    windows166('stale-companion-discards-lift', 'control_accounts.py',
+               "# Keep any unified lift while leaving the newer companion unchanged.\n                return {target: {'kind': KIND, 'data': current}}",
+               "# Discard the clear with the stale companion.\n                return {}", ['windows/clear-observation-order'])
+    windows166('older-clear-lifts-newer-rejection', 'control_accounts.py',
+               "and unified['observed_at'] <= params['now']", "",
+               ['windows/clear-observation-order'])
     windows166('window-count-omitted', 'control_launch.py',
                "self.window_counts[key] = self.window_counts.get(key, 0) + 1",
                "self.window_counts[key] = self.window_counts.get(key, 0)", ['observability/counts-and-log'])

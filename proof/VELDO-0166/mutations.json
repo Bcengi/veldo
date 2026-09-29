@@ -3,26 +3,26 @@
   {
    "diff": "proof/VELDO-0166/windows166-named-only.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "8711d3805de1bc21e32a24f8c609bb66390f7ffcf6fce1700dccc89a814c94b7",
+   "mutant_sha256": "bd8b20a4ecc030bcaa85617c3d5841107795060066e46a8ad15f936fa0493d94",
    "name": "windows166-named-only",
    "named_rows": [
     "windows/five-hour",
     "windows/qualified-set"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-named-only-journey.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "8711d3805de1bc21e32a24f8c609bb66390f7ffcf6fce1700dccc89a814c94b7",
+   "mutant_sha256": "bd8b20a4ecc030bcaa85617c3d5841107795060066e46a8ad15f936fa0493d94",
    "name": "windows166-named-only-journey",
    "named_rows": [
     "attribution/stored-account"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/75_veldo_0062_accounts.py"
   },
   {
@@ -40,44 +40,44 @@
   {
    "diff": "proof/VELDO-0166/windows166-status-spills.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "cc3390b04225055b5272c780cfa09727891c7ce8d656a31285f79cdea70c74c6",
+   "mutant_sha256": "248e42593131e08e4cf2da23427e6f5be233c6f114d6460bef85133addb51d53",
    "name": "windows166-status-spills",
    "named_rows": [
     "windows/status-only-named"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-allowed-invented.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "12a1bb5b74142a1a038cb0be666fa388fe686575bf97d7e51047a114f7f92858",
+   "mutant_sha256": "5dd51aefafc4ebc4f2a2e3db6f5d8a00370be3f066985030dbf050eeeb0206b1",
    "name": "windows166-allowed-invented",
    "named_rows": [
     "windows/status-only-named"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-named-twice.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "77133969a03dff7ad3a1d5f8eeda40326f3b600f198132af084188c6257b3e93",
+   "mutant_sha256": "4b1b95702e96e65baa9fa73b4a01a221d61874a8189a6e1bc0dfeea65234846a",
    "name": "windows166-named-twice",
    "named_rows": [
     "windows/qualified-set",
     "windows/status-only-named"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-reset-borrowed.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "87e1ad5f2f28ae43b8d1e3d34760a575bff36501fc45ba8e5541543a296f75ef",
+   "mutant_sha256": "d7c7de5232281111bcf948d4732647073d024fdb0e28244f89c977b39043b132",
    "name": "windows166-reset-borrowed",
    "named_rows": [
     "windows/five-hour",
@@ -85,57 +85,57 @@
     "windows/missing-reset-receipts"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-utilization-borrowed.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "777222f4d5bba6569715f5f1b0cad9fa24f635497097f4eb0ee43992c6794fff",
+   "mutant_sha256": "1f88f7fe42c324852576446640acba30e929119bd8dc3442cfac8f93a1a3241e",
    "name": "windows166-utilization-borrowed",
    "named_rows": [
     "windows/five-hour",
     "windows/qualified-set"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-absent-status-refused.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "2249ae27508adf7f00467b715c6cb927a371aabc385746365137c9dac62a492f",
+   "mutant_sha256": "884d86127efa3f1812426018f6cf7dd50c74d6f103cb35a9cfb6ee196c50fd8f",
    "name": "windows166-absent-status-refused",
    "named_rows": [
     "windows/five-hour",
     "windows/status-only-named"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-rejection-lifted.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "3f415579c8ef32863be32e66c62a9fb8f55544cd8d3338360a8ed91368c6cd3d",
+   "mutant_sha256": "7d95b16ef54dccb92cd25414cd15314ad37fe39c8670d0cc069a349a80ca262c",
    "name": "windows166-rejection-lifted",
    "named_rows": [
     "windows/rejection-kept"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-rejection-kept-forever.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "206039a25ec5af8181375b4c69f15db50076b6a2e4937cd76fa94a66d46e335b",
+   "mutant_sha256": "039e854564683e96ff4c074232e2e2a326053aa318c39611189b4a27c2b41196",
    "name": "windows166-rejection-kept-forever",
    "named_rows": [
     "windows/rejection-kept"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
@@ -153,85 +153,85 @@
   {
    "diff": "proof/VELDO-0166/windows166-named-top-only.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "23b79b0898bf3ad584e4b3bd13ae71e6cddcd5190e34057c98cce7ce3949fe6d",
+   "mutant_sha256": "e43e8191206f404f6dcde77deee3a1471af79c469fc9fd276345d330d0fb1098",
    "name": "windows166-named-top-only",
    "named_rows": [
     "windows/named-fallback"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-named-map-only.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "5265786aad9ec07a7531728f5538629ccc1ebdc8f0b8079bacde458390477531",
+   "mutant_sha256": "e9e684f05c2ae65e67570cf7f21c84eeb4d23e5b0ccc8c5b2ec6607444601544",
    "name": "windows166-named-map-only",
    "named_rows": [
     "windows/named-precedence"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-reset-fill-dropped.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "a46863e9a39a81e7716dc351589cc700bda2fc88314bf28eca57cb2598c45c2c",
+   "mutant_sha256": "b0de4c60c56d47578b27a3318479bcfc3a650ebc0865b1386e7fe10616d204b1",
    "name": "windows166-reset-fill-dropped",
    "named_rows": [
     "windows/rejection-reset-filled"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-clear-invents-unified.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "28a491a0eaf007bb02d49d116ee6b4cc5c8517abd3f978d2909208c5b8f1d3b3",
+   "mutant_sha256": "5a5a99f07187cbcc9fb10eb32dc9821857bf3840f0c8757ad5cf3924511a05fc",
    "name": "windows166-clear-invents-unified",
    "named_rows": [
     "windows/clear"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-clear-keeps-stream-limit.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "ae522958eff6e8ad01a074029092dde41d308951b3432a24c116e1bf14b2f947",
+   "mutant_sha256": "585e836680d162025d277abde2a455bd27345bb05c4131f3e1ef64db61d98d47",
    "name": "windows166-clear-keeps-stream-limit",
    "named_rows": [
     "windows/clear"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-unnamed-rejection-dropped.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "83c0610041792593d364a0d147162b0b87f6f4bfefc0871806e441e3942074bd",
+   "mutant_sha256": "c238154f56e708ca1da70903c4e5ee28ae1f33d3ea91220863a3a757fef1e170",
    "name": "windows166-unnamed-rejection-dropped",
    "named_rows": [
     "windows/unnamed-rejection"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-clear-signal-dropped.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "fd1a6b1b057ccef79722aad5d525d079ef0f8e57e874a061bdd241c8b0c0e48d",
+   "mutant_sha256": "6ceb040f74d7da26ada339ae00fe7524207d9dddf50aadc7ee2ff1f31cdbb3f6",
    "name": "windows166-clear-signal-dropped",
    "named_rows": [
     "windows/clear-active-rejection"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
@@ -249,19 +249,19 @@
   {
    "diff": "proof/VELDO-0166/windows166-clear-store-keeps-rejection.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "99d5937c790781baae897b01601ab52850649a4d025ddb17f22ddace7d0f2a1f",
+   "mutant_sha256": "f5903acfef76395f2a3392dad970ef9ab4f80324ed2721ea85aeebaabc230805",
    "name": "windows166-clear-store-keeps-rejection",
    "named_rows": [
     "windows/clear-active-rejection"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-clear-unified-lift-dropped.diff",
    "module": ".veldo/control_accounts.py",
-   "mutant_sha256": "2e559bb0405cdbfd106587ca652a06a2f71b7636589f38bb7f0057a6d2acd445",
+   "mutant_sha256": "670d6b4a7d1dc5f922f06affda26c2941d8d547a58adc2abb3fb533f01fb1a63",
    "name": "windows166-clear-unified-lift-dropped",
    "named_rows": [
     "windows/clear-unified-no-reset",
@@ -269,19 +269,79 @@
     "windows/clear-unified-bare"
    ],
    "result": "not run",
-   "source_sha256": "8eb0e4b05b4294b8a2601b44d6142e51023a0e736be0ff2c9db59b436e646631",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {
    "diff": "proof/VELDO-0166/windows166-bare-clear-dropped.diff",
    "module": ".veldo/control_engine_claude.py",
-   "mutant_sha256": "e1dc46c4183a7a72883d09fa5b4f8dcd987276fc2724caabfe2b790b19c7c3a9",
+   "mutant_sha256": "116695f8beadcf3c3efe9d67df7570524bbdd934801982cd699e0aa6574096ea",
    "name": "windows166-bare-clear-dropped",
    "named_rows": [
     "windows/clear-unified-bare"
    ],
    "result": "not run",
-   "source_sha256": "c30dde0734e45c89869cb410a0c90171aaa67e1fcf68b353c13f8492a8866949",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
+   "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+  },
+  {
+   "diff": "proof/VELDO-0166/windows166-warning-clear-signal-dropped.diff",
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "fdf33a58acdf7f6fa0f0cd416ffb96234ed657994c9c0a93f8f123c5df4f2eca",
+   "name": "windows166-warning-clear-signal-dropped",
+   "named_rows": [
+    "windows/clear-warning"
+   ],
+   "result": "not run",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
+   "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+  },
+  {
+   "diff": "proof/VELDO-0166/windows166-warning-stream-clear-dropped.diff",
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "9090ad00ff68e109999f879b6df05aad211edf58336b23ab1f2af95c60ab15d9",
+   "name": "windows166-warning-stream-clear-dropped",
+   "named_rows": [
+    "windows/clear-warning"
+   ],
+   "result": "not run",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
+   "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+  },
+  {
+   "diff": "proof/VELDO-0166/windows166-bare-warning-clear-dropped.diff",
+   "module": ".veldo/control_engine_claude.py",
+   "mutant_sha256": "30a2e2383fa67af26d4c9bffeaf951ccecedeefe3544f04a10174e5bc5a797f1",
+   "name": "windows166-bare-warning-clear-dropped",
+   "named_rows": [
+    "windows/clear-warning"
+   ],
+   "result": "not run",
+   "source_sha256": "6e452ab82c8b8a0d6784c2c9903d99c2d68734d9f004bce5ce395a6586c31f42",
+   "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+  },
+  {
+   "diff": "proof/VELDO-0166/windows166-stale-companion-discards-lift.diff",
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "b646c9a15bea37c7dfe9965e3bbb621e3f80de07ba079a9da39d28a9e271d77e",
+   "name": "windows166-stale-companion-discards-lift",
+   "named_rows": [
+    "windows/clear-observation-order"
+   ],
+   "result": "not run",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
+   "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
+  },
+  {
+   "diff": "proof/VELDO-0166/windows166-older-clear-lifts-newer-rejection.diff",
+   "module": ".veldo/control_accounts.py",
+   "mutant_sha256": "da7018a73c683d66115d3f7c4b1811d4f3169bc12e1ce550c63250eb8055b71b",
+   "name": "windows166-older-clear-lifts-newer-rejection",
+   "named_rows": [
+    "windows/clear-observation-order"
+   ],
+   "result": "not run",
+   "source_sha256": "d3b920d18fef7612e840e0dc5459bdd63a58abcb8b2e7fd508e957aa2c2f1354",
    "suite": "scripts/suites/83_veldo_0166_usage_windows.py"
   },
   {

@@ -1137,7 +1137,7 @@
    "requires": [
     "83_veldo_0166_usage_windows"
    ],
-   "regions": "All qualified Claude Code windows through Metering and the account writer; existing and new profile directories.",
+   "regions": "All qualified Claude Code windows through Metering and the account writer, unnamed allowed and allowed_warning clears, and observation ordering across dispatches; existing and new profile directories.",
    "requires_note": "Only shared ROOT and expect. Real signed SQLite store, Metering receipts and account_add over generated profiles. No engine or login runs."
   },
   {

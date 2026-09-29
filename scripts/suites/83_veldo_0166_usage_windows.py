@@ -14,6 +14,7 @@ def _v166_suite():
     import subprocess
     import tempfile
     from types import SimpleNamespace
+    from unittest.mock import patch
 
     PRODUCTION = {
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
@@ -28,6 +29,7 @@ def _v166_suite():
                                   'windows/clear', 'windows/unnamed-rejection',
                                   'windows/clear-active-rejection', 'windows/clear-unified-no-reset',
                                   'windows/clear-unified-reset', 'windows/clear-unified-bare',
+                                  'windows/clear-warning', 'windows/clear-observation-order',
                                   'observability/counts-and-log',
                                   'profiles/existing', 'profiles/created')}
 
@@ -78,7 +80,7 @@ def _v166_suite():
                 accounts.register('register/' + name, fields['account'], fields['provider'], fields['label'],
                                   fields['profiles'], now=1)
                 accounts.principal = 'receiver'
-            def observe(name, *lines, dispatch=None):
+            def observe(name, *lines, dispatch=None, at=None):
                 if dispatch is None:
                     register(name)
                 contract = dict(dispatch_id=dispatch or 'dispatch/' + name, unit='unit/' + name,
@@ -93,9 +95,11 @@ def _v166_suite():
                 meter.started()
                 try:
                     # The real receiver path, including chunk buffering, private raw receipts and account writes.
-                    for line in lines:
-                        meter.feed(line[:37])
-                        meter.feed(line[37:] + b'\n')
+                    clock = SimpleNamespace(time=lambda: at)
+                    with patch.object(L, 'time', clock) if at is not None else contextlib.nullcontext():
+                        for line in lines:
+                            meter.feed(line[:37])
+                            meter.feed(line[37:] + b'\n')
                     meter.file.flush()
                     path = base / 'receipts' / (hashlib.sha256(meter.invocation.encode()).hexdigest() + '.jsonl')
                     kept = path.read_bytes().splitlines()
@@ -293,6 +297,59 @@ def _v166_suite():
                           and kept[1:] == ([] if separate else [first]) + [clear] * (1 if bare else 3)
                           and meter.window_counts.get(('unified', 'allowed'), 0) == 0
                           and meter.window_counts.get((None, None), 0) == 0)
+
+            # A 2.1.281 unnamed warning is a clear on both the stream and store sides.
+            for prior_window, bare in ((None, False), (None, True), ('five_hour', False)):
+                first = rate(dict(status='rejected', **({} if prior_window is None else {
+                    'rateLimitType': prior_window})))
+                clear_info = dict(status='allowed_warning')
+                if not bare:
+                    clear_info['unifiedWindows'] = {
+                        'five_hour': dict(utilization=0.3, resetsAt=now + 7200),
+                        'seven_day': dict(utilization=0.7, resetsAt=now + 14400)}
+                clear = rate(clear_info)
+                for separate in (False, True):
+                    name = 'warning-%s-%s-%s' % (prior_window, bare, separate)
+                    if separate:
+                        _, prior_meter, _ = observe(name, first)
+                        check('windows/clear-warning', name + ': rejection was persisted',
+                              not prior_meter.errors and pool_state(name, now)[1] is False)
+                        windows, meter, kept = observe(name, clear, dispatch='dispatch/later/' + name)
+                    else:
+                        windows, meter, kept = observe(name, first, clear)
+                    check('windows/clear-warning', name + ': warning reopens stream and pool with receipts',
+                          not meter.errors and meter.meter.limit() is None
+                          and pool_state(name, now) == (None, True)
+                          and kept[1:] == ([] if separate else [first]) + [clear] * (1 if bare else 2)
+                          and all(windows.get(w, {}).get('status') is None
+                                  for w in clear_info.get('unifiedWindows', {}))
+                          and (prior_window is not None or windows.get('unified', {}).get('status') == 'allowed')
+                          and meter.window_counts.get(('unified', 'allowed'), 0) == 0)
+
+            # Concurrent dispatches can arrive out of observation order. Exercise both sides
+            # of the unified timestamp guard, including equality, with real signed writes.
+            for clear_at in (99, 100, 200):
+                name = 'ordered-clear-' + str(clear_at)
+                first = rate(dict(status='rejected'))
+                _, rejected_meter, _ = observe(name, first, at=100)
+                companion = rate(dict(status='allowed_warning', rateLimitType='five_hour',
+                                      utilization=0.8, resetsAt=900))
+                before, companion_meter, _ = observe(name, companion, dispatch='dispatch/newer/' + name, at=300)
+                clear = rate(dict(status='allowed', unifiedWindows={
+                    'five_hour': dict(utilization=0.1, resetsAt=800)}))
+                windows, meter, kept = observe(name, clear, dispatch='dispatch/clear/' + name, at=clear_at)
+                unified = windows.get('unified', {})
+                lifts = clear_at >= 100
+                check('windows/clear-observation-order', name + ': preserve newer companion and order unified clear',
+                      not rejected_meter.errors and not companion_meter.errors and not meter.errors
+                      and windows.get('five_hour') == before.get('five_hour')
+                      and set(windows) == {'unified', 'five_hour'}
+                      and unified.get('status') == ('allowed' if lifts else 'rejected')
+                      and unified.get('observed_at') == (clear_at if lifts else 100)
+                      and unified.get('source_dispatch') == ('dispatch/clear/' + name if lifts else 'dispatch/' + name)
+                      and unified.get('reset_at') is None
+                      and pool_state(name, 400) == ((None, True) if lifts else ('account_limit:unified', False))
+                      and kept[1:] == [clear])
 
             windows, meter, kept = observe('clear-bare-empty', rate(dict(status='allowed')))
             check('windows/clear', 'bare clear without an existing unified creates no window',

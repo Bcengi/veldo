@@ -946,7 +946,7 @@ class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
     {'kind': 'window', 'window_id', 'status', 'reset_at', 'utilization'}, each with its `line` and
-    `receipt`. A bare allowed event emits kind `clear_rejection` with no window id.
+    `receipt`. A bare allowed or allowed_warning event emits kind `clear_rejection` with no window id.
     `final()` is the conclusive total, without tokens when the result had no readable
     modelUsage and empty when the CLI reported no result. `clock` and `zone` are the engine's clock
     and local time zone, for a CLI that states times in local time (this one does not)."""
@@ -1098,7 +1098,7 @@ class Meter:
                                 'reset_at': reset if _number(reset) else None, 'signal': 'stream'}
             elif (self.limited or {}).get('signal') == 'stream' and (
                     self.limited['window'] == str(named or LIMIT_WINDOW)
-                    or (named is None and status == 'allowed')):
+                    or (named is None and status in ('allowed', 'allowed_warning'))):
                 self.limited = None  # A named reopening or the engine's clear event lifts the stream limit.
             # Unnamed rejections use the stream limit's window; clear events still report only the map.
             rated_window = named or (LIMIT_WINDOW if status == 'rejected' else None)
@@ -1111,10 +1111,10 @@ class Meter:
                 rated = window == rated_window
                 found.append(dict(seen, kind='window', window_id=str(window),
                                   status=('rejected' if status == 'rejected' else 'allowed') if rated else None,
-                                  clear_rejection=named is None and status == 'allowed',
+                                  clear_rejection=named is None and status in ('allowed', 'allowed_warning'),
                                   reset_at=reset if _number(reset) else None,
                                   utilization=utilization if _number(utilization) and utilization >= 0 else None))
-            if not found and named is None and status == 'allowed':
+            if not found and named is None and status in ('allowed', 'allowed_warning'):
                 # Carry a bare clear to the store without inventing a window observation.
                 found.append(dict(seen, kind='clear_rejection', window_id=None, status=None,
                                   reset_at=None, utilization=None, clear_rejection=True))

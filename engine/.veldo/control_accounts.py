@@ -321,7 +321,8 @@ class Accounts:
                 return {target: {'kind': KIND, 'data': current}}
             prior = current['windows'].get(params['window_id'])
             if prior is not None and prior['observed_at'] > params['now']:
-                return {}  # An older observation never replaces a newer one.
+                # Keep any unified lift while leaving the newer companion unchanged.
+                return {target: {'kind': KIND, 'data': current}}
             if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
                 # VELDO-0166: keep a rejection, but let a later report supply its missing reset.
                 # The account then remains blocked only until that reported time.

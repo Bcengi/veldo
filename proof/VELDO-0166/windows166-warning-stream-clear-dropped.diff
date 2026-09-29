@@ -2,4 +2,4 @@
 +++ b/.veldo/control_engine_claude.py
 @@ -1101 +1101 @@
 -                    or (named is None and status in ('allowed', 'allowed_warning'))):
-+                    or False):
++                    or (named is None and status == 'allowed')):

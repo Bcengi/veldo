@@ -1,5 +1,5 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -328 +328 @@
+@@ -329 +329 @@
 -                if prior.get('reset_at') is None and params['reset_at'] is not None:
 +                if False:

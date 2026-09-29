@@ -169,3 +169,23 @@ lifts an existing unified rejection, including one from an earlier dispatch, wit
 window. A bare allowed event carries its clear signal even without reported windows. Three production
 rows cover no reset, a future reset and a bare clear; windows/clear retains the no-unified control.
 Finding-166 mutations drop the stored lift and the bare clear signal. No footprint expansion.
+
+2026-09-29: re-check at 75f45d77 treats unnamed allowed_warning as a clear in the Meter and
+account store, for a reported map or a bare signal. A stale companion now retains an already
+applied unified lift. The ordering row covers older, equal and newer clear timestamps relative
+to the unified rejection, while preserving the newer companion. Two new production rows are
+red by assertion on 75f45d77; five finding-166 mutations pin warning signals, stream clearing,
+bare warnings, retained lifts and the observed_at guard. No footprint expansion.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, named-window clear coverage: seven_day_opus,
+seven_day_sonnet or overage rejected then a real clear. The real clear map never lists these
+windows, so the store keeps their rejection until its reset or forever without one. This
+predates this branch and remains outside VELDO-0166.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, bare clear after named rejection: five_hour
+rejected then a bare allowed. The bare clear lifts only unified in the store. This predates
+this branch and remains outside VELDO-0166.
+
+2026-09-29: VELDO-0160 / Release 2 follow-up ticket, multiple stream limits: unnamed rejected,
+then five_hour rejected, then five_hour allowed. The Meter tracks one limit. This predates
+this branch and remains outside VELDO-0166.

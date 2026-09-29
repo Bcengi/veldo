@@ -1,0 +1,7 @@
+--- a/.veldo/control_accounts.py
++++ b/.veldo/control_accounts.py
+@@ -324,2 +324,2 @@
+-                # Keep any unified lift while leaving the newer companion unchanged.
+-                return {target: {'kind': KIND, 'data': current}}
++                # Discard the clear with the stale companion.
++                return {}
