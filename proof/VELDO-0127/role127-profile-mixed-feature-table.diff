@@ -1,0 +1,13 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -373,9 +373,7 @@
+     # Serialize one table in both the profile and CLI, after every grant override.
+     # Literal feature dots remain quoted table keys, not TOML path separators.
+     features = configuration.setdefault('features', {})
+-    for key in list(configuration):
+-        if key.startswith('features.'):
+-            features[key[len('features.'):]] = configuration.pop(key)
++    # Defect: retain dotted overrides alongside the literal-name table.
+     return files
+ 
+ 

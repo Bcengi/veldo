@@ -12,7 +12,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-SUITE = '89_veldo_0127_feature_listing.py'
+SUITE = '90_veldo_0127_feature_profile.py'
 P = '-' * 2
 
 
@@ -60,7 +60,7 @@ def main():
         observed = json.loads(result.stdout)
     behavior = observed['rows']
     observed['behavior_rows'] = behavior
-    observed['every_changed_behavior_row_red'] = len(behavior) == 11 and all(not ok for _, ok in behavior)
+    observed['every_changed_behavior_row_red'] = len(behavior) == 2 and all(not ok for _, ok in behavior)
     report = dict(schema='veldo.proof-red/v1',spec_id='VELDO-0127',commit=commit,
                   suite='scripts/suites/'+SUITE,tree='unchanged git archive; current suite and proof helper',**observed)
     path = HERE / ('red-at-' + sys.argv[2] + '.json')

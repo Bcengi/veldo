@@ -1193,6 +1193,15 @@
    ],
    "regions": "Default-off feature overrides, dotted feature names, mapped grants independent of defaults, and missing, empty or malformed qualification listing stops.",
    "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; pinned binary on guarded loopback with empty generated profiles. Invalid records derive from the production writer."
+  },
+  {
+   "name": "90_veldo_0127_feature_profile",
+   "file": "90_veldo_0127_feature_profile.py",
+   "requires": [
+    "90_veldo_0127_feature_profile"
+   ],
+   "regions": "Generated Codex profile parses with exact feature values; one CLI feature table preserves grants on the pinned loopback first request, with the exact profile in CODEX_HOME.",
+   "requires_note": "Only ROOT and expect. Signed role and qualification writers, binding and Receiver._baseline. Exact generated profile and receiver argv on guarded loopback with empty homes, no login or model."
   }
  ]
 }

@@ -908,6 +908,31 @@
    "source_sha256": "ad8a610a556ee5123ed6667ec86fef6fdb3c903d0c0fdcab66960dd4e5150d8d",
    "status": "registered; execution reserved for reviewer",
    "suite": "89_veldo_0127_feature_listing.py"
+  },
+  {
+   "diff": "role127-profile-mixed-feature-table.diff",
+   "module": ".veldo/control_agent_config_handoff.py",
+   "mutant_sha256": "eef7f7b1903e41c6e9d40564de24e2b6fccc48a3ec925e5aa28f31baaaca2b98",
+   "name": "role127-profile-mixed-feature-table",
+   "named_rows": [
+    "profile/parse-values",
+    "profile/pinned-tools"
+   ],
+   "source_sha256": "b73d425b7f6b6422640da4ce56d133cbf96c8f180968d8a61d89daef011c0df8",
+   "status": "registered; execution reserved for reviewer",
+   "suite": "90_veldo_0127_feature_profile.py"
+  },
+  {
+   "diff": "role127-profile-cli-table-wiped.diff",
+   "module": ".veldo/control_engine_codex.py",
+   "mutant_sha256": "80e56bf36c34046de77c3960a5ab75960d73834ff53e29a23e7815ffc1539d87",
+   "name": "role127-profile-cli-table-wiped",
+   "named_rows": [
+    "profile/pinned-tools"
+   ],
+   "source_sha256": "3f1e8fed5d574fb52a53cf8d54bae8910d1eb9a9bdb40552bffa974cfd7fc4cc",
+   "status": "registered; execution reserved for reviewer",
+   "suite": "90_veldo_0127_feature_profile.py"
   }
  ]
 }

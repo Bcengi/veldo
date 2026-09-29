@@ -9293,6 +9293,16 @@ def cases():
     add(127, 'role127-feature-off-clock-grant-lost', listing127, 'control_agent_config_handoff.py',
         "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['explicit/mapped-default-off'], [])
 
+    profile127 = '90_veldo_0127_feature_profile.py'
+    add(127, 'role127-profile-mixed-feature-table', profile127, 'control_agent_config_handoff.py',
+        "    for key in list(configuration):\n        if key.startswith('features.'):\n            features[key[len('features.'):]] = configuration.pop(key)",
+        "    # Defect: retain dotted overrides alongside the literal-name table.",
+        ['profile/parse-values', 'profile/pinned-tools'], [])
+    add(127, 'role127-profile-cli-table-wiped', profile127, 'control_engine_codex.py',
+        "        argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]",
+        "        argv += ['-c', '%s=%s' % (key, _toml({} if key == 'features' else configuration[key]))]",
+        ['profile/pinned-tools'], [])
+
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])

@@ -1,0 +1,11 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -771,7 +771,7 @@
+             raise Refused(error.code) from None
+     argv = list(base['options'])
+     for key in sorted(configuration):
+-        argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
++        argv += ['-c', '%s=%s' % (key, _toml({} if key == 'features' else configuration[key]))]
+     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
+     files[GENERATED_FILE] = text.encode()
+     return {'argv': argv, 'environment': dict(base['environment']), 'files': files,
