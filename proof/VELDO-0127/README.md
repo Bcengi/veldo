@@ -32,9 +32,13 @@ AC1 is unchanged.
 
 `red-at-d72da222.json` records all 25 rows red by assertion against the unchanged
 baseline archive. Suite 88 passes all 25 rows in ordinary and clean gate
-environments. Suite 87's ordinary run preserves all 176 delivery rows.
+environments. Suite 87 preserves all 176 delivery rows in both environments.
 The partial runner intentionally exits nonzero even with no failures; these
-scoped results are not a gate claim. `feature-checks.json` records final checks.
+scoped results are not a gate claim. Suite 86 retains 25 passing offline rows
+and only the two stale live-capture failures. `feature-checks.json` records final
+checks, including the exact clean environment. The validator passes, mutation
+anchors report zero bad anchors, the footprint reports nothing outside, and the
+production engine copies are byte-identical.
 
 Seven new mutations omit an image, browser, computer, suggestion or skill-search
 override, withdraw granted sleep, or silently accept an unknown enabled feature.

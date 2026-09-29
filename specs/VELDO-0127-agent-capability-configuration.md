@@ -200,6 +200,13 @@ observes the actual pinned launch arguments, mapped grants and the prelaunch sto
 The existing footprint covers the implementation and proof; no expansion is needed.
 Production digests changed. The reviewer recaptures live proofs after this lands
 on the branch; this repair does not recapture them or claim a gate pass.
+The 25 new rows are all red by assertion against the unchanged d72da222 archive,
+and pass in ordinary and clean gate environments. Suite 87 preserves all 176
+delivery rows in both environments. Seven new mutations have exact registered
+diffs and named rows; execution remains reserved for the reviewer.
+Suite 86 passes 25 offline rows in both environments and retains only the two
+stale live-capture failures. The validator passes, anchors report zero bad
+anchors, the footprint reports nothing outside, and engine copies are identical.
 
 2026-09-29, Codex grant delivery repair from 13cc4898: AC1 and AC3 refuse
 model-specific clock and async-input grants absent from the pinned catalog, and
