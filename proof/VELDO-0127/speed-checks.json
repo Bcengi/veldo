@@ -1,0 +1,124 @@
+{
+ "baseline_commit": "2fb32ed8",
+ "final_delivery_rows": 177,
+ "gate_environment_run": {
+  "environment": {
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_TERMINAL_PROMPT": "0",
+   "HOME": "/dev/shm/veldo0127-gate-home-jukun3m9",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "PATH": "/usr/bin:/usr/bin:/bin",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONHASHSEED": "0",
+   "PYTHONNOUSERSITE": "1",
+   "TMPDIR": "/dev/shm",
+   "TZ": "UTC"
+  },
+  "exit_code": 2,
+  "failed": 0,
+  "log_sha256": "0c4ba605c9f80f6d60e5a546ca12b86d3eff429b64bea1d7c8d10cd3dfaf986b",
+  "passed": 203,
+  "seconds": 19.275,
+  "suite": "87_veldo_0127_codex_delivery"
+ },
+ "gate_executed": false,
+ "implementation_commit": "1eed0e742d0c570c6b84f42f042b39b67134973b",
+ "mutation_checker_executed": false,
+ "observation_cache": false,
+ "original_assertion_code_preserved": true,
+ "original_delivery_rows": 176,
+ "partial_run_note": "Exit 2 with zero failed assertions is the required partial-run status, not a gate pass.",
+ "production_unchanged": true,
+ "runtime_budget_seconds": 60,
+ "spec_id": "VELDO-0127",
+ "suites": [
+  {
+   "after": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "f4db91dce3f20de63a6b190a4c49fe18724eff432704a1a2b6dd722a43719ae9",
+    "passed": 53,
+    "seconds": 38.064
+   },
+   "before": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "3874557b154b20b3d1104e4b840ccee87c51e9680304fcadd59013425f6b3a22",
+    "passed": 53,
+    "seconds": 38.32
+   },
+   "suite": "86_veldo_0127_agent_configuration"
+  },
+  {
+   "after": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "3b01520b39413b5186262a7ea4a49b46f4e01b217c3ceba156db72894f14fc45",
+    "passed": 203,
+    "seconds": 51.41
+   },
+   "before": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "4b558defb25c37c04b762c9496e487c1f87e9a65990c1a05b1e10211df6a8add",
+    "passed": 202,
+    "seconds": 128.89
+   },
+   "suite": "87_veldo_0127_codex_delivery"
+  },
+  {
+   "after": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "d1ddab71d3067e102b832088b78ce12681cc64ea93c235c9b93d160efd040147",
+    "passed": 51,
+    "seconds": 6.2
+   },
+   "before": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "2c232501a7e07a4f889afdbd174fa1c4d5bebf90284b063b8be883f3d359e818",
+    "passed": 51,
+    "seconds": 6.345
+   },
+   "suite": "88_veldo_0127_feature_defaults"
+  },
+  {
+   "after": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "6c9caf7b093e64d79078a5456d315c1e35b81f1cd503f10d4b133c552b14c30c",
+    "passed": 37,
+    "seconds": 4.466
+   },
+   "before": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "8909a12853541c9919678092b3f1107aa0e2c6926fd4d193c0fa458423361fc4",
+    "passed": 37,
+    "seconds": 4.702
+   },
+   "suite": "89_veldo_0127_feature_listing"
+  },
+  {
+   "after": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "04a9a96e2c9961a49d8898125d27e8c6a3429d4aad8033cf8c87dc5870493b97",
+    "passed": 28,
+    "seconds": 11.488
+   },
+   "before": {
+    "exit_code": 2,
+    "failed": 0,
+    "log_sha256": "ac1f406c824327e29eca9fed3e33aea18ebfcf22d490e66d32c111c628a30041",
+    "passed": 28,
+    "seconds": 11.66
+   },
+   "suite": "90_veldo_0127_feature_profile"
+  }
+ ],
+ "workers": 2
+}

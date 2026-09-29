@@ -114,7 +114,7 @@ def main():
         manual_mutations()
         return
     if len(sys.argv) != 3 or sys.argv[1] != P + 'red':
-        raise SystemExit('Use ' + P + 'red PRE_CHANGE_COMMIT. Mutations are run only by the reviewer.')
+        raise SystemExit('Use ' + P + 'red PRE_CHANGE_COMMIT or ' + P + 'mutations for the two manual checks.')
     git = load('role_drive_git', ROOT / '.veldo/git_process.py')
     commit = git.run(['git','-C',str(ROOT),'rev-parse',P+'verify',sys.argv[2]+'^{commit}'],
                      capture_output=True, text=True, check=True).stdout.strip()

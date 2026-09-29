@@ -46,6 +46,19 @@ when all their assertions pass; they are partial runs and do not establish a gat
 pass, live qualification, landing approval or shipped status. The reviewer owns
 the full gate and mutation checker runs.
 
+Measured wall seconds, including each suite's shared preamble:
+
+| Suite | Before | After |
+| --- | ---: | ---: |
+| 86 | 38.32 | 38.06 |
+| 87 | 128.89 | 51.41 |
+| 88 | 6.34 | 6.20 |
+| 89 | 4.70 | 4.47 |
+| 90 | 11.66 | 11.49 |
+
+Suite 87 also passed all 203 rows in 19.27 seconds with the exact empty gate
+environment and temporary HOME and TMPDIR on /dev/shm.
+
 ## Generated feature profile repair, 2026-09-29
 
 This repair starts at `9233e1b4`. After all recorded feature, native grant and
