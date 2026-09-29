@@ -1175,6 +1175,15 @@
    ],
    "regions": "Each grantable Codex tool on every qualified model, exact empty-role and MCP controls, save refusals, and production missing or extra tool stops.",
    "requires_note": "Only ROOT and expect. Accepted signed role writes and Receiver._baseline; pinned binary against loopback with an empty generated profile and network guard. No login or model."
+  },
+  {
+   "name": "88_veldo_0127_feature_defaults",
+   "file": "88_veldo_0127_feature_defaults.py",
+   "requires": [
+    "88_veldo_0127_feature_defaults"
+   ],
+   "regions": "Default-on Codex tool features explicitly disabled; mapped grants delivered with exact feature controls; unknown enabled features stop before launch.",
+   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; actual pinned binary arguments and tool definitions on loopback with empty generated profiles."
   }
  ]
 }

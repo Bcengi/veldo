@@ -49,6 +49,9 @@ args = sys.argv[1:]
 if args[:2] == ['debug', 'models']:
     print(Path(CATALOG).read_text())
     sys.exit(0)
+if args[:2] == ['features', 'list']:
+    print(json.loads(Path(CATALOG).with_name('features-fixture.json').read_text())['stdout'], end='')
+    sys.exit(0)
 config = {}
 def merge(a, b):
     for k, v in b.items():
@@ -71,6 +74,7 @@ if fault == 'mcp': args += ['-c', 'mcp_servers.jira.enabled_tools=[]']
 spec = importlib.util.spec_from_file_location('wire_fixture', HELPER)
 wire = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(wire)
+Path(FAULT).with_suffix('.args.json').write_text(json.dumps(args))
 sys.exit(wire.forward(args, config, Path(FAULT).with_suffix('.log')))
 '''.replace('PYTHON', sys.executable).replace('CATALOG', repr(str(catalog))).replace(
         'FAULT', repr(str(fault))).replace('HELPER', repr(str(Path(__file__).resolve())))

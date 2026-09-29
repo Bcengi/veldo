@@ -74,6 +74,9 @@ for i, arg in enumerate(args):
 if args[:3] == ['debug', 'models', P + 'bundled']:
     print(Path(CATALOG_FIXTURE).read_text())
     sys.exit(0)
+if args[:2] == ['features', 'list']:
+    print(json.loads(Path(CATALOG_FIXTURE).with_name('features-fixture.json').read_text())['stdout'], end='')
+    sys.exit(0)
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)

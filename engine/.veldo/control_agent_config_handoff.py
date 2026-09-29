@@ -286,9 +286,61 @@ def codex_model(bound, revision):
     return dict(copy.deepcopy(catalog), models=[selected])
 
 
-def codex(configuration, capability, inventory, config, *, catalog=None):
+def codex_features(listing, grants):
+    """Classify every enabled binary default, including login-dependent tool sources.
+
+    The complete features-list output belongs to the digest-bound qualification.
+    An unknown enabled feature is potentially a tool source and refuses launch.
+    """
+    mapped = {
+        'shell_tool': {'shell'}, 'unified_exec': {'shell'}, 'unified_exec_tty': {'shell'},
+        'view_image': {'view_image'}, 'multi_agent': {'multi_agent', 'sub_agents'},
+        'sleep_tool': {'clock'},
+    }
+    ungranted = {
+        'apps', 'browser_use', 'browser_use_external', 'browser_use_full_cdp_access',
+        'computer_use', 'goals', 'hooks', 'image_generation', 'in_app_browser',
+        'in_app_local_automation', 'mentions_v2', 'plugins', 'remote_plugin',
+        'skill_mcp_dependency_install', 'skill_search', 'tool_suggest', 'workspace_dependencies',
+    }
+    # These defaults change protocol, UI, transport or execution implementation;
+    # they do not register another tool. Code Mode's runner is model-selected.
+    non_tools = {
+        'auth_elicitation', 'code_mode_host', 'collaboration_modes', 'compaction_image_budget',
+        'content_item_kinds', 'enable_request_compression', 'fast_mode', 'guardian_approval',
+        'in_app_chat', 'in_app_dictation', 'in_app_updates', 'item_ids', 'personality',
+        'plugin_sharing', 'remote_compaction_v2', 'resize_all_images', 'shell_snapshot',
+        'sqlite', 'steer', 'terminal_resize_reflow', 'tool_call_mcp_elicitation',
+        'tool_search_always_defer_mcp_tools', 'tui_app_server', 'unbounded_connection_retries',
+        'unified_exec_zsh_fork',
+    }
+    defaults = {}
+    if not isinstance(listing, str) or not listing.strip():
+        raise Refused('configuration_stop:codex_feature_listing')
+    for line in listing.splitlines():
+        match = re.fullmatch(r'([a-z0-9_.]+)\s+([a-z ]+?)\s+(true|false)\s*', line)
+        if not match or match[1] in defaults:
+            raise Refused('configuration_stop:codex_feature_listing')
+        defaults[match[1]] = match[3] == 'true'
+    configuration = {}
+    for feature, enabled in defaults.items():
+        if not enabled:
+            continue
+        if feature in mapped:
+            configuration['features.' + feature] = bool(mapped[feature].intersection(grants))
+        elif feature in ungranted:
+            configuration['features.' + feature] = False
+        elif feature not in non_tools:
+            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
+    return configuration
+
+
+def codex(configuration, capability, inventory, config, *, catalog=None, feature_listing=None):
     revision = capability['revision']
     configuration.update(revision['settings'])
+    if feature_listing is None:
+        feature_listing = X.load_qualification().get('feature_listing', '')
+    configuration.update(codex_features(feature_listing, set(revision['native_tools'])))
     for name, feature in CODEX_NATIVE.items():
         configuration['features.' + feature] = name in revision['native_tools']
     configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}

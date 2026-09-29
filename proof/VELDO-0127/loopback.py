@@ -22,7 +22,7 @@ def load(name, path):
     return module
 
 
-def capture(binary, configuration, *, models=False, catalog=None):
+def capture(binary, configuration, *, models=False, catalog=None, features=False):
     """Only transport and temporary MCP/skill paths differ from the generated role input."""
     X = load('loopback_codex', ROOT / '.veldo/control_engine_codex.py')
     sys.path.insert(0, str(ROOT / 'proof/VELDO-0156'))
@@ -116,6 +116,8 @@ def capture(binary, configuration, *, models=False, catalog=None):
             args += ['-c', key + '=' + X._toml(value)]
         if models:
             args = [str(binary), 'debug', 'models', P + 'bundled']
+        if features:
+            args = [str(binary), 'features', 'list']
         try:
             done = subprocess.run(args, input='Reply ready without tools.', text=True, capture_output=True,
                                   cwd=clone, env=env, timeout=45, preexec_fn=lambda: deny_network(port))

@@ -525,6 +525,22 @@ def bundled_catalog(executable):
             raise Refused('missing_evidence:codex_bundled_catalog') from None
 
 
+def feature_listing(executable):
+    """Record binary defaults at qualification, without account or project configuration."""
+    with tempfile.TemporaryDirectory(prefix='veldo-features-') as temp:
+        root = Path(temp)
+        home, profile = root / 'home', root / 'profile'
+        home.mkdir(); profile.mkdir()
+        try:
+            done = subprocess.run([str(executable), 'features', 'list'], cwd=root,
+                env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
+                     'TMPDIR': temp, 'LANG': 'C.UTF-8'},
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+            return done.stdout
+        except (OSError, subprocess.SubprocessError):
+            raise Refused('missing_evidence:codex_feature_listing') from None
+
+
 def qualification(executable, flags=FLAGS, *, catalog=False):
     """The qualification record of one installed vendor binary. Reads its package manifest and its bytes;
     catalog=True also captures its bundled model catalog offline."""
@@ -545,7 +561,8 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
     if catalog:
         bundled = bundled_catalog(executable)
-        record.update(model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+        record.update(feature_listing=feature_listing(executable),
+                      model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
                       model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
     return record
 
@@ -590,6 +607,7 @@ def bind(adapter, state_root=None):
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
             'baseline': base, 'model_tool_modes': record['model_tool_modes'],
+            'feature_listing': record.get('feature_listing', ''),
             'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
 
 
@@ -746,7 +764,8 @@ def baseline(bound, run, environment=None, record=None, servers=()):
         try:
             catalog = helper.codex_model(bound, run['capability']['revision'])
             listing = helper.inventory(run['capability'], servers)
-            files = helper.codex(configuration, run['capability'], listing, Path(run['config']), catalog=catalog)
+            files = helper.codex(configuration, run['capability'], listing, Path(run['config']), catalog=catalog,
+                                 feature_listing=bound.get('feature_listing', ''))
             wanted = helper.expected(run['capability'], listing)
         except helper.Refused as error:
             raise Refused(error.code) from None

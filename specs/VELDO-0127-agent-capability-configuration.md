@@ -192,6 +192,15 @@ not tests run by this writing revision.
 
 ## History
 
+2026-09-29, default feature repair from d72da222: AC2, AC3 and AC4 classify
+the complete pinned binary feature listing retained at qualification. Each
+default-on tool source is explicitly disabled unless its existing native grant
+enables it; unknown enabled features cause a named configuration stop. Suite 88
+observes the actual pinned launch arguments, mapped grants and the prelaunch stop.
+The existing footprint covers the implementation and proof; no expansion is needed.
+Production digests changed. The reviewer recaptures live proofs after this lands
+on the branch; this repair does not recapture them or claim a gate pass.
+
 2026-09-29, Codex grant delivery repair from 13cc4898: AC1 and AC3 refuse
 model-specific clock and async-input grants absent from the pinned catalog, and
 tool-search combinations that cannot expose the exact selected definitions.

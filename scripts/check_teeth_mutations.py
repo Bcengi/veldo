@@ -9260,6 +9260,20 @@ def cases():
         "configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']",
         ['delivery/gpt-6-astra/none'], [])
 
+    defaults127 = '88_veldo_0127_feature_defaults.py'
+    mapped127 = ['mapped/' + n for n in ('shell', 'clock', 'view_image', 'multi_agent', 'sub_agents')]
+    for feature in ('image_generation', 'browser_use', 'computer_use', 'tool_suggest', 'skill_search'):
+        add(127, 'role127-default-omitted-' + feature, defaults127, 'control_agent_config_handoff.py',
+            "            configuration['features.' + feature] = False",
+            "            if feature != " + repr(feature) + ":\n"
+            "                configuration['features.' + feature] = False",
+            ['defaults/' + feature] + mapped127, [])
+    add(127, 'role127-default-clock-grant-lost', defaults127, 'control_agent_config_handoff.py',
+        "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['mapped/clock'], [])
+    add(127, 'role127-default-unknown-accepted', defaults127, 'control_agent_config_handoff.py',
+        "            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)",
+        "            pass", ['defaults/unknown'], [])
+
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', '        for name, data in assets.items():', '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
