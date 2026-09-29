@@ -109,7 +109,8 @@ def _v171_suite():
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
-    close_runtime = runtime.install(base)
+    cache = Path(tempfile.mkdtemp(prefix='d171-', dir=fast))
+    close_runtime = runtime.install(base, cache)
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -209,9 +210,9 @@ def _v171_suite():
             '\nimport importlib.util\n'
             's = importlib.util.spec_from_file_location("setup_runtime", %r)\n'
             'r = importlib.util.module_from_spec(s); s.loader.exec_module(r)\n'
-            'r.install(%r)\n'
+            'r.install(%r, %r)\n'
             'if os.environ.get("VELDO_LISTEN_EVENT"): r.notify_listen(os.environ["VELDO_LISTEN_EVENT"])\n'
-            % (str(support_path), str(base)))
+            % (str(support_path), str(base), str(cache)))
 
     # Every store connection this process opens, recorded while `capturing` is set (the running-service row).
     connects, capturing = [], [False]
@@ -1306,6 +1307,7 @@ def _v171_suite():
             with contextlib.suppress(OSError):
                 os.chmod(directory, 0o700)
         shutil.rmtree(str(base), ignore_errors=True)
+        shutil.rmtree(cache)
 
     if profiler is not None:
         profiler.disable()

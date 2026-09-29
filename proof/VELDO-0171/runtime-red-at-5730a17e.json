@@ -1,0 +1,33 @@
+{
+  "commit": "5730a17eab6fb9b08b0c07542ca3cd2dd901aab8",
+  "suite": "85_veldo_0171_setup_api.py",
+  "limit_seconds": 30,
+  "rows": {
+    "install/assets": 2.1060056956484914,
+    "tailscale/capture": 0.0656863171607256,
+    "tailscale/fixed-paths": 0.00022137677296996117,
+    "tailscale/refusals": 11.968991701956838,
+    "tailscale/serve-bg": 4.482668434269726,
+    "api-edge/enrolled-by-owner": 0.008322427980601788,
+    "api/service-configuration": 0.0002136891707777977,
+    "api/unit": 1.1963343136012554,
+    "rerun/changes-nothing": 5.176153448410332,
+    "rerun/arguments-compared": 20.777141554746777,
+    "rerun/differs-refused": 11.290450790897012,
+    "api-edge/installed-api-call": 0.11639168206602335,
+    "api/loopback-only": 0.006288660690188408,
+    "passkey/first-enrollment": 1.4214150118641555,
+    "api/content-security-policy": 0.001859346404671669,
+    "api-edge/running-service": 13.523584969341755,
+    "rerun/over-0139-host": 0.00665087066590786,
+    "api/start-rules": 6.659310474060476
+  },
+  "seconds": 79.55037471465766,
+  "behavior_checks_pass": true,
+  "by_assertion": true,
+  "runtime_row": [
+    "runtime/suite-budget",
+    false
+  ],
+  "note": "The baseline suite, with timing observations only. Existing behavior stays green; the runtime claim is red."
+}

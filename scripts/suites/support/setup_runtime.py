@@ -18,10 +18,8 @@ import sys
 import time
 
 
-def install(base):
-    base = Path(base)
-    cache = base / 'derivations'
-    cache.mkdir(exist_ok=True)
+def install(base, cache):
+    base, cache = Path(base), Path(cache)
     loader = importlib.machinery.SourceFileLoader
     original_compile, original_exec = loader.source_to_code, loader.exec_module
 
@@ -133,6 +131,7 @@ def runtime_red(root, here, suite, commit, limit, git):
         git.run(['git', '-C', str(tree), 'checkout', '-q', '--detach', resolved], capture_output=True, check=True)
         path = tree / 'scripts/suites' / suite
         source = path.read_text()
+        source_digest = hashlib.sha256(source.encode()).hexdigest()
         # Add observations only. The baseline's original setup, waits and assertions run.
         source = source.replace('    def check(row, label, condition):',
                                 '    timings = {name: 0.0 for name in ROWS}\n'
@@ -151,7 +150,8 @@ def runtime_red(root, here, suite, commit, limit, git):
             result = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', Path(suite).stem],
                                     cwd=tree, stdout=output, stderr=subprocess.STDOUT)
         measured = json.loads(timing.read_text())
-        report = dict(commit=resolved, suite=suite, limit_seconds=limit, **measured,
+        report = dict(schema='veldo.proof-runtime/v1', spec_id=Path(here).name,
+                      commit=resolved, suite=suite, source_sha256=source_digest, limit_seconds=limit, **measured,
                       behavior_checks_pass=result.returncode == 2,
                       by_assertion=result.returncode == 2,
                       runtime_row=['runtime/suite-budget', measured['seconds'] < limit],

@@ -112,7 +112,8 @@ def _v189_suite():
     base = Path(tempfile.mkdtemp(prefix='b189-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v189_runtime', support_path)
-    close_runtime = runtime.install(base)
+    cache = Path(tempfile.mkdtemp(prefix='d189-', dir=fast))
+    close_runtime = runtime.install(base, cache)
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -207,9 +208,9 @@ def _v189_suite():
             '\nimport importlib.util\n'
             's = importlib.util.spec_from_file_location("setup_runtime", %r)\n'
             'r = importlib.util.module_from_spec(s); s.loader.exec_module(r)\n'
-            'r.install(%r)\n'
+            'r.install(%r, %r)\n'
             'if os.environ.get("VELDO_LISTEN_EVENT"): r.notify_listen(os.environ["VELDO_LISTEN_EVENT"])\n'
-            % (str(support_path), str(base)))
+            % (str(support_path), str(base), str(cache)))
 
     def child_env():
         env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
@@ -1766,6 +1767,7 @@ def _v189_suite():
         if ts is not None:
             ts.close()
         remove(base)
+        shutil.rmtree(cache)
 
     if profiler is not None:
         profiler.disable()
