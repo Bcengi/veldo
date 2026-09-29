@@ -780,6 +780,41 @@ def _v189_suite():
               == sorted({new for _old, new in substitutions(host)})
               and all(f.get('reason') for f in equivalence.get('fields') or []))
 
+    def runtime_record_upgrade(row, fresh, commit):
+        """An earlier runtime inventory written by setup, including a key the historical installers lacked.
+
+        Missing keys are filled from the fresh layout even if the explicit runtime assignment is stale.
+        Keep the historical journeys intact and also exercise replacement of an existing inventory.
+        Only the inert runtime fixture's bytes differ; no installation record is edited by the suite.
+        """
+        host = Host('runtime-' + commit)
+        asset = mods / 'runtime/nested/upgrade.json'
+        current_bytes = asset.read_bytes()
+        try:
+            asset.write_text('{"upgrade": false}\n')
+            code, answer = host.setup()
+        finally:
+            asset.write_bytes(current_bytes)
+        check(row, commit + ': setup writes the earlier runtime-bearing installation',
+              code == 0 and answer.get('outcome') == 'set_up')
+        if code != 0:
+            return
+        previous = host.record().get('runtime_assets')
+        expected = fresh.record().get('runtime_assets')
+        name = 'runtime/nested/upgrade.json'
+        check(row, commit + ': the existing runtime inventory differs from fresh and names its installed bytes',
+              bool(previous) and bool(expected) and previous != expected
+              and previous.get(name) == named(host.home / 'bin').get(name)
+              and previous.get(name) != expected.get(name))
+        code, answer = host.setup()
+        step = next((s for s in answer.get('steps', []) if s.get('step') == 'engine_upgrade'), {})
+        check(row, commit + ': upgrading an existing runtime inventory succeeds and reports the changed asset',
+              code == 0 and step.get('outcome') == 'done' and name in step.get('changed', []))
+        check(row, commit + ': the upgraded record replaces the existing runtime inventory with the fresh one',
+              host.record().get('runtime_assets') == expected)
+        check(row, commit + ': the upgraded runtime bytes match the fresh inventory',
+              all(named(host.home / 'bin').get(n) == digest for n, digest in (expected or {}).items()))
+
     # The kept data of AC3: the key directory, the host trust, the binding, the token file, every registered
     # account's profile directory, the store's rows and every configuration value.
     def kept(host):
@@ -1122,6 +1157,7 @@ def _v189_suite():
                 check(row, 'nothing of the switch is left beside the engine directory [%s]'
                       % sorted(p.name for p in host.home.iterdir()),
                       sorted(p.name for p in host.home.iterdir()) == ['bin', 'config', 'state'])
+                runtime_record_upgrade(row, fresh, commit)
             with section(EQ):
                 equals_fresh(EQ, host, fresh, commit)
             with section(RN):

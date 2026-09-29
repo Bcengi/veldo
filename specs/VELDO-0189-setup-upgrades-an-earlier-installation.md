@@ -371,3 +371,13 @@ Both archived engines match their historical .veldo trees exactly; regeneration 
 Validation passes and anchors report zero bad entries. Finding 189's 46 mutations remain unchanged and
 reviewer pending. This repair stays inside the footprint; the origin/main comparison with only 0189
 still reports inherited 0171 paths, while both stacked specifications cover the branch changes.
+
+2026-09-29, runtime inventory mutation review: the stale-record mutant is reachable when the
+installed record already has runtime_assets. Both historical installers omit that key, so the
+missing-key backfill repairs the mutant's stale assignment on those hosts. Keep the exact historical
+journeys and add a runtime-bearing predecessor to each named older-host row, installed by real setup
+with different inert asset bytes. Real setup upgrades it, and assertions require the prior inventory
+to differ, the changed asset to be reported, and the resulting record and installed bytes to match
+fresh. No production change, acceptance criterion change or footprint extension is needed. Reading
+all finding 189 registrations found no other mutant masked by that missing-key fallback. Execution
+of the registered mutants remains reserved to the reviewer.

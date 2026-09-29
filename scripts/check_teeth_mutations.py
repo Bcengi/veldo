@@ -9265,6 +9265,8 @@ def cases():
              ['refusal/env-collision'])
     # VELDO-0189 owner-approved fresh equivalence amendment.
     # Both older-host rows call equals_fresh: asset bytes/modes, runtime record and pin.
+    # They also install an earlier runtime inventory through setup and then upgrade it:
+    # the historical records lack runtime_assets, so missing-key backfill masks stale assignment there.
     # Name those behavior rows directly, retaining both hosts for every equivalence defect.
     add(189, 'upgrade189-runtime-unrecorded', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "    recorded = dict(recorded, **record.get('runtime_assets', {}))",
