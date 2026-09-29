@@ -11,12 +11,15 @@ absent, and each supported singleton grant still gets its own binary request.
 Unsupported grants still go through the production save refusal without a launch.
 There is no observation cache and no catalog-derived substitute for wire evidence.
 
-The production loopback server polls for shutdown every 0.01 seconds instead of
-using Python's 0.5 second default. Its HTTP 400 response, full request capture,
-child completion, joins and comparisons are unchanged. Both production copies
-are byte-identical. This avoids paying an idle teardown interval for every case.
-Suite 87 measured 48.05 seconds after the change, including its shared preamble,
-with all 176 original assertions plus the new `delivery/runtime` assertion green.
+The suite provides a standard HTTPServer subclass whose default shutdown poll
+interval is 0.01 seconds instead of Python's 0.5 second default. Each factory's
+handoff module gets its own HTTP-server proxy; no shared module is patched.
+The production HTTP 400 handler, request capture, binary child completion, joins
+and comparisons are unchanged. Production and engine files are unchanged from
+the baseline, preserving their digest-bound live evidence. This avoids paying
+an idle test teardown interval for every case.
+The final measured results include the shared preamble and retain all 176
+original assertions plus the new `delivery/runtime` assertion.
 The registered `role127-delivery-slow-shutdown` falsifier restores the old polling
 interval and targets the new under-60-second runtime assertion.
 
@@ -28,8 +31,9 @@ through Receiver._baseline. AC4's launch configuration and profile checks remain
 in suites 86 and 90; suites 88 and 89 retain feature and listing controls.
 
 Only `delivery/runtime` is new behavior for the red replay. All 176 original
-behavior rows must remain green on the baseline. The current suite and helper
-run against the unchanged production tree archived from `2fb32ed8`. The proof
+behavior rows must remain green on the baseline. The driver runs
+the unchanged archived suite and production tree from `2fb32ed8`, applying only
+the new runtime assertion around it. The proof
 driver also reads two literal finding-127 registrations with AST, applies each
 to a temporary module copy and runs the current suite against that copy. It never
 imports or executes the mutation checker, and never edits a real production file.

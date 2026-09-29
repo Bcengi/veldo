@@ -1,0 +1,11 @@
+--- a/proof/VELDO-0127/delivery_fixture.py
++++ b/proof/VELDO-0127/delivery_fixture.py
+@@ -10,7 +10,7 @@
+ class ObservationServer(http.server.HTTPServer):
+     """Standard loopback server with a shorter test teardown polling interval."""
+ 
+-    def serve_forever(self, poll_interval=0.01):
++    def serve_forever(self, poll_interval=0.5):
+         return super().serve_forever(poll_interval=poll_interval)
+ 
+ 

@@ -469,7 +469,7 @@ def codex_observe(bound, extra, environment, config):
         profile = home / 'profile'
         profile.mkdir(mode=0o700)
         server = http.server.HTTPServer(('127.0.0.1', 0), Endpoint)
-        thread = threading.Thread(target=server.serve_forever, kwargs={'poll_interval': 0.01}, daemon=True)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         provider = {'name': 'role-observation', 'base_url': 'http://127.0.0.1:%d/v1' % server.server_port,
                     'wire_api': 'responses', 'supports_standalone_web_search': True,

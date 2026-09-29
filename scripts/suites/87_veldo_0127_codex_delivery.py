@@ -18,7 +18,7 @@ def _v127_delivery():
         spec.loader.exec_module(module)
         return module
     started = time.monotonic()
-    delivery = load('v127_delivery_cases', TREE / 'proof/VELDO-0127/delivery_fixture.py')
+    delivery = load('v127_delivery_cases', ROOT / "proof/VELDO-0127" / "delivery_fixture.py")
     engine = load('v127_delivery_models', PRODUCTION['control_engine_codex.py'])
     models = list(engine.MODEL_TOOL_MODES)
     # Two disjoint factories, including SQLite connections and fault files. Each

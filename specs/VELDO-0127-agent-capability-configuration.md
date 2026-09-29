@@ -456,8 +456,10 @@ must recapture them. No acceptance check or live evidence binding is relaxed.
 
 2026-09-29, delivery proof speed repair from 2fb32ed8: AC2 retains all existing
 per-model wire assertions and adds the delivery runtime budget. Two isolated
-factories run disjoint model groups with at most two workers. The stand-in shutdown
-poll interval is shortened without changing request capture, comparison or refusal.
+factories run disjoint model groups with at most two workers. A suite-local standard
+HTTPServer subclass shortens shutdown polling without changing the production
+handler, request capture, comparison or refusal. Production is unchanged, preserving
+the existing digest-bound live captures.
 No row is renamed and no footprint expansion is needed. Timings and the unchanged
 behavior checks are retained in proof/VELDO-0127. This is a speed repair only;
 no gate, live qualification or shipped-status claim is made.

@@ -25,7 +25,7 @@ def load(name, path):
     return module
 
 
-def one(root, paths=None):
+def one(root, paths=None, baseline=False):
     rows = []
     shared = Path(root) / 'scripts/suites/shared.py'
     ns = {'__file__':str(shared), '__suite_file__':str(ROOT / 'scripts/suites' / SUITE),
@@ -37,12 +37,17 @@ def one(root, paths=None):
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
-        source = (ROOT / 'scripts/suites' / SUITE).read_text()
+        source = ((Path(root) if baseline else ROOT) / 'scripts/suites' / SUITE).read_text()
         for module, path in (paths or {}).items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
             assert source.count(anchor) == 1, module
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(str(path)) + ')')
+        started = time.monotonic()
         exec(compile(source, SUITE, 'exec'), ns)
+        if baseline:
+            seconds = time.monotonic() - started
+            ns['expect']('VELDO-0127 delivery/runtime', seconds < 60)
+            print('  VELDO-0127 delivery/runtime seconds: %.3f' % seconds)
     rows = [r for r in rows if r[0].startswith('VELDO-0127 ')]
     details = [line.strip() for line in output.getvalue().splitlines() if 'VELDO-0127' in line and 'detail:' in line]
     timings = [line.strip() for line in output.getvalue().splitlines() if 'delivery/runtime seconds:' in line]
@@ -99,6 +104,9 @@ def manual_mutations():
 
 
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == P + 'baseline':
+        print(json.dumps(one(sys.argv[2], baseline=True)))
+        return
     if len(sys.argv) in (3, 4) and sys.argv[1] == P + 'one':
         print(json.dumps(one(sys.argv[2], json.loads(sys.argv[3]) if len(sys.argv) == 4 else None)))
         return
@@ -113,22 +121,25 @@ def main():
     with tempfile.TemporaryDirectory(prefix='v127-red-') as temp:
         archive = git.run(['git','-C',str(ROOT),'archive',commit], capture_output=True,check=True).stdout
         subprocess.run(['tar','-x','-C',temp],input=archive,check=True)
-        result = subprocess.run([sys.executable,'-B',__file__,P+'one',temp],capture_output=True,text=True,timeout=600)
+        result = subprocess.run([sys.executable,'-B',__file__,P+'baseline',temp],capture_output=True,text=True,timeout=600)
         if result.returncode:
             raise SystemExit('Red replay did not finish: ' + result.stderr[-1000:])
         observed = json.loads(result.stdout)
     behavior = [r for r in observed['rows'] if r[0] == 'VELDO-0127 delivery/runtime']
     observed['behavior_rows'] = behavior
     observed['every_changed_behavior_row_red'] = len(behavior) == 1 and all(not ok for _, ok in behavior)
+    preserved = [r for r in observed['rows'] if r[0] != 'VELDO-0127 delivery/runtime']
+    observed['all_original_rows_preserved_green'] = len(preserved) == 176 and all(ok for _, ok in preserved)
     report = dict(schema='veldo.proof-red/v1',spec_id='VELDO-0127',commit=commit,
-                  suite='scripts/suites/'+SUITE,tree='unchanged git archive; current suite and proof helper',**observed)
+                  suite='scripts/suites/'+SUITE,tree='unchanged git archive and delivery suite; current runtime assertion and unchanged wire helpers',**observed)
     path = HERE / ('red-at-' + sys.argv[2] + '.json')
     path.write_text(json.dumps(report,indent=1,sort_keys=True)+'\n')
     print(json.dumps({'failed_rows':len(report['failed_rows']),'rows':len(report['rows']),
                       'by_assertion':report['by_assertion'],
                       'every_changed_behavior_row_red': report['every_changed_behavior_row_red'],
                       'record':str(path.relative_to(ROOT))}))
-    if not report['by_assertion'] or not report['every_changed_behavior_row_red']:
+    if (not report['by_assertion'] or not report['every_changed_behavior_row_red']
+            or not report['all_original_rows_preserved_green']):
         raise SystemExit(1)
 
 

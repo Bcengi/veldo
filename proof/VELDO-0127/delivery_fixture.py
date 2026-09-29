@@ -1,8 +1,17 @@
 """Isolated delivery cases; each worker owns its factory, faults and observations."""
 import importlib.util
+import http.server
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
+
+
+class ObservationServer(http.server.HTTPServer):
+    """Standard loopback server with a shorter test teardown polling interval."""
+
+    def serve_forever(self, poll_interval=0.01):
+        return super().serve_forever(poll_interval=poll_interval)
 
 
 def run(ROOT, TREE, PRODUCTION, models):
@@ -31,6 +40,11 @@ def run(ROOT, TREE, PRODUCTION, models):
         try:
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
+            # Only the server scheduling fixture changes. The production handler,
+            # binary invocation, observation reader and exact comparison all run.
+            # Keep this proxy local to this factory's handoff module, not global.
+            L.HANDOFF.http = SimpleNamespace(server=SimpleNamespace(
+                HTTPServer=ObservationServer, BaseHTTPRequestHandler=http.server.BaseHTTPRequestHandler))
             bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
             serial = [0]
             def definition(model, grants, mcp=False):
