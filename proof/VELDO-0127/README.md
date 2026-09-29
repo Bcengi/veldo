@@ -1,5 +1,37 @@
 # VELDO-0127 role capability configuration
 
+## Usage-window integration repair, 2026-09-29
+
+The baseline is `ef1cd2fb`. The receiver constructor always defines `binding`;
+the engine launch path calls `_login`, then `_bind`, and refuses failures before
+`_invoke` constructs Metering. A successful engine binding is a dictionary.
+The window-only stand-in in suite 83 omitted this field. It now supplies an empty
+binding dictionary, with no role expectation. Production behavior is unchanged.
+An AST comparison confirms that adding this keyword is the only executable change
+in the suite; all window, receipt, ordering, rejection and profile assertions remain.
+The spec footprint adds this suite to preserve AC2/AC4's receiver contract.
+
+Suite 83 now passes all 19 rows. Suite 86 passes all 27 rows, including both live
+evidence checks, in the normal and clean gate environments. This supersedes the
+older stale-capture notes below: this fixture repair changes no production digest
+and requires no recapture. All 211 shared Python engine copies match byte for byte.
+The constructor and production invoke searches also identify the receiver regression
+suites listed with their results in `integration-checks.json`: 24 scoped suites,
+528 target rows and zero failures. Suite 83 also passes in the clean environment.
+
+The baseline suite 83 failed with the reported AttributeError before its first row.
+That is a reproduced crash, not an assertion-based red record. Replaying suite 86
+against this baseline cannot make a fixture-only repair into a production behavior
+change; `red-at-ef1cd2fb.json` retains 26 passing VELDO-0127 rows and no red rows,
+without claiming a new assertion-based red result.
+Earlier assertion-based behavior red records remain historical.
+
+The existing 56 finding-127 and 32 finding-166 mutations remain registered. The
+global static audit finds unique names and zero bad anchors. No mutation was run,
+and no rejection is claimed; the reviewer runs those checks. No new criterion or
+production mutant is introduced by this fixture correction. requires.json was
+regenerated without a content change. The gate and aggregate selftest were not run.
+
 ## Lead check repairs, 2026-09-29
 
 The repair baseline is `c6f6b357`. Skill exclusion now uses the shared isolated

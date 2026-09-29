@@ -1,0 +1,267 @@
+{
+  "anchors": "0 bad anchors",
+  "baseline_commit": "ef1cd2fb",
+  "before": {
+    "by_assertion": false,
+    "error": "AttributeError: 'types.SimpleNamespace' object has no attribute 'binding'",
+    "location": "control_launch.Metering.__init__; receiver.binding.get",
+    "returncode": 1,
+    "suite": "83_veldo_0166_usage_windows"
+  },
+  "clean_environment": {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/veldo0127-integration-home",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC"
+  },
+  "clean_environment_suites": [
+    {
+      "returncode": 2,
+      "seconds": 0.64,
+      "suite": "83_veldo_0166_usage_windows",
+      "target_rows_passed": 19,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 24.08,
+      "suite": "86_veldo_0127_agent_configuration",
+      "target_rows_passed": 27,
+      "total_rows_failed": 0
+    }
+  ],
+  "contract": {
+    "binding_contract": "Receiver.launch checks _login and _bind refusals before _invoke; _invoke skips Metering when login is None; successful _bind writes a dictionary.",
+    "direct_receiver_suite_construction": [
+      "66_veldo_0047_authority",
+      "82_veldo_0141_execution_record",
+      "86_veldo_0127_agent_configuration",
+      "86_veldo_0186_setup_assets"
+    ],
+    "fixture_scope": "Empty dictionary models a window-only observer without role expectations; production Metering and signed window writers remain real.",
+    "metering_constructor_sites": [
+      "Receiver._invoke",
+      "83_veldo_0166_usage_windows.observe"
+    ],
+    "receiver_initializes_binding": true
+  },
+  "footprint": "Outside the VELDO-0127 footprint: none.",
+  "gate": {
+    "executed": false,
+    "reason": "Reserved for reviewer, along with aggregate selftest and mutation execution."
+  },
+  "live_recapture_required": false,
+  "mutations": {
+    "executed": false,
+    "reason": "Reserved for reviewer; existing criterion falsifiers unchanged.",
+    "rejected_this_run": 0
+  },
+  "normal_suites": [
+    {
+      "returncode": 2,
+      "seconds": 0.56,
+      "suite": "83_veldo_0166_usage_windows",
+      "target_rows_passed": 19,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 16.6,
+      "suite": "86_veldo_0127_agent_configuration",
+      "target_rows_passed": 27,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 13.5,
+      "suite": "66_veldo_0047_authority",
+      "target_rows_passed": 30,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 8.55,
+      "suite": "62_veldo_0039_dispatch",
+      "target_rows_passed": 21,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 6.83,
+      "suite": "63_veldo_0040_containment",
+      "target_rows_passed": 20,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 10.58,
+      "suite": "63_veldo_0049_floor",
+      "target_rows_passed": 20,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 8.13,
+      "suite": "64_veldo_0050_proof",
+      "target_rows_passed": 14,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 11.24,
+      "suite": "67_veldo_0041_heartbeat",
+      "target_rows_passed": 23,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 6.24,
+      "suite": "67_veldo_0135_offers",
+      "target_rows_passed": 9,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 6.01,
+      "suite": "70_veldo_0069_bindings",
+      "target_rows_passed": 10,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 3.19,
+      "suite": "71_veldo_0076_projects",
+      "target_rows_passed": 32,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 30.08,
+      "suite": "75_veldo_0062_accounts",
+      "target_rows_passed": 23,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 18.75,
+      "suite": "78_veldo_0060_claude_adapter",
+      "target_rows_passed": 35,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 22.26,
+      "suite": "78_veldo_0160_account_pool",
+      "target_rows_passed": 34,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 12.22,
+      "suite": "79_veldo_0061_codex_adapter",
+      "target_rows_passed": 21,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 10.63,
+      "suite": "80_veldo_0155_claude_baseline",
+      "target_rows_passed": 18,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 2.76,
+      "suite": "81_veldo_0156_codex_baseline",
+      "target_rows_passed": 22,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 20.57,
+      "suite": "82_veldo_0129_worker_wiring",
+      "target_rows_passed": 29,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 18.89,
+      "suite": "82_veldo_0141_execution_record",
+      "target_rows_passed": 40,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 12.58,
+      "suite": "82_veldo_0165_launch_hygiene",
+      "target_rows_passed": 23,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 2.42,
+      "suite": "82_veldo_0173_tool_registry",
+      "target_rows_passed": 11,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 30.51,
+      "suite": "83_veldo_0154_factory_loop",
+      "target_rows_passed": 13,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 4.34,
+      "suite": "85_veldo_0158_credential_delivery",
+      "target_rows_passed": 23,
+      "total_rows_failed": 0
+    },
+    {
+      "returncode": 2,
+      "seconds": 14.77,
+      "suite": "86_veldo_0186_setup_assets",
+      "target_rows_passed": 11,
+      "total_rows_failed": 0
+    }
+  ],
+  "production_changed": false,
+  "repair": "Supply the production receiver binding field in the VELDO-0166 window-only stand-in.",
+  "replay": {
+    "every_changed_behavior_row_red": false,
+    "failed_rows": [],
+    "interpretation": "The existing behavior driver finds no production regression at this baseline. No assertion-based red result is claimed for the fixture correction.",
+    "record": "red-at-ef1cd2fb.json",
+    "rows": 26
+  },
+  "requires": "Regenerated; no content change; both suites already registered.",
+  "schema": "veldo.implementation-checks/v1",
+  "spec_id": "VELDO-0127",
+  "static_audit": {
+    "engine_python_copies_checked": 211,
+    "engine_python_mismatches": [],
+    "finding127_registered": 56,
+    "finding166_registered": 32,
+    "fixture_only_binding_added": true,
+    "registered_names_unique": true
+  },
+  "suite_summary": {
+    "exit_2": "Expected partial-run status, not a gate result.",
+    "failed_rows": 0,
+    "selectors": 24,
+    "target_rows_passed": 528
+  },
+  "validator": {
+    "command": "python3 .veldo/validate.py all",
+    "returncode": 0
+  }
+}
