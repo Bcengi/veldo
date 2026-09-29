@@ -2,11 +2,11 @@
  "engine": "codex",
  "problems": [],
  "production": {
-  "control_agent_config.py": "1fdd225047839a139a31fda5da6dce287c0e7cc55a0235e60291fe1a0f72791e",
-  "control_agent_config_handoff.py": "a723dcdb828fb83630e348385034cb91265935afbab50a71cf9fe808da116934",
+  "control_agent_config.py": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
+  "control_agent_config_handoff.py": "b73d425b7f6b6422640da4ce56d133cbf96c8f180968d8a61d89daef011c0df8",
   "control_engine_claude.py": "b0b0fa352f6df575c38a529eb447da4c664816ecf338b03884eedce174094c3e",
-  "control_engine_codex.py": "5e7b539af240495b425900f073a75e740dd8050c2bc4d8da831c7c0989e4ef0e",
-  "control_launch.py": "e9f8a85b2963d556fd5ac23110236a5bfe4dca1adc99782be988c095df64224b"
+  "control_engine_codex.py": "3f1e8fed5d574fb52a53cf8d54bae8910d1eb9a9bdb40552bffa974cfd7fc4cc",
+  "control_launch.py": "08ce9911ecbbf29f70a61874b80f45a340aa8850e16f0fe2c2021e76af459f0f"
  },
  "runs": [
   {
@@ -17,23 +17,129 @@
     "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
     "features": {
      "apply_patch_freeform": false,
+     "apply_patch_preserve_line_endings": false,
+     "apply_patch_streaming_events": false,
+     "apps": false,
+     "apps_mcp_path_override": false,
+     "artifact": false,
+     "background_paginated_rollout_migration": false,
+     "bedrock_setup_wizard": false,
+     "browser_use": false,
+     "browser_use_external": false,
+     "browser_use_full_cdp_access": false,
+     "chronicle": false,
+     "code_mode": false,
+     "code_mode_buffered_exec": false,
+     "code_mode_interrupt": false,
+     "code_mode_only": false,
+     "code_mode_prewarm": false,
+     "codex_git_commit": false,
+     "computer_use": false,
+     "concurrent_reasoning_summaries": false,
+     "context_management": false,
+     "current_time_reminder": false,
+     "cwd_relative_turn_diffs": false,
+     "default_mode_request_user_input": false,
+     "deferred_executor": false,
+     "deferred_tool_world_state": false,
+     "elevated_windows_sandbox": false,
+     "enable_fanout": false,
+     "enable_mcp_apps": false,
+     "exec_permission_approvals": false,
+     "executed_tool_call_metadata": false,
+     "executor_capability_discovery": false,
+     "experimental_windows_sandbox": false,
+     "external_agent_memory_import": false,
+     "external_migration": false,
      "goals": false,
+     "guardian_enhanced_node_repl_transcripts": false,
+     "guardian_ext": false,
+     "guardian_node_repl_transcript_images": false,
+     "guardian_reuse_parent_compaction": false,
+     "guardianv2": false,
+     "guardianv2.thread_context": false,
+     "hooks": false,
+     "image_detail_original": false,
+     "image_generation": false,
+     "image_resize_notice": false,
+     "in_app_browser": false,
+     "in_app_local_automation": false,
+     "js_repl": false,
+     "js_repl_tools_only": false,
+     "local_thread_store_compression": false,
+     "local_thread_store_shared_compression": false,
+     "mcp_2026_07_28": false,
+     "mcp_oauth_refresh_coordination": false,
+     "memories": false,
+     "mentions_v2": false,
      "multi_agent": false,
+     "multi_agent_mode": false,
      "multi_agent_v2": {
       "enabled": false
      },
+     "network_proxy": false,
+     "non_prefixed_mcp_tool_names": false,
+     "omit_app_server_notification_media": false,
+     "plugin_hooks": false,
+     "plugins": false,
+     "powershell_shell_version": false,
+     "prevent_idle_sleep": false,
+     "psp": false,
+     "realtime_conversation": false,
+     "reasoning_effort_override": false,
+     "recommended_plugins": false,
+     "remote_control": false,
+     "remote_models": false,
+     "remote_plugin": false,
+     "request_permissions_tool": false,
+     "request_rule": false,
+     "respect_system_proxy": false,
+     "responses_websockets": false,
+     "responses_websockets_v2": false,
+     "retain_client_developer_messages": false,
+     "rollout_budget": false,
+     "runtime_metrics": false,
+     "search_tool": false,
+     "secret_auth_storage": false,
+     "send_async_message": false,
+     "shell_snapshot_v2": false,
      "shell_tool": true,
-     "sleep_tool": {
-      "enabled": false
-     },
-     "view_image": false
+     "shell_zsh_fork": false,
+     "skill_env_var_dependency_prompt": false,
+     "skill_mcp_dependency_install": false,
+     "skill_search": false,
+     "skip_host_skill_discovery": false,
+     "sleep_tool": false,
+     "standalone_web_search": false,
+     "step_model_switching": false,
+     "terminal_visualization_instructions": false,
+     "token_budget": false,
+     "tool_search": false,
+     "tool_suggest": false,
+     "transcript_v2": false,
+     "unavailable_dummy_tools": false,
+     "undo": false,
+     "unified_exec": true,
+     "unified_exec_tty": true,
+     "unified_image_budget": false,
+     "use_agent_identity": false,
+     "use_legacy_landlock": false,
+     "use_linux_sandbox_bwrap": false,
+     "view_image": false,
+     "web_search_cached": false,
+     "web_search_request": false,
+     "windows_sandbox_service": false,
+     "workspace_dependencies": false,
+     "workspace_owner_usage_nudge": false,
+     "worktrees": false,
+     "write_stdin_approval": false
     },
     "forced_login_method": "chatgpt",
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-       "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+       "/run/user/1000/veldo0127-live-z7op398x/server.py",
+       "/run/user/1000/veldo0127-live-z7op398x/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -46,7 +152,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/682cae8b0a859628289322fb01b26721/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/3f750dee9b60a0b98c505920db54cd6c/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -55,7 +161,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -76,7 +182,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 8331,
+      "input_tokens": 7895,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -111,7 +217,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 8331,
+   "first_turn_context": 7895,
    "init": {},
    "listing": [
     {
@@ -254,9 +360,9 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 2093,
-    "digest": "sha256:7f2fe3ba7ad5f061717568d29d6285053a7a29d02a0c574365cca400c4f3821e",
-    "lines": 8
+    "bytes": 3317,
+    "digest": "sha256:e59ad25c3f633d301bd607b1a81a3c328e58af953d6e78a35267e02003c58f34",
+    "lines": 11
    },
    "revision": {
     "digest": "sha256:bf67218b3969037705d06569e9e5ca46d5573408c7bc5f80347b4236fa3f2041",
@@ -307,23 +413,129 @@
      "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
      "features": {
       "apply_patch_freeform": false,
+      "apply_patch_preserve_line_endings": false,
+      "apply_patch_streaming_events": false,
+      "apps": false,
+      "apps_mcp_path_override": false,
+      "artifact": false,
+      "background_paginated_rollout_migration": false,
+      "bedrock_setup_wizard": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "chronicle": false,
+      "code_mode": false,
+      "code_mode_buffered_exec": false,
+      "code_mode_interrupt": false,
+      "code_mode_only": false,
+      "code_mode_prewarm": false,
+      "codex_git_commit": false,
+      "computer_use": false,
+      "concurrent_reasoning_summaries": false,
+      "context_management": false,
+      "current_time_reminder": false,
+      "cwd_relative_turn_diffs": false,
+      "default_mode_request_user_input": false,
+      "deferred_executor": false,
+      "deferred_tool_world_state": false,
+      "elevated_windows_sandbox": false,
+      "enable_fanout": false,
+      "enable_mcp_apps": false,
+      "exec_permission_approvals": false,
+      "executed_tool_call_metadata": false,
+      "executor_capability_discovery": false,
+      "experimental_windows_sandbox": false,
+      "external_agent_memory_import": false,
+      "external_migration": false,
       "goals": false,
+      "guardian_enhanced_node_repl_transcripts": false,
+      "guardian_ext": false,
+      "guardian_node_repl_transcript_images": false,
+      "guardian_reuse_parent_compaction": false,
+      "guardianv2": false,
+      "guardianv2.thread_context": false,
+      "hooks": false,
+      "image_detail_original": false,
+      "image_generation": false,
+      "image_resize_notice": false,
+      "in_app_browser": false,
+      "in_app_local_automation": false,
+      "js_repl": false,
+      "js_repl_tools_only": false,
+      "local_thread_store_compression": false,
+      "local_thread_store_shared_compression": false,
+      "mcp_2026_07_28": false,
+      "mcp_oauth_refresh_coordination": false,
+      "memories": false,
+      "mentions_v2": false,
       "multi_agent": false,
+      "multi_agent_mode": false,
       "multi_agent_v2": {
        "enabled": false
       },
+      "network_proxy": false,
+      "non_prefixed_mcp_tool_names": false,
+      "omit_app_server_notification_media": false,
+      "plugin_hooks": false,
+      "plugins": false,
+      "powershell_shell_version": false,
+      "prevent_idle_sleep": false,
+      "psp": false,
+      "realtime_conversation": false,
+      "reasoning_effort_override": false,
+      "recommended_plugins": false,
+      "remote_control": false,
+      "remote_models": false,
+      "remote_plugin": false,
+      "request_permissions_tool": false,
+      "request_rule": false,
+      "respect_system_proxy": false,
+      "responses_websockets": false,
+      "responses_websockets_v2": false,
+      "retain_client_developer_messages": false,
+      "rollout_budget": false,
+      "runtime_metrics": false,
+      "search_tool": false,
+      "secret_auth_storage": false,
+      "send_async_message": false,
+      "shell_snapshot_v2": false,
       "shell_tool": true,
-      "sleep_tool": {
-       "enabled": false
-      },
-      "view_image": false
+      "shell_zsh_fork": false,
+      "skill_env_var_dependency_prompt": false,
+      "skill_mcp_dependency_install": false,
+      "skill_search": false,
+      "skip_host_skill_discovery": false,
+      "sleep_tool": false,
+      "standalone_web_search": false,
+      "step_model_switching": false,
+      "terminal_visualization_instructions": false,
+      "token_budget": false,
+      "tool_search": false,
+      "tool_suggest": false,
+      "transcript_v2": false,
+      "unavailable_dummy_tools": false,
+      "undo": false,
+      "unified_exec": true,
+      "unified_exec_tty": true,
+      "unified_image_budget": false,
+      "use_agent_identity": false,
+      "use_legacy_landlock": false,
+      "use_linux_sandbox_bwrap": false,
+      "view_image": false,
+      "web_search_cached": false,
+      "web_search_request": false,
+      "windows_sandbox_service": false,
+      "workspace_dependencies": false,
+      "workspace_owner_usage_nudge": false,
+      "worktrees": false,
+      "write_stdin_approval": false
      },
      "forced_login_method": "chatgpt",
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-        "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+        "/run/user/1000/veldo0127-live-z7op398x/server.py",
+        "/run/user/1000/veldo0127-live-z7op398x/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -336,7 +548,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/682cae8b0a859628289322fb01b26721/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/3f750dee9b60a0b98c505920db54cd6c/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -345,7 +557,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -366,20 +578,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a0edb1-ef94-7072-a892-3161ced6ffae",
-        "session_id": "01a0edb1-ef46-7903-9fd2-96f89689858e",
-        "thread_id": "01a0edb1-ef46-7903-9fd2-96f89689858e",
-        "turn_id": "01a0edb1-ef94-7072-a892-3161ced6ffae",
-        "x-codex-installation-id": "950d1033-92d6-49bd-9112-313dd3b75699",
-        "x-codex-turn-metadata": "{\"installation_id\":\"950d1033-92d6-49bd-9112-313dd3b75699\",\"session_id\":\"01a0edb1-ef46-7903-9fd2-96f89689858e\",\"thread_id\":\"01a0edb1-ef46-7903-9fd2-96f89689858e\",\"agent_name\":\"/root\",\"turn_id\":\"01a0edb1-ef94-7072-a892-3161ced6ffae\",\"window_id\":\"01a0edb1-ef46-7903-9fd2-96f89689858e:0\",\"window_number\":0,\"context_window_id\":\"01a0edb1-ef46-7903-9fd2-970a56e9ac66\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0edb1-ef94-7072-a892-3161ced6ffae\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790694256539}",
-        "x-codex-window-id": "01a0edb1-ef46-7903-9fd2-96f89689858e:0"
+        "root_turn_id": "01a0eed0-9229-7dc0-ad48-4c43e93249c6",
+        "session_id": "01a0eed0-9218-77e3-9628-5eff7c50c8bb",
+        "thread_id": "01a0eed0-9218-77e3-9628-5eff7c50c8bb",
+        "turn_id": "01a0eed0-9229-7dc0-ad48-4c43e93249c6",
+        "x-codex-installation-id": "b995fdad-f4d0-4d92-83f7-961bc4703643",
+        "x-codex-turn-metadata": "{\"installation_id\":\"b995fdad-f4d0-4d92-83f7-961bc4703643\",\"session_id\":\"01a0eed0-9218-77e3-9628-5eff7c50c8bb\",\"thread_id\":\"01a0eed0-9218-77e3-9628-5eff7c50c8bb\",\"agent_name\":\"/root\",\"turn_id\":\"01a0eed0-9229-7dc0-ad48-4c43e93249c6\",\"window_id\":\"01a0eed0-9218-77e3-9628-5eff7c50c8bb:0\",\"window_number\":0,\"context_window_id\":\"01a0eed0-9218-77e3-9628-5f015b85c280\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0eed0-9229-7dc0-ad48-4c43e93249c6\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790713041450}",
+        "x-codex-window-id": "01a0eed0-9218-77e3-9628-5eff7c50c8bb:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_3ddee418-a1fb-50b2-bd97-a3b3f75bd005",
+         "id": "at_2e8fc686-377e-5095-bb71-b5e0a166e373",
          "role": "developer",
          "tools": [
           {
@@ -440,7 +652,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_b7dd5012-d612-5468-9de8-46cafcf52103",
+         "id": "msg_dd79368f-8bcd-55dd-b272-c2628a02b053",
          "role": "developer",
          "type": "message"
         },
@@ -451,7 +663,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-0h6k_1x5/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-yg6sbugs/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -463,18 +675,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb1-f003-7b82-bfbb-8aba29ce5b11",
+         "id": "msg_01a0eed0-925a-7b90-9ba9-421e5179fb04",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-0h6k_1x5/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-0h6k_1x5/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-yg6sbugs/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-yg6sbugs/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb1-f003-7b82-bfbb-8acd55473027",
+         "id": "msg_01a0eed0-925a-7b90-9ba9-422f57c4cfef",
          "role": "user",
          "type": "message"
         },
@@ -485,14 +697,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb1-f007-7530-93b4-4f3653445363",
+         "id": "msg_01a0eed0-9261-70f2-a3c8-c10f1dc1ff96",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a0edb1-ef46-7903-9fd2-96f89689858e",
+       "prompt_cache_key": "01a0eed0-9218-77e3-9628-5eff7c50c8bb",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -509,8 +721,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-0h6k_1x5\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-0h6k_1x5/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0edb1-ef46-7903-9fd2-96f89689858e\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-yg6sbugs\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-yg6sbugs/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0eed0-9218-77e3-9628-5eff7c50c8bb\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -587,23 +799,129 @@
     "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
     "features": {
      "apply_patch_freeform": false,
+     "apply_patch_preserve_line_endings": false,
+     "apply_patch_streaming_events": false,
+     "apps": false,
+     "apps_mcp_path_override": false,
+     "artifact": false,
+     "background_paginated_rollout_migration": false,
+     "bedrock_setup_wizard": false,
+     "browser_use": false,
+     "browser_use_external": false,
+     "browser_use_full_cdp_access": false,
+     "chronicle": false,
+     "code_mode": false,
+     "code_mode_buffered_exec": false,
+     "code_mode_interrupt": false,
+     "code_mode_only": false,
+     "code_mode_prewarm": false,
+     "codex_git_commit": false,
+     "computer_use": false,
+     "concurrent_reasoning_summaries": false,
+     "context_management": false,
+     "current_time_reminder": false,
+     "cwd_relative_turn_diffs": false,
+     "default_mode_request_user_input": false,
+     "deferred_executor": false,
+     "deferred_tool_world_state": false,
+     "elevated_windows_sandbox": false,
+     "enable_fanout": false,
+     "enable_mcp_apps": false,
+     "exec_permission_approvals": false,
+     "executed_tool_call_metadata": false,
+     "executor_capability_discovery": false,
+     "experimental_windows_sandbox": false,
+     "external_agent_memory_import": false,
+     "external_migration": false,
      "goals": false,
+     "guardian_enhanced_node_repl_transcripts": false,
+     "guardian_ext": false,
+     "guardian_node_repl_transcript_images": false,
+     "guardian_reuse_parent_compaction": false,
+     "guardianv2": false,
+     "guardianv2.thread_context": false,
+     "hooks": false,
+     "image_detail_original": false,
+     "image_generation": false,
+     "image_resize_notice": false,
+     "in_app_browser": false,
+     "in_app_local_automation": false,
+     "js_repl": false,
+     "js_repl_tools_only": false,
+     "local_thread_store_compression": false,
+     "local_thread_store_shared_compression": false,
+     "mcp_2026_07_28": false,
+     "mcp_oauth_refresh_coordination": false,
+     "memories": false,
+     "mentions_v2": false,
      "multi_agent": false,
+     "multi_agent_mode": false,
      "multi_agent_v2": {
       "enabled": false
      },
+     "network_proxy": false,
+     "non_prefixed_mcp_tool_names": false,
+     "omit_app_server_notification_media": false,
+     "plugin_hooks": false,
+     "plugins": false,
+     "powershell_shell_version": false,
+     "prevent_idle_sleep": false,
+     "psp": false,
+     "realtime_conversation": false,
+     "reasoning_effort_override": false,
+     "recommended_plugins": false,
+     "remote_control": false,
+     "remote_models": false,
+     "remote_plugin": false,
+     "request_permissions_tool": false,
+     "request_rule": false,
+     "respect_system_proxy": false,
+     "responses_websockets": false,
+     "responses_websockets_v2": false,
+     "retain_client_developer_messages": false,
+     "rollout_budget": false,
+     "runtime_metrics": false,
+     "search_tool": false,
+     "secret_auth_storage": false,
+     "send_async_message": false,
+     "shell_snapshot_v2": false,
      "shell_tool": true,
-     "sleep_tool": {
-      "enabled": false
-     },
-     "view_image": false
+     "shell_zsh_fork": false,
+     "skill_env_var_dependency_prompt": false,
+     "skill_mcp_dependency_install": false,
+     "skill_search": false,
+     "skip_host_skill_discovery": false,
+     "sleep_tool": false,
+     "standalone_web_search": false,
+     "step_model_switching": false,
+     "terminal_visualization_instructions": false,
+     "token_budget": false,
+     "tool_search": false,
+     "tool_suggest": false,
+     "transcript_v2": false,
+     "unavailable_dummy_tools": false,
+     "undo": false,
+     "unified_exec": true,
+     "unified_exec_tty": true,
+     "unified_image_budget": false,
+     "use_agent_identity": false,
+     "use_legacy_landlock": false,
+     "use_linux_sandbox_bwrap": false,
+     "view_image": false,
+     "web_search_cached": false,
+     "web_search_request": false,
+     "windows_sandbox_service": false,
+     "workspace_dependencies": false,
+     "workspace_owner_usage_nudge": false,
+     "worktrees": false,
+     "write_stdin_approval": false
     },
     "forced_login_method": "chatgpt",
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-       "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+       "/run/user/1000/veldo0127-live-z7op398x/server.py",
+       "/run/user/1000/veldo0127-live-z7op398x/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -616,7 +934,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/7c2c477c2eff96bf4d3af46892b53b38/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/d9bbb9afc95fd188f65b51207902eae1/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -625,7 +943,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -646,7 +964,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 8333,
+      "input_tokens": 7896,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -681,7 +999,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 8333,
+   "first_turn_context": 7896,
    "init": {},
    "listing": [
     {
@@ -824,9 +1142,9 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 2092,
-    "digest": "sha256:7f568d82e65dad71f7375b5f2c1aaadc4e231c15c864c180330d36e71f695714",
-    "lines": 8
+    "bytes": 3318,
+    "digest": "sha256:250abada8e040bf91d7b25b739025c545e38999223d00fff05e211234c3ad430",
+    "lines": 11
    },
    "revision": {
     "digest": "sha256:bf67218b3969037705d06569e9e5ca46d5573408c7bc5f80347b4236fa3f2041",
@@ -877,23 +1195,129 @@
      "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
      "features": {
       "apply_patch_freeform": false,
+      "apply_patch_preserve_line_endings": false,
+      "apply_patch_streaming_events": false,
+      "apps": false,
+      "apps_mcp_path_override": false,
+      "artifact": false,
+      "background_paginated_rollout_migration": false,
+      "bedrock_setup_wizard": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "chronicle": false,
+      "code_mode": false,
+      "code_mode_buffered_exec": false,
+      "code_mode_interrupt": false,
+      "code_mode_only": false,
+      "code_mode_prewarm": false,
+      "codex_git_commit": false,
+      "computer_use": false,
+      "concurrent_reasoning_summaries": false,
+      "context_management": false,
+      "current_time_reminder": false,
+      "cwd_relative_turn_diffs": false,
+      "default_mode_request_user_input": false,
+      "deferred_executor": false,
+      "deferred_tool_world_state": false,
+      "elevated_windows_sandbox": false,
+      "enable_fanout": false,
+      "enable_mcp_apps": false,
+      "exec_permission_approvals": false,
+      "executed_tool_call_metadata": false,
+      "executor_capability_discovery": false,
+      "experimental_windows_sandbox": false,
+      "external_agent_memory_import": false,
+      "external_migration": false,
       "goals": false,
+      "guardian_enhanced_node_repl_transcripts": false,
+      "guardian_ext": false,
+      "guardian_node_repl_transcript_images": false,
+      "guardian_reuse_parent_compaction": false,
+      "guardianv2": false,
+      "guardianv2.thread_context": false,
+      "hooks": false,
+      "image_detail_original": false,
+      "image_generation": false,
+      "image_resize_notice": false,
+      "in_app_browser": false,
+      "in_app_local_automation": false,
+      "js_repl": false,
+      "js_repl_tools_only": false,
+      "local_thread_store_compression": false,
+      "local_thread_store_shared_compression": false,
+      "mcp_2026_07_28": false,
+      "mcp_oauth_refresh_coordination": false,
+      "memories": false,
+      "mentions_v2": false,
       "multi_agent": false,
+      "multi_agent_mode": false,
       "multi_agent_v2": {
        "enabled": false
       },
+      "network_proxy": false,
+      "non_prefixed_mcp_tool_names": false,
+      "omit_app_server_notification_media": false,
+      "plugin_hooks": false,
+      "plugins": false,
+      "powershell_shell_version": false,
+      "prevent_idle_sleep": false,
+      "psp": false,
+      "realtime_conversation": false,
+      "reasoning_effort_override": false,
+      "recommended_plugins": false,
+      "remote_control": false,
+      "remote_models": false,
+      "remote_plugin": false,
+      "request_permissions_tool": false,
+      "request_rule": false,
+      "respect_system_proxy": false,
+      "responses_websockets": false,
+      "responses_websockets_v2": false,
+      "retain_client_developer_messages": false,
+      "rollout_budget": false,
+      "runtime_metrics": false,
+      "search_tool": false,
+      "secret_auth_storage": false,
+      "send_async_message": false,
+      "shell_snapshot_v2": false,
       "shell_tool": true,
-      "sleep_tool": {
-       "enabled": false
-      },
-      "view_image": false
+      "shell_zsh_fork": false,
+      "skill_env_var_dependency_prompt": false,
+      "skill_mcp_dependency_install": false,
+      "skill_search": false,
+      "skip_host_skill_discovery": false,
+      "sleep_tool": false,
+      "standalone_web_search": false,
+      "step_model_switching": false,
+      "terminal_visualization_instructions": false,
+      "token_budget": false,
+      "tool_search": false,
+      "tool_suggest": false,
+      "transcript_v2": false,
+      "unavailable_dummy_tools": false,
+      "undo": false,
+      "unified_exec": true,
+      "unified_exec_tty": true,
+      "unified_image_budget": false,
+      "use_agent_identity": false,
+      "use_legacy_landlock": false,
+      "use_linux_sandbox_bwrap": false,
+      "view_image": false,
+      "web_search_cached": false,
+      "web_search_request": false,
+      "windows_sandbox_service": false,
+      "workspace_dependencies": false,
+      "workspace_owner_usage_nudge": false,
+      "worktrees": false,
+      "write_stdin_approval": false
      },
      "forced_login_method": "chatgpt",
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-        "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+        "/run/user/1000/veldo0127-live-z7op398x/server.py",
+        "/run/user/1000/veldo0127-live-z7op398x/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -906,7 +1330,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/7c2c477c2eff96bf4d3af46892b53b38/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/d9bbb9afc95fd188f65b51207902eae1/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -915,7 +1339,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -936,20 +1360,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a0edb2-0435-7632-b0b6-5d5cbc027906",
-        "session_id": "01a0edb2-0422-7861-860e-a50b69fbbcf4",
-        "thread_id": "01a0edb2-0422-7861-860e-a50b69fbbcf4",
-        "turn_id": "01a0edb2-0435-7632-b0b6-5d5cbc027906",
-        "x-codex-installation-id": "5db69726-87e6-43c4-a222-894957220b21",
-        "x-codex-turn-metadata": "{\"installation_id\":\"5db69726-87e6-43c4-a222-894957220b21\",\"session_id\":\"01a0edb2-0422-7861-860e-a50b69fbbcf4\",\"thread_id\":\"01a0edb2-0422-7861-860e-a50b69fbbcf4\",\"agent_name\":\"/root\",\"turn_id\":\"01a0edb2-0435-7632-b0b6-5d5cbc027906\",\"window_id\":\"01a0edb2-0422-7861-860e-a50b69fbbcf4:0\",\"window_number\":0,\"context_window_id\":\"01a0edb2-0422-7861-860e-a516b8d339cc\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0edb2-0435-7632-b0b6-5d5cbc027906\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790694261813}",
-        "x-codex-window-id": "01a0edb2-0422-7861-860e-a50b69fbbcf4:0"
+        "root_turn_id": "01a0eed0-ab9b-7dc1-a4a4-1f702f239e71",
+        "session_id": "01a0eed0-ab87-7692-874e-2af6542929e4",
+        "thread_id": "01a0eed0-ab87-7692-874e-2af6542929e4",
+        "turn_id": "01a0eed0-ab9b-7dc1-a4a4-1f702f239e71",
+        "x-codex-installation-id": "6fdaa655-5f51-42c4-aa50-b25c8b99a331",
+        "x-codex-turn-metadata": "{\"installation_id\":\"6fdaa655-5f51-42c4-aa50-b25c8b99a331\",\"session_id\":\"01a0eed0-ab87-7692-874e-2af6542929e4\",\"thread_id\":\"01a0eed0-ab87-7692-874e-2af6542929e4\",\"agent_name\":\"/root\",\"turn_id\":\"01a0eed0-ab9b-7dc1-a4a4-1f702f239e71\",\"window_id\":\"01a0eed0-ab87-7692-874e-2af6542929e4:0\",\"window_number\":0,\"context_window_id\":\"01a0eed0-ab87-7692-874e-2b00ce4a55ce\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0eed0-ab9b-7dc1-a4a4-1f702f239e71\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790713047964}",
+        "x-codex-window-id": "01a0eed0-ab87-7692-874e-2af6542929e4:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_a512fe0a-e92d-5d23-ab66-c11c8c5d6eb7",
+         "id": "at_0220ce5a-ccdd-5459-890b-941ebbe8ac93",
          "role": "developer",
          "tools": [
           {
@@ -1010,7 +1434,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_cd64cf25-bdbf-5b88-abb1-853ed873e537",
+         "id": "msg_0a7cf54d-3bc7-58ed-a253-478ebe36c117",
          "role": "developer",
          "type": "message"
         },
@@ -1021,7 +1445,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-238dfbgv/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-6rlc56uw/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -1033,18 +1457,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-0472-7243-be89-f17177b5ebdd",
+         "id": "msg_01a0eed0-abcc-71f1-9fcd-1f98a5c61023",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-238dfbgv/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-238dfbgv/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-6rlc56uw/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-6rlc56uw/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-0472-7243-be89-f1896415e4ff",
+         "id": "msg_01a0eed0-abcc-71f1-9fcd-1fa1e8c4dcf2",
          "role": "user",
          "type": "message"
         },
@@ -1055,14 +1479,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-0475-7423-ae1e-7d474f75f7b6",
+         "id": "msg_01a0eed0-abce-7620-9f7b-0d8e3883ecea",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a0edb2-0422-7861-860e-a50b69fbbcf4",
+       "prompt_cache_key": "01a0eed0-ab87-7692-874e-2af6542929e4",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -1079,8 +1503,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-238dfbgv\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-238dfbgv/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0edb2-0422-7861-860e-a50b69fbbcf4\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-6rlc56uw\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-6rlc56uw/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0eed0-ab87-7692-874e-2af6542929e4\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -1157,23 +1581,129 @@
     "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
     "features": {
      "apply_patch_freeform": false,
+     "apply_patch_preserve_line_endings": false,
+     "apply_patch_streaming_events": false,
+     "apps": false,
+     "apps_mcp_path_override": false,
+     "artifact": false,
+     "background_paginated_rollout_migration": false,
+     "bedrock_setup_wizard": false,
+     "browser_use": false,
+     "browser_use_external": false,
+     "browser_use_full_cdp_access": false,
+     "chronicle": false,
+     "code_mode": false,
+     "code_mode_buffered_exec": false,
+     "code_mode_interrupt": false,
+     "code_mode_only": false,
+     "code_mode_prewarm": false,
+     "codex_git_commit": false,
+     "computer_use": false,
+     "concurrent_reasoning_summaries": false,
+     "context_management": false,
+     "current_time_reminder": false,
+     "cwd_relative_turn_diffs": false,
+     "default_mode_request_user_input": false,
+     "deferred_executor": false,
+     "deferred_tool_world_state": false,
+     "elevated_windows_sandbox": false,
+     "enable_fanout": false,
+     "enable_mcp_apps": false,
+     "exec_permission_approvals": false,
+     "executed_tool_call_metadata": false,
+     "executor_capability_discovery": false,
+     "experimental_windows_sandbox": false,
+     "external_agent_memory_import": false,
+     "external_migration": false,
      "goals": false,
+     "guardian_enhanced_node_repl_transcripts": false,
+     "guardian_ext": false,
+     "guardian_node_repl_transcript_images": false,
+     "guardian_reuse_parent_compaction": false,
+     "guardianv2": false,
+     "guardianv2.thread_context": false,
+     "hooks": false,
+     "image_detail_original": false,
+     "image_generation": false,
+     "image_resize_notice": false,
+     "in_app_browser": false,
+     "in_app_local_automation": false,
+     "js_repl": false,
+     "js_repl_tools_only": false,
+     "local_thread_store_compression": false,
+     "local_thread_store_shared_compression": false,
+     "mcp_2026_07_28": false,
+     "mcp_oauth_refresh_coordination": false,
+     "memories": false,
+     "mentions_v2": false,
      "multi_agent": false,
+     "multi_agent_mode": false,
      "multi_agent_v2": {
       "enabled": false
      },
+     "network_proxy": false,
+     "non_prefixed_mcp_tool_names": false,
+     "omit_app_server_notification_media": false,
+     "plugin_hooks": false,
+     "plugins": false,
+     "powershell_shell_version": false,
+     "prevent_idle_sleep": false,
+     "psp": false,
+     "realtime_conversation": false,
+     "reasoning_effort_override": false,
+     "recommended_plugins": false,
+     "remote_control": false,
+     "remote_models": false,
+     "remote_plugin": false,
+     "request_permissions_tool": false,
+     "request_rule": false,
+     "respect_system_proxy": false,
+     "responses_websockets": false,
+     "responses_websockets_v2": false,
+     "retain_client_developer_messages": false,
+     "rollout_budget": false,
+     "runtime_metrics": false,
+     "search_tool": false,
+     "secret_auth_storage": false,
+     "send_async_message": false,
+     "shell_snapshot_v2": false,
      "shell_tool": true,
-     "sleep_tool": {
-      "enabled": false
-     },
-     "view_image": false
+     "shell_zsh_fork": false,
+     "skill_env_var_dependency_prompt": false,
+     "skill_mcp_dependency_install": false,
+     "skill_search": false,
+     "skip_host_skill_discovery": false,
+     "sleep_tool": false,
+     "standalone_web_search": false,
+     "step_model_switching": false,
+     "terminal_visualization_instructions": false,
+     "token_budget": false,
+     "tool_search": false,
+     "tool_suggest": false,
+     "transcript_v2": false,
+     "unavailable_dummy_tools": false,
+     "undo": false,
+     "unified_exec": true,
+     "unified_exec_tty": true,
+     "unified_image_budget": false,
+     "use_agent_identity": false,
+     "use_legacy_landlock": false,
+     "use_linux_sandbox_bwrap": false,
+     "view_image": false,
+     "web_search_cached": false,
+     "web_search_request": false,
+     "windows_sandbox_service": false,
+     "workspace_dependencies": false,
+     "workspace_owner_usage_nudge": false,
+     "worktrees": false,
+     "write_stdin_approval": false
     },
     "forced_login_method": "chatgpt",
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-       "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+       "/run/user/1000/veldo0127-live-z7op398x/server.py",
+       "/run/user/1000/veldo0127-live-z7op398x/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1186,7 +1716,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/5212d3efa0b86a6453736b3eaf268874/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/9b18a5c6fca10c058bcd0477121fdc02/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1195,7 +1725,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -1216,7 +1746,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 8382,
+      "input_tokens": 7939,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -1251,7 +1781,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 8382,
+   "first_turn_context": 7939,
    "init": {},
    "listing": [
     {
@@ -1394,9 +1924,9 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 2096,
-    "digest": "sha256:cce6684f9fe9057c63219ea3364826f7cb322a84b22934ba0b7fc9d1fa1d83b3",
-    "lines": 8
+    "bytes": 3321,
+    "digest": "sha256:b15665fb977b5bedf2eaf1a6c0d06db6a59305d6e71f4cdcc6eb0b7db34d7233",
+    "lines": 11
    },
    "revision": {
     "digest": "sha256:466b0824b501d2bb97ba1b41331b1d5743d2f473be2cd63ec8b674068b10edd2",
@@ -1458,23 +1988,129 @@
      "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
      "features": {
       "apply_patch_freeform": false,
+      "apply_patch_preserve_line_endings": false,
+      "apply_patch_streaming_events": false,
+      "apps": false,
+      "apps_mcp_path_override": false,
+      "artifact": false,
+      "background_paginated_rollout_migration": false,
+      "bedrock_setup_wizard": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "chronicle": false,
+      "code_mode": false,
+      "code_mode_buffered_exec": false,
+      "code_mode_interrupt": false,
+      "code_mode_only": false,
+      "code_mode_prewarm": false,
+      "codex_git_commit": false,
+      "computer_use": false,
+      "concurrent_reasoning_summaries": false,
+      "context_management": false,
+      "current_time_reminder": false,
+      "cwd_relative_turn_diffs": false,
+      "default_mode_request_user_input": false,
+      "deferred_executor": false,
+      "deferred_tool_world_state": false,
+      "elevated_windows_sandbox": false,
+      "enable_fanout": false,
+      "enable_mcp_apps": false,
+      "exec_permission_approvals": false,
+      "executed_tool_call_metadata": false,
+      "executor_capability_discovery": false,
+      "experimental_windows_sandbox": false,
+      "external_agent_memory_import": false,
+      "external_migration": false,
       "goals": false,
+      "guardian_enhanced_node_repl_transcripts": false,
+      "guardian_ext": false,
+      "guardian_node_repl_transcript_images": false,
+      "guardian_reuse_parent_compaction": false,
+      "guardianv2": false,
+      "guardianv2.thread_context": false,
+      "hooks": false,
+      "image_detail_original": false,
+      "image_generation": false,
+      "image_resize_notice": false,
+      "in_app_browser": false,
+      "in_app_local_automation": false,
+      "js_repl": false,
+      "js_repl_tools_only": false,
+      "local_thread_store_compression": false,
+      "local_thread_store_shared_compression": false,
+      "mcp_2026_07_28": false,
+      "mcp_oauth_refresh_coordination": false,
+      "memories": false,
+      "mentions_v2": false,
       "multi_agent": false,
+      "multi_agent_mode": false,
       "multi_agent_v2": {
        "enabled": false
       },
+      "network_proxy": false,
+      "non_prefixed_mcp_tool_names": false,
+      "omit_app_server_notification_media": false,
+      "plugin_hooks": false,
+      "plugins": false,
+      "powershell_shell_version": false,
+      "prevent_idle_sleep": false,
+      "psp": false,
+      "realtime_conversation": false,
+      "reasoning_effort_override": false,
+      "recommended_plugins": false,
+      "remote_control": false,
+      "remote_models": false,
+      "remote_plugin": false,
+      "request_permissions_tool": false,
+      "request_rule": false,
+      "respect_system_proxy": false,
+      "responses_websockets": false,
+      "responses_websockets_v2": false,
+      "retain_client_developer_messages": false,
+      "rollout_budget": false,
+      "runtime_metrics": false,
+      "search_tool": false,
+      "secret_auth_storage": false,
+      "send_async_message": false,
+      "shell_snapshot_v2": false,
       "shell_tool": true,
-      "sleep_tool": {
-       "enabled": false
-      },
-      "view_image": false
+      "shell_zsh_fork": false,
+      "skill_env_var_dependency_prompt": false,
+      "skill_mcp_dependency_install": false,
+      "skill_search": false,
+      "skip_host_skill_discovery": false,
+      "sleep_tool": false,
+      "standalone_web_search": false,
+      "step_model_switching": false,
+      "terminal_visualization_instructions": false,
+      "token_budget": false,
+      "tool_search": false,
+      "tool_suggest": false,
+      "transcript_v2": false,
+      "unavailable_dummy_tools": false,
+      "undo": false,
+      "unified_exec": true,
+      "unified_exec_tty": true,
+      "unified_image_budget": false,
+      "use_agent_identity": false,
+      "use_legacy_landlock": false,
+      "use_linux_sandbox_bwrap": false,
+      "view_image": false,
+      "web_search_cached": false,
+      "web_search_request": false,
+      "windows_sandbox_service": false,
+      "workspace_dependencies": false,
+      "workspace_owner_usage_nudge": false,
+      "worktrees": false,
+      "write_stdin_approval": false
      },
      "forced_login_method": "chatgpt",
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-        "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+        "/run/user/1000/veldo0127-live-z7op398x/server.py",
+        "/run/user/1000/veldo0127-live-z7op398x/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -1487,7 +2123,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/5212d3efa0b86a6453736b3eaf268874/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/9b18a5c6fca10c058bcd0477121fdc02/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -1496,7 +2132,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -1517,20 +2153,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a0edb2-199f-7c50-8a10-0a73e0188731",
-        "session_id": "01a0edb2-198b-7882-8b02-ec5999eb09af",
-        "thread_id": "01a0edb2-198b-7882-8b02-ec5999eb09af",
-        "turn_id": "01a0edb2-199f-7c50-8a10-0a73e0188731",
-        "x-codex-installation-id": "240a494b-d6ca-42f4-87b5-b56ad3686759",
-        "x-codex-turn-metadata": "{\"installation_id\":\"240a494b-d6ca-42f4-87b5-b56ad3686759\",\"session_id\":\"01a0edb2-198b-7882-8b02-ec5999eb09af\",\"thread_id\":\"01a0edb2-198b-7882-8b02-ec5999eb09af\",\"agent_name\":\"/root\",\"turn_id\":\"01a0edb2-199f-7c50-8a10-0a73e0188731\",\"window_id\":\"01a0edb2-198b-7882-8b02-ec5999eb09af:0\",\"window_number\":0,\"context_window_id\":\"01a0edb2-198b-7882-8b02-ec6b59af89f0\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0edb2-199f-7c50-8a10-0a73e0188731\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790694267295}",
-        "x-codex-window-id": "01a0edb2-198b-7882-8b02-ec5999eb09af:0"
+        "root_turn_id": "01a0eed0-c68c-7c82-8a7b-3d68bc1b6ab5",
+        "session_id": "01a0eed0-c679-7b72-8cc9-7c410f051ce8",
+        "thread_id": "01a0eed0-c679-7b72-8cc9-7c410f051ce8",
+        "turn_id": "01a0eed0-c68c-7c82-8a7b-3d68bc1b6ab5",
+        "x-codex-installation-id": "a65cfb8d-e729-41ff-9b4e-635c7de82c1f",
+        "x-codex-turn-metadata": "{\"installation_id\":\"a65cfb8d-e729-41ff-9b4e-635c7de82c1f\",\"session_id\":\"01a0eed0-c679-7b72-8cc9-7c410f051ce8\",\"thread_id\":\"01a0eed0-c679-7b72-8cc9-7c410f051ce8\",\"agent_name\":\"/root\",\"turn_id\":\"01a0eed0-c68c-7c82-8a7b-3d68bc1b6ab5\",\"window_id\":\"01a0eed0-c679-7b72-8cc9-7c410f051ce8:0\",\"window_number\":0,\"context_window_id\":\"01a0eed0-c679-7b72-8cc9-7c558e3118ad\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0eed0-c68c-7c82-8a7b-3d68bc1b6ab5\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790713054860}",
+        "x-codex-window-id": "01a0eed0-c679-7b72-8cc9-7c410f051ce8:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_0a292d14-26a4-52c7-ae9c-b43176a3fc40",
+         "id": "at_11e62824-5172-5e10-822a-826e707f3fe4",
          "role": "developer",
          "tools": [
           {
@@ -1591,7 +2227,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_0803c967-27a0-54a5-a0ae-1e274f935f14",
+         "id": "msg_6f8fab91-27a5-5fd8-ad81-4e39e166b443",
          "role": "developer",
          "type": "message"
         },
@@ -1602,7 +2238,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-m6e_2017/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-bq_vo276/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -1614,18 +2250,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-19dc-7f13-a256-e6009c97dcde",
+         "id": "msg_01a0eed0-c6bc-7cd1-898d-2c19a15c7df0",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-m6e_2017/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-m6e_2017/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-bq_vo276/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-bq_vo276/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-19dc-7f13-a256-e619b3f8805f",
+         "id": "msg_01a0eed0-c6bc-7cd1-898d-2c2aa9b2467a",
          "role": "user",
          "type": "message"
         },
@@ -1636,14 +2272,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-19e0-7a53-a1a1-f124262464f6",
+         "id": "msg_01a0eed0-c6c3-7563-874c-95e709b5e257",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a0edb2-198b-7882-8b02-ec5999eb09af",
+       "prompt_cache_key": "01a0eed0-c679-7b72-8cc9-7c410f051ce8",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -1660,8 +2296,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-m6e_2017\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-m6e_2017/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0edb2-198b-7882-8b02-ec5999eb09af\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-bq_vo276\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-bq_vo276/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0eed0-c679-7b72-8cc9-7c410f051ce8\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -1738,23 +2374,129 @@
     "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
     "features": {
      "apply_patch_freeform": false,
+     "apply_patch_preserve_line_endings": false,
+     "apply_patch_streaming_events": false,
+     "apps": false,
+     "apps_mcp_path_override": false,
+     "artifact": false,
+     "background_paginated_rollout_migration": false,
+     "bedrock_setup_wizard": false,
+     "browser_use": false,
+     "browser_use_external": false,
+     "browser_use_full_cdp_access": false,
+     "chronicle": false,
+     "code_mode": false,
+     "code_mode_buffered_exec": false,
+     "code_mode_interrupt": false,
+     "code_mode_only": false,
+     "code_mode_prewarm": false,
+     "codex_git_commit": false,
+     "computer_use": false,
+     "concurrent_reasoning_summaries": false,
+     "context_management": false,
+     "current_time_reminder": false,
+     "cwd_relative_turn_diffs": false,
+     "default_mode_request_user_input": false,
+     "deferred_executor": false,
+     "deferred_tool_world_state": false,
+     "elevated_windows_sandbox": false,
+     "enable_fanout": false,
+     "enable_mcp_apps": false,
+     "exec_permission_approvals": false,
+     "executed_tool_call_metadata": false,
+     "executor_capability_discovery": false,
+     "experimental_windows_sandbox": false,
+     "external_agent_memory_import": false,
+     "external_migration": false,
      "goals": false,
+     "guardian_enhanced_node_repl_transcripts": false,
+     "guardian_ext": false,
+     "guardian_node_repl_transcript_images": false,
+     "guardian_reuse_parent_compaction": false,
+     "guardianv2": false,
+     "guardianv2.thread_context": false,
+     "hooks": false,
+     "image_detail_original": false,
+     "image_generation": false,
+     "image_resize_notice": false,
+     "in_app_browser": false,
+     "in_app_local_automation": false,
+     "js_repl": false,
+     "js_repl_tools_only": false,
+     "local_thread_store_compression": false,
+     "local_thread_store_shared_compression": false,
+     "mcp_2026_07_28": false,
+     "mcp_oauth_refresh_coordination": false,
+     "memories": false,
+     "mentions_v2": false,
      "multi_agent": false,
+     "multi_agent_mode": false,
      "multi_agent_v2": {
       "enabled": false
      },
+     "network_proxy": false,
+     "non_prefixed_mcp_tool_names": false,
+     "omit_app_server_notification_media": false,
+     "plugin_hooks": false,
+     "plugins": false,
+     "powershell_shell_version": false,
+     "prevent_idle_sleep": false,
+     "psp": false,
+     "realtime_conversation": false,
+     "reasoning_effort_override": false,
+     "recommended_plugins": false,
+     "remote_control": false,
+     "remote_models": false,
+     "remote_plugin": false,
+     "request_permissions_tool": false,
+     "request_rule": false,
+     "respect_system_proxy": false,
+     "responses_websockets": false,
+     "responses_websockets_v2": false,
+     "retain_client_developer_messages": false,
+     "rollout_budget": false,
+     "runtime_metrics": false,
+     "search_tool": false,
+     "secret_auth_storage": false,
+     "send_async_message": false,
+     "shell_snapshot_v2": false,
      "shell_tool": true,
-     "sleep_tool": {
-      "enabled": false
-     },
-     "view_image": false
+     "shell_zsh_fork": false,
+     "skill_env_var_dependency_prompt": false,
+     "skill_mcp_dependency_install": false,
+     "skill_search": false,
+     "skip_host_skill_discovery": false,
+     "sleep_tool": false,
+     "standalone_web_search": false,
+     "step_model_switching": false,
+     "terminal_visualization_instructions": false,
+     "token_budget": false,
+     "tool_search": false,
+     "tool_suggest": false,
+     "transcript_v2": false,
+     "unavailable_dummy_tools": false,
+     "undo": false,
+     "unified_exec": true,
+     "unified_exec_tty": true,
+     "unified_image_budget": false,
+     "use_agent_identity": false,
+     "use_legacy_landlock": false,
+     "use_linux_sandbox_bwrap": false,
+     "view_image": false,
+     "web_search_cached": false,
+     "web_search_request": false,
+     "windows_sandbox_service": false,
+     "workspace_dependencies": false,
+     "workspace_owner_usage_nudge": false,
+     "worktrees": false,
+     "write_stdin_approval": false
     },
     "forced_login_method": "chatgpt",
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-       "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+       "/run/user/1000/veldo0127-live-z7op398x/server.py",
+       "/run/user/1000/veldo0127-live-z7op398x/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1767,7 +2509,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/19abde82950672e9a8a31177cd31ce5e/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/10ac25c3e663ac05dccff610a5a05fa6/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1776,7 +2518,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -1797,7 +2539,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 8385,
+      "input_tokens": 7947,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -1832,7 +2574,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 8385,
+   "first_turn_context": 7947,
    "init": {},
    "listing": [
     {
@@ -1975,9 +2717,9 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 2097,
-    "digest": "sha256:1b935dcef880ba71442db20f2991e20e42c292d2ba7b36ac7d08a1daf6d72005",
-    "lines": 8
+    "bytes": 3321,
+    "digest": "sha256:569d656a62368d7ac2d1a76a6da76a522e7624bd45f4983d0cffaddb2f667ac1",
+    "lines": 11
    },
    "revision": {
     "digest": "sha256:466b0824b501d2bb97ba1b41331b1d5743d2f473be2cd63ec8b674068b10edd2",
@@ -2039,23 +2781,129 @@
      "developer_instructions": "Use the listed role instruction.\n\n\nUse the project role instruction.\n",
      "features": {
       "apply_patch_freeform": false,
+      "apply_patch_preserve_line_endings": false,
+      "apply_patch_streaming_events": false,
+      "apps": false,
+      "apps_mcp_path_override": false,
+      "artifact": false,
+      "background_paginated_rollout_migration": false,
+      "bedrock_setup_wizard": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "chronicle": false,
+      "code_mode": false,
+      "code_mode_buffered_exec": false,
+      "code_mode_interrupt": false,
+      "code_mode_only": false,
+      "code_mode_prewarm": false,
+      "codex_git_commit": false,
+      "computer_use": false,
+      "concurrent_reasoning_summaries": false,
+      "context_management": false,
+      "current_time_reminder": false,
+      "cwd_relative_turn_diffs": false,
+      "default_mode_request_user_input": false,
+      "deferred_executor": false,
+      "deferred_tool_world_state": false,
+      "elevated_windows_sandbox": false,
+      "enable_fanout": false,
+      "enable_mcp_apps": false,
+      "exec_permission_approvals": false,
+      "executed_tool_call_metadata": false,
+      "executor_capability_discovery": false,
+      "experimental_windows_sandbox": false,
+      "external_agent_memory_import": false,
+      "external_migration": false,
       "goals": false,
+      "guardian_enhanced_node_repl_transcripts": false,
+      "guardian_ext": false,
+      "guardian_node_repl_transcript_images": false,
+      "guardian_reuse_parent_compaction": false,
+      "guardianv2": false,
+      "guardianv2.thread_context": false,
+      "hooks": false,
+      "image_detail_original": false,
+      "image_generation": false,
+      "image_resize_notice": false,
+      "in_app_browser": false,
+      "in_app_local_automation": false,
+      "js_repl": false,
+      "js_repl_tools_only": false,
+      "local_thread_store_compression": false,
+      "local_thread_store_shared_compression": false,
+      "mcp_2026_07_28": false,
+      "mcp_oauth_refresh_coordination": false,
+      "memories": false,
+      "mentions_v2": false,
       "multi_agent": false,
+      "multi_agent_mode": false,
       "multi_agent_v2": {
        "enabled": false
       },
+      "network_proxy": false,
+      "non_prefixed_mcp_tool_names": false,
+      "omit_app_server_notification_media": false,
+      "plugin_hooks": false,
+      "plugins": false,
+      "powershell_shell_version": false,
+      "prevent_idle_sleep": false,
+      "psp": false,
+      "realtime_conversation": false,
+      "reasoning_effort_override": false,
+      "recommended_plugins": false,
+      "remote_control": false,
+      "remote_models": false,
+      "remote_plugin": false,
+      "request_permissions_tool": false,
+      "request_rule": false,
+      "respect_system_proxy": false,
+      "responses_websockets": false,
+      "responses_websockets_v2": false,
+      "retain_client_developer_messages": false,
+      "rollout_budget": false,
+      "runtime_metrics": false,
+      "search_tool": false,
+      "secret_auth_storage": false,
+      "send_async_message": false,
+      "shell_snapshot_v2": false,
       "shell_tool": true,
-      "sleep_tool": {
-       "enabled": false
-      },
-      "view_image": false
+      "shell_zsh_fork": false,
+      "skill_env_var_dependency_prompt": false,
+      "skill_mcp_dependency_install": false,
+      "skill_search": false,
+      "skip_host_skill_discovery": false,
+      "sleep_tool": false,
+      "standalone_web_search": false,
+      "step_model_switching": false,
+      "terminal_visualization_instructions": false,
+      "token_budget": false,
+      "tool_search": false,
+      "tool_suggest": false,
+      "transcript_v2": false,
+      "unavailable_dummy_tools": false,
+      "undo": false,
+      "unified_exec": true,
+      "unified_exec_tty": true,
+      "unified_image_budget": false,
+      "use_agent_identity": false,
+      "use_legacy_landlock": false,
+      "use_linux_sandbox_bwrap": false,
+      "view_image": false,
+      "web_search_cached": false,
+      "web_search_request": false,
+      "windows_sandbox_service": false,
+      "workspace_dependencies": false,
+      "workspace_owner_usage_nudge": false,
+      "worktrees": false,
+      "write_stdin_approval": false
      },
      "forced_login_method": "chatgpt",
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-xqenlsgu/server.py",
-        "/run/user/1000/veldo0127-live-xqenlsgu/jira.value"
+        "/run/user/1000/veldo0127-live-z7op398x/server.py",
+        "/run/user/1000/veldo0127-live-z7op398x/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -2068,7 +2916,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-xqenlsgu/factory/runs/19abde82950672e9a8a31177cd31ce5e/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-z7op398x/factory/runs/10ac25c3e663ac05dccff610a5a05fa6/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -2077,7 +2925,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-xqenlsgu/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-z7op398x/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -2098,20 +2946,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a0edb2-2dfa-79c2-8d9e-ee55236577f9",
-        "session_id": "01a0edb2-2de7-7521-aa52-f311c8d275b3",
-        "thread_id": "01a0edb2-2de7-7521-aa52-f311c8d275b3",
-        "turn_id": "01a0edb2-2dfa-79c2-8d9e-ee55236577f9",
-        "x-codex-installation-id": "36dbee0a-dada-4de9-a98d-81913c06eea2",
-        "x-codex-turn-metadata": "{\"installation_id\":\"36dbee0a-dada-4de9-a98d-81913c06eea2\",\"session_id\":\"01a0edb2-2de7-7521-aa52-f311c8d275b3\",\"thread_id\":\"01a0edb2-2de7-7521-aa52-f311c8d275b3\",\"agent_name\":\"/root\",\"turn_id\":\"01a0edb2-2dfa-79c2-8d9e-ee55236577f9\",\"window_id\":\"01a0edb2-2de7-7521-aa52-f311c8d275b3:0\",\"window_number\":0,\"context_window_id\":\"01a0edb2-2de7-7521-aa52-f3299efa040a\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0edb2-2dfa-79c2-8d9e-ee55236577f9\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790694272507}",
-        "x-codex-window-id": "01a0edb2-2de7-7521-aa52-f311c8d275b3:0"
+        "root_turn_id": "01a0eed0-dc37-70f2-8a0c-019550e5efdd",
+        "session_id": "01a0eed0-dc25-7780-bd04-b99ff49e046d",
+        "thread_id": "01a0eed0-dc25-7780-bd04-b99ff49e046d",
+        "turn_id": "01a0eed0-dc37-70f2-8a0c-019550e5efdd",
+        "x-codex-installation-id": "6623a168-3e38-4885-ad4a-8cab4463e5f3",
+        "x-codex-turn-metadata": "{\"installation_id\":\"6623a168-3e38-4885-ad4a-8cab4463e5f3\",\"session_id\":\"01a0eed0-dc25-7780-bd04-b99ff49e046d\",\"thread_id\":\"01a0eed0-dc25-7780-bd04-b99ff49e046d\",\"agent_name\":\"/root\",\"turn_id\":\"01a0eed0-dc37-70f2-8a0c-019550e5efdd\",\"window_id\":\"01a0eed0-dc25-7780-bd04-b99ff49e046d:0\",\"window_number\":0,\"context_window_id\":\"01a0eed0-dc25-7780-bd04-b9a56f4fb703\",\"request_kind\":\"turn\",\"root_turn_id\":\"01a0eed0-dc37-70f2-8a0c-019550e5efdd\",\"thread_source\":\"user\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1790713060408}",
+        "x-codex-window-id": "01a0eed0-dc25-7780-bd04-b99ff49e046d:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_0d9d5c4a-d27a-58a9-8dbe-80abf8a49b92",
+         "id": "at_25b65b66-9dbf-5b64-a86f-359956c682c2",
          "role": "developer",
          "tools": [
           {
@@ -2172,7 +3020,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_7b04a53d-c300-54f3-907b-5d7311703fa3",
+         "id": "msg_5cad4ee9-195e-5cf7-bd92-4c926239f338",
          "role": "developer",
          "type": "message"
         },
@@ -2183,7 +3031,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-286xkal0/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-dklik3ag/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -2195,18 +3043,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-2e33-7cb3-89d7-b7c5413fe60e",
+         "id": "msg_01a0eed0-dc69-7391-b3d2-a103089fe40f",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-286xkal0/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-286xkal0/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-dklik3ag/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-09-29</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-dklik3ag/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-2e33-7cb3-89d7-b7d2e9e9f38e",
+         "id": "msg_01a0eed0-dc69-7391-b3d2-a11dcb6c200a",
          "role": "user",
          "type": "message"
         },
@@ -2217,14 +3065,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a0edb2-2e36-7b61-9406-c0c9d57d7d35",
+         "id": "msg_01a0eed0-dc72-7f81-b876-11b0df02ddfc",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a0edb2-2de7-7521-aa52-f311c8d275b3",
+       "prompt_cache_key": "01a0eed0-dc25-7780-bd04-b99ff49e046d",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -2241,8 +3089,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-286xkal0\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-286xkal0/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0edb2-2de7-7521-aa52-f311c8d275b3\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-dklik3ag\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-dklik3ag/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a0eed0-dc25-7780-bd04-b99ff49e046d\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
