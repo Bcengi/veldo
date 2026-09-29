@@ -1,5 +1,5 @@
 --- a/.veldo/control_accounts.py
 +++ b/.veldo/control_accounts.py
-@@ -316 +316 @@
+@@ -325 +325 @@
 -            if not params.get('clear_rejection') and params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):
 +            if params['status'] is None and prior is not None and blocking({'windows': {'w': prior}}, params['now']):

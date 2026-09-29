@@ -278,8 +278,9 @@ class Accounts:
 
     def observe(self, command_id, account, window_id, *, status, reset_at, utilization, source_dispatch, now,
                 clear_rejection=False):
-        """Record a reported window; an explicit clear can lift a rejection without inventing a status."""
-        if (not _text(window_id) or status not in WINDOW_STATUSES or (reset_at is not None and not _number(reset_at))
+        """Record a window or, with no window id, an explicit clear of a stored unified rejection."""
+        if ((not _text(window_id) and not (window_id is None and clear_rejection))
+                or status not in WINDOW_STATUSES or (reset_at is not None and not _number(reset_at))
                 or (utilization is not None and (not _number(utilization) or utilization < 0))
                 or not _text(source_dispatch)):
             raise Refused('invalid_input', 'a window id, status, reset, utilization and source dispatch')
@@ -310,6 +311,14 @@ class Accounts:
         elif action == 'status':
             value = dict(current, status=params['status'])
         elif action == 'observe':
+            unified = current['windows'].get('unified')
+            if (params.get('clear_rejection') and unified is not None
+                    and unified.get('status') == 'rejected' and unified['observed_at'] <= params['now']):
+                # The clear applies to the account, including a rejection from an earlier dispatch.
+                current['windows']['unified'] = dict(unified, status='allowed', observed_at=params['now'],
+                                                     source_dispatch=params['source_dispatch'])
+            if params['window_id'] is None:
+                return {target: {'kind': KIND, 'data': current}}
             prior = current['windows'].get(params['window_id'])
             if prior is not None and prior['observed_at'] > params['now']:
                 return {}  # An older observation never replaces a newer one.

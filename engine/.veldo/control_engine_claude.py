@@ -946,7 +946,8 @@ class Meter:
     """Reads one invocation's stream line by line. `feed(bytes)` returns the observations the
     complete lines in it make: {'kind': 'usage', 'usage': cumulative {tokens, messages}} or
     {'kind': 'window', 'window_id', 'status', 'reset_at', 'utilization'}, each with its `line` and
-    `receipt`. `final()` is the conclusive total, without tokens when the result had no readable
+    `receipt`. A bare allowed event emits kind `clear_rejection` with no window id.
+    `final()` is the conclusive total, without tokens when the result had no readable
     modelUsage and empty when the CLI reported no result. `clock` and `zone` are the engine's clock
     and local time zone, for a CLI that states times in local time (this one does not)."""
 
@@ -1113,6 +1114,10 @@ class Meter:
                                   clear_rejection=named is None and status == 'allowed',
                                   reset_at=reset if _number(reset) else None,
                                   utilization=utilization if _number(utilization) and utilization >= 0 else None))
+            if not found and named is None and status == 'allowed':
+                # Carry a bare clear to the store without inventing a window observation.
+                found.append(dict(seen, kind='clear_rejection', window_id=None, status=None,
+                                  reset_at=None, utilization=None, clear_rejection=True))
             return found
         return []
 

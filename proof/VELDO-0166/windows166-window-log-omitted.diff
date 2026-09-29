@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1967 +1967 @@
+@@ -1974 +1974 @@
 -                self.receiver.emit(dict(event='window_observed', account=self.account,
 +                dict(dict(event='window_observed', account=self.account,

@@ -26,7 +26,9 @@ def _v166_suite():
                                   'windows/rejection-kept', 'windows/named-fallback',
                                   'windows/named-precedence', 'windows/rejection-reset-filled',
                                   'windows/clear', 'windows/unnamed-rejection',
-                                  'windows/clear-active-rejection', 'observability/counts-and-log',
+                                  'windows/clear-active-rejection', 'windows/clear-unified-no-reset',
+                                  'windows/clear-unified-reset', 'windows/clear-unified-bare',
+                                  'observability/counts-and-log',
                                   'profiles/existing', 'profiles/created')}
 
     def check(row, label, condition):
@@ -76,9 +78,10 @@ def _v166_suite():
                 accounts.register('register/' + name, fields['account'], fields['provider'], fields['label'],
                                   fields['profiles'], now=1)
                 accounts.principal = 'receiver'
-            def observe(name, *lines):
-                register(name)
-                contract = dict(dispatch_id='dispatch/' + name, unit='unit/' + name,
+            def observe(name, *lines, dispatch=None):
+                if dispatch is None:
+                    register(name)
+                contract = dict(dispatch_id=dispatch or 'dispatch/' + name, unit='unit/' + name,
                                 reservation=dict(account=name, project='project'))
                 events = []
                 receiver = SimpleNamespace(login={'engine': C}, config={'store': str(base / 'store.sqlite3')},
@@ -253,6 +256,48 @@ def _v166_suite():
                       and windows.get('five_hour', {}).get('reset_at') == now + 7200
                       and windows.get('five_hour', {}).get('utilization') == 0.1
                       and kept[1:] == [first, clear, clear])
+
+            # The real clear map has no unified entry. Reopen a persisted unnamed rejection,
+            # both in the same stream and when a new dispatch has no local memory of it.
+            for suffix, reset, bare in (('no-reset', None, False), ('reset', now + 3600, False),
+                                        ('bare', None, True)):
+                first = rate(dict(status='rejected', **({} if reset is None else {'resetsAt': reset})))
+                clear_info = dict(status='allowed')
+                if not bare:
+                    clear_info.update(isUsingOverage=False, unifiedWindows={
+                        'five_hour': dict(utilization=0.1, resetsAt=now + 7200),
+                        'seven_day': dict(utilization=0.3, resetsAt=now + 14400),
+                        'seven_day_overage_included': dict(utilization=0.0, resetsAt=now + 14400)})
+                clear = rate(clear_info)
+                for separate in (False, True):
+                    name = 'clear-unified-' + suffix + ('-later' if separate else '-same')
+                    row = 'windows/clear-unified-' + suffix
+                    if separate:
+                        _, prior_meter, _ = observe(name, first)
+                        check(row, 'earlier dispatch persisted a blocking rejection',
+                              not prior_meter.errors and pool_state(name, now) == ('account_limit:unified', False))
+                        windows, meter, kept = observe(name, clear, dispatch='dispatch/later/' + name)
+                    else:
+                        windows, meter, kept = observe(name, first, clear)
+                    unified = windows.get('unified', {})
+                    check(row, name + ': clear reopens the persisted account immediately',
+                          not meter.errors and meter.meter.limit() is None
+                          and pool_state(name, now) == (None, True)
+                          and unified.get('status') == 'allowed'
+                          and unified.get('source_dispatch') == meter.dispatch_id
+                          and unified.get('reset_at') == reset)
+                    expected = set(clear_info.get('unifiedWindows', {}))
+                    check(row, name + ': only reported windows counted, clear receipt retained',
+                          set(windows) == expected | {'unified'}
+                          and all(windows[w]['status'] is None for w in expected)
+                          and kept[1:] == ([] if separate else [first]) + [clear] * (1 if bare else 3)
+                          and meter.window_counts.get(('unified', 'allowed'), 0) == 0
+                          and meter.window_counts.get((None, None), 0) == 0)
+
+            windows, meter, kept = observe('clear-bare-empty', rate(dict(status='allowed')))
+            check('windows/clear', 'bare clear without an existing unified creates no window',
+                  not meter.errors and windows == {} and not meter.window_counts
+                  and meter.meter.limit() is None)
 
             passed = int(time.time()) - 60
             first = rate(dict(status='rejected', rateLimitType='five_hour', resetsAt=passed, utilization=1.0))

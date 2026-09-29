@@ -1,6 +1,7 @@
 # VELDO-0166 proof
 
-Implementation commit `7f54fdfe` on `build-veldo-0166`, fixing the re-check at `1b7d225e`.
+This re-check repairs the stored unified clear regression at `9cca7766` on `build-veldo-0166`.
+The preceding implementation was `7f54fdfe`, fixing the re-check at `1b7d225e`.
 The earlier implementation was `2c4f250c`, after the local main merge at `3544d4c4`.
 Veldo records every reported Claude Code usage window against the account and preserves an
 existing profile directory when registering it. All fixtures are generated locally; no engine,
@@ -20,7 +21,11 @@ fills it in while preserving the rejected status. The account is blocked only un
 including when the newly learned reset already passed. An unnamed allowed clear instead carries
 `clear_rejection` through Metering to the signed account writer. Its reported companions replace
 active rejections, including those with no reset, keeping their status absent. Both Meter and store
-then agree that the rejection was cleared.
+then agree that the rejection was cleared. The writer also lifts an existing `unified` rejection,
+including one persisted by an earlier dispatch, marking it allowed with the clearing dispatch and
+observation time. It preserves the reported reset and utilization. A bare allowed event forwards a
+clear signal with its receipt and no window id; it creates and counts no window. An account without
+a stored unified window still acquires none.
 
 Account registration changes the mode only of a directory it creates, to 0700. The helper counts
 successful additions in `ADDED_COUNTS` by created or existing and emits a structured stderr log
@@ -50,6 +55,9 @@ writer, production membership authorization and `accounts.account_add`. Each row
 | AC1 | `windows/clear` | A real unnamed clear updates both windows, stores no unified window and clears the stream limit. |
 | AC1 | `windows/unnamed-rejection` | An unnamed rejection stores unified, its reset and receipt; the real pool blocks until the reset or indefinitely without one. |
 | AC1 | `windows/clear-active-rejection` | A clear event lifts both no-reset and future-reset rejections in Meter and the real pool, without inventing statuses or a unified observation. |
+| AC1 | `windows/clear-unified-no-reset` | A real clear map reopens an unnamed no-reset rejection, in the same dispatch and a later dispatch. |
+| AC1 | `windows/clear-unified-reset` | The same clear reopens a future-reset rejection immediately, in both dispatch cases. |
+| AC1 | `windows/clear-unified-bare` | A bare allowed event reopens a persisted unnamed rejection without inventing a window observation. |
 | Observability | `observability/counts-and-log` | Counts separate names, statuses and directory states; structured logs carry required attribution and omit private metadata and contents. |
 | AC2 | `profiles/existing` | Both providers preserve mode 0755, file bytes, mtime and entries and record existing. |
 | AC2 | `profiles/created` | Both providers create mode 0700 under umask 022 and record created. |
@@ -62,17 +70,20 @@ on the original pre-0166 implementation. `red-at-3544d4c4.json` records all five
 red by assertion on the merged commit immediately before these fixes, with the seven existing
 rows green. `red-at-1b7d225e.json` records both re-check rows red by assertion on the commit immediately
 before this repair, with the 12 existing rows green. Every new behavior row is red on its
-pre-change implementation. None of these records contains an exception in place of an assertion.
+pre-change implementation. `red-at-9cca7766.json` records all three new unified-clear rows red by assertion on the commit
+immediately before this repair; the 14 existing rows remain green. None of these records contains
+an exception in place of an assertion.
 
 ## Mutations
 
-`mutations.json` registers 25 finding-166 mutations and their exact diffs and module digests.
+`mutations.json` registers 27 finding-166 mutations and their exact diffs and module digests.
 The original 12 include both declared falsifiers and the existing suite-75 journey mutation.
 The nine additions pin top-level fallback, map precedence, missing-reset repair, unnamed clear
 window handling, stream clearing, both counters, window logging and account directory logging.
 Four re-check additions drop the unnamed rejection, drop the Meter's clear signal, omit its
 forwarding in Metering, or ignore it in the store. Each targets its corresponding new row.
-Changed mutation anchors were refreshed without changing the existing defects.
+Two further mutations drop the unified rejection lift or the bare clear signal and target the
+new unified-clear rows. Changed mutation anchors were refreshed without changing the existing defects.
 
 The driver's register-only option refreshes this inventory and parses every mutant without
 executing suites. Mutation execution is reserved for the reviewer under this run's instructions.
@@ -96,6 +107,6 @@ Metering forwarding, account observation writer, blocking readers in the reserva
 and pool, and their suite callers. No footprint expansion was needed.
 
 The gate, whole selftest, other suites and mutation execution were not run, as instructed.
-Mutation registration parsed all 25 mutant sources; no mutation rejection is claimed for this
+Mutation registration parsed all 27 mutant sources; no mutation rejection is claimed for this
 revision. The spec History names VELDO-0160 as the follow-up ticket for expiring no-reset
 rejections; implementing that expiry remains outside this repair.

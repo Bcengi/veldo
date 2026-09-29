@@ -8748,6 +8748,12 @@ def cases():
     windows166('clear-store-keeps-rejection', 'control_accounts.py',
                "not params.get('clear_rejection') and params['status'] is None",
                "params['status'] is None", ['windows/clear-active-rejection'])
+    windows166('clear-unified-lift-dropped', 'control_accounts.py',
+               "params.get('clear_rejection') and unified is not None",
+               "False and unified is not None", ['windows/clear-unified-no-reset', 'windows/clear-unified-reset', 'windows/clear-unified-bare'])
+    windows166('bare-clear-dropped', 'control_engine_claude.py',
+               "if not found and named is None and status == 'allowed':",
+               "if False:", ['windows/clear-unified-bare'])
     windows166('window-count-omitted', 'control_launch.py',
                "self.window_counts[key] = self.window_counts.get(key, 0) + 1",
                "self.window_counts[key] = self.window_counts.get(key, 0)", ['observability/counts-and-log'])

@@ -163,3 +163,9 @@ All edits remain within the existing footprint.
 seven_day_opus, seven_day_sonnet or overage rejection without a unifiedWindows entry, or a result-text
 limit with no readable reset, currently blocks the account indefinitely. Pool expiry remains outside
 VELDO-0166.
+
+2026-09-29: re-check repairs the stored unnamed rejection after an explicit clear. The account writer
+lifts an existing unified rejection, including one from an earlier dispatch, without creating a unified
+window. A bare allowed event carries its clear signal even without reported windows. Three production
+rows cover no reset, a future reset and a bare clear; windows/clear retains the no-unified control.
+Finding-166 mutations drop the stored lift and the bare clear signal. No footprint expansion.
