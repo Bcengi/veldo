@@ -368,3 +368,82 @@ this entire stacked branch with origin/main and still lists inherited VELDO-0171
 historical gate stamps. With both specs it lists only those stamps. This review changes neither the
 inherited paths nor the footprint to hide them. The checkout's gate byproducts are restored before the
 final commit; the gate and mutation executions were not run.
+
+## Runtime review, 2026-09-29
+
+The original suite at 5730a17e still passes its behavioral assertions but fails the new runtime
+limit. [The runtime red record](runtime-red-at-5730a17e.json) runs that original suite with timing
+observations only. Reproduce it with `python3 proof/VELDO-0189/drive.py --red 5730a17e --runtime`.
+The existing behavioral red records remain historical product evidence; this change adds no
+production behavior. [The comparison](performance.json) records the final runs and assertion audit.
+
+| Run | Seconds | Passing checks |
+| --- | ---: | ---: |
+| Baseline | 345.246 | 58 |
+| Optimized | 53.37 | 58 |
+| Empty gate environment | 56.98 | 58 |
+
+The target is 60 seconds for the selected suite. Both final runs have zero failed checks.
+All 124 existing check sites remain, and the kill-loop bodies are identical to the baseline.
+The suite still emits one report per behavior row.
+
+The shared support file caches Python compilation and successful real installer engine-census
+results for this run. Its keys include source bytes and filenames, declared seeds, call arguments
+and runtime asset bytes. Compiled code retains its original source filename for ownership checks.
+The cache lives outside the host fixture tree, preserving the complete no-write witnesses, and
+is removed after the suite. Each historical engine and host is laid down once; saved host trees
+are restored for recovery cases. Setup, service restarts and all kill points still run.
+
+Authority startup waits for its real READY notification; API startup waits for the real inet
+listen event or that child's exit, with a five-second deadline. A stop wakes the authority socket
+after SIGTERM. These replace fixed sleeps and readiness polling.
+
+Row times charge elapsed work between observations to the row consuming it. Shared setup is
+charged to its first observation; final cleanup is included in the total.
+
+| Row | Before (s) | After (s) | Gate (s) |
+| --- | ---: | ---: | ---: |
+| install/assets | 0.208 | 0.212 | 0.218 |
+| upgrade/from-8bc34e94 | 4.534 | 1.538 | 1.551 |
+| upgrade/from-971186ac | 5.945 | 2.151 | 2.204 |
+| upgrade/removed-module | 4.257 | 2.384 | 2.482 |
+| upgrade/census | 0.362 | 0.300 | 0.279 |
+| upgrade/refused-by-name | 9.709 | 0.792 | 0.842 |
+| switch/kill-points | 113.491 | 15.647 | 16.724 |
+| switch/failed-restart | 4.547 | 0.893 | 0.978 |
+| kept/owner-data | 0.005 | 0.005 | 0.005 |
+| announce/before-first-write | 0.000 | 0.000 | 0.000 |
+| restart/rules | 0.025 | 0.025 | 0.023 |
+| second-run/changes-nothing | 4.342 | 0.687 | 0.718 |
+| switch/failed-after-start | 11.345 | 2.092 | 2.227 |
+| ownership/restore-differs | 0.002 | 0.003 | 0.002 |
+| ownership/committed | 5.498 | 1.092 | 1.155 |
+| switch/resumed-failure | 32.941 | 4.680 | 5.103 |
+| switch/rollback-kills | 44.936 | 7.547 | 7.977 |
+| switch/stop-refused | 9.193 | 1.584 | 1.686 |
+| ownership/restore-reported | 8.884 | 1.482 | 1.554 |
+| ownership/start-drops | 5.364 | 0.756 | 0.805 |
+| ownership/commit-refused | 4.656 | 0.646 | 0.678 |
+| switch/stop-before-restore | 5.326 | 0.997 | 1.028 |
+| upgrade/older-0186-equivalence | 0.017 | 0.016 | 0.016 |
+| kept/runs | 0.005 | 0.005 | 0.005 |
+| upgrade/fresh-0186 | 6.627 | 2.333 | 2.418 |
+| engines/atomic-record | 13.423 | 1.253 | 1.399 |
+| engines/repair-record | 9.708 | 0.868 | 0.974 |
+| engines/refuse-record | 6.623 | 0.596 | 0.664 |
+| engines/codex-refusal | 0.024 | 0.005 | 0.004 |
+| engines/repair-report | 19.805 | 1.733 | 1.922 |
+| upgrade/corrupt-runtime-record | 9.726 | 0.688 | 0.733 |
+| upgrade/receiver-without-store | 3.330 | 0.244 | 0.258 |
+
+The diagnostic [profile](runtime-profile-before.json) includes profiler overhead and is separate
+from the unprofiled table. Repeated AST traversal dominated it (519.955 cumulative seconds in
+ast.walk); the setup subprocess driver accounted for 96.273 seconds over 25 invocations. History
+archives and saved hosts were already reused. Memoizing the unchanged engine derivations removes
+the repeated AST work in both the parent and killed setup interpreters.
+
+The existing 46 finding-189 mutants remain registered, with unique names and zero bad anchors.
+Their execution and the full gate are reserved to the reviewer. The manifest already registers
+this suite; requires.json was regenerated without a content change. The validator passes and
+production engine copies are unchanged. The footprint checker reports only the two gate stamps
+already present in the branch before this work; this change commits neither.

@@ -1,0 +1,228 @@
+{
+  "schema": "veldo.proof-runtime-comparison/v1",
+  "spec_id": "VELDO-0189",
+  "baseline": "5730a17e",
+  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+  "target_seconds": 60,
+  "before_seconds": 345.246,
+  "normal": {
+    "passed": 58,
+    "failed": 0,
+    "seconds": 53.37,
+    "selected_run_exit_code": 2
+  },
+  "gate": {
+    "passed": 58,
+    "failed": 0,
+    "seconds": 56.98,
+    "selected_run_exit_code": 2
+  },
+  "rows": [
+    {
+      "row": "install/assets",
+      "before": 0.208,
+      "after": 0.212,
+      "gate": 0.218
+    },
+    {
+      "row": "upgrade/from-8bc34e94",
+      "before": 4.534,
+      "after": 1.538,
+      "gate": 1.551
+    },
+    {
+      "row": "upgrade/from-971186ac",
+      "before": 5.945,
+      "after": 2.151,
+      "gate": 2.204
+    },
+    {
+      "row": "upgrade/removed-module",
+      "before": 4.257,
+      "after": 2.384,
+      "gate": 2.482
+    },
+    {
+      "row": "upgrade/census",
+      "before": 0.362,
+      "after": 0.3,
+      "gate": 0.279
+    },
+    {
+      "row": "upgrade/refused-by-name",
+      "before": 9.709,
+      "after": 0.792,
+      "gate": 0.842
+    },
+    {
+      "row": "switch/kill-points",
+      "before": 113.491,
+      "after": 15.647,
+      "gate": 16.724
+    },
+    {
+      "row": "switch/failed-restart",
+      "before": 4.547,
+      "after": 0.893,
+      "gate": 0.978
+    },
+    {
+      "row": "kept/owner-data",
+      "before": 0.005,
+      "after": 0.005,
+      "gate": 0.005
+    },
+    {
+      "row": "announce/before-first-write",
+      "before": 0.0,
+      "after": 0.0,
+      "gate": 0.0
+    },
+    {
+      "row": "restart/rules",
+      "before": 0.025,
+      "after": 0.025,
+      "gate": 0.023
+    },
+    {
+      "row": "second-run/changes-nothing",
+      "before": 4.342,
+      "after": 0.687,
+      "gate": 0.718
+    },
+    {
+      "row": "switch/failed-after-start",
+      "before": 11.345,
+      "after": 2.092,
+      "gate": 2.227
+    },
+    {
+      "row": "ownership/restore-differs",
+      "before": 0.002,
+      "after": 0.003,
+      "gate": 0.002
+    },
+    {
+      "row": "ownership/committed",
+      "before": 5.498,
+      "after": 1.092,
+      "gate": 1.155
+    },
+    {
+      "row": "switch/resumed-failure",
+      "before": 32.941,
+      "after": 4.68,
+      "gate": 5.103
+    },
+    {
+      "row": "switch/rollback-kills",
+      "before": 44.936,
+      "after": 7.547,
+      "gate": 7.977
+    },
+    {
+      "row": "switch/stop-refused",
+      "before": 9.193,
+      "after": 1.584,
+      "gate": 1.686
+    },
+    {
+      "row": "ownership/restore-reported",
+      "before": 8.884,
+      "after": 1.482,
+      "gate": 1.554
+    },
+    {
+      "row": "ownership/start-drops",
+      "before": 5.364,
+      "after": 0.756,
+      "gate": 0.805
+    },
+    {
+      "row": "ownership/commit-refused",
+      "before": 4.656,
+      "after": 0.646,
+      "gate": 0.678
+    },
+    {
+      "row": "switch/stop-before-restore",
+      "before": 5.326,
+      "after": 0.997,
+      "gate": 1.028
+    },
+    {
+      "row": "upgrade/older-0186-equivalence",
+      "before": 0.017,
+      "after": 0.016,
+      "gate": 0.016
+    },
+    {
+      "row": "kept/runs",
+      "before": 0.005,
+      "after": 0.005,
+      "gate": 0.005
+    },
+    {
+      "row": "upgrade/fresh-0186",
+      "before": 6.627,
+      "after": 2.333,
+      "gate": 2.418
+    },
+    {
+      "row": "engines/atomic-record",
+      "before": 13.423,
+      "after": 1.253,
+      "gate": 1.399
+    },
+    {
+      "row": "engines/repair-record",
+      "before": 9.708,
+      "after": 0.868,
+      "gate": 0.974
+    },
+    {
+      "row": "engines/refuse-record",
+      "before": 6.623,
+      "after": 0.596,
+      "gate": 0.664
+    },
+    {
+      "row": "engines/codex-refusal",
+      "before": 0.024,
+      "after": 0.005,
+      "gate": 0.004
+    },
+    {
+      "row": "engines/repair-report",
+      "before": 19.805,
+      "after": 1.733,
+      "gate": 1.922
+    },
+    {
+      "row": "upgrade/corrupt-runtime-record",
+      "before": 9.726,
+      "after": 0.688,
+      "gate": 0.733
+    },
+    {
+      "row": "upgrade/receiver-without-store",
+      "before": 3.33,
+      "after": 0.244,
+      "gate": 0.258
+    }
+  ],
+  "assertion_audit": {
+    "existing_check_sites": 124,
+    "removed_check_sites": 0,
+    "added_check_sites": 0,
+    "kill_loops_identical": true,
+    "baseline_sha256": "c62f767e371db3d9d615f963654a3908571fd6c88fefcad6bf06e36539449a31",
+    "current_sha256": "f2bdada5a3171968140c2a53ada3719a4c97ee6a1f50132cf1fd5b98f93fca0e"
+  },
+  "support_sha256": "9166ee19f60e0f895e277d9b5472bcc6deb2ea38e205946b9a9e91fd14391591",
+  "timing_method": "Elapsed work between check calls is charged to the consuming row. Shared preparation belongs to the first consuming observation; final cleanup is included only in the suite total.",
+  "gate_environment": "env -i with Python directory:/usr/bin:/bin, scratch HOME and TMPDIR on /dev/shm, LANG and LC_ALL C.UTF-8, TZ UTC, PYTHONDONTWRITEBYTECODE=1, PYTHONNOUSERSITE=1, PYTHONHASHSEED=0, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null, GIT_TERMINAL_PROMPT=0; VELDO_ROW_TIMINGS records observations only.",
+  "registered_mutants": 46,
+  "mutation_execution": "Reserved to the reviewer; zero bad anchors and no duplicate names.",
+  "footprint": "The union footprint checker reports only .veldo/events.jsonl and .veldo/last_verify, both inherited before 5730a17e. This change does not commit either stamp."
+}

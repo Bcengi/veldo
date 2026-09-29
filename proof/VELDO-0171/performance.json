@@ -1,0 +1,144 @@
+{
+  "schema": "veldo.proof-runtime-comparison/v1",
+  "spec_id": "VELDO-0171",
+  "baseline": "5730a17e",
+  "suite": "scripts/suites/85_veldo_0171_setup_api.py",
+  "target_seconds": 30,
+  "before_seconds": 79.55,
+  "normal": {
+    "passed": 44,
+    "failed": 0,
+    "seconds": 10.31,
+    "selected_run_exit_code": 2
+  },
+  "gate": {
+    "passed": 44,
+    "failed": 0,
+    "seconds": 10.3,
+    "selected_run_exit_code": 2
+  },
+  "rows": [
+    {
+      "row": "install/assets",
+      "before": 2.106,
+      "after": 1.515,
+      "gate": 1.497
+    },
+    {
+      "row": "tailscale/capture",
+      "before": 0.066,
+      "after": 0.064,
+      "gate": 0.064
+    },
+    {
+      "row": "tailscale/fixed-paths",
+      "before": 0.0,
+      "after": 0.0,
+      "gate": 0.0
+    },
+    {
+      "row": "tailscale/refusals",
+      "before": 11.969,
+      "after": 0.867,
+      "gate": 0.871
+    },
+    {
+      "row": "tailscale/serve-bg",
+      "before": 4.483,
+      "after": 0.691,
+      "gate": 0.681
+    },
+    {
+      "row": "api-edge/enrolled-by-owner",
+      "before": 0.008,
+      "after": 0.008,
+      "gate": 0.008
+    },
+    {
+      "row": "api/service-configuration",
+      "before": 0.0,
+      "after": 0.0,
+      "gate": 0.0
+    },
+    {
+      "row": "api/unit",
+      "before": 1.196,
+      "after": 0.035,
+      "gate": 0.035
+    },
+    {
+      "row": "rerun/changes-nothing",
+      "before": 5.176,
+      "after": 0.346,
+      "gate": 0.344
+    },
+    {
+      "row": "rerun/arguments-compared",
+      "before": 20.777,
+      "after": 1.02,
+      "gate": 0.955
+    },
+    {
+      "row": "rerun/differs-refused",
+      "before": 11.29,
+      "after": 0.679,
+      "gate": 0.644
+    },
+    {
+      "row": "api-edge/installed-api-call",
+      "before": 0.116,
+      "after": 0.096,
+      "gate": 0.084
+    },
+    {
+      "row": "api/loopback-only",
+      "before": 0.006,
+      "after": 0.449,
+      "gate": 0.44
+    },
+    {
+      "row": "passkey/first-enrollment",
+      "before": 1.421,
+      "after": 0.69,
+      "gate": 0.664
+    },
+    {
+      "row": "api/content-security-policy",
+      "before": 0.002,
+      "after": 0.002,
+      "gate": 0.001
+    },
+    {
+      "row": "api-edge/running-service",
+      "before": 13.524,
+      "after": 2.819,
+      "gate": 2.649
+    },
+    {
+      "row": "rerun/over-0139-host",
+      "before": 0.007,
+      "after": 0.009,
+      "gate": 0.009
+    },
+    {
+      "row": "api/start-rules",
+      "before": 6.659,
+      "after": 0.904,
+      "gate": 0.873
+    }
+  ],
+  "assertion_audit": {
+    "existing_check_sites": 94,
+    "removed_check_sites": 0,
+    "added_check_sites": 1,
+    "kill_loops_identical": true,
+    "baseline_sha256": "3a475240c2262f3ce297e4a1223c7ed820906f61559ddc87032e56fe592a8eab",
+    "current_sha256": "02881a85f86fb97811f420c77858f3b7334b75368bc98d91c37af2ed1e315ae1"
+  },
+  "support_sha256": "9166ee19f60e0f895e277d9b5472bcc6deb2ea38e205946b9a9e91fd14391591",
+  "timing_method": "Elapsed work between check calls is charged to the consuming row. Shared preparation belongs to the first consuming observation; final cleanup is included only in the suite total.",
+  "gate_environment": "env -i with Python directory:/usr/bin:/bin, scratch HOME and TMPDIR on /dev/shm, LANG and LC_ALL C.UTF-8, TZ UTC, PYTHONDONTWRITEBYTECODE=1, PYTHONNOUSERSITE=1, PYTHONHASHSEED=0, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null, GIT_TERMINAL_PROMPT=0; VELDO_ROW_TIMINGS records observations only.",
+  "registered_mutants": 17,
+  "mutation_execution": "Reserved to the reviewer; zero bad anchors and no duplicate names.",
+  "footprint": "The union footprint checker reports only .veldo/events.jsonl and .veldo/last_verify, both inherited before 5730a17e. This change does not commit either stamp."
+}

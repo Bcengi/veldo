@@ -332,3 +332,10 @@ supplied origin/main checker still reports inherited stacked paths and historica
 content-keyed engine derivations within one suite run and waiting on service readiness or exit.
 The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
 same isolated computation cache and process event waits. No production contract or gate budget changes.
+
+2026-09-29, runtime proof: the unprofiled baseline at 5730a17e passes its behavior checks but
+fails the 60-second runtime assertion at 345.246 seconds. The final selected suite passes 58 checks
+in 53.37 seconds ordinarily and 56.98 seconds in the empty gate environment, with no failures.
+Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
+assertion audit are in proof/VELDO-0189/performance.json and its companion records. Finding 189
+mutations remain registered; their execution and the full gate are reserved to the reviewer.

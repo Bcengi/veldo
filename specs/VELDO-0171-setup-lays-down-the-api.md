@@ -334,3 +334,10 @@ The re-run's first step is engine_upgrade.
 content-keyed engine derivations within one suite run and waiting on service readiness or exit.
 The footprint adds scripts/suites/support/setup_runtime.py because both setup suites need the
 same isolated computation cache and process event waits. No production contract or gate budget changes.
+
+2026-09-29, runtime proof: the unprofiled baseline at 5730a17e passes its behavior checks but
+fails the 30-second runtime assertion at 79.550 seconds. The final selected suite passes 44 checks
+in 10.31 seconds ordinarily and 10.30 seconds in the empty gate environment, with no failures.
+Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
+assertion audit are in proof/VELDO-0171/performance.json and its companion records. Finding 171
+mutations remain registered; their execution and the full gate are reserved to the reviewer.

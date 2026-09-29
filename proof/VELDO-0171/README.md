@@ -163,3 +163,69 @@ the gate's isolated environment; `scripts/check_git_boundary.py` passes; the foo
 nothing outside VELDO-0171's footprint; the anchor check reports 0 bad anchors; `.veldo/validate.py all`
 passes. The gate was not run, no service manager was used and the host's real Tailscale was never run by
 any suite.
+
+## Runtime review, 2026-09-29
+
+The original suite at 5730a17e still passes its behavioral assertions but fails the new runtime
+limit. [The runtime red record](runtime-red-at-5730a17e.json) runs that original suite with timing
+observations only. Reproduce it with `python3 proof/VELDO-0171/drive.py --red 5730a17e --runtime`.
+The existing behavioral red records remain historical product evidence; this change adds no
+production behavior. [The comparison](performance.json) records the final runs and assertion audit.
+
+| Run | Seconds | Passing checks |
+| --- | ---: | ---: |
+| Baseline | 79.550 | 44 |
+| Optimized | 10.31 | 44 |
+| Empty gate environment | 10.30 | 44 |
+
+The target is 30 seconds for the selected suite. Both final runs have zero failed checks.
+All 94 existing check sites remain, and the kill-loop bodies are identical to the baseline.
+The suite still emits one report per behavior row.
+
+The shared support file caches Python compilation and successful real installer engine-census
+results for this run. Its keys include source bytes and filenames, declared seeds, call arguments
+and runtime asset bytes. Compiled code retains its original source filename for ownership checks.
+The cache lives outside the host fixture tree, preserving the complete no-write witnesses, and
+is removed after the suite. Each historical engine and host is laid down once; saved host trees
+are restored for recovery cases. Setup, service restarts and all kill points still run.
+
+Authority startup waits for its real READY notification; API startup waits for the real inet
+listen event or that child's exit, with a five-second deadline. A stop wakes the authority socket
+after SIGTERM. These replace fixed sleeps and readiness polling.
+
+Row times charge elapsed work between observations to the row consuming it. Shared setup is
+charged to its first observation; final cleanup is included in the total.
+
+| Row | Before (s) | After (s) | Gate (s) |
+| --- | ---: | ---: | ---: |
+| install/assets | 2.106 | 1.515 | 1.497 |
+| tailscale/capture | 0.066 | 0.064 | 0.064 |
+| tailscale/fixed-paths | 0.000 | 0.000 | 0.000 |
+| tailscale/refusals | 11.969 | 0.867 | 0.871 |
+| tailscale/serve-bg | 4.483 | 0.691 | 0.681 |
+| api-edge/enrolled-by-owner | 0.008 | 0.008 | 0.008 |
+| api/service-configuration | 0.000 | 0.000 | 0.000 |
+| api/unit | 1.196 | 0.035 | 0.035 |
+| rerun/changes-nothing | 5.176 | 0.346 | 0.344 |
+| rerun/arguments-compared | 20.777 | 1.020 | 0.955 |
+| rerun/differs-refused | 11.290 | 0.679 | 0.644 |
+| api-edge/installed-api-call | 0.116 | 0.096 | 0.084 |
+| api/loopback-only | 0.006 | 0.449 | 0.440 |
+| passkey/first-enrollment | 1.421 | 0.690 | 0.664 |
+| api/content-security-policy | 0.002 | 0.002 | 0.001 |
+| api-edge/running-service | 13.524 | 2.819 | 2.649 |
+| rerun/over-0139-host | 0.007 | 0.009 | 0.009 |
+| api/start-rules | 6.659 | 0.904 | 0.873 |
+
+The loopback mutant writes 0.0.0.0 into the process configuration. The real API rejects that
+address before listening, so the old suite spent three twenty-second waits looking for a socket
+of an exited child. The new wait ends on that child's exit and api/loopback-only asserts the
+missing listener. Failed registration still passes the generated browser's actual fingerprint
+to the real passkey command, avoiding a None argument exception. HTTP requests have a three-second
+bound. This mutant's execution is reserved to the reviewer.
+
+The existing 17 finding-171 mutants remain registered, with unique names and zero bad anchors.
+Their execution and the full gate are reserved to the reviewer. The manifest already registers
+this suite; requires.json was regenerated without a content change. The validator passes and
+production engine copies are unchanged. The footprint checker reports only the two gate stamps
+already present in the branch before this work; this change commits neither.

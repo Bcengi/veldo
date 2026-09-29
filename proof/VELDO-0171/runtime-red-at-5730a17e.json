@@ -29,5 +29,8 @@
     "runtime/suite-budget",
     false
   ],
-  "note": "The baseline suite, with timing observations only. Existing behavior stays green; the runtime claim is red."
+  "note": "The baseline suite, with timing observations only. Existing behavior stays green; the runtime claim is red.",
+  "schema": "veldo.proof-runtime/v1",
+  "spec_id": "VELDO-0171",
+  "source_sha256": "3a475240c2262f3ce297e4a1223c7ed820906f61559ddc87032e56fe592a8eab"
 }
