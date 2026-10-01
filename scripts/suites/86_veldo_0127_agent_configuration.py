@@ -620,12 +620,19 @@ for step in (packet.get('payload') or {}).get('script',[]):
             check('format/fake-lines', 'shared constructors produce both completed stream protocols',
                   bool(list(markers.glob('*.out'))))
             evidence = load('v127_live_evidence', EVIDENCE_PATH)
-            live = load('v127_live_driver', LIVE_PATH)
+            # Exercise relocation and a semantic no-op even in the standalone suite. Keep
+            # the supplied driver (including mutations), but resolve its unchanged loopback
+            # dependency from this suite's tree: loopback itself needs the repository assets.
+            driver_copy = base / 'capture-driver' / 'live.py'
+            driver_copy.parent.mkdir()
+            driver_copy.write_bytes(LIVE_PATH.read_bytes() + b'\n# Capture relocation control.\n')
+            live = load('v127_live_driver', driver_copy)
+            live.HERE = TREE / 'proof/VELDO-0127'
             capture_role = f.role('codex', 'codex-always')
             capture_role['settings']['model'] = 'gpt-6-astra'
             f.save(capture_role)
             direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
-            check('review/codex-capture', 'lead driver records the loopback tools beside its production run',
+            check('review/codex-capture', 'lead driver records the loopback tools beside its production run (capture error=%s)' % error,
                   direct is not None and bool(direct.get('wire_tools'))
                   and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
                                                  for r in direct.get('wire_capture', {}).get('requests', [])]
