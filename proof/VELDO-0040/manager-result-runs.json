@@ -1,0 +1,4212 @@
+{
+  "gate": {
+    "load": [],
+    "load_reaped": true,
+    "mode": "gate",
+    "output": "/tmp/flake0040-settled-gate",
+    "rounds": 1,
+    "runs": [
+      {
+        "copy": 1,
+        "deterministic": {
+          "conclude_settles": [
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            }
+          ],
+          "conclude_unknown": [
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 1,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          ],
+          "manager_cap_after_adapter_exit": {
+            "caps": {
+              "oom-kill": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "memory_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "oom-kill",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "timeout": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "runtime_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": true,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "explicit": {
+              "configuration_stop": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "configuration_stop",
+                "supervision": {
+                  "cause": "configuration_stop",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "deadline": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "deadline",
+                "supervision": {
+                  "cause": "deadline",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "heartbeat_missing": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "heartbeat_missing",
+                "supervision": {
+                  "cause": "heartbeat_missing",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "paid_api": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "paid_api",
+                "supervision": {
+                  "cause": "paid_api",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "requested": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "requested",
+                "supervision": {
+                  "cause": "requested",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "usage_cap": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "usage_cap",
+                "supervision": {
+                  "cause": "usage_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "requested": {
+              "calls": 1,
+              "elapsed": 0.0,
+              "inferred": "requested",
+              "supervision": {
+                "cause": "requested",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "timeout",
+                "scope_timestamps": {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                },
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "cooperative"
+                  },
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          }
+        },
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 52,
+        "pid": 294157,
+        "raised": [],
+        "round": 1,
+        "runtime_cap": {
+          "active": 2634630.264317,
+          "beats": [
+            1790934052.5732403,
+            1790934052.6735022,
+            1790934052.7737834,
+            1790934052.8739505,
+            1790934052.974151,
+            1790934053.074385,
+            1790934053.1745477,
+            1790934053.2747438,
+            1790934053.3749077,
+            1790934053.4751647,
+            1790934053.5754395,
+            1790934053.675574,
+            1790934053.7757697,
+            1790934053.8759978,
+            1790934053.9761727,
+            1790934054.0763497
+          ],
+          "beats_monotonic": [
+            2634630.445869984,
+            2634630.54613935,
+            2634630.64642162,
+            2634630.746589896,
+            2634630.846791285,
+            2634630.947025266,
+            2634631.04718443,
+            2634631.147380367,
+            2634631.247544602,
+            2634631.347800887,
+            2634631.448077376,
+            2634631.548210891,
+            2634631.648407251,
+            2634631.748635588,
+            2634631.848816475,
+            2634631.948988796
+          ],
+          "began": 1790934052.035776,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "first_beat_after_active": true,
+            "last_beat_before_inactive": true,
+            "result_timeout": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "timestamps_ordered": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "inactive": 2634632.036267,
+          "last_beat_after_active": 1.6846717963926494,
+          "last_beat_after_running": 1.5345187187194824,
+          "running_at": 1790934052.541831,
+          "state": "exited",
+          "stopping": 2634631.532776,
+          "stubborn": {
+            "at": 1790934052.5731514,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40221fb118a.slice/veldo-dispatch-b312365aa73813c0dd32a4465e1f7938.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 294245,
+            "pid": 294245,
+            "ppid": 294234,
+            "role": "stubborn",
+            "sid": 294245,
+            "start": "263463043",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790934054.1633804,
+            "empty_monotonic": 2634632.035990536,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40221fb118a.slice/veldo-dispatch-b312365aa73813c0dd32a4465e1f7938.scope",
+              "slice": "v40221fb118a.slice",
+              "unit": "veldo-dispatch-b312365aa73813c0dd32a4465e1f7938.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2634630.428121019,
+              "interval_seconds": 10,
+              "last": 2634630.428121019,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 294239,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2634630.428073437,
+                  "seq": 1,
+                  "taken": 2634630.428121019
+                }
+              ],
+              "released": 2634630.414389285,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "scope_timestamps": {
+              "ActiveEnterTimestampMonotonic": 2634630264317,
+              "ActiveExitTimestampMonotonic": 2634631532776,
+              "InactiveEnterTimestampMonotonic": 2634632036267
+            },
+            "steps": [
+              {
+                "at": 1790934053.661031,
+                "monotonic": 2634631.533636908,
+                "step": "terminate"
+              },
+              {
+                "at": 1790934054.1625023,
+                "monotonic": 2634632.035104867,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790934053.6602983,
+            1790934053.661138
+          ],
+          "unit_after": "not-found",
+          "unit_error": null
+        },
+        "seconds": 10.29695211397484
+      }
+    ],
+    "sha256": {
+      ".veldo/control_containment.py": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
+      ".veldo/control_launch.py": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
+      "scripts/suites/63_veldo_0040_containment.py": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8"
+    },
+    "source_head": "ffb12c22206dc0783de0a5cf25dc280d10b7fdcc",
+    "suite_copies_per_round": 1
+  },
+  "load": {
+    "load": [
+      {
+        "cpu": 0,
+        "cpu_ticks": 4528,
+        "pid": 298699
+      },
+      {
+        "cpu": 1,
+        "cpu_ticks": 4292,
+        "pid": 298700
+      },
+      {
+        "cpu": 2,
+        "cpu_ticks": 4529,
+        "pid": 298701
+      },
+      {
+        "cpu": 3,
+        "cpu_ticks": 4304,
+        "pid": 298702
+      },
+      {
+        "cpu": 4,
+        "cpu_ticks": 4569,
+        "pid": 298703
+      },
+      {
+        "cpu": 5,
+        "cpu_ticks": 4415,
+        "pid": 298704
+      },
+      {
+        "cpu": 6,
+        "cpu_ticks": 4483,
+        "pid": 298705
+      },
+      {
+        "cpu": 7,
+        "cpu_ticks": 4318,
+        "pid": 298706
+      },
+      {
+        "cpu": 8,
+        "cpu_ticks": 4750,
+        "pid": 298707
+      },
+      {
+        "cpu": 9,
+        "cpu_ticks": 4710,
+        "pid": 298708
+      },
+      {
+        "cpu": 10,
+        "cpu_ticks": 4729,
+        "pid": 298709
+      },
+      {
+        "cpu": 11,
+        "cpu_ticks": 4751,
+        "pid": 298710
+      },
+      {
+        "cpu": 12,
+        "cpu_ticks": 4692,
+        "pid": 298711
+      },
+      {
+        "cpu": 13,
+        "cpu_ticks": 4783,
+        "pid": 298712
+      },
+      {
+        "cpu": 14,
+        "cpu_ticks": 4766,
+        "pid": 298713
+      },
+      {
+        "cpu": 15,
+        "cpu_ticks": 4762,
+        "pid": 298714
+      },
+      {
+        "cpu": 16,
+        "cpu_ticks": 4699,
+        "pid": 298715
+      },
+      {
+        "cpu": 17,
+        "cpu_ticks": 4690,
+        "pid": 298716
+      },
+      {
+        "cpu": 18,
+        "cpu_ticks": 4729,
+        "pid": 298717
+      },
+      {
+        "cpu": 19,
+        "cpu_ticks": 4726,
+        "pid": 298718
+      }
+    ],
+    "load_reaped": true,
+    "mode": "load",
+    "output": "/tmp/flake0040-settled-load",
+    "rounds": 3,
+    "runs": [
+      {
+        "copy": 1,
+        "deterministic": {
+          "conclude_settles": [
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            }
+          ],
+          "conclude_unknown": [
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 1,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          ],
+          "manager_cap_after_adapter_exit": {
+            "caps": {
+              "oom-kill": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "memory_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "oom-kill",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "timeout": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "runtime_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": true,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "explicit": {
+              "configuration_stop": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "configuration_stop",
+                "supervision": {
+                  "cause": "configuration_stop",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "deadline": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "deadline",
+                "supervision": {
+                  "cause": "deadline",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "heartbeat_missing": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "heartbeat_missing",
+                "supervision": {
+                  "cause": "heartbeat_missing",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "paid_api": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "paid_api",
+                "supervision": {
+                  "cause": "paid_api",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "requested": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "requested",
+                "supervision": {
+                  "cause": "requested",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "usage_cap": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "usage_cap",
+                "supervision": {
+                  "cause": "usage_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "requested": {
+              "calls": 1,
+              "elapsed": 0.0,
+              "inferred": "requested",
+              "supervision": {
+                "cause": "requested",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "timeout",
+                "scope_timestamps": {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                },
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "cooperative"
+                  },
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          }
+        },
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 52,
+        "pid": 298719,
+        "raised": [],
+        "round": 1,
+        "runtime_cap": {
+          "active": 2634695.970061,
+          "beats": [
+            1790934118.2934144,
+            1790934118.3935053,
+            1790934118.4935908,
+            1790934118.593729,
+            1790934118.6938593,
+            1790934118.7939627,
+            1790934118.894092,
+            1790934118.994231,
+            1790934119.0943701,
+            1790934119.1945136,
+            1790934119.2946608,
+            1790934119.3947637,
+            1790934119.4948545,
+            1790934119.5949965,
+            1790934119.695104,
+            1790934119.7952454
+          ],
+          "beats_monotonic": [
+            2634696.166040568,
+            2634696.266125549,
+            2634696.366212462,
+            2634696.466363253,
+            2634696.566490375,
+            2634696.666584479,
+            2634696.7667247,
+            2634696.866860706,
+            2634696.967003398,
+            2634697.067146929,
+            2634697.167296237,
+            2634697.267388769,
+            2634697.367475343,
+            2634697.46763237,
+            2634697.567725569,
+            2634697.667880288
+          ],
+          "began": 1790934117.4287422,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "first_beat_after_active": true,
+            "last_beat_before_inactive": true,
+            "result_timeout": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "timestamps_ordered": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "inactive": 2634697.697533,
+          "last_beat_after_active": 1.6978192878887057,
+          "last_beat_after_running": 1.535935640335083,
+          "running_at": 1790934118.2593098,
+          "state": "exited",
+          "stopping": 2634697.194867,
+          "stubborn": {
+            "at": 1790934118.2933419,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40c17a3287a.slice/veldo-dispatch-1c4117efd1b37914da12876242040a1e.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 298826,
+            "pid": 298826,
+            "ppid": 298812,
+            "role": "stubborn",
+            "sid": 298826,
+            "start": "263469615",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790934119.8250985,
+            "empty_monotonic": 2634697.697708328,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40c17a3287a.slice/veldo-dispatch-1c4117efd1b37914da12876242040a1e.scope",
+              "slice": "v40c17a3287a.slice",
+              "unit": "veldo-dispatch-1c4117efd1b37914da12876242040a1e.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2634696.147004416,
+              "interval_seconds": 10,
+              "last": 2634696.147004416,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 298822,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2634696.14605315,
+                  "seq": 1,
+                  "taken": 2634696.147004416
+                }
+              ],
+              "released": 2634696.131866168,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "scope_timestamps": {
+              "ActiveEnterTimestampMonotonic": 2634695970061,
+              "ActiveExitTimestampMonotonic": 2634697194867,
+              "InactiveEnterTimestampMonotonic": 2634697697533
+            },
+            "steps": [
+              {
+                "at": 1790934119.3235333,
+                "monotonic": 2634697.196139679,
+                "step": "terminate"
+              },
+              {
+                "at": 1790934119.8241513,
+                "monotonic": 2634697.696754484,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790934119.32245,
+            1790934119.3236015
+          ],
+          "unit_after": "not-found",
+          "unit_error": null
+        },
+        "seconds": 15.82612448465079
+      },
+      {
+        "copy": 1,
+        "deterministic": {
+          "conclude_settles": [
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            }
+          ],
+          "conclude_unknown": [
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 1,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          ],
+          "manager_cap_after_adapter_exit": {
+            "caps": {
+              "oom-kill": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "memory_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "oom-kill",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "timeout": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "runtime_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": true,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "explicit": {
+              "configuration_stop": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "configuration_stop",
+                "supervision": {
+                  "cause": "configuration_stop",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "deadline": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "deadline",
+                "supervision": {
+                  "cause": "deadline",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "heartbeat_missing": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "heartbeat_missing",
+                "supervision": {
+                  "cause": "heartbeat_missing",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "paid_api": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "paid_api",
+                "supervision": {
+                  "cause": "paid_api",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "requested": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "requested",
+                "supervision": {
+                  "cause": "requested",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "usage_cap": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "usage_cap",
+                "supervision": {
+                  "cause": "usage_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "requested": {
+              "calls": 1,
+              "elapsed": 0.0,
+              "inferred": "requested",
+              "supervision": {
+                "cause": "requested",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "timeout",
+                "scope_timestamps": {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                },
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "cooperative"
+                  },
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          }
+        },
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 52,
+        "pid": 299675,
+        "raised": [],
+        "round": 2,
+        "runtime_cap": {
+          "active": 2634711.86607,
+          "beats": [
+            1790934134.1896558,
+            1790934134.2897933,
+            1790934134.389888,
+            1790934134.4899778,
+            1790934134.5900698,
+            1790934134.692043,
+            1790934134.7921698,
+            1790934134.8922844,
+            1790934134.9924273,
+            1790934135.0925403,
+            1790934135.1926272,
+            1790934135.2927024,
+            1790934135.3928103,
+            1790934135.4929492,
+            1790934135.5930436,
+            1790934135.6931648,
+            1790934135.7932782
+          ],
+          "beats_monotonic": [
+            2634712.062280061,
+            2634712.162425666,
+            2634712.262507907,
+            2634712.362600179,
+            2634712.462691441,
+            2634712.564675063,
+            2634712.664798252,
+            2634712.764911293,
+            2634712.865059866,
+            2634712.965164716,
+            2634713.065248026,
+            2634713.16532055,
+            2634713.265442461,
+            2634713.365578978,
+            2634713.465663902,
+            2634713.565788663,
+            2634713.66590029
+          ],
+          "began": 1790934133.32676,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "first_beat_after_active": true,
+            "last_beat_before_inactive": true,
+            "result_timeout": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "timestamps_ordered": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "inactive": 2634713.697447,
+          "last_beat_after_active": 1.7998302900232375,
+          "last_beat_after_running": 1.639418125152588,
+          "running_at": 1790934134.15386,
+          "state": "exited",
+          "stopping": 2634713.194874,
+          "stubborn": {
+            "at": 1790934134.1895897,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v405812a06ca.slice/veldo-dispatch-8a448b3be61bd5c5e2ed927a778eba72.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 299747,
+            "pid": 299747,
+            "ppid": 299737,
+            "role": "stubborn",
+            "sid": 299747,
+            "start": "263471204",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790934135.8244941,
+            "empty_monotonic": 2634713.697103523,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v405812a06ca.slice/veldo-dispatch-8a448b3be61bd5c5e2ed927a778eba72.scope",
+              "slice": "v405812a06ca.slice",
+              "unit": "veldo-dispatch-8a448b3be61bd5c5e2ed927a778eba72.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2634712.048005183,
+              "interval_seconds": 10,
+              "last": 2634712.048005183,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 299741,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2634712.047023163,
+                  "seq": 1,
+                  "taken": 2634712.048005183
+                }
+              ],
+              "released": 2634712.02641632,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "scope_timestamps": {
+              "ActiveEnterTimestampMonotonic": 2634711866070,
+              "ActiveExitTimestampMonotonic": 2634713194874,
+              "InactiveEnterTimestampMonotonic": 2634713697447
+            },
+            "steps": [
+              {
+                "at": 1790934135.3232944,
+                "monotonic": 2634713.195900501,
+                "step": "terminate"
+              },
+              {
+                "at": 1790934135.8239233,
+                "monotonic": 2634713.696526996,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790934135.3224242,
+            1790934135.3233676
+          ],
+          "unit_after": "not-found",
+          "unit_error": null
+        },
+        "seconds": 15.833122339099646
+      },
+      {
+        "copy": 1,
+        "deterministic": {
+          "conclude_settles": [
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            }
+          ],
+          "conclude_unknown": [
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 1,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          ],
+          "manager_cap_after_adapter_exit": {
+            "caps": {
+              "oom-kill": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "memory_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "oom-kill",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "timeout": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "runtime_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": true,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "explicit": {
+              "configuration_stop": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "configuration_stop",
+                "supervision": {
+                  "cause": "configuration_stop",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "deadline": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "deadline",
+                "supervision": {
+                  "cause": "deadline",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "heartbeat_missing": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "heartbeat_missing",
+                "supervision": {
+                  "cause": "heartbeat_missing",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "paid_api": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "paid_api",
+                "supervision": {
+                  "cause": "paid_api",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "requested": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "requested",
+                "supervision": {
+                  "cause": "requested",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "usage_cap": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "usage_cap",
+                "supervision": {
+                  "cause": "usage_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "requested": {
+              "calls": 1,
+              "elapsed": 0.0,
+              "inferred": "requested",
+              "supervision": {
+                "cause": "requested",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "timeout",
+                "scope_timestamps": {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                },
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "cooperative"
+                  },
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          }
+        },
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 52,
+        "pid": 300536,
+        "raised": [],
+        "round": 3,
+        "runtime_cap": {
+          "active": 2634727.875056,
+          "beats": [
+            1790934150.204902,
+            1790934150.3050148,
+            1790934150.405109,
+            1790934150.5051947,
+            1790934150.6052752,
+            1790934150.7053702,
+            1790934150.8054104,
+            1790934150.9055102,
+            1790934151.0056033,
+            1790934151.1057131,
+            1790934151.2058358,
+            1790934151.3059237,
+            1790934151.4060056,
+            1790934151.5060935,
+            1790934151.6061869,
+            1790934151.706309,
+            1790934151.806394
+          ],
+          "beats_monotonic": [
+            2634728.07753214,
+            2634728.177643442,
+            2634728.277734523,
+            2634728.377817332,
+            2634728.477897191,
+            2634728.577994451,
+            2634728.678033061,
+            2634728.778134054,
+            2634728.878226946,
+            2634728.97833939,
+            2634729.078463284,
+            2634729.178545382,
+            2634729.278629487,
+            2634729.378719522,
+            2634729.478811059,
+            2634729.578935512,
+            2634729.679014993
+          ],
+          "began": 1790934149.3257327,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "first_beat_after_active": true,
+            "last_beat_before_inactive": true,
+            "result_timeout": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "timestamps_ordered": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "inactive": 2634729.699106,
+          "last_beat_after_active": 1.8039589929394424,
+          "last_beat_after_running": 1.6405489444732666,
+          "running_at": 1790934150.1658452,
+          "state": "exited",
+          "stopping": 2634729.194879,
+          "stubborn": {
+            "at": 1790934150.2048144,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v404fae1640a.slice/veldo-dispatch-c86d9f3aae0d7f10b96014ffef830c32.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 300643,
+            "pid": 300643,
+            "ppid": 300634,
+            "role": "stubborn",
+            "sid": 300643,
+            "start": "263472805",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790934151.826404,
+            "empty_monotonic": 2634729.69901361,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v404fae1640a.slice/veldo-dispatch-c86d9f3aae0d7f10b96014ffef830c32.scope",
+              "slice": "v404fae1640a.slice",
+              "unit": "veldo-dispatch-c86d9f3aae0d7f10b96014ffef830c32.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2634728.057005058,
+              "interval_seconds": 10,
+              "last": 2634728.057005058,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 300639,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2634728.056041025,
+                  "seq": 1,
+                  "taken": 2634728.057005058
+                }
+              ],
+              "released": 2634728.038403734,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "scope_timestamps": {
+              "ActiveEnterTimestampMonotonic": 2634727875056,
+              "ActiveExitTimestampMonotonic": 2634729194879,
+              "InactiveEnterTimestampMonotonic": 2634729699106
+            },
+            "steps": [
+              {
+                "at": 1790934151.32353,
+                "monotonic": 2634729.196135901,
+                "step": "terminate"
+              },
+              {
+                "at": 1790934151.824923,
+                "monotonic": 2634729.697526434,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790934151.3224244,
+            1790934151.3244092
+          ],
+          "unit_after": "not-found",
+          "unit_error": null
+        },
+        "seconds": 15.937247730791569
+      }
+    ],
+    "sha256": {
+      ".veldo/control_containment.py": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
+      ".veldo/control_launch.py": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
+      "scripts/suites/63_veldo_0040_containment.py": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8"
+    },
+    "source_head": "d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515",
+    "suite_copies_per_round": 1
+  },
+  "normal": {
+    "load": [],
+    "load_reaped": true,
+    "mode": "normal",
+    "output": "/tmp/flake0040-settled-normal",
+    "rounds": 1,
+    "runs": [
+      {
+        "copy": 1,
+        "deterministic": {
+          "conclude_settles": [
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [
+                {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                }
+              ],
+              "result": "timeout",
+              "state": "failed",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            },
+            {
+              "calls": 2,
+              "elapsed": 0.05,
+              "resets": [],
+              "result": "timeout",
+              "state": "inactive",
+              "timestamps": {
+                "ActiveEnterTimestampMonotonic": 100,
+                "ActiveExitTimestampMonotonic": 200,
+                "InactiveEnterTimestampMonotonic": 300
+              }
+            }
+          ],
+          "conclude_unknown": [
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 1,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            },
+            {
+              "calls": 101,
+              "elapsed": 5.0,
+              "inferred": "exit",
+              "supervision": {
+                "cause": "unknown",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "unknown",
+                "scope_timestamps": {},
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          ],
+          "manager_cap_after_adapter_exit": {
+            "caps": {
+              "oom-kill": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "memory_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "oom-kill",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "timeout": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "exit",
+                "supervision": {
+                  "cause": "runtime_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": true,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "explicit": {
+              "configuration_stop": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "configuration_stop",
+                "supervision": {
+                  "cause": "configuration_stop",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "deadline": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "deadline",
+                "supervision": {
+                  "cause": "deadline",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "heartbeat_missing": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "heartbeat_missing",
+                "supervision": {
+                  "cause": "heartbeat_missing",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "paid_api": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "paid_api",
+                "supervision": {
+                  "cause": "paid_api",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "requested": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "requested",
+                "supervision": {
+                  "cause": "requested",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              },
+              "usage_cap": {
+                "calls": 1,
+                "elapsed": 0.0,
+                "inferred": "usage_cap",
+                "supervision": {
+                  "cause": "usage_cap",
+                  "empty": true,
+                  "empty_at": 1000.0,
+                  "empty_monotonic": 0.0,
+                  "graces": {
+                    "kill_grace_seconds": 1,
+                    "stop_grace_seconds": 1
+                  },
+                  "group": {
+                    "unit": "fake.scope"
+                  },
+                  "heartbeat": null,
+                  "result": "timeout",
+                  "scope_timestamps": {
+                    "ActiveEnterTimestampMonotonic": 100,
+                    "ActiveExitTimestampMonotonic": 200,
+                    "InactiveEnterTimestampMonotonic": 300
+                  },
+                  "steps": [
+                    {
+                      "at": 1000.0,
+                      "monotonic": 0.0,
+                      "step": "terminate"
+                    }
+                  ]
+                },
+                "termination": {
+                  "deadline_stop": false,
+                  "output_bytes": 0,
+                  "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "returncode": 143,
+                  "signal": null
+                }
+              }
+            },
+            "requested": {
+              "calls": 1,
+              "elapsed": 0.0,
+              "inferred": "requested",
+              "supervision": {
+                "cause": "requested",
+                "empty": true,
+                "empty_at": 1000.0,
+                "empty_monotonic": 0.0,
+                "graces": {
+                  "kill_grace_seconds": 1,
+                  "stop_grace_seconds": 1
+                },
+                "group": {
+                  "unit": "fake.scope"
+                },
+                "heartbeat": null,
+                "result": "timeout",
+                "scope_timestamps": {
+                  "ActiveEnterTimestampMonotonic": 100,
+                  "ActiveExitTimestampMonotonic": 200,
+                  "InactiveEnterTimestampMonotonic": 300
+                },
+                "steps": [
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "cooperative"
+                  },
+                  {
+                    "at": 1000.0,
+                    "monotonic": 0.0,
+                    "step": "terminate"
+                  }
+                ]
+              },
+              "termination": {
+                "deadline_stop": false,
+                "output_bytes": 0,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "returncode": 143,
+                "signal": null
+              }
+            }
+          }
+        },
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 52,
+        "pid": 293005,
+        "raised": [],
+        "round": 1,
+        "runtime_cap": {
+          "active": 2634604.851308,
+          "beats": [
+            1790934027.1626534,
+            1790934027.2628603,
+            1790934027.3632994,
+            1790934027.4636192,
+            1790934027.5641134,
+            1790934027.664414,
+            1790934027.7647176,
+            1790934027.8650908,
+            1790934027.9654229,
+            1790934028.0657513,
+            1790934028.1659157,
+            1790934028.2661715,
+            1790934028.3664618,
+            1790934028.4667838,
+            1790934028.567025,
+            1790934028.667248,
+            1790934028.7675292
+          ],
+          "beats_monotonic": [
+            2634605.035286247,
+            2634605.135494079,
+            2634605.236044812,
+            2634605.336259303,
+            2634605.436858081,
+            2634605.537055476,
+            2634605.63738956,
+            2634605.737785386,
+            2634605.83806502,
+            2634605.938387843,
+            2634606.038550101,
+            2634606.138807189,
+            2634606.239100081,
+            2634606.339418922,
+            2634606.439659238,
+            2634606.539883321,
+            2634606.640164873
+          ],
+          "began": 1790934026.623098,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "first_beat_after_active": true,
+            "last_beat_before_inactive": true,
+            "result_timeout": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "timestamps_ordered": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "inactive": 2634606.653064,
+          "last_beat_after_active": 1.7888568732887506,
+          "last_beat_after_running": 1.6366949081420898,
+          "running_at": 1790934027.1308343,
+          "state": "exited",
+          "stopping": 2634606.150422,
+          "stubborn": {
+            "at": 1790934027.162564,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4059e71edca.slice/veldo-dispatch-68957b9dc95129f73a8d5b6e71778257.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 293071,
+            "pid": 293071,
+            "ppid": 293061,
+            "role": "stubborn",
+            "sid": 293071,
+            "start": "263460502",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790934028.780152,
+            "empty_monotonic": 2634606.652762063,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4059e71edca.slice/veldo-dispatch-68957b9dc95129f73a8d5b6e71778257.scope",
+              "slice": "v4059e71edca.slice",
+              "unit": "veldo-dispatch-68957b9dc95129f73a8d5b6e71778257.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2634605.022367006,
+              "interval_seconds": 10,
+              "last": 2634605.022367006,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 293065,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2634605.022179038,
+                  "seq": 1,
+                  "taken": 2634605.022367006
+                }
+              ],
+              "released": 2634605.003392917,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "scope_timestamps": {
+              "ActiveEnterTimestampMonotonic": 2634604851308,
+              "ActiveExitTimestampMonotonic": 2634606150422,
+              "InactiveEnterTimestampMonotonic": 2634606653064
+            },
+            "steps": [
+              {
+                "at": 1790934028.278606,
+                "monotonic": 2634606.151212568,
+                "step": "terminate"
+              },
+              {
+                "at": 1790934028.7792745,
+                "monotonic": 2634606.651877433,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790934028.2779756,
+            1790934028.2788167
+          ],
+          "unit_after": "not-found",
+          "unit_error": null
+        },
+        "seconds": 10.372543092817068
+      }
+    ],
+    "sha256": {
+      ".veldo/control_containment.py": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
+      ".veldo/control_launch.py": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
+      "scripts/suites/63_veldo_0040_containment.py": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8"
+    },
+    "source_head": "ffb12c22206dc0783de0a5cf25dc280d10b7fdcc",
+    "suite_copies_per_round": 1
+  }
+}

@@ -3103,6 +3103,19 @@ def cases():
     def contain(name, module, old, new, row, also=()):
         add(40, name, '63_veldo_0040_containment.py', module, old, new, ['containment/' + row], also)
 
+    contain('containment-inferred-exit-hides-cap', 'control_launch.py',
+            "        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):\n",
+            "        if cause is None and result in ('timeout', 'oom-kill'):\n",
+            'manager-cap-after-adapter-exit')
+    contain('containment-result-before-settled', 'control_containment.py',
+            "                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):\n",
+            "                if shown.get('Result'):\n",
+            'conclude-settles')
+    contain('containment-unreadable-result-silent', 'control_containment.py',
+            "        return 'unknown'\n",
+            "        return None  # defect: unreadable evidence silently becomes an ordinary exit\n",
+            'conclude-unknown')
+
     # AC1, declared: the worker is launched outside its dispatch group.
     contain('containment-launch-outside-group', 'control_containment.py',
             "        return head + ['--'] + list(argv)\n",

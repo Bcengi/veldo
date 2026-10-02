@@ -1926,11 +1926,15 @@ class Receiver:
             self.committed = recorder.close()
         code = worker.poll() if code is None else code
         result = group.conclude() if group is not None and empty else None
-        if cause is None and result in ('timeout', 'oom-kill'):
+        # Explicit receiver or owner decisions win; an adapter exit is only an inference.
+        cause = cause or (stop.cause if stop is not None else None)
+        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):
             # systemd stopped the group at a cap: the runtime cap is a deadline, the memory cap is not.
             cause = {'timeout': 'runtime_cap', 'oom-kill': 'memory_cap'}[result]
             stopped = cause == 'runtime_cap'
-        self.supervision = {'cause': cause or (stop.cause if stop is not None else None),
+        if cause in (None, 'exit') and result == 'unknown':
+            cause = 'unknown'
+        self.supervision = {'cause': cause,
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
                                         'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),

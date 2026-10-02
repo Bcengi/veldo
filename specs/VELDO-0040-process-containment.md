@@ -166,3 +166,19 @@ limitations separately from the reviewer's gate. The current row passed normally
 in the inherited gate shell environment and in ten matching loaded rounds. The
 runtime-cap-disabled mutation failed by assertion with complete diagnostics;
 the historical gate red remains unreproduced and its cause unknown.
+
+2026-10-02, measured manager-result race (fix-flake-0040): the reviewer's gate
+on cd3df736 measured a stopped descendant within the runtime bound, but an
+exited dispatch with deadline_stop false, cause exit, no retained scope clocks,
+and six false runtime-cap conjuncts. The cap worked; final manager evidence
+was lost. Group.conclude now waits within SETTLE_SECONDS for failed or inactive,
+bounds each show call by the remaining budget, retries tool and timestamp parse
+failures, and records unknown when evidence remains unreadable. The receiver
+resolves both cause sources explicitly: manager timeout and oom-kill outrank
+inferred exit, while requested, deadline, usage, heartbeat and configuration
+stops keep precedence. Unknown manager evidence cannot silently become exit.
+Three deterministic suite 63 rows cover cap precedence after adapter exit,
+settlement from deactivating and unreadable evidence; each has a registered
+mutation. The live runtime-cap row and its diagnostics and bounds are retained.
+Selected-suite verification and manual mutation results are in proof/VELDO-0040;
+the canonical gate remains the reviewer's responsibility.
