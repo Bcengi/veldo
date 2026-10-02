@@ -208,10 +208,10 @@ def _tool(profile, name, env):
     return path if path and os.path.isfile(path) and os.access(path, os.X_OK) else None
 
 
-def _show(systemctl, env, unit, names):
+def _show(systemctl, env, unit, names, timeout=TOOL_SECONDS):
     """Properties of a unit (or of the manager itself when unit is None) from the user manager."""
     command = [systemctl, '--user', 'show'] + [a for n in names for a in ('-p', n)] + ([unit] if unit else [])
-    result = subprocess.run(command, capture_output=True, text=True, timeout=TOOL_SECONDS, env=env,
+    result = subprocess.run(command, capture_output=True, text=True, timeout=timeout, env=env,
                             stdin=subprocess.DEVNULL)
     if result.returncode:
         raise OSError('systemctl show failed')
@@ -380,8 +380,8 @@ class Group:
             head += ['-p', '%s=%s' % (name, value)]
         return head + ['--'] + list(argv)
 
-    def _show(self, unit, names):
-        return _show(self.systemctl, self.environment, unit, names)
+    def _show(self, unit, names, timeout=TOOL_SECONDS):
+        return _show(self.systemctl, self.environment, unit, names, timeout=timeout)
 
     def live(self):
         """The populated dispatch groups in this profile's slice, read from the kernel."""
@@ -499,21 +499,28 @@ class Group:
         return True
 
     def conclude(self):
-        """After the group is empty: the scope's result as systemd recorded it (`timeout` for the
-        runtime cap, `oom-kill` for the memory cap), clearing a failed scope so it is not left loaded."""
-        try:
-            # Retain the manager's clock at the stop we already observe, before reset-failed
-            # unloads the scope. Receiver scheduling must not become the scope's runtime origin.
-            names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
-                     'InactiveEnterTimestampMonotonic')
-            shown = self._show(self.unit, ('Result', 'ActiveState', *names))
-            self.timestamps = {name: int(shown.get(name) or 0) for name in names}
-            if shown.get('ActiveState') == 'failed':
-                subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
-                               timeout=TOOL_SECONDS, env=self.environment, stdin=subprocess.DEVNULL)
-            return shown.get('Result')
-        except (OSError, subprocess.SubprocessError):
-            return None
+        """After empty, wait boundedly for the manager's final result before clearing the scope.
+        An empty cgroup can precede the scope's terminal state. Unreadable evidence stays unknown."""
+        end = time.monotonic() + SETTLE_SECONDS
+        names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+                 'InactiveEnterTimestampMonotonic')
+        self.timestamps = {}
+        while (remaining := end - time.monotonic()) > 0:
+            try:
+                shown = self._show(self.unit, ('Result', 'ActiveState', *names),
+                                   timeout=min(TOOL_SECONDS, remaining))
+                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
+                    timestamps = {name: int(shown.get(name) or 0) for name in names}
+                    self.timestamps = timestamps
+                    if shown.get('ActiveState') == 'failed':
+                        with contextlib.suppress(OSError, subprocess.SubprocessError):
+                            subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
+                                           timeout=TOOL_SECONDS, env=self.environment, stdin=subprocess.DEVNULL)
+                    return shown['Result']
+            except (OSError, subprocess.SubprocessError, ValueError):
+                pass
+            time.sleep(min(0.05, max(0, end - time.monotonic())))
+        return 'unknown'
 
     def close(self):
         if self.events is not None:

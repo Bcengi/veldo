@@ -16,6 +16,7 @@ burns CPU, writes a file, handles a stop, and writes what it saw; it qualifies n
 def _v40_suite():
     import contextlib
     import importlib.util
+    import io
     import json
     import os
     from pathlib import Path
@@ -26,6 +27,7 @@ def _v40_suite():
     import tempfile
     import time
     import types
+    from unittest.mock import patch
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -433,6 +435,133 @@ sys.exit(payload.get('code', 0))
                 for label in labels:
                     if label not in emitted:
                         check(label, False, {'raised': repr(error)} if label == 'containment/runtime-cap' else None)
+
+        # Deterministic manager sequences: no sleep, real signals, or process scheduling.
+        stamp_names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+                       'InactiveEnterTimestampMonotonic')
+
+        def manager_record(state='failed', result='timeout'):
+            return dict(ActiveState=state, Result=result, **dict(zip(stamp_names, ('100', '200', '300'))))
+
+        @contextlib.contextmanager
+        def manager_sequence(sequence):
+            clock, calls, resets = [0.0], [], []
+            group = C.Group.__new__(C.Group)
+            group.unit, group.systemctl, group.environment = 'fake.scope', 'fake-systemctl', {}
+            group.events, group.timestamps = 12, {}
+
+            def run(command, **kwargs):
+                if 'reset-failed' in command:
+                    resets.append(dict(group.timestamps))
+                    return types.SimpleNamespace(returncode=0)
+                assert 'show' in command
+                calls.append(kwargs['timeout'])
+                item = sequence[min(len(calls) - 1, len(sequence) - 1)]
+                if isinstance(item, Exception):
+                    if isinstance(item, subprocess.TimeoutExpired):
+                        clock[0] += kwargs['timeout']
+                    raise item
+                return types.SimpleNamespace(returncode=0, stdout='\n'.join(k + '=' + v for k, v in item.items()))
+
+            def sleep(seconds):
+                clock[0] += seconds
+
+            fake_time = types.SimpleNamespace(monotonic=lambda: clock[0], time=lambda: 1000 + clock[0], sleep=sleep)
+            fake_subprocess = types.SimpleNamespace(**vars(subprocess))
+            fake_subprocess.run = run
+            with patch.object(C, 'subprocess', fake_subprocess), patch.object(C, 'time', fake_time):
+                yield group, clock, calls, resets
+
+        def reap_sequence(sequence, explicit=None, requested=False):
+            with manager_sequence(sequence) as (group, clock, calls, resets):
+                population = iter((True, False))
+                group.populated = lambda: next(population)
+                group.members = lambda: [44]
+                group.terminate = lambda: None
+                group.report = lambda: {'unit': group.unit}
+                group.close = lambda: None
+                stops = []
+                original_stop = C.Stop
+
+                def stop_factory(*args):
+                    stop = original_stop(*args)
+                    if explicit:
+                        stop.begin(explicit, clock[0], False)
+                    stops.append(stop)
+                    return stop
+
+                class Output(io.BytesIO):
+                    def fileno(self):
+                        return 11
+
+                worker = types.SimpleNamespace(pid=44, stdin=io.BytesIO(), stdout=Output(),
+                                               group=group, wait=lambda: 143)
+                receiver = types.SimpleNamespace(metering=None, recorder=None, control=None,
+                                                 _graces=lambda: (1, 1), _stop_asked=lambda: requested)
+                poller = types.SimpleNamespace(register=lambda *args: None, unregister=lambda *args: None,
+                                              poll=lambda timeout: [(13, 1)])
+                fake_os = types.SimpleNamespace(**vars(os))
+                fake_os.pidfd_open = lambda pid: 13
+                fake_os.close = lambda fd: None
+                fake_os.set_blocking = lambda *args: None
+                fake_os.read = lambda *args: b''
+                fake_os.kill = lambda *args: None
+                contract = dict(dispatch_id='fake', unit='unit', station='build', source={},
+                                input={'payload': {}}, capability={'configuration': {}}, deadline=2000)
+                with patch.object(L, 'C', C), patch.object(C, 'Stop', stop_factory), \
+                        patch.object(C, 'os', fake_os), patch.object(L, 'os', fake_os), \
+                        patch.object(L, 'select', types.SimpleNamespace(poll=lambda: poller, POLLIN=1,
+                                                                      POLLPRI=2, POLLERR=8)), \
+                        patch.object(L, 'time', C.time):
+                    termination = L.Receiver._reap(receiver, worker, contract)
+                return dict(termination=termination, supervision=receiver.supervision,
+                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0])
+
+        with region('containment/manager-cap-after-adapter-exit'):
+            caps = {result: reap_sequence([manager_record(result=result)]) for result in ('timeout', 'oom-kill')}
+            # Every explicit decision made by begin() or the prompt-write guard keeps precedence.
+            reasons = ('requested', 'usage_cap', 'deadline', 'heartbeat_missing', 'configuration_stop', 'paid_api')
+            explicit = {reason: reap_sequence([manager_record()], explicit=reason) for reason in reasons}
+            requested = reap_sequence([manager_record()], requested=True)
+            observed['manager_cap_after_adapter_exit'] = dict(caps=caps, explicit=explicit, requested=requested)
+            check('containment/manager-cap-after-adapter-exit',
+                  all(row['inferred'] == 'exit' and row['supervision']['empty']
+                      and row['supervision']['cause'] == cause
+                      and row['termination']['deadline_stop'] == (result == 'timeout')
+                      and row['supervision']['result'] == result
+                      for result, cause in (('timeout', 'runtime_cap'), ('oom-kill', 'memory_cap'))
+                      for row in (caps[result],))
+                  and all(row['supervision']['cause'] == reason for reason, row in explicit.items())
+                  and requested['supervision']['cause'] == 'requested'
+                  and not requested['termination']['deadline_stop'])
+
+        with region('containment/conclude-settles'):
+            settling = []
+            bad = manager_record()
+            bad[stamp_names[0]] = 'unreadable'
+            for first in (manager_record('deactivating', 'success'), OSError('busy manager'), bad):
+                for state in ('failed', 'inactive'):
+                    with manager_sequence([first, manager_record(state)]) as (group, clock, calls, resets):
+                        result = group.conclude()
+                        settling.append(dict(result=result, timestamps=group.timestamps, calls=len(calls),
+                                             elapsed=clock[0], resets=resets, state=state))
+            observed['conclude_settles'] = settling
+            check('containment/conclude-settles', all(
+                row['result'] == 'timeout' and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
+                and row['calls'] == 2 and 0 < row['elapsed'] <= C.SETTLE_SECONDS
+                and row['resets'] == ([row['timestamps']] if row['state'] == 'failed' else [])
+                for row in settling))
+
+        with region('containment/conclude-unknown'):
+            unreadable = [reap_sequence([item]) for item in (
+                OSError('unreadable unit'), subprocess.TimeoutExpired('show', C.TOOL_SECONDS),
+                {}, manager_record('deactivating', 'success'), bad)]
+            observed['conclude_unknown'] = unreadable
+            check('containment/conclude-unknown', all(
+                row['supervision']['result'] == 'unknown' and row['supervision']['cause'] == 'unknown'
+                and row['supervision']['scope_timestamps'] == {} and row['inferred'] == 'exit'
+                and not row['termination']['deadline_stop'] and row['elapsed'] <= C.SETTLE_SECONDS
+                for row in unreadable))
 
         started, made = {}, []
         try:

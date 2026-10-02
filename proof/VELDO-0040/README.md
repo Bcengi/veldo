@@ -133,3 +133,46 @@ The canonical gate and mutation drivers are reserved for the reviewer and were
 not run. The gate byproducts are excluded. This is selected-suite evidence, not
 a gate stamp or a reproduced fix. The reported historical red remains unresolved;
 a future red should now carry the missing per-conjunct evidence.
+
+## Measured manager-result race, 2026-10-02
+
+This continuation supersedes the unresolved diagnosis above. The reviewer's
+gate on cd3df736 (which includes ffb12c22) measured six false runtime-cap
+conjuncts: deadline_stop, cause_runtime_cap, result_timeout, timestamps_ordered,
+last_beat_before_inactive and runtime_bound. The descendant did stop: its last
+beat was 2.04 seconds after running, term_count was 2, it was no longer living,
+and the scope was not-found afterward. The receiver instead recorded exited,
+returncode 143, deadline_stop false, cause exit and zero scope clocks.
+
+The production final read could precede the manager's terminal state or fail.
+It now retries within SETTLE_SECONDS, with each show timeout capped by the
+remaining budget, and reads Result and all clocks from the same terminal
+snapshot. ValueError from a malformed clock is retried too. Evidence still
+unreadable at the deadline is recorded as result unknown and cause unknown
+unless an explicit stop decision already explains the stop. A reset-failed
+failure cannot discard a successfully captured result.
+
+The receiver now resolves its local cause and Stop.cause before applying
+manager cap precedence. Timeout maps to runtime_cap and deadline_stop true;
+oom-kill maps to memory_cap. Both outrank inferred exit. All existing explicit
+causes retain precedence: requested, deadline, usage_cap, heartbeat_missing,
+configuration_stop and paid_api. Source inspection qualifies the reported
+mechanism: in ffb12c22 Stop.adapter_exited sets Stop.cause, not the receiver's
+local cause. A successfully read timeout already overrides that particular
+inference in that version. The measured missing result is the reproduced
+production defect; the explicit precedence rule protects both cause sources.
+
+Three deterministic rows use a fake systemctl show sequence and fake monotonic
+clock, with no timing thresholds or live process scheduling:
+
+| Row | Evidence | Registered mutation |
+|-|-|-|
+| containment/manager-cap-after-adapter-exit | Adapter exit while populated, then empty; timeout and oom-kill classification; every explicit cause preserved | containment-inferred-exit-hides-cap |
+| containment/conclude-settles | Deactivating, failed show or malformed clock followed by failed or inactive; final result and clocks retained before reset | containment-result-before-settled |
+| containment/conclude-unknown | Persistent unreadable, timed-out, missing, deactivating or malformed evidence; bounded unknown result and cause | containment-unreadable-result-silent |
+
+The live runtime-cap assertion and diagnostics are unchanged. Suite 63 now adds
+six assertions, including the three region-completion rows, for 52 total with
+the harness's shared assertions. The load driver now runs one suite at a time
+with one pinned burner per available CPU, per the owner's run constraint.
+Earlier simultaneous-load records above remain historical evidence.

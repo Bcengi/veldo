@@ -2,10 +2,9 @@
 
 Usage: python3 proof/VELDO-0040/runtime_cap_check.py MODE LABEL [ROUNDS]
 Modes: original-load, normal, gate, load, mutation.
-Loaded rounds run two suite copies concurrently plus a pinned burner on every CPU.
+Loaded rounds run one selected suite at a time plus a pinned burner on every CPU.
 Original production and suite come from f1e1abb9; only row diagnostics are added.
 """
-import concurrent.futures
 import hashlib
 import json
 import os
@@ -83,7 +82,7 @@ atexit.register(capture)
                             for name in [SUITE, '.veldo/control_containment.py', '.veldo/control_launch.py']}
         command = COMMAND if mode != 'gate' else ['bash', '-c', ' '.join(COMMAND)]
         loaded = mode in ('original-load', 'load')
-        report['suite_copies_per_round'] = 2 if loaded else 1
+        report['suite_copies_per_round'] = 1
 
         def run_one(round_number, slot):
             prefix = out / ('round-%02d-copy-%d' % (round_number, slot))
@@ -104,6 +103,8 @@ atexit.register(capture)
                 row.update({k: data[k] for k in ('passed', 'failed', 'seconds')})
                 row['runtime_cap'] = data['observed'].get('runtime_cap')
                 row['raised'] = data['observed'].get('raised')
+                row['deterministic'] = {k: data['observed'].get(k) for k in (
+                    'manager_cap_after_adapter_exit', 'conclude_settles', 'conclude_unknown')}
             row['failed_details'] = [line.strip().split('SELFTEST FAIL: ', 1)[1]
                                      for line in prefix.with_suffix('.log').read_text().splitlines()
                                      if 'SELFTEST FAIL:' in line]
@@ -118,19 +119,15 @@ atexit.register(capture)
                     workers.append(worker)
                     report['load'].append({'cpu': cpu, 'pid': worker.pid})
                 (out / 'load-pids.json').write_text(json.dumps(report['load'], indent=2) + '\n')
-            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-                for round_number in range(1, rounds + 1):
-                    tasks = [pool.submit(run_one, round_number, slot)
-                             for slot in range(1, report['suite_copies_per_round'] + 1)]
-                    for task in tasks:
-                        row = task.result()
-                        report['runs'].append(row)
-                        runtime = row.get('runtime_cap') or {}
-                        print(json.dumps({'round': row['round'], 'copy': row['copy'], 'failed': row.get('failed'),
-                                          'false_conjuncts': runtime.get('false_conjuncts'),
-                                          'gap': runtime.get('last_beat_after_running'),
-                                          'red_rows': [x.split(': ', 1)[0] for x in row['failed_details']]}), flush=True)
-                    (out / 'report.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+            for round_number in range(1, rounds + 1):
+                row = run_one(round_number, 1)
+                report['runs'].append(row)
+                runtime = row.get('runtime_cap') or {}
+                print(json.dumps({'round': row['round'], 'copy': row['copy'], 'failed': row.get('failed'),
+                                  'false_conjuncts': runtime.get('false_conjuncts'),
+                                  'gap': runtime.get('last_beat_after_running'),
+                                  'red_rows': [x.split(': ', 1)[0] for x in row['failed_details']]}), flush=True)
+                (out / 'report.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
         finally:
             for worker, entry in zip(workers, report['load']):
                 if worker.poll() is None:
