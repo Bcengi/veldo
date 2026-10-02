@@ -1,0 +1,12 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -332,7 +332,8 @@
+         elif enabled and feature not in ungranted:
+             raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
+         else:
+-            configuration[key] = False
++            if feature != 'tool_suggest':
++                configuration[key] = False
+         if '.' in feature:
+             # CLI dotted paths cannot quote a literal dot; use an inline table.
+             configuration.setdefault('features', {})[feature] = configuration.pop(key)

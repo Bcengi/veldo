@@ -1,0 +1,267 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 defaults/apps",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use_external",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use_full_cdp_access",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/computer_use",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/hooks",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/image_generation",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/in_app_browser",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/in_app_local_automation",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/mentions_v2",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/plugins",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/remote_plugin",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/skill_mcp_dependency_install",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/skill_search",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/tool_suggest",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/workspace_dependencies",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/sleep_tool",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unified_exec",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unified_exec_tty",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/shell",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/clock",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unknown",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "d72da2222f32d684dbe17f43739accd3af202c82",
+ "details": [
+  "VELDO-0127 defaults/apps detail: (None, None)",
+  "VELDO-0127 defaults/browser_use detail: (None, None)",
+  "VELDO-0127 defaults/browser_use_external detail: (None, None)",
+  "VELDO-0127 defaults/browser_use_full_cdp_access detail: (None, None)",
+  "VELDO-0127 defaults/computer_use detail: (None, None)",
+  "VELDO-0127 defaults/hooks detail: (None, None)",
+  "VELDO-0127 defaults/image_generation detail: (None, None)",
+  "VELDO-0127 defaults/in_app_browser detail: (None, None)",
+  "VELDO-0127 defaults/in_app_local_automation detail: (None, None)",
+  "VELDO-0127 defaults/mentions_v2 detail: (None, None)",
+  "VELDO-0127 defaults/plugins detail: (None, None)",
+  "VELDO-0127 defaults/remote_plugin detail: (None, None)",
+  "VELDO-0127 defaults/skill_mcp_dependency_install detail: (None, None)",
+  "VELDO-0127 defaults/skill_search detail: (None, None)",
+  "VELDO-0127 defaults/tool_suggest detail: (None, None)",
+  "VELDO-0127 defaults/workspace_dependencies detail: (None, None)",
+  "VELDO-0127 defaults/sleep_tool detail: (None, None)",
+  "VELDO-0127 defaults/unified_exec detail: (None, None)",
+  "VELDO-0127 defaults/unified_exec_tty detail: (None, None)",
+  "VELDO-0127 mapped/shell detail: (None, False, True)",
+  "VELDO-0127 mapped/clock detail: (None, False, True)",
+  "VELDO-0127 mapped/view_image detail: (None, False, True)",
+  "VELDO-0127 mapped/multi_agent detail: (None, False, True)",
+  "VELDO-0127 mapped/sub_agents detail: (None, False, True)",
+  "VELDO-0127 defaults/unknown detail: (None, ['exec', 'wait'], True)"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 defaults/apps",
+  "VELDO-0127 defaults/browser_use",
+  "VELDO-0127 defaults/browser_use_external",
+  "VELDO-0127 defaults/browser_use_full_cdp_access",
+  "VELDO-0127 defaults/computer_use",
+  "VELDO-0127 defaults/hooks",
+  "VELDO-0127 defaults/image_generation",
+  "VELDO-0127 defaults/in_app_browser",
+  "VELDO-0127 defaults/in_app_local_automation",
+  "VELDO-0127 defaults/mentions_v2",
+  "VELDO-0127 defaults/plugins",
+  "VELDO-0127 defaults/remote_plugin",
+  "VELDO-0127 defaults/skill_mcp_dependency_install",
+  "VELDO-0127 defaults/skill_search",
+  "VELDO-0127 defaults/tool_suggest",
+  "VELDO-0127 defaults/workspace_dependencies",
+  "VELDO-0127 defaults/sleep_tool",
+  "VELDO-0127 defaults/unified_exec",
+  "VELDO-0127 defaults/unified_exec_tty",
+  "VELDO-0127 mapped/shell",
+  "VELDO-0127 mapped/clock",
+  "VELDO-0127 mapped/view_image",
+  "VELDO-0127 mapped/multi_agent",
+  "VELDO-0127 mapped/sub_agents",
+  "VELDO-0127 defaults/unknown"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 defaults/apps",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use_external",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/browser_use_full_cdp_access",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/computer_use",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/hooks",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/image_generation",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/in_app_browser",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/in_app_local_automation",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/mentions_v2",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/plugins",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/remote_plugin",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/skill_mcp_dependency_install",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/skill_search",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/tool_suggest",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/workspace_dependencies",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/sleep_tool",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unified_exec",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unified_exec_tty",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/shell",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/clock",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/view_image",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/multi_agent",
+   false
+  ],
+  [
+   "VELDO-0127 mapped/sub_agents",
+   false
+  ],
+  [
+   "VELDO-0127 defaults/unknown",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/88_veldo_0127_feature_defaults.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

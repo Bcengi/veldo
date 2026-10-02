@@ -1,0 +1,92 @@
+{
+ "base_commit": "9233e1b4",
+ "checks": {
+  "anchors": "0 bad anchors",
+  "diff_check": "passed",
+  "engine_copy": "byte-identical",
+  "footprint": "outside the footprint: none",
+  "requires": "regenerated",
+  "validator_exit_code": 0
+ },
+ "gate": "not run; scoped suite results are not a gate pass",
+ "gate_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo0127-profile-gate",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "implementation_commit": "b8ed12e8",
+ "live_capture": "unchanged; reviewer recaptures after this lands",
+ "mutations": {
+  "executed": false,
+  "new": 2,
+  "registered": 74,
+  "rejections_claimed": 0
+ },
+ "red": {
+  "all_red_by_assertion": true,
+  "file": "red-at-9233e1b4.json",
+  "rows": 2
+ },
+ "runs": [
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "partial": true,
+   "passed": 2,
+   "seconds": 13.43,
+   "suite": "90_veldo_0127_feature_profile"
+  },
+  {
+   "environment": "clean gate",
+   "failed_rows": [],
+   "partial": true,
+   "passed": 2,
+   "seconds": 8.44,
+   "suite": "90_veldo_0127_feature_profile"
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "partial": true,
+   "passed": 176,
+   "seconds": 129.1,
+   "suite": "87_veldo_0127_codex_delivery"
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "partial": true,
+   "passed": 25,
+   "seconds": 6.1,
+   "suite": "88_veldo_0127_feature_defaults"
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "partial": true,
+   "passed": 11,
+   "seconds": 4.49,
+   "suite": "89_veldo_0127_feature_listing"
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "partial": true,
+   "passed": 25,
+   "seconds": 40.74,
+   "suite": "86_veldo_0127_agent_configuration"
+  }
+ ]
+}

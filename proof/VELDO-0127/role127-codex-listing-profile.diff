@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -512,7 +512,7 @@
+     home = Path(config) / 'listing-home'
+     home.mkdir(mode=0o700)
+     env = dict(environment, **extra['environment'], **extra['secrets'])
+-    env['CODEX_HOME'] = str(home)
++    pass  # defect: the listing reads the account profile's config.toml
+ 
+     def ask(command):
+         try:

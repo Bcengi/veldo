@@ -245,9 +245,14 @@ def stream_input():
                                    'pid': os.getpid()}}}
             emit(complete_event(answer))
         elif message.get('type') == 'user':
+            if message.get('shouldQuery') is False:
+                emit(own['init'])
+                emit(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False,
+                                     'num_turns': 0, 'result': '',
+                                     'usage': {'input_tokens': 0, 'output_tokens': 0}}))
+                continue
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
-packet = stream_input()
 narrowed, named = option(('--tools',))
 _, denied = option(('--disallowedTools', '--disallowed-tools'))
 kept = split(named)
@@ -259,7 +264,9 @@ own['init'] = complete_event({'type': 'system', 'subtype': 'init', 'apiKeySource
                'output_style': 'default', 'skills': [], 'plugins': [],
                'uuid': 'fixture-init', 'session_id': 'fixture-session'})
 (markers / ('%%d.json' %% os.getpid())).write_text(json.dumps(own))
-emit(own['init'])
+if '--mcp-config' in sys.argv: own['init']['plugins'] = []
+packet = stream_input()
+if '--mcp-config' not in sys.argv: emit(own['init'])
 payload = packet.get('payload') or {}
 for step in payload.get('script') or []:
     if 'line' in step:
@@ -410,8 +417,16 @@ sys.exit(payload.get('code', 0))
 
         # AC1: a bound role revision's native tools are the launch tool set, beyond the in-run list too.
         granted = ['Bash', 'Edit', 'EnterWorktree', 'Read', 'ReportFindings']
+        # VELDO-0127: the accepted writer replaces this suite's former hand-built role revision.
+        C127 = load('v173_agent_config', mods / 'control_agent_config.py')
+        configs = C127.Configurations(S, writer, domain=DOMAIN, repository=REPOSITORY, signer='owner', sign=sign)
+        for base_revision in range(7):
+            configs.save({'role': 'builder-173', 'engine': 'claude_code',
+                          'native_tools': [{'name': name, 'load': 'always'} for name in granted],
+                          'mcp': [], 'skills': [], 'instructions': [], 'settings': {'model': 'fixture-model'}},
+                         principal='owner', base=base_revision, command_id='role-173-' + str(base_revision))
         revision = {'role': 'builder-173', 'revision': 7, 'native_tools': granted}
-        launch, record = submit('unit-revision', {'role_revision': revision})
+        launch, record = submit('unit-revision', {'role': 'builder-173', 'revision': 7})
         observed = markers_of(launch)
         own = observed[0] if len(observed) == 1 else {}
         init = set((own.get('init') or {}).get('tools') or [])

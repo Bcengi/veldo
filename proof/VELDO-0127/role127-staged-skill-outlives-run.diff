@@ -1,0 +1,12 @@
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py
+@@ -1028,8 +1028,7 @@
+         if run is not None and (self.supervision or {}).get('empty') is not False:
+             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
+             # for close() alone could survive into the clone (VELDO-0127).
+-            self._unstage_skills()
+-            shutil.rmtree(run, ignore_errors=True)
++            shutil.rmtree(run, ignore_errors=True)  # defect: links left for close() alone
+ 
+     def _settlement_trust(self, EL):
+         """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the

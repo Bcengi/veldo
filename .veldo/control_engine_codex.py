@@ -146,12 +146,14 @@ Standard library only.
 import datetime
 import hashlib
 import json
+import importlib.util
 import os
 from pathlib import Path
 import re
 import struct
 import subprocess
 import time
+import tempfile
 import zoneinfo
 
 PROVIDER = 'codex'
@@ -420,6 +422,19 @@ FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')
 ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
 QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
+# Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
+NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan'],
+    'sub_agents': ['collaboration.' + n for n in ('followup_task', 'interrupt_agent', 'list_agents',
+                                               'send_message', 'spawn_agent', 'wait_agent')],
+    'request_user_input_async': ['request_user_input_async'], 'clock': ['clock__curr_time', 'clock.sleep']}
+NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
+# Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
+# This mapping key is conditional on the selected server set, not a native role tool.
+NATIVE_TOOL_MAPPING['mcp_server'] = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+# Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
+MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
+
+
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
 STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
@@ -487,22 +502,69 @@ def _package(executable):
     return None, None
 
 
-def qualification(executable, flags=FLAGS):
+def catalog_digest(catalog):
+    return 'sha256:' + hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def bundled_catalog(executable):
+    """Offline qualification only, with no inherited profile or credentials."""
+    with tempfile.TemporaryDirectory(prefix='veldo-catalog-') as temp:
+        root = Path(temp)
+        home, profile = root / 'home', root / 'profile'
+        home.mkdir(); profile.mkdir()
+        try:
+            done = subprocess.run([str(executable), 'debug', 'models', '-' * 2 + 'bundled'],
+                cwd=root, env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
+                              'TMPDIR': temp, 'LANG': 'C.UTF-8'},
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+            catalog = json.loads(done.stdout)
+            if not isinstance(catalog.get('models'), list) or not catalog['models']:
+                raise ValueError('missing models')
+            return catalog
+        except (OSError, ValueError, subprocess.SubprocessError):
+            raise Refused('missing_evidence:codex_bundled_catalog') from None
+
+
+def feature_listing(executable):
+    """Record binary defaults at qualification, without account or project configuration."""
+    with tempfile.TemporaryDirectory(prefix='veldo-features-') as temp:
+        root = Path(temp)
+        home, profile = root / 'home', root / 'profile'
+        home.mkdir(); profile.mkdir()
+        try:
+            done = subprocess.run([str(executable), 'features', 'list'], cwd=root,
+                env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
+                     'TMPDIR': temp, 'LANG': 'C.UTF-8'},
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+            return done.stdout
+        except (OSError, subprocess.SubprocessError):
+            raise Refused('missing_evidence:codex_feature_listing') from None
+
+
+def qualification(executable, flags=FLAGS, *, catalog=False):
     """The qualification record of one installed vendor binary. Reads its package manifest and its bytes;
-    nothing is executed."""
+    catalog=True also captures its bundled model catalog offline."""
     root, manifest = _package(executable)
     if root is None or manifest is None or manifest.get('name') != PACKAGE:
         raise Refused('invalid_input:engine_package')
     version = str(manifest.get('version') or '')
-    return {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
+    record = {'schema': QUALIFICATION_SCHEMA, 'engine': PROVIDER, 'package': PACKAGE, 'package_version': version,
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
+            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': MODEL_TOOL_MODES,
+            'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
             'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
             'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
+    if catalog:
+        bundled = bundled_catalog(executable)
+        record.update(feature_listing=feature_listing(executable),
+                      model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+                      model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
+    return record
 
 
 def load_qualification(path=None):
@@ -544,7 +606,9 @@ def bind(adapter, state_root=None):
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
-            'baseline': base}
+            'baseline': base, 'model_tool_modes': record['model_tool_modes'],
+            'feature_listing': record.get('feature_listing', ''),
+            'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
 
 
 def command(bound, adapter):
@@ -665,6 +729,8 @@ def qualified_baseline(bound, record=None):
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
     if not isinstance(record.get('session_environment'), list):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
+    if record.get('model_tool_modes') != MODEL_TOOL_MODES:
+        raise Refused('missing_evidence:codex_model_tool_modes')
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
@@ -691,12 +757,32 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     secrets, routes = {}, []
     if servers:
         configuration['mcp_servers'] = {server['id']: _mcp_table(server, secrets, routes) for server in servers}
+    files = {}
+    wanted = None
+    if run.get('capability'):
+        helper = _capability_handoff()
+        try:
+            catalog = helper.codex_model(bound, run['capability']['revision'])
+            listing = helper.inventory(run['capability'], servers)
+            files = helper.codex(configuration, run['capability'], listing, Path(run['config']), catalog=catalog,
+                                 feature_listing=bound.get('feature_listing', ''))
+            wanted = helper.expected(run['capability'], listing)
+        except helper.Refused as error:
+            raise Refused(error.code) from None
     argv = list(base['options'])
     for key in sorted(configuration):
         argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': {GENERATED_FILE: text.encode()},
-            'secrets': secrets, 'routes': routes}
+    files[GENERATED_FILE] = text.encode()
+    return {'argv': argv, 'environment': dict(base['environment']), 'files': files,
+            'secrets': secrets, 'routes': routes, 'expected': wanted}
+
+
+def _capability_handoff():
+    spec = importlib.util.spec_from_file_location('codex_handoff', Path(__file__).with_name('control_agent_config_handoff.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _mcp_table(server, secrets, routes):
@@ -739,11 +825,12 @@ def _codex_home(environment, cwd=None):
     return Path(cwd) / home if home is not None and cwd is not None and not home.is_absolute() else home
 
 
-def _held(directory, skip=()):
+def _held(directory, skip=(), allowed=()):
     """The first entry of a skill place, or None when it holds nothing (absent, or not a directory); a place
     that cannot be listed holds something unknown and is named itself."""
     try:
-        entries = sorted(set(os.listdir(directory)) - set(skip))
+        entries = sorted(name for name in set(os.listdir(directory)) - set(skip)
+                         if (Path(directory) / name / 'SKILL.md').resolve() not in allowed)
     except (FileNotFoundError, NotADirectoryError):
         return None
     except OSError:
@@ -767,22 +854,23 @@ def profile_problem(bound, environment, cwd=None):
     the profile (its bundled .system excepted), of the engine HOME's .agents and of the clone around the
     engine's working directory `cwd` (not known for another host's engine, whose own receiver checks it). None
     when there is none."""
+    allowed = {Path(s['source_path']).resolve() for s in (bound.get('capability') or {}).get('skills', [])}
     home = _codex_home(environment, cwd)
     for name in PROFILE_INSTRUCTIONS if home is not None else ():
         if os.path.lexists(home / name):
             return 'invalid_input:engine_profile:' + name
-    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None
+    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,), allowed) if home is not None else None
     if held is not None:
         return 'invalid_input:engine_profile:%s/%s' % (PROFILE_SKILLS, held)
     user = environment.get('HOME')
     user = (Path(cwd) / user if cwd is not None and not Path(user).is_absolute() else Path(user)) if user else None
     for place in HOME_SKILLS if user is not None else ():
-        held = _held(user / place)
+        held = _held(user / place, allowed=allowed)
         if held is not None:
             return 'invalid_input:engine_home:%s/%s' % (place, held)
     for directory in _project(cwd) if cwd is not None else ():
         for place in CLONE_SKILLS:
-            held = _held(directory / place)
+            held = _held(directory / place, allowed=allowed)
             if held is not None:
                 return 'invalid_input:engine_clone:%s/%s' % (os.path.relpath(directory / place, cwd), held)
     return None
@@ -944,7 +1032,7 @@ def main(argv=None):
     if len(args) != 2 or args[0] != 'qualify':
         sys.stderr.write('usage: control_engine_codex.py qualify <vendor binary>\n')
         return 2
-    sys.stdout.write(json.dumps(qualification(args[1]), indent=1, sort_keys=True) + '\n')
+    sys.stdout.write(json.dumps(qualification(args[1], catalog=True), indent=1, sort_keys=True) + '\n')
     return 0
 
 

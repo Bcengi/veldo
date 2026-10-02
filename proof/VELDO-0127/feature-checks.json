@@ -1,0 +1,86 @@
+{
+ "anchors": "0 bad anchors",
+ "baseline": "d72da222",
+ "checks": {
+  "configuration_clean": {
+   "exit_code": 1,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0127 live/claude",
+    "SELFTEST FAIL: VELDO-0127 live/codex"
+   ],
+   "partial_run": true,
+   "suite_rows_passed": 25,
+   "summary": "selftest (PARTIAL, 1 of 137 suites): 51 passed, 2 failed in 43.89s"
+  },
+  "configuration_normal": {
+   "exit_code": 1,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0127 live/claude",
+    "SELFTEST FAIL: VELDO-0127 live/codex"
+   ],
+   "partial_run": true,
+   "suite_rows_passed": 25,
+   "summary": "selftest (PARTIAL, 1 of 137 suites): 51 passed, 2 failed in 38.22s"
+  },
+  "delivery_clean": {
+   "exit_code": 2,
+   "failures": [],
+   "partial_run": true,
+   "suite_rows_passed": 176,
+   "summary": "selftest (PARTIAL, 1 of 137 suites): 202 passed, 0 failed in 93.76s"
+  },
+  "delivery_normal": {
+   "exit_code": 2,
+   "failures": [],
+   "partial_run": true,
+   "suite_rows_passed": 176,
+   "summary": "selftest (PARTIAL, 1 of 136 suites): 202 passed, 0 failed in 133.31s"
+  },
+  "features_clean": {
+   "exit_code": 2,
+   "failures": [],
+   "partial_run": true,
+   "suite_rows_passed": 25,
+   "summary": "selftest (PARTIAL, 1 of 137 suites): 51 passed, 0 failed in 4.48s"
+  },
+  "features_normal": {
+   "exit_code": 2,
+   "failures": [],
+   "partial_run": true,
+   "suite_rows_passed": 25,
+   "summary": "selftest (PARTIAL, 1 of 137 suites): 51 passed, 0 failed in 6.26s"
+  }
+ },
+ "clean_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo0127-feature-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "engine_copies_identical": true,
+ "footprint": "none outside",
+ "gate_run": false,
+ "live_recapture": "reviewer after landing on this branch",
+ "mutations_executed": false,
+ "new_registered_mutations": 7,
+ "production_commit": "36cecc76",
+ "python3": "/usr/bin/python3",
+ "red_by_assertion": true,
+ "red_record": "red-at-d72da222.json",
+ "red_rows": 25,
+ "source_sha256": {
+  ".veldo/control_agent_config_handoff.py": "70c36d229d7a42d087d5eb56d8b40a37e074ec1cb90a3ea65855db73dfd8970b",
+  ".veldo/control_engine_codex.py": "3f1e8fed5d574fb52a53cf8d54bae8910d1eb9a9bdb40552bffa974cfd7fc4cc",
+  "scripts/suites/88_veldo_0127_feature_defaults.py": "527ead0dc011675fccefa247ce3a4236463a2c7a81bcbeee1fc340f71536bdc1"
+ },
+ "spec_id": "VELDO-0127",
+ "validate_all_exit_code": 0
+}

@@ -138,8 +138,9 @@ holds the prompt: the receiver writes the engine's input from `Guard.opening(pac
 Claude Code's initialize control request with its input left open, Codex's packet whole and closed),
 reads the stream through `Guard.feed`, where a login the engine reports that is not a subscription stops
 the worker by name (stop cause `paid_api`, the invocation cancelled, the artifact's `login` naming it)
-before the prompt is ever written, and writes `Guard.release()` (the prompt, once the login is
-confirmed) before closing the input; a stopped run's input is closed with nothing more written. An
+before the prompt is ever written, and writes each `Guard.release()` (the prompt, once the login is
+confirmed; for a role-bound run first its capability probe, VELDO-0127) before closing the input after the
+prompt; a stopped run's input is closed with nothing more written. An
 account the config's `subscription_tokens` names (account to a 0600 file of this account's own) runs
 with that token as CLAUDE_CODE_OAUTH_TOKEN, the one login variable it then carries; the file is opened
 once, without following a link, and checked and read on that one descriptor. The receiver's own environment keeps
@@ -225,6 +226,8 @@ C = _organ('control_containment')
 HB = _organ('control_heartbeat')
 RT = _organ('control_retirement')
 ER = _organ('control_execution_record')
+CFG = _organ('control_agent_config')
+HANDOFF = _organ('control_agent_config_handoff')
 DL = _organ('control_credential_delivery')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
 # invocation seam and each subscription engine's login and usage reports.
@@ -553,6 +556,11 @@ class Runner:
         # this preparation reserves another.
         self.sweep()
         now = self.clock()
+        try:
+            configuration = CFG.bind(self.dispatches.conn, self.dispatches.domain,
+                                     self.dispatches.repository, configuration)
+        except CFG.Refused as error:
+            raise D.Refused(error.code) from None
         decided = dict(context or {}, holder=holder)
         decision = self.gate.require(station, unit, context=decided)
         held = self.dispatches.active(unit, station)
@@ -963,13 +971,23 @@ class Receiver:
         self.credentials = None
         self.delivered = None
         self.selected = None
+        self.role_skills = []
         # VELDO-0141: the contract launched, the run's resolved values and its execution record.
         self.contract = None
         self.resolved = None
         self.recorder = None
         self.committed = None
 
+    def _unstage_skills(self):
+        """The role skills staged into the clone's discovery directory are links into the run's own configuration:
+        each is removed with the run, so none outlives its target or reaches a later run of the same clone."""
+        skills, self.role_skills = self.role_skills, []
+        for path in skills:
+            if path.is_symlink():
+                path.unlink()
+
     def close(self):
+        self._unstage_skills()
         if self.recorder is not None:
             self.recorder.close()
         self.conn.close()
@@ -1008,6 +1026,9 @@ class Receiver:
         recorded; a group that could not be emptied keeps them, since what is left of the run may still use them."""
         run, self.run = self.run, None
         if run is not None and (self.supervision or {}).get('empty') is not False:
+            # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
+            # for close() alone could survive into the clone (VELDO-0127).
+            self._unstage_skills()
             shutil.rmtree(run, ignore_errors=True)
 
     def _settlement_trust(self, EL):
@@ -1070,7 +1091,7 @@ class Receiver:
         refusal = None
         if contract_digest != record['contract_digest']:
             refusal = 'binding_mismatch:contract_digest'
-        elif not isinstance(adapter, dict) or not adapter.get('argv'):
+        elif not isinstance(adapter, dict) or (not adapter.get('argv') and adapter.get('engine') != 'claude_code'):
             refusal = 'unregistered_adapter:' + str(contract['capability']['adapter'])
         else:
             refusal = self._recheck(contract)
@@ -1178,7 +1199,7 @@ class Receiver:
             self.emit({'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
-        if remote and supervision['cause'] == 'paid_api':
+        if remote and supervision['cause'] in ('paid_api', 'configuration_stop'):
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
@@ -1272,8 +1293,18 @@ class Receiver:
                 module.tool_options(bound, revision)
             except module.Refused as error:
                 return error.code
+        try:
+            capability = HANDOFF.materialize(self.conn, self.contract['domain'], self.contract['repository'],
+                                            revision, {'project': self._engine_cwd(argv, dispatch_id, False),
+                                                       'factory': self.config.get('workspace')})
+            if capability and revision['engine'] != module.PROVIDER:
+                return 'unsupported_configuration:engine'
+            if capability and module.PROVIDER == 'claude_code' and set(revision['native_tools']) - set(bound['tools']['registry']):
+                return 'unavailable_service:native_tools'
+        except HANDOFF.Refused as error:
+            return error.code
         self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured),
-                            revision=revision)
+                            revision=revision, capability=capability)
         # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
         # and the login the engine would take in its environment, checked before acceptance: a profile item
         # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
@@ -1281,7 +1312,7 @@ class Receiver:
         login_environment = self._login_environment(adapter)
         cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
         self.token, problem = self._token()
-        problem = (problem or module.profile_problem(bound, login_environment, cwd)
+        problem = (problem or module.profile_problem(self.binding, login_environment, cwd)
                    or module.login_problem(bound, login_environment, cwd))
         if problem:
             self.binding, self.token = None, None
@@ -1368,17 +1399,36 @@ class Receiver:
         files written 0600 into the run's own configuration directory, the engine's own runtime directory
         named for the wrapper's strip, and the subscription token of an account configured with one. The
         receiver reports what it added and the names removed, never a value."""
-        run = dict(self._run_directories(dispatch_id), revision=self.binding.get('revision'))
+        run = dict(self._run_directories(dispatch_id), revision=self.binding.get('revision'),
+                   capability=self.binding.get('capability'))
         engine = self.login['engine']
         try:
             extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
-        except engine.Refused as error:
+            self.binding['expected'] = extra.get('expected')
+            if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
+                self.metering.login_guard.expected = extra['expected']
+                self.metering.terminal.hold_prompt()
+        except (engine.Refused, HANDOFF.Refused) as error:
             # VELDO-0158: a credential the engine cannot be handed (a name two servers claim) is never dropped.
             raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
+        # The generated files exist before anything reads the configuration naming them: the real Codex loads its
+        # whole configuration, the per-run `model_catalog_json` included, for `mcp list` as it does for exec, and
+        # refuses to start when that file is missing (VELDO-0127).
         for name, data in sorted(extra['files'].items()):
+            Path(run['config'], name).parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             with os.fdopen(os.open(os.path.join(run['config'], name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
                            'wb') as handle:
                 handle.write(data)
+        try:
+            if extra.get('expected') and engine.PROVIDER == 'codex':
+                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])
+                tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])
+                self.emit({'event': 'capability_tools', 'tools': tools})
+                self.emit({'event': 'capability_listing', 'listing': [
+                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})
+        except (engine.Refused, HANDOFF.Refused) as error:
+            raise DL.Undeliverable(error.code, error.code.split(':', 1)[1], 'delivery_failed') from None
+        self.role_skills = HANDOFF.stage_skills(run.get('capability'), Path(run['config']))
         at = baseline_at(argv, self.binding, reported)
         argv[at:at] = list(extra['argv'])
         environment.update(extra['environment'])
@@ -1417,6 +1467,7 @@ class Receiver:
             'token': token is not None,
             # VELDO-0173: the launch tool set and the registry tools switched off, by name only.
             'tools': extra.get('tools'),
+            'capabilities': extra.get('expected'),
             'removed': sorted((set(n for n in os.environ if n not in environment)
                               | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
                               - set(own))}})
@@ -1685,18 +1736,26 @@ class Receiver:
         opening, close = login.opening(json.dumps(packet).encode()) if login is not None \
             else (json.dumps(packet).encode(), True)
         held = queue.Queue()
+        input_failed = threading.Event()
 
         def feed():
             try:
                 worker.stdin.write(opening)
                 worker.stdin.flush()
-                if not close:
+                # Each input the Guard releases, in order, until its last (the prompt) or a stop (None);
+                # a role-bound run's capability probe comes before the prompt (VELDO-0127).
+                last = close
+                while not last:
                     later = held.get()
-                    if later:
-                        worker.stdin.write(later)
-                        worker.stdin.flush()
+                    if not later:
+                        break
+                    data, last = later
+                    worker.stdin.write(data)
+                    worker.stdin.flush()
+                    if last and getattr(metering.terminal, 'require_prompt', False):
+                        metering.terminal.wrote_prompt()
             except OSError:
-                pass
+                input_failed.set()
             finally:
                 with contextlib.suppress(OSError):
                     worker.stdin.close()
@@ -1737,18 +1796,21 @@ class Receiver:
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
-                begin('paid_api')
+                begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
+            if metering is not None and metering.feed(chunk):
+                begin('usage_cap')
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
-                    held.put(prompt)
-            # VELDO-0062: a cap the CLI's own report reached stops the worker.
-            if metering is not None and metering.feed(chunk):
-                begin('usage_cap')
+                    held.put((prompt, getattr(login, 'released', True)))
         if recorder is not None:
             # The wrapper's identity line first, then what the engine printed after it.
             if getattr(worker, 'identity_line', None) is not None:
                 recorder.line('wrapper', worker.identity_line)
+            # VELDO-0127: a role-bound run's recorded launch set and revision, right after the identity line.
+            if (self.binding or {}).get('expected') is not None:
+                recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
+                                                     'role_revision_digest': self.binding['revision']['digest']}).encode())
             recorder.feed('engine', carry)
             recorder.batch()
         take(carry)
@@ -1764,6 +1826,8 @@ class Receiver:
                     break
                 live = cause is None and code is None
                 waits = [contract['deadline'] - time.time()] if live else []
+                if live and getattr(login, 'init_deadline', None) is not None and not login.released:
+                    waits.append(login.init_deadline - time.monotonic())
                 waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
                                                              watch.due() if watch is not None and live else math.inf,
                                                              settle if settle is not None else math.inf)
@@ -1806,6 +1870,9 @@ class Receiver:
                 if recorder is not None:
                     recorder.batch()
                 now = time.monotonic()
+                if cause is None and code is None and hasattr(login, 'expired') and login.expired(now):
+                    metering.login_stop = login.stop
+                    begin('configuration_stop')
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
@@ -1840,7 +1907,21 @@ class Receiver:
                 for chunk in iter(lambda: os.read(errors, 65536), b''):
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
+        feeder.join(timeout=1)
+        if (metering is not None and getattr(metering.terminal, 'require_prompt', False)
+                and (input_failed.is_set() or not metering.terminal.prompt_written)):
+            metering.login_stop = metering.login_stop or 'configuration_stop:prompt_write_failed'
+            cause = cause or 'configuration_stop'
         if recorder is not None:
+            # Role debug qualification and first-turn size remain in the committed execution record.
+            debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
+            if debug is not None and debug.is_file():
+                recorder.feed('stderr', debug.read_bytes())
+            if (metering is not None and metering.first_turn_context is not None
+                    and (self.binding or {}).get('capability')):
+                # VELDO-0127 AC4: a role-bound run's first-turn context size, which the marker qualification
+                # compares; a run bound to no role keeps its identity line as its one wrapper line (VELDO-0141).
+                recorder.line('wrapper', json.dumps({'first_turn_context': metering.first_turn_context}).encode())
             # The record's last lines, and what the exit commits of it.
             self.committed = recorder.close()
         code = worker.poll() if code is None else code
@@ -1916,7 +1997,12 @@ class Metering:
         self.report = None
         # VELDO-0155, VELDO-0156: the stream side of the paid-API guard, and the named stop it made.
         self.login_guard = self.engine.Guard()
+        if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':
+            self.login_guard.expected = receiver.binding['expected']
+            self.terminal.hold_prompt()
         self.login_stop = None
+        self.context_pending = b''
+        self.first_turn_context = None
 
     def _stop(self, dispatch_id):
         self.stop = True
@@ -1946,6 +2032,18 @@ class Metering:
     def feed(self, chunk):
         """Whether the worker must stop, after the observations in `chunk`."""
         self.terminal.feed(chunk)
+        if self.first_turn_context is None:
+            self.context_pending += chunk
+            while b'\n' in self.context_pending:
+                raw, _, self.context_pending = self.context_pending.partition(b'\n')
+                try:
+                    event = json.loads(raw)
+                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)
+                except (ValueError, AttributeError, TypeError):
+                    pass
+                if self.first_turn_context is not None:
+                    self.context_pending = b''
+                    break
         for observation in self.meter.feed(chunk):
             self._observe(observation)
         return self.stop
@@ -1996,7 +2094,8 @@ class Metering:
         document = dict(self.terminal.document(termination, cause), dispatch_id=self.dispatch_id,
                         invocation=self.invocation, account=self.account,
                         executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')},
-                        login={'source': self.login_guard.source, 'stop': self.login_stop})
+                        login={'source': self.login_guard.source, 'stop': self.login_stop},
+                        first_turn_context=self.first_turn_context)
         data = (json.dumps(document, sort_keys=True) + '\n').encode()
         directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
         try:
@@ -2027,7 +2126,7 @@ class Metering:
                          wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
             if termination.get('deadline_stop'):
                 outcome = 'timeout'
-            elif cause == 'paid_api':
+            elif cause in ('paid_api', 'configuration_stop'):
                 outcome = 'cancelled'
             elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
                 outcome = 'cancelled'

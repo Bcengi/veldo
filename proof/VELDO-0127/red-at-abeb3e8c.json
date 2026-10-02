@@ -1,0 +1,80 @@
+{
+ "by_assertion": true,
+ "commit": "abeb3e8c995c1e7b41ffbe30bd7c86951c52b05d",
+ "details": [
+  "VELDO-0127 revision/history detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 handoff/claude detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 handoff/codex detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 dispatch/binding detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 dispatch/refusal detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 launch/push detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 launch/unlisted detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 launch/instructions detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 live/claude detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 live/codex detail: accepted role handoff is absent in this tree",
+  "VELDO-0127 format/fake-lines detail: accepted role handoff is absent in this tree"
+ ],
+ "failed_rows": [
+  "VELDO-0127 revision/history",
+  "VELDO-0127 handoff/claude",
+  "VELDO-0127 handoff/codex",
+  "VELDO-0127 dispatch/binding",
+  "VELDO-0127 dispatch/refusal",
+  "VELDO-0127 launch/push",
+  "VELDO-0127 launch/unlisted",
+  "VELDO-0127 launch/instructions",
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 format/fake-lines"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   false
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   false
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   false
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   false
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   false
+  ],
+  [
+   "VELDO-0127 launch/push",
+   false
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   false
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   false
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

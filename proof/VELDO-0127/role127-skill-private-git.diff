@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -547,7 +547,7 @@
+             link = root / skill['name']
+             if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
+                 continue
+-            exclude = _git_process.run(['git', '-C', str(capability['project']), 'rev-parse',
++            exclude = subprocess.run(['git', '-C', str(capability['project']), 'rev-parse',
+                                       OPTION + 'git-path', 'info/exclude'], check=True, capture_output=True, text=True)
+             path = Path(exclude.stdout.strip())
+             if not path.is_absolute():

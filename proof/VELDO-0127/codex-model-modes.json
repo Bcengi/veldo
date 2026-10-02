@@ -1,0 +1,23 @@
+{
+ "returncode": 0,
+ "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-_rpsp1g3\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-_rpsp1g3/profile\"))\n",
+ "model_tool_modes": {
+  "gpt-6-astra": "code_mode_only",
+  "gpt-5.6-sol": "code_mode_only",
+  "gpt-5.6-terra": "code_mode_only",
+  "gpt-5.6-luna": "code_mode_only",
+  "gpt-daybreak-blue-latest": "code_mode_only",
+  "gpt-daybreak-red-latest": "code_mode_only",
+  "gpt-5.5": null,
+  "gpt-5.4": null,
+  "gpt-5.4-mini": null,
+  "gpt-5.2": null,
+  "codex-auto-review": "code_mode_only"
+ },
+ "catalog_sha256": "44b4b18ae234973ced984e707e8bc3d7e958df5a5070d950a2c630b67fe64710",
+ "schema": "veldo.offline-tool-observation/v1",
+ "requests": [],
+ "executable_digest": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "configuration": {},
+ "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME"
+}

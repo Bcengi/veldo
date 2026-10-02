@@ -1,0 +1,131 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/skill-git-boundary",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "c6f6b35753c77998ce77daf4944cab25a2d0403d",
+ "details": [
+  "VELDO-0127 live/claude detail: missing or stale live capture",
+  "VELDO-0127 live/codex detail: missing or stale live capture",
+  "VELDO-0127 review/skill-git-boundary detail: skill exclusion stays in the project despite ambient Git selectors"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 review/skill-git-boundary"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-git-boundary",
+   false
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   true
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   true
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   true
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/fields",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/grants",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/integrity",
+   true
+  ],
+  [
+   "VELDO-0127 wire/normalization",
+   true
+  ],
+  [
+   "VELDO-0127 wire/resources",
+   true
+  ],
+  [
+   "VELDO-0127 wire/no-server",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

@@ -1,0 +1,160 @@
+{
+  "scope": "Selected-suite diagnostic only; not gate verification or passed unit evidence",
+  "starting_commit": "19944b3c61f9ddca55d915d5e6a60e8a0fb05aee",
+  "implementation_commit": "43d2b4ab0bf5695c616f123ed4d6a50c8cf31fdf",
+  "suite": "86_veldo_0127_agent_configuration",
+  "mutation_registry": "scripts/check_teeth_mutations.py (read as AST data, not executed)",
+  "driver_sha256": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+  "runs": [
+    {
+      "phase": "before",
+      "mode": "baseline",
+      "returncode": 2,
+      "failed_rows": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 141 suites): 53 passed, 0 failed in 38.11s"
+      ]
+    },
+    {
+      "mode": "noop",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 1,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "copied_loopback_exists": false,
+      "failed_rows": [
+        "VELDO-0127 review/codex-capture"
+      ],
+      "expected_rows": [],
+      "summary": [
+        "  VELDO-0127 review/codex-capture detail: lead driver records the loopback tools beside its production run (capture error=FileNotFoundError)",
+        "selftest (PARTIAL, 1 of 141 suites): 52 passed, 1 failed in 36.77s"
+      ],
+      "phase": "before"
+    },
+    {
+      "phase": "after",
+      "mode": "baseline",
+      "returncode": 2,
+      "failed_rows": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 141 suites): 53 passed, 0 failed in 38.22s"
+      ]
+    },
+    {
+      "mode": "noop",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 2,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "copied_loopback_exists": false,
+      "failed_rows": [],
+      "expected_rows": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 141 suites): 53 passed, 0 failed in 38.00s"
+      ],
+      "phase": "after"
+    },
+    {
+      "mode": "comment",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 2,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "453f3b5014d457f022e7c626b0d19d1a6f42190e74b7b78e8dc46dc7a4b12950",
+      "copied_loopback_exists": false,
+      "failed_rows": [],
+      "expected_rows": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 141 suites): 53 passed, 0 failed in 38.76s"
+      ],
+      "phase": "after"
+    },
+    {
+      "mode": "role127-lead-model-mode-ignored",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 1,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "36d98a51e428aa13c6866f6172e3c2f5ff6c0fd7936f343bba8ae678a25598c1",
+      "copied_loopback_exists": false,
+      "failed_rows": [
+        "VELDO-0127 review/codex-capture"
+      ],
+      "expected_rows": [
+        "VELDO-0127 review/codex-capture"
+      ],
+      "summary": [
+        "  VELDO-0127 review/codex-capture detail: unknown model is refused",
+        "selftest (PARTIAL, 1 of 141 suites): 52 passed, 1 failed in 37.88s"
+      ],
+      "phase": "after"
+    },
+    {
+      "mode": "role127-loopback-tool-observation-lost",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 1,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "c4b1270982b86e70efdd9af925742526105a819f8aa28aef80bd24022522c25d",
+      "copied_loopback_exists": false,
+      "failed_rows": [
+        "VELDO-0127 review/codex-capture"
+      ],
+      "expected_rows": [
+        "VELDO-0127 review/codex-capture"
+      ],
+      "summary": [
+        "  VELDO-0127 review/codex-capture detail: lead driver records the loopback tools beside its production run (capture error=None)",
+        "selftest (PARTIAL, 1 of 141 suites): 52 passed, 1 failed in 38.01s"
+      ],
+      "phase": "after"
+    },
+    {
+      "mode": "role127-probe-capture-omitted",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "86_veldo_0127_agent_configuration"
+      ],
+      "returncode": 1,
+      "old_digest": "e8139dbcb7273cd5cf4a1f84325150c3eee25653d260514042202ad9420f4cdb",
+      "new_digest": "7c56017dad26434ba828ad881ea1dfba40f2ffd22f6dcf2a6695148965fac5ad",
+      "copied_loopback_exists": false,
+      "failed_rows": [
+        "VELDO-0127 review/probe-terminal"
+      ],
+      "expected_rows": [
+        "VELDO-0127 review/probe-terminal"
+      ],
+      "summary": [
+        "  VELDO-0127 review/probe-terminal detail: live capture retains zero-turn result and assistant count before prompt",
+        "selftest (PARTIAL, 1 of 141 suites): 52 passed, 1 failed in 38.34s"
+      ],
+      "phase": "after"
+    }
+  ]
+}

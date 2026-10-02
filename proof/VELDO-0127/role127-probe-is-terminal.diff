@@ -1,0 +1,11 @@
+--- .veldo/control_engine_claude.py
++++ .veldo/control_engine_claude.py
+@@ -1776,7 +1776,7 @@
+             if decoded is None:
+                 self.malformed += 1
+                 return
+-            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):
++            if False:
+                 self.probe_result = decoded
+                 return
+             self.result, self.receipt = decoded, receipt(line)

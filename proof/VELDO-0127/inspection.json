@@ -1,0 +1,37 @@
+{
+  "base_commit": "9f1a0445",
+  "outcome": "blocked_required_live_qualification",
+  "production_changed": false,
+  "schema": "veldo.implementation-inspection/v1",
+  "source_sha256": {
+    ".veldo/control_credential_delivery.py": "069ce48a3e56c00d89457b8b0116b68266f64e3db5d080c19a6f6c3c18952849",
+    ".veldo/control_engine_claude.py": "1b98f8e40626f10b7d83f3e4a008ffad7de99a5904cd13a70575c5ce8714dc09",
+    ".veldo/control_engine_codex.py": "fd7e0b0680beec7e19bea812539412310c291548451802772be271c0dd39f12b",
+    ".veldo/control_launch.py": "187d191dc30a02e52d25532b5c1d18301015065e3adf1f25e2e91da0f17ecd55",
+    ".veldo/control_mcp_catalog.py": "87e4a44d36f9ae396bde2f93fd43fbc5fb05ad753624ab5a0fc20c38f96483a2",
+    "proof/VELDO-0155/README.md": "cc3ba1e7db001b5a212f1f8cab1e566d4b8fa9da7495b6375534d849d0144825",
+    "proof/VELDO-0156/README.md": "0ec7ffb416102a49dfe69e4ae805dd11699ab45372bd94ef90356f1c3bb7b6d3",
+    "proof/VELDO-0172/capture.json": "8f5b8eb50df11324ebdf50834e1018c0a2bbc93f653d81b5a69327e20808c8e3",
+    "proof/VELDO-0173/README.md": "d03708352aaad662073d30ad98f3d3a0ded8118dbdef77a8ba6b4d7fdf2dab9e",
+    "specs/VELDO-0127-agent-capability-configuration.md": "622f577fb03207a44d1d167d683158e27511a73895e761d07c073ee7201c0436"
+  },
+  "spec_id": "VELDO-0127",
+  "static_claude_inspection": {
+    "executed": false,
+    "initial_event_generator_offset": 208905932,
+    "initial_event_precedes_input_iteration": true,
+    "input_iteration_offset": 208906026,
+    "scope": "Static ordering only; no live role handoff or marker qualification.",
+    "sha256": "56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+    "version": "2.1.281"
+  },
+  "unperformed": [
+    "AC1 role revision implementation and behavior suite",
+    "AC2 actual Claude Code and Codex role handoff qualification",
+    "AC3 revision binding implementation and behavior suite",
+    "AC4 actual marker/debug/context-size qualification",
+    "red record",
+    "teeth mutation registration and execution",
+    "canonical gate"
+  ]
+}

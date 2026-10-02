@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -330,7 +330,7 @@
+         if feature in mapped:
+             configuration[key] = bool(mapped[feature].intersection(grants))
+         elif enabled and feature not in ungranted:
+-            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
++            pass
+         else:
+             configuration[key] = False
+         if '.' in feature:

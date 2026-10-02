@@ -1,0 +1,663 @@
+{
+ "schema": "veldo.codex-tool-investigation/v1",
+ "binary_sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "network": "Each probe used loopback.capture, empty temporary HOME and CODEX_HOME, generated MCP fixture and Landlock TCP restriction.",
+ "model_defaults": {
+  "slug": "gpt-6-astra",
+  "shell_type": "unified_exec",
+  "tool_mode": "code_mode_only",
+  "multi_agent_version": "v2",
+  "experimental_supported_tools": [
+   "send_user_message_async",
+   "clock"
+  ]
+ },
+ "probes": [
+  {
+   "name": "code-mode",
+   "overrides": {
+    "features.code_mode": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "0f85c835ebf773d9ab2efd13360188d919951db76f28bf657f9b10f8db419cc3"
+  },
+  {
+   "name": "multi-bool",
+   "overrides": {
+    "features.multi_agent_v2": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "a33c308b3713de3ea50d96a8b53e6044e13951c7b103fc27fb1bc65fc1f5b98c"
+  },
+  {
+   "name": "code-top",
+   "overrides": {
+    "code_mode": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "342f46c2cad7820fbcc7b025c3ba464ed6dbba2434d51aef77489c2d34937e58"
+  },
+  {
+   "name": "multi-top",
+   "overrides": {
+    "code_mode": {
+     "enabled": false
+    },
+    "multi_agent_v2": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "ea0e371daf680332a6fe6c28d8c5ffecf7718824c0d7538ff2e8c57d5baf55fc"
+  },
+  {
+   "name": "async-off",
+   "overrides": {
+    "features.default_mode_request_user_input": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "b9360f8d639c7b6b0ccf3e2e533807573765d12546a706252b0aef53b6967085"
+  },
+  {
+   "name": "mode-off",
+   "overrides": {
+    "features.multi_agent_mode": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "8bf1386d9570c6c81f3b729a20db0341490104f5d0827ff52099222feb3c7cec"
+  },
+  {
+   "name": "host-off",
+   "overrides": {
+    "features.code_mode_host": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "8d0ee5cb46abcf76898f04ab7c9531e013306999f770327300a5e98d7a5343ca"
+  },
+  {
+   "name": "orchestrator",
+   "overrides": {
+    "orchestrator": {
+     "enabled": false
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "b3bd358678d287689c34878a9fd7e4cdff558da6e933fb7995eb78192b7993a7"
+  },
+  {
+   "name": "search-off",
+   "overrides": {
+    "features.tool_search": false
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "13cffa2798d859260b39156475631ee97dd3c68cb8daaf177df7679238d72647"
+  },
+  {
+   "name": "multi-direct-only",
+   "overrides": {
+    "features.multi_agent_v2": {
+     "enabled": false,
+     "non_code_mode_only": true
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "84ee6cdf22f3dc254b0ac744d8bd381099e95df43462ef79d5a102bcbf74b788"
+  },
+  {
+   "name": "orchestrator-tools",
+   "overrides": {
+    "orchestrator": {
+     "enabled_tools": [
+      "exec_command",
+      "write_stdin",
+      "update_plan",
+      "mcp__jira__jira_search"
+     ]
+    }
+   },
+   "returncode": 0,
+   "tools": [
+    "collaboration.followup_task",
+    "collaboration.interrupt_agent",
+    "collaboration.list_agents",
+    "collaboration.send_message",
+    "collaboration.spawn_agent",
+    "collaboration.wait_agent",
+    "functions.exec",
+    "functions.request_user_input_async",
+    "functions.wait"
+   ],
+   "nested_declarations": [
+    "apply_patch",
+    "clock__curr_time",
+    "exec_command",
+    "list_mcp_resource_templates",
+    "list_mcp_resources",
+    "read_mcp_resource",
+    "update_plan",
+    "write_stdin"
+   ],
+   "request_sha256": "7cd274d133e9084bb05e2344413608d015873d09650b1bd1363162b658bfc070"
+  }
+ ],
+ "feature_listing": [
+  "code_mode                                under development  false",
+  "code_mode_host                           stable             true",
+  "code_mode_only                           under development  false",
+  "default_mode_request_user_input          under development  false",
+  "multi_agent                              stable             false",
+  "multi_agent_mode                         removed            false",
+  "multi_agent_v2                           stable             false",
+  "shell_tool                               stable             true"
+ ],
+ "feature_listing_command": "codex features list under the production role configuration, empty profiles and loopback.capture containment",
+ "model_catalog_command": "codex debug models under empty profiles and loopback.capture containment",
+ "reproduction": "For each probe, copy codex-loopback.json configuration, apply its overrides, and call loopback.capture(binary, configuration). Compare codex_tool_names(codex_request_tools(request body)). All probes use the unchanged pinned model catalog.",
+ "qualified_model_tool_modes": {
+  "gpt-6-astra": "code_mode_only",
+  "gpt-5.6-sol": "code_mode_only",
+  "gpt-5.6-terra": "code_mode_only",
+  "gpt-5.6-luna": "code_mode_only",
+  "gpt-daybreak-blue-latest": "code_mode_only",
+  "gpt-daybreak-red-latest": "code_mode_only",
+  "gpt-5.5": null,
+  "gpt-5.4": null,
+  "gpt-5.4-mini": null,
+  "gpt-5.2": null,
+  "codex-auto-review": "code_mode_only"
+ },
+ "direct_tool_probes": [
+  {
+   "name": "combined",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ]
+     },
+     "actual": [
+      "apply_patch",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "mcp__jira.jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "apply_patch",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search"
+     ],
+     "missing": [
+      "mcp__jira.jira_search"
+     ],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "request_sha256": [
+    "63597ed3f240613c49cf3e3d20ffc4b927dbe740d6951788a6949e139098c533"
+   ],
+   "overrides": {
+    "tools.apply_patch": {
+     "enabled": false
+    },
+    "tools.list_mcp_resources": {
+     "enabled": false
+    },
+    "tools.list_mcp_resource_templates": {
+     "enabled": false
+    },
+    "tools.read_mcp_resource": {
+     "enabled": false
+    },
+    "features.tool_search": false
+   }
+  },
+  {
+   "name": "tables",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
+    "features.apply_patch": {
+     "enabled": false
+    },
+    "features.mcp_resources": {
+     "enabled": false
+    },
+    "features.tool_search": {
+     "enabled": false
+    }
+   }
+  },
+  {
+   "name": "searchtable",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
+    "features.tool_search": {
+     "enabled": false
+    }
+   }
+  },
+  {
+   "name": "toggles",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ]
+     },
+     "actual": [
+      "apply_patch",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "mcp__jira.jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "apply_patch",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search"
+     ],
+     "missing": [
+      "mcp__jira.jira_search"
+     ],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "request_sha256": [
+    "c10390d0c11ec17ae62656d103539d571255de222762acef132f3484bbb55660"
+   ],
+   "overrides": {
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false,
+    "features.mcp_2026_07_28": false,
+    "orchestrator.mcp.enabled": false
+   }
+  },
+  {
+   "name": "registry",
+   "returncode": 1,
+   "observations": [],
+   "request_sha256": [],
+   "overrides": {
+    "features.tool_registry": {
+     "enabled": false
+    },
+    "features.tool_search": false
+   }
+  },
+  {
+   "name": "control",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ]
+     },
+     "actual": [
+      "apply_patch",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search"
+     ],
+     "expected": [
+      "exec_command",
+      "mcp__jira.jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "apply_patch",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search"
+     ],
+     "missing": [
+      "exec_command",
+      "mcp__jira.jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "request_sha256": [
+    "fe0a8000793a91ac8fa7ebf88f437a2703e625423b581b701c58af85fdb24f20"
+   ],
+   "overrides": {
+    "features.shell_tool": false,
+    "tools.update_plan": {
+     "enabled": false
+    },
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false
+   }
+  },
+  {
+   "name": "discovery",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ]
+     },
+     "actual": [
+      "apply_patch",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "mcp__jira.jira_search",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [
+      "apply_patch",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "tool_search"
+     ],
+     "missing": [
+      "mcp__jira.jira_search"
+     ],
+     "stop": "configuration_stop:codex_unexpected_tool"
+    }
+   ],
+   "request_sha256": [
+    "60133b718707c8b2067df162a215ddb039f181058ed9829f63ddef1aaa7b1032"
+   ],
+   "overrides": {
+    "features.executor_capability_discovery": false,
+    "features.tool_search": false,
+    "features.tool_search_always_defer_mcp_tools": false,
+    "features.deferred_tool_world_state": false,
+    "orchestrator.mcp.enabled": false
+   }
+  }
+ ],
+ "direct_tool_conclusion": "Tested switches did not establish equality. No working switch claimed or installed.",
+ "model_catalog_record": "codex-model-modes.json",
+ "catalog_repair": {
+  "owner_messages": [
+   29393,
+   29398
+  ],
+  "baseline": "0fbf6f09",
+  "qualification_record": "../../.veldo/runtime/codex-qualification.json",
+  "new_observations": [
+   "catalog-loopback-gpt-6-astra.json",
+   "catalog-loopback-gpt-5.5.json"
+  ],
+  "resource_investigation": "resource-investigation.json",
+  "conclusion": "Catalog controls remove the prior extras and expose Jira directly. Code Mode is preserved. Only the three resource readers remain unexpected; comparison still fails closed."
+ }
+}

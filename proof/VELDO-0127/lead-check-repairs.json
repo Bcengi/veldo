@@ -1,0 +1,98 @@
+{
+ "anchors": "0 bad anchors",
+ "baseline_commit": "c6f6b357",
+ "engine_sync": {
+  "mismatches": [],
+  "modules_checked": 7,
+  "qualification_equal": true
+ },
+ "footprint": "nothing outside; VELDO-0061 suite added for AC2 qualification comparison",
+ "gate_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo0127-check-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "git_boundary": "pass",
+ "implementation_commit": "0dfd7037",
+ "limitations": [
+  "Both live captures need lead recapture after the handoff production digest changed.",
+  "Red replay also reports both stale live rows; only the changed skill-boundary behavior is claimed red.",
+  "Gate, aggregate selftest and mutations were not run."
+ ],
+ "mutations": {
+  "executed": false,
+  "new_registration": "role127-skill-private-git",
+  "reason": "Reviewer runs mutations outside this job.",
+  "rejections_claimed": 0
+ },
+ "red_behavior_rows": [
+  "review/skill-git-boundary"
+ ],
+ "red_by_assertion": true,
+ "red_record": "red-at-c6f6b357.json",
+ "requires": "regenerated; unchanged",
+ "suites": [
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "log_sha256": "c8cae38e16963f1af8f1b07f3557fb464a9e9b4ea611083926187b04d3eed597",
+   "suite": "50_git_environment",
+   "suite_rows_passed": 4
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "log_sha256": "2c02d325e4b9291e79bd0e6c646d7f7120003b7c0c3d8babbafc508d22d31358",
+   "suite": "79_veldo_0061_codex_adapter",
+   "suite_rows_passed": 21
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "log_sha256": "b0131fab22213d7007be10f97dc2cfd7e83ac920318628d21351949c4ffc7622",
+   "suite": "82_veldo_0173_tool_registry",
+   "suite_rows_passed": 11
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [],
+   "log_sha256": "30a973df88277430a49fb32e78b68b1b2c4e15874fbe7c61992097a5a5611344",
+   "suite": "82_veldo_0172_live_formats",
+   "suite_rows_passed": 4
+  },
+  {
+   "environment": "normal",
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "b6cf0c9e56ef72af38a9b391483c79a82df0e87785a34570cda7b73d59f222e9",
+   "suite": "86_veldo_0127_agent_configuration",
+   "suite_rows_passed": 25
+  },
+  {
+   "environment": "gate",
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "6b2b5c07e15261c4d352e03d2c7095f04526b8cbe5aa3caa608db6c9cde7040c",
+   "suite": "86_veldo_0127_agent_configuration",
+   "suite_rows_passed": 25
+  }
+ ],
+ "supersedes": "checks.json describes the earlier repair; this record describes the lead check repairs.",
+ "validation": {
+  "command": "python3 .veldo/validate.py all",
+  "exit": 0
+ }
+}

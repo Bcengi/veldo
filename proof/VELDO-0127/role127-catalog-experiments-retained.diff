@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -280,7 +280,7 @@
+         selected['apply_patch_tool_type'] = None
+     experimental = {'send_user_message_async': 'request_user_input_async', 'clock': 'clock'}
+     selected['experimental_supported_tools'] = [n for n in entry['experimental_supported_tools']
+-                                                if experimental.get(n, n) in grants]
++                                                if True]
+     if 'tool_search' not in grants:
+         selected['supports_search_tool'] = False
+     return dict(copy.deepcopy(catalog), models=[selected])

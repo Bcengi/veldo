@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -429,7 +429,7 @@
+     except Refused as error:
+         return error.code
+     if set(actual) - set(expected_names):
+-        return 'configuration_stop:codex_unexpected_tool'
++        return None
+     if set(actual) != set(expected_names):
+         return 'configuration_stop:codex_missing_tool'
+     return None

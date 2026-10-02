@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config.py
++++ .veldo/control_agent_config.py
+@@ -85,7 +85,7 @@
+             if not valid:
+                 raise Refused('invalid_input:agent_' + field)
+     if definition['engine'] == 'codex':
+-        codex_grants(definition)
++        pass
+ 
+ 
+ def codex_grants(definition):

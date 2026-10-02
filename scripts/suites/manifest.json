@@ -1141,6 +1141,15 @@
    "requires_note": "Only shared ROOT and expect. Real Git (a scaffolded repository with its canonical gate, a disposable bare remote with its reflog, the enrolled, builder, publication and colleague clones, a pre-push hook of the publication clone armed for one push), the SQLite store with OpenSSH signatures, VELDO-0076 projects, VELDO-0031 claims, VELDO-0036 reservations, VELDO-0039 dispatches with real child processes, VELDO-0050 proof, the VELDO-0049 floor, the VELDO-0028 effect executor, the lander, VELDO-0058's installed gate, VELDO-0057's publication and receipt, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), the Runner and launch receiver processes, the trusted wrapper and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential."
   },
   {
+   "name": "86_veldo_0127_agent_configuration",
+   "file": "86_veldo_0127_agent_configuration.py",
+   "requires": [
+    "86_veldo_0127_agent_configuration"
+   ],
+   "regions": "Immutable accepted roles, bundled catalog overrides for unchanged Codex models, exact direct and Code Mode effective tool comparison including resource readers only with selected MCP servers, bound dispatch revisions, launch capability equality and pending live captures.",
+   "requires_note": "Shared ROOT and expect only. Production signed store, role and MCP catalog writers, credentials, Runner, receiver and both engine adapters. Generated VELDO-0172 fake engines and temporary profiles."
+  },
+  {
    "name": "83_veldo_0166_usage_windows",
    "file": "83_veldo_0166_usage_windows.py",
    "requires": [
@@ -1166,6 +1175,42 @@
    ],
    "regions": "Runtime asset census and missing source refusal; setup pins Claude Code and records Codex, installed receiver bindings, unknown versions and digest mismatches; setup missing-source refusal leaves an empty state root; nested runtime directories are 0500; unknown Claude version names version evidence; real pin counts exclude vendor bindings; installed receiver emits binds_refused once per failed engine bind",
    "requires_note": "Only shared ROOT and expect. Real setup, service installer, keys, store, enrollment and installed engine bindings. Inert engine bytes with shared constructors, no engine executes; containment host qualification and daemon reload are fixture seams."
+  },
+  {
+   "name": "87_veldo_0127_codex_delivery",
+   "file": "87_veldo_0127_codex_delivery.py",
+   "requires": [
+    "87_veldo_0127_codex_delivery"
+   ],
+   "regions": "Each grantable Codex tool on every qualified model, exact empty-role and MCP controls, save refusals, and production missing or extra tool stops. Two isolated workers retain every wire claim; elapsed seconds are informational.",
+   "requires_note": "Only ROOT and expect. Accepted signed role writes and Receiver._baseline; pinned binary against loopback with an empty generated profile and network guard. No login or model."
+  },
+  {
+   "name": "88_veldo_0127_feature_defaults",
+   "file": "88_veldo_0127_feature_defaults.py",
+   "requires": [
+    "88_veldo_0127_feature_defaults"
+   ],
+   "regions": "Default-on Codex tool features explicitly disabled; mapped grants delivered with exact feature controls; unknown enabled features stop before launch.",
+   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; actual pinned binary arguments and tool definitions on loopback with empty generated profiles."
+  },
+  {
+   "name": "89_veldo_0127_feature_listing",
+   "file": "89_veldo_0127_feature_listing.py",
+   "requires": [
+    "89_veldo_0127_feature_listing"
+   ],
+   "regions": "Default-off feature overrides, dotted feature names, mapped grants independent of defaults, and missing, empty or malformed qualification listing stops.",
+   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; pinned binary on guarded loopback with empty generated profiles. Invalid records derive from the production writer."
+  },
+  {
+   "name": "90_veldo_0127_feature_profile",
+   "file": "90_veldo_0127_feature_profile.py",
+   "requires": [
+    "90_veldo_0127_feature_profile"
+   ],
+   "regions": "Generated Codex profile parses with exact feature values; one CLI feature table preserves grants on the pinned loopback first request, with the exact profile in CODEX_HOME.",
+   "requires_note": "Only ROOT and expect. Signed role and qualification writers, binding and Receiver._baseline. Exact generated profile and receiver argv on guarded loopback with empty homes, no login or model."
   },
   {
    "name": "85_veldo_0171_setup_api",

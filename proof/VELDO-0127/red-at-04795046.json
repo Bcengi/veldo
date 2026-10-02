@@ -1,0 +1,96 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "04795046e4888ded31b473be9d8f0921d1b01eff",
+ "details": [
+  "VELDO-0127 live/claude detail: missing or stale live capture; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing",
+  "VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback request capture missing; Codex loopback request capture missing; Codex loopback request capture missing; Codex loopback request capture missing",
+  "VELDO-0127 review/codex-tools detail: qualification writer and comparator share exact shell and plan vocabulary",
+  "VELDO-0127 review/codex-tools detail: real Code Mode extras stay named and never hide missing grants"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 review/codex-tools"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   true
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   true
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   true
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   true
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

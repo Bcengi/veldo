@@ -1,0 +1,123 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/skill-git-boundary",
+   true
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "ef1cd2fb40413639cc6c2e2075bb6038930fdbd3",
+ "details": [],
+ "every_changed_behavior_row_red": false,
+ "failed_rows": [],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   true
+  ],
+  [
+   "VELDO-0127 live/codex",
+   true
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-git-boundary",
+   true
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   true
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   true
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   true
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/fields",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/grants",
+   true
+  ],
+  [
+   "VELDO-0127 catalog/integrity",
+   true
+  ],
+  [
+   "VELDO-0127 wire/normalization",
+   true
+  ],
+  [
+   "VELDO-0127 wire/resources",
+   true
+  ],
+  [
+   "VELDO-0127 wire/no-server",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

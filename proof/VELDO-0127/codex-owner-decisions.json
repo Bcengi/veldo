@@ -1,0 +1,20 @@
+{
+ "list_mcp_resource_templates": {
+  "capability": "Lists resource templates of the configured role MCP servers.",
+  "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+  "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+  "evidence": "resource-qualification.json"
+ },
+ "list_mcp_resources": {
+  "capability": "Lists resources of the configured role MCP servers.",
+  "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+  "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+  "evidence": "resource-qualification.json"
+ },
+ "read_mcp_resource": {
+  "capability": "Reads a resource URI offered by a configured role MCP server.",
+  "classification": "Resolved by owner Telegram 29400/29401 on 2026-09-28",
+  "disposition": "Expected exactly when at least one MCP server is selected; unexpected with no selected server.",
+  "evidence": "resource-qualification.json"
+ }
+}

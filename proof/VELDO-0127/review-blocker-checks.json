@@ -1,0 +1,18 @@
+{
+ "scope": "Documentation and blocker evidence only; production repair stopped as requested.",
+ "offline_codex": {
+  "runs": 2,
+  "both_exit_zero": true,
+  "tool_list_obtained": false,
+  "tcp_denied": "Landlock"
+ },
+ "footprint": "nothing outside",
+ "anchors": "0 bad anchors",
+ "validation": {
+  "command": "python3 .veldo/validate.py all",
+  "exit": 0
+ },
+ "suites_run": [],
+ "red_record": "No new behavior change or red record; stopped at exact-tool-list blocker.",
+ "mutations_run": false
+}

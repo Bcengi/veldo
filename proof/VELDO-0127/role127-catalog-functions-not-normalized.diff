@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config_handoff.py
++++ .veldo/control_agent_config_handoff.py
+@@ -387,7 +387,7 @@
+ 
+ 
+ def codex_name(name):
+-    name = name.removeprefix('functions.')
++    name = name
+     if name == 'web__run':
+         return 'web_search'
+     if name.startswith('mcp__'):

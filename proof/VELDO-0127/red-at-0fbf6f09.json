@@ -1,0 +1,188 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/fields",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/grants",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/integrity",
+   false
+  ],
+  [
+   "VELDO-0127 wire/normalization",
+   false
+  ],
+  [
+   "VELDO-0127 wire/resources",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "0fbf6f09de36d319b4adcf0b854e59bd2d4e9dcd",
+ "details": [
+  "VELDO-0127 live/claude detail: missing or stale live capture; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing; instruction discovery debug control missing; pre-prompt probe evidence missing",
+  "VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback request capture missing; Codex loopback tool observation missing or different; Codex loopback request capture missing; Codex loopback tool observation missing or different; Codex loopback request capture missing; Codex loopback tool observation missing or different; Codex loopback request capture missing; Codex loopback tool observation missing or different",
+  "VELDO-0127 review/codex-tools detail: both directions compare effective definitions with mapped grants",
+  "VELDO-0127 review/codex-tools detail: qualification writer and comparator share the shell and plan vocabulary",
+  "VELDO-0127 review/codex-tools detail: Code Mode equality includes runner and nested declarations",
+  "VELDO-0127 review/codex-mode detail: gpt-6-astra: Code Mode runs with unchanged model and generated catalog",
+  "VELDO-0127 review/codex-mode detail: absent: override failure stops closed",
+  "VELDO-0127 review/codex-mode detail: digest: override failure stops closed",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-sol: Code Mode runs with unchanged model and generated catalog",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-terra: Code Mode runs with unchanged model and generated catalog",
+  "VELDO-0127 review/codex-mode detail: gpt-5.6-luna: Code Mode runs with unchanged model and generated catalog",
+  "VELDO-0127 review/codex-capture detail: lead driver records the loopback tools beside its production run",
+  "VELDO-0127 review/codex-capture detail: lead accepts Code Mode models without substitution and rejects unknown models",
+  "VELDO-0127 catalog/fields detail: gpt-6-astra: exactly four permitted fields change",
+  "VELDO-0127 catalog/fields detail: gpt-5.6-sol: exactly four permitted fields change",
+  "VELDO-0127 catalog/fields detail: gpt-5.6-terra: exactly four permitted fields change",
+  "VELDO-0127 catalog/fields detail: gpt-5.6-luna: exactly four permitted fields change",
+  "VELDO-0127 catalog/grants detail: grants-sub_agents: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/grants detail: grants-apply_patch: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/grants detail: grants-clock: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/grants detail: grants-request_user_input_async: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/grants detail: grants-tool_search: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/grants detail: grants-sub_agents-apply_patch-clock-request_user_input_async-tool_search: accepted grants preserve only the requested catalog fields",
+  "VELDO-0127 catalog/integrity detail: qualification captures the fake binary bundled catalog with its digest",
+  "VELDO-0127 catalog/integrity detail: absent: unusable override retains named Code Mode stop",
+  "VELDO-0127 catalog/integrity detail: digest: unusable override retains named Code Mode stop",
+  "VELDO-0127 wire/normalization detail: direct namespaces and MCP spellings compare to the same grants",
+  "VELDO-0127 wire/normalization detail: gpt-6-astra: runner and nested declarations expose every grant",
+  "VELDO-0127 wire/normalization detail: gpt-5.6-sol: runner and nested declarations expose every grant",
+  "VELDO-0127 wire/normalization detail: gpt-5.6-terra: runner and nested declarations expose every grant",
+  "VELDO-0127 wire/normalization detail: gpt-5.6-luna: runner and nested declarations expose every grant",
+  "VELDO-0127 wire/resources detail: ungranted readers remain visible and fail closed",
+  "VELDO-0127 wire/resources detail: code: retained binary request exposes only configured-server readers beyond grants"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 live/claude",
+  "VELDO-0127 live/codex",
+  "VELDO-0127 review/codex-tools",
+  "VELDO-0127 review/codex-mode",
+  "VELDO-0127 review/codex-capture",
+  "VELDO-0127 catalog/fields",
+  "VELDO-0127 catalog/grants",
+  "VELDO-0127 catalog/integrity",
+  "VELDO-0127 wire/normalization",
+  "VELDO-0127 wire/resources"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 revision/history",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/claude",
+   true
+  ],
+  [
+   "VELDO-0127 handoff/codex",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/binding",
+   true
+  ],
+  [
+   "VELDO-0127 dispatch/refusal",
+   true
+  ],
+  [
+   "VELDO-0127 launch/push",
+   true
+  ],
+  [
+   "VELDO-0127 launch/unlisted",
+   true
+  ],
+  [
+   "VELDO-0127 launch/instructions",
+   true
+  ],
+  [
+   "VELDO-0127 live/claude",
+   false
+  ],
+  [
+   "VELDO-0127 live/codex",
+   false
+  ],
+  [
+   "VELDO-0127 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0127 review/skill-commit",
+   true
+  ],
+  [
+   "VELDO-0127 review/probe-terminal",
+   true
+  ],
+  [
+   "VELDO-0127 review/init-bound",
+   true
+  ],
+  [
+   "VELDO-0127 review/slash-collision",
+   true
+  ],
+  [
+   "VELDO-0127 review/marker-debug",
+   true
+  ],
+  [
+   "VELDO-0127 review/codex-tools",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-mode",
+   false
+  ],
+  [
+   "VELDO-0127 review/codex-capture",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/fields",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/grants",
+   false
+  ],
+  [
+   "VELDO-0127 catalog/integrity",
+   false
+  ],
+  [
+   "VELDO-0127 wire/normalization",
+   false
+  ],
+  [
+   "VELDO-0127 wire/resources",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/86_veldo_0127_agent_configuration.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

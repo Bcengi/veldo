@@ -1,0 +1,11 @@
+--- proof/VELDO-0127/live.py
++++ proof/VELDO-0127/live.py
+@@ -139,7 +139,7 @@
+         wire_tools = [evidence.wire_observation(r['body'], expected, helper) for r in wire['requests']]
+     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
+             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
+-            'builtin_commands':builtin, 'probe':document.get('probe'),
++            'builtin_commands':builtin, 'probe':None,
+             'disallowed':disallowed, 'configuration':configuration, 'listing':listing, 'wire_capture':wire, 'wire_tools':wire_tools,
+             'model_catalog':catalog if engine == 'codex' else None,
+             'first_turn_context':document.get('first_turn_context'), 'context_events':context_events,

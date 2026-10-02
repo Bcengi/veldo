@@ -1,0 +1,12 @@
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py
+@@ -1917,8 +1917,7 @@
+             debug = Path(self.run) / RUN_CONFIG / 'role-debug.log' if self.run else None
+             if debug is not None and debug.is_file():
+                 recorder.feed('stderr', debug.read_bytes())
+-            if (metering is not None and metering.first_turn_context is not None
+-                    and (self.binding or {}).get('capability')):
++            if metering is not None and metering.first_turn_context is not None:
+                 # VELDO-0127 AC4: a role-bound run's first-turn context size, which the marker qualification
+                 # compares; a run bound to no role keeps its identity line as its one wrapper line (VELDO-0141).
+                 recorder.line('wrapper', json.dumps({'first_turn_context': metering.first_turn_context}).encode())

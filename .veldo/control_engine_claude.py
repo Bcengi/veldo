@@ -209,6 +209,7 @@ Standard library only.
 import datetime
 import hashlib
 import json
+import importlib.util
 import math
 import os
 from pathlib import Path
@@ -1141,7 +1142,7 @@ REGISTRATION = {
     },
 }
 VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
+STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api', 'configuration_stop')
 
 
 class Refused(Exception):
@@ -1302,6 +1303,13 @@ SUBSCRIPTION_PROVIDER = 'firstParty'
 # subscriptions): Enterprise, Team, Max and Pro. Its default label for any other tier, "Claude API", is not one.
 SUBSCRIPTIONS = ('Claude Enterprise', 'Claude Team', 'Claude Max', 'Claude Pro')
 TOKEN_SOURCE = 'CLAUDE_CODE_OAUTH_TOKEN'
+# VELDO-0127: the capability probe of a role-bound run. The 2.1.281 binary reports its init event only once a
+# first user message reaches it (its engine yields system/init as it starts reading input), never for the
+# initialize request alone, so a prompt held until init is never released. Its stream JSON user message takes
+# shouldQuery false: the message is appended to the transcript without an assistant turn and merged into the
+# next user message that queries. With no content it adds nothing to that message; the binary answers it with
+# its init event (after the selected MCP servers have connected) and a zero-turn result, before any model request.
+PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None, 'shouldQuery': False}
 # The Anthropic profile store the binary reads when ANTHROPIC_CONFIG_DIR is unset (it is stripped):
 # XDG_CONFIG_HOME/anthropic, else HOME/.config/anthropic; the active profile named by its active_config
 # file, else `default`; a profile of either type below logs a run in ahead of the claude.ai login.
@@ -1439,8 +1447,22 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     argv = (list(base['options'][:2]) + [base['settings_option'], str(config / SETTINGS_FILE),
                                          base['mcp_option'], str(config / MCP_FILE)] + list(base['options'][2:])
             + list(base['stream_options']) + list(options['argv']))
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],
-            'secrets': {}, 'routes': routes}
+    extra = {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],
+             'secrets': {}, 'routes': routes}
+    if run.get('capability'):
+        helper = _capability_handoff()
+        try:
+            return helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config)
+        except helper.Refused as error:
+            raise Refused(error.code) from None
+    return extra
+
+
+def _capability_handoff():
+    spec = importlib.util.spec_from_file_location('claude_handoff', Path(__file__).with_name('control_agent_config_handoff.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _mcp_entry(server, routes):
@@ -1560,6 +1582,12 @@ class Guard:
         self.prompt = None
         self.confirmed = False
         self.released = False
+        self.expected = None
+        self.capabilities_confirmed = False
+        self.probed = False
+        self.builtin_commands = ()
+        self.init_deadline = None
+        self.probe_result = None
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1569,10 +1597,17 @@ class Guard:
         return (json.dumps(request) + '\n').encode(), False
 
     def release(self):
-        """The prompt as the user message of stream JSON input, once, after a confirmed subscription login and
-        with no stop; None otherwise (and ever after)."""
+        """The next input to write after a confirmed subscription login and with no stop, else None: for a
+        role-bound run (`expected` set, VELDO-0127) first the capability PROBE, once, and the prompt only after
+        the init event it draws matches; then the prompt as the user message of stream JSON input, once.
+        `released` is true once the prompt itself is returned, the input's last write."""
         if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
             return None
+        if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
+            if self.probed:
+                return None
+            self.probed = True
+            return (json.dumps(PROBE) + '\n').encode()
         self.released = True
         message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
                    'parent_tool_use_id': None}
@@ -1614,6 +1649,19 @@ class Guard:
             return self._stopped('subscriptionType', subscription)
         if self.stop is None:
             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
+            if self.expected is not None:
+                self.init_deadline = time.monotonic() + 5
+            # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
+            # from the model); the init comparison leaves only those out of the slash commands it compares.
+            commands = response.get('commands')
+            self.builtin_commands = _capability_handoff().builtin_commands(commands)
+        return None
+
+    def expired(self, now):
+        if (self.init_deadline is not None and now >= self.init_deadline
+                and not self.released and self.stop is None):
+            self.stop = 'configuration_stop:init_missing'
+            return self.stop
         return None
 
     def _line(self, line):
@@ -1623,12 +1671,23 @@ class Guard:
             return None
         if not isinstance(event, dict):
             return None
+        if event.get('type') == 'result' and self.probed and not self.released:
+            self.probe_result = _terminal(event)
+            if self.probe_result is None or self.probe_result['num_turns'] != 0:
+                self.stop = 'configuration_stop:probe_result'
+                return self.stop
         if event.get('type') == 'control_response':
             answer = event.get('response')
             if isinstance(answer, dict) and answer.get('request_id') == self.request_id and not self.confirmed:
                 return self._answer(answer)
             return None
         if event.get('type') == 'system' and event.get('subtype') == 'init':
+            if self.expected is not None:
+                problem = _capability_handoff().difference(event, self.expected, self.builtin_commands)
+                if problem:
+                    self.stop = problem
+                    return problem
+                self.capabilities_confirmed = True
             source = event.get('apiKeySource')
             if source != SUBSCRIPTION_SOURCE:
                 return self._stopped('apiKeySource', source)
@@ -1676,6 +1735,18 @@ class Terminal:
         self.malformed = 0
         self.result = None
         self.receipt = None
+        self.prompt_written = True
+        self.require_prompt = False
+        self.probe_result = None
+        self.assistants_before_prompt = 0
+
+    def hold_prompt(self):
+        self.require_prompt = True
+        self.prompt_written = False
+
+    def wrote_prompt(self):
+        self.prompt_written = True
+
 
     def feed(self, chunk):
         self.pending += chunk
@@ -1698,10 +1769,15 @@ class Terminal:
         if not isinstance(event, dict) or not _text(event.get('type')):
             self.malformed += 1
             return
+        if event['type'] == 'assistant' and not self.prompt_written:
+            self.assistants_before_prompt += 1
         if event['type'] == 'result':
             decoded = _terminal(event)
             if decoded is None:
                 self.malformed += 1
+                return
+            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):
+                self.probe_result = decoded
                 return
             self.result, self.receipt = decoded, receipt(line)
 
@@ -1720,6 +1796,8 @@ class Terminal:
             found.append('nonzero_exit')
         if self.malformed:
             found.append('malformed_output')
+        if not self.prompt_written:
+            found.append('configuration_stop:prompt_not_written')
         if self.result is None:
             found.append('missing_result')
         elif self.result['subtype'] != 'success' or self.result['is_error']:
@@ -1732,6 +1810,8 @@ class Terminal:
         problems = self.problems(termination, cause)
         return {'schema': ARTIFACT_SCHEMA, 'engine': PROVIDER, 'verdict': problems[0] if problems else 'complete',
                 'complete': not problems, 'problems': problems, 'terminal': self.result, 'terminal_receipt': self.receipt,
+                'probe': {'result': self.probe_result, 'assistants_before_prompt': self.assistants_before_prompt,
+                          'prompt_written': self.prompt_written},
                 'stream': {'lines': self.lines, 'malformed': self.malformed,
                            'output_digest': (termination or {}).get('output_digest'),
                            'output_bytes': (termination or {}).get('output_bytes')},

@@ -1,0 +1,128 @@
+{
+ "behavior_rows": [
+  [
+   "VELDO-0127 explicit/memories",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/recommended_plugins",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/request_permissions_tool",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/standalone_web_search",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/enable_mcp_apps",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/guardianv2.thread_context",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/mapped-default-off",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/unknown-default-off",
+   false
+  ],
+  [
+   "VELDO-0127 listing/missing",
+   false
+  ],
+  [
+   "VELDO-0127 listing/empty",
+   false
+  ],
+  [
+   "VELDO-0127 listing/malformed",
+   false
+  ]
+ ],
+ "by_assertion": true,
+ "commit": "2234d2058c8b0329b37ba841ed298910e3598552",
+ "details": [
+  "VELDO-0127 explicit/memories detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/recommended_plugins detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/request_permissions_tool detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/standalone_web_search detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/enable_mcp_apps detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/guardianv2.thread_context detail: (None, None, ['exec', 'wait'])",
+  "VELDO-0127 listing/missing detail: valid listing explicitly disables standalone_web_search and launches",
+  "VELDO-0127 listing/empty detail: valid listing explicitly disables standalone_web_search and launches",
+  "VELDO-0127 listing/malformed detail: valid listing explicitly disables standalone_web_search and launches",
+  "VELDO-0127 explicit/mapped-default-off detail: ([], None, None, ['exec', 'wait'])",
+  "VELDO-0127 explicit/mapped-default-off detail: (['clock'], None, None, ['clock.sleep', 'clock__curr_time', 'exec', 'wait'])",
+  "VELDO-0127 explicit/unknown-default-off detail: (None, None, ['exec', 'wait'])"
+ ],
+ "every_changed_behavior_row_red": true,
+ "failed_rows": [
+  "VELDO-0127 explicit/memories",
+  "VELDO-0127 explicit/recommended_plugins",
+  "VELDO-0127 explicit/request_permissions_tool",
+  "VELDO-0127 explicit/standalone_web_search",
+  "VELDO-0127 explicit/enable_mcp_apps",
+  "VELDO-0127 explicit/guardianv2.thread_context",
+  "VELDO-0127 explicit/mapped-default-off",
+  "VELDO-0127 explicit/unknown-default-off",
+  "VELDO-0127 listing/missing",
+  "VELDO-0127 listing/empty",
+  "VELDO-0127 listing/malformed"
+ ],
+ "rows": [
+  [
+   "VELDO-0127 explicit/memories",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/recommended_plugins",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/request_permissions_tool",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/standalone_web_search",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/enable_mcp_apps",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/guardianv2.thread_context",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/mapped-default-off",
+   false
+  ],
+  [
+   "VELDO-0127 explicit/unknown-default-off",
+   false
+  ],
+  [
+   "VELDO-0127 listing/missing",
+   false
+  ],
+  [
+   "VELDO-0127 listing/empty",
+   false
+  ],
+  [
+   "VELDO-0127 listing/malformed",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0127",
+ "suite": "scripts/suites/89_veldo_0127_feature_listing.py",
+ "tree": "unchanged git archive; current suite and proof helper"
+}

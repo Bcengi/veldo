@@ -1,0 +1,11 @@
+--- .veldo/control_agent_config.py
++++ .veldo/control_agent_config.py
+@@ -105,7 +105,7 @@
+     # In 0.154 search is absent without MCP and Code Mode omits search itself.
+     # With MCP, selected definitions are deferred in either mode. No combination
+     # delivers the complete grant, so refuse it until the binary is qualified.
+-    if 'tool_search' in grants:
++    if False:
+         raise Refused('unsupported_configuration:codex_tool:' + model + ':tool_search')
+ 
+ 

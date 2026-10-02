@@ -260,6 +260,10 @@ _FILES = [
     ".veldo/control_credential_keystore.py",
     # VELDO-0158: each Linux run's credentials, resolved from the keystore by the launch receiver.
     ".veldo/control_credential_delivery.py",
+    # VELDO-0127: accepted role capability revisions and their engine handoff, which control_launch.py
+    # loads; runtime assets, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_agent_config.py",
+    ".veldo/control_agent_config_handoff.py",
     ".veldo/secretref.py",
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",

@@ -8038,7 +8038,7 @@ def cases():
                 "                      # defect: the bundled skills load when the prompt names one\n",
                 'baseline/planted-skill-bundled')
     baseline156('codex-skills-profile-accepted', 'control_engine_codex.py',
-                "    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,)) if home is not None else None\n",
+                "    held = _held(home / PROFILE_SKILLS, (BUNDLED_SKILLS,), allowed) if home is not None else None\n",
                 "    held = None  # defect: a profile's own skill loads when the prompt names it\n",
                 'baseline/planted-skill-profile')
     baseline156('codex-skills-home-accepted', 'control_engine_codex.py',
@@ -9217,8 +9217,8 @@ def cases():
              ['redaction/claude-keystore-value', 'redaction/codex-keystore-value'])
     # AC1: Claude Code's values put in the engine environment besides its private file.
     delivery('claude-value-in-environment', 'control_engine_claude.py',
-             "    return {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],\n",
-             "    return {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
+             "    extra = {'argv': argv, 'environment': dict(base['environment']), 'files': files, 'tools': options['report'],\n",
+             "    extra = {'argv': argv, 'environment': dict(base['environment'], **{n: i['handle'].reveal() for s in servers or ()\n"
              "            for n, i in s['environment'].items() if 'handle' in i}), 'files': files, 'tools': options['report'],\n",
              ['delivery/claude-private-file'])
     # AC1: a server given another server's credential (every variable delivered so far forwarded to each).
@@ -9359,6 +9359,192 @@ def cases():
               "            if not any(isinstance(data.get('subject'), dict)\n",
               "            if False and not any(isinstance(data.get('subject'), dict)\n",
               ['grant/revoked-before-answer'])
+    # VELDO-0127 catalog controls and effective Code Mode definitions.
+    catalog_suite = '86_veldo_0127_agent_configuration.py'
+    add(127, 'role127-resource-grant-omitted', catalog_suite, 'control_agent_config_handoff.py',
+        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
+        "    if False:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/resources'])
+    add(127, 'role127-resource-grant-without-server', catalog_suite, 'control_agent_config_handoff.py',
+        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
+        "    if True:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/no-server'])
+    add(127, 'role127-catalog-subagents-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected.pop('multi_agent_version', None)", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-patch-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected['apply_patch_tool_type'] = None", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-experiments-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "if experimental.get(n, n) in grants]", "if True]", ['catalog/fields'])
+    add(127, 'role127-catalog-search-retained', catalog_suite, 'control_agent_config_handoff.py',
+        "        selected['supports_search_tool'] = False", "        pass", ['catalog/fields'])
+    add(127, 'role127-catalog-granted-subagents-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "    if not grants.intersection({'sub_agents', 'multi_agent'}):", "    if True:", ['catalog/grants'])
+    add(127, 'role127-catalog-granted-patch-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "    if 'apply_patch' not in grants:", "    if True:", ['catalog/grants'])
+    add(127, 'role127-catalog-granted-experiments-lost', catalog_suite, 'control_agent_config_handoff.py',
+        "if experimental.get(n, n) in grants]", "if False]", ['catalog/grants'])
+    add(127, 'role127-search-unsupported-accepted', '87_veldo_0127_codex_delivery.py', 'control_agent_config.py',
+        "    if 'tool_search' in grants:", "    if False:", ['delivery/gpt-5.5/tool_search'])
+    add(127, 'role127-catalog-reasoning-altered', catalog_suite, 'control_agent_config_handoff.py',
+        "    selected = copy.deepcopy(entry)",
+        "    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')", ['catalog/fields'])
+    add(127, 'role127-catalog-digest-unchecked', catalog_suite, 'control_agent_config_handoff.py',
+        "bound.get('model_catalog_digest') != X.catalog_digest(catalog)", "False", ['catalog/integrity'])
+    add(127, 'role127-catalog-functions-not-normalized', catalog_suite, 'control_agent_config_handoff.py',
+        "    name = name.removeprefix('functions.')", "    name = name", ['wire/normalization'])
+    add(127, 'role127-catalog-mcp-not-normalized', catalog_suite, 'control_agent_config_handoff.py',
+        "        name = name[:5] + name[5:].replace('.', '__', 1)", "        pass", ['wire/normalization'])
+    add(127, 'role127-catalog-nested-declarations-ignored', catalog_suite, 'control_agent_config_handoff.py',
+        "        if name == 'exec':", "        if False:", ['wire/normalization'])
+    add(127, 'role127-catalog-runner-not-expected', catalog_suite, 'control_agent_config_handoff.py',
+        "        names.extend(['exec', 'wait'])", "        pass", ['review/codex-tools'])
+    add(127, 'role127-catalog-resource-readers-hidden', catalog_suite, 'control_agent_config_handoff.py',
+        "    return sorted(names)\n\n\ndef codex_expected_tools",
+        "    return sorted(n for n in names if n not in ('list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource'))\n\n\ndef codex_expected_tools",
+        ['wire/resources'])
+    # VELDO-0127 model-dependent qualification and lead capture, with no invented switch claims.
+    add(127, 'role127-model-modes-omitted', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']}",
+        "model_tool_modes={}", ['review/codex-mode'])
+    add(127, 'role127-model-baseline-unchecked', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "    if record.get('model_tool_modes') != MODEL_TOOL_MODES:", "    if False:", ['review/codex-mode'])
+    add(127, 'role127-code-mode-refusal-bypassed', '86_veldo_0127_agent_configuration.py', 'control_agent_config_handoff.py',
+        "        raise Refused('configuration_stop:codex_code_mode_model')", "        return None", ['review/codex-mode'])
+    add(127, 'role127-lead-model-mode-ignored', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
+        "    if model not in modes:", "    if False:", ['review/codex-capture'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-loopback-tool-observation-lost', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
+        "'wire_tools':wire_tools,", "'wire_tools':[],", ['review/codex-capture'])
+    result[-1]['dir'] = '.'
+
+    # VELDO-0127 item 1: direct shell vocabulary and named, unmasked Code Mode evidence.
+    add(127, 'role127-shell-wire-mapping-loses-wait', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'],",
+        "NATIVE_TOOL_MAPPING = {'shell': ['exec_command'],", ['review/codex-tools'])
+    add(127, 'role127-owner-tools-hidden', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
+        "'unexpected': sorted(set(actual) - set(wanted)),", "'unexpected': [],", ['review/codex-tools'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-code-mode-hides-missing-grants', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
+        "'missing': sorted(set(wanted) - set(actual)),", "'missing': [],", ['review/codex-tools'])
+    result[-1]['dir'] = '.'
+    # VELDO-0127: immutable revision history and exact role capability handoff.
+    suite127 = '86_veldo_0127_agent_configuration.py'
+    add(127, 'role127-overwrite-history', suite127, 'control_agent_config.py',
+        '        return result\n',
+        '        if base and kind == KINDS[0]:\n'
+        '            self.conn.execute("UPDATE entities SET data=? WHERE id=?",\n'
+        '                (json.dumps(result), identity(self.domain, self.repository, kind, name, base)))\n'
+        '        return result\n', ['revision/history'])
+    add(127, 'role127-remove-mcp-tool', suite127, 'control_agent_config_handoff.py',
+        "    extra['expected'] = wanted",
+        "    wanted['tools'] = [n for n in wanted['tools'] if n != 'mcp__jira__jira_search']\n"
+        "    extra['expected'] = wanted", ['handoff/claude'],
+        also=(("    denied = ['mcp__%s__%s' % (s, t)",
+               "    denied = ['mcp__jira__jira_search'] + ['mcp__%s__%s' % (s, t)"),))
+    add(127, 'role127-codex-drop-tool', suite127, 'control_agent_config_handoff.py',
+        "configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']",
+        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['handoff/codex'])
+    add(127, 'role127-add-default-tool', suite127, 'control_agent_config_handoff.py',
+        "            return 'configuration_stop:unexpected_tool'",
+        "            return None", ['dispatch/refusal'])
+    add(127, 'role127-in-run-ceiling', suite127, 'control_engine_claude.py',
+        "        launch, source = sorted(set(native)), 'role_revision'",
+        "        launch, source = sorted(set(tools['in_run'])), 'role_revision'", ['launch/push'])
+    add(127, 'role127-allow-unlisted-skill', suite127, 'control_agent_config_handoff.py',
+        "    for field in ('tools', 'mcp_servers', 'slash_commands', 'skills', 'plugins'):",
+        "    for field in ('tools', 'mcp_servers', 'slash_commands', 'plugins'):", ['launch/unlisted'])
+    add(127, 'role127-forget-first-context', suite127, 'control_launch.py',
+        '                    self.first_turn_context = HANDOFF.context_size(event, self.engine.PROVIDER)',
+        '                    self.first_turn_context = None', ['launch/instructions'])
+    # VELDO-0127 live qualification: what the real engines accept and report, which the fakes now follow.
+    add(127, 'role127-probe-withheld', suite127, 'control_engine_claude.py',
+        "            self.probed = True\n            return (json.dumps(PROBE) + '\\n').encode()\n",
+        "            return None  # defect: the prompt waits for an init the engine reports only for a message\n",
+        ['handoff/claude'])
+    add(127, 'role127-probe-content', suite127, 'control_engine_claude.py',
+        "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []},",
+        "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': 'capability check'},", ['handoff/claude'])
+    add(127, 'role127-engine-plugins-kept', suite127, 'control_agent_config_handoff.py',
+        "    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
+        "    settings.update(disableBundledSkills=True,", ['handoff/claude'])
+    add(127, 'role127-bundled-skills-kept', suite127, 'control_agent_config_handoff.py',
+        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
+        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=False,", ['handoff/claude'])
+    add(127, 'role127-builtin-commands-compared', suite127, 'control_agent_config_handoff.py',
+        "            value = [v for v in value if v not in set(builtin)]",
+        "            value = list(value)", ['handoff/claude'])
+    add(127, 'role127-skill-tool-withdrawn', suite127, 'control_agent_config_handoff.py',
+        "    if capability['skills'] or 'Skill' in revision['native_tools']:",
+        "    if capability['skills']:", ['launch/unlisted'])
+    add(127, 'role127-codex-listing-exec-flag', suite127, 'control_agent_config_handoff.py',
+        "            done = subprocess.run([bound['path'], 'mcp'] + command",
+        "            done = subprocess.run([bound['path'], OPTION + 'ignore-user-config', 'mcp'] + command", ['handoff/codex'])
+    add(127, 'role127-codex-listing-profile', suite127, 'control_agent_config_handoff.py',
+        "    env['CODEX_HOME'] = str(home)\n",
+        "    pass  # defect: the listing reads the account profile's config.toml\n", ['handoff/codex'])
+    add(127, 'role127-codex-listing-tools-from-list', suite127, 'control_agent_config_handoff.py',
+        "        server = ask(['get', item['name']])",
+        "        server = dict(item)", ['handoff/codex'])
+    # The real Codex loads the per-run model_catalog_json for `mcp list`: the listing ran before the run's files
+    # were written, so every real role-bound Codex launch stopped as configuration_stop:mcp_servers (live, 29401 on).
+    add(127, 'role127-codex-listing-before-files', suite127, 'control_launch.py',
+        "                self.metering.terminal.hold_prompt()\n        except (engine.Refused, HANDOFF.Refused) as error:",
+        "                self.metering.terminal.hold_prompt()\n"
+        "            if extra.get('expected') and engine.PROVIDER == 'codex':\n"
+        "                listing = HANDOFF.codex_listing(self.binding, extra, environment, run['config'])\n"
+        "                self.emit({'event': 'capability_listing', 'listing': [\n"
+        "                    {k: item[k] for k in ('name', 'enabled', 'enabled_tools') if k in item} for item in listing]})\n"
+        "        except (engine.Refused, HANDOFF.Refused) as error:", ['handoff/codex'],
+        also=(("        try:\n            if extra.get('expected') and engine.PROVIDER == 'codex':\n",
+               "        try:\n            if False:  # defect: the listing ran before the files it loads were written\n"),))
+    # Staged role skills were unlinked only in the receiver's close(), which the runner's stop at the end races.
+    add(127, 'role127-staged-skill-outlives-run', suite127, 'control_launch.py',
+        "            self._unstage_skills()\n            shutil.rmtree(run, ignore_errors=True)\n",
+        "            shutil.rmtree(run, ignore_errors=True)  # defect: links left for close() alone\n",
+        ['review/skill-commit'])
+    add(127, 'role127-context-line-every-run', '82_veldo_0141_execution_record.py', 'control_launch.py',
+        "            if (metering is not None and metering.first_turn_context is not None\n"
+        "                    and (self.binding or {}).get('capability')):\n",
+        "            if metering is not None and metering.first_turn_context is not None:\n",
+        ['record/claude-complete', 'record/codex-complete'])
+    add(127, 'role127-scaffold-omits-role-modules', '66_veldo_0047_authority.py', 'init_scaffold.py',
+        '    ".veldo/control_agent_config.py",\n    ".veldo/control_agent_config_handoff.py",\n', '',
+        ['authority/installed-assets'])
+
+    add(127, 'role127-skill-private-git', suite127, 'control_agent_config_handoff.py',
+        "            exclude = _git_process.run(['git',",
+        "            exclude = subprocess.run(['git',", ['review/skill-git-boundary'])
+
+    add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
+        "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
+        "                handle.write('\\n')", ['review/skill-commit'])
+    add(127, 'role127-probe-is-terminal', suite127, 'control_engine_claude.py',
+        "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
+        "            if False:", ['review/probe-terminal'])
+    add(127, 'role127-prompt-write-failure-swallowed', suite127, 'control_launch.py',
+        "                and (input_failed.is_set() or not metering.terminal.prompt_written)):",
+        "                and False):", ['review/probe-terminal'])
+    add(127, 'role127-init-unbounded', suite127, 'control_engine_claude.py',
+        "                self.init_deadline = time.monotonic() + 5",
+        "                self.init_deadline = time.monotonic() + 90", ['review/init-bound'])
+    add(127, 'role127-slash-collision-hidden', suite127, 'control_agent_config_handoff.py',
+        "    return tuple(sorted(name for name, flags in entries.items() if all(flags)))",
+        "    return tuple(sorted(name for name, flags in entries.items() if any(flags)))", ['review/slash-collision'])
+    add(127, 'role127-planted-debug-ignored', suite127, 'proof/VELDO-0127/evidence.py',
+        "    if run.get('marker') and run.get('debug_lines') != []:",
+        "    if False:", ['review/marker-debug'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-debug-control-vacuous', suite127, 'proof/VELDO-0127/evidence.py',
+        "    elif not control.get('debug_lines') and control.get('qualification') != 'context-size-only':",
+        "    elif False:", ['review/marker-debug'])
+    result[-1]['dir'] = '.'
+    add(127, 'role127-wire-extra-ignored', suite127, 'control_agent_config_handoff.py',
+        "        return 'configuration_stop:codex_unexpected_tool'",
+        "        return None", ['review/codex-tools'])
+    add(127, 'role127-wire-missing-ignored', suite127, 'control_agent_config_handoff.py',
+        "        return 'configuration_stop:codex_missing_tool'",
+        "        return None", ['review/codex-tools'])
+    add(127, 'role127-probe-capture-omitted', suite127, 'proof/VELDO-0127/live.py',
+        "'probe':document.get('probe')", "'probe':None", ['review/probe-terminal'])
+    result[-1]['dir'] = '.'
     # VELDO-0189 owner-approved fresh equivalence amendment.
     # Both older-host rows call equals_fresh: asset bytes/modes, runtime record and pin.
     # They also install an earlier runtime inventory through setup and then upgrade it:
@@ -9428,6 +9614,71 @@ def cases():
         "            os.chmod(target, 0o444)\n            report['pins_made'] = 1", ['upgrade/from-8bc34e94', 'upgrade/from-971186ac'], [])
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
+    delivery127 = '87_veldo_0127_codex_delivery.py'
+    add(127, 'role127-delivery-sleep-disabled', delivery127, 'control_agent_config_handoff.py',
+        "    configuration['features.goals'] = False",
+        "    configuration['features.sleep_tool'] = {'enabled': False}\n"
+        "    configuration['features.goals'] = False", ['delivery/gpt-6-astra/clock'], [])
+    add(127, 'role127-delivery-web-dropped', delivery127, 'control_agent_config_handoff.py',
+        "    configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'",
+        "    configuration['web_search'] = 'disabled'", ['delivery/gpt-6-astra/web_search'], [])
+    add(127, 'role127-delivery-comparison-skipped', delivery127, 'control_launch.py',
+        "                tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])",
+        "                tools = []", ['stop/gpt-6-astra/missing', 'stop/gpt-6-astra/extra', 'stop/gpt-6-astra/mcp'], [])
+    add(127, 'role127-delivery-unsupported-accepted', delivery127, 'control_agent_config.py',
+        "        codex_grants(definition)", "        pass", ['delivery/gpt-5.5/clock',
+        'delivery/gpt-5.5/request_user_input_async', 'save/gpt-5.5/search-mcp'], [])
+    add(127, 'role127-delivery-mcp-dropped', delivery127, 'control_agent_config_handoff.py',
+        "configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']",
+        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['delivery/gpt-6-astra/jira'], [])
+    add(127, 'role127-delivery-default-tool', delivery127, 'control_agent_config_handoff.py',
+        "configuration['features.' + feature] = name in revision['native_tools']",
+        "configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']",
+        ['delivery/gpt-6-astra/none'], [])
+
+    defaults127 = '88_veldo_0127_feature_defaults.py'
+    mapped127 = ['mapped/' + n for n in ('shell', 'clock', 'view_image', 'multi_agent', 'sub_agents')]
+    for feature in ('image_generation', 'browser_use', 'computer_use', 'tool_suggest', 'skill_search'):
+        add(127, 'role127-default-omitted-' + feature, defaults127, 'control_agent_config_handoff.py',
+            "            configuration[key] = False",
+            "            if feature != " + repr(feature) + ":\n"
+            "                configuration[key] = False",
+            ['defaults/' + feature] + mapped127, [])
+    add(127, 'role127-default-clock-grant-lost', defaults127, 'control_agent_config_handoff.py',
+        "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['mapped/clock'], [])
+    add(127, 'role127-default-unknown-accepted', defaults127, 'control_agent_config_handoff.py',
+        "            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)",
+        "            pass", ['defaults/unknown'], [])
+
+    listing127 = '89_veldo_0127_feature_listing.py'
+    add(127, 'role127-feature-listing-ignored', listing127, 'control_agent_config_handoff.py',
+        "    if not isinstance(listing, str) or not listing.strip():\n"
+        "        raise Refused('configuration_stop:codex_feature_listing')",
+        "    if not isinstance(listing, str) or not listing.strip():\n"
+        "        return {}", ['listing/missing', 'listing/empty', 'listing/malformed'], [(
+        "        if not match or match[1] in defaults:\n"
+        "            raise Refused('configuration_stop:codex_feature_listing')",
+        "        if not match or match[1] in defaults:\n"
+        "            return {}")])
+    add(127, 'role127-feature-default-off-skipped', listing127, 'control_agent_config_handoff.py',
+        "        if feature in non_tools:", "        if feature in non_tools or not enabled:",
+        ['explicit/' + n for n in ('memories', 'recommended_plugins', 'request_permissions_tool',
+         'standalone_web_search', 'enable_mcp_apps', 'guardianv2.thread_context',
+         'mapped-default-off', 'unknown-default-off')] +
+        ['listing/missing', 'listing/empty', 'listing/malformed'], [])
+    add(127, 'role127-feature-off-clock-grant-lost', listing127, 'control_agent_config_handoff.py',
+        "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['explicit/mapped-default-off'], [])
+
+    profile127 = '90_veldo_0127_feature_profile.py'
+    add(127, 'role127-profile-mixed-feature-table', profile127, 'control_agent_config_handoff.py',
+        "    for key in list(configuration):\n        if key.startswith('features.'):\n            features[key[len('features.'):]] = configuration.pop(key)",
+        "    # Defect: retain dotted overrides alongside the literal-name table.",
+        ['profile/parse-values', 'profile/pinned-tools'], [])
+    add(127, 'role127-profile-cli-table-wiped', profile127, 'control_engine_codex.py',
+        "        argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]",
+        "        argv += ['-c', '%s=%s' % (key, _toml({} if key == 'features' else configuration[key]))]",
+        ['profile/pinned-tools'], [])
+
     # targets() matches the final word of each reported row, without the spec prefix.
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', "        for name, data in laid['assets'].items():", '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])

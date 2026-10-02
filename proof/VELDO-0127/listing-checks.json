@@ -1,0 +1,127 @@
+{
+ "base_commit": "2234d205",
+ "checks": {
+  "anchors": "0 bad anchors",
+  "diff_check": "passed",
+  "engine_copy": "byte-identical",
+  "footprint": "outside the footprint: none",
+  "requires": "regenerated",
+  "validator_exit_code": 0
+ },
+ "gate_environment": {
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo0127-fix11-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC"
+ },
+ "implementation_commit": "462b1bfc",
+ "live_capture": "unchanged; reviewer recaptures after this lands",
+ "mutations": {
+  "executed": false,
+  "new": 3,
+  "registered": 72,
+  "rejections_claimed": 0
+ },
+ "red": {
+  "all_red_by_assertion": true,
+  "file": "red-at-2234d205.json",
+  "refusal_rows": "paired with valid-listing explicit-default-off launch controls; existing refusal logic itself passes the baseline",
+  "rows": 11
+ },
+ "runs": [
+  {
+   "environment": "normal",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "80de15c5ebd45cd93800e013e50e3c1768c75845f05d5b0aa2cffebaefad8e93",
+   "rows_passed": 11,
+   "seconds": 4.41,
+   "suite": "89_veldo_0127_feature_listing"
+  },
+  {
+   "environment": "gate_environment",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "8d94d2cdead1c9146fe5c69869584a5ead767944ced7f680a1284afa737bedf2",
+   "rows_passed": 11,
+   "seconds": 3.38,
+   "suite": "89_veldo_0127_feature_listing"
+  },
+  {
+   "environment": "normal",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "d1246a1b9e53f28733dff9e155336f36414c729664551577f27cd0525f85bdf2",
+   "rows_passed": 25,
+   "seconds": 6.07,
+   "suite": "88_veldo_0127_feature_defaults"
+  },
+  {
+   "environment": "gate_environment",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "fc405400353ae61ca323a74c5a2f98fce43155b42c3e4cf7a6a76a2b42acc000",
+   "rows_passed": 25,
+   "seconds": 4.48,
+   "suite": "88_veldo_0127_feature_defaults"
+  },
+  {
+   "environment": "normal",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "fac2ac1a29f659a245aa300b0d6f344377a8f4747aaff1dc888fab3a277dccd5",
+   "rows_passed": 176,
+   "seconds": 131.33,
+   "suite": "87_veldo_0127_codex_delivery"
+  },
+  {
+   "environment": "gate_environment",
+   "exit_code": 2,
+   "failed_rows": [],
+   "log_sha256": "a8f8ba0dc895f643773fbeb77b118f48fa916508a29d8a171d2cb9437b04af61",
+   "rows_passed": 176,
+   "seconds": 93.56,
+   "suite": "87_veldo_0127_codex_delivery"
+  },
+  {
+   "environment": "normal",
+   "exit_code": 1,
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "612f63616b414e1823a1ddb2e6cbe1ef3c99f7cf453ec8b6ccb2db66d5de0ea5",
+   "rows_passed": 25,
+   "seconds": 39.44,
+   "suite": "86_veldo_0127_agent_configuration"
+  },
+  {
+   "environment": "gate_environment",
+   "exit_code": 1,
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log_sha256": "95110865faa2d116d990e42a5084730697e235e7824a58871ab6acb3d3031bc7",
+   "rows_passed": 25,
+   "seconds": 44.13,
+   "suite": "86_veldo_0127_agent_configuration"
+  }
+ ],
+ "scope": "scoped observations only; no gate certification",
+ "source_sha256": {
+  ".veldo/control_agent_config_handoff.py": "ad8a610a556ee5123ed6667ec86fef6fdb3c903d0c0fdcab66960dd4e5150d8d",
+  "proof/VELDO-0127/drive.py": "479aaaf31f210dfebf903a5330d3cac1da4d6cbb729fd9444142a6709f2c41f5",
+  "proof/VELDO-0127/loopback.py": "75b9bc4e07975dfc47db99c269bd14c921d4144888b985b287221bbeaaa244d8",
+  "scripts/suites/89_veldo_0127_feature_listing.py": "4aba11e91b9167239f53159b7c539281c20e8ce307dac65f6f101b573bcb0448"
+ },
+ "spec_id": "VELDO-0127"
+}

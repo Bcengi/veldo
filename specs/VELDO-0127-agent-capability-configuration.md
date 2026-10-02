@@ -14,6 +14,8 @@ depends_on: [VELDO-0025, VELDO-0035, VELDO-0089, VELDO-0141, VELDO-0144, VELDO-0
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
+  - "engine/runtime/codex-qualification.json"
+  - ".veldo/runtime/codex-qualification.json"
   - "engine/.veldo/control_agent_config*.py"
   - ".veldo/control_agent_config*.py"
   - "packs/*/.veldo/control_agent_config*.py"
@@ -23,7 +25,14 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0127_*.py"
+  - "scripts/suites/82_veldo_0173_tool_registry.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/83_veldo_0166_usage_windows.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0127-agent-capability-configuration.md"
@@ -63,14 +72,26 @@ acceptance_criteria:
       and completeness: For actual Claude Code and Codex workers on Linux (the Mac handoff is
       VELDO-0147), enumerate
       effective engine-native and MCP capabilities at launch and compare set equality and settings
-      with the accepted role revision in both directions. Include a configured Jira-capable MCP tool
+      with the accepted role revision in both directions. Selecting at least one MCP server grants
+      exactly list_mcp_resources, list_mcp_resource_templates and read_mcp_resource on Codex 0.154;
+      selecting no MCP server grants none of them, and their presence fails closed. Remove a reader
+      with a server selected or expect readers with no server selected: the corresponding equality
+      row must fail. Include a configured Jira-capable MCP tool
       as an ordinary tool, with no special factory channel. Verify each server authenticates
       using exactly its configured credential delivery, including the Atlassian catalog server's
       keystore credential, without gaining another server's credentials.
-      Compare redacted credential-source identities, never secret values. Falsifier: Remove one configured MCP
+      Compare redacted credential-source identities, never secret values. Generated Codex config.toml
+      parses with tomllib and retains every assigned feature value, including literal dotted names,
+      in one features table after all handoff assignments. Falsifier: Restore mixed dotted feature
+      keys and an inline features table; the profile parse and value row must fail by assertion.
+      The delivery suite retains every per-model singleton-grant, empty-role and refusal claim
+      from the pinned binary requests with at most two workers. Elapsed seconds are informational:
+      timing belongs in the measurement record, not in a pass/fail row.
+      Falsifier: Remove one configured MCP
       tool while allowing launch; the exact-handoff comparison must fail.
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
+      Restore mixed dotted feature keys and an inline features table; the profile parse row must fail.
   - id: AC3
     text: >
       Claim: The dispatch records the configuration revision actually used and refuses an
@@ -90,7 +111,11 @@ acceptance_criteria:
       Code, compare the init event's `tools`, `mcp_servers`, `slash_commands`, `skills` and
       `plugins` with the set the dispatch recorded, in both directions, and stop the run by name on
       any difference before its first turn; for Codex, compare its own MCP listing and the generated
-      configuration where its stream reports less. Listed instruction files reach Claude Code joined
+      configuration where its stream reports less. The pinned Codex binary accepts the exact generated
+      profile in an empty CODEX_HOME and the receiver's argv against a loopback stand-in, and its first
+      request has exactly the expected tools. One features override preserves all earlier and later
+      handoff values. Falsifier: Wipe the CLI features table; the pinned tool row must fail by assertion.
+      Listed instruction files reach Claude Code joined
       into one generated file for the `append-system-prompt-file` option and Codex through developer
       instructions. Because the init event names no loaded instruction files, plant a marker
       CLAUDE.md in the clone and in the account profile with discovery turned off, and compare the
@@ -103,6 +128,7 @@ acceptance_criteria:
     falsified_by: >
       Pass the in-run list as `tools` whatever revision is bound; the PushNotification row must fail.
       Let the engine load a skill the role does not list; the launch-set comparison must fail.
+      Wipe the CLI features table; the pinned tool row must fail by assertion.
 required_evidence: [unit, integration]
 rollback: >
   Disable new operations for this concern while preserving accepted records, configuration
@@ -179,6 +205,86 @@ not tests run by this writing revision.
 
 ## History
 
+2026-09-29, generated profile repair from 9233e1b4: AC2 and AC4 require
+one features table after all handoff assignments, preserving every existing
+feature value and literal dotted name. The generated config.toml must parse
+with tomllib, and the pinned binary must accept that exact profile and the
+receiver arguments on a credential-free loopback stand-in, with the expected
+first-request tool set. Falsifier: restore the mixed table and dotted-key form;
+the profile parse row must fail by assertion. A dropped later grant must fail
+the pinned tool comparison. The existing footprint covers this repair.
+Live proofs are not recaptured here; the reviewer recaptures them after this
+lands because the production digest changes.
+Suite 90 passes both rows in normal and clean gate environments; the unchanged
+9233e1b4 archive is red by assertion on both. Suites 87, 88 and 89 pass 176,
+25 and 11 rows. Suite 86 passes 25 offline rows and retains only its two stale
+live-capture failures. Two new mutations are registered with exact diffs and
+named rows; execution and rejection remain reserved for the reviewer. The
+validator passes, anchors report zero bad anchors, the footprint has nothing
+outside, requirements are regenerated and engine copies match. No gate pass
+or live recapture is claimed.
+
+2026-09-29, recorded feature repair from 2234d205: AC2 and AC4 explicitly set
+every listed feature outside the known non-tool set, including default-off tool
+sources. Mapped features follow the native grant regardless of their default;
+other features are false, while unknown default-on features still stop by name.
+Literal dots in feature names travel in an inline TOML table because CLI dotted
+paths cannot preserve them. The loopback proof serializer preserves those literal
+names in both its TOML file and CLI arguments. AC3 and AC4 gain missing, empty and malformed listing
+rows through qualification, binding and the real launch path. Each refusal row
+pairs its negative case with a valid-listing explicit-default-off launch control.
+Suites 89, 88 and 87 pass 11, 25 and 176 rows in normal and clean gate
+environments. Suite 86 passes 25 offline rows in both and retains only the two
+stale live-capture failures. The unchanged 2234d205 archive is red by assertion
+on all eleven new paired rows. Three new mutations are registered; mutation
+execution is reserved for the reviewer. The validator passes, anchors report
+zero bad anchors, the footprint reports nothing outside, and engine copies match.
+The existing footprint covers all changes; no expansion is needed. Production
+digests changed, so the reviewer recaptures live proofs after this lands. This
+repair does not recapture them or claim a gate pass.
+
+2026-09-29, default feature repair from d72da222: AC2, AC3 and AC4 classify
+the complete pinned binary feature listing retained at qualification. Each
+default-on tool source is explicitly disabled unless its existing native grant
+enables it; unknown enabled features cause a named configuration stop. Suite 88
+observes the actual pinned launch arguments, mapped grants and the prelaunch stop.
+The existing footprint covers the implementation and proof; no expansion is needed.
+Production digests changed. The reviewer recaptures live proofs after this lands
+on the branch; this repair does not recapture them or claim a gate pass.
+The 25 new rows are all red by assertion against the unchanged d72da222 archive,
+and pass in ordinary and clean gate environments. Suite 87 preserves all 176
+delivery rows in both environments. Seven new mutations have exact registered
+diffs and named rows; execution remains reserved for the reviewer.
+Suite 86 passes 25 offline rows in both environments and retains only the two
+stale live-capture failures. The validator passes, anchors report zero bad
+anchors, the footprint reports nothing outside, and engine copies are identical.
+
+2026-09-29, Codex grant delivery repair from 13cc4898: AC1 and AC3 refuse
+model-specific clock and async-input grants absent from the pinned catalog, and
+tool-search combinations that cannot expose the exact selected definitions.
+AC2 preserves clock sleep, permits an empty native grant set, and normalizes the
+Code Mode web search declaration. The loopback transport advertises the same
+standalone web search support as the production provider. AC4 now observes the
+pinned binary's built-in and MCP definitions through an empty-profile loopback
+preflight and refuses missing or extra tools before the task can launch. Suite 86
+uses real wire observations instead of catalog-derived fake tools; suite 87 drives
+each grant and model, save refusals, empty controls and production stops. Existing
+footprint patterns cover every file; no expansion is needed. Production digests
+changed: the live capture must be redone by the reviewer after this lands on the
+branch. This repair does not recapture live proofs or claim a gate pass.
+The 176 new rows pass in normal and clean gate environments and are all red by
+assertion on the unchanged baseline archive. Suite 86 passes 25 offline rows in
+both environments and retains the two stale live-capture failures. The footprint,
+anchor and validator checks pass, and shared Python engine copies are identical.
+Mutations are registered with current diffs; only the reviewer executes them.
+
+2026-09-29, merged-tree Metering integration repair: add the VELDO-0166 usage-window
+suite to the footprint to align its receiver stand-in with AC2/AC4's launch contract.
+Every production Receiver defines binding, and the engine path binds a dictionary
+before constructing Metering. Supply that dictionary in the window-only fixture;
+keep every window, receipt and profile assertion unchanged. Production modules and
+their engine copies are unchanged, so this repair does not invalidate live captures.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 4, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
@@ -227,3 +333,143 @@ and checks its presence in init and absence from disallowedTools, moved from VEL
 registry concern became VELDO-0173. Status is draft; only the owner marks it ready.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-09-28: live captures are pending the lead's run of proof/VELDO-0127/live.py.
+
+2026-09-28, live qualification: the first real runs showed three defects the fakes hid, all fixed in the
+handoff without changing a criterion. Claude Code 2.1.281 reports its init event only when a first user
+message arrives, so a prompt held for init was never written; the Guard now writes an empty message with
+shouldQuery false (no turn, and no content of its own), compares the init it draws and only then writes
+the prompt, so AC4's stop still comes before the first turn. The real init also lists the engine's
+built-in plugins, bundled and built-in skills and built-in commands: a role-bound run's generated settings
+turn the plugins and skills off, the Skill tool stays when the revision grants it, and the slash-command
+comparison leaves out only the commands the engine's own initialize answer marks built-in (typed, never
+offered to the model; every offered skill is still compared). Codex 0.154 `mcp list` rejects
+the ignore-user-config option and prints no enabled tools, so its listing runs `mcp list` and `mcp get` against an
+empty CODEX_HOME of the run's own. The marker qualification compares first-turn context within a stated
+bound, because two real runs of one role differ by a few dozen tokens. The footprint adds the scaffolder,
+whose file list must lay down both role modules. Status unchanged.
+
+2026-09-28, review repair at f96c1931: stopped on the owner's explicit condition that
+an unobtainable exact Codex tool list must be reported instead of weakening AC2.
+The qualified Codex 0.154.0 offline debug prompt-input command was run with the
+captured native configuration and with shell and unified exec disabled, a generated
+credential-free MCP fixture, empty temporary profiles and TCP denied by Landlock.
+Both successful outputs contain only input messages, no effective tool definitions.
+The retained blocker evidence is proof/VELDO-0127/codex-offline-tools.json. No production
+fix is claimed. Captured live runs exist but do not close this review. The proof README
+and mutation ledger now distinguish captured evidence from incomplete qualification.
+No footprint expansion was needed. Status unchanged.
+
+2026-09-28, follow-up ticket for AC3: qualify a worker already running under revision A
+while B is authored, then show that worker remains on A and a later dispatch binds B.
+The current row changes revisions between prepare and launch, not during execution.
+
+2026-09-28, follow-up ticket for refusal reporting: preserve a handoff configuration_stop
+as a configuration failure. The current wrapper reports credential delivery failure
+and names mcp_servers as a credential. This reporting repair is outside this job.
+
+2026-09-28, review continuation from 5a9a05d2: six new review rows exercise the production
+handoff and proof readers. Staged Codex skill links receive exact clone-local Git exclusions;
+Claude waits at most five seconds for init after the subscription handshake, retains its
+zero-turn probe and pre-prompt assistant count, rejects a failed prompt write and excludes
+pre-prompt results from the terminal record. A duplicate slash-command name is excluded only
+when every entry is built-in. Planted debug instruction lines now fail qualification; the live
+driver adds an instruction-discovery positive control and explicitly records context-size-only
+qualification if the pinned binary does not log the load. The control has not been run here.
+The six review rows are red by assertion against 5a9a05d2 and green on the repaired code,
+including under the gate environment. No footprint expansion was needed.
+
+The Codex loopback route succeeded without a login or model: the pinned 0.154 binary sends
+Responses streaming requests with its exact tools array inside an additional_tools input item.
+The new reader compares this array in both directions and the live driver retains it. The
+captured role still exposes ungranted collaboration, async-input and Code Mode tools after the
+observed switches, so item 1 remains incomplete and the proof rejects it. The old Claude live
+capture also lacks the new probe and positive-control evidence. These two live rows stay red;
+no complete qualification, mutation rejection, gate pass or shipped status is claimed.
+
+
+2026-09-28, item 1 continuation from 04795046: inspected each extra tool's real
+schema and the pinned binary's strings, feature listing and built-in model catalog.
+Code Mode exec/wait are JavaScript orchestration, not shell-only aliases. Shell's
+nested direct operations are exec_command/write_stdin; the qualification writer and
+handoff now share that vocabulary. AC2 needs the shipped record, so the footprint
+adds engine/runtime/codex-qualification.json and .veldo/runtime/codex-qualification.json.
+Each tested Code Mode, collaboration and async-input switch left the extra tools
+present. The fresh production capture and evidence reader retain all nine extras
+by name as case (c) owner decisions, without exempting them, and retain all missing
+direct definitions, including the selected Jira tool. No grant, generated switch
+or model metadata was changed. The fake-driven row checks the production writer's
+mapping and these honest refusal observations. Item 1 remains blocked on the owner
+decisions and missing wire definitions; no exact equality or completed qualification
+is claimed. Status and acceptance criteria are unchanged.
+
+2026-09-28, item 1 continuation from 321f638d: the qualified baseline records every
+model's tool_mode from the pinned binary's debug models with an empty profile.
+AC2 and AC3 require configuration_stop:codex_code_mode_model before launching a
+code_mode_only role with a restricted native set. The observed Code Mode wrapper
+capabilities remain the case (c) evidence. AC2 also requires direct-tool equality,
+including explicit patch/resource grants and selected MCP definitions without search
+indirection; candidate switches must be verified on the loopback stand-in. The lead
+capture takes the direct model only from its codex-model argument and retains the
+loopback tool observation beside each run. Falsifiers: erase the qualified modes,
+bypass the model refusal, or omit the recorded loopback tool observation. No footprint
+addition is needed for these existing production and proof files. Direct-tool switch
+qualification is still incomplete; no role model is silently changed.
+
+2026-09-28, item 1 catalog repair (owner Telegram 29393, 29398): preserve the accepted
+model and its default Code Mode. At qualification, capture the pinned binary's bundled
+catalog offline with empty HOME and CODEX_HOME and retain its digest. A role handoff
+copies its model entry into the run configuration, removing multi_agent_version unless
+sub_agents is granted, nulling apply_patch_tool_type unless patching is granted,
+filtering experimental_supported_tools to granted capabilities, and disabling
+supports_search_tool unless tool_search is granted. No other entry field changes.
+The native role vocabulary includes sub_agents. The old Code Mode refusal remains
+only for an unusable catalog override. AC2 compares the runner and its nested
+declarations in Code Mode, or direct definitions otherwise, after normalizing
+functions prefixes and MCP names, in both directions. Its falsifiers retain each of
+the four ungranted catalog fields, discard a granted field, or omit normalization.
+The resource readers remain a named fail-closed case (c) pending owner decision;
+they reach only resources of configured role MCP servers. The lead capture uses
+gpt-6-astra with this generated catalog. Earlier Code Mode case (c) entries are history.
+The existing footprint covers this repair; no paths were added.
+
+2026-09-28, owner Telegram 29400 (asked) and 29401 ("Ok"): reading an MCP server's
+resources is part of granting that server. AC2 expects exactly list_mcp_resources,
+list_mcp_resource_templates and read_mcp_resource when the revision selects any MCP
+server, and none when it selects no server. Missing readers in the first case and
+present readers in the second fail exact equality. The native mapping and qualification
+record retain this rule; direct and Code Mode loopback captures qualify both cases.
+The prior resource-reader case (c) table becomes history. The existing footprint
+covers the production mapping, comparison, suite and proof files; no paths added.
+
+2026-09-29, lead check repairs: AC4 skill staging uses the shared isolated Git
+boundary so ambient selectors cannot redirect its exclude file. AC2 qualification
+equality invokes the production writer with offline bundled-catalog capture, retaining
+the catalog, digest, model modes and native mapping. AC3 and AC4 registry fixtures
+answer the no-turn probe before accepting the real prompt. Add the VELDO-0061 suite
+to the footprint for that qualification comparison; no other footprint expansion.
+The production handoff edit invalidates both digest-bound live captures; the lead
+must recapture them. No acceptance check or live evidence binding is relaxed.
+
+2026-09-29, delivery proof speed repair from 2fb32ed8: AC2 retains all existing
+per-model wire assertions and adds the delivery runtime budget. Two isolated
+factories run disjoint model groups with at most two workers. A suite-local standard
+HTTPServer subclass shortens shutdown polling without changing the production
+handler, request capture, comparison or refusal. Production is unchanged, preserving
+the existing digest-bound live captures.
+No row is renamed and no footprint expansion is needed. Timings and the unchanged
+behavior checks are retained in proof/VELDO-0127. This is a speed repair only;
+no gate, live qualification or shipped-status claim is made.
+Suite 87 fell from 128.89 to 51.41 seconds, and took 19.28 seconds in the
+empty gate environment. All 176 existing delivery rows remain; the runtime row
+alone is red on the unchanged 2fb32ed8 archive (132.39 seconds).
+
+2026-09-29, remove the delivery timing row from 20bc8548: machine load can
+change wall time without changing behavior. Timing belongs in the measurement
+record, not in a pass/fail row. AC2 retains all 176 delivery behavior rows and
+the two-worker limit; suite 87 still prints measured seconds. Remove the timing
+mutation, its diff and red record, and restore the earlier profile red driver.
+No new behavior row or falsifier is introduced, so no new red replay applies.
+Normal and empty gate-environment measurements are recorded in
+proof/VELDO-0127/timing-row-removal-checks.json. No footprint expansion is needed.
