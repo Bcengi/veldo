@@ -5,7 +5,10 @@ assignments made under it, in the control store. A team is plain versioned data:
 of kind `team` for project `project:<name>` (VELDO-0076). It names exactly one project manager and
 the required elaboration, implementation and independent review roles (REQUIRED_ROLES), each with
 exactly the fields of ROLE_FIELDS: its workers, responsibilities, expertise, proposal permissions,
-engine eligibility, budget and independence. The schema is closed: any other field, a tool list, an
+engine eligibility, budget, independence, kind and capability_configuration. Specialists may be added.
+The four required names have kind required; every other name has kind specialist. Each capability
+reference is {role, revision} and resolves through VELDO-0127 in this domain and repository.
+The schema is closed: any other field, a tool list, an
 MCP server list or any second capability filter among them, is refused by name. A role's tools and
 MCP servers come only from VELDO-0127's versioned capability configuration, never from here. The
 service declares both kinds and both id prefixes as its own (control_store's declare_owners), so no
@@ -42,7 +45,8 @@ the store's coordinates. The project must be ACTIVE (project_not_active:<state> 
            and to the applicable VELDO-0049 engineering-review policy (review-policy:<repository>,
            each risk tier's count of distinct independent reviews). A missing policy, or no count for
            the unit's risk, refuses missing_authority:review_policy: nothing defaults to no review.
-           The builder is an implementation worker, each reviewer an independent review worker; fewer
+           The staffing choice names a role (implementation for existing callers). A missing role opens
+           a staffing request to the current owner and assigns nothing. The builder belongs to that role, each reviewer an independent review worker; fewer
            distinct reviewers than the count refuses insufficient_reviews:<n>/<need>; a reviewer who
            is the builder, shares the builder's independence group or repeats another reviewer refuses
            reviewer_not_independent:<reviewer>; and every position is bound to the exact subject (the
@@ -81,6 +85,7 @@ AC = _organ('authority_contract')
 PJ = _organ('control_project')
 RT = _organ('control_reservation_runtime')
 ST = _organ('control_request_settlement')
+CFG = _organ('control_agent_config')
 
 SCHEMA = 'veldo.team/v1'
 ASSIGNMENT_SCHEMA = 'veldo.team_assignment/v1'
@@ -93,7 +98,8 @@ OPERATIONS = ('propose', 'amend', 'assign')
 COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 PM_ROLE = 'project_manager'
 REQUIRED_ROLES = (PM_ROLE, 'elaboration', 'implementation', 'independent_review')
-ROLE_FIELDS = ('workers', 'responsibilities', 'expertise', 'proposal_permissions', 'engines', 'budget', 'independence')
+ROLE_FIELDS = ('workers', 'responsibilities', 'expertise', 'proposal_permissions', 'engines', 'budget', 'independence',
+               'capability_configuration', 'kind')
 # The responsibility each required role must carry.
 REQUIRED_RESPONSIBILITY = {PM_ROLE: 'coordinate', 'elaboration': 'elaborate', 'implementation': 'implement',
                            'independent_review': 'review'}
@@ -173,14 +179,15 @@ def schema_problems(team):
     problems = []
     for role in sorted(team['roles'], key=str):
         spec = team['roles'][role]
-        if role not in REQUIRED_ROLES:
+        if not isinstance(role, str) or not _NAME.fullmatch(role):
             problems.append('invalid_input:role:%s' % role)
             continue
         if not isinstance(spec, dict):
             problems.append('invalid_input:role:%s' % role)
             continue
         problems += ['invalid_input:field:%s/%s' % (role, f) for f in sorted(spec, key=str) if f not in ROLE_FIELDS]
-        problems += ['invalid_input:missing:%s/%s' % (role, f) for f in ROLE_FIELDS if f not in spec]
+        problems += ['invalid_input:missing:%s/%s' % (role, f) for f in ROLE_FIELDS if f not in spec
+                     and f not in ('kind', 'capability_configuration')]
         workers = spec.get('workers')
         if 'workers' in spec and not (isinstance(workers, list) and all(_is_str(w) for w in workers)
                                       and len(set(workers)) == len(workers)):
@@ -203,7 +210,7 @@ def schema_problems(team):
         independence = spec.get('independence')
         if 'independence' in spec and not (isinstance(independence, dict) and set(independence) == {'distinct_from'}
                                            and isinstance(independence['distinct_from'], list)
-                                           and all(r in REQUIRED_ROLES and r != role
+                                           and all(r in team['roles'] and r != role
                                                    for r in independence['distinct_from'])):
             problems.append('invalid_input:independence:%s' % role)
     return problems
@@ -221,7 +228,7 @@ def staffing_problems(team, membership, project, now, active_member, scope_cover
     for m in membership:
         if isinstance(m, dict):
             entries[m.get('principal')] = m
-    for role in REQUIRED_ROLES:
+    for role in (*REQUIRED_ROLES, *(r for r in roles if r not in REQUIRED_ROLES)):
         spec = roles.get(role)
         if not spec or not spec.get('workers'):
             problems.append('missing_staffing:%s' % role)
@@ -233,7 +240,7 @@ def staffing_problems(team, membership, project, now, active_member, scope_cover
             if (not active_member(entry, now)[0] or entry.get('principal_type') not in WORKER_TYPES
                     or not scope_covers(entry.get('scope'), [name])):
                 problems.append('unknown_worker:%s/%s' % (role, worker))
-        if REQUIRED_RESPONSIBILITY[role] not in spec['responsibilities']:
+        if role in REQUIRED_RESPONSIBILITY and REQUIRED_RESPONSIBILITY[role] not in spec['responsibilities']:
             problems.append('missing_responsibility:%s' % role)
         problems += ['engine_ineligible:%s/%s' % (role, e) for e in spec['engines'] if e not in ENGINES]
         for unit in sorted(spec['budget']):
@@ -266,8 +273,9 @@ def amendment_brief(record):
     proposal = record['proposal']
     lines = ['Accept team revision %d of project %s (amends revision %d).'
              % (proposal['revision'], record['project'], proposal['base_revision'])]
-    for role in REQUIRED_ROLES:
-        spec = proposal['team']['roles'][role]
+    for role, spec in sorted(proposal['team']['roles'].items()):
+        lines.append('Kind %s; capability configuration %s.' % (spec['kind'],
+                     json.dumps(spec['capability_configuration'], sort_keys=True)))
         lines.append('The %s role is %s; engines %s; budget %s; may propose %s; separate from %s.' % (
             role, ', '.join(spec['workers']), ', '.join(spec['engines']),
             ', '.join('%s %s' % (u, spec['budget'][u]) for u in sorted(spec['budget'])),
@@ -427,11 +435,40 @@ class Teams:
         workers = sorted({w for spec in team['roles'].values() for w in spec.get('workers') or []})
         return problems, workers
 
+    def _capabilities(self, team, project, pinned, now):
+        """Every role names an accepted immutable capability revision, never a second tool filter."""
+        problems = []
+        for role, spec in team['roles'].items():
+            expected = 'required' if role in REQUIRED_ROLES else 'specialist'
+            if spec.get('kind') != expected:
+                problems.append('invalid_kind:%s' % role)
+            reference = spec.get('capability_configuration')
+            if reference is None:
+                problems.append('missing_capability_configuration:%s' % role)
+                continue
+            if (not isinstance(reference, dict) or set(reference) != {'role', 'revision'}
+                    or not CFG.MC.identifier(reference.get('role'))
+                    or type(reference.get('revision')) is not int or reference['revision'] < 1):
+                problems.append('invalid_capability_configuration:%s' % role)
+                continue
+            try:
+                CFG.read(self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'],
+                         reference['role'], reference['revision'])
+            except CFG.Refused:
+                problems.append('unresolved_capability_configuration:%s' % role)
+                continue
+            pinned.append(CFG.identity(self.ids['domain_uuid'], self.ids['repository_uuid'],
+                                       CFG.KINDS[0], reference['role'], reference['revision']))
+        if problems:
+            raise Refused('incomplete_roster:' + problems[0], '; '.join(problems), problems,
+                          self._owner_request(project, team, problems, now))
+
     def _propose(self, command, state, project, record, params, pinned, now):
         team = command.get('team')
         problems = schema_problems(team)
         if problems:
             raise Refused(problems[0], '; '.join(problems), problems)
+        self._capabilities(team, project, pinned, now)
         staffing, workers = self._staffed(team, state, project, now)
         if staffing:
             raise Refused('incomplete_roster:' + staffing[0], '; '.join(staffing), staffing,
@@ -486,6 +523,7 @@ class Teams:
         ruling = settlement['data'].get('ruling')
         if ruling not in RULINGS:
             raise Refused('not_accepted:%s' % ruling, 'the owner did not accept the proposal')
+        self._capabilities(proposal['team'], project, pinned, now)
         staffing, workers = self._staffed(proposal['team'], state, project, now)
         if staffing:
             raise Refused('incomplete_roster:' + staffing[0], '; '.join(staffing), staffing,
@@ -510,6 +548,12 @@ class Teams:
             raise Refused('invalid_input:unit', 'the unit is not an execution unit of this project')
         data = unit['data']
         subject = {'unit': unit_id, 'revision': data.get('revision'), 'scope_digest': data.get('scope_digest')}
+        role = command.get('role', 'implementation')
+        if not _is_str(role) or role not in team['roles']:
+            problems = ['missing_role:%s' % role]
+            raise Refused('not_staffed:role:%s' % role, problems=problems,
+                          owner_request=self._owner_request(project, team, problems, now))
+        self._capabilities(team, project, pinned, now)
         policy_row = state['entities'].get(review_policy_id(self.ids['repository_uuid']))
         tiers = ((policy_row.get('data') or {}).get('tiers') or {}) if (policy_row or {}).get('kind') == REVIEW_POLICY_KIND else {}
         need = tiers.get(data.get('risk')) if _is_str(data.get('risk')) else None
@@ -522,8 +566,8 @@ class Teams:
             raise Refused('invalid_input:positions', 'one builder and a list of reviewer positions')
         entries = {m.get('principal'): m for m in state['membership'] if isinstance(m, dict)}
         problems, staffed = [], []
-        if builder not in team['roles']['implementation']['workers']:
-            staffed.append('not_staffed:implementation/%s' % builder)
+        if builder not in team['roles'][role]['workers']:
+            staffed.append('not_staffed:%s/%s' % (role, builder))
         group = (entries.get(builder) or {}).get('independence_group') or builder
         seen = set()
         for position in reviewers:
@@ -554,6 +598,9 @@ class Teams:
             'team': {'revision': record['revision'], 'digest': record['digest'], 'version': record['version']},
             'policy': {'id': review_policy_id(self.ids['repository_uuid']), 'version': policy_row['version'],
                        'risk': data['risk'], 'required_reviews': need},
+            'role': role, 'capability_configuration': copy.deepcopy(team['roles'][role].get('capability_configuration')),
+            'reviewer_capability_configuration': copy.deepcopy(
+                team['roles']['independent_review'].get('capability_configuration')),
             'builder': builder, 'reviewers': [p['reviewer'] for p in reviewers], 'assigned_by': principal,
             'at': now}
         pinned += [aid, unit_id, review_policy_id(self.ids['repository_uuid']), builder] + sorted(seen)
@@ -643,7 +690,9 @@ class Teams:
             if (data.get('subject') or {}).get('kind') == STAFFING_SUBJECT and data.get('state') in (
                     'OFFERED', 'ACCEPTED', 'IN_PROGRESS'):
                 pending_requests += 1
-        return dict(self.counts, teams=len(teams), pending_proposals=sum(1 for t in teams if t.get('proposal')),
+        specialists = {t['project']: sum(s.get('kind') == 'specialist' for s in
+                       (t.get('team') or {}).get('roles', {}).values()) for t in teams}
+        return dict(self.counts, teams=len(teams), specialists=specialists, pending_proposals=sum(1 for t in teams if t.get('proposal')),
                     pending_staffing_requests=pending_requests,
                     assignments=self.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?',
                                                   (ASSIGNMENT_KIND,)).fetchone()[0])

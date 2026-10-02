@@ -455,8 +455,15 @@ def _v79_suite():
                         % (record.get('uuid'), record.get('decomposition_revision') or 0, record.get('project'),
                            record.get('title'), record.get('work_class'), '; '.join(record.get('scope') or []), units))
 
+            CG = load('team_fixture_config', mods / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(names, responsibility, perms=('feature',), distinct=()):
-                return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
                             proposal_permissions=list(perms), engines=['claude_code'],
                             budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
                             independence={'distinct_from': list(distinct)})

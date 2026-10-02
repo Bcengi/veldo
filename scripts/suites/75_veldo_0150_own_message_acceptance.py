@@ -399,8 +399,15 @@ def _v150_suite():
             teams = TM.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I, requester='pm',
                              request_sign=lambda m: sign_as('pm', m))
 
+            CG = load('team_fixture_config', mods / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(names, responsibility, perms=('feature',), distinct=()):
-                return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
                             proposal_permissions=list(perms), engines=['claude_code'],
                             budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
                             independence={'distinct_from': list(distinct)})

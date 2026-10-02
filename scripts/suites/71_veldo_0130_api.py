@@ -1714,8 +1714,15 @@ def _v130_checks(base):
             taken = backlog.apply(command('owner', operation='take', feature=feature.get('feature_id'),
                                           work_class='PRODUCT_CHANGE'))
 
+            CG = _v130_load('team_fixture_config', organs / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(members, duty, perms=('feature',), engines=('claude_code',), distinct=()):
-                return dict(workers=list(members), responsibilities=[duty, 'report'], expertise=['python'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(members), responsibilities=[duty, 'report'], expertise=['python'],
                             proposal_permissions=list(perms), engines=list(engines),
                             budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
                             independence={'distinct_from': list(distinct)})
