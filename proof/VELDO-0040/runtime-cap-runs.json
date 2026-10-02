@@ -1,0 +1,3087 @@
+{
+  "original_loaded": {
+    "load": [
+      {
+        "cpu": 0,
+        "cpu_ticks": 14597,
+        "pid": 3976239
+      },
+      {
+        "cpu": 1,
+        "cpu_ticks": 14362,
+        "pid": 3976240
+      },
+      {
+        "cpu": 2,
+        "cpu_ticks": 14365,
+        "pid": 3976241
+      },
+      {
+        "cpu": 3,
+        "cpu_ticks": 14099,
+        "pid": 3976242
+      },
+      {
+        "cpu": 4,
+        "cpu_ticks": 14150,
+        "pid": 3976243
+      },
+      {
+        "cpu": 5,
+        "cpu_ticks": 14320,
+        "pid": 3976244
+      },
+      {
+        "cpu": 6,
+        "cpu_ticks": 14342,
+        "pid": 3976245
+      },
+      {
+        "cpu": 7,
+        "cpu_ticks": 14673,
+        "pid": 3976246
+      },
+      {
+        "cpu": 8,
+        "cpu_ticks": 15830,
+        "pid": 3976247
+      },
+      {
+        "cpu": 9,
+        "cpu_ticks": 16049,
+        "pid": 3976248
+      },
+      {
+        "cpu": 10,
+        "cpu_ticks": 15953,
+        "pid": 3976249
+      },
+      {
+        "cpu": 11,
+        "cpu_ticks": 15999,
+        "pid": 3976250
+      },
+      {
+        "cpu": 12,
+        "cpu_ticks": 15857,
+        "pid": 3976251
+      },
+      {
+        "cpu": 13,
+        "cpu_ticks": 16016,
+        "pid": 3976252
+      },
+      {
+        "cpu": 14,
+        "cpu_ticks": 16115,
+        "pid": 3976253
+      },
+      {
+        "cpu": 15,
+        "cpu_ticks": 16058,
+        "pid": 3976254
+      },
+      {
+        "cpu": 16,
+        "cpu_ticks": 15717,
+        "pid": 3976255
+      },
+      {
+        "cpu": 17,
+        "cpu_ticks": 15941,
+        "pid": 3976256
+      },
+      {
+        "cpu": 18,
+        "cpu_ticks": 15941,
+        "pid": 3976257
+      },
+      {
+        "cpu": 19,
+        "cpu_ticks": 16032,
+        "pid": 3976258
+      }
+    ],
+    "load_reaped": true,
+    "mode": "original-load",
+    "original_commit": "f1e1abb9",
+    "output": "/tmp/flake0040-baseline-heavy",
+    "rounds": 10,
+    "runs": [
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3976261,
+        "raised": [],
+        "round": 1,
+        "runtime_cap": {
+          "beats": [
+            1790924133.0429342,
+            1790924133.1430142,
+            1790924133.2430892,
+            1790924133.3431602,
+            1790924133.4432275,
+            1790924133.5433385,
+            1790924133.643466,
+            1790924133.7435944,
+            1790924133.8437216,
+            1790924133.9438472,
+            1790924134.0439343,
+            1790924134.1440105,
+            1790924134.2440813,
+            1790924134.3442101,
+            1790924134.4443452,
+            1790924134.5444632
+          ],
+          "began": 1790924132.1494403,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5331230163574219,
+          "running_at": 1790924133.0113401,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924133.0428648,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v407bfe5901a.slice/veldo-dispatch-97e9cfd7ac83cbd984e23cabd0c323c8.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3976402,
+            "pid": 3976402,
+            "ppid": 3976391,
+            "role": "stubborn",
+            "sid": 3976402,
+            "start": "262471090",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924134.5764174,
+            "empty_monotonic": 2624712.449027151,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v407bfe5901a.slice/veldo-dispatch-97e9cfd7ac83cbd984e23cabd0c323c8.scope",
+              "slice": "v407bfe5901a.slice",
+              "unit": "veldo-dispatch-97e9cfd7ac83cbd984e23cabd0c323c8.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624710.907015368,
+              "interval_seconds": 10,
+              "last": 2624710.907015368,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3976398,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624710.906029815,
+                  "seq": 1,
+                  "taken": 2624710.907015368
+                }
+              ],
+              "released": 2624710.883895001,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924134.0735338,
+                "monotonic": 2624711.946139889,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924134.5749347,
+                "monotonic": 2624712.447538794,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924134.0723515,
+            1790924134.0744092
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.764488967135549
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3976262,
+        "raised": [],
+        "round": 1,
+        "runtime_cap": {
+          "beats": [
+            1790924133.0780442,
+            1790924133.1781342,
+            1790924133.2782114,
+            1790924133.3782856,
+            1790924133.4783573,
+            1790924133.5784104,
+            1790924133.6784835,
+            1790924133.778583,
+            1790924133.878711,
+            1790924133.978796,
+            1790924134.078872,
+            1790924134.178946,
+            1790924134.279019,
+            1790924134.3790967,
+            1790924134.479197,
+            1790924134.5793176,
+            1790924134.6794362
+          ],
+          "began": 1790924132.1534388,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6391184329986572,
+          "running_at": 1790924133.0403178,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924133.0779576,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v408bc1f8caa.slice/veldo-dispatch-7bac5990eeba504d9f85ad1923a5ee2a.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3976412,
+            "pid": 3976412,
+            "ppid": 3976394,
+            "role": "stubborn",
+            "sid": 3976412,
+            "start": "262471093",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924134.7664063,
+            "empty_monotonic": 2624712.639015862,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v408bc1f8caa.slice/veldo-dispatch-7bac5990eeba504d9f85ad1923a5ee2a.scope",
+              "slice": "v408bc1f8caa.slice",
+              "unit": "veldo-dispatch-7bac5990eeba504d9f85ad1923a5ee2a.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624710.932011562,
+              "interval_seconds": 10,
+              "last": 2624710.932011562,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3976408,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624710.931742568,
+                  "seq": 1,
+                  "taken": 2624710.932011562
+                }
+              ],
+              "released": 2624710.912872176,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924134.2639341,
+                "monotonic": 2624712.13654085,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924134.7649214,
+                "monotonic": 2624712.637526016,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924134.2634234,
+            1790924134.2644114
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 16.042290480341762
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3977551,
+        "raised": [],
+        "round": 2,
+        "runtime_cap": {
+          "beats": [
+            1790924149.290891,
+            1790924149.3909757,
+            1790924149.4910512,
+            1790924149.591123,
+            1790924149.6912053,
+            1790924149.7912793,
+            1790924149.891353,
+            1790924149.9914641,
+            1790924150.0915997,
+            1790924150.1917253,
+            1790924150.2918358,
+            1790924150.3919122,
+            1790924150.492058,
+            1790924150.5921915,
+            1790924150.6923242,
+            1790924150.7924483
+          ],
+          "began": 1790924148.3914294,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5413672924041748,
+          "running_at": 1790924149.251081,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924149.290801,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4057ffbd4aa.slice/veldo-dispatch-6971ac46237f2b1bfc79093c9e0a2500.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3977650,
+            "pid": 3977650,
+            "ppid": 3977624,
+            "role": "stubborn",
+            "sid": 3977650,
+            "start": "262472714",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924150.8249218,
+            "empty_monotonic": 2624728.697531552,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4057ffbd4aa.slice/veldo-dispatch-6971ac46237f2b1bfc79093c9e0a2500.scope",
+              "slice": "v4057ffbd4aa.slice",
+              "unit": "veldo-dispatch-6971ac46237f2b1bfc79093c9e0a2500.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624727.139109663,
+              "interval_seconds": 10,
+              "last": 2624727.139109663,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3977644,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624727.139049418,
+                  "seq": 1,
+                  "taken": 2624727.139109663
+                }
+              ],
+              "released": 2624727.123635899,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924150.3235266,
+                "monotonic": 2624728.196133311,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924150.8244116,
+                "monotonic": 2624728.697015612,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924150.3224306,
+            1790924150.3244119
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.92021712101996
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3977552,
+        "raised": [],
+        "round": 2,
+        "runtime_cap": {
+          "beats": [
+            1790924149.2260568,
+            1790924149.3261497,
+            1790924149.4262567,
+            1790924149.5263493,
+            1790924149.6264298,
+            1790924149.726518,
+            1790924149.826598,
+            1790924149.9267032,
+            1790924150.0268147,
+            1790924150.1269166,
+            1790924150.2270432,
+            1790924150.3271172,
+            1790924150.4271896,
+            1790924150.527304,
+            1790924150.627401,
+            1790924150.7275429
+          ],
+          "began": 1790924148.3525567,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5442025661468506,
+          "running_at": 1790924149.1833403,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924149.2259672,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40aac3b105a.slice/veldo-dispatch-7b0f8e2f8750a00f7aaba0cc00fb489f.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3977635,
+            "pid": 3977635,
+            "ppid": 3977603,
+            "role": "stubborn",
+            "sid": 3977635,
+            "start": "262472707",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924150.825402,
+            "empty_monotonic": 2624728.698011644,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40aac3b105a.slice/veldo-dispatch-7b0f8e2f8750a00f7aaba0cc00fb489f.scope",
+              "slice": "v40aac3b105a.slice",
+              "unit": "veldo-dispatch-7b0f8e2f8750a00f7aaba0cc00fb489f.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624727.074388019,
+              "interval_seconds": 10,
+              "last": 2624727.074388019,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3977630,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624727.0700513,
+                  "seq": 1,
+                  "taken": 2624727.074388019
+                }
+              ],
+              "released": 2624727.055897401,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924150.3235295,
+                "monotonic": 2624728.196135264,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924150.8249247,
+                "monotonic": 2624728.697528422,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924150.32244,
+            1790924150.3244135
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 16.057812970131636
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3978906,
+        "raised": [],
+        "round": 3,
+        "runtime_cap": {
+          "beats": [
+            1790924165.5676992,
+            1790924165.6677923,
+            1790924165.7679248,
+            1790924165.8680165,
+            1790924165.9680934,
+            1790924166.0682144,
+            1790924166.1683424,
+            1790924166.268466,
+            1790924166.3686018,
+            1790924166.468701,
+            1790924166.568775,
+            1790924166.668876,
+            1790924166.7689695,
+            1790924166.8690968,
+            1790924166.969229,
+            1790924167.069361
+          ],
+          "began": 1790924164.6474757,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5384221076965332,
+          "running_at": 1790924165.5309389,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924165.5676303,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40b3ffb618a.slice/veldo-dispatch-ad2959c2cc6078044812a141b1c67162.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3978978,
+            "pid": 3978978,
+            "ppid": 3978959,
+            "role": "stubborn",
+            "sid": 3978978,
+            "start": "262474342",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924167.0754275,
+            "empty_monotonic": 2624744.948037042,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40b3ffb618a.slice/veldo-dispatch-ad2959c2cc6078044812a141b1c67162.scope",
+              "slice": "v40b3ffb618a.slice",
+              "unit": "veldo-dispatch-ad2959c2cc6078044812a141b1c67162.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624743.424014117,
+              "interval_seconds": 10,
+              "last": 2624743.424014117,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3978973,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624743.423042292,
+                  "seq": 1,
+                  "taken": 2624743.424014117
+                }
+              ],
+              "released": 2624743.40348245,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924166.5735285,
+                "monotonic": 2624744.446135499,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924167.074926,
+                "monotonic": 2624744.947528441,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924166.572931,
+            1790924166.5736012
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.776664908975363
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3978907,
+        "raised": [],
+        "round": 3,
+        "runtime_cap": {
+          "beats": [
+            1790924165.5345435,
+            1790924165.6346312,
+            1790924165.7349164,
+            1790924165.8350217,
+            1790924165.9351003,
+            1790924166.0352283,
+            1790924166.1353655,
+            1790924166.2354617,
+            1790924166.3355887,
+            1790924166.435707,
+            1790924166.5358212,
+            1790924166.6358995,
+            1790924166.7359734,
+            1790924166.8361,
+            1790924166.9361966,
+            1790924167.036281
+          ],
+          "began": 1790924164.6433814,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.536961317062378,
+          "running_at": 1790924165.4993198,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924165.534476,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40cd3eb0d9a.slice/veldo-dispatch-ad6068cf7f8b8e7d20d02beec8d62d60.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3978967,
+            "pid": 3978967,
+            "ppid": 3978955,
+            "role": "stubborn",
+            "sid": 3978967,
+            "start": "262474339",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924167.0774052,
+            "empty_monotonic": 2624744.950014692,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40cd3eb0d9a.slice/veldo-dispatch-ad6068cf7f8b8e7d20d02beec8d62d60.scope",
+              "slice": "v40cd3eb0d9a.slice",
+              "unit": "veldo-dispatch-ad6068cf7f8b8e7d20d02beec8d62d60.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624743.385005189,
+              "interval_seconds": 10,
+              "last": 2624743.385005189,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3978963,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624743.384041946,
+                  "seq": 1,
+                  "taken": 2624743.385005189
+                }
+              ],
+              "released": 2624743.371877875,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924166.5755203,
+                "monotonic": 2624744.448126937,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924167.0760949,
+                "monotonic": 2624744.948698268,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924166.5724337,
+            1790924166.5764098
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.920690904837102
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3980128,
+        "raised": [],
+        "round": 4,
+        "runtime_cap": {
+          "beats": [
+            1790924181.822045,
+            1790924181.9221437,
+            1790924182.0222318,
+            1790924182.122305,
+            1790924182.222389,
+            1790924182.3224928,
+            1790924182.4225938,
+            1790924182.5227225,
+            1790924182.6228352,
+            1790924182.7229488,
+            1790924182.8230546,
+            1790924182.9231558,
+            1790924183.0232563,
+            1790924183.1233876,
+            1790924183.2234733,
+            1790924183.3235953
+          ],
+          "began": 1790924180.9206064,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5404407978057861,
+          "running_at": 1790924181.7831545,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924181.8219564,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v405d93f416a.slice/veldo-dispatch-72a7b968ef975ea2241a11b1c7c43909.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3980228,
+            "pid": 3980228,
+            "ppid": 3980202,
+            "role": "stubborn",
+            "sid": 3980228,
+            "start": "262475967",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924183.3275578,
+            "empty_monotonic": 2624761.200167434,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v405d93f416a.slice/veldo-dispatch-72a7b968ef975ea2241a11b1c7c43909.scope",
+              "slice": "v405d93f416a.slice",
+              "unit": "veldo-dispatch-72a7b968ef975ea2241a11b1c7c43909.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624759.671024624,
+              "interval_seconds": 10,
+              "last": 2624759.671024624,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3980224,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624759.670040904,
+                  "seq": 1,
+                  "taken": 2624759.671024624
+                }
+              ],
+              "released": 2624759.655711842,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924182.8265269,
+                "monotonic": 2624760.699133329,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924183.3271034,
+                "monotonic": 2624761.199707433,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924182.8254528,
+            1790924182.8274145
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 16.011437654029578
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3980129,
+        "raised": [],
+        "round": 4,
+        "runtime_cap": {
+          "beats": [
+            1790924181.713531,
+            1790924181.8136427,
+            1790924181.913746,
+            1790924182.0138369,
+            1790924182.1139116,
+            1790924182.2140367,
+            1790924182.3141577,
+            1790924182.4142864,
+            1790924182.5144231,
+            1790924182.6145487,
+            1790924182.7146711,
+            1790924182.8147595,
+            1790924182.914856,
+            1790924183.0149417,
+            1790924183.1150737,
+            1790924183.2151964,
+            1790924183.317461
+          ],
+          "began": 1790924180.8383727,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6391665935516357,
+          "running_at": 1790924181.6782944,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924181.7134588,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40ff4019d3a.slice/veldo-dispatch-b1c0df62b752a1ad61b1e296db4e090b.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3980212,
+            "pid": 3980212,
+            "ppid": 3980198,
+            "role": "stubborn",
+            "sid": 3980212,
+            "start": "262475957",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924183.3274217,
+            "empty_monotonic": 2624761.200031092,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40ff4019d3a.slice/veldo-dispatch-b1c0df62b752a1ad61b1e296db4e090b.scope",
+              "slice": "v40ff4019d3a.slice",
+              "unit": "veldo-dispatch-b1c0df62b752a1ad61b1e296db4e090b.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624759.568299462,
+              "interval_seconds": 10,
+              "last": 2624759.568299462,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3980207,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624759.568046176,
+                  "seq": 1,
+                  "taken": 2624759.568299462
+                }
+              ],
+              "released": 2624759.550850406,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924182.8232036,
+                "monotonic": 2624760.695809976,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924183.3236253,
+                "monotonic": 2624761.196228729,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924182.822423,
+            1790924182.823406
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.819741395302117
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3981360,
+        "raised": [],
+        "round": 5,
+        "runtime_cap": {
+          "beats": [
+            1790924198.0408905,
+            1790924198.1409657,
+            1790924198.2410507,
+            1790924198.3411386,
+            1790924198.441215,
+            1790924198.5444608,
+            1790924198.6445832,
+            1790924198.7447076,
+            1790924198.8448343,
+            1790924198.944965,
+            1790924199.0450554,
+            1790924199.1451294,
+            1790924199.2452002,
+            1790924199.345329,
+            1790924199.4454591,
+            1790924199.5455866
+          ],
+          "began": 1790924197.1013718,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5863871574401855,
+          "running_at": 1790924197.9591994,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924198.0408208,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4061eb41efa.slice/veldo-dispatch-1132326fa813209a3cad8955f0919a78.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3981452,
+            "pid": 3981452,
+            "ppid": 3981433,
+            "role": "stubborn",
+            "sid": 3981452,
+            "start": "262477585",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924199.577413,
+            "empty_monotonic": 2624777.450022554,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4061eb41efa.slice/veldo-dispatch-1132326fa813209a3cad8955f0919a78.scope",
+              "slice": "v4061eb41efa.slice",
+              "unit": "veldo-dispatch-1132326fa813209a3cad8955f0919a78.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624775.850011324,
+              "interval_seconds": 10,
+              "last": 2624775.850011324,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3981447,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624775.849044028,
+                  "seq": 1,
+                  "taken": 2624775.850011324
+                }
+              ],
+              "released": 2624775.831752167,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924199.0745308,
+                "monotonic": 2624776.947137472,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924199.5759268,
+                "monotonic": 2624777.448530502,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924199.0734162,
+            1790924199.075408
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.9471021941863
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3981361,
+        "raised": [],
+        "round": 5,
+        "runtime_cap": {
+          "beats": [
+            1790924197.9731698,
+            1790924198.0732563,
+            1790924198.1733317,
+            1790924198.2734694,
+            1790924198.373601,
+            1790924198.4736874,
+            1790924198.5738328,
+            1790924198.6739202,
+            1790924198.7739937,
+            1790924198.8741264,
+            1790924198.974266,
+            1790924199.075409,
+            1790924199.175498,
+            1790924199.2755935,
+            1790924199.3757222,
+            1790924199.4758537
+          ],
+          "began": 1790924197.101523,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5436408519744873,
+          "running_at": 1790924197.9322128,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924197.9730814,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v401d6de6aea.slice/veldo-dispatch-c81883a05cefd35a5a63a9c54c8028e5.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3981443,
+            "pid": 3981443,
+            "ppid": 3981431,
+            "role": "stubborn",
+            "sid": 3981443,
+            "start": "262477582",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924199.5754743,
+            "empty_monotonic": 2624777.448083813,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v401d6de6aea.slice/veldo-dispatch-c81883a05cefd35a5a63a9c54c8028e5.scope",
+              "slice": "v401d6de6aea.slice",
+              "unit": "veldo-dispatch-c81883a05cefd35a5a63a9c54c8028e5.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624775.821019356,
+              "interval_seconds": 10,
+              "last": 2624775.821019356,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3981437,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624775.820045283,
+                  "seq": 1,
+                  "taken": 2624775.821019356
+                }
+              ],
+              "released": 2624775.804769102,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924199.0735335,
+                "monotonic": 2624776.946140357,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924199.5749457,
+                "monotonic": 2624777.447549675,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924199.0724826,
+            1790924199.0736067
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.959452434908599
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3982557,
+        "raised": [],
+        "round": 6,
+        "runtime_cap": {
+          "beats": [
+            1790924214.2180727,
+            1790924214.318167,
+            1790924214.4182527,
+            1790924214.5183299,
+            1790924214.6184204,
+            1790924214.718549,
+            1790924214.8186655,
+            1790924214.9187648,
+            1790924215.0188541,
+            1790924215.118972,
+            1790924215.2191014,
+            1790924215.3192377,
+            1790924215.419334,
+            1790924215.519425,
+            1790924215.619551,
+            1790924215.7204626
+          ],
+          "began": 1790924213.3176548,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5409467220306396,
+          "running_at": 1790924214.1795158,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924214.2179945,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40217cc927a.slice/veldo-dispatch-8241728927863f7be02b7bda312a61f0.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3982741,
+            "pid": 3982741,
+            "ppid": 3982722,
+            "role": "stubborn",
+            "sid": 3982741,
+            "start": "262479207",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924215.7959096,
+            "empty_monotonic": 2624793.668519241,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40217cc927a.slice/veldo-dispatch-8241728927863f7be02b7bda312a61f0.scope",
+              "slice": "v40217cc927a.slice",
+              "unit": "veldo-dispatch-8241728927863f7be02b7bda312a61f0.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624792.061334881,
+              "interval_seconds": 10,
+              "last": 2624792.061334881,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3982735,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624792.057027552,
+                  "seq": 1,
+                  "taken": 2624792.061334881
+                }
+              ],
+              "released": 2624792.052070802,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924215.294647,
+                "monotonic": 2624793.167253415,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924215.7953427,
+                "monotonic": 2624793.667945738,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924215.2923996,
+            1790924215.2947896
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.797281160019338
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3982558,
+        "raised": [],
+        "round": 6,
+        "runtime_cap": {
+          "beats": [
+            1790924214.1987581,
+            1790924214.2988377,
+            1790924214.3989077,
+            1790924214.498972,
+            1790924214.5990376,
+            1790924214.699149,
+            1790924214.799265,
+            1790924214.899371,
+            1790924214.9994285,
+            1790924215.0995014,
+            1790924215.1996505,
+            1790924215.3001022,
+            1790924215.4004776,
+            1790924215.500632,
+            1790924215.60077,
+            1790924215.7008688
+          ],
+          "began": 1790924213.2958932,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5395221710205078,
+          "running_at": 1790924214.1613467,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924214.198682,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40c1a51b07a.slice/veldo-dispatch-ab7b509986c4ef19e88a44b9f4e96738.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3982734,
+            "pid": 3982734,
+            "ppid": 3982718,
+            "role": "stubborn",
+            "sid": 3982734,
+            "start": "262479205",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924215.815457,
+            "empty_monotonic": 2624793.688066743,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40c1a51b07a.slice/veldo-dispatch-ab7b509986c4ef19e88a44b9f4e96738.scope",
+              "slice": "v40c1a51b07a.slice",
+              "unit": "veldo-dispatch-ab7b509986c4ef19e88a44b9f4e96738.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624792.051207741,
+              "interval_seconds": 10,
+              "last": 2624792.051207741,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3982726,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624792.051050412,
+                  "seq": 1,
+                  "taken": 2624792.051207741
+                }
+              ],
+              "released": 2624792.033901122,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924215.2932644,
+                "monotonic": 2624793.165870619,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924215.8153868,
+                "monotonic": 2624793.687991722,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924215.2930546,
+            1790924215.293321
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 16.038932222872972
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3983964,
+        "raised": [],
+        "round": 7,
+        "runtime_cap": {
+          "beats": [
+            1790924230.4815216,
+            1790924230.581611,
+            1790924230.6816878,
+            1790924230.7817793,
+            1790924230.881888,
+            1790924230.9819944,
+            1790924231.082107,
+            1790924231.182251,
+            1790924231.2823818,
+            1790924231.3825037,
+            1790924231.4825847,
+            1790924231.5826535,
+            1790924231.6827285,
+            1790924231.782852,
+            1790924231.8829684,
+            1790924231.9830747
+          ],
+          "began": 1790924229.5483942,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5431814193725586,
+          "running_at": 1790924230.4398932,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924230.4814339,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40e5bfef67a.slice/veldo-dispatch-324fa2c4fd8ff10dd6a45b540b9bd44f.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3984083,
+            "pid": 3984083,
+            "ppid": 3984057,
+            "role": "stubborn",
+            "sid": 3984083,
+            "start": "262480833",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924232.0754075,
+            "empty_monotonic": 2624809.948017248,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40e5bfef67a.slice/veldo-dispatch-324fa2c4fd8ff10dd6a45b540b9bd44f.scope",
+              "slice": "v40e5bfef67a.slice",
+              "unit": "veldo-dispatch-324fa2c4fd8ff10dd6a45b540b9bd44f.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624808.328009079,
+              "interval_seconds": 10,
+              "last": 2624808.328009079,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3984074,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624808.327046185,
+                  "seq": 1,
+                  "taken": 2624808.328009079
+                }
+              ],
+              "released": 2624808.312448397,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924231.5735552,
+                "monotonic": 2624809.446162064,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924232.0741386,
+                "monotonic": 2624809.946742663,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924231.5724306,
+            1790924231.5744107
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.757481824606657
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3983965,
+        "raised": [],
+        "round": 7,
+        "runtime_cap": {
+          "beats": [
+            1790924230.422813,
+            1790924230.5228937,
+            1790924230.6229742,
+            1790924230.7230737,
+            1790924230.8231845,
+            1790924230.923272,
+            1790924231.0233896,
+            1790924231.1235094,
+            1790924231.2236288,
+            1790924231.3237445,
+            1790924231.4238744,
+            1790924231.5239644,
+            1790924231.6240418,
+            1790924231.7242093,
+            1790924231.8243456,
+            1790924231.9244592,
+            1790924232.024587
+          ],
+          "began": 1790924229.5465646,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6402485370635986,
+          "running_at": 1790924230.3843384,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924230.4227436,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v401bce05ada.slice/veldo-dispatch-62e8f7c7ce3d31d462dd720f0b8fc156.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3984066,
+            "pid": 3984066,
+            "ppid": 3984055,
+            "role": "stubborn",
+            "sid": 3984066,
+            "start": "262480827",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924232.075621,
+            "empty_monotonic": 2624809.948230343,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v401bce05ada.slice/veldo-dispatch-62e8f7c7ce3d31d462dd720f0b8fc156.scope",
+              "slice": "v401bce05ada.slice",
+              "unit": "veldo-dispatch-62e8f7c7ce3d31d462dd720f0b8fc156.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624808.274005289,
+              "interval_seconds": 10,
+              "last": 2624808.274005289,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3984061,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624808.273038175,
+                  "seq": 1,
+                  "taken": 2624808.274005289
+                }
+              ],
+              "released": 2624808.256895211,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924231.574479,
+                "monotonic": 2624809.447085606,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924232.0750473,
+                "monotonic": 2624809.947651375,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924231.5724413,
+            1790924231.5754106
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.799535285215825
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3985181,
+        "raised": [],
+        "round": 8,
+        "runtime_cap": {
+          "beats": [
+            1790924246.4694107,
+            1790924246.5695226,
+            1790924246.6696334,
+            1790924246.7697432,
+            1790924246.8698235,
+            1790924246.969909,
+            1790924247.0700178,
+            1790924247.1701267,
+            1790924247.2702146,
+            1790924247.3703182,
+            1790924247.4704068,
+            1790924247.5704753,
+            1790924247.6705592,
+            1790924247.7706358,
+            1790924247.870756,
+            1790924247.9708765,
+            1790924248.0709934
+          ],
+          "began": 1790924245.5908546,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6354737281799316,
+          "running_at": 1790924246.4355197,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924246.4693272,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4060236caaa.slice/veldo-dispatch-288de810bbf78a8dc3db4c3b435c6012.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3985253,
+            "pid": 3985253,
+            "ppid": 3985234,
+            "role": "stubborn",
+            "sid": 3985253,
+            "start": "262482432",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924248.0754051,
+            "empty_monotonic": 2624825.948014578,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4060236caaa.slice/veldo-dispatch-288de810bbf78a8dc3db4c3b435c6012.scope",
+              "slice": "v4060236caaa.slice",
+              "unit": "veldo-dispatch-288de810bbf78a8dc3db4c3b435c6012.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624824.321288776,
+              "interval_seconds": 10,
+              "last": 2624824.321288776,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3985245,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624824.311696546,
+                  "seq": 1,
+                  "taken": 2624824.321288776
+                }
+              ],
+              "released": 2624824.308070084,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924247.573222,
+                "monotonic": 2624825.445828382,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924248.073412,
+                "monotonic": 2624825.946015351,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924247.5729337,
+            1790924247.573405
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.767532906960696
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3985182,
+        "raised": [],
+        "round": 8,
+        "runtime_cap": {
+          "beats": [
+            1790924246.4627407,
+            1790924246.5628603,
+            1790924246.662967,
+            1790924246.7630632,
+            1790924246.8631473,
+            1790924246.9632607,
+            1790924247.0633767,
+            1790924247.1634562,
+            1790924247.263573,
+            1790924247.363679,
+            1790924247.4637687,
+            1790924247.563864,
+            1790924247.6639426,
+            1790924247.7640254,
+            1790924247.8641083,
+            1790924247.9642284,
+            1790924248.064373
+          ],
+          "began": 1790924245.585435,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6435189247131348,
+          "running_at": 1790924246.420854,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924246.4626572,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40f51584a6a.slice/veldo-dispatch-fe73827b83887e19d78ecb30de8b9af4.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3985246,
+            "pid": 3985246,
+            "ppid": 3985233,
+            "role": "stubborn",
+            "sid": 3985246,
+            "start": "262482431",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924248.0754135,
+            "empty_monotonic": 2624825.948023091,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40f51584a6a.slice/veldo-dispatch-fe73827b83887e19d78ecb30de8b9af4.scope",
+              "slice": "v40f51584a6a.slice",
+              "unit": "veldo-dispatch-fe73827b83887e19d78ecb30de8b9af4.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624824.308004159,
+              "interval_seconds": 10,
+              "last": 2624824.308004159,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3985239,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624824.307045914,
+                  "seq": 1,
+                  "taken": 2624824.308004159
+                }
+              ],
+              "released": 2624824.293415326,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924247.5730665,
+                "monotonic": 2624825.445672777,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924248.0740383,
+                "monotonic": 2624825.946641793,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924247.572426,
+            1790924247.5734093
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.968299255240709
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3986445,
+        "raised": [],
+        "round": 9,
+        "runtime_cap": {
+          "beats": [
+            1790924262.7813993,
+            1790924262.8814774,
+            1790924262.9815464,
+            1790924263.081616,
+            1790924263.1816862,
+            1790924263.2817798,
+            1790924263.3819044,
+            1790924263.4820232,
+            1790924263.5821512,
+            1790924263.6822803,
+            1790924263.7823617,
+            1790924263.8824084,
+            1790924263.982552,
+            1790924264.0826907,
+            1790924264.182792,
+            1790924264.2829378
+          ],
+          "began": 1790924261.9093418,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5347130298614502,
+          "running_at": 1790924262.7482247,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924262.7813277,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40d220c3d9a.slice/veldo-dispatch-7c497938d81825a2744557a1497933fe.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3986547,
+            "pid": 3986547,
+            "ppid": 3986521,
+            "role": "stubborn",
+            "sid": 3986547,
+            "start": "262484064",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924264.3254075,
+            "empty_monotonic": 2624842.198016943,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40d220c3d9a.slice/veldo-dispatch-7c497938d81825a2744557a1497933fe.scope",
+              "slice": "v40d220c3d9a.slice",
+              "unit": "veldo-dispatch-7c497938d81825a2744557a1497933fe.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624840.636085773,
+              "interval_seconds": 10,
+              "last": 2624840.636085773,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3986540,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624840.636043888,
+                  "seq": 1,
+                  "taken": 2624840.636085773
+                }
+              ],
+              "released": 2624840.620780123,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924263.8235207,
+                "monotonic": 2624841.696127483,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924264.324926,
+                "monotonic": 2624842.19752948,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924263.8224196,
+            1790924263.824408
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 16.110136727802455
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3986446,
+        "raised": [],
+        "round": 9,
+        "runtime_cap": {
+          "beats": [
+            1790924262.7181532,
+            1790924262.8182359,
+            1790924262.9183173,
+            1790924263.018393,
+            1790924263.118463,
+            1790924263.2185607,
+            1790924263.3187087,
+            1790924263.4187963,
+            1790924263.518929,
+            1790924263.6190486,
+            1790924263.7194395,
+            1790924263.819515,
+            1790924263.9195879,
+            1790924264.0197277,
+            1790924264.119877,
+            1790924264.2199664,
+            1790924264.320108
+          ],
+          "began": 1790924261.8433564,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.6392529010772705,
+          "running_at": 1790924262.680855,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924262.7180643,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40b17d81a3a.slice/veldo-dispatch-c1371414501bb54b84667042ed9c872d.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3986529,
+            "pid": 3986529,
+            "ppid": 3986517,
+            "role": "stubborn",
+            "sid": 3986529,
+            "start": "262484057",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924264.3254046,
+            "empty_monotonic": 2624842.198014123,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40b17d81a3a.slice/veldo-dispatch-c1371414501bb54b84667042ed9c872d.scope",
+              "slice": "v40b17d81a3a.slice",
+              "unit": "veldo-dispatch-c1371414501bb54b84667042ed9c872d.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624840.567005007,
+              "interval_seconds": 10,
+              "last": 2624840.567005007,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3986525,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624840.566048178,
+                  "seq": 1,
+                  "taken": 2624840.567005007
+                }
+              ],
+              "released": 2624840.553414282,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924263.8235216,
+                "monotonic": 2624841.696128152,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924264.324098,
+                "monotonic": 2624842.196702348,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924263.8224266,
+            1790924263.8244102
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.90187137387693
+      },
+      {
+        "copy": 1,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3987792,
+        "raised": [],
+        "round": 10,
+        "runtime_cap": {
+          "beats": [
+            1790924279.0467231,
+            1790924279.1467905,
+            1790924279.2468903,
+            1790924279.3469672,
+            1790924279.447034,
+            1790924279.5471344,
+            1790924279.6472464,
+            1790924279.7473505,
+            1790924279.8474555,
+            1790924279.9475493,
+            1790924280.0476375,
+            1790924280.147732,
+            1790924280.247818,
+            1790924280.3478959,
+            1790924280.447995,
+            1790924280.548067
+          ],
+          "began": 1790924278.176339,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.536773920059204,
+          "running_at": 1790924279.0112932,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924279.0466542,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4019d0e05ea.slice/veldo-dispatch-b9cbb291bed69f48763d9a7e3d3d320b.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3987885,
+            "pid": 3987885,
+            "ppid": 3987867,
+            "role": "stubborn",
+            "sid": 3987885,
+            "start": "262485690",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924280.5764089,
+            "empty_monotonic": 2624858.449018218,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v4019d0e05ea.slice/veldo-dispatch-b9cbb291bed69f48763d9a7e3d3d320b.scope",
+              "slice": "v4019d0e05ea.slice",
+              "unit": "veldo-dispatch-b9cbb291bed69f48763d9a7e3d3d320b.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624856.900011614,
+              "interval_seconds": 10,
+              "last": 2624856.900011614,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3987874,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624856.897048698,
+                  "seq": 1,
+                  "taken": 2624856.900011614
+                }
+              ],
+              "released": 2624856.883847486,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924280.0735564,
+                "monotonic": 2624857.946163203,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924280.5749137,
+                "monotonic": 2624858.447520413,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924280.0724576,
+            1790924280.074493
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.946552062872797
+      },
+      {
+        "copy": 2,
+        "exit_code": 2,
+        "failed": 0,
+        "failed_details": [],
+        "passed": 46,
+        "pid": 3987793,
+        "raised": [],
+        "round": 10,
+        "runtime_cap": {
+          "beats": [
+            1790924279.0598607,
+            1790924279.1599703,
+            1790924279.260102,
+            1790924279.3601942,
+            1790924279.4602668,
+            1790924279.5604024,
+            1790924279.6614563,
+            1790924279.761592,
+            1790924279.861721,
+            1790924279.9618545,
+            1790924280.061962,
+            1790924280.1624267,
+            1790924280.2625124,
+            1790924280.3625937,
+            1790924280.462723,
+            1790924280.5628297
+          ],
+          "began": 1790924278.1763625,
+          "bound": 2.7,
+          "checks": {
+            "beats_present": true,
+            "cause_runtime_cap": true,
+            "deadline_stop": true,
+            "result_timeout": true,
+            "running_at_present": true,
+            "runtime_bound": true,
+            "state_exited": true,
+            "stubborn_not_living": true,
+            "stubborn_present": true,
+            "supervision_empty": true,
+            "term_present": true,
+            "unit_not_found": true
+          },
+          "false_conjuncts": [],
+          "last_beat_after_running": 1.5518178939819336,
+          "running_at": 1790924279.0110118,
+          "state": "exited",
+          "stubborn": {
+            "at": 1790924279.0597937,
+            "caps": {
+              "CapAmb": "0000000000000000",
+              "CapEff": "0000000000000000",
+              "CapInh": "0000000000000000",
+              "CapPrm": "0000000000000000"
+            },
+            "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40a9c46ef4a.slice/veldo-dispatch-aa733671e87929e275f08963547fa284.scope",
+            "fsize": [
+              8388608,
+              8388608
+            ],
+            "gid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ],
+            "pgid": 3987883,
+            "pid": 3987883,
+            "ppid": 3987866,
+            "role": "stubborn",
+            "sid": 3987883,
+            "start": "262485690",
+            "uid": [
+              "1000",
+              "1000",
+              "1000",
+              "1000"
+            ]
+          },
+          "stubborn_living": false,
+          "supervision": {
+            "cause": "runtime_cap",
+            "empty": true,
+            "empty_at": 1790924280.5741866,
+            "empty_monotonic": 2624858.446796011,
+            "graces": {
+              "kill_grace_seconds": 0.5,
+              "stop_grace_seconds": 0.6
+            },
+            "group": {
+              "cgroup": "/user.slice/user-1000.slice/user@1000.service/v40a9c46ef4a.slice/veldo-dispatch-aa733671e87929e275f08963547fa284.scope",
+              "slice": "v40a9c46ef4a.slice",
+              "unit": "veldo-dispatch-aa733671e87929e275f08963547fa284.scope"
+            },
+            "heartbeat": {
+              "beats": 1,
+              "channel_open": false,
+              "first": 2624856.900027607,
+              "interval_seconds": 10,
+              "last": 2624856.900027607,
+              "liveness": "live",
+              "max_gap": null,
+              "pid": 3987875,
+              "recent": [
+                {
+                  "renewed": true,
+                  "sent": 2624856.899063602,
+                  "seq": 1,
+                  "taken": 2624856.900027607
+                }
+              ],
+              "released": 2624856.88356891,
+              "renewal_refusals": [],
+              "renewed": 1,
+              "uncertain_at": null,
+              "window_seconds": 30
+            },
+            "result": "timeout",
+            "steps": [
+              {
+                "at": 1790924280.0735323,
+                "monotonic": 2624857.946138717,
+                "step": "terminate"
+              },
+              {
+                "at": 1790924280.5740895,
+                "monotonic": 2624858.446694093,
+                "step": "kill"
+              }
+            ]
+          },
+          "term_count": 2,
+          "termination": {
+            "deadline_stop": true,
+            "output_bytes": 0,
+            "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "returncode": 143,
+            "signal": null
+          },
+          "terms": [
+            1790924280.0724304,
+            1790924280.0736036
+          ],
+          "unit_after": "not-found"
+        },
+        "seconds": 15.951501910109073
+      }
+    ],
+    "sha256": {
+      ".veldo/control_containment.py": "e11f4d030e83453ecb9c6df9e5b4c486144c6d0cab7066c2f88ee0010fa796e9",
+      ".veldo/control_launch.py": "08ce9911ecbbf29f70a61874b80f45a340aa8850e16f0fe2c2021e76af459f0f",
+      "scripts/suites/63_veldo_0040_containment.py": "b63da254642710ddbfa80ede1a1095f4991aed017ce30c4d69278e0d142b8366"
+    },
+    "source_head": "7e2b050550015e0d9f0a1151099981e59432f1f4",
+    "suite_copies_per_round": 2
+  },
+  "status": "historical red not reproduced; cause unknown"
+}
