@@ -175,6 +175,21 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, report-handshake proof complete at a45269eb: all three new falsifiers
+are rejected by assertion, each with only its named suite-86 row red. The manual
+proof mode applies registry edits in a disposable archive and runs the suite-86
+selector serially; it never executes the mutation checker. All 27 finding-148
+diffs and digests are refreshed. Suites 86, 62 (dispatch), 63 (containment), 67
+(heartbeat), 80, 81 and 82 (execution record) each pass alone in ordinary and
+exact empty gate environments, 14 runs with zero failures and partial-run exit 2.
+Requires.json is regenerated unchanged, engine/.veldo/control_launch.py matches its source,
+the Git boundary passes, anchors report 0 bad, and validate.py all exits 0.
+The origin/main footprint check flags 58 inherited paths already at 1ab79713;
+this repair adds none outside the existing footprint. The concatenated alternate
+anchor-check path is absent; the supplied scratchpad/anchor_check.py was used.
+Whole selftest, gate, mutation checker and load execution remain with the reviewer
+under the owner's explicit token and concurrent-gate limits.
+
 2026-10-02, report-handshake review repair from 1ab79713: add suite-86 probes
 that stop the real wrapper immediately after release, delay it past its startup
 budget, and exit it before the setup report. The read-only baseline replay makes

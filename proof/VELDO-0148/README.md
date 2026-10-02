@@ -52,6 +52,30 @@ The proof driver's report-mutants mode reads the three registrations as syntax
 and applies each to a disposable archive, then invokes only suite 86, one at a
 time. It never executes the mutation checker. The normal proof-driver mutation
 mode and the full mutation checker remain reserved for the reviewer.
+[manual-report-mutants.json](manual-report-mutants.json) records all three new
+mutants rejected by assertion, each with only its own named row red. The unbounded
+poll hits the fixture's outer timeout while the wrapper remains stopped. All 27
+finding-148 registrations have refreshed exact diffs and source/mutant digests in
+[mutations.json](mutations.json); execution evidence is current for these three,
+with the other registrations explicitly left for reviewer execution.
+
+[handshake-verification.json](handshake-verification.json) records 14 passing
+selectors: suites 86, 62 (dispatch), 63 (containment), 67 (heartbeat), 80, 81 and
+82 (execution record), serially in ordinary and exact empty gate environments.
+Every gate run uses a fresh HOME in /dev/shm and the specified session bus.
+Each returns the expected partial-run exit 2 with zero failures. These scoped
+checks are not a full gate verdict. Requires.json was regenerated unchanged.
+The Git boundary check passes, all mutation anchors are unique (0 bad), and
+validate.py all exits 0. No protected path changed.
+
+The supplied footprint checker compares origin/main to HEAD and reports 58
+inherited out-of-footprint paths, already present at baseline 1ab79713. The
+repair-only comparison has none, as recorded in
+[handshake-footprint.json](handshake-footprint.json). The spec footprint was not
+expanded to include unrelated inherited work. The alternate path ending in
+scratchpadanchor_check.py does not exist; the supplied scratchpad/anchor_check.py
+was used. The full selftest, gate, mutation checker and load tests were not run,
+following the explicit token and concurrent-gate restrictions.
 
 ## Fast-exit review repair at e1009abc
 

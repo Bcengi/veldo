@@ -1,0 +1,150 @@
+{
+ "control_launch_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+ "gate_environment": {
+  "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "fresh /dev/shm/v148-home-* directory per run",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC",
+  "XDG_RUNTIME_DIR": "/run/user/1000"
+ },
+ "implementation_commit": "a45269eb0e940a14ca555a479b27f8806fab91f3",
+ "runs": [
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 0.0,
+   "suite": "86_veldo_0148_re_land",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 50 passed, 0 failed in 37.77s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 8.737,
+   "suite": "62_veldo_0039_dispatch",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 8.64s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 7.282,
+   "suite": "63_veldo_0040_containment",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 7.19s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 11.392,
+   "suite": "67_veldo_0041_heartbeat",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 11.29s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 10.988,
+   "suite": "80_veldo_0155_claude_baseline",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 10.87s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 2.821,
+   "suite": "81_veldo_0156_codex_baseline",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 2.73s"
+  },
+  {
+   "environment": "ordinary",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 19.161,
+   "suite": "82_veldo_0141_execution_record",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 66 passed, 0 failed in 19.04s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 41.412,
+   "suite": "86_veldo_0148_re_land",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 50 passed, 0 failed in 41.29s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 12.246,
+   "suite": "62_veldo_0039_dispatch",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 12.13s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 10.99,
+   "suite": "63_veldo_0040_containment",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 10.92s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 13.044,
+   "suite": "67_veldo_0041_heartbeat",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 12.96s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 19.406,
+   "suite": "80_veldo_0155_claude_baseline",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 19.32s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 5.025,
+   "suite": "81_veldo_0156_codex_baseline",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 4.91s"
+  },
+  {
+   "environment": "gate",
+   "exit": 2,
+   "failed_rows": [],
+   "passed": true,
+   "seconds": 20.459,
+   "suite": "82_veldo_0141_execution_record",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 66 passed, 0 failed in 20.34s"
+  }
+ ],
+ "schema": "veldo.scoped-verification/v1",
+ "suite_sha256": "10517aca0f667f010efbf5aafeafad597f51768f5911c3408c59ed8b834ff2be"
+}

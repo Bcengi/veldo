@@ -27,43 +27,46 @@
  },
  "mutants": [
   {
-   "by_assertion": null,
+   "by_assertion": true,
    "diff": "proof/VELDO-0148/receiver148-report-wait-unbounded.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
    "mutant_sha256": "88dd7e1eb0af8c6b5336cca21045e7911767fda4afc830308ae86c512eadae49",
    "name": "receiver148-report-wait-unbounded",
-   "named_row_red": null,
+   "named_row_red": true,
    "named_rows": [
     "receiver/report-timeout"
    ],
    "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "static refresh; mutation checker execution reserved for reviewer"
+   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
   },
   {
-   "by_assertion": null,
+   "by_assertion": true,
    "diff": "proof/VELDO-0148/receiver148-late-wrapper-execs.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
    "mutant_sha256": "36f399307c4871629581575ca221d2f4d9d0edb066b1dadc657183cf543bf8ba",
    "name": "receiver148-late-wrapper-execs",
-   "named_row_red": null,
+   "named_row_red": true,
    "named_rows": [
     "receiver/late-wrapper"
    ],
    "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "static refresh; mutation checker execution reserved for reviewer"
+   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
   },
   {
-   "by_assertion": null,
+   "by_assertion": true,
    "diff": "proof/VELDO-0148/receiver148-wrapper-eof-is-timeout.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
    "mutant_sha256": "bcc6a818e967d6a39addf8c6ecf8ec9b7e71cef82e01b94a4d720638a9682a0a",
    "name": "receiver148-wrapper-eof-is-timeout",
-   "named_row_red": null,
+   "named_row_red": true,
    "named_rows": [
     "receiver/wrapper-exited"
    ],
    "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "static refresh; mutation checker execution reserved for reviewer"
+   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
   },
   {
    "by_assertion": null,
@@ -382,7 +385,7 @@
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "All 27 registrations statically refreshed. Mutation checker execution remains reserved for the reviewer.",
+ "status": "All 27 registrations statically refreshed; three report-handshake mutants rejected by assertion in serial suite-86 runs. Full mutation checker execution remains reserved for the reviewer.",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
  "suite_sha256": "10517aca0f667f010efbf5aafeafad597f51768f5911c3408c59ed8b834ff2be"
 }

@@ -9,6 +9,10 @@ every run. Writes proof/VELDO-0148/mutations.json and one exact applied diff per
 
     python3 -B proof/VELDO-0148/drive.py
 
+With `--report-mutants` it applies only the three report-handshake mutations in
+a disposable archive and runs suite 86 serially through its selftest selector.
+This mode reads registrations as syntax and never executes the mutation checker.
+
 With `--wake-only` it applies just the wake no-op by hand to a temporary module
 copy and asserts that only reland/end-wakes-pass is red. This mode never imports
 the mutation checker.
