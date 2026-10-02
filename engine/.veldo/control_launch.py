@@ -1633,12 +1633,17 @@ class Receiver:
                 raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
             # The wrapper reports only after placement has completed. Until then it
             # cannot be reported running, even when it has left the scope or died.
+            # Its startup budget starts before its identity report, hence before
+            # this release. The same bound plus reap time and one second of report
+            # margin is strictly later, even if the wrapper stalls after release.
             poller = select.poll()
             poller.register(setup, select.POLLIN)
             acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
             status = os.read(setup, 1) if acknowledged else b''
             if status != b'1':
-                reason = {b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout'}.get(status, 'heartbeat_report_timeout')
+                reason = ({b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout',
+                           b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')
+                          if acknowledged else 'heartbeat_report_timeout')
                 settled = group.discard(worker)
                 raise C.Refused('spawn_failed:containment:' + reason, settled=settled, group=group.report())
         except BaseException:
@@ -2224,6 +2229,9 @@ def wrap(argv):
         os._exit(127)
     if held is not None:
         C.hold(held)
+    # Start before the identity line that allows the receiver to release us. This
+    # deadline cannot move later when a released wrapper is stopped or frozen.
+    heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS if beat is not None else None
     sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
     sys.stdout.flush()
     if held is not None and not C.released(0):
@@ -2238,9 +2246,6 @@ def wrap(argv):
             if setup is not None:
                 os.write(setup, b'T' if isinstance(error, TimeoutError) else b'0')
             os._exit(125)
-        if setup is not None:
-            os.write(setup, b'1')
-            os.close(setup)
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
@@ -2262,6 +2267,16 @@ def wrap(argv):
             os._exit(WRAPPER_REFUSED)
     # THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156), applied to what this wrapper execs and to nothing else.
     environment = engine_environment(environment)
+    if beat is not None:
+        # Check after all preparation, immediately before success and exec. A
+        # placement that completed after our budget never authorizes an engine.
+        if time.monotonic() >= heartbeat_deadline:
+            if setup is not None:
+                os.write(setup, b'T')
+            os._exit(125)
+        if setup is not None:
+            os.write(setup, b'1')
+            os.close(setup)
     try:
         os.execve(path, argv, environment)
     except OSError:

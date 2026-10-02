@@ -168,7 +168,63 @@ def wake_only():
     assert report['by_assertion'] and report['only_named_row_red']
 
 
+def report_mutants():
+    """Run only the three report regressions' mutants, serially via suite 86.
+
+    Read registrations as syntax, never execute the mutation checker. Each edit
+    lives in a disposable archive of HEAD, never another branch or worktree.
+    """
+    names = {'receiver148-report-wait-unbounded', 'receiver148-late-wrapper-execs',
+             'receiver148-wrapper-eof-is-timeout'}
+    registry = ast.parse((ROOT / 'scripts/check_teeth_mutations.py').read_text())
+    cases = [tuple(ast.literal_eval(arg) for arg in node.args) for node in ast.walk(registry)
+             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+             and node.func.id == 'reland148' and ast.literal_eval(node.args[0]) in names]
+    assert len(cases) == len(names)
+    commit = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    records = []
+    with tempfile.TemporaryDirectory(prefix='v148-report-mutants-') as directory:
+        tree = Path(directory) / 'tree'
+        tree.mkdir()
+        archive = _git_process.run(['git', '-C', str(ROOT), 'archive', commit],
+                                   capture_output=True, check=True).stdout
+        subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
+        for name, module, old, new, rows in cases:
+            target = tree / '.veldo' / module
+            source = target.read_text()
+            assert source == (ROOT / '.veldo' / module).read_text()
+            assert source.count(old) == 1
+            target.write_text(source.replace(old, new))
+            log = Path(directory) / (name + '.log')
+            try:
+                with log.open('w') as output:
+                    proc = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', SUITE[:-3]],
+                                          cwd=tree, stdout=output, stderr=subprocess.STDOUT, timeout=600)
+                lines = log.read_text().splitlines()
+                failed = [line.split('SELFTEST FAIL: ', 1)[1] for line in lines if 'SELFTEST FAIL: ' in line]
+                summary = next((line for line in lines if line.startswith('selftest (PARTIAL')), None)
+                record = dict(name=name, named_rows=list(rows), failed_rows=failed, summary=summary,
+                              exit=proc.returncode, source_sha256=hashlib.sha256(source.encode()).hexdigest(),
+                              mutant_sha256=_sha(target), by_assertion=summary is not None and not any(
+                                  'ran to its end' in line or 'Traceback' in line for line in lines),
+                              only_named_rows_red=failed == [PREFIX + row for row in rows],
+                              details=[line.strip() for line in lines if ' detail:' in line])
+                records.append(record)
+                print(name, summary, flush=True)
+            finally:
+                target.write_text(source)
+    report = dict(schema='veldo.manual-mutation/v1', spec_id='VELDO-0148', commit=commit,
+                  suite='scripts/suites/' + SUITE, suite_sha256=_sha(ROOT / 'scripts/suites' / SUITE),
+                  mutants=records, checker_executed=False)
+    (HERE / 'manual-report-mutants.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    assert all(r['by_assertion'] and r['only_named_rows_red'] for r in records)
+
+
 def main():
+    if sys.argv[1:] == ['--report-mutants']:
+        report_mutants()
+        return
     if sys.argv[1:] == ['--wake-only']:
         wake_only()
         return

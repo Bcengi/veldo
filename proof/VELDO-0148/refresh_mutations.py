@@ -33,19 +33,22 @@ def main():
             assert mutant.count(before) == 1, (name, before)
             mutant = mutant.replace(before, after)
         compile(mutant, module, 'exec')
-        record = dict(previous[name], named_rows=rows, source_sha256=digest(source),
+        rows = list(rows)
+        record = dict(previous.get(name, dict(name=name, module='.veldo/' + module,
+                                             diff='proof/VELDO-0148/%s.diff' % name)),
+                      named_rows=rows, source_sha256=digest(source),
                       mutant_sha256=digest(mutant), by_assertion=None, named_row_red=None,
                       status='static refresh; mutation checker execution reserved for reviewer')
-        assert rows == previous[name]['named_rows'] or name == 'reland148-end-wakes-nothing'
+        assert name not in previous or rows == previous[name]['named_rows']
         (ROOT / record['diff']).write_text(''.join(difflib.unified_diff(
             source.splitlines(keepends=True), mutant.splitlines(keepends=True), n=0,
             fromfile='a/.veldo/' + module, tofile='b/.veldo/' + module)))
         records.append(record)
-    assert len(records) == len(previous) == len({r['name'] for r in records})
+    assert len(records) == len({r['name'] for r in records})
+    assert set(previous) <= {r['name'] for r in records}
     document.update(mutants=records, suite_sha256=digest(
         (ROOT / 'scripts/suites/86_veldo_0148_re_land.py').read_text()),
-        status='All 19 registrations statically refreshed. Only the wake target changed. '
-               'Manual wake rejection is recorded separately in manual-wake.json. '
+        status='All %d registrations statically refreshed. ' % len(records) +
                'Mutation checker execution remains reserved for the reviewer.')
     (HERE / 'mutations.json').write_text(json.dumps(document, indent=1, sort_keys=True) + '\n')
     print('Refreshed %d exact diffs and source/mutant digests; all anchors unique and mutants compile.' % len(records))

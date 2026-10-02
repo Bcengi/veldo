@@ -19,6 +19,40 @@ run the installed launch executable. Another local clone moves the remote before
 publication clone's pre-push hook. Engine output comes from a generated fake; no real model,
 login, external service or real credential is used. Each row reports once.
 
+## Report handshake review repair at 1ab79713
+
+The wrapper starts its five-second startup budget before its identity line, which
+precedes the receiver's release by construction. It checks that budget immediately
+before reporting success and executing the engine. The receiver keeps its bound
+from the same SETUP_SECONDS constant, plus SETTLE_SECONDS and one second for the
+report. A wrapper stalled after release cannot reset its deadline. EOF before a
+report is now heartbeat_wrapper_exited, distinct from heartbeat_report_timeout.
+Only control_launch.py and its byte-identical engine copy change in production.
+No footprint expansion is needed.
+
+Three suite-86 rows drive the real contained receiver and wrapper in disposable
+scopes. The fixture wraps the real release reader and injects a fault only after
+it consumes the receiver's release. Each row checks the fault was reached, the
+named refusal, settled containment and absence of the engine's marker.
+
+| Row | Fault and assertion | Finding 148 falsifier |
+| --- | --- | --- |
+| receiver/report-timeout | SIGSTOP leaves the wrapper unable to answer; the receiver returns heartbeat_report_timeout. An outer timeout becomes an assertion failure. | receiver148-report-wait-unbounded |
+| receiver/late-wrapper | Delay after release exceeds the wrapper budget; heartbeat_timeout is returned and the engine never executes. | receiver148-late-wrapper-execs |
+| receiver/wrapper-exited | Wrapper exits immediately after release; EOF is heartbeat_wrapper_exited. | receiver148-wrapper-eof-is-timeout |
+
+[red-at-1ab79713.json](red-at-1ab79713.json) was collected before the production
+edit. Late-wrapper and wrapper-exited fail by assertion, with no raised row and
+all other rows green. Report-timeout is necessarily green on this baseline: the
+seven-second receiver bound already exists. Its negative proof is the unbounded
+poll mutation, not a fabricated baseline failure. The baseline record was
+committed separately as 6f66e56e.
+
+The proof driver's report-mutants mode reads the three registrations as syntax
+and applies each to a disposable archive, then invokes only suite 86, one at a
+time. It never executes the mutation checker. The normal proof-driver mutation
+mode and the full mutation checker remain reserved for the reviewer.
+
 ## Fast-exit review repair at e1009abc
 
 The heartbeat previously moved itself only after enumerating its inherited file

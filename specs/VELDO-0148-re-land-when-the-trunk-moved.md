@@ -180,8 +180,8 @@ that stop the real wrapper immediately after release, delay it past its startup
 budget, and exit it before the setup report. The read-only baseline replay makes
 late-wrapper and wrapper-exited red by assertion. Report-timeout is a green
 baseline control because that receiver bound already exists; its falsifier is an
-unbounded report poll. The repair will start the wrapper budget before its
-identity report, check it immediately before success and exec, and distinguish
+unbounded report poll. The repair starts the wrapper budget before its
+identity report, checks it immediately before success and exec, and distinguishes
 wrapper EOF from report timeout. All changes fit the existing footprint.
 
 2026-10-02, bounded placement regression repair from 5935c652: the heartbeat

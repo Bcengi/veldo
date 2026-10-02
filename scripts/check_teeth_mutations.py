@@ -9333,6 +9333,16 @@ def cases():
     # row of suite 86, then the seams the rows rest on.
     def reland148(name, module, old, new, rows, also=()):
         add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-report-wait-unbounded', 'control_launch.py',
+              '            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))\n',
+              '            acknowledged = poller.poll()\n', ('receiver/report-timeout',))
+    reland148('receiver148-late-wrapper-execs', 'control_launch.py',
+              '        if time.monotonic() >= heartbeat_deadline:\n',
+              '        if False:\n', ('receiver/late-wrapper',))
+    reland148('receiver148-wrapper-eof-is-timeout', 'control_launch.py',
+              "                           b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')\n",
+              "                           b'': 'heartbeat_report_timeout'}.get(status, 'heartbeat_setup')\n",
+              ('receiver/wrapper-exited',))
     reland148('receiver148-placement-wait-unbounded', 'control_heartbeat.py',
               '            if not poller.poll(int(SETUP_SECONDS * 1000)):\n',
               '            if not poller.poll():\n', ('receiver/placement-timeout',))
