@@ -175,6 +175,13 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, census review repair at 3caa6d1c: Group.retain binds each libsystemd
+function by explicit attribute access and passes the bound function to checked.
+All C signatures, call arguments, cleanup and named errors are preserved. The
+engine copy is byte-identical. VELDO-0169 census/writers fails by assertion on
+the baseline and passes after this production-only binding change; its suite
+selector is 84_veldo_0169_project_handouts. The census is unchanged.
+
 2026-10-02, report-handshake proof complete at a45269eb: all three new falsifiers
 are rejected by assertion, each with only its named suite-86 row red. The manual
 proof mode applies registry edits in a disposable archive and runs the suite-86

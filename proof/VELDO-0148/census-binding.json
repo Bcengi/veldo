@@ -1,0 +1,21 @@
+{
+  "baseline": "3caa6d1c",
+  "suite": "84_veldo_0169_project_handouts",
+  "scope": "Census regression only; partial runs are not a gate verdict.",
+  "red": {
+    "exit": 1,
+    "summary": "selftest (PARTIAL, 1 of 142 suites): 52 passed, 1 failed in 12.67s",
+    "failed_rows": [
+      "VELDO-0169 census/writers"
+    ],
+    "details": [
+      "VELDO-0169 detail: census/writers: control_containment.Group.retain:397 getattr(name) may name a claim or station contract writer: not resolved"
+    ]
+  },
+  "green": {
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 142 suites): 53 passed, 0 failed in 12.30s",
+    "failed_rows": [],
+    "details": []
+  }
+}

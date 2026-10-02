@@ -383,35 +383,34 @@ class Group:
 
         lib = ct.CDLL('libsystemd.so.0')
         pointer = ct.c_void_p
-        signatures = {
-            'sd_bus_new': ([ct.POINTER(pointer)], ct.c_int),
-            'sd_bus_set_address': ([pointer, ct.c_char_p], ct.c_int),
-            'sd_bus_set_bus_client': ([pointer, ct.c_int], ct.c_int),
-            'sd_bus_set_method_call_timeout': ([pointer, ct.c_uint64], ct.c_int),
-            'sd_bus_start': ([pointer], ct.c_int),
-            'sd_bus_call_method': ([pointer, ct.c_char_p, ct.c_char_p, ct.c_char_p,
-                                    ct.c_char_p, pointer, pointer, ct.c_char_p], ct.c_int),
-            'sd_bus_flush_close_unref': ([pointer], pointer),
-        }
-        for name, (arguments, result) in signatures.items():
-            function = getattr(lib, name)
+        signatures = (
+            (lib.sd_bus_new, [ct.POINTER(pointer)], ct.c_int),
+            (lib.sd_bus_set_address, [pointer, ct.c_char_p], ct.c_int),
+            (lib.sd_bus_set_bus_client, [pointer, ct.c_int], ct.c_int),
+            (lib.sd_bus_set_method_call_timeout, [pointer, ct.c_uint64], ct.c_int),
+            (lib.sd_bus_start, [pointer], ct.c_int),
+            (lib.sd_bus_call_method, [pointer, ct.c_char_p, ct.c_char_p, ct.c_char_p,
+                                     ct.c_char_p, pointer, pointer, ct.c_char_p], ct.c_int),
+            (lib.sd_bus_flush_close_unref, [pointer], pointer),
+        )
+        for function, arguments, result in signatures:
             function.argtypes, function.restype = arguments, result
 
-        def checked(name, *args):
-            result = getattr(lib, name)(*args)
+        def checked(function, *args):
+            result = function(*args)
             if result < 0:
-                raise OSError(-result, name)
+                raise OSError(-result, function.__name__)
 
         bus = pointer()
         try:
-            checked('sd_bus_new', ct.byref(bus))
+            checked(lib.sd_bus_new, ct.byref(bus))
             address = self.environment.get('DBUS_SESSION_BUS_ADDRESS') or (
                 'unix:path=' + self.environment['XDG_RUNTIME_DIR'] + '/bus')
-            checked('sd_bus_set_address', bus, address.encode())
-            checked('sd_bus_set_bus_client', bus, 1)
-            checked('sd_bus_set_method_call_timeout', bus, round(TOOL_SECONDS * 10 ** 6))
-            checked('sd_bus_start', bus)
-            checked('sd_bus_call_method', bus, b'org.freedesktop.systemd1', b'/org/freedesktop/systemd1',
+            checked(lib.sd_bus_set_address, bus, address.encode())
+            checked(lib.sd_bus_set_bus_client, bus, 1)
+            checked(lib.sd_bus_set_method_call_timeout, bus, round(TOOL_SECONDS * 10 ** 6))
+            checked(lib.sd_bus_start, bus)
+            checked(lib.sd_bus_call_method, bus, b'org.freedesktop.systemd1', b'/org/freedesktop/systemd1',
                     b'org.freedesktop.systemd1.Manager', b'RefUnit', None, None, b's',
                     ct.c_char_p(self.unit.encode()))
         except BaseException:

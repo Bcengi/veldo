@@ -19,6 +19,16 @@ run the installed launch executable. Another local clone moves the remote before
 publication clone's pre-push hook. Engine output comes from a generated fake; no real model,
 login, external service or real credential is used. Each row reports once.
 
+## Census binding review repair at 3caa6d1c
+
+Group.retain now binds the seven libsystemd functions through explicit attributes
+and passes bound functions to checked. Argument types, return types, bus calls,
+cleanup and OSError names are preserved. Both containment copies are identical.
+The census remains unchanged. [census-binding.json](census-binding.json) records
+the baseline assertion failure in VELDO-0169 census/writers and its passing
+rerun in the empty gate environment. The matching suite selector is
+84_veldo_0169_project_handouts. These scoped runs are not a full gate verdict.
+
 ## Report handshake review repair at 1ab79713
 
 The wrapper starts its five-second startup budget before its identity line, which
