@@ -72,7 +72,9 @@ closed-role assertion now checks invalid names and still rejects tool fields.
 Its specification criteria and all specification statuses remain unchanged.
 Production changes stay in `control_team.py`, whose engine and installed copies
 are byte-identical. The existing scaffold already installs both the team service
-and capability service.
+and capability service. The production reader census found the objective service
+reading the accepted PM workers and the API model registry exposing the team record;
+both consume the added fields without a production change.
 
 The supplied `scratchpadanchor_check.py` path does not exist. The supplied
 `scratchpad/anchor_check.py` checker is used and its result is retained instead.
