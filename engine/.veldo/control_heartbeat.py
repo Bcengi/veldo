@@ -62,6 +62,7 @@ OPERATION = 'dispatch_heartbeat'
 GROUP = 'veldo-wrapper'
 CGROUP = Path('/sys/fs/cgroup')
 SETTLE_SECONDS = 1.0
+SETUP_SECONDS = 5.0
 LINE_BYTES = 512
 KEEP = 64
 
@@ -105,7 +106,20 @@ def start(fd, seconds):
                 status = 0
             finally:
                 os._exit(status)
-        _, status = os.waitpid(first, 0)
+        child = os.pidfd_open(first)
+        try:
+            poller = select.poll()
+            poller.register(child, select.POLLIN)
+            if not poller.poll(int(SETUP_SECONDS * 1000)):
+                # The child may still be outside the heartbeat group. Address this
+                # exact child, then bound even its reap; never exec after a timeout.
+                signal.pidfd_send_signal(child, signal.SIGKILL)
+                poller.poll(int(SETTLE_SECONDS * 1000))
+                os.waitpid(first, os.WNOHANG)
+                raise TimeoutError('heartbeat placement timed out')
+            _, status = os.waitpid(first, os.WNOHANG)
+        finally:
+            os.close(child)
         if status != 0:
             raise OSError('heartbeat group setup failed')
     finally:

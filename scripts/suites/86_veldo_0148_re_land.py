@@ -61,7 +61,8 @@ def _v148_suite():
             'reland/never-forced', 'reland/end-wakes-pass', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
             'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines',
-            'receiver/normal-exit', 'receiver/settled-scope', 'receiver/fast-exit')
+            'receiver/normal-exit', 'receiver/settled-scope', 'receiver/fast-exit',
+            'receiver/placement-error', 'receiver/placement-timeout')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1320,6 +1321,64 @@ sys.exit(chosen['code'])
                       and 0 < dig(row, 'supervision', 'scope_timestamps', 'ActiveEnterTimestampMonotonic')
                       <= dig(row, 'supervision', 'scope_timestamps', 'InactiveEnterTimestampMonotonic')
                       for row in completed))
+
+        # Exercise the real contained-launch interface with a placement destination
+        # that is absent or never accepts its writer. Each probe owns a fresh module
+        # tree and scope; its outer timeout becomes a row assertion, never a driver hang.
+        for fault in ('error', 'timeout'):
+            row = 'receiver/placement-' + fault
+            with region(row):
+                probe = base / ('placement-' + fault)
+                shutil.copytree(mods, probe)
+                for module in ('control_launch.py', 'control_containment.py', 'control_heartbeat.py'):
+                    shutil.copyfile(PRODUCTION[module], probe / module)
+                destination = probe / 'never-moved'
+                destination.mkdir()
+                if fault == 'timeout':
+                    os.mkfifo(destination / 'cgroup.procs')
+                with (probe / 'control_heartbeat.py').open('a') as hook:
+                    hook.write("\n_placement_parent = os.getpid()\n_placement_path = group_path\n"
+                               "def group_path(cgroup):\n"
+                               "    return _placement_path(cgroup) if os.getpid() == _placement_parent else Path(%r)\n"
+                               % str(destination if fault == 'timeout' else destination / 'absent'))
+                marker = probe / 'engine-ran'
+                driver = probe / 'probe.py'
+                driver.write_text("""
+import importlib.util, json, os, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('placement_launch', Path(__file__).with_name('control_launch.py'))
+L = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(L)
+receiver = L.Receiver.__new__(L.Receiver)
+receiver.profile = json.loads(sys.argv[1])
+receiver.qualification = None
+receiver.config = {}
+worker = None
+try:
+    worker = receiver._contained(sys.argv[2], [sys.executable, '-c',
+        'from pathlib import Path; Path(%r).write_text("ran")' % sys.argv[3]], dict(os.environ))
+    result = {'refusal': None}
+except L.C.Refused as error:
+    result = {'refusal': error.code, 'settled': error.settled, 'group': error.group}
+finally:
+    if worker is not None:
+        worker.group.discard(worker)
+print(json.dumps(result))
+""")
+                child = subprocess.Popen([sys.executable, '-B', str(driver), json.dumps(PROFILE),
+                                          'placement-' + run_id + '-' + fault, str(marker)],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+                try:
+                    output, errors = child.communicate(timeout=20)
+                    result = json.loads(output) if child.returncode == 0 else {'error': errors.decode()[-500:]}
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait(timeout=5)
+                    result = {'row_timeout': True}
+                check(row, 'bounded receiver refusal before engine exec: %s' % result,
+                      result.get('refusal') == 'spawn_failed:containment:heartbeat_' +
+                      ('setup' if fault == 'error' else 'timeout')
+                      and result.get('settled') is True and not marker.exists())
 
         with region('receiver/fast-exit'):
             held = [json.loads(path.read_text()).get('held_heartbeat')

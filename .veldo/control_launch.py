@@ -1592,16 +1592,19 @@ class Receiver:
         interval, window = self._heartbeat()
         # The heartbeat channel (VELDO-0041): the wrapper's heartbeat writes it, this receiver reads it.
         channel, beat = os.pipe()
-        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(group.held()),
+        setup, ready = os.pipe()
+        held = dict(group.held(), heartbeat_setup=ready)
+        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(held),
                    '--heartbeat', str(beat), repr(float(interval))] + argv
         try:
             with group.admission():
                 try:
                     worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
-                                              close_fds=True, pass_fds=(beat,))
+                                              close_fds=True, pass_fds=(beat, ready))
                 finally:
                     os.close(beat)
+                    os.close(ready)
                 worker.group = group
                 try:
                     reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
@@ -1628,9 +1631,21 @@ class Receiver:
             except OSError:
                 settled = group.discard(worker)
                 raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
+            # The wrapper reports only after placement has completed. Until then it
+            # cannot be reported running, even when it has left the scope or died.
+            poller = select.poll()
+            poller.register(setup, select.POLLIN)
+            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
+            status = os.read(setup, 1) if acknowledged else b''
+            if status != b'1':
+                reason = {b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout'}.get(status, 'heartbeat_report_timeout')
+                settled = group.discard(worker)
+                raise C.Refused('spawn_failed:containment:' + reason, settled=settled, group=group.report())
         except BaseException:
             os.close(channel)
             raise
+        finally:
+            os.close(setup)
         worker.heartbeat = HB.Watch(channel, interval, window, time.monotonic())
         return worker
 
@@ -2216,7 +2231,16 @@ def wrap(argv):
     if beat is not None:
         # Released: the heartbeat starts now, in a process of its own, and this process closes the
         # channel before it becomes the engine, so liveness never waits on anything the engine does.
-        HB.start(*beat)
+        setup = held.get('heartbeat_setup') if held is not None else None
+        try:
+            HB.start(*beat)
+        except OSError as error:
+            if setup is not None:
+                os.write(setup, b'T' if isinstance(error, TimeoutError) else b'0')
+            os._exit(125)
+        if setup is not None:
+            os.write(setup, b'1')
+            os.close(setup)
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)

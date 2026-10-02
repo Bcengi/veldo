@@ -9333,6 +9333,12 @@ def cases():
     # row of suite 86, then the seams the rows rest on.
     def reland148(name, module, old, new, rows, also=()):
         add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-placement-wait-unbounded', 'control_heartbeat.py',
+              '            if not poller.poll(int(SETUP_SECONDS * 1000)):\n',
+              '            if not poller.poll():\n', ('receiver/placement-timeout',))
+    reland148('receiver148-placement-report-ignored', 'control_launch.py',
+              "            if status != b'1':\n", "            if False:\n",
+              ('receiver/placement-error', 'receiver/placement-timeout'))
     reland148('receiver148-heartbeat-moves-after-exec', 'control_heartbeat.py',
               "                (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))\n", "",
               ('receiver/fast-exit',), also=((

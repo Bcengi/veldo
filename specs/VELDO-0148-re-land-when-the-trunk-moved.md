@@ -175,6 +175,20 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, bounded placement regression repair from 5935c652: the heartbeat
+placement child now has a five-second pidfd wait and a bounded kill/reap. The
+wrapper reports setup success, failure or timeout on a private pipe; the receiver
+bounds that report wait and refuses containment before reporting a running engine.
+The prior blocking waitpid could wait forever on a stalled move. A failed move
+also used to leave the receiver reporting accepted, making containment tests wait
+for engine markers that could never exist. The dedicated-group mutant exposed
+that missing refusal. Placement still precedes engine exec, preserving fast exits.
+Suite 86 adds production receiver probes for an absent destination and a FIFO
+that never accepts the placement writer, each with its own outer timeout reported
+as an assertion. Finding 148 adds falsifiers for the unbounded placement wait and
+an ignored setup result. All files fit the existing footprint. Validation follows.
+
+
 2026-10-02, fast-exit proof complete: implementation 58dca632 passes suites 86,
 63, 67, 80, 81 and 62 serially in both ordinary and exact empty gate environments,
 12 selectors with zero failures and expected partial-run exit 2. Suite 86 has
