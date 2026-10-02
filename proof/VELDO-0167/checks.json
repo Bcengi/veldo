@@ -1,148 +1,260 @@
 {
   "schema": "veldo.scoped-checks/v1",
   "spec_id": "VELDO-0167",
-  "implementation_commit": "a2f363bb",
+  "implementation_commit": "d7cbaec7d6f147b483a2302ac034daef975fcdd9",
   "gate_run": false,
   "whole_selftest_run": false,
-  "reason": "Builder scope restriction; reviewer owns full gate.",
-  "suite_exit_note": "selftest returns 2 for a successful partial run; all summaries report zero failed.",
+  "global_mutation_cli_run": false,
+  "reason": "Owner token rules reserve the gate, whole selftest and global mutation CLI to the reviewer.",
+  "suite_exit_note": "Exit 2 is successful partial verification, never a gate stamp.",
   "suites": [
     {
       "environment": "ordinary",
+      "suite": "91_veldo_0167_setup_records",
+      "exit_code": 2,
+      "seconds": 16.1,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 34 passed, 0 failed in 15.94s",
+      "passed": true
+    },
+    {
+      "environment": "ordinary",
+      "suite": "86_veldo_0189_engine_upgrade",
+      "exit_code": 2,
+      "seconds": 71.19,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 58 passed, 0 failed in 71.03s",
+      "passed": true
+    },
+    {
+      "environment": "ordinary",
+      "suite": "85_veldo_0171_setup_api",
+      "exit_code": 2,
+      "seconds": 12.54,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 12.37s",
+      "passed": true
+    },
+    {
+      "environment": "ordinary",
       "suite": "73_veldo_0139_factory_setup",
       "exit_code": 2,
-      "seconds": 25.09,
+      "seconds": 28.54,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 43 passed, 0 failed in 28.43s",
+      "passed": true
+    },
+    {
+      "environment": "ordinary",
+      "suite": "71_veldo_0130_api",
+      "exit_code": 2,
+      "seconds": 22.86,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 68 passed, 0 failed in 22.75s",
       "passed": true
     },
     {
       "environment": "ordinary",
       "suite": "82_veldo_0141_execution_record",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 19.04
+      "seconds": 19.35,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 66 passed, 0 failed in 19.21s",
+      "passed": true
     },
     {
       "environment": "ordinary",
-      "suite": "71_veldo_0130_api",
+      "suite": "82_veldo_0144_mcp_catalog",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 20.12
+      "seconds": 30.97,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 55 passed, 0 failed in 30.87s",
+      "passed": true
     },
     {
       "environment": "ordinary",
-      "suite": "66_veldo_0047_authority",
+      "suite": "74_veldo_0140_standing_delegation",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 15.4
+      "seconds": 12.54,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 35 passed, 0 failed in 12.40s",
+      "passed": true
     },
     {
       "environment": "ordinary",
-      "suite": "62_veldo_0039_dispatch",
+      "suite": "86_veldo_0186_setup_assets",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 9.01
+      "seconds": 16.14,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 37 passed, 0 failed in 16.04s",
+      "passed": true
     },
     {
       "environment": "ordinary",
-      "suite": "26_veldo_0009_install_stamp",
+      "suite": "86_veldo_0168_text",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 0.43
+      "seconds": 3.12,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 52 passed, 0 failed in 3.03s",
+      "passed": true
     },
     {
       "environment": "gate",
       "suite": "91_veldo_0167_setup_records",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 6.89
+      "seconds": 15.04,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 34 passed, 0 failed in 14.87s",
+      "passed": true
+    },
+    {
+      "environment": "gate",
+      "suite": "86_veldo_0189_engine_upgrade",
+      "exit_code": 2,
+      "seconds": 74.64,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 58 passed, 0 failed in 74.50s",
+      "passed": true
     },
     {
       "environment": "gate",
       "suite": "85_veldo_0171_setup_api",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 10.92
+      "seconds": 11.99,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 11.84s",
+      "passed": true
     },
     {
       "environment": "gate",
       "suite": "73_veldo_0139_factory_setup",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 36.41
-    },
-    {
-      "environment": "gate",
-      "suite": "82_veldo_0141_execution_record",
-      "exit_code": 2,
-      "passed": true,
-      "seconds": 20.31
+      "seconds": 40.85,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 43 passed, 0 failed in 40.75s",
+      "passed": true
     },
     {
       "environment": "gate",
       "suite": "71_veldo_0130_api",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 27.96
+      "seconds": 32.31,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 68 passed, 0 failed in 32.20s",
+      "passed": true
     },
     {
       "environment": "gate",
-      "suite": "66_veldo_0047_authority",
+      "suite": "82_veldo_0141_execution_record",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 15.28
+      "seconds": 21.34,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 66 passed, 0 failed in 21.23s",
+      "passed": true
     },
     {
       "environment": "gate",
-      "suite": "62_veldo_0039_dispatch",
+      "suite": "82_veldo_0144_mcp_catalog",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 11.9
+      "seconds": 55.62,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 55 passed, 0 failed in 55.53s",
+      "passed": true
     },
     {
       "environment": "gate",
-      "suite": "26_veldo_0009_install_stamp",
+      "suite": "74_veldo_0140_standing_delegation",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 0.4
+      "seconds": 14.51,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 35 passed, 0 failed in 14.37s",
+      "passed": true
     },
     {
-      "environment": "ordinary",
-      "suite": "91_veldo_0167_setup_records",
+      "environment": "gate",
+      "suite": "86_veldo_0186_setup_assets",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 6.8
+      "seconds": 17.5,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 37 passed, 0 failed in 17.39s",
+      "passed": true
     },
     {
-      "environment": "ordinary",
-      "suite": "85_veldo_0171_setup_api",
+      "environment": "gate",
+      "suite": "86_veldo_0168_text",
       "exit_code": 2,
-      "passed": true,
-      "seconds": 11.85
+      "seconds": 3.77,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 52 passed, 0 failed in 3.66s",
+      "passed": true
     }
   ],
-  "checks": [
-    {
-      "name": "git-boundary",
-      "exit_code": 0,
-      "passed": true
-    },
+  "static": [
     {
       "name": "footprint",
+      "command": [
+        "python3",
+        "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+        "VELDO-0167"
+      ],
       "exit_code": 0,
       "passed": true
     },
     {
       "name": "anchors",
+      "command": [
+        "python3",
+        "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+      ],
       "exit_code": 0,
       "passed": true
     },
     {
-      "name": "validate",
+      "name": "requested_anchor_path",
+      "command": [
+        "python3",
+        "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpadanchor_check.py"
+      ],
+      "exit_code": 2,
+      "passed": false
+    },
+    {
+      "name": "contracts",
+      "command": [
+        "python3",
+        ".veldo/validate.py",
+        "all"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "git_boundary",
+      "command": [
+        "python3",
+        "scripts/check_git_boundary.py"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "diff_whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
       "exit_code": 0,
       "passed": true
     }
   ],
-  "unavailable": [
-    "The alternate scratchpadanchor_check.py path does not exist; scratchpad/anchor_check.py is available."
+  "source_sha256": {
+    ".veldo/control_factory_setup.py": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e",
+    ".veldo/control_factory_setup_records.py": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba",
+    ".veldo/control_service_api.py": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
+  },
+  "engine_copies_equal": true,
+  "limitation": "The requested scratchpadanchor_check.py does not exist; scratchpad/anchor_check.py passed with 0 bad anchors.",
+  "mutations": {
+    "driver": "proof/VELDO-0167/drive.py",
+    "registry_finding": 167,
+    "count": 15,
+    "all_named_rows_red": true,
+    "all_by_assertion": true,
+    "controls_green": true,
+    "names_globally_unique": true,
+    "report": "proof/VELDO-0167/mutations.json"
+  },
+  "red_records": [
+    {
+      "commit": "a0b70287",
+      "assertion_failures": 5,
+      "report": "proof/VELDO-0167/red-at-a0b70287.json"
+    },
+    {
+      "commit": "f1e1abb9",
+      "assertion_failures": 8,
+      "report": "proof/VELDO-0167/red-at-f1e1abb9.json"
+    }
   ]
 }

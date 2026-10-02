@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_records.py
++++ b/.veldo/control_factory_setup_records.py
+@@ -85 +85 @@
+-                expected[key] = held[key]
++                expected[key] = str(Path(installed['store_path']).parent / 'runs') if key == 'runs' else held[key]

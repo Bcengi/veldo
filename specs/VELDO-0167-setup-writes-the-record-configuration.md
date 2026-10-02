@@ -189,3 +189,11 @@ accepted without counting a refused request; record deliveries and drops have se
 An engine upgrade includes API record configuration in its transaction before restarting and
 reports no redundant restart. Suite 91 adds historical-engine, SIGKILL, counter and restart rows,
 with distinct finding 167 falsifiers. All changes stay within the existing footprint.
+
+2026-10-02, review proof: all eight behavior rows fail by assertion at f1e1abb9; the five
+review rows fail at a0b70287. All fifteen finding 167 mutations fail on their named rows
+by assertion with green controls. Ten scoped suites pass individually in both the ordinary
+and clean gate environments, including 91, 86 engine upgrade and 85. Contract, footprint,
+anchor and Git boundary checks pass. The alternate requested scratchpadanchor_check.py
+path is absent; scratchpad/anchor_check.py reports zero bad anchors. The owner reserves
+the gate, whole selftest and global mutation CLI for the reviewer. No gate stamp is claimed.

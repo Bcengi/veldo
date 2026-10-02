@@ -1,0 +1,92 @@
+{
+ "by_assertion": true,
+ "commit": "a0b702877dd91224d47bda8154bf9f66aa3b26d8",
+ "details": [
+  "VELDO-0167 older-engine-host detail: older engine rerun succeeds: invalid_input:state_root:differs:/dev/shm/b171-mcznjkeh/install-old/597c8530f30f05c8/config/receiver-27b2719acdf715d4.json",
+  "VELDO-0167 older-engine-host detail: engine and records keys added",
+  "VELDO-0167 interrupted-record-write detail: later rerun succeeds: FileExistsError:stale-record-temporary",
+  "VELDO-0167 hints-without-api detail: valid hint is accepted with no API",
+  "VELDO-0167 hints-without-api detail: no refused request counted",
+  "VELDO-0167 record-hint-counts detail: record delivery and drop counted separately",
+  "VELDO-0167 record-hint-counts detail: journal counts stay separate",
+  "VELDO-0167 upgrade-restart-answer detail: record configuration is ready at the single restart",
+  "VELDO-0167 upgrade-restart-answer detail: answer requires no redundant restart: the service reads its new record configuration on restart: systemctl --user restart veldo-authority-13d73dd432dcebe8.service"
+ ],
+ "failed_rows": [
+  "VELDO-0167 older-engine-host",
+  "VELDO-0167 interrupted-record-write",
+  "VELDO-0167 hints-without-api",
+  "VELDO-0167 record-hint-counts",
+  "VELDO-0167 upgrade-restart-answer"
+ ],
+ "modules": {
+  ".veldo/control_execution_record.py": {
+   "at_commit": "74c6fad9e9d58212a55111bbe6a417d0de4852f70996c372663e8cde77f2503b",
+   "now": "74c6fad9e9d58212a55111bbe6a417d0de4852f70996c372663e8cde77f2503b"
+  },
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e",
+   "now": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e"
+  },
+  ".veldo/control_factory_setup_records.py": {
+   "at_commit": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5",
+   "now": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e",
+   "now": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "f187362587b7794b50a47df5c27de6377bd717ba0129d72fb32cb57cbb29b4e6",
+   "now": "f187362587b7794b50a47df5c27de6377bd717ba0129d72fb32cb57cbb29b4e6"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294",
+   "now": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "08dfcffbc86ff2abc8ba8cdf6b7f787f1ed957563c33b9157175da7bccfbcc03",
+   "now": "08dfcffbc86ff2abc8ba8cdf6b7f787f1ed957563c33b9157175da7bccfbcc03"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0167 installed-record",
+   true
+  ],
+  [
+   "VELDO-0167 late-subscriber",
+   true
+  ],
+  [
+   "VELDO-0167 older-host",
+   true
+  ],
+  [
+   "VELDO-0167 older-engine-host",
+   false
+  ],
+  [
+   "VELDO-0167 interrupted-record-write",
+   false
+  ],
+  [
+   "VELDO-0167 hints-without-api",
+   false
+  ],
+  [
+   "VELDO-0167 record-hint-counts",
+   false
+  ],
+  [
+   "VELDO-0167 upgrade-restart-answer",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 16.082,
+ "spec_id": "VELDO-0167",
+ "suite": "scripts/suites/91_veldo_0167_setup_records.py",
+ "tree": "git archive a0b702877dd91224d47bda8154bf9f66aa3b26d8, unchanged; the current suite file run against it"
+}

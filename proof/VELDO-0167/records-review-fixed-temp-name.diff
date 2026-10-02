@@ -1,0 +1,6 @@
+--- a/.veldo/control_factory_setup_records.py
++++ b/.veldo/control_factory_setup_records.py
+@@ -110 +110,2 @@
+-            fd, temporary = tempfile.mkstemp(prefix=Path(path).name + '.records-', dir=Path(path).parent)
++            temporary = str(path) + '.records-new'
++            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -346 +346 @@
+-        self.counts['dropped' if record_hint is None else 'record_dropped'] += len(dropped)
++        self.counts['dropped'] += len(dropped)

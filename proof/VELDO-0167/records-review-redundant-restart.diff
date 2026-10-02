@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -957 +957 @@
+-        if running and states['installed_service_config'] == 'upgrade' and upgraded.get('restart') != 'restarted':
++        if running and states['installed_service_config'] == 'upgrade':

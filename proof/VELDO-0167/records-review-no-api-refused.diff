@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -406 +406 @@
+-            return {'accepted': True, 'sent': 0, 'dropped': 0}
++            return {'accepted': False, 'reason': 'unavailable_service:api'}

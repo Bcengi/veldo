@@ -1,5 +1,5 @@
 --- a/.veldo/control_factory_setup_records.py
 +++ b/.veldo/control_factory_setup_records.py
-@@ -29 +29 @@
+@@ -30 +30 @@
 -    return {'records': str(Path(root) / 'records'), 'record_hint_service': socket}
 +    return {'records': str(Path(root) / 'records'), 'record_hints': []}

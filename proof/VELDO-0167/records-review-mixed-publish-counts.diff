@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -345 +345 @@
+-        self.counts['published' if record_hint is None else 'record_published'] += sent
++        self.counts['published'] += sent

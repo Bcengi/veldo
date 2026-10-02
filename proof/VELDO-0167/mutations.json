@@ -17,9 +17,29 @@
    [
     "VELDO-0167 older-host",
     true
+   ],
+   [
+    "VELDO-0167 older-engine-host",
+    true
+   ],
+   [
+    "VELDO-0167 interrupted-record-write",
+    true
+   ],
+   [
+    "VELDO-0167 hints-without-api",
+    true
+   ],
+   [
+    "VELDO-0167 record-hint-counts",
+    true
+   ],
+   [
+    "VELDO-0167 upgrade-restart-answer",
+    true
    ]
   ],
-  "seconds": 6.91
+  "seconds": 14.46
  },
  "controls_green": true,
  "mutants": [
@@ -32,15 +52,17 @@
     "VELDO-0167 installed-record detail: installed API serves lines: {'error': 'unavailable_service', 'refusal': 'unavailable_service:records'}",
     "VELDO-0167 older-host detail: api-service.json adds keys",
     "VELDO-0167 older-host detail: api-service.json adds keys",
-    "VELDO-0167 older-host detail: running configuration upgrade names the restart"
+    "VELDO-0167 older-host detail: running configuration upgrade names the restart",
+    "VELDO-0167 upgrade-restart-answer detail: record configuration is ready at the single restart"
    ],
    "diff": "proof/VELDO-0167/records-api-key-omitted.diff",
    "failed_rows": [
     "VELDO-0167 installed-record",
-    "VELDO-0167 older-host"
+    "VELDO-0167 older-host",
+    "VELDO-0167 upgrade-restart-answer"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "cc62d7c4e83a68b23835e23c7c34b52b959885fb5dc5ecfe54dea7e90f680f82",
+   "mutant_sha256": "8caf43c6bd3a1af51c48865a9b08550c82312a396bd90aaf1a7107b593931aee",
    "name": "records-api-key-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -59,10 +81,30 @@
     [
      "VELDO-0167 older-host",
      false
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     false
     ]
    ],
-   "seconds": 6.889,
-   "source_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e"
+   "seconds": 15.988,
+   "source_sha256": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e"
   },
   {
    "by_assertion": true,
@@ -70,15 +112,17 @@
     "VELDO-0167 late-subscriber detail: receiver names service, no subscriber registry or fixed list",
     "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
     "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
-    "VELDO-0167 older-host detail: receiver-e6c513b2e785d614.json adds keys"
+    "VELDO-0167 older-host detail: receiver-62862b204cacbb13.json adds keys",
+    "VELDO-0167 older-engine-host detail: engine and records keys added"
    ],
    "diff": "proof/VELDO-0167/records-fixed-subscriber-list.diff",
    "failed_rows": [
     "VELDO-0167 late-subscriber",
-    "VELDO-0167 older-host"
+    "VELDO-0167 older-host",
+    "VELDO-0167 older-engine-host"
    ],
    "module": ".veldo/control_factory_setup_records.py",
-   "mutant_sha256": "7ae2cbc3e0e17137e88c831c9778a04ecf5855d9d8042edf80c7fc9cb0ab9f4f",
+   "mutant_sha256": "8dbaea472abdfecf79bb61fdf4d9f24edf1b7f0806bc14c327acf39f3126abbd",
    "name": "records-fixed-subscriber-list",
    "named_row_red": true,
    "named_rows": [
@@ -97,26 +141,53 @@
     [
      "VELDO-0167 older-host",
      false
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     false
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 14.903,
-   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+   "seconds": 23.529,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
     "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
-    "VELDO-0167 older-host detail: receiver-3dc1648a4591a7d7.json adds keys",
-    "VELDO-0167 older-host detail: names differing receiver-3dc1648a4591a7d7.json"
+    "VELDO-0167 older-host detail: receiver-887d86e534ce9332.json adds keys",
+    "VELDO-0167 older-host detail: names differing receiver-887d86e534ce9332.json",
+    "VELDO-0167 older-host detail: names differing receiver-887d86e534ce9332.json",
+    "VELDO-0167 older-engine-host detail: engine and records keys added",
+    "VELDO-0167 interrupted-record-write detail: killed after temp open and before replace",
+    "VELDO-0167 interrupted-record-write detail: kill left a private temporary file",
+    "VELDO-0167 interrupted-record-write detail: later rerun succeeds: None"
    ],
    "diff": "proof/VELDO-0167/records-existing-receiver-skipped.diff",
    "failed_rows": [
     "VELDO-0167 late-subscriber",
-    "VELDO-0167 older-host"
+    "VELDO-0167 older-host",
+    "VELDO-0167 older-engine-host",
+    "VELDO-0167 interrupted-record-write"
    ],
    "module": ".veldo/control_factory_setup_records.py",
-   "mutant_sha256": "e16493775481e038cdbcc4e6cc4d41116dc50fcec74619a965f9b5103f2da175",
+   "mutant_sha256": "8b014f86516813dbf44075d015bc53ae1126f4dc141b7f350d90debddc0ec328",
    "name": "records-existing-receiver-skipped",
    "named_row_red": true,
    "named_rows": [
@@ -135,23 +206,46 @@
     [
      "VELDO-0167 older-host",
      false
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     false
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     false
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 14.936,
-   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+   "seconds": 24.502,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
   },
   {
    "by_assertion": true,
    "details": [
     "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
-    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines"
+    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
+    "VELDO-0167 record-hint-counts detail: record delivery and drop counted separately",
+    "VELDO-0167 record-hint-counts detail: journal counts stay separate"
    ],
    "diff": "proof/VELDO-0167/records-fanout-first-only.diff",
    "failed_rows": [
-    "VELDO-0167 late-subscriber"
+    "VELDO-0167 late-subscriber",
+    "VELDO-0167 record-hint-counts"
    ],
    "module": ".veldo/control_service_api.py",
-   "mutant_sha256": "10c4c503ddf2712cb5c52dca11c153a61e05d98fdb5f4b713be22e9cdebd1e46",
+   "mutant_sha256": "4d63629bb6a0df98993d25d0f5035a7ff27220edf5cb995c4ef9a6044512ada9",
    "name": "records-fanout-first-only",
    "named_row_red": true,
    "named_rows": [
@@ -170,10 +264,30 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     false
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 14.898,
-   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+   "seconds": 23.03,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
   },
   {
    "by_assertion": true,
@@ -185,7 +299,7 @@
     "VELDO-0167 late-subscriber"
    ],
    "module": ".veldo/control_service_api.py",
-   "mutant_sha256": "9813f15b10f4ff464bf61feea2fa9eea21c9779a1025f24f7f359c9758a1b622",
+   "mutant_sha256": "2b0104da383194c097a6ad6a8d0e15f2c56b4e4ce0beb4105d4b1e4ccad4d462",
    "name": "records-service-number-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -204,10 +318,30 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 7.9,
-   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+   "seconds": 17.087,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
   },
   {
    "by_assertion": true,
@@ -239,23 +373,44 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 14.893,
+   "seconds": 23.013,
    "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0167 older-host detail: names differing receiver-f8090b5a449bc47a.json",
-    "VELDO-0167 older-host detail: names differing api-service.json"
+    "VELDO-0167 older-host detail: names differing receiver-99ffb33376f9a347.json",
+    "VELDO-0167 older-host detail: names differing api-service.json",
+    "VELDO-0167 older-host detail: names differing receiver-99ffb33376f9a347.json"
    ],
    "diff": "proof/VELDO-0167/records-rerun-difference-accepted.diff",
    "failed_rows": [
     "VELDO-0167 older-host"
    ],
    "module": ".veldo/control_factory_setup_records.py",
-   "mutant_sha256": "b5cfe880128d0d9cc7774bed11021877bf376d23afce57c8ce17c8e39bedcc76",
+   "mutant_sha256": "a158b51c7a649e5fd9689a6000385437cbc2bd0302988964f6ecf5579f0bb4ef",
    "name": "records-rerun-difference-accepted",
    "named_row_red": true,
    "named_rows": [
@@ -274,15 +429,478 @@
     [
      "VELDO-0167 older-host",
      false
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 7.373,
-   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+   "seconds": 15.579,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 upgrade-restart-answer detail: record configuration is ready at the single restart"
+   ],
+   "diff": "proof/VELDO-0167/records-review-config-after-restart.diff",
+   "failed_rows": [
+    "VELDO-0167 upgrade-restart-answer"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "ae142022b55b72c03572b220f36b268e5c5de16ccfb8fa0fc3316e1f19808202",
+   "name": "records-review-config-after-restart",
+   "named_row_red": true,
+   "named_rows": [
+    "upgrade-restart-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     false
+    ]
+   ],
+   "seconds": 14.969,
+   "source_sha256": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 older-engine-host detail: older engine rerun succeeds: invalid_input:state_root:differs:/dev/shm/b171-g494ot4x/install-old/ba7f93f690686cd3/config/receiver-6112728134aac32c.json",
+    "VELDO-0167 older-engine-host detail: engine and records keys added"
+   ],
+   "diff": "proof/VELDO-0167/records-review-old-engine-fresh-keys.diff",
+   "failed_rows": [
+    "VELDO-0167 older-engine-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "a1a441453aca5e2c9f58cc5a0e9e9c683bd29d44058e09ec30941d29e138ce4e",
+   "name": "records-review-old-engine-fresh-keys",
+   "named_row_red": true,
+   "named_rows": [
+    "older-engine-host"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     false
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 16.014,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 older-engine-host detail: older engine rerun succeeds: invalid_input:state_root:differs:/dev/shm/b171-jcz9rrdt/install-old/0699783f9e6cbe63/config/receiver-6b00284f25097021.json",
+    "VELDO-0167 older-engine-host detail: engine and records keys added"
+   ],
+   "diff": "proof/VELDO-0167/records-review-old-runs-overwritten.diff",
+   "failed_rows": [
+    "VELDO-0167 older-engine-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "e7e8edcc73e6d7eeb5c4f5b2659aa490c5a64a5f935b3fe2dd3ab78850998857",
+   "name": "records-review-old-runs-overwritten",
+   "named_row_red": true,
+   "named_rows": [
+    "older-engine-host"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     false
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 13.988,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 interrupted-record-write detail: later rerun succeeds: FileExistsError:stale-record-temporary"
+   ],
+   "diff": "proof/VELDO-0167/records-review-fixed-temp-name.diff",
+   "failed_rows": [
+    "VELDO-0167 interrupted-record-write"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "e451a8ceb97dbe494ccc6072c0403cb3b27efda314c10d1594b524b70a3502bb",
+   "name": "records-review-fixed-temp-name",
+   "named_row_red": true,
+   "named_rows": [
+    "interrupted-record-write"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     false
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 16.506,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 hints-without-api detail: valid hint is accepted with no API",
+    "VELDO-0167 hints-without-api detail: no refused request counted"
+   ],
+   "diff": "proof/VELDO-0167/records-review-no-api-refused.diff",
+   "failed_rows": [
+    "VELDO-0167 hints-without-api"
+   ],
+   "module": ".veldo/control_service_api.py",
+   "mutant_sha256": "ff4b16327f17eb22113b316475575a4dbb21ca8ac49638efd658d41fc7d50d9b",
+   "name": "records-review-no-api-refused",
+   "named_row_red": true,
+   "named_rows": [
+    "hints-without-api"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     false
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 15.0,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 record-hint-counts detail: record delivery and drop counted separately",
+    "VELDO-0167 record-hint-counts detail: journal counts stay separate"
+   ],
+   "diff": "proof/VELDO-0167/records-review-mixed-publish-counts.diff",
+   "failed_rows": [
+    "VELDO-0167 record-hint-counts"
+   ],
+   "module": ".veldo/control_service_api.py",
+   "mutant_sha256": "7de3ab9249571d7dd6b704bc854c3e0f839737129a3ab74e4ad1f98783ef046c",
+   "name": "records-review-mixed-publish-counts",
+   "named_row_red": true,
+   "named_rows": [
+    "record-hint-counts"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     false
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 15.518,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 record-hint-counts detail: record delivery and drop counted separately",
+    "VELDO-0167 record-hint-counts detail: journal counts stay separate"
+   ],
+   "diff": "proof/VELDO-0167/records-review-mixed-drop-counts.diff",
+   "failed_rows": [
+    "VELDO-0167 record-hint-counts"
+   ],
+   "module": ".veldo/control_service_api.py",
+   "mutant_sha256": "9d31c1f9b7f3102e506c34f18385c5c98d042f4a498767075595c9ceea81c7be",
+   "name": "records-review-mixed-drop-counts",
+   "named_row_red": true,
+   "named_rows": [
+    "record-hint-counts"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     false
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
+    ]
+   ],
+   "seconds": 16.037,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 upgrade-restart-answer detail: answer requires no redundant restart: the service reads its new record configuration on restart: systemctl --user restart veldo-authority-4944291f4f119675.service"
+   ],
+   "diff": "proof/VELDO-0167/records-review-redundant-restart.diff",
+   "failed_rows": [
+    "VELDO-0167 upgrade-restart-answer"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "8646405892b117e84d4872a0b9b0c3c57ccf157b3783aaae6da63ad75916a36a",
+   "name": "records-review-redundant-restart",
+   "named_row_red": true,
+   "named_rows": [
+    "upgrade-restart-answer"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     false
+    ]
+   ],
+   "seconds": 15.485,
+   "source_sha256": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e"
   }
  ],
  "mutations_per_row": {
+  "hints-without-api": [
+   "records-review-no-api-refused"
+  ],
   "installed-record": [
    "records-api-key-omitted"
+  ],
+  "interrupted-record-write": [
+   "records-review-fixed-temp-name"
   ],
   "late-subscriber": [
    "records-fixed-subscriber-list",
@@ -290,14 +908,26 @@
    "records-service-number-omitted",
    "records-receiver-service-ignored"
   ],
+  "older-engine-host": [
+   "records-review-old-engine-fresh-keys",
+   "records-review-old-runs-overwritten"
+  ],
   "older-host": [
    "records-existing-receiver-skipped",
    "records-rerun-difference-accepted"
+  ],
+  "record-hint-counts": [
+   "records-review-mixed-publish-counts",
+   "records-review-mixed-drop-counts"
+  ],
+  "upgrade-restart-answer": [
+   "records-review-config-after-restart",
+   "records-review-redundant-restart"
   ]
  },
  "noop": {
   "control_factory_setup.py": {
-   "copy_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e",
+   "copy_sha256": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -313,13 +943,33 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 6.877,
-   "source_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e"
+   "seconds": 17.562,
+   "source_sha256": "4c27adcf7e71a3e0fe7ed74b2bd6c06ada58ad8fd974641b3f403cf3b9c0066e"
   },
   "control_factory_setup_records.py": {
-   "copy_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5",
+   "copy_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -335,10 +985,30 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 6.893,
-   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+   "seconds": 14.022,
+   "source_sha256": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba"
   },
   "control_launch.py": {
    "copy_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e",
@@ -357,13 +1027,33 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 6.9,
+   "seconds": 17.043,
    "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
   },
   "control_service_api.py": {
-   "copy_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294",
+   "copy_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -379,15 +1069,35 @@
     [
      "VELDO-0167 older-host",
      true
+    ],
+    [
+     "VELDO-0167 older-engine-host",
+     true
+    ],
+    [
+     "VELDO-0167 interrupted-record-write",
+     true
+    ],
+    [
+     "VELDO-0167 hints-without-api",
+     true
+    ],
+    [
+     "VELDO-0167 record-hint-counts",
+     true
+    ],
+    [
+     "VELDO-0167 upgrade-restart-answer",
+     true
     ]
    ],
-   "seconds": 6.898,
-   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+   "seconds": 15.031,
+   "source_sha256": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 167",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 116.27,
+ "serial_seconds": 344.363,
  "spec_id": "VELDO-0167",
  "suite": "scripts/suites/91_veldo_0167_setup_records.py"
 }

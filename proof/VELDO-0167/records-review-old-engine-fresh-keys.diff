@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_records.py
++++ b/.veldo/control_factory_setup_records.py
+@@ -81 +81 @@
+-        expected = {k: v for k, v in expected.items() if k in held or path not in upgrading}
++        expected = dict(expected)
