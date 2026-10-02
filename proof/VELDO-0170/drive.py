@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Run the current VELDO-0170 suite over a read-only git archive of the baseline."""
 import ast
-import concurrent.futures
 import contextlib
-import difflib
 import hashlib
 import importlib.util
 import io

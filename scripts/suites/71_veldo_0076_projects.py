@@ -242,7 +242,7 @@ sys.stdout.flush()
             receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                          enrollment_signers=str(receiver_enrollment_signers))))
             receiver_host_trust.chmod(0o600)
-            config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 
+            config.write_text(json.dumps({'host_trust': str(receiver_host_trust),
                 'store': str(db), 'journal_key': str(keys / 'journal'), 'principal': 'launch-receiver',
                 'workspace': str(base / 'work'),
                 'profile': {'kind': 'linux-systemd', 'slice': 'v76s%s.slice' % os.urandom(4).hex(),

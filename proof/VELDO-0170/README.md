@@ -44,5 +44,21 @@ with intended rows in `mutations.json`. Mutation execution is reserved to the re
 by the owner's token rule. No mutation rejection is claimed here. The whole selftest,
 mutation checker and canonical gate are also reserved to the reviewer.
 
-Validation is in progress. The selected suite passes all eight behavior rows and the
-existing dispatch suite passes. The anchor check reports zero bad anchors.
+Validation: all seven selected suites pass with zero failed assertions, both ordinarily
+and in the specified empty gate environment: `87_veldo_0170_receiver_trust`,
+`62_veldo_0039_dispatch`, `66_veldo_0047_authority`, `70_veldo_0069_bindings`,
+`73_veldo_0139_factory_setup`, `85_veldo_0171_setup_api`, and
+`86_veldo_0189_engine_upgrade`. The final isolated runs execute strictly sequentially.
+`validation.json` records their actual summaries. Exit 2 is the selftest's required
+partial-run exit, even with no failed assertion; these runs do not certify the full gate.
+
+The Git boundary and validator checks pass, every engine copy is byte-identical,
+and the anchor checker reports zero bad anchors. The supplied alternate final path
+`scratchpadanchor_check.py` does not exist; `scratchpad/anchor_check.py` passes.
+
+AC1 also requires ordinary receiver fixtures in sixteen other launch suites to name
+trust. Those constructors now write generated host trust with no settlement signers;
+the spec footprint names each affected file. Their existing assertions and fake engines
+are unchanged. These additional fixture edits are syntax checked; their broader suite
+execution remains with the reviewer under the owner's test scope restriction.
+The explicit absent-trust cases in suites 70 and 87 still omit the key.

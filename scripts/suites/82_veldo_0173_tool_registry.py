@@ -312,7 +312,7 @@ sys.exit(payload.get('code', 0))
         receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                      enrollment_signers=str(receiver_enrollment_signers))))
         receiver_host_trust.chmod(0o600)
-        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 
+        config.write_text(json.dumps({'host_trust': str(receiver_host_trust),
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
             'host': HOST, 'receipts': str(base / 'receipts'), 'state_root': str(factory),

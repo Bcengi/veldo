@@ -1,0 +1,4 @@
+--- a/.veldo/control_factory_setup_trust.py
++++ b/.veldo/control_factory_setup_trust.py
+@@ -61,0 +62 @@
++            API.replace_file(path, API.text(held), 0o600)

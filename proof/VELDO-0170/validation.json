@@ -1,0 +1,135 @@
+{
+ "schema": "veldo.scoped-validation/v1",
+ "spec_id": "VELDO-0170",
+ "results": [
+  {
+   "suite": "87_veldo_0170_receiver_trust",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 34 passed, 0 failed in 6.73s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "87_veldo_0170_receiver_trust",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 34 passed, 0 failed in 6.70s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "62_veldo_0039_dispatch",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 8.55s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "62_veldo_0039_dispatch",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 12.06s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 56 passed, 0 failed in 14.03s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 56 passed, 0 failed in 14.97s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "70_veldo_0069_bindings",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 36 passed, 0 failed in 5.71s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "70_veldo_0069_bindings",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 36 passed, 0 failed in 7.46s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 43 passed, 0 failed in 24.69s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 43 passed, 0 failed in 37.88s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 10.30s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 11.32s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "ordinary",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 58 passed, 0 failed in 58.97s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "isolated",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 58 passed, 0 failed in 63.01s",
+   "exit_code": 2,
+   "meaning": "partial success; not gate evidence"
+  }
+ ],
+ "gate": "not run: reserved to reviewer",
+ "whole_selftest": "not run: reserved to reviewer",
+ "mutations": "ten registered, not executed: reserved to reviewer",
+ "additional_fixture_suites": {
+  "paths": [
+   "scripts/suites/63_veldo_0040_containment.py",
+   "scripts/suites/63_veldo_0049_floor.py",
+   "scripts/suites/64_veldo_0050_proof.py",
+   "scripts/suites/67_veldo_0041_heartbeat.py",
+   "scripts/suites/67_veldo_0135_offers.py",
+   "scripts/suites/71_veldo_0076_projects.py",
+   "scripts/suites/75_veldo_0062_accounts.py",
+   "scripts/suites/78_veldo_0060_claude_adapter.py",
+   "scripts/suites/78_veldo_0160_account_pool.py",
+   "scripts/suites/79_veldo_0061_codex_adapter.py",
+   "scripts/suites/80_veldo_0155_claude_baseline.py",
+   "scripts/suites/81_veldo_0156_codex_baseline.py",
+   "scripts/suites/82_veldo_0141_execution_record.py",
+   "scripts/suites/82_veldo_0165_launch_hygiene.py",
+   "scripts/suites/82_veldo_0173_tool_registry.py",
+   "scripts/suites/85_veldo_0158_credential_delivery.py"
+  ],
+  "validation": "syntax checked only; broader execution reserved to reviewer"
+ },
+ "checks": {
+  "validator": "pass",
+  "git_boundary": "pass",
+  "anchors": "0 bad anchors",
+  "engine_copies": "byte-identical"
+ },
+ "unavailable_check": "scratchpadanchor_check.py does not exist; scratchpad/anchor_check.py passes"
+}

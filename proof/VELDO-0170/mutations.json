@@ -11,7 +11,10 @@
     "launch/governed",
     "launch/ungoverned"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-no-trust-as-unsigned.diff",
+   "source_sha256": "542578c2122c1d487bbe2259a31585f06b17616fa9bd77c141182b1c25038852",
+   "mutant_sha256": "36c3bcb2896e78ced0ba26c8409d70ef9bc1f4d4882df9eb7ec3b0b826040bfa"
   },
   {
    "name": "receiver170-repair-omits-trust",
@@ -19,7 +22,10 @@
    "named_rows": [
     "rerun/launch-after-repair"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-repair-omits-trust.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "68485cf7c42e9458b974448ba97f4f1a6c5ce5c28417143b1ec7ecddb5f96137"
   },
   {
    "name": "receiver170-status-hides-missing",
@@ -27,7 +33,10 @@
    "named_rows": [
     "status/configurations"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-status-hides-missing.diff",
+   "source_sha256": "fbf1b09319e81a6f477b345035c82f86ec941fec1f6fecca09a7470b5dd97bd7",
+   "mutant_sha256": "bc3c68624ebe3c705db3c6a574de066d0acd0d3752317847d54ba610f9c608cc"
   },
   {
    "name": "receiver170-trust-from-default-only",
@@ -35,7 +44,10 @@
    "named_rows": [
     "rerun/no-installed-trust"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-trust-from-default-only.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "cec791e3aebc4d1c1ac696727bd411d9ad7fdb521c0f72a5561f2aa9d67152ac"
   },
   {
    "name": "receiver170-host-identity-unchecked",
@@ -43,7 +55,10 @@
    "named_rows": [
     "rerun/host-identity"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-host-identity-unchecked.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "ff9b1a24162764dd215f18bb25816b8910f1ec2a7e0a2fd6bb6458de935b2c5d"
   },
   {
    "name": "receiver170-differing-config-accepted",
@@ -51,7 +66,10 @@
    "named_rows": [
     "rerun/differs"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-differing-config-accepted.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "918e6b87780fecf9769ab490d23da122d0d5c7a0c256f718ac0342a64c4ba7e1"
   },
   {
    "name": "receiver170-current-rewritten",
@@ -59,7 +77,10 @@
    "named_rows": [
     "rerun/launch-after-repair"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-current-rewritten.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "27469e8308a97d56aef866f751c2d55fa1f440d860a4e25d4de578ce9636cf86"
   },
   {
    "name": "receiver170-no-default-trust",
@@ -67,7 +88,10 @@
    "named_rows": [
     "rerun/default-trust"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-no-default-trust.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "da7d0c828daf613561b39ac49a1c47d0d1fc941df4a017107e0ec93e05016340"
   },
   {
    "name": "receiver170-repair-step-skipped",
@@ -75,7 +99,10 @@
    "named_rows": [
     "rerun/launch-after-repair"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-repair-step-skipped.diff",
+   "source_sha256": "4dead7a4c7fb24bc88966d5f63680f23ecdda025e4250d5afe54265ae1d4edc5",
+   "mutant_sha256": "a2968bbd31d5b3cbdb2cff4d5d21fa5b0a20e4a36c3a5d872e789e69fff1e5f2"
   },
   {
    "name": "receiver170-repair-world-readable",
@@ -83,7 +110,10 @@
    "named_rows": [
     "rerun/launch-after-repair"
    ],
-   "status": "registered_not_run"
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-repair-world-readable.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "407cc04edf7178c8c9df38ce687b4893786a5dafb2b9f322e6230ce952965754"
   }
  ]
 }
