@@ -1,0 +1,20 @@
+--- a/scripts/suites/12_warp_1210_hardening_four.py
++++ b/scripts/suites/12_warp_1210_hardening_four.py
+@@ -5960,2 +5960,9 @@
+     _p = _m10_r12_fifo_at(_root, _where)
++    if _where.startswith("THE BYTECODE CACHE") and _rev is None:
++        # Mutate only this cell's relocated engine; keep the suite assertion unchanged.
++        _closure = _root / ".veldo/metrics_read_closure.py"
++        _text = _closure.read_text()
++        _old = "printable(c), _entry_kind(c)"
++        assert _text.count(_old) == 1
++        _closure.write_text(_text.replace(_old, "'<cache path omitted>', _entry_kind(c)"))
+     _res = dict(_m10_r11_surfaces(_root, None,
+@@ -5964,2 +5971,7 @@
+     _m10_sh.rmtree(_root, ignore_errors=True)
++    if _where.startswith("THE BYTECODE CACHE") and _rev is None:
++        print("VELDO-0148 cache-path mutant: " + json.dumps({
++            name: {"rc": row["rc"], "hung": row["hung"],
++                   "nonempty": bool(row["out"].strip()), "named": _p.name in row["out"]}
++            for name, row in _res.items() if name != "path"}, sort_keys=True))
+     return (_where, _tag), _res

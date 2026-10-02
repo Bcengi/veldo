@@ -443,3 +443,24 @@ preamble), zero failures. The footprint check reports 46 paths, none outside; th
 reports 0 bad anchors and validation exits 0. Engine copies match their repository counterparts.
 The suite remains registered once and requires.json was regenerated. No other suites, full gate
 or mutation checker ran in this repair.
+
+
+## Bytecode-cache FIFO fixture follow-up
+
+The suite-12 closure fixture used a metrics invocation to create `__pycache__` before
+installing its FIFO. With `PYTHONDONTWRITEBYTECODE=1` that directory never appeared.
+The fixture now creates the parent of `cache_from_source(validate.py)` explicitly,
+without warming the engine. The FIFO is itself the cache entry a module load would
+open; a compiled file is unnecessary. All twenty surface/path checks remain intact.
+
+[bytecode-cache-followup.json](bytecode-cache-followup.json) records the scoped suite
+runs with and without the flag, the cache-assumption audit, and the negative control.
+These are targeted regression results, not a gate result or a landing verdict.
+The full selftest, integration first-use check (which runs the full selftest), gate,
+and mutation runners were not run, as instructed.
+
+[bytecode-cache-mutant.patch](bytecode-cache-mutant.patch) reproduces the negative
+control: apply it to the repaired suite, run the same suite selector with bytecode
+writes disabled, then restore the suite. It changes only the cache cell's relocated
+engine diagnostic to omit the cache filename, leaving every assertion unchanged.
+The patch is evidence for replay and is not applied to the committed suite.
