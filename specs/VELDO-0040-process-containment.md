@@ -191,7 +191,9 @@ is named containment-resolved-exit-hides-cap to identify its role as a guard
 on the restructured receiver. Explicit causes in its suite row now come from
 the real request, meter, deadline and heartbeat paths through receiver begin().
 The conclude-settles falsifier is also checked against the complete pre-fix
-conclude rebuilt from ffb12c22 in a temporary copy. reset-failed shares the
+conclude rebuilt from ffb12c22 in a temporary copy: the target fails by
+assertion and its region completes. Restoring only the pre-fix receiver leaves
+the precedence row green with the fixed conclude. reset-failed shares the
 remaining SETTLE_SECONDS budget and is skipped when no time remains. Only
 suite 63 normal, gate-environment and temporary-copy checks run in this review
 continuation; no load mode or canonical gate runs here.

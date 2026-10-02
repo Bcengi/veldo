@@ -4208,5 +4208,9 @@
     },
     "source_head": "ffb12c22206dc0783de0a5cf25dc280d10b7fdcc",
     "suite_copies_per_round": 1
+  },
+  "historical_limitations": {
+    "precedence_fixture": "These runs predate the review correction. Explicit cases called Stop.begin directly without setting receiver local cause, an unreachable production state. They are superseded by review-correction-runs.json.",
+    "mutation_story": "The former containment-inferred-exit-hides-cap name did not represent the historical defect; the renamed guard protects restructured cause precedence. The production defect was conclude losing final manager evidence."
   }
 }

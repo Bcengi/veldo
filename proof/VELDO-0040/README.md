@@ -196,8 +196,10 @@ AST data, applies each edit to a temporary production copy and invokes only
 suite 63, sequentially. It also rebuilds the pre-fix conclude and receiver
 methods from ffb12c22 and removes the reset budget guard in separate copies.
 It never imports or executes the teeth driver.
-The corrected runs and rebuild evidence will be retained in
-manager-result-mutations.json with each exact diff, source hash and target row.
+manager-result-mutations.json retains the corrected runs and rebuild evidence
+with each exact diff, source hash and target row. The renamed guard replaces
+the old inferred-exit-hides-cap artifact; its historical red only demonstrated
+the new precedence structure, not the pre-fix defect.
 The precedence row now drives requested, usage_cap, deadline, heartbeat_missing,
 configuration_stop and paid_api through the receiver's real begin() path. It
 asserts the resulting cause, cooperative first step and deadline_stop value.
@@ -205,8 +207,38 @@ The settlement row records per-case exceptions as assertion evidence so a
 pre-fix malformed clock cannot bypass the target assertion. The same row checks
 reset-failed timing near and at budget exhaustion.
 
-The full selftest,
-canonical gate and both gate mutation drivers were not run; their result and
+The rebuilt ffb12c22 conclude makes containment/conclude-settles red by
+assertion, with that region completing. It returns success after a single
+deactivating read, returns None after a failed show, and raises ValueError on
+malformed clocks. All six settlement cases fail the expected final snapshot.
+The separate conclude-unknown region also raises with the pre-fix malformed
+clock; this does not substitute for the settlement assertion failure.
+Rebuilding the pre-fix receiver with the fixed conclude leaves the precedence
+row green, confirming that the old local-cause check already handled caps.
+
+| Temporary-copy case | Passed | Failed | Target red by assertion |
+|-|-:|-:|-|
+| containment-resolved-exit-hides-cap | 50 | 2 | yes |
+| containment-result-before-settled | 50 | 2 | yes |
+| containment-unreadable-result-silent | 51 | 1 | yes |
+| containment-pre-fix-conclude | 49 | 3 | yes |
+| containment-pre-fix-receiver-control | 51 | 1 | no, expected green control |
+| containment-reset-past-budget | 51 | 1 | yes |
+
+Every target region completes; only the pre-fix conclude's separate unknown
+region raises. The pre-fix receiver's only failure is conclude-unknown, since
+that receiver predates explicit unknown classification. The reset-only negative
+control preserves all ordinary settlement cases but fails the reset budget.
+
+Review correction verification is in review-correction-runs.json: normal and
+inherited gate-shell suite 63 runs each passed 52 assertions with zero failures
+or raised regions. Both reset budget cases ended at SETTLE_SECONDS (5 seconds),
+retained timeout and all clocks, and skipped reset when no time remained. The
+live runtime-cap row passed unchanged in both runs. No load mode ran during
+this review correction. Source hashes bind these observations to the tested
+suite and production modules; earlier loaded observations remain historical.
+
+The full selftest, canonical gate and both gate mutation drivers were not run; their result and
 the merged-tree stamp belong to the reviewer. Selected-suite exit code 2 on
 all-green partial runs is the harness's expected partial-run status, not a
 canonical verification claim.

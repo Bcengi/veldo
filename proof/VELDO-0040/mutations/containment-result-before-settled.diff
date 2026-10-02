@@ -8,4 +8,4 @@
 +                if shown.get('Result'):
                      timestamps = {name: int(shown.get(name) or 0) for name in names}
                      self.timestamps = timestamps
-                     if shown.get('ActiveState') == 'failed':
+                     remaining = end - time.monotonic()
