@@ -65,10 +65,11 @@ def patch(path, expected, owned, differs):
     return ('upgrade' if added else 'equal'), text, added
 
 
-def prepare(root, installed, receivers, api, service_text, differs):
+def prepare(root, installed, receivers, api, service_text, differs, engine_writes=()):
     directory(root, differs)
     owned = keys(root, installed['socket'])
     files = []
+    upgrading = {path for kind, path, _text, _mode in engine_writes if kind == 'configuration'}
     for path, expected in sorted(receivers.items()):
         # Earlier engine keys are added by the engine upgrade before this step writes.
         try:
@@ -77,7 +78,7 @@ def prepare(root, installed, receivers, api, service_text, differs):
             raise differs(str(path)) from None
         if not isinstance(held, dict):
             raise differs(str(path))
-        expected = {k: v for k, v in expected.items() if k in held}
+        expected = {k: v for k, v in expected.items() if k in held or path not in upgrading}
         # These are receiver-owned choices, retained by the engine upgrade too.
         for key in ('runs', 'adapters'):
             if key in held:

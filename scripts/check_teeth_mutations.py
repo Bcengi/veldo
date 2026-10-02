@@ -9833,7 +9833,7 @@ def cases():
     add(167, 'records-review-config-after-restart', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
         "if engine['state'] != 'current' or engine['restart_due']:", 'if False:', ['upgrade-restart-answer'])
     add(167, 'records-review-old-engine-fresh-keys', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
-        'expected = {k: v for k, v in expected.items() if k in held}', 'expected = dict(expected)', ['older-engine-host'])
+        'expected = {k: v for k, v in expected.items() if k in held or path not in upgrading}', 'expected = dict(expected)', ['older-engine-host'])
     add(167, 'records-review-old-runs-overwritten', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
         'expected[key] = held[key]', "expected[key] = str(Path(installed['store_path']).parent / 'runs') if key == 'runs' else held[key]", ['older-engine-host'])
     add(167, 'records-review-fixed-temp-name', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',

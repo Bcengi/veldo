@@ -812,7 +812,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
     records = organ('control_factory_setup_records')
-    record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs)
+    record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs, engine['writes'])
     states = {'service_config': record_plan['api_states']['service_config'],
               'installed_service_config': record_plan['api_states']['installed_service_config'],
               'process_config': API.file_state(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600,

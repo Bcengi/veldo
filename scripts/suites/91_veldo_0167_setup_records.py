@@ -109,10 +109,14 @@ def _v167_suite():
         check('older-host', 'second rerun is byte-identical', code == 0 and again.get('outcome') == 'already_set_up'
               and again_before == h['snapshot'](root, install, units, trust.parent, workspace / '.git/veldo'))
         # Refuse changed non-owned values before any file is written.
-        for path, key in [(Path(receivers[0]), 'principal'), (configs[-1], 'origin')]:
+        for path, key, remove in [(Path(receivers[0]), 'principal', False), (configs[-1], 'origin', False),
+                                  (Path(receivers[0]), 'principal', True)]:
             saved = path.read_bytes()
             value = json.loads(saved)
-            value[key] = 'different'
+            if remove:
+                value.pop(key)
+            else:
+                value[key] = 'different'
             path.write_text(json.dumps(value, indent=1, sort_keys=True) + '\n')
             before = h['snapshot'](root, install, units, trust.parent)
             code, refused = setup(*args)
