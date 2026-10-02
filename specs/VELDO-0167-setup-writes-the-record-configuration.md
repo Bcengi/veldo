@@ -168,3 +168,8 @@ this step's keys to a host laid down before it and keeps VELDO-0171's changes-no
 scope text now names VELDO-0171. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-10-02, build: setup now shares a private records directory between installed receivers and
+the API and upgrades only its missing or null record keys. Receivers send record wakes to the
+authority socket; the service uses its existing subscriber fan-out and numbering. Proof work
+is in progress on build-veldo-0167. Status remains ready for independent review.

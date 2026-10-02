@@ -508,6 +508,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         with step('api_edge_enrollment'):
             enroll_api_edge(plan, ids, S, conn, (journal_principal, journal_sign), owner_sign, envelope, next_id, projection)
             os.chmod(projection, 0o600)
+        with step('records_directory'):
+            organ('control_factory_setup_records').directory(root, _differs, write=True)
         with step('api_service_configuration'):
             api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
         with step('service_install'):
@@ -515,6 +517,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
                                    api_service=api_service)
+        with step('record_configuration'):
+            organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
         with step('engine_pins'):
             engines = organ('control_factory_setup_engines').install(
                 root, Path(installed['home']) / 'bin', plan['engines'], Refused)
@@ -611,9 +615,10 @@ def paths(root, keys, home, unit_dir, unit):
 
 def api_service_text(plan, ids, name):
     API = organ('control_factory_setup_api')
-    return API.text(API.service_config(plan['store'], ids, {'principal': JOURNAL_PRINCIPAL,
+    return API.text(dict(API.service_config(plan['store'], ids, {'principal': JOURNAL_PRINCIPAL,
                                                             'key': os.path.join(plan['keys'], JOURNAL_KEY)},
-                                       API_EDGE, plan['workspace'], name))
+                                       API_EDGE, plan['workspace'], name),
+                         records=os.path.join(plan['root'], 'records')))
 
 
 def api_process_text(plan, ids, api, name, port):
@@ -806,8 +811,10 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
-    states = {'service_config': API.file_state(api['service_config'], service_text, 0o600, _differs),
-              'installed_service_config': API.file_state(api['installed_service_config'], service_text, 0o600, _differs),
+    records = organ('control_factory_setup_records')
+    record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs)
+    states = {'service_config': record_plan['api_states']['service_config'],
+              'installed_service_config': record_plan['api_states']['installed_service_config'],
               'process_config': API.file_state(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600,
                                                _differs),
               # An API unit the upgrade renders again from the current template is judged as that rendering.
@@ -896,6 +903,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 finally:
                     writer.close()
         mark('api_edge_enrollment', edge != 'enrolled', through_service=through)
+        outcomes.extend(records.apply(record_plan, _differs))
         if states['service_config'] == 'absent':
             API.write_new(api['service_config'], service_text, 0o600)
         mark('api_service_configuration', states['service_config'] == 'absent')
@@ -979,6 +987,7 @@ def inspect_engine(plan, installed, home, unit_dir, api_unit):
         raise Refused('invalid_input:state_root:holds_install_root', 'the installation is not where its record is')
     engine = _api(lambda: UP.inspect(laid, installed, os.path.join(home, 'config', 'service.json'), api_unit))
     engine['module'] = UP
+    engine['receivers'] = laid['receivers']
     return engine
 
 

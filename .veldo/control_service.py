@@ -1955,6 +1955,7 @@ def serve(config_path):
                                      service.verify, config['host_identity'], service.apply,
                                      watermark=service.watermark,
                                      minimum_generation=config['authority_generation'], context=True)
+            authority = SA.RecordHints(authority, service)
             stopping = []
             signal.signal(signal.SIGTERM, lambda signum, frame: stopping.append(signum))
             signal.signal(signal.SIGINT, lambda signum, frame: stopping.append(signum))

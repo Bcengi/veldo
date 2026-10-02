@@ -281,6 +281,7 @@ _FILES = [
     # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
     # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_api.py",
+    ".veldo/control_factory_setup_records.py",
     # VELDO-0189: its engine upgrade of an installation an earlier engine laid down. An owner command too,
     # so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_upgrade.py",

@@ -435,8 +435,9 @@ class Recorder:
     unit, station, project, account, host); `resolved` is the run's Resolved set, read at each line; `hints`
     the API hint sockets told after each batch."""
 
-    def __init__(self, records, header, resolved, hints=(), clock=time.time):
+    def __init__(self, records, header, resolved, hints=(), clock=time.time, hint_service=None):
         self.dispatch_id = header['dispatch_id']
+        self.hint_service = hint_service
         self.resolved, self.hints, self.clock = resolved, list(hints or ()), clock
         os.makedirs(str(records), mode=0o700, exist_ok=True)
         os.chmod(str(records), 0o700)
@@ -589,7 +590,7 @@ class Recorder:
         """Tell every configured API hint socket this dispatch's last sequence (identity only)."""
         body = json.dumps({'schema': HINT_SCHEMA, 'dispatch_id': self.dispatch_id, 'seq': self.sequence,
                            'ended': bool(ended)}, sort_keys=True).encode()
-        for target in self.hints:
+        for target in ([self.hint_service] if self.hint_service else self.hints):
             if push(target, body):
                 self.sent['hints'] += 1
             else:

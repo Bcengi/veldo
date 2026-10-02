@@ -325,11 +325,11 @@ class ServiceApi:
         """The VELDO-0046 hint of the journal head: identity only, never domain data."""
         return self.authority.hint()
 
-    def publish(self):
+    def publish(self, record_hint=None):
         """Send the head record's hint to every subscribed API, naming this instance and the hint's number
         for that subscriber (counted whether or not it arrives, so a lost hint is a gap the API sees).
         Returns {sent, dropped}."""
-        hint = dict(self.hint(), instance=self.instance)
+        hint = dict(self.hint() if record_hint is None else record_hint, instance=self.instance)
         sent, dropped = 0, []
         for path in list(self.subscribers):
             self.sequence[path] = self.sequence.get(path, 0) + 1
@@ -378,3 +378,32 @@ class ServiceApi:
         return {'available': True, 'instance': self.instance, 'edge': self.edge, 'subscribers': len(self.subscribers),
                 'counts': dict(self.counts), 'metrics': self.authority.metrics(),
                 'catalog': self.authority.catalog.metrics(), 'credentials': self.authority.mcp_credentials.metrics()}
+
+
+class RecordHints:
+    """Multiplex identity-only record wakes on the authority socket; commands keep their judge."""
+
+    def __init__(self, authority, service):
+        self.authority, self.service = authority, service
+
+    def _no(self, reason, message):
+        return self.authority._no(reason, message)
+
+    def judge(self, request, uid):
+        schema = AUTH.ER.HINT_SCHEMA
+        if not isinstance(request, dict) or request.get('schema') != schema:
+            return self.authority.judge(request, uid)
+        if uid != os.getuid():
+            return self._no('peer_not_authorized', 'record hints require this account')
+        if (set(request) != {'schema', 'dispatch_id', 'seq', 'ended'}
+                or not isinstance(request['dispatch_id'], str) or not request['dispatch_id']
+                or type(request['seq']) is not int or request['seq'] < 0
+                or type(request['ended']) is not bool):
+            return self._no('malformed_request', 'record hints carry identity only')
+        api = self.service.api
+        if api is None:
+            return {'accepted': False, 'reason': 'unavailable_service:api'}
+        result = api.publish(record_hint=request)
+        self.service._log(dict(result, kind='api', operation='record_hint', at=time.time(),
+                               dispatch_id=request['dispatch_id'], seq=request['seq'], instance=api.instance))
+        return dict(result, accepted=True)

@@ -1019,7 +1019,8 @@ class Receiver:
         # containing root in trusted receiver config when their cwd is a subdirectory.
         self.resolved.paths = ER.clone_paths(cwd, root=self.config.get('clone_root', cwd))
         self.recorder = ER.Recorder(ER.directory(self.config), header, self.resolved,
-                                    hints=self.config.get('record_hints') or ())
+                                    hints=self.config.get('record_hints') or (),
+                                    hint_service=self.config.get('record_hint_service'))
 
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
