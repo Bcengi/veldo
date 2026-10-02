@@ -1227,7 +1227,7 @@
    "requires": [
     "91_veldo_0167_setup_records"
    ],
-   "regions": "Installed record route, late subscribers through the service, additive setup reruns.",
+   "regions": "Installed record route, late subscribers through the service, additive setup reruns, historical engines, interrupted record writes, separate hint counts and restart answers.",
    "requires_note": "Only ROOT and expect; isolated installed-host fixture reused from suite 171, with production record and dispatch writers."
   }
  ]

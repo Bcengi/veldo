@@ -181,3 +181,11 @@ It checks absent and null key upgrades, byte preservation, no-op reruns and name
 evidence is in proof/VELDO-0167. The existing VELDO-0171 older-host row now includes the records
 directory. No footprint expansion was needed. Full gate and global mutation execution remain
 reserved to the reviewer under the builder's resource restrictions.
+
+2026-10-02, review fixes: record preflight leaves missing engine keys to the engine upgrade
+and preserves receiver runs and adapters. Record configuration replacements use private unique
+sibling files, so a killed writer does not block the next run. Valid hints with no API are
+accepted without counting a refused request; record deliveries and drops have separate counters.
+An engine upgrade includes API record configuration in its transaction before restarting and
+reports no redundant restart. Suite 91 adds historical-engine, SIGKILL, counter and restart rows,
+with distinct finding 167 falsifiers. All changes stay within the existing footprint.

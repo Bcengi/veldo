@@ -9829,6 +9829,24 @@ def cases():
     add(167, 'records-rerun-difference-accepted', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
         '    if merged != expected:', '    if False:', ['older-host'])
 
+    # VELDO-0167 review: older engines, interrupted writes, hint counts and restart answers.
+    add(167, 'records-review-config-after-restart', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
+        "if engine['state'] != 'current' or engine['restart_due']:", 'if False:', ['upgrade-restart-answer'])
+    add(167, 'records-review-old-engine-fresh-keys', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        'expected = {k: v for k, v in expected.items() if k in held}', 'expected = dict(expected)', ['older-engine-host'])
+    add(167, 'records-review-old-runs-overwritten', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        'expected[key] = held[key]', "expected[key] = str(Path(installed['store_path']).parent / 'runs') if key == 'runs' else held[key]", ['older-engine-host'])
+    add(167, 'records-review-fixed-temp-name', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        "fd, temporary = tempfile.mkstemp(prefix=Path(path).name + '.records-', dir=Path(path).parent)", "temporary = str(path) + '.records-new'\n            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)", ['interrupted-record-write'])
+    add(167, 'records-review-no-api-refused', '91_veldo_0167_setup_records.py', 'control_service_api.py',
+        "return {'accepted': True, 'sent': 0, 'dropped': 0}", "return {'accepted': False, 'reason': 'unavailable_service:api'}", ['hints-without-api'])
+    add(167, 'records-review-mixed-publish-counts', '91_veldo_0167_setup_records.py', 'control_service_api.py',
+        "self.counts['published' if record_hint is None else 'record_published'] += sent", "self.counts['published'] += sent", ['record-hint-counts'])
+    add(167, 'records-review-mixed-drop-counts', '91_veldo_0167_setup_records.py', 'control_service_api.py',
+        "self.counts['dropped' if record_hint is None else 'record_dropped'] += len(dropped)", "self.counts['dropped'] += len(dropped)", ['record-hint-counts'])
+    add(167, 'records-review-redundant-restart', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
+        " and upgraded.get('restart') != 'restarted':", ':', ['upgrade-restart-answer'])
+
     return result
 
 

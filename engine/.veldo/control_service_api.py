@@ -192,7 +192,8 @@ class ServiceApi:
         self.subscribers_file = Path(state_dir) / SUBSCRIBERS_NAME
         self.subscribers = self._remembered()
         self.sequence = {}
-        self.counts = {'calls': 0, 'refused': 0, 'published': 0, 'dropped': 0}
+        self.counts = {'calls': 0, 'refused': 0, 'published': 0, 'dropped': 0,
+                       'record_published': 0, 'record_dropped': 0}
 
     # -- the request signature -----------------------------------------------------------------
 
@@ -341,8 +342,8 @@ class ServiceApi:
         if dropped:
             self.subscribers = [p for p in self.subscribers if p not in dropped]
             self._remember()
-        self.counts['published'] += sent
-        self.counts['dropped'] += len(dropped)
+        self.counts['published' if record_hint is None else 'record_published'] += sent
+        self.counts['dropped' if record_hint is None else 'record_dropped'] += len(dropped)
         return {'sent': sent, 'dropped': len(dropped), 'watermark': hint.get('watermark')}
 
     def announce(self):
@@ -402,7 +403,7 @@ class RecordHints:
             return self._no('malformed_request', 'record hints carry identity only')
         api = self.service.api
         if api is None:
-            return {'accepted': False, 'reason': 'unavailable_service:api'}
+            return {'accepted': True, 'sent': 0, 'dropped': 0}
         result = api.publish(record_hint=request)
         self.service._log(dict(result, kind='api', operation='record_hint', at=time.time(),
                                dispatch_id=request['dispatch_id'], seq=request['seq'], instance=api.instance))

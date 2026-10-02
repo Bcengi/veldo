@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import stat
+import tempfile
 
 
 def directory(root, differs, write=False):
@@ -76,9 +77,11 @@ def prepare(root, installed, receivers, api, service_text, differs):
             raise differs(str(path)) from None
         if not isinstance(held, dict):
             raise differs(str(path))
-        expected = {k: v for k, v in expected.items() if k in held or k not in ('host_trust', 'state_root')}
-        if 'runs' in held:
-            expected['runs'] = str(Path(installed['store_path']).parent / 'runs')
+        expected = {k: v for k, v in expected.items() if k in held}
+        # These are receiver-owned choices, retained by the engine upgrade too.
+        for key in ('runs', 'adapters'):
+            if key in held:
+                expected[key] = held[key]
         expected.update(owned)
         state, text, added = patch(path, expected, owned, differs)
         files.append((path, expected, owned, state, text, added))
@@ -103,8 +106,7 @@ def apply(plan, differs):
             expected = dict(current, **own)
             state, text, added = patch(path, expected, own, differs)
         if state == 'upgrade':
-            temporary = str(path) + '.records-new'
-            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            fd, temporary = tempfile.mkstemp(prefix=Path(path).name + '.records-', dir=Path(path).parent)
             with os.fdopen(fd, 'w') as handle:
                 handle.write(text)
             os.replace(temporary, path)

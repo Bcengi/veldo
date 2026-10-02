@@ -28,7 +28,11 @@ def _v167_suite():
         'control_execution_record.py': ROOT / ".veldo" / "control_execution_record.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
-    rows = {name: [] for name in ('installed-record', 'late-subscriber', 'older-host')}
+    here = Path(globals().get('__suite_file__', ROOT / 'scripts/suites/91_veldo_0167_setup_records.py')).resolve().parents[2]
+    review_spec = importlib.util.spec_from_file_location('v167_review', here / 'proof/VELDO-0167/review_rows.py')
+    review = importlib.util.module_from_spec(review_spec)
+    review_spec.loader.exec_module(review)
+    rows = {name: [] for name in ('installed-record', 'late-subscriber', 'older-host') + review.ROWS}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -117,6 +121,8 @@ def _v167_suite():
                   and before == h['snapshot'](root, install, units, trust.parent))
             path.write_bytes(saved)
 
+        review.interrupted(h, check, args, configs)
+
         # Configure a plain fixture adapter through the installed receiver's spawn seam.
         # No vendor engine, login, model, network, or hand-written execution record.
         L = load('v167_installed_launch', home / 'bin/control_launch.py')
@@ -174,6 +180,7 @@ def _v167_suite():
         release_socket.settimeout(10)
         worker_source = "import sys, socket\nprint('first record line', flush=True)\ns=socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)\ns.connect(sys.argv[1])\ns.recv(1)\nprint('late record line', flush=True)\nprint('fixture error line', file=sys.stderr, flush=True)\n"
         worker = receiver._spawn(dispatch_id, 'fixture-acceptance', dict(argv=[sys.executable, '-c', worker_source, release_path], identity='reported'))
+        review.hints(h, check, home, installed, receiver)
         process = L.process_identity(worker.pid)
         dispatches.run(dispatch_id, D.digest(contract), process, now=time.time())
         # _reap consumes the real stdout and stderr streams and calls Recorder's real writer and hints.
@@ -261,6 +268,9 @@ def _v167_suite():
                     client.terminate()
                     client.wait(timeout=5)
             receiver.close()
+        manager.stop(report['unit'])
+        review.older_engine(h, check)
+        review.restart(h, check, here)
 
     here = Path(globals().get('__suite_file__', ROOT / 'scripts/suites/91_veldo_0167_setup_records.py')).resolve().parents[2]
     spec = importlib.util.spec_from_file_location('v167_fixture', here / 'proof/VELDO-0167/fixture.py')

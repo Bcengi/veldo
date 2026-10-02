@@ -840,6 +840,11 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if released:
             os.close(lock)
             lock = None
+        # Include record configuration in the engine transaction so its restart reads it.
+        if engine['state'] != 'current' or engine['restart_due']:
+            for path, _expected, _own, state, text, _added in record_plan['files']:
+                if path in (api['service_config'], api['installed_service_config']) and state == 'upgrade':
+                    engine['writes'].insert(0, ('configuration', path, text, 0o600))
         upgraded = upgrade_engine(plan, engine, runner, running)
         if released:
             lock = take_lock(root, create=False)
@@ -949,7 +954,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
             next_step = 'start it explicitly: systemctl --user start %s (the API unit %s starts with it)' % (
                 authority_unit, api['unit'])
-        if running and states['installed_service_config'] == 'upgrade':
+        if running and states['installed_service_config'] == 'upgrade' and upgraded.get('restart') != 'restarted':
             next_step = 'the service reads its new record configuration on restart: systemctl --user restart %s' % authority_unit
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, name, port))
