@@ -164,13 +164,14 @@ def mark(markers, tag, name, data):
     temporary = Path(markers) / ('%s.%s.%d.tmp' % (tag, name, os.getpid()))
     temporary.write_text(json.dumps(data))
     os.replace(temporary, path)
-def log(markers, tag, name, what):
+def log(markers, tag, name, what, clock=time.time):
     with open(Path(markers) / ('%s.%s.%s' % (tag, name, what)), 'a') as handle:
-        handle.write('%r\\n' % time.time())
+        handle.write('%r\\n' % clock())
 def beat(markers, tag, name, seconds):
     end = time.time() + seconds
     while time.time() < end:
         log(markers, tag, name, 'beat')
+        log(markers, tag, name, 'beat_monotonic', time.monotonic)
         time.sleep(0.1)
 '''
         child = base / 'child40.py'
@@ -671,19 +672,26 @@ sys.exit(payload.get('code', 0))
                 began, capped = started['runtime']
                 ended = runner('runtime').wait(capped) or {}
                 stubborn = marker(capped, 'stubborn')
-                beats = times(capped, 'stubborn', 'beat')
-                running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
+                beats = times(capped, 'stubborn', 'beat_monotonic')
                 supervision = getattr(capped, 'supervision', None) or {}
+                stamps = supervision.get('scope_timestamps') or {}
+                active = stamps.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+                stopping = stamps.get('ActiveExitTimestampMonotonic', 0) / 10 ** 6
+                inactive = stamps.get('InactiveEnterTimestampMonotonic', 0) / 10 ** 6
+                # RuntimeMaxSec starts at scope activation, before the receiver records running.
+                # All comparisons use CLOCK_MONOTONIC, including the manager's retained timestamps.
                 observed['runtime_cap'] = {'state': ended.get('state'), 'termination': ended.get('termination'),
-                                           'supervision': supervision, 'running_at': running_at,
-                                           'last_beat_after_running': round(beats[-1] - running_at, 2) if beats and running_at else None,
+                                           'supervision': supervision, 'beats_monotonic': beats,
+                                           'last_beat_after_active': beats[-1] - active if beats and active else None,
                                            'terms': times(capped, 'stubborn', 'term'),
                                            'unit_after': show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')}
                 check('containment/runtime-cap',
                       ended.get('state') == 'exited' and (ended.get('termination') or {}).get('deadline_stop') is True
                       and supervision.get('cause') == 'runtime_cap' and supervision.get('result') == 'timeout'
-                      and bool(stubborn) and not living(stubborn) and bool(beats) and running_at is not None
-                      and beats[-1] - running_at <= 1.2 + 0.5 + 1.0 and len(times(capped, 'stubborn', 'term')) >= 1
+                      and bool(stubborn) and not living(stubborn) and bool(beats)
+                      and 0 < active <= stopping <= inactive
+                      and active <= beats[0] and beats[-1] <= inactive
+                      and beats[-1] - active <= 1.2 + 0.5 + 1.0 and len(times(capped, 'stubborn', 'term')) >= 1
                       and supervision.get('empty') is True
                       and show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState') == 'not-found')
 

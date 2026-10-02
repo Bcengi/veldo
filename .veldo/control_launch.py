@@ -1935,6 +1935,7 @@ class Receiver:
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
                                         'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
                             'empty_at': emptied[0], 'empty_monotonic': emptied[1], 'result': result,
+                            'scope_timestamps': getattr(group, 'timestamps', {}),
                             'group': group.report() if group is not None else None,
                             'heartbeat': watch.summary() if watch is not None else None}
         if group is not None and empty:

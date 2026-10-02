@@ -502,7 +502,12 @@ class Group:
         """After the group is empty: the scope's result as systemd recorded it (`timeout` for the
         runtime cap, `oom-kill` for the memory cap), clearing a failed scope so it is not left loaded."""
         try:
-            shown = self._show(self.unit, ('Result', 'ActiveState'))
+            # Retain the manager's clock at the stop we already observe, before reset-failed
+            # unloads the scope. Receiver scheduling must not become the scope's runtime origin.
+            names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+                     'InactiveEnterTimestampMonotonic')
+            shown = self._show(self.unit, ('Result', 'ActiveState', *names))
+            self.timestamps = {name: int(shown.get(name) or 0) for name in names}
             if shown.get('ActiveState') == 'failed':
                 subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
                                timeout=TOOL_SECONDS, env=self.environment, stdin=subprocess.DEVNULL)

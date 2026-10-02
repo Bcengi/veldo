@@ -150,3 +150,13 @@ for that reason (review, 2026-09-24).
 2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `control_runner*.py`, which does not
 exist; the Runner is class `Runner` in `control_launch`, already in the footprint. Criteria and status
 unchanged.
+
+2026-10-02, runtime-cap timing correction (fix-flake-0040): suite 63 compares the
+stubborn descendant's monotonic beats with the scope's ActiveEnterTimestampMonotonic,
+using the unchanged 1.2 + 0.5 + 1.0 second bound, and requires no beat after the
+manager's InactiveEnterTimestampMonotonic. The receiver records running after
+scope activation and wrapper release, so that history time is a late origin.
+The supervisor retains the manager's activation, stop and inactive timestamps
+when it already reads the scope result, before reset-failed clears it. This is
+observation only; installed caps and stop behavior are unchanged. Selected suite
+and manual mutation results are recorded separately from the reviewer's gate.
