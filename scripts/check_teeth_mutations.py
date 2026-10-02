@@ -3103,7 +3103,9 @@ def cases():
     def contain(name, module, old, new, row, also=()):
         add(40, name, '63_veldo_0040_containment.py', module, old, new, ['containment/' + row], also)
 
-    contain('containment-inferred-exit-hides-cap', 'control_launch.py',
+    # Regression guard for the restructured cause precedence, not the pre-fix defect.
+    # The old receiver tested local cause before falling back to Stop.cause.
+    contain('containment-resolved-exit-hides-cap', 'control_launch.py',
             "        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):\n",
             "        if cause is None and result in ('timeout', 'oom-kill'):\n",
             'manager-cap-after-adapter-exit')

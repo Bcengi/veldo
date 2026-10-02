@@ -104,7 +104,7 @@ atexit.register(capture)
                 row['runtime_cap'] = data['observed'].get('runtime_cap')
                 row['raised'] = data['observed'].get('raised')
                 row['deterministic'] = {k: data['observed'].get(k) for k in (
-                    'manager_cap_after_adapter_exit', 'conclude_settles', 'conclude_unknown')}
+                    'manager_cap_after_adapter_exit', 'conclude_settles', 'conclude_reset_budget', 'conclude_unknown')}
             row['failed_details'] = [line.strip().split('SELFTEST FAIL: ', 1)[1]
                                      for line in prefix.with_suffix('.log').read_text().splitlines()
                                      if 'SELFTEST FAIL:' in line]
