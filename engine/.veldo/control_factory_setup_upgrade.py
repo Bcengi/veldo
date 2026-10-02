@@ -180,6 +180,9 @@ def inspect(laid, record, record_path, api_unit=None):
         if now is not None and now != body:
             writes.append(('unit', path, body, 0o644))
     fresh_configs = dict(laid['receivers'])
+    # VELDO-0170 owns this key even when the installed engine is already current.
+    fresh_configs = {path: {key: value for key, value in receiver.items() if key != 'host_trust'}
+                     for path, receiver in fresh_configs.items()}
     if laid.get('ingress') is not None:
         with contextlib.suppress(ValueError):
             fresh_configs[os.path.join(laid['config_dir'], 'channel-ingress.json')] = json.loads(laid['ingress'])

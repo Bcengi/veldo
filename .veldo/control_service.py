@@ -670,7 +670,29 @@ def status(unit, runner=None):
         ['show', '-p', 'LoadState', '-p', 'ActiveState', '-p', 'SubState', '-p', 'MainPID', '-p', 'NRestarts',
          '-p', 'Result', '-p', 'FragmentPath', _unit(unit)])
     shown = dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
-    return dict(shown, unit=unit, show_rc=rc)
+    report = dict(shown, unit=unit, show_rc=rc)
+    fragment = shown.get('FragmentPath')
+    if fragment:
+        with contextlib.suppress(OSError, ValueError, Refused):
+            for line in Path(fragment).read_text().splitlines():
+                if line.startswith('ExecStart='):
+                    argv = shlex.split(line.partition('=')[2])
+                    if 'serve' in argv:
+                        report['receivers'] = receiver_status(load_config(argv[argv.index('serve') + 1]))
+    return report
+
+
+def receiver_status(config):
+    """Read each installed receiver on every inspection, so a setup repair needs no restart."""
+    missing = []
+    for repository, path in sorted((config.get('receiver') or {}).get('configs', {}).items()):
+        with contextlib.suppress(OSError, ValueError):
+            receiver = json.loads(Path(path).read_text())
+            if not receiver.get('host_trust'):
+                missing.append({'repository': repository, 'configuration': path,
+                                'refusal': 'host_trust_required:receiver_configuration',
+                                'repair': 'run veldo factory setup again with the arguments the host was laid down with'})
+    return {'refusals': missing, 'metrics': {'host_trust_required': len(missing)}}
 
 
 def start(unit, runner=None):
@@ -1405,7 +1427,8 @@ class Service:
                 'journal_head': head[1] if head else S.GENESIS_DIGEST, 'entities': entities,
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
-                'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status()}
+                'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status(),
+                'receivers': receiver_status(self.config)}
 
     def commit_ownership(self):
         """VELDO-0189: the upgrade committed (setup removed the previous engine after this service answered),

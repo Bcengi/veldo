@@ -24,6 +24,8 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0170_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/62_veldo_0039_dispatch.py"
+  - "scripts/suites/70_veldo_0069_bindings.py"
   - "scripts/suites/*_veldo_0171_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -143,3 +145,10 @@ is one step of that re-run. depends_on adds VELDO-0171, so the work item moves f
 bin/veldo leaves the footprint. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-10-02: implementation on build-veldo-0170. The receiver names missing configuration
+trust before accepting work; lifecycle status and service inspection list affected configurations.
+Factory setup gains an installation-derived host trust step even on a current engine.
+The footprint adds suites 62 and 70 because their old receiver fixtures or assertions
+explicitly rely on the absent-trust behavior this criterion replaces. Proof is in progress;
+status remains ready and independent review is pending.
