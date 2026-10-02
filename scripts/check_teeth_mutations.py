@@ -3025,11 +3025,13 @@ def cases():
              "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
              "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
              'launch-results')
+    # A transport can deliver the wrapper identity and worker output in one read. Suite 62
+    # coalesces those lines after the contained wrapper's release, so this records the worker's
+    # forged identity without waiting for output during the containment/heartbeat handshake.
     dispatch('dispatch-identity-from-worker-output', 'control_launch.py',
              "        line, _, carry = pending.partition(b'\\n')\n        message = json.loads(line)\n",
              "        line, _, carry = pending.partition(b'\\n')\n"
-             "        if b'\\n' in carry or select.select([worker.stdout], [], [], 5)[0]:  # defect: a later line is read\n"
-             "            carry += b'' if b'\\n' in carry else os.read(worker.stdout.fileno(), 65536)\n"
+             "        if b'\\n' in carry:  # defect: worker output replaces the wrapper's identity\n"
              "            line, _, carry = carry.partition(b'\\n')\n"
              "        message = json.loads(line)\n",
              'launch-results')
