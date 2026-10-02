@@ -164,13 +164,14 @@ def mark(markers, tag, name, data):
     temporary = Path(markers) / ('%s.%s.%d.tmp' % (tag, name, os.getpid()))
     temporary.write_text(json.dumps(data))
     os.replace(temporary, path)
-def log(markers, tag, name, what):
+def log(markers, tag, name, what, clock=time.time):
     with open(Path(markers) / ('%s.%s.%s' % (tag, name, what)), 'a') as handle:
-        handle.write('%r\\n' % time.time())
+        handle.write('%r\\n' % clock())
 def beat(markers, tag, name, seconds):
     end = time.time() + seconds
     while time.time() < end:
         log(markers, tag, name, 'beat')
+        log(markers, tag, name, 'beat_monotonic', time.monotonic)
         time.sleep(0.1)
 '''
         child = base / 'child40.py'
@@ -417,9 +418,10 @@ sys.exit(payload.get('code', 0))
 
         emitted, raised, regions, observed = set(), [], [], {}
 
-        def check(label, condition):
+        def check(label, condition, detail=None):
             emitted.add(label)
-            expect('VELDO-0040 ' + label, bool(condition))
+            suffix = ': ' + json.dumps(detail, sort_keys=True) if not condition and detail else ''
+            expect('VELDO-0040 ' + label + suffix, bool(condition))
 
         @contextlib.contextmanager
         def region(*labels):
@@ -430,7 +432,7 @@ sys.exit(payload.get('code', 0))
                 raised.append((labels[0], repr(error)))
                 for label in labels:
                     if label not in emitted:
-                        check(label, False)
+                        check(label, False, {'raised': repr(error)} if label == 'containment/runtime-cap' else None)
 
         started, made = {}, []
         try:
@@ -671,21 +673,52 @@ sys.exit(payload.get('code', 0))
                 began, capped = started['runtime']
                 ended = runner('runtime').wait(capped) or {}
                 stubborn = marker(capped, 'stubborn')
-                beats = times(capped, 'stubborn', 'beat')
-                running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
+                beats = times(capped, 'stubborn', 'beat_monotonic')
                 supervision = getattr(capped, 'supervision', None) or {}
-                observed['runtime_cap'] = {'state': ended.get('state'), 'termination': ended.get('termination'),
-                                           'supervision': supervision, 'running_at': running_at,
-                                           'last_beat_after_running': round(beats[-1] - running_at, 2) if beats and running_at else None,
-                                           'terms': times(capped, 'stubborn', 'term'),
-                                           'unit_after': show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')}
-                check('containment/runtime-cap',
-                      ended.get('state') == 'exited' and (ended.get('termination') or {}).get('deadline_stop') is True
-                      and supervision.get('cause') == 'runtime_cap' and supervision.get('result') == 'timeout'
-                      and bool(stubborn) and not living(stubborn) and bool(beats) and running_at is not None
-                      and beats[-1] - running_at <= 1.2 + 0.5 + 1.0 and len(times(capped, 'stubborn', 'term')) >= 1
-                      and supervision.get('empty') is True
-                      and show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState') == 'not-found')
+                stamps = supervision.get('scope_timestamps') or {}
+                active = stamps.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+                stopping = stamps.get('ActiveExitTimestampMonotonic', 0) / 10 ** 6
+                inactive = stamps.get('InactiveEnterTimestampMonotonic', 0) / 10 ** 6
+                # RuntimeMaxSec starts at scope activation, before the receiver records running.
+                # All comparisons use CLOCK_MONOTONIC, including the manager's retained timestamps.
+                wall_beats = times(capped, 'stubborn', 'beat')
+                running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
+                terms = times(capped, 'stubborn', 'term')
+                unit_error = None
+                try:
+                    unit_after = show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')
+                except (OSError, subprocess.SubprocessError) as error:
+                    unit_after, unit_error = None, repr(error)
+                stubborn_living = living(stubborn)
+                gap = beats[-1] - active if beats and active else None
+                checks = {
+                    'state_exited': ended.get('state') == 'exited',
+                    'deadline_stop': (ended.get('termination') or {}).get('deadline_stop') is True,
+                    'cause_runtime_cap': supervision.get('cause') == 'runtime_cap',
+                    'result_timeout': supervision.get('result') == 'timeout',
+                    'stubborn_present': bool(stubborn),
+                    'stubborn_not_living': not stubborn_living,
+                    'beats_present': bool(beats),
+                    'timestamps_ordered': 0 < active <= stopping <= inactive,
+                    'first_beat_after_active': bool(beats) and active <= beats[0],
+                    'last_beat_before_inactive': bool(beats) and beats[-1] <= inactive,
+                    'runtime_bound': gap is not None and gap <= 1.2 + 0.5 + 1.0,
+                    'term_present': len(terms) >= 1,
+                    'supervision_empty': supervision.get('empty') is True,
+                    'unit_not_found': unit_after == 'not-found',
+                }
+                observed['runtime_cap'] = {
+                    'state': ended.get('state'), 'termination': ended.get('termination'),
+                    'supervision': supervision, 'beats_monotonic': beats, 'beats': wall_beats,
+                    'active': active, 'stopping': stopping, 'inactive': inactive,
+                    'running_at': running_at, 'began': began,
+                    'last_beat_after_active': gap,
+                    'last_beat_after_running': wall_beats[-1] - running_at if wall_beats and running_at else None,
+                    'bound': 1.2 + 0.5 + 1.0, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
+                    'terms': terms, 'term_count': len(terms), 'unit_after': unit_after, 'unit_error': unit_error,
+                    'checks': checks, 'false_conjuncts': [name for name, ok in checks.items() if not ok],
+                }
+                check('containment/runtime-cap', all(checks.values()), observed['runtime_cap'])
 
             # AC3: a cooperative stop, and the escalation past a signal-ignoring descendant
             with region('containment/cooperative-stop', 'containment/stop-escalation'):

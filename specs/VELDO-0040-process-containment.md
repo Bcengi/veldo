@@ -150,3 +150,19 @@ for that reason (review, 2026-09-24).
 2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `control_runner*.py`, which does not
 exist; the Runner is class `Runner` in `control_launch`, already in the footprint. Criteria and status
 unchanged.
+
+2026-10-02, runtime-cap investigation (fix-flake-0040): the row now names every
+false conjunct and records the compared values for failed_details. The earlier
+late-origin explanation was incorrect: recording running after activation
+reduces the original measured gap. The original f1e1abb9 suite and production
+code passed ten loaded rounds of two simultaneous suite copies plus a pinned
+busy loop on each available CPU. No false conjunct or production cause was
+reproduced; the closest gap was 1.6435189247131348 seconds against 2.7 seconds.
+The monotonic scope-activation origin remains a correct, stricter measurement,
+not an established flake fix. The existing result read retains activation,
+stop and inactive timestamps before clearing the scope. Installed controls,
+assertion bounds and timeouts are unchanged. Proof records observations and
+limitations separately from the reviewer's gate. The current row passed normally,
+in the inherited gate shell environment and in ten matching loaded rounds. The
+runtime-cap-disabled mutation failed by assertion with complete diagnostics;
+the historical gate red remains unreproduced and its cause unknown.
