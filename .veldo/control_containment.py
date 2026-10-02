@@ -512,13 +512,11 @@ class Group:
                 if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
                     timestamps = {name: int(shown.get(name) or 0) for name in names}
                     self.timestamps = timestamps
-                    # Clear a failed scope always (a skipped reset leaves it loaded for good), within
-                    # what is left of the settle budget but never less than a second.
                     remaining = end - time.monotonic()
-                    if shown.get('ActiveState') == 'failed':
+                    if shown.get('ActiveState') == 'failed' and remaining > 0:
                         with contextlib.suppress(OSError, subprocess.SubprocessError):
                             subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
-                                           timeout=min(TOOL_SECONDS, max(remaining, 1.0)), env=self.environment,
+                                           timeout=min(TOOL_SECONDS, remaining), env=self.environment,
                                            stdin=subprocess.DEVNULL)
                     return shown['Result']
             except (OSError, subprocess.SubprocessError, ValueError):
