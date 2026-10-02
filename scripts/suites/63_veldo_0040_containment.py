@@ -432,7 +432,7 @@ sys.exit(payload.get('code', 0))
                 raised.append((labels[0], repr(error)))
                 for label in labels:
                     if label not in emitted:
-                        check(label, False)
+                        check(label, False, {'raised': repr(error)} if label == 'containment/runtime-cap' else None)
 
         started, made = {}, []
         try:
@@ -684,7 +684,11 @@ sys.exit(payload.get('code', 0))
                 wall_beats = times(capped, 'stubborn', 'beat')
                 running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
                 terms = times(capped, 'stubborn', 'term')
-                unit_after = show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')
+                unit_error = None
+                try:
+                    unit_after = show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')
+                except (OSError, subprocess.SubprocessError) as error:
+                    unit_after, unit_error = None, repr(error)
                 stubborn_living = living(stubborn)
                 gap = beats[-1] - active if beats and active else None
                 checks = {
@@ -711,7 +715,7 @@ sys.exit(payload.get('code', 0))
                     'last_beat_after_active': gap,
                     'last_beat_after_running': wall_beats[-1] - running_at if wall_beats and running_at else None,
                     'bound': 1.2 + 0.5 + 1.0, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
-                    'terms': terms, 'term_count': len(terms), 'unit_after': unit_after,
+                    'terms': terms, 'term_count': len(terms), 'unit_after': unit_after, 'unit_error': unit_error,
                     'checks': checks, 'false_conjuncts': [name for name, ok in checks.items() if not ok],
                 }
                 check('containment/runtime-cap', all(checks.values()), observed['runtime_cap'])
