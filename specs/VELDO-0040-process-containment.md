@@ -167,33 +167,32 @@ in the inherited gate shell environment and in ten matching loaded rounds. The
 runtime-cap-disabled mutation failed by assertion with complete diagnostics;
 the historical gate red remains unreproduced and its cause unknown.
 
-2026-10-02, measured manager-result loss (fix-flake-0040): the reviewer's gate
-on cd3df736 measured a stopped descendant within the runtime bound, but an
-exited dispatch with deadline_stop false, cause exit, no retained scope clocks,
-and six false runtime-cap conjuncts. The cap worked; final manager evidence
-was lost in conclude's early or failed final read. Stop.adapter_exited only
-sets Stop.cause; the old local cause check already mapped a successfully read
-timeout to runtime_cap. The precedence restructuring is a regression guard,
-not the measured defect. Group.conclude now waits within SETTLE_SECONDS for failed or inactive,
-bounds each show call by the remaining budget, retries tool and timestamp parse
-failures, and records unknown when evidence remains unreadable. The receiver
-resolves both cause sources explicitly: manager timeout and oom-kill outrank
-inferred exit, while requested, deadline, usage, heartbeat and configuration
-stops keep precedence. Unknown manager evidence cannot silently become exit.
-Three deterministic suite 63 rows cover cap precedence after adapter exit,
-settlement from deactivating and unreadable evidence; each has a registered
-mutation. The live runtime-cap row and its diagnostics and bounds are retained.
-Selected-suite verification and manual mutation results are in proof/VELDO-0040;
-the canonical gate remains the reviewer's responsibility.
+2026-10-02, measured manager-result loss (fix-flake-0040): the reviewer first
+observed lost final scope evidence at cd3df736. A bounded terminal-state read
+and cause-precedence guards were added. The early-conclude diagnosis was
+superseded by the measured sequence at 074dbdcd: RuntimeMaxSec sends SIGTERM,
+the adapter exits 143, Stop.adapter_exited terminates and kills the remaining
+group, and the manager can collect the scope before conclude. A not-found
+unit's inactive/success/zero-clock defaults are not evidence. Waiting longer
+cannot recover the result or make it a reliable cap witness.
 
-2026-10-02, proof review correction (fix-flake-0040): the precedence mutation
-is named containment-resolved-exit-hides-cap to identify its role as a guard
-on the restructured receiver. Explicit causes in its suite row now come from
-the real request, meter, deadline and heartbeat paths through receiver begin().
-The conclude-settles falsifier is also checked against the complete pre-fix
-conclude rebuilt from ffb12c22 in a temporary copy: the target fails by
-assertion and its region completes. Restoring only the pre-fix receiver leaves
-the precedence row green with the fixed conclude. reset-failed shares the
-remaining SETTLE_SECONDS budget and is skipped when no time remains. Only
-suite 63 normal, gate-environment and temporary-copy checks run in this review
-continuation; no load mode or canonical gate runs here.
+2026-10-02, recorded stop evidence (fix-flake-0040): Group.attach now retains
+ActiveEnterTimestampMonotonic and installed RuntimeMaxUSec and TimeoutStopUSec
+while the loaded scope exists, before releasing the engine. The receiver
+retains adapter exit and escalation times on CLOCK_MONOTONIC. A signal exit
+(including the wrapper's 143 status), terminate or kill at or beyond activation
+plus RuntimeMaxSec establishes runtime_cap and deadline_stop when no explicit
+cause applies. Requested, usage_cap, deadline, paid_api, configuration_stop and
+heartbeat_missing keep precedence. Group samples memory.events oom_kill before
+receiver cleanup; retained OOM kills or a loaded manager oom-kill establish
+memory_cap. Only LoadState=loaded permits a manager result; not-found is
+unknown. The effective result and raw manager_result are recorded separately.
+
+The runtime row uses the saved activation, receiver stop and empty clocks,
+retaining every conjunct and its 1.2 + 0.5 + 1.0 bound. Six new deterministic
+rows cover start evidence, signal exit plus cleanup after the cap with a
+collected unit, not-found unknown, ordinary exit before the cap, every explicit
+cause, and retained OOM evidence. Each has a named mutation. Two complete
+production modules from 9a48b4ea are rebuilt in a temporary copy against the
+new rows. Proof records selected-suite results and assertion failures; the
+reviewer owns full verification and the VELDO-0127 digest-bound live recapture.

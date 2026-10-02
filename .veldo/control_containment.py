@@ -353,6 +353,7 @@ class Group:
         self.systemctl = qualification['host']['systemctl']
         self.settings = {name: entry['value'] for name, entry in qualification['settings'].items()}
         self.cgroup, self.events, self.installed = None, None, {}
+        self.start_evidence, self.oom_kill = {}, 0
 
     def report(self):
         return {'unit': self.unit, 'slice': self.slice, 'cgroup': self.cgroup}
@@ -435,7 +436,7 @@ class Group:
         declared control is installed, from the kernel's files and the manager's unit; then open the
         group's populated events. Returns the named problems, [] when contained as declared."""
         shown = self._show(self.unit, ('ControlGroup', 'Slice', 'RuntimeMaxUSec', 'TimeoutStopUSec', 'OOMPolicy',
-                                       'KillMode'))
+                                       'KillMode', 'LoadState', 'ActiveEnterTimestampMonotonic'))
         cgroup = shown.get('ControlGroup') or ''
         if (not cgroup or cgroup_of(pid) != cgroup or cgroup.rsplit('/', 1)[-1] != self.unit
                 or shown.get('Slice') != self.slice):
@@ -447,7 +448,12 @@ class Group:
                 'RuntimeMaxUSec': span_us(shown.get('RuntimeMaxUSec')),
                 'TimeoutStopUSec': span_us(shown.get('TimeoutStopUSec')),
                 'OOMPolicy': shown.get('OOMPolicy'), 'KillMode': shown.get('KillMode'), 'Max file size': file_limit(pid)}
+        self.start_evidence = {
+            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),
+            'RuntimeMaxUSec': read['RuntimeMaxUSec'], 'TimeoutStopUSec': read['TimeoutStopUSec']}
         problems = []
+        if shown.get('LoadState') != 'loaded' or self.start_evidence['ActiveEnterTimestampMonotonic'] <= 0:
+            problems.append('spawn_failed:containment:activation')
         for name, controls in self._expected().items():
             self.installed[name] = {control: read[control] for control in controls}
             if self.installed[name] != controls:
@@ -459,9 +465,19 @@ class Group:
         text = _read(CGROUP / self.cgroup.lstrip('/') / 'cgroup.procs') if self.cgroup else None
         return [int(line) for line in (text or '').split()]
 
+    def sample_memory(self):
+        """Retain OOM kills while the cgroup exists, before receiver cleanup can remove it."""
+        if self.cgroup:
+            text = _read(CGROUP / self.cgroup.lstrip('/') / 'memory.events') or ''
+            for line in text.splitlines():
+                key, value = line.split()
+                if key == 'oom_kill':
+                    self.oom_kill = max(self.oom_kill, int(value))
+
     def populated(self):
         """Whether any process is left in the group (read from its cgroup.events, which also consumes
         the pending event); False once the group directory is gone."""
+        self.sample_memory()
         if self.events is not None:
             try:
                 return b'populated 1' in os.pread(self.events, 4096, 0).splitlines()
@@ -471,12 +487,14 @@ class Group:
 
     def terminate(self):
         """SIGTERM to every process in the group."""
+        self.sample_memory()
         for pid in self.members():
             with contextlib.suppress(ProcessLookupError, PermissionError):
                 os.kill(pid, signal.SIGTERM)
 
     def kill(self):
         """Kill every process in the group and its descendants at once (cgroup.kill)."""
+        self.sample_memory()
         if self.cgroup:
             with contextlib.suppress(OSError):
                 (CGROUP / self.cgroup.lstrip('/') / 'cgroup.kill').write_text('1')
@@ -507,9 +525,10 @@ class Group:
         self.timestamps = {}
         while (remaining := end - time.monotonic()) > 0:
             try:
-                shown = self._show(self.unit, ('Result', 'ActiveState', *names),
+                shown = self._show(self.unit, ('LoadState', 'Result', 'ActiveState', *names),
                                    timeout=min(TOOL_SECONDS, remaining))
-                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
+                if (shown.get('LoadState') == 'loaded'
+                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):
                     timestamps = {name: int(shown.get(name) or 0) for name in names}
                     self.timestamps = timestamps
                     remaining = end - time.monotonic()
@@ -519,6 +538,8 @@ class Group:
                                            timeout=min(TOOL_SECONDS, remaining), env=self.environment,
                                            stdin=subprocess.DEVNULL)
                     return shown['Result']
+                if shown.get('LoadState') == 'not-found':
+                    break
             except (OSError, subprocess.SubprocessError, ValueError):
                 pass
             time.sleep(min(0.05, max(0, end - time.monotonic())))

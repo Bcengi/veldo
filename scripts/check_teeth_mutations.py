@@ -3106,13 +3106,39 @@ def cases():
     # Regression guard for the restructured cause precedence, not the pre-fix defect.
     # The old receiver tested local cause before falling back to Stop.cause.
     contain('containment-resolved-exit-hides-cap', 'control_launch.py',
-            "        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):\n",
-            "        if cause is None and result in ('timeout', 'oom-kill'):\n",
+            "        if cause in (None, 'exit'):\n",
+            "        if cause is None:\n",
             'manager-cap-after-adapter-exit')
     contain('containment-result-before-settled', 'control_containment.py',
-            "                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):\n",
+            "                if (shown.get('LoadState') == 'loaded'\n"
+            "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",
             "                if shown.get('Result'):\n",
             'conclude-settles')
+    contain('containment-recorded-runtime-ignored', 'control_launch.py',
+            "            elif manager_result == 'timeout' or runtime_reached:\n",
+            "            elif manager_result == 'timeout':\n",
+            'recorded-runtime-after-collection')
+    contain('containment-not-found-is-success', 'control_containment.py',
+            "                if (shown.get('LoadState') == 'loaded'\n",
+            '                if (True\n',
+            'not-found-unknown')
+    contain('containment-normal-exit-unknown', 'control_launch.py',
+            "            elif code == 0:\n                cause = 'exit'\n",
+            "            elif code == 0:\n                cause = 'unknown'\n",
+            'normal-exit-before-cap')
+    contain('containment-recorded-cap-overrides-explicit', 'control_launch.py',
+            "        if cause in (None, 'exit'):\n",
+            '        if True:\n',
+            'recorded-cap-explicit-precedence')
+    contain('containment-start-activation-lost', 'control_containment.py',
+            "            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),\n",
+            "            'ActiveEnterTimestampMonotonic': 0,\n",
+            'start-evidence')
+    contain('containment-oom-evidence-lost', 'control_containment.py',
+            '                    self.oom_kill = max(self.oom_kill, int(value))\n',
+            '                    self.oom_kill = 0\n',
+            'retained-oom-before-cleanup')
+
     contain('containment-unreadable-result-silent', 'control_containment.py',
             "        return 'unknown'\n",
             "        return None  # defect: unreadable evidence silently becomes an ordinary exit\n",

@@ -134,111 +134,69 @@ not run. The gate byproducts are excluded. This is selected-suite evidence, not
 a gate stamp or a reproduced fix. The reported historical red remains unresolved;
 a future red should now carry the missing per-conjunct evidence.
 
-## Measured manager-result loss, 2026-10-02
+## Recorded cause after scope collection, 2026-10-02
 
-This continuation supersedes the unresolved diagnosis above. The reviewer's
-gate on cd3df736 (which includes ffb12c22) measured six false runtime-cap
-conjuncts: deadline_stop, cause_runtime_cap, result_timeout, timestamps_ordered,
-last_beat_before_inactive and runtime_bound. The descendant did stop: its last
-beat was 2.04 seconds after running, term_count was 2, it was no longer living,
-and the scope was not-found afterward. The receiver instead recorded exited,
-returncode 143, deadline_stop false, cause exit and zero scope clocks.
+The measured sequence at the reviewer's 074dbdcd supersedes the earlier
+conclude-too-early explanation. RuntimeMaxSec sent SIGTERM; the adapter exited
+143; Stop.adapter_exited started terminate then cgroup.kill; the group emptied;
+and conclude read a collected scope. The not-found unit supplied inactive,
+success and zero clocks. The six false conjuncts were deadline_stop,
+cause_runtime_cap, result_timeout, timestamps_ordered,
+last_beat_before_inactive and runtime_bound. The reported last beat was 2.74
+seconds after running, term_count was 2, and the stubborn process was dead.
+The earlier settlement change cannot recover collected evidence, and cleanup
+can also change the manager result. More waiting is not a solution.
 
-The production final read could precede the manager's terminal state or fail.
-It now retries within SETTLE_SECONDS, with each show timeout capped by the
-remaining budget, and reads Result and all clocks from the same terminal
-snapshot. ValueError from a malformed clock is retried too. Evidence still
-unreadable at the deadline is recorded as result unknown and cause unknown
-unless an explicit stop decision already explains the stop. A reset-failed
-failure cannot discard a successfully captured result. Its timeout is capped by
-the remaining settle budget, and reset is skipped when that budget is exhausted.
+Group.attach records scope_start from the loaded scope before engine release:
+ActiveEnterTimestampMonotonic, installed RuntimeMaxUSec and TimeoutStopUSec.
+Receiver._reap retains the adapter-exit monotonic time and its own escalation
+steps. A signal exit (negative signal or shell-style 128 plus signal), terminate
+or kill at or after activation plus the installed runtime cap establishes
+runtime_cap and deadline_stop. The explicit causes requested, usage_cap,
+deadline, paid_api, configuration_stop and heartbeat_missing win over inferred
+caps. The receiver also retains its contract deadline.
 
-The receiver now resolves its local cause and Stop.cause before applying
-manager cap precedence. Timeout maps to runtime_cap and deadline_stop true;
-oom-kill maps to memory_cap. Both outrank inferred exit. All existing explicit
-causes retain precedence: requested, deadline, usage_cap, heartbeat_missing,
-configuration_stop and paid_api. Source inspection qualifies the reported
-mechanism: in ffb12c22 Stop.adapter_exited sets Stop.cause, not the receiver's
-local cause. A successfully read timeout already overrides that particular
-inference in that version. The measured missing result identifies conclude as the production defect.
-The old local-cause cap check already handled a successfully read timeout after
-adapter exit. The renamed containment-resolved-exit-hides-cap mutation guards
-the restructured precedence after resolving both cause sources; it does not
-recreate a historical production bug.
+For memory, the minimal additional witness is memory.events oom_kill, sampled
+on population observations and immediately before terminate or kill. The maximum
+observed count survives removal of the cgroup. A retained OOM kill or loaded
+manager oom-kill establishes memory_cap, ahead of elapsed runtime evidence.
+This does not claim to recover a counter that disappeared before any observation.
 
-Three deterministic rows use a fake systemctl show sequence and fake monotonic
-clock, with no timing thresholds or live process scheduling:
+Group.conclude accepts manager results and terminal clocks only with
+LoadState=loaded. Not-found ends the read as unknown. Supervision preserves
+manager_result separately from the effective result: inferred runtime_cap
+records timeout, even when manager_result is unknown or success. No manager
+clock is synthesized. The live row uses saved scope_start activation,
+stop_monotonic and empty_monotonic. All existing predicates remain, including
+the timeout result, timestamp order, empty group, absent unit and unchanged
+1.2 + 0.5 + 1.0 runtime bound.
 
-| Row | Evidence | Registered mutation |
-|-|-|-|
-| containment/manager-cap-after-adapter-exit | Adapter exit while populated, then empty; timeout and oom-kill classification; every explicit cause preserved | containment-resolved-exit-hides-cap |
-| containment/conclude-settles | Deactivating, failed show or malformed clock followed by failed or inactive; final result and clocks retained before reset | containment-result-before-settled |
-| containment/conclude-unknown | Persistent unreadable, timed-out, missing, deactivating or malformed evidence; bounded unknown result and cause | containment-unreadable-result-silent |
+| Deterministic row | Mutation |
+|-|-|
+| containment/start-evidence | containment-start-activation-lost |
+| containment/recorded-runtime-after-collection | containment-recorded-runtime-ignored |
+| containment/not-found-unknown | containment-not-found-is-success |
+| containment/normal-exit-before-cap | containment-normal-exit-unknown |
+| containment/recorded-cap-explicit-precedence | containment-recorded-cap-overrides-explicit |
+| containment/retained-oom-before-cleanup | containment-oom-evidence-lost |
 
-The live runtime-cap assertion and diagnostics are unchanged. Suite 63 now adds
-six assertions, including the three region-completion rows, for 52 total with
-the harness's shared assertions. The load driver now runs one suite at a time
-with one pinned burner per available CPU, per the owner's run constraint.
-Earlier simultaneous-load records above remain historical evidence.
+The fake receiver drives real begin(), adapter exit, terminate and kill, with
+both 143 and negative SIGTERM statuses. The ordinary-exit row finishes before
+the cap even if conclude later exhausts its read budget. The precedence row
+drives all six explicit paths with both runtime and memory evidence. Existing
+manager precedence, bounded settlement and unreadable-result rows remain.
 
-Historical verification before this proof correction: manager-result-runs.json records the exact
-suite and production hashes, all three deterministic observations and the live
-runtime-cap diagnostics. Normal and inherited gate shell runs each passed
-52 assertions with zero failures or raised regions. Three sequential loaded
-runs also passed 52 each. All 20 pinned burners accumulated CPU ticks (minimum
-4292), and all were terminated and reaped by their recorded child PIDs. The
-largest loaded activation-based last-beat gap was 1.8039589929394424 seconds,
-below the unchanged 2.7 second bound. The proof driver uses the gate's bash -c
-shell with the inherited environment, not the canonical gate itself.
+recorded_cause_check.py runs only suite 63, one copy at a time. It reads the
+nine selected mutation registrations as AST data without importing or running
+the mutation driver, and saves exact diffs and source hashes. Its pre-fix mode
+replaces both complete production files with engine sources from 9a48b4ea in
+a temporary copy, keeping the current suite. The normal and gate modes run
+the selected suite directly and through the gate's bash -c shell with inherited
+environment. Detailed observations and results are in recorded-cause-runs.json.
 
-manager_result_check.py reads only the three manager-result registrations as
-AST data, applies each edit to a temporary production copy and invokes only
-suite 63, sequentially. It also rebuilds the pre-fix conclude and receiver
-methods from ffb12c22 and removes the reset budget guard in separate copies.
-It never imports or executes the teeth driver.
-manager-result-mutations.json retains the corrected runs and rebuild evidence
-with each exact diff, source hash and target row. The renamed guard replaces
-the old inferred-exit-hides-cap artifact; its historical red only demonstrated
-the new precedence structure, not the pre-fix defect.
-The precedence row now drives requested, usage_cap, deadline, heartbeat_missing,
-configuration_stop and paid_api through the receiver's real begin() path. It
-asserts the resulting cause, cooperative first step and deadline_stop value.
-The settlement row records per-case exceptions as assertion evidence so a
-pre-fix malformed clock cannot bypass the target assertion. The same row checks
-reset-failed timing near and at budget exhaustion.
-
-The rebuilt ffb12c22 conclude makes containment/conclude-settles red by
-assertion, with that region completing. It returns success after a single
-deactivating read, returns None after a failed show, and raises ValueError on
-malformed clocks. All six settlement cases fail the expected final snapshot.
-The separate conclude-unknown region also raises with the pre-fix malformed
-clock; this does not substitute for the settlement assertion failure.
-Rebuilding the pre-fix receiver with the fixed conclude leaves the precedence
-row green, confirming that the old local-cause check already handled caps.
-
-| Temporary-copy case | Passed | Failed | Target red by assertion |
-|-|-:|-:|-|
-| containment-resolved-exit-hides-cap | 50 | 2 | yes |
-| containment-result-before-settled | 50 | 2 | yes |
-| containment-unreadable-result-silent | 51 | 1 | yes |
-| containment-pre-fix-conclude | 49 | 3 | yes |
-| containment-pre-fix-receiver-control | 51 | 1 | no, expected green control |
-| containment-reset-past-budget | 51 | 1 | yes |
-
-Every target region completes; only the pre-fix conclude's separate unknown
-region raises. The pre-fix receiver's only failure is conclude-unknown, since
-that receiver predates explicit unknown classification. The reset-only negative
-control preserves all ordinary settlement cases but fails the reset budget.
-
-Review correction verification is in review-correction-runs.json: normal and
-inherited gate-shell suite 63 runs each passed 52 assertions with zero failures
-or raised regions. Both reset budget cases ended at SETTLE_SECONDS (5 seconds),
-retained timeout and all clocks, and skipped reset when no time remained. The
-live runtime-cap row passed unchanged in both runs. No load mode ran during
-this review correction. Source hashes bind these observations to the tested
-suite and production modules; earlier loaded observations remain historical.
-
-The full selftest, canonical gate and both gate mutation drivers were not run; their result and
-the merged-tree stamp belong to the reviewer. Selected-suite exit code 2 on
-all-green partial runs is the harness's expected partial-run status, not a
-canonical verification claim.
+Earlier manager-result-runs.json, manager-result-mutations.json and
+review-correction-runs.json are historical evidence for the superseded approach.
+Their old loaded passes did not establish a reliable cause witness. No load
+mode, full selftest, canonical gate, gate mutation driver or VELDO-0127 live
+capture runs in this continuation. Partial-suite all-green status exits 2 by
+design; these results are not a gate stamp or independent approval.
