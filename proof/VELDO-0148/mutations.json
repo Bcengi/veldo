@@ -28,6 +28,32 @@
  "mutants": [
   {
    "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-clean-exit-invents-stop.diff",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "d5b089b5782f4c7ce90adbdc414acbca372ad40161d476a5481d496d9cae1e5a",
+   "name": "receiver148-clean-exit-invents-stop",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/normal-exit"
+   ],
+   "source_sha256": "f5848e16b8e0ac7b5df087adc2d0b1b18da73ec71cf523981d121341e0833d83",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-success-collected-before-read.diff",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "af79782b327bef1a0959093131fa54590b442831cc257ba659be51cdea81afd5",
+   "name": "receiver148-success-collected-before-read",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/settled-scope"
+   ],
+   "source_sha256": "f5848e16b8e0ac7b5df087adc2d0b1b18da73ec71cf523981d121341e0833d83",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/reland148-stale-left-failed.diff",
    "module": ".veldo/control_landing_station.py",
    "mutant_sha256": "83f80fa50d28954e6dc90ce18e85259d115a6f74202c43c9b9ca1ab1b56446a1",
@@ -277,7 +303,7 @@
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "All 19 registrations statically refreshed. Only the wake target changed. Manual wake rejection is recorded separately in manual-wake.json. Mutation checker execution remains reserved for the reviewer.",
+ "status": "All 21 registrations statically refreshed, including two receiver regression falsifiers. No mutation execution is claimed for this repair; the reviewer runs findings 40 and 148.",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
- "suite_sha256": "3efa86a7f7b37d654726f0066b357233cb62861b40112b259baeb8eeda13b79b"
+ "suite_sha256": "eab4ec732bb4415f6df4d32b94cad448e97c8a14851e59f456ec5c267122d058"
 }

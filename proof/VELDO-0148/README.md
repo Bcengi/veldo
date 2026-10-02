@@ -19,6 +19,81 @@ run the installed launch executable. Another local clone moves the remote before
 publication clone's pre-push hook. Engine output comes from a generated fake; no real model,
 login, external service or real credential is used. Each row reports once.
 
+## Receiver regression repair at a90e5a85
+
+The read-only archive bisect in [receiver-bisect.json](receiver-bisect.json) identifies
+`0f289ab824e7aa88ef6271cb0d8a664ca676876f` as the first bad commit. Each probe runs
+suites 67, 80 and 81 serially in the exact empty gate environment, with the session
+bus explicitly named. Both main f1e1abb9 and the first bad commit's parent 9572210b
+pass all three. No branch or other worktree was checked out or changed.
+
+That commit unconditionally assigned cause `exit` to a clean adapter completion,
+replacing the established absence of a stop cause. Its new LoadState check also
+correctly rejected the default success printed for an already collected scope,
+but successful scopes had no reference keeping their actual terminal result
+available. Removing that guard would lose the containment work's uncertainty rule.
+
+The receiver now acquires a private libsystemd RefUnit connection for its own scope
+before releasing the wrapper. It reads the real loaded terminal result and clocks,
+then Group.close releases the connection. The connection also drops on receiver
+death, and is created after spawning the wrapper, so the engine never inherits it.
+This uses Python ctypes and the Linux provider's existing systemd library, with no
+new Python package. The manager-call timeout remains TOOL_SECONDS. The loaded-state,
+terminal-state and settle-budget checks are unchanged. Explicit stops, runtime-cap
+inference and retained OOM evidence still precede ordinary completion. Clean
+completion keeps the actual cleanup cause if one exists and otherwise has no cause.
+
+Suite 86 now runs its real conflict rebuild and review as local contained workers,
+using its existing profile and fixture engine, and stops only its own transient
+slice at teardown. It adds two rows:
+
+* `receiver/normal-exit`: both production launches exit zero with live heartbeat,
+  empty group, no stop steps and no stop cause.
+* `receiver/settled-scope`: both launches retain the actual manager success and
+  ordered terminal clocks, instead of accepting a collected unit's defaults.
+
+The heartbeat and engine-baseline failing rows are unchanged. Suite 63's
+`empty-ordinary-after-cap-unknown` controls incorrectly required cause `exit` even
+though they model an already empty group with no inferred stop. Their exact
+expectation is now None, plus explicit assertions that no stop was inferred and
+no steps occurred. Every after-cap unknown assertion is preserved, and every other
+suite-63 assertion is unchanged. The finding-40 normal-exit mutation keeps its row
+and follows the corrected production expression.
+
+[red-at-a90e5a85.json](red-at-a90e5a85.json) records both new suite-86 rows red by
+assertion, with its previous rows green. The same file records the unchanged
+`heartbeat/blocked-call-liveness`, `heartbeat/engine-group-signal` and both
+`strip/user-manager` rows red by assertion through normal selftest selectors.
+The proof driver's red mode can include these serial receiver regression runs with
+its receiver-regressions option; no mutation driver is loaded in that mode.
+
+Suite 63 passes alone at a90e5a85 as well as after this repair in the gate environment.
+The supplied mutation-stage `invalid_baseline` label does not name the failed row;
+its exact cause cannot be established from that label. The reviewer must supply its
+failing assertion detail or rerun finding 40, including containment-result-before-settled.
+Mutation and full-gate execution are prohibited during this builder run. No new
+mutation rejection is claimed. All 21 finding-148 registrations, including the two
+receiver falsifiers, have current hashes, exact diffs and unique compiling anchors.
+
+The repair adds only the two production modules, their engine copies and suite 63
+to the footprint, and project_runner to placement. These are needed by AC1's real
+rebuild and review completion. The supplied footprint checker compares the entire
+branch to origin/main and also sees inherited VELDO-0040 containment evidence and
+VELDO-0127 live-capture files. Those pre-existing paths are not added to this spec's
+footprint. Checking the three merged concerns together reports none outside; the
+repair delta alone is fully inside VELDO-0148. The alternate supplied path ending
+in scratchpadanchor_check.py does not exist; scratchpad/anchor_check.py does.
+
+The detailed [verification record](receiver-verification.json) has 12 green
+selector runs: suites 62 dispatch, 63 containment, 67 heartbeat, 80 Claude baseline,
+81 Codex baseline and 86 re-land, each in ordinary and empty gate environments.
+All run one at a time. Suite 86 has 18 passing rows, 44 with the shared preamble.
+The other totals with the preamble are 47, 78, 49, 44 and 48 respectively. Selector
+exit 2 is expected and does not claim a full gate. Validation and Git-boundary
+checks pass, the anchor checker reports zero bad anchors and no duplicate names,
+both changed engine copies match, suite registration remains singular, and
+requires.json regenerates unchanged.
+
 ## Criterion rows
 
 | Criterion | Row | What it proves |
@@ -84,8 +159,8 @@ behavior checks, not polling attempts. No production timeout or code changed.
 
 ## Red record
 
-[red-at-ad916989.json](red-at-ad916989.json) replays the current suite against an unchanged archive
-of the original pre-concern commit: all 14 behavior rows fail by assertion and the format control
+[red-at-ad916989.json](red-at-ad916989.json) preserves the earlier suite replay against an unchanged archive
+of the original pre-concern commit: its 14 behavior rows fail by assertion and the format control
 stays green. [red-at-b33e82f8.json](red-at-b33e82f8.json) preserves the earlier suite replay against the commit
 before the first review repair: its two new approval rows fail by assertion; the existing rows stay green.
 [red-at-f59b3136.json](red-at-f59b3136.json) records this re-check: all four changed or new
@@ -119,9 +194,9 @@ Replay the isolated copy experiment with the proof driver's `--wake-only` option
 
 [mutations.json](mutations.json) records the lead's reported run at f59b3136: 14 of 14
 mutations rejected. This is attributed evidence supplied in the owner's brief, not a builder run.
-It separately records all 19 current finding-148 registrations, source and mutant digests, exact
+It separately records all 21 current finding-148 registrations, source and mutant digests, exact
 applied diffs and named rows. Their anchors and syntax are statically checked; execution on this
-repair is pending for all 19. The manual wake and historical state-guard experiments are recorded separately;
+repair is pending for all 21. The manual wake and historical state-guard experiments are recorded separately;
 no mutation-checker rejection is claimed for this repair.
 [mutations-before-review.json](mutations-before-review.json) preserves the earlier builder's
 12 rejections as historical evidence.
@@ -132,6 +207,8 @@ question, allow a proof mismatch, reapply a grant and overwrite a revoked approv
 
 | Mutation | Named row |
 |---|---|
+| `receiver148-clean-exit-invents-stop` | `receiver/normal-exit` |
+| `receiver148-success-collected-before-read` | `receiver/settled-scope` |
 | `reland148-stale-left-failed` (AC1 falsifier) | `reland/stale-subject` |
 | `lease148-loss-unknown` (AC2 falsifier) | `lease/trunk-moved` |
 | `grant148-old-tree-accepted` (AC3 falsifier) | `grant/fresh-request` |
@@ -161,7 +238,7 @@ re-check with `python3 -B proof/VELDO-0148/drive.py --red f59b3136`.
 For reviewer use, `python3 -B proof/VELDO-0148/drive.py` regenerates mutation evidence with at most
 two workers. The builder did not run that mutation mode or the mutation checker.
 
-## Current completion checks
+## Earlier deterministic repair checks
 
 The repair from 7ee372ed changes no production bytes or acceptance criteria, and
 needs no footprint expansion. [verification.json](verification.json) records the

@@ -173,6 +173,30 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, receiver repair verification: dcf48b53 passes suites 62 dispatch,
+63 containment, 67 heartbeat, 80 Claude baseline, 81 Codex baseline and 86 re-land
+in ordinary and empty gate environments, serially. All 12 selectors report zero
+failures and the expected partial-run exit 2. Suite 86 has 18 rows including its
+format control and fake capture. The red driver at a90e5a85 makes both new receiver
+rows red by assertion with the prior rows green, then runs the original suites
+and records both heartbeat rows and both strip/user-manager rows red by assertion.
+The saved bisect and verification records carry the environments, summaries,
+digests and limitations. All 21 finding-148 mutation records have exact current
+diffs and digests; execution and finding 40 remain for the reviewer, with no new
+rejection claimed. The supplied invalid_baseline label did not reproduce as a
+suite-63 failure in either environment; its failing detail was requested.
+
+The supplied anchor checker reports 0 bad anchors and no duplicate names; Git
+boundary and validation pass. Both changed engine modules match, suite 86 remains
+registered exactly once, and requires.json regenerates unchanged. The supplied
+single-spec footprint check sees 58 inherited VELDO-0040 and VELDO-0127 paths from
+the branch's merges; the repair delta has none outside VELDO-0148, and the same
+checker with all three merged concerns reports none outside. The second supplied
+anchor path, scratchpadanchor_check.py, does not exist; the actual scratchpad/
+anchor_check.py was used. Neither a full selftest, gate, mutation driver nor load
+test ran, as the explicit token rules prohibit them. Gate byproducts are restored
+and excluded from commits. No protected file, other branch or worktree was changed.
+
 2026-10-02, receiver regression repair from a90e5a85: read-only archive bisect
 between f1e1abb9 and a90e5a85 identifies 0f289ab824e7aa88ef6271cb0d8a664ca676876f
 as the first bad commit for suites 67, 80 and 81 in the empty gate environment.

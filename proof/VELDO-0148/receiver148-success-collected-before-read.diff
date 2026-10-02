@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1612 +1611,0 @@
+-                        group.retain()
