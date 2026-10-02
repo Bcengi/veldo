@@ -131,3 +131,10 @@ revision references and role-named assignments to the existing team service. The
 four existing team-consumer suites (0089, 0150, 0079 and 0130) to migrate their fixtures through
 the accepted capability writer and update the superseded closed-role schema assertion. The
 criteria of VELDO-0089 and the specification status are unchanged.
+
+2026-10-02, proof and compatibility checks: suite 91 adds 23 behavior rows over the
+signed team, capability, owner-settlement and backlog interfaces. The unchanged
+f1e1abb9 archive is red by assertion on every row. Finding 151 registers 15 exact
+mutations; execution is reserved for the reviewer under this run's token rules.
+The proof directory records scoped normal and clean-environment checks, not a full
+gate result or a landing decision. No specification status is changed.

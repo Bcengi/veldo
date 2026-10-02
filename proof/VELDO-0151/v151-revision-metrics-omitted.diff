@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -706 +706 @@
+-                    revisions_accepted=sum(len(t.get('revisions', [])) for t in teams),
++                    revisions_accepted=0,

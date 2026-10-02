@@ -441,16 +441,17 @@ c.close()
                 value = copy.deepcopy(roster)
                 value['roles'][name]['capability_configuration']['revision'] = 987
                 rejected_team('roles/unresolved-reference/' + name, value, 'unresolved_capability_configuration:' + name)
-                for kind in ('unknown', 'specialist' if name == 'implementation' else 'required'):
+                for kind in ('unknown', 'specialist' if name == 'implementation' else 'required', None):
                     value = copy.deepcopy(roster)
                     value['roles'][name]['kind'] = kind
-                    rejected_team('roles/kind/' + name + '/' + kind, value, 'invalid_kind:' + name)
+                    rejected_team('roles/kind/' + name + '/' + str(kind), value, 'invalid_kind:' + name)
             value = copy.deepcopy(roster)
             value['roles']['designer']['capability_configuration'] = {'role': 'designer'}
             rejected_team('roles/unversioned-reference', value, 'invalid_capability_configuration:designer')
-            value = copy.deepcopy(roster)
-            value['roles'].pop('independent_review')
-            rejected_team('roles/required-still-required', value, 'missing_staffing:independent_review')
+            for required in ('project_manager', 'elaboration', 'implementation', 'independent_review'):
+                value = copy.deepcopy(roster)
+                value['roles'].pop(required)
+                rejected_team('roles/required-still-required/' + required, value, 'missing_staffing:' + required)
 
             with region('roles/brief-and-authority'):
                 proposed = propose(roster)
@@ -471,17 +472,51 @@ c.close()
                         and 'invalid_input:field:designer/tools' in filtered.get('problems', [])),
                     ('authority unchanged', authority_rows() == authority_before)])
 
-            # Build the execution-unit payload through the production backlog constructor.
-            # Risk is the existing team interface's policy input; Backlog has no risk writer.
+            # The real intake, objective and backlog writers create the unit.
+            IN = load('v151_intake', mods / 'control_intake.py')
+            OB = load('v151_objective', mods / 'control_objective.py')
             CB = load('v151_backlog', mods / 'control_backlog.py')
+            EV = load('v151_attribution', mods / 'control_channel_attribution.py')
+            acquirer = EV.Acquirer(S, CM, P, V, presenter, EV.TelegramAcquisitionEdge(P, url, 'bot89'),
+                conn, 'authority', journal_sign, 'api-edge', lambda m: sign_as('api-edge', m))
+            intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a'],
+                              api_edge='api-edge', journal_signer='authority', sign=journal_sign)
+            message_body = dict(schema=IN.API_SCHEMA, domain=DOMAIN, request_id=next_id('intake'),
+                edge='api-edge', principal='olga', text='For proj-a: design the checkout.', project=None, clarifies=None)
+            received = intake.receive('api_request', dict(request=message_body,
+                signature=sign_as('api-edge', S.canonical_bytes(message_body))))
+            objectives = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)
+
+            def command(who, operation, **fields):
+                return signed(who, dict(ids, operation=operation, principal=who,
+                    command_id=next_id('work'), nonce=next_id('work-nonce'), **fields))
+
+            proposed = objectives.apply(command('olga', 'propose', proposal=received.get('proposal_id'),
+                outcome='A traveler buys a pass.', scope=['design'], authority={'acceptor': 'olga', 'assessor': 'zed'},
+                evidence_requirements=[{'id': 'outcome', 'kind': 'gate_observation'}]))
+            oid = proposed.get('objective_id')
+            objective = OB.read(conn, oid) or {}
+            source_key = IN.source_key('api_request', message_body['request_id'])
+            intake_command = next((c for c, transition in conn.execute('SELECT command_id, transition FROM journal')
+                                   if source_key in json.loads(transition)), None)
+            objectives.apply(command('olga', 'accept_message', objective=oid,
+                objective_version=objective.get('version'), revision=objective.get('revision'),
+                bound_digest=objective.get('bound_digest'), intake_command=intake_command))
+            feature = objectives.apply(command('olga', 'propose_feature', objective=oid,
+                objective_version=(OB.read(conn, oid) or {}).get('version'), feature='design',
+                title='Design checkout', scope=['design']))
             backlog = CB.Backlog(S, CM, conn, ids, 'authority', journal_sign)
+            taken = backlog.apply(command('olga', 'take', feature=feature.get('feature_id'), work_class='PRODUCT_CHANGE'))
             uid = 'VELDO-9151'
             raw_unit = dict(unit=uid, specification=uid, scope=['design'], requirements=[],
                             eligible_holders=['w-build2'])
-            unit = backlog._new_unit(dict(uuid='backlog:team-proof', project='proj-a'), raw_unit, 1,
-                                     dict(by='pm', at=time.time(), operation='prepare', command_id=next_id('unit')))
+            prepared = backlog.apply(command('olga', 'prepare', item=taken.get('item_id'),
+                item_version=(taken.get('item') or {}).get('version'), units=[raw_unit]))
+            unit = (entity(uid) or {}).get('data', {})
+            # No production writer supplies the team's risk input yet. Decorate the real unit,
+            # retaining its complete provenance, with the risk that selects the review policy.
             fixture(uid, 'execution_unit', dict(unit, risk='critical'))
-            subject = {k: unit[k] for k in ('revision', 'scope_digest')}
+            subject = {k: unit.get(k) for k in ('revision', 'scope_digest')}
             subject['unit'] = uid
 
             def assign(name='designer', builder='w-build2', reviewers=('w-rev1', 'w-rev2'), **extra):
@@ -500,7 +535,7 @@ c.close()
                 wrong = assign(subject=dict(subject, revision=0))
                 valid = assign()
                 check('assignment/policy', [
-                    ('positive specialist assignment', valid.get('ok')),
+                    ('real backlog unit and specialist assignment', prepared.get('ok') and valid.get('ok')),
                     ('missing policy refuses', refused(missing, 'missing_authority:review_policy')),
                     ('review count enforced', refused(few, 'insufficient_reviews:1/2')),
                     ('independence enforced', str(same.get('reason')).startswith('reviewer_not_independent:')),
@@ -535,6 +570,12 @@ c.close()
                         a.get('capability_configuration') == {'role': 'designer', 'revision': 2}
                         for a in other_process().get('assignments', [])))])
 
+            with region('assignment/unlisted-worker'):
+                result = assign(builder='w-build')
+                check('assignment/unlisted-worker', [
+                    ('specialist role accepted', team_record().get('revision') == 3),
+                    ('worker must belong to selected role', refused(result, 'not_staffed:designer/w-build'))])
+
             with region('assignment/staffing-request'):
                 before = CT.assignments(conn)
                 missing = assign(name='android_builder')
@@ -548,6 +589,17 @@ c.close()
                     ('names missing role', 'missing_role:android_builder' in request.get('brief', '')),
                     ('assigns nothing', CT.assignments(conn) == before),
                     ('invents no worker or authority', authority_rows() == authority_before)])
+            with region('roles/observability'):
+                metrics = service.metrics()
+                observations = service.observations
+                reference_id = CG.identity(DOMAIN, REPO, CG.KINDS[0], 'designer', 2)
+                check('roles/observability', [
+                    ('accepted revisions counted', metrics.get('revisions_accepted') == 3),
+                    ('refused revisions counted', metrics.get('revisions_refused', 0) >= 12),
+                    ('staffing request reasons counted once', metrics.get('staffing_requests_by_reason', {}).get(
+                        'missing_role') == 1),
+                    ('capability revision pinned on assignment', any(reference_id in o['accepted_versions']
+                        for o in observations if o['operation'] == 'assign'))])
         finally:
             for server in servers:
                 with contextlib.suppress(Exception):

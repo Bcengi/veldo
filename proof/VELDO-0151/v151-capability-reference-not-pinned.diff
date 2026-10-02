@@ -1,0 +1,6 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -461,2 +461 @@
+-            pinned.append(CFG.identity(self.ids['domain_uuid'], self.ids['repository_uuid'],
+-                                       CFG.KINDS[0], reference['role'], reference['revision']))
++            pass

@@ -1,0 +1,4 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -448 +447,0 @@
+-                problems.append('missing_capability_configuration:%s' % role)

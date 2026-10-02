@@ -46,7 +46,8 @@ the store's coordinates. The project must be ACTIVE (project_not_active:<state> 
            each risk tier's count of distinct independent reviews). A missing policy, or no count for
            the unit's risk, refuses missing_authority:review_policy: nothing defaults to no review.
            The staffing choice names a role (implementation for existing callers). A missing role opens
-           a staffing request to the current owner and assigns nothing. The builder belongs to that role, each reviewer an independent review worker; fewer
+           a staffing request to the current owner and assigns nothing. The builder belongs to that role;
+           each reviewer is an independent review worker. Fewer
            distinct reviewers than the count refuses insufficient_reviews:<n>/<need>; a reviewer who
            is the builder, shares the builder's independence group or repeats another reviewer refuses
            reviewer_not_independent:<reviewer>; and every position is bound to the exact subject (the
@@ -210,7 +211,7 @@ def schema_problems(team):
         independence = spec.get('independence')
         if 'independence' in spec and not (isinstance(independence, dict) and set(independence) == {'distinct_from'}
                                            and isinstance(independence['distinct_from'], list)
-                                           and all(r in team['roles'] and r != role
+                                           and all((r in REQUIRED_ROLES or r in team['roles']) and r != role
                                                    for r in independence['distinct_from'])):
             problems.append('invalid_input:independence:%s' % role)
     return problems
@@ -362,7 +363,7 @@ class Teams:
         observation.update(outcome='accepted' if result['ok'] else 'refused',
                            refusal=None if result['ok'] else result['reason'],
                            taxonomy=None if result['ok'] else taxonomy(result['reason']),
-                           owner_request=result.get('owner_request'))
+                           owner_request=result.get('owner_request'), problems=result.get('problems', []))
         self.counts[observation['outcome']] += 1
         self.observations.append(observation)
         return result
@@ -690,9 +691,21 @@ class Teams:
             if (data.get('subject') or {}).get('kind') == STAFFING_SUBJECT and data.get('state') in (
                     'OFFERED', 'ACCEPTED', 'IN_PROGRESS'):
                 pending_requests += 1
+        requested, reasons = set(), {}
+        for observation in self.observations:
+            rid = observation.get('owner_request')
+            if rid and rid not in requested:
+                requested.add(rid)
+                reason = observation['refusal'].split(':', 1)[0]
+                for key in {p.split(':', 1)[0] for p in observation.get('problems') or [reason]}:
+                    reasons[key] = reasons.get(key, 0) + 1
         specialists = {t['project']: sum(s.get('kind') == 'specialist' for s in
                        (t.get('team') or {}).get('roles', {}).values()) for t in teams}
-        return dict(self.counts, teams=len(teams), specialists=specialists, pending_proposals=sum(1 for t in teams if t.get('proposal')),
+        return dict(self.counts, teams=len(teams), specialists=specialists,
+                    staffing_requests_by_reason=reasons,
+                    revisions_accepted=sum(len(t.get('revisions', [])) for t in teams),
+                    revisions_refused=sum(o['outcome'] == 'refused' and o['operation'] in ('propose', 'amend')
+                                          for o in self.observations), pending_proposals=sum(1 for t in teams if t.get('proposal')),
                     pending_staffing_requests=pending_requests,
                     assignments=self.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?',
                                                   (ASSIGNMENT_KIND,)).fetchone()[0])

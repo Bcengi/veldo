@@ -6141,6 +6141,128 @@ def cases():
            also=[("        if (record or {}).get('state') != 'active' or not owner:\n",
                   "        if not owner:  # defect: on any edge state\n")])
 
+    # VELDO-0151: declared falsifiers and specialist role bindings.
+    add(151,
+        'v151-missing-reference-accepted',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "                problems.append('missing_capability_configuration:%s' % role)\n",
+        '',
+        ['roles/missing-reference/implementation', 'roles/missing-reference/designer'],
+        ())
+    add(151,
+        'v151-unresolved-reference-accepted',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "                problems.append('unresolved_capability_configuration:%s' % role)\n",
+        '',
+        ['roles/unresolved-reference/implementation', 'roles/unresolved-reference/designer'],
+        ())
+    add(151,
+        'v151-kind-unchecked',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "            if spec.get('kind') != expected:\n",
+        '            if False:\n',
+        ['roles/kind/implementation/unknown', 'roles/kind/designer/required', 'roles/kind/implementation/specialist', 'roles/kind/designer/None'],
+        ())
+    add(151,
+        'v151-missing-specialist-assigned',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "        if not _is_str(role) or role not in team['roles']:\n            problems = ['missing_role:%s' % role]\n            raise Refused('not_staffed:role:%s' % role, problems=problems,\n                          owner_request=self._owner_request(project, team, problems, now))\n",
+        "        if role not in team['roles']:\n            role = 'implementation'\n",
+        ['assignment/staffing-request'],
+        ())
+    add(151,
+        'v151-capability-binding-dropped',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "'capability_configuration': copy.deepcopy(team['roles'][role].get('capability_configuration'))",
+        "'capability_configuration': None",
+        ['assignment/bindings'],
+        ())
+    add(151,
+        'v151-role-binding-dropped',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "'role': role, 'capability_configuration':",
+        "'role': 'implementation', 'capability_configuration':",
+        ['assignment/bindings'],
+        ())
+    add(151,
+        'v151-specialist-worker-unchecked',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "        if builder not in team['roles'][role]['workers']:\n",
+        '        if False:\n',
+        ['assignment/unlisted-worker'],
+        ())
+    add(151,
+        'v151-team-binding-stale',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "'team': {'revision': record['revision'], 'digest': record['digest'], 'version': record['version']}",
+        "'team': {'revision': 0, 'digest': record['digest'], 'version': record['version']}",
+        ['assignment/bindings'],
+        ())
+    add(151,
+        'v151-review-count-unchecked',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        '        if len(seen) < need:\n',
+        '        if False:\n',
+        ['assignment/policy'],
+        ())
+    add(151,
+        'v151-owner-request-omitted',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "        name = project['name']\n        subject_digest",
+        "        return None\n        name = project['name']\n        subject_digest",
+        ['assignment/staffing-request', 'roles/missing-reference/designer'],
+        ())
+    add(151,
+        'v151-specialist-brief-omitted',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "    for role, spec in sorted(proposal['team']['roles'].items()):\n",
+        "    for role, spec in sorted(proposal['team']['roles'].items()):\n        if role not in REQUIRED_ROLES:\n            continue\n",
+        ['roles/brief-and-authority'],
+        ())
+    add(151,
+        'v151-capability-resolution-floats',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "                         reference['role'], reference['revision'])\n",
+        "                         reference['role'], None)\n",
+        ['roles/unresolved-reference/designer'],
+        ())
+    add(151,
+        'v151-roster-admission-permission',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        '                    if p in AUTHORITY_NAMES:\n',
+        '                    if False:\n',
+        ['roles/brief-and-authority'],
+        [('                    elif p not in PROPOSAL_KINDS:\n', '                    elif p not in PROPOSAL_KINDS + tuple(AUTHORITY_NAMES):\n')])
+    add(151,
+        'v151-revision-metrics-omitted',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "revisions_accepted=sum(len(t.get('revisions', [])) for t in teams)",
+        'revisions_accepted=0',
+        ['roles/observability'],
+        ())
+    add(151,
+        'v151-capability-reference-not-pinned',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "            pinned.append(CFG.identity(self.ids['domain_uuid'], self.ids['repository_uuid'],\n                                       CFG.KINDS[0], reference['role'], reference['revision']))\n",
+        '            pass\n',
+        ['roles/observability'],
+        ())
+
     # VELDO-0089: each criterion's declared falsifier first, then the threat model's other shapes.
     def team(name, module, old, new, rows, also=()):
         add(89, name, '73_veldo_0089_team.py', module, old, new, ['team/' + row for row in rows], also)
@@ -6149,7 +6271,7 @@ def cases():
     result[-1]['rows'] = ['install/assets']
     # AC1 (declared falsifier): a team missing required independent review is accepted.
     team('review-role-not-required', 'control_team.py',
-         "    for role in REQUIRED_ROLES:\n        spec = roles.get(role)\n",
+         "    for role in (*REQUIRED_ROLES, *(r for r in roles if r not in REQUIRED_ROLES)):\n        spec = roles.get(role)\n",
          "    for role in [r for r in REQUIRED_ROLES if r != 'independent_review']:  # defect: review is optional\n"
          "        spec = roles.get(role)\n", ['incomplete-roster'],
          also=[("        spec = roles.get(role) or {}\n        declared",
