@@ -1,0 +1,64 @@
+{
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "63_veldo_0040_containment"
+  ],
+  "source_head": "d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515",
+  "mutations": [
+    {
+      "name": "containment-inferred-exit-hides-cap",
+      "target": "VELDO-0040 containment/manager-cap-after-adapter-exit",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/manager-cap-after-adapter-exit",
+        "VELDO-0040 containment/runtime-cap: {\"active\": 2635066.542352, \"beats\": [1790934488.7586637, 1790934488.858834, 1790934488.9590018, 1790934489.0591693, 1790934489.159431, 1790934489.2596884, 1790934489.3598444, 1790934489.4600031, 1790934489.5601614, 1790934489.6605139, 1790934489.7608154, 1790934489.8610756, 1790934489.9612658, 1790934490.0614777, 1790934490.1617444, 1790934490.2619712, 1790934490.3621538, 1790934490.4624062], \"beats_monotonic\": [2635066.631295584, 2635066.731475132, 2635066.831638968, 2635066.931809077, 2635067.032069675, 2635067.132326607, 2635067.232479377, 2635067.33263974, 2635067.432790162, 2635067.533162667, 2635067.633462783, 2635067.733714247, 2635067.83390368, 2635067.934113342, 2635068.03438241, 2635068.134610515, 2635068.234798626, 2635068.33504609], \"began\": 1790934488.508328, \"bound\": 2.7, \"checks\": {\"beats_present\": true, \"cause_runtime_cap\": false, \"deadline_stop\": false, \"first_beat_after_active\": true, \"last_beat_before_inactive\": true, \"result_timeout\": true, \"runtime_bound\": true, \"state_exited\": true, \"stubborn_not_living\": true, \"stubborn_present\": true, \"supervision_empty\": true, \"term_present\": true, \"timestamps_ordered\": true, \"unit_not_found\": true}, \"false_conjuncts\": [\"deadline_stop\", \"cause_runtime_cap\"], \"inactive\": 2635068.424933, \"last_beat_after_active\": 1.7926940903998911, \"last_beat_after_running\": 1.7329514026641846, \"running_at\": 1790934488.7294548, \"state\": \"exited\", \"stopping\": 2635067.921768, \"stubborn\": {\"at\": 1790934488.7585769, \"caps\": {\"CapAmb\": \"0000000000000000\", \"CapEff\": \"0000000000000000\", \"CapInh\": \"0000000000000000\", \"CapPrm\": \"0000000000000000\"}, \"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v409c7339c0a.slice/veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\", \"fsize\": [8388608, 8388608], \"gid\": [\"1000\", \"1000\", \"1000\", \"1000\"], \"pgid\": 311202, \"pid\": 311202, \"ppid\": 311192, \"role\": \"stubborn\", \"sid\": 311202, \"start\": \"263506661\", \"uid\": [\"1000\", \"1000\", \"1000\", \"1000\"]}, \"stubborn_living\": false, \"supervision\": {\"cause\": \"exit\", \"empty\": true, \"empty_at\": 1790934490.5521863, \"empty_monotonic\": 2635068.424795889, \"graces\": {\"kill_grace_seconds\": 0.5, \"stop_grace_seconds\": 0.6}, \"group\": {\"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v409c7339c0a.slice/veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\", \"slice\": \"v409c7339c0a.slice\", \"unit\": \"veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\"}, \"heartbeat\": {\"beats\": 1, \"channel_open\": false, \"first\": 2635066.616287814, \"interval_seconds\": 10, \"last\": 2635066.616287814, \"liveness\": \"live\", \"max_gap\": null, \"pid\": 311196, \"recent\": [{\"renewed\": true, \"sent\": 2635066.61620201, \"seq\": 1, \"taken\": 2635066.616287814}], \"released\": 2635066.601994027, \"renewal_refusals\": [], \"renewed\": 1, \"uncertain_at\": null, \"window_seconds\": 30}, \"result\": \"timeout\", \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 2635066542352, \"ActiveExitTimestampMonotonic\": 2635067921768, \"InactiveEnterTimestampMonotonic\": 2635068424933}, \"steps\": [{\"at\": 1790934490.0500743, \"monotonic\": 2635067.922681143, \"step\": \"terminate\"}, {\"at\": 1790934490.5514963, \"monotonic\": 2635068.424093767, \"step\": \"kill\"}]}, \"term_count\": 2, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 143, \"signal\": null}, \"terms\": [1790934490.0492792, 1790934490.050203], \"unit_after\": \"not-found\", \"unit_error\": null}"
+      ],
+      "target_red": true,
+      "raised_regions": [],
+      "passed": 50,
+      "failed": 2,
+      "source_sha256": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
+      "mutated_sha256": "21f09d5f4271dec3a67678c4610d2d48205ae70a8957986c60c398ab9ce9674c",
+      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
+      "diff": "mutations/containment-inferred-exit-hides-cap.diff",
+      "log": "/tmp/flake0040-manual-containment-inferred-exit-hides-cap.log"
+    },
+    {
+      "name": "containment-result-before-settled",
+      "target": "VELDO-0040 containment/conclude-settles",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/conclude-settles",
+        "VELDO-0040 containment/conclude-unknown"
+      ],
+      "target_red": true,
+      "raised_regions": [],
+      "passed": 50,
+      "failed": 2,
+      "source_sha256": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
+      "mutated_sha256": "8673bf1c51edb3bc86b0b04df2e9a8231571edf406651c3192529a21d19a33f2",
+      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
+      "diff": "mutations/containment-result-before-settled.diff",
+      "log": "/tmp/flake0040-manual-containment-result-before-settled.log"
+    },
+    {
+      "name": "containment-unreadable-result-silent",
+      "target": "VELDO-0040 containment/conclude-unknown",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/conclude-unknown"
+      ],
+      "target_red": true,
+      "raised_regions": [],
+      "passed": 51,
+      "failed": 1,
+      "source_sha256": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
+      "mutated_sha256": "76d36092d24fcddb2f526e7e918257946312770e857736a7e2a487061fe08032",
+      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
+      "diff": "mutations/containment-unreadable-result-silent.diff",
+      "log": "/tmp/flake0040-manual-containment-unreadable-result-silent.log"
+    }
+  ]
+}

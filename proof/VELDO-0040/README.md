@@ -176,3 +176,31 @@ six assertions, including the three region-completion rows, for 52 total with
 the harness's shared assertions. The load driver now runs one suite at a time
 with one pinned burner per available CPU, per the owner's run constraint.
 Earlier simultaneous-load records above remain historical evidence.
+
+Verification for this continuation: manager-result-runs.json records the exact
+suite and production hashes, all three deterministic observations and the live
+runtime-cap diagnostics. Normal and inherited gate shell runs each passed
+52 assertions with zero failures or raised regions. Three sequential loaded
+runs also passed 52 each. All 20 pinned burners accumulated CPU ticks (minimum
+4292), and all were terminated and reaped by their recorded child PIDs. The
+largest loaded activation-based last-beat gap was 1.8039589929394424 seconds,
+below the unchanged 2.7 second bound. The proof driver uses the gate's bash -c
+shell with the inherited environment, not the canonical gate itself.
+
+manager_result_check.py reads only the three new registrations as AST data,
+applies each single edit to a temporary production copy and invokes only
+suite 63, sequentially. It never imports or executes the teeth driver.
+manager-result-mutations.json and the three named diffs in mutations/ retain
+the edits, source and mutated hashes, exact failing rows and assertion counts:
+
+| Mutation | Passed | Failed | Target red by assertion | Raised regions |
+|-|-:|-:|-|-:|
+| containment-inferred-exit-hides-cap | 50 | 2 | yes | 0 |
+| containment-result-before-settled | 50 | 2 | yes | 0 |
+| containment-unreadable-result-silent | 51 | 1 | yes | 0 |
+
+Only these new mutations were driven in this continuation. The full selftest,
+canonical gate and both gate mutation drivers were not run; their result and
+the merged-tree stamp belong to the reviewer. Selected-suite exit code 2 on
+all-green partial runs is the harness's expected partial-run status, not a
+canonical verification claim.

@@ -1,0 +1,11 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -520,7 +520,7 @@
+             except (OSError, subprocess.SubprocessError, ValueError):
+                 pass
+             time.sleep(min(0.05, max(0, end - time.monotonic())))
+-        return 'unknown'
++        return None  # defect: unreadable evidence silently becomes an ordinary exit
+ 
+     def close(self):
+         if self.events is not None:

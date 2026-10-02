@@ -1,0 +1,11 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -509,7 +509,7 @@
+             try:
+                 shown = self._show(self.unit, ('Result', 'ActiveState', *names),
+                                    timeout=min(TOOL_SECONDS, remaining))
+-                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
++                if shown.get('Result'):
+                     timestamps = {name: int(shown.get(name) or 0) for name in names}
+                     self.timestamps = timestamps
+                     if shown.get('ActiveState') == 'failed':
