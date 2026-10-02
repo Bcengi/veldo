@@ -173,3 +173,11 @@ scope text now names VELDO-0171. Still a draft.
 the API and upgrades only its missing or null record keys. Receivers send record wakes to the
 authority socket; the service uses its existing subscriber fan-out and numbering. Proof work
 is in progress on build-veldo-0167. Status remains ready for independent review.
+
+2026-10-02, proof: suite 91_veldo_0167_setup_records drives the installed receiver's spawn and
+reap interfaces, the installed service, authenticated HTTP record reads and two late API processes.
+It checks absent and null key upgrades, byte preservation, no-op reruns and named refusals. Finding
+167 registers seven falsifiers. The baseline f1e1abb9 fails all three behavior rows by assertion;
+evidence is in proof/VELDO-0167. The existing VELDO-0171 older-host row now includes the records
+directory. No footprint expansion was needed. Full gate and global mutation execution remain
+reserved to the reviewer under the builder's resource restrictions.

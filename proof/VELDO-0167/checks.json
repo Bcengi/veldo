@@ -1,0 +1,148 @@
+{
+  "schema": "veldo.scoped-checks/v1",
+  "spec_id": "VELDO-0167",
+  "implementation_commit": "a2f363bb",
+  "gate_run": false,
+  "whole_selftest_run": false,
+  "reason": "Builder scope restriction; reviewer owns full gate.",
+  "suite_exit_note": "selftest returns 2 for a successful partial run; all summaries report zero failed.",
+  "suites": [
+    {
+      "environment": "ordinary",
+      "suite": "73_veldo_0139_factory_setup",
+      "exit_code": 2,
+      "seconds": 25.09,
+      "passed": true
+    },
+    {
+      "environment": "ordinary",
+      "suite": "82_veldo_0141_execution_record",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 19.04
+    },
+    {
+      "environment": "ordinary",
+      "suite": "71_veldo_0130_api",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 20.12
+    },
+    {
+      "environment": "ordinary",
+      "suite": "66_veldo_0047_authority",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 15.4
+    },
+    {
+      "environment": "ordinary",
+      "suite": "62_veldo_0039_dispatch",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 9.01
+    },
+    {
+      "environment": "ordinary",
+      "suite": "26_veldo_0009_install_stamp",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 0.43
+    },
+    {
+      "environment": "gate",
+      "suite": "91_veldo_0167_setup_records",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 6.89
+    },
+    {
+      "environment": "gate",
+      "suite": "85_veldo_0171_setup_api",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 10.92
+    },
+    {
+      "environment": "gate",
+      "suite": "73_veldo_0139_factory_setup",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 36.41
+    },
+    {
+      "environment": "gate",
+      "suite": "82_veldo_0141_execution_record",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 20.31
+    },
+    {
+      "environment": "gate",
+      "suite": "71_veldo_0130_api",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 27.96
+    },
+    {
+      "environment": "gate",
+      "suite": "66_veldo_0047_authority",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 15.28
+    },
+    {
+      "environment": "gate",
+      "suite": "62_veldo_0039_dispatch",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 11.9
+    },
+    {
+      "environment": "gate",
+      "suite": "26_veldo_0009_install_stamp",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 0.4
+    },
+    {
+      "environment": "ordinary",
+      "suite": "91_veldo_0167_setup_records",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 6.8
+    },
+    {
+      "environment": "ordinary",
+      "suite": "85_veldo_0171_setup_api",
+      "exit_code": 2,
+      "passed": true,
+      "seconds": 11.85
+    }
+  ],
+  "checks": [
+    {
+      "name": "git-boundary",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "footprint",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "anchors",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "validate",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "unavailable": [
+    "The alternate scratchpadanchor_check.py path does not exist; scratchpad/anchor_check.py is available."
+  ]
+}

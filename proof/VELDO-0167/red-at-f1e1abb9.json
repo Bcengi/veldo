@@ -3,7 +3,7 @@
  "commit": "f1e1abb9ed0006b7d97948aed943c044b0b616cc",
  "details": [
   "VELDO-0167 installed-record detail: one private records directory exists at setup",
-  "VELDO-0167 installed-record detail: receiver-71464bc9e82912c6.json shares records",
+  "VELDO-0167 installed-record detail: receiver-2fa1dde0e1eaaeac.json shares records",
   "VELDO-0167 installed-record detail: api-service.json shares records",
   "VELDO-0167 installed-record detail: api-service.json shares records",
   "VELDO-0167 installed-record detail: installed route serves while worker is running",
@@ -11,14 +11,15 @@
   "VELDO-0167 late-subscriber detail: receiver names service, no subscriber registry or fixed list",
   "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
   "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
-  "VELDO-0167 older-host detail: older host upgrades: invalid_input:state_root:differs:/dev/shm/b171-ipdrwcd8/state-records/host/api-service.json",
+  "VELDO-0167 older-host detail: older host upgrades: invalid_input:state_root:differs:/dev/shm/b171-vffqab1p/state-records/host/api-service.json",
   "VELDO-0167 older-host detail: creates private records directory",
-  "VELDO-0167 older-host detail: receiver-71464bc9e82912c6.json adds keys",
+  "VELDO-0167 older-host detail: receiver-2fa1dde0e1eaaeac.json adds keys",
   "VELDO-0167 older-host detail: api-service.json adds keys",
   "VELDO-0167 older-host detail: api-service.json adds keys",
   "VELDO-0167 older-host detail: second rerun is byte-identical",
-  "VELDO-0167 older-host detail: names differing receiver-71464bc9e82912c6.json",
-  "VELDO-0167 older-host detail: names differing api-service.json"
+  "VELDO-0167 older-host detail: names differing receiver-2fa1dde0e1eaaeac.json",
+  "VELDO-0167 older-host detail: names differing api-service.json",
+  "VELDO-0167 older-host detail: running configuration upgrade names the restart"
  ],
  "failed_rows": [
   "VELDO-0167 installed-record",
@@ -32,7 +33,7 @@
   },
   ".veldo/control_factory_setup.py": {
    "at_commit": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
-   "now": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+   "now": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e"
   },
   ".veldo/control_factory_setup_records.py": {
    "at_commit": null,
@@ -71,7 +72,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 14.485,
+ "seconds": 14.924,
  "spec_id": "VELDO-0167",
  "suite": "scripts/suites/91_veldo_0167_setup_records.py",
  "tree": "git archive f1e1abb9ed0006b7d97948aed943c044b0b616cc, unchanged; the current suite file run against it"

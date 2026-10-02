@@ -19,7 +19,7 @@
     true
    ]
   ],
-  "seconds": 6.446
+  "seconds": 6.91
  },
  "controls_green": true,
  "mutants": [
@@ -31,7 +31,8 @@
     "VELDO-0167 installed-record detail: installed route serves while worker is running",
     "VELDO-0167 installed-record detail: installed API serves lines: {'error': 'unavailable_service', 'refusal': 'unavailable_service:records'}",
     "VELDO-0167 older-host detail: api-service.json adds keys",
-    "VELDO-0167 older-host detail: api-service.json adds keys"
+    "VELDO-0167 older-host detail: api-service.json adds keys",
+    "VELDO-0167 older-host detail: running configuration upgrade names the restart"
    ],
    "diff": "proof/VELDO-0167/records-api-key-omitted.diff",
    "failed_rows": [
@@ -39,7 +40,7 @@
     "VELDO-0167 older-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "5d2b78cc368552ad93e3298c9b426aa9f244dfc1aef3421a48d94fdacd569962",
+   "mutant_sha256": "cc62d7c4e83a68b23835e23c7c34b52b959885fb5dc5ecfe54dea7e90f680f82",
    "name": "records-api-key-omitted",
    "named_row_red": true,
    "named_rows": [
@@ -60,8 +61,8 @@
      false
     ]
    ],
-   "seconds": 6.961,
-   "source_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+   "seconds": 6.889,
+   "source_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e"
   },
   {
    "by_assertion": true,
@@ -69,7 +70,7 @@
     "VELDO-0167 late-subscriber detail: receiver names service, no subscriber registry or fixed list",
     "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
     "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
-    "VELDO-0167 older-host detail: receiver-2ba88177e109a8af.json adds keys"
+    "VELDO-0167 older-host detail: receiver-e6c513b2e785d614.json adds keys"
    ],
    "diff": "proof/VELDO-0167/records-fixed-subscriber-list.diff",
    "failed_rows": [
@@ -98,7 +99,7 @@
      false
     ]
    ],
-   "seconds": 14.457,
+   "seconds": 14.903,
    "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
   },
   {
@@ -106,8 +107,8 @@
    "details": [
     "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
     "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
-    "VELDO-0167 older-host detail: receiver-867bcf8bdd1cae1e.json adds keys",
-    "VELDO-0167 older-host detail: names differing receiver-867bcf8bdd1cae1e.json"
+    "VELDO-0167 older-host detail: receiver-3dc1648a4591a7d7.json adds keys",
+    "VELDO-0167 older-host detail: names differing receiver-3dc1648a4591a7d7.json"
    ],
    "diff": "proof/VELDO-0167/records-existing-receiver-skipped.diff",
    "failed_rows": [
@@ -136,7 +137,7 @@
      false
     ]
    ],
-   "seconds": 14.553,
+   "seconds": 14.936,
    "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
   },
   {
@@ -171,7 +172,7 @@
      true
     ]
    ],
-   "seconds": 14.965,
+   "seconds": 14.898,
    "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
   },
   {
@@ -205,7 +206,7 @@
      true
     ]
    ],
-   "seconds": 7.902,
+   "seconds": 7.9,
    "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
   },
   {
@@ -240,13 +241,13 @@
      true
     ]
    ],
-   "seconds": 14.935,
+   "seconds": 14.893,
    "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
   },
   {
    "by_assertion": true,
    "details": [
-    "VELDO-0167 older-host detail: names differing receiver-994b49a3e401692c.json",
+    "VELDO-0167 older-host detail: names differing receiver-f8090b5a449bc47a.json",
     "VELDO-0167 older-host detail: names differing api-service.json"
    ],
    "diff": "proof/VELDO-0167/records-rerun-difference-accepted.diff",
@@ -275,7 +276,7 @@
      false
     ]
    ],
-   "seconds": 6.89,
+   "seconds": 7.373,
    "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
   }
  ],
@@ -296,7 +297,7 @@
  },
  "noop": {
   "control_factory_setup.py": {
-   "copy_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7",
+   "copy_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e",
    "details": [],
    "failed_rows": [],
    "preamble_rows": 26,
@@ -314,8 +315,8 @@
      true
     ]
    ],
-   "seconds": 6.9,
-   "source_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+   "seconds": 6.877,
+   "source_sha256": "7cc04f753674ff90bb81ac277819d4fa7c9e251259b14ad94b847a9e24edd92e"
   },
   "control_factory_setup_records.py": {
    "copy_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5",
@@ -336,7 +337,7 @@
      true
     ]
    ],
-   "seconds": 6.401,
+   "seconds": 6.893,
    "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
   },
   "control_launch.py": {
@@ -358,7 +359,7 @@
      true
     ]
    ],
-   "seconds": 6.434,
+   "seconds": 6.9,
    "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
   },
   "control_service_api.py": {
@@ -380,13 +381,13 @@
      true
     ]
    ],
-   "seconds": 6.427,
+   "seconds": 6.898,
    "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 167",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 113.271,
+ "serial_seconds": 116.27,
  "spec_id": "VELDO-0167",
  "suite": "scripts/suites/91_veldo_0167_setup_records.py"
 }

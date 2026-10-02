@@ -19,7 +19,7 @@ def run(root, production, exercise):
     body = body.replace('        close_runtime()',
                         "        compare = load('v167_conform', Path(__fixture__).resolve().parents[2] / 'proof/VELDO-0172/compare_formats.py')\n"
                         "        issues, trace = compare.conform_fake(dict(base=base, fake=engines186['fake']), '0167_setup_records')\n"
-                        "        if issues:\n            raise AssertionError(str(issues))\n"
                         '        close_runtime()')
+    body += "    if issues:\n        raise AssertionError(str(issues))\n"
     ns = dict(ROOT=Path(root), __production__=production, __exercise__=exercise, __fixture__=__file__)
     exec(compile(prefix + body + '\n_v171_suite()\n', __file__, 'exec'), ns)
