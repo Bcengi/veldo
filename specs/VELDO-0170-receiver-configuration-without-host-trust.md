@@ -25,6 +25,22 @@ footprint:
   - "scripts/suites/*_veldo_0170_*.py"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/62_veldo_0039_dispatch.py"
+  - "scripts/suites/63_veldo_0040_containment.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/64_veldo_0050_proof.py"
+  - "scripts/suites/67_veldo_0041_heartbeat.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/71_veldo_0076_projects.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/80_veldo_0155_claude_baseline.py"
+  - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/82_veldo_0165_launch_hygiene.py"
+  - "scripts/suites/82_veldo_0173_tool_registry.py"
+  - "scripts/suites/85_veldo_0158_credential_delivery.py"
   - "scripts/suites/70_veldo_0069_bindings.py"
   - "scripts/suites/*_veldo_0171_*.py"
   - "scripts/suites/manifest.json"
@@ -155,3 +171,9 @@ f1e1abb9. The comparison retains owner-configured adapters and the historical de
 runs path, as the existing engine upgrade requires. Finding 170 registers ten mutants;
 the owner reserves mutation execution and the full gate to the reviewer. Status remains
 ready and independent review is pending.
+
+2026-10-02: the footprint also names the sixteen existing launch suites whose ordinary
+receiver fixtures lacked host trust. AC1 requires every receiver to name it, so those
+fixtures now write a generated host trust with no settlement signers. Their behavior
+assertions and explicit missing-trust tests are unchanged. Broader suite execution is
+reserved to the reviewer under the owner's test scope restriction.

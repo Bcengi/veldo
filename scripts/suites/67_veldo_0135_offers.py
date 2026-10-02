@@ -309,7 +309,14 @@ sys.stdout.flush()
                                                             who, mode, str(markers)]}
         config = base / 'receiver.json'
         worker_slice = 'v135s%s.slice' % os.urandom(4).hex()
-        config.write_text(json.dumps({'store': str(db), 'journal_key': str(private / 'journal'),
+        # VELDO-0170: ordinary launch fixtures name installed host trust; no settlements are trusted.
+        receiver_host_trust = Path(db).parent / 'receiver-host-trust.json'
+        receiver_enrollment_signers = receiver_host_trust.with_name('receiver-enrollment-signers')
+        receiver_enrollment_signers.write_text('')
+        receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
+                                                     enrollment_signers=str(receiver_enrollment_signers))))
+        receiver_host_trust.chmod(0o600)
+        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(work), 'domain': DOMAIN,
                                       'profile': {'kind': 'linux-systemd', 'slice': worker_slice,
                                                   'lock': str(base / 'containment.lock'), 'concurrency': 64,

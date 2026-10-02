@@ -335,7 +335,14 @@ sys.exit(payload.get('code', 0))
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'
         wrapper = [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
-        config.write_text(json.dumps({
+        # VELDO-0170: ordinary launch fixtures name installed host trust; no settlements are trusted.
+        receiver_host_trust = Path(db).parent / 'receiver-host-trust.json'
+        receiver_enrollment_signers = receiver_host_trust.with_name('receiver-enrollment-signers')
+        receiver_enrollment_signers.write_text('')
+        receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
+                                                     enrollment_signers=str(receiver_enrollment_signers))))
+        receiver_host_trust.chmod(0o600)
+        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
             'host': HOST, 'receipts': str(base / 'receipts'), 'state_root': str(factory),
