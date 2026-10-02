@@ -118,7 +118,7 @@ def main():
                 targets = ('recorded-runtime-after-collection', 'not-found-unknown')
             diff = ''.join(''.join(difflib.unified_diff(before[module].splitlines(True),
                            (copy / '.veldo' / module).read_text().splitlines(True),
-                           fromfile='a/.veldo/' + module, tofile='b/.veldo/' + module)) for module in MODULES)
+                           fromfile='a/.veldo/' + module, tofile='b/.veldo/' + module, n=0)) for module in MODULES)
             diff_path = HERE / 'mutations' / ('recorded-' + name + '.diff')
             diff_path.write_text(diff)
             run(name, copy, targets=targets, diff=str(diff_path.relative_to(HERE)))

@@ -1,10 +1,10 @@
 --- a/.veldo/control_containment.py
 +++ b/.veldo/control_containment.py
-@@ -582 +582,2 @@
+@@ -612 +612,2 @@
 -            self.group.terminate()
 +            with contextlib.suppress(ProcessLookupError):
 +                os.kill(self.pid, signal.SIGTERM)  # defect: only the parent is stopped
-@@ -584 +585,2 @@
+@@ -614 +615,2 @@
 -            self.group.kill()
 +            with contextlib.suppress(ProcessLookupError):
 +                os.kill(self.pid, signal.SIGKILL)  # defect: only the parent is stopped

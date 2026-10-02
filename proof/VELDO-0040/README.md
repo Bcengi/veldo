@@ -181,8 +181,7 @@ the timeout result, timestamp order, empty group, absent unit and unchanged
 | containment/retained-oom-before-cleanup | containment-oom-evidence-lost |
 
 The fake receiver drives real begin(), adapter exit, terminate and kill, with
-both 143 and negative SIGTERM statuses. The ordinary-exit row finishes before
-the cap even if conclude later exhausts its read budget. The precedence row
+both 143 and negative SIGTERM statuses. The ordinary-exit row uses both collected and loaded units before the cap. The precedence row
 drives all six explicit paths with both runtime and memory evidence. Existing
 manager precedence, bounded settlement and unreadable-result rows remain.
 
@@ -200,3 +199,38 @@ Their old loaded passes did not establish a reliable cause witness. No load
 mode, full selftest, canonical gate, gate mutation driver or VELDO-0127 live
 capture runs in this continuation. Partial-suite all-green status exits 2 by
 design; these results are not a gate stamp or independent approval.
+
+Verification for implementation commit 0f289ab8: normal and inherited gate-shell
+suite 63 each passed 64 assertions with zero failures and no raised regions.
+Both live runtime rows passed every conjunct. The recorded activation-based
+last-beat gaps were 1.683642 seconds normally and 1.683204 seconds in the gate shell,
+against the unchanged 2.7 second bound.
+
+| Temporary-copy check | Passed | Failed | Named row red by assertion |
+|-|-:|-:|-|
+| containment-normal-exit-unknown | 62 | 2 | yes |
+| containment-not-found-is-success | 61 | 3 | yes |
+| containment-oom-evidence-lost | 63 | 1 | yes |
+| containment-recorded-cap-overrides-explicit | 60 | 4 | yes |
+| containment-recorded-runtime-ignored | 63 | 1 | yes |
+| containment-resolved-exit-hides-cap | 59 | 5 | yes |
+| containment-result-before-settled | 59 | 5 | yes |
+| containment-start-activation-lost | 55 | 9 | yes |
+| containment-unreadable-result-silent | 60 | 4 | yes |
+| pre-fix | 58 | 6 | yes, both required rows |
+
+All nine registered mutations complete every region. The complete pre-fix
+rebuild fails recorded-runtime-after-collection and not-found-unknown by
+assertion, with both regions completing. It reports cause exit and raw success
+for the collected scope. Its separate retained-OOM region raises because the
+old Group has no sample_memory method; that exception is not counted as either
+required falsification. Source and rebuilt hashes and the exact rebuild diff
+are retained with the results.
+
+All 31 current mutation registrations match their source anchors. Saved current
+mutation diffs were refreshed and checked for application with zero-context
+diff support; only the nine recorded here were executed in this continuation.
+Both production files in .veldo are byte-identical to engine/.veldo. The initial
+development run had one exit-notified failure while absent units consumed the
+settle budget. Returning unknown immediately for not-found resolved that
+failure; the recorded final runs use that version.
