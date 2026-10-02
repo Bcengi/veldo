@@ -150,7 +150,8 @@ def _v170_suite():
         CS.uninstall(fresh['unit'], install_root=str(install), unit_dir=str(units), runner=manager)
         CS.install([str(repo), str(other)], host_trust=str(trust), install_root=str(install), unit_dir=str(units),
                    state_root=str(root), key_directory=str(root / 'keys'), profile=profile, writable=[], runner=manager,
-                   channel_ingress=fresh['ingress'], api_service=str(root / 'host/api-service.json'))
+                   channel_ingress=fresh['ingress'], api_service=str(root / 'host/api-service.json'),
+                   adapters={'owner-worker': {'argv': ['/bin/true']}})
         installed = json.loads(config_path.read_text())
         paths = [Path(installed['receiver']['configs'][r]) for r in (ids['repository_uuid'], 'repository-other')]
         old, current = paths
@@ -255,22 +256,28 @@ def _v170_suite():
                              parameters=dict(entity_id=eid, kind=kind, data=data)), 'authority', sign, 1)
 
         for principal in ('runner', 'launch-receiver'):
-            put(principal, 'membership', dict(principal_type='service', roles=[], scope=[ids['repository_uuid']],
+            put(principal, 'membership', dict(principal_type='service', roles=[], scope=[ids['repository_uuid'], 'repository-other'],
                                              revoked_at=None, expires_at=None))
         put('project:p1', 'project', {'name': 'receiver trust'})
         put('authority:' + ids['domain_uuid'], 'authority', {'state': 'active', 'generation': 1})
-        reservations = D.RES.Reservations(S, writer, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
-                                         principal='runner', authorize=lambda c, cmd: True, signer='authority', sign=sign)
-        for scope, subject in (('account', 'acct-170'), ('project', 'p1')):
-            reservations.configure(next_id(), scope, subject, dict(capacity=50, invocations=50, wall_seconds=5000), now=time.time())
-        for sid in ('VELDO-9701', 'VELDO-9702'):
-            put(sid, 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'],
+        reservations_by_repo = {}
+        for repository in (ids['repository_uuid'], 'repository-other'):
+            reservations = D.RES.Reservations(S, writer, domain=ids['domain_uuid'], repository=repository,
+                principal='runner', authorize=lambda c, cmd: True, signer='authority', sign=sign)
+            reservations_by_repo[repository] = reservations
+            for scope, subject in (('account', 'acct-170'), ('project', 'p1')):
+                reservations.configure(next_id(), scope, subject,
+                                       dict(capacity=50, invocations=50, wall_seconds=5000), now=time.time())
+        for sid, repository in (('VELDO-9701', ids['repository_uuid']), ('VELDO-9702', ids['repository_uuid']),
+                                ('VELDO-9703', 'repository-other')):
+            put(sid, 'execution_unit', dict(state='READY', repository_uuid=repository,
                 backlog_item_uuid='backlog:' + sid, requirements=[], eligible_holders=['worker'], project='p1',
                 scope_digest='sha256:scope-' + sid, revision=1, depends_on=[]))
-            put('backlog:' + sid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=ids['repository_uuid']))
+            put('backlog:' + sid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=repository))
             put('admission:' + sid, 'admission', dict(unit=sid, state='accepted', scope_digest='sha256:scope-' + sid))
-            reservations.configure(next_id(), 'unit', sid, dict(capacity=20, invocations=20, wall_seconds=2000), now=time.time())
-            claim = CLM.claim_id(ids['repository_uuid'], sid)
+            reservations_by_repo[repository].configure(next_id(), 'unit', sid,
+                dict(capacity=20, invocations=20, wall_seconds=2000), now=time.time())
+            claim = CLM.claim_id(repository, sid)
             writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                           'writes': ('entities', 'journal', 'commands', 'nonces')}
             versions = {eid: writer.execute('SELECT version FROM entities WHERE id=?', (eid,)).fetchone()[0]
@@ -278,13 +285,15 @@ def _v170_suite():
             S.execute(writer, dict(command_id=next_id(), principal='worker', operation='claim_operation', nonce=next_id(),
                 artifact_digests=[], expected_versions=dict(versions, **{claim: 0}), parameters=dict(action='claim',
                 unit_id=sid, backlog_item_uuid='backlog:' + sid, claim_id=claim, holder='worker', generation=0,
-                capabilities=[], repository_uuid=ids['repository_uuid'])), 'authority', sign, 1)
+                capabilities=[], repository_uuid=repository)), 'authority', sign, 1)
         _v170_settle(load, mods, writer, ids, root, repo, url, token, bot, chat, H, F, put, next_id, sign)
         reader = S.open_store(fresh['store'], mode='r')
-        gate = EL.Gate(S, reader, domain_uuid=ids['domain_uuid'], repository_uuid=ids['repository_uuid'],
-                       workspace=str(repo), settlement_trust=EL.load_host_trust(str(trust)).settlement_trust(str(repo)))
-        dispatches = D.Dispatches(S, writer, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
-                                 principal='runner', signer='authority', sign=sign)
+        gates, dispatches_by_repo = {}, {}
+        for repository, workspace in ((ids['repository_uuid'], repo), ('repository-other', other)):
+            gates[repository] = EL.Gate(S, reader, domain_uuid=ids['domain_uuid'], repository_uuid=repository,
+                workspace=str(workspace), settlement_trust=EL.load_host_trust(str(trust)).settlement_trust(str(workspace)))
+            dispatches_by_repo[repository] = D.Dispatches(S, writer, domain=ids['domain_uuid'], repository=repository,
+                                                          principal='runner', signer='authority', sign=sign)
         markers = base / 'markers'
         markers.mkdir()
         worker = base / 'worker.py'
@@ -294,7 +303,9 @@ def _v170_suite():
         def launch(path, governed=True, missing=False):
             # Substitute only this suite's worker transport in the installer-produced configuration.
             config = json.loads(path.read_text())
-            config.update(repository=ids['repository_uuid'], workspace=str(repo))
+            repository, workspace = config['repository'], config['workspace']
+            gate, dispatches = gates[repository], dispatches_by_repo[repository]
+            reservations = reservations_by_repo[repository]
             config['adapters'] = {'fixture': {'identity': 'reported', 'argv': [sys.executable, '-B',
                 str(mods / 'control_launch.py'), 'exec', sys.executable, '-B', str(worker), str(markers)]}}
             if missing:
@@ -302,7 +313,8 @@ def _v170_suite():
             launch_path = base / ('launch-' + next_id() + '.json')
             write(launch_path, config)
             runner = L.Runner(gate, reservations, dispatches, lambda c: L.invoke(launch_path, c, dispatches), account='acct-170')
-            job = runner.submit('VELDO-9701' if governed else 'VELDO-9702', 'build', holder='worker', source=str(repo),
+            sid = ('VELDO-9701' if governed else 'VELDO-9702') if repository == ids['repository_uuid'] else 'VELDO-9703'
+            job = runner.submit(sid, 'build', holder='worker', source=workspace,
                 revision='HEAD', payload={'task': 'proceed'}, adapter='fixture', configuration={'tools': ['Read']},
                 deadline=time.time() + 30)
             runner.wait(job, timeout=15)
@@ -389,7 +401,7 @@ def _v170_settle(load, mods, conn, ids, root, repo, url, token, bot, chat, H, F,
     record = dict(schema=ST.DD.GOVERNING_SCHEMA, decision_id='D-9701', revision=1,
                   framing_digest=ST.digest({'question': 'proceed'}),
                   subject=dict(kind='spec', id=sid, digest=ST.DD.subject_digest('spec', subject)),
-                  scope=dict(operation='proceed', target=sid, parameters={}), blocks=[sid], obligations=[])
+                  scope=dict(operation='proceed', target=sid, parameters={}), blocks=[sid, 'VELDO-9703'], obligations=[])
     put(rid, 'decision', record)
     requester = F.REQUESTER
     signer = ACT.ssh_signer(str(root / 'keys' / F.REQUESTER_KEY))

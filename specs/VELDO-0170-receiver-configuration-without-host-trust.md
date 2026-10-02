@@ -150,5 +150,8 @@ bin/veldo leaves the footprint. Still a draft.
 trust before accepting work; lifecycle status and service inspection list affected configurations.
 Factory setup gains an installation-derived host trust step even on a current engine.
 The footprint adds suites 62 and 70 because their old receiver fixtures or assertions
-explicitly rely on the absent-trust behavior this criterion replaces. Proof is in progress;
-status remains ready and independent review is pending.
+explicitly rely on the absent-trust behavior this criterion replaces. Suite 87 and proof/VELDO-0170 record eight behavior rows, all red by assertion at
+f1e1abb9. The comparison retains owner-configured adapters and the historical default
+runs path, as the existing engine upgrade requires. Finding 170 registers ten mutants;
+the owner reserves mutation execution and the full gate to the reviewer. Status remains
+ready and independent review is pending.

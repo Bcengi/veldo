@@ -35,13 +35,16 @@ def validate(step, installed, receivers, differs):
     for path, (repository, held) in step['configs'].items():
         expected = dict(template, repository=repository,
                         workspace=installed['repositories'][repository][0])
+        # Adapters are owner configuration, not setup arguments. The existing engine upgrade
+        # preserves them; this step must render the same configured workers, never empty defaults.
+        expected['adapters'] = held.get('adapters')
         expected.pop('host_trust', None)
         actual = dict(held)
         actual.pop('host_trust', None)
         if 'state_root' not in actual:
             expected.pop('state_root', None)
-            if 'runs' in actual:
-                expected['runs'] = str(Path(actual['store']).parent / 'runs')
+        if 'runs' in actual:
+            expected['runs'] = str(Path(actual['store']).parent / 'runs')
         if actual != expected:
             raise differs(path)
 
