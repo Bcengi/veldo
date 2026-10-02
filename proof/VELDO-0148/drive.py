@@ -41,7 +41,7 @@ SUITE = '86_veldo_0148_re_land.py'
 PREFIX = 'VELDO-0148 '
 FINDING = 148
 MODULES = ('control_service.py', 'control_landing_station.py', 'control_landing.py', 'control_effect_executor.py',
-           'lander.py')
+           'lander.py', 'control_launch.py', 'control_containment.py')
 
 
 def _load(name, path):
@@ -105,7 +105,26 @@ def _raised(observed):
     return any('ran to its end' in d for d in observed['details'])
 
 
-def red(commit):
+def regression_runs(root):
+    """Run the original receiver regression suites serially through the normal selector.
+
+    The caller supplies the gate environment. No mutation driver is loaded.
+    """
+    reports = []
+    for suite in ('67_veldo_0041_heartbeat', '80_veldo_0155_claude_baseline', '81_veldo_0156_codex_baseline'):
+        proc = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite],
+                              cwd=root, capture_output=True, text=True, timeout=600)
+        lines = (proc.stdout + proc.stderr).splitlines()
+        failed = [line.split('SELFTEST FAIL: ', 1)[1] for line in lines if 'SELFTEST FAIL: ' in line]
+        summary = next((line for line in lines if line.startswith('selftest (PARTIAL')), None)
+        reports.append(dict(suite=suite, exit=proc.returncode, summary=summary, failed_rows=failed,
+                            by_assertion=summary is not None and not any(
+                                'raised' in line or 'Traceback' in line for line in lines),
+                            details=[line for line in lines if 'detail:' in line]))
+    return reports
+
+
+def red(commit, regressions=False):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
@@ -116,9 +135,10 @@ def red(commit):
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
         observed = run({}, tree)
+        previous = regression_runs(tree) if regressions else []
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0148', suite='scripts/suites/' + SUITE, commit=resolved,
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
-                  by_assertion=not _raised(observed), **observed)
+                  by_assertion=not _raised(observed), receiver_regressions=previous, **observed)
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
     print(json.dumps({'commit': resolved, 'failed_rows': observed['failed_rows'], 'by_assertion': report['by_assertion'],
@@ -153,7 +173,7 @@ def main():
         wake_only()
         return
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
-        red(sys.argv[2])
+        red(sys.argv[2], '--receiver-regressions' in sys.argv)
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
         print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))

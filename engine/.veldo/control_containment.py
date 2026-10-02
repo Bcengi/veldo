@@ -372,6 +372,53 @@ class Group:
         """What the trusted wrapper applies to itself before the engine runs; every descendant inherits it."""
         return {'file_bytes': self.settings['file_bytes']}
 
+    def retain(self):
+        """Keep this scope loaded until close, including after a successful emptying.
+
+        RefUnit belongs to this private bus connection. Closing it releases the reference,
+        including when the receiver dies. The engine never inherits the connection.
+        libsystemd is the Linux provider's own bus client; no Python package is needed.
+        """
+        import ctypes as ct
+
+        lib = ct.CDLL('libsystemd.so.0')
+        pointer = ct.c_void_p
+        signatures = {
+            'sd_bus_new': ([ct.POINTER(pointer)], ct.c_int),
+            'sd_bus_set_address': ([pointer, ct.c_char_p], ct.c_int),
+            'sd_bus_set_bus_client': ([pointer, ct.c_int], ct.c_int),
+            'sd_bus_set_method_call_timeout': ([pointer, ct.c_uint64], ct.c_int),
+            'sd_bus_start': ([pointer], ct.c_int),
+            'sd_bus_call_method': ([pointer, ct.c_char_p, ct.c_char_p, ct.c_char_p,
+                                    ct.c_char_p, pointer, pointer, ct.c_char_p], ct.c_int),
+            'sd_bus_flush_close_unref': ([pointer], pointer),
+        }
+        for name, (arguments, result) in signatures.items():
+            function = getattr(lib, name)
+            function.argtypes, function.restype = arguments, result
+
+        def checked(name, *args):
+            result = getattr(lib, name)(*args)
+            if result < 0:
+                raise OSError(-result, name)
+
+        bus = pointer()
+        try:
+            checked('sd_bus_new', ct.byref(bus))
+            address = self.environment.get('DBUS_SESSION_BUS_ADDRESS') or (
+                'unix:path=' + self.environment['XDG_RUNTIME_DIR'] + '/bus')
+            checked('sd_bus_set_address', bus, address.encode())
+            checked('sd_bus_set_bus_client', bus, 1)
+            checked('sd_bus_set_method_call_timeout', bus, round(TOOL_SECONDS * 10 ** 6))
+            checked('sd_bus_start', bus)
+            checked('sd_bus_call_method', bus, b'org.freedesktop.systemd1', b'/org/freedesktop/systemd1',
+                    b'org.freedesktop.systemd1.Manager', b'RefUnit', None, None, b's',
+                    ct.c_char_p(self.unit.encode()))
+        except BaseException:
+            lib.sd_bus_flush_close_unref(bus)
+            raise
+        self.reference = (lib, bus)
+
     def command(self, argv):
         """systemd-run creates this dispatch's scope with every cap installed, moves itself into it and
         then becomes `argv` (the trusted wrapper) by exec: the same pid, already contained."""
@@ -546,6 +593,10 @@ class Group:
         return 'unknown'
 
     def close(self):
+        reference = getattr(self, 'reference', None)
+        if reference is not None:
+            self.reference = None
+            reference[0].sd_bus_flush_close_unref(reference[1])
         if self.events is not None:
             os.close(self.events)
             self.events = None

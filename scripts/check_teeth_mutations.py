@@ -3145,7 +3145,9 @@ def cases():
             '                if (True\n',
             'not-found-unknown')
     contain('containment-normal-exit-unknown', 'control_launch.py',
-            "            elif code == 0:\n                cause = 'exit'\n",
+            "            elif code == 0:\n"
+            "                # A clean adapter exit adds no stop cause. Keep any actual cleanup stop.\n"
+            "                cause = stop.cause if stop is not None else None\n",
             "            elif code == 0:\n                cause = 'unknown'\n",
             'normal-exit-before-cap')
     contain('containment-recorded-cap-overrides-explicit', 'control_launch.py',
@@ -9331,6 +9333,11 @@ def cases():
     # row of suite 86, then the seams the rows rest on.
     def reland148(name, module, old, new, rows, also=()):
         add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-clean-exit-invents-stop', 'control_launch.py',
+              "                cause = stop.cause if stop is not None else None\n",
+              "                cause = 'exit'\n", ['receiver/normal-exit'])
+    reland148('receiver148-success-collected-before-read', 'control_launch.py',
+              '                        group.retain()\n', '', ['receiver/settled-scope'])
     # AC1: a stale-subject refusal leaves the land failed, so nothing re-lands it.
     reland148('reland148-stale-left-failed', 'control_landing_station.py',
               "                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):\n",

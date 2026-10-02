@@ -633,7 +633,8 @@ sys.exit(payload.get('code', 0))
                 row['supervision']['cause'] == 'unknown' and not row['termination']['deadline_stop']
                 and row['supervision']['manager_result'] in (None, 'unknown')
                 and row['supervision']['empty'] and row['supervision']['steps'] == []
-                for row in rows) and all(row['supervision']['cause'] == 'exit'
+                for row in rows) and all(row['supervision']['cause'] is None
+                                        and row['inferred'] is None and row['supervision']['steps'] == []
                                         and not row['termination']['deadline_stop'] for row in controls),
                 observed['empty_ordinary_after_cap_unknown'])
 

@@ -53,11 +53,14 @@ def _v148_suite():
         'control_landing.py': ROOT / ".veldo" / "control_landing.py",
         'control_effect_executor.py': ROOT / ".veldo" / "control_effect_executor.py",
         'lander.py': ROOT / ".veldo" / "lander.py",
+        'control_containment.py': ROOT / ".veldo" / "control_containment.py",
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
     }
     ROWS = ('install/land-station', 'reland/stale-subject', 'reland/review-kept', 'reland/conflict-rebuild',
             'reland/never-forced', 'reland/end-wakes-pass', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
-            'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines')
+            'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines',
+            'receiver/normal-exit', 'receiver/settled-scope')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -705,10 +708,9 @@ sys.exit(chosen['code'])
         install_root, unit_dir = base / 'install', base / 'units'
         wrapper_bin = install_root / CS.CC.service_id(binding) / 'bin'
         ROLE = dict(adapter='codex', configuration={'tools': ['Read', 'Edit']}, seconds=CHILD_WAIT)
-        ADAPTERS = {'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
+        ADAPTERS = {'codex': {'identity': 'local', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
                               'executable': str(vendored), 'qualification': str(qualification),
-                              'argv': [sys.executable, '-B', str(wrapper_bin / 'control_launch.py'), 'exec', str(vendored)]
-                              + list(CODEX.FLAGS)}}
+                              'argv': [str(vendored)] + list(CODEX.FLAGS)}}
         PROFILE = {'kind': 'linux-systemd', 'slice': 'v148%s.slice' % run_id, 'lock': str(base / 'workers.lock'),
                    'concurrency': 4, 'runtime_seconds': 600, 'memory_bytes': 256 << 20, 'cpu_percent': 100,
                    'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
@@ -773,6 +775,8 @@ sys.exit(chosen['code'])
         def step():
             return loop.run() if loop is not None else None
 
+        received = {}
+
         def finish_workers():
             """Consume actual launch-pipe events, then finish their production passes.
 
@@ -781,6 +785,8 @@ sys.exit(chosen['code'])
             """
             end = time.monotonic() + CHILD_WAIT
             while loop is not None:
+                for line in loop.lines.values():
+                    received.update(line.runner.launches)
                 pipes = loop.pipes()
                 if not pipes:
                     return True
@@ -1245,6 +1251,27 @@ sys.exit(chosen['code'])
                   and len(lands(V)) == 1 and not receipts(V) and effect(one.get('dispatch_id')) is None)
 
         # VELDO-0172: every line the fake was scripted to print is an event of the binary's own table.
+        with region('receiver/normal-exit', 'receiver/settled-scope'):
+            completed = [dict(dispatch_id=launch.dispatch_id,
+                              record={k: (launch.record or {}).get(k) for k in ('state', 'termination')},
+                              supervision=launch.supervision or {}) for launch in received.values()]
+            check('receiver/normal-exit', 'real rebuild and review end cleanly without an imposed stop: %s' % completed,
+                  len(completed) >= 2 and all(
+                      dig(row, 'record', 'state') == 'exited'
+                      and dig(row, 'record', 'termination', 'returncode') == 0
+                      and row['supervision'].get('cause') is None
+                      and row['supervision'].get('steps') == []
+                      and row['supervision'].get('empty') is True
+                      and dig(row, 'supervision', 'heartbeat', 'liveness') == 'live'
+                      for row in completed))
+            check('receiver/settled-scope', 'read the loaded scope terminal result before releasing it: %s' % completed,
+                  len(completed) >= 2 and all(
+                      row['supervision'].get('result') == 'success'
+                      and row['supervision'].get('manager_result') == 'success'
+                      and 0 < dig(row, 'supervision', 'scope_timestamps', 'ActiveEnterTimestampMonotonic')
+                      <= dig(row, 'supervision', 'scope_timestamps', 'InactiveEnterTimestampMonotonic')
+                      for row in completed))
+
         with region('format/fake-lines'):
             codex_table = FORMATS['codex']
             problems = []
@@ -1269,6 +1296,10 @@ sys.exit(chosen['code'])
                     with contextlib.suppress(Exception):
                         launch.stop('suite teardown')
                         launch.wait(timeout=30)
+        if 'PROFILE' in locals():
+            tools = dict(os.environ, XDG_RUNTIME_DIR=os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid())
+            subprocess.run(['systemctl', '--user', 'stop', PROFILE['slice']], env=tools,
+                           capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()

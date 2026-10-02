@@ -1609,6 +1609,7 @@ class Receiver:
                     if not problems and reported.get('pid') != worker.pid:
                         problems = ['spawn_failed:containment:identity']
                     if not problems:
+                        group.retain()
                         HB.make_group(group.cgroup)
                         if self.config.get('clones'):
                             clone = _organ('control_clone')
@@ -1955,7 +1956,8 @@ class Receiver:
                 # An ordinary status can be a handled cap signal; missing evidence is not success.
                 cause = 'unknown'
             elif code == 0:
-                cause = 'exit'
+                # A clean adapter exit adds no stop cause. Keep any actual cleanup stop.
+                cause = stop.cause if stop is not None else None
             elif result == 'unknown':
                 cause = 'unknown'
         self.supervision = {'cause': cause,

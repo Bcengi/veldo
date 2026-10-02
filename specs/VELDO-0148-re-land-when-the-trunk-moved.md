@@ -11,9 +11,14 @@ plan: PLAN-0019
 work: W108
 plan_revision: 4
 depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0154]
-placement: [distribution, fleet, contracts, metrics]
+placement: [distribution, fleet, contracts, metrics, project_runner]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_containment.py"
+  - ".veldo/control_containment.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "scripts/suites/63_veldo_0040_containment.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
@@ -167,6 +172,34 @@ the authority service (VELDO-0154 AC1), which this concern extends for a refused
 to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
+
+2026-10-02, receiver regression repair from a90e5a85: read-only archive bisect
+between f1e1abb9 and a90e5a85 identifies 0f289ab824e7aa88ef6271cb0d8a664ca676876f
+as the first bad commit for suites 67, 80 and 81 in the empty gate environment.
+The parent 9572210b and main f1e1abb9 pass all three; a90e5a85 fails the two
+heartbeat rows and both strip/user-manager rows by assertion. The classification
+change invented an exit stop for a clean adapter; the LoadState guard correctly
+rejected collected scopes but exposed the lack of a reference retaining success.
+The receiver now holds a private libsystemd RefUnit connection before releasing
+the engine, reads the terminal result while that scope is still loaded, and
+releases it on Group.close. Receiver death also releases the bus reference. The
+engine does not inherit the connection. A clean adapter adds no stop cause;
+actual cleanup, explicit stops, retained OOM and runtime evidence keep their
+precedence. Missing manager evidence still stays unknown.
+
+The footprint adds control_launch.py and control_containment.py with their engine
+copies because AC1's real conflict rebuild and review must finish under the
+receiver without losing their scope result. Suite 86 adds real rebuild/review
+assertions for both regressions and finding 148 registers their falsifiers.
+The footprint also adds suite 63: its empty-ordinary-after-cap-unknown controls
+incorrectly demanded cause exit with no inferred stop and no stop steps. Their
+exact expectation is corrected to None and strengthened to require no inferred
+stop and no steps. All after-cap unknown assertions and all other containment
+rows are unchanged. Finding 40's normal-exit mutation anchor follows the new
+expression; its target row is unchanged. No failing heartbeat or baseline row
+was edited. Suite 63 is green before and after this repair in the gate environment;
+the mutation driver's invalid_baseline label alone does not identify its failing
+row. Full gate and mutation execution remain reserved for the reviewer.
 
 2026-09-29, deterministic proof repair complete: 587af58f's suite bytes pass all
 16 rows in ordinary, empty gate-environment and artificial-load runs, serially
