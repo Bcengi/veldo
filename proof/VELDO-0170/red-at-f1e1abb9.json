@@ -1,0 +1,95 @@
+{
+ "by_assertion": true,
+ "commit": "f1e1abb9ed0006b7d97948aed943c044b0b616cc",
+ "details": [
+  "VELDO-0170 launch/governed detail: missing receiver trust is named before acceptance or spawn: unsigned_decision:decision:D-9701",
+  "VELDO-0170 launch/governed detail: refusal records configuration, repository, dispatch and count",
+  "VELDO-0170 launch/ungoverned detail: missing receiver trust is named before acceptance or spawn: None",
+  "VELDO-0170 launch/ungoverned detail: refusal records configuration, repository, dispatch and count",
+  "VELDO-0170 status/configurations detail: both service status surfaces list exactly the old receiver with one repair",
+  "VELDO-0170 status/configurations detail: status clears on the next read without a service restart",
+  "VELDO-0170 rerun/launch-after-repair detail: only the missing key is added at 0600; current bytes stay unchanged",
+  "VELDO-0170 rerun/launch-after-repair detail: governed work launches under repaired/current trust: unsigned_decision:decision:D-9701",
+  "VELDO-0170 rerun/no-installed-trust detail: absent: refused by name without any file changes: None['/dev/shm/v170-3j0i5oy2/install/76d9cffa1615807f/config/api-process.json']",
+  "VELDO-0170 rerun/no-installed-trust detail: unreadable: refused by name without any file changes: None[]",
+  "VELDO-0170 rerun/host-identity detail: identity: refused by name without any file changes: None[]",
+  "VELDO-0170 rerun/differs detail: a changed receiver is refused before any writes: None[]",
+  "VELDO-0170 rerun/default-trust detail: default trust comes from the host and is reported by the repair step"
+ ],
+ "failed_rows": [
+  "VELDO-0170 launch/governed",
+  "VELDO-0170 launch/ungoverned",
+  "VELDO-0170 status/configurations",
+  "VELDO-0170 rerun/launch-after-repair",
+  "VELDO-0170 rerun/no-installed-trust",
+  "VELDO-0170 rerun/host-identity",
+  "VELDO-0170 rerun/differs",
+  "VELDO-0170 rerun/default-trust"
+ ],
+ "modules": {
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
+   "now": "4dead7a4c7fb24bc88966d5f63680f23ecdda025e4250d5afe54265ae1d4edc5"
+  },
+  ".veldo/control_factory_setup_trust.py": {
+   "at_commit": null,
+   "now": "85c2423a2b6d3a80a8b7f3b484e246bf1213d88af86dd3e623c0d29e1f3b244d"
+  },
+  ".veldo/control_factory_setup_upgrade.py": {
+   "at_commit": "fda674a7a8292d38dc8959e0942238b9ee05807bb61e3a8c27910289a9c30574",
+   "now": "00dd33ac6441e7798a83b9756067dd56cb737b65d17ab339d5025583bda0ce97"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "08ce9911ecbbf29f70a61874b80f45a340aa8850e16f0fe2c2021e76af459f0f",
+   "now": "542578c2122c1d487bbe2259a31585f06b17616fa9bd77c141182b1c25038852"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "fbf1b09319e81a6f477b345035c82f86ec941fec1f6fecca09a7470b5dd97bd7"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "347bb13958771368f103f763a041a033033d4840627daee7eb5c0b7531c9ef65",
+   "now": "8adf3170131b730733a2636d19beba8ae37020dd6725bfc376a3b6434194c6b4"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0170 launch/governed",
+   false
+  ],
+  [
+   "VELDO-0170 launch/ungoverned",
+   false
+  ],
+  [
+   "VELDO-0170 status/configurations",
+   false
+  ],
+  [
+   "VELDO-0170 rerun/launch-after-repair",
+   false
+  ],
+  [
+   "VELDO-0170 rerun/no-installed-trust",
+   false
+  ],
+  [
+   "VELDO-0170 rerun/host-identity",
+   false
+  ],
+  [
+   "VELDO-0170 rerun/differs",
+   false
+  ],
+  [
+   "VELDO-0170 rerun/default-trust",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.229,
+ "spec_id": "VELDO-0170",
+ "suite": "scripts/suites/87_veldo_0170_receiver_trust.py",
+ "tree": "git archive f1e1abb9ed0006b7d97948aed943c044b0b616cc, unchanged; the current suite file run against it"
+}

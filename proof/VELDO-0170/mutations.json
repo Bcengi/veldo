@@ -1,0 +1,89 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0170",
+ "registry": "scripts/check_teeth_mutations.py",
+ "execution": "not_run: token rule reserves mutation execution to reviewer",
+ "mutants": [
+  {
+   "name": "receiver170-no-trust-as-unsigned",
+   "module": ".veldo/control_launch.py",
+   "named_rows": [
+    "launch/governed",
+    "launch/ungoverned"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-repair-omits-trust",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/launch-after-repair"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-status-hides-missing",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "status/configurations"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-trust-from-default-only",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/no-installed-trust"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-host-identity-unchecked",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/host-identity"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-differing-config-accepted",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/differs"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-current-rewritten",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/launch-after-repair"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-no-default-trust",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/default-trust"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-repair-step-skipped",
+   "module": ".veldo/control_factory_setup.py",
+   "named_rows": [
+    "rerun/launch-after-repair"
+   ],
+   "status": "registered_not_run"
+  },
+  {
+   "name": "receiver170-repair-world-readable",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/launch-after-repair"
+   ],
+   "status": "registered_not_run"
+  }
+ ]
+}

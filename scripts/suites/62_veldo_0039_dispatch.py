@@ -194,13 +194,18 @@ sys.stdout.buffer.write(out)
 sys.stdout.flush()
 sys.exit(payload.get('code', 0))
 ''')
+        host_trust = private / 'host_trust.json'
+        enrollment_signers = private / 'enrollment_signers'
+        enrollment_signers.write_text('')
+        host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='host-39',
+                                              enrollment_signers=str(enrollment_signers))))
         config = base / 'receiver.json'
         # This host's worker profile (VELDO-0040): every local worker runs in its own systemd scope in a
         # slice of this run's own, with caps far above what these fixture engines use.
         worker_slice = 'v39s%s.slice' % os.urandom(4).hex()
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
-            'workspace': str(base),
+            'workspace': str(base), 'host_trust': str(host_trust),
             'profile': {'kind': 'linux-systemd', 'slice': worker_slice, 'lock': str(base / 'containment.lock'),
                         'concurrency': 64, 'runtime_seconds': 600, 'memory_bytes': 1 << 30, 'cpu_percent': 400,
                         'file_bytes': 1 << 30},

@@ -8985,6 +8985,38 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+    # VELDO-0170: missing receiver trust and its single setup repair path.
+    add(170, 'receiver170-no-trust-as-unsigned', '87_veldo_0170_receiver_trust.py', 'control_launch.py',
+        "            raise EL.Stopped('host_trust_required:receiver_configuration')\n",
+        '            return None\n', ['launch/governed', 'launch/ungoverned'], ())
+    add(170, 'receiver170-repair-omits-trust', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            held['host_trust'] = step['trust']\n",
+        "            held.pop('host_trust', None)\n", ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-status-hides-missing', '87_veldo_0170_receiver_trust.py', 'control_service.py',
+        "            if not receiver.get('host_trust'):\n",
+        '            if False:\n', ['status/configurations'], ())
+    add(170, 'receiver170-trust-from-default-only', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or path\n",
+        '            path = EL.host_trust_path()\n', ['rerun/no-installed-trust'], ())
+    add(170, 'receiver170-host-identity-unchecked', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "    if trust.host_identity != installed.get('host_identity'):\n",
+        '    if False:\n', ['rerun/host-identity'], ())
+    add(170, 'receiver170-differing-config-accepted', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '        if actual != expected:\n',
+        '        if False:\n', ['rerun/differs'], ())
+    add(170, 'receiver170-current-rewritten', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '        else:\n            current.append(path)\n',
+        '        else:\n            API.replace_file(path, API.text(held), 0o600)\n            current.append(path)\n', ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-no-default-trust', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or path\n",
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or str(Path(ingress).with_name('absent-trust.json'))\n", ['rerun/default-trust'], ())
+    add(170, 'receiver170-repair-step-skipped', '87_veldo_0170_receiver_trust.py', 'control_factory_setup.py',
+        '        outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))\n',
+        '        pass\n', ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-repair-world-readable', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '            API.replace_file(path, API.text(held), 0o600)\n',
+        '            API.replace_file(path, API.text(held), 0o644)\n', ['rerun/launch-after-repair'], ())
+
     # VELDO-0171: setup lays the API down behind Tailscale Serve and a re-run changes nothing. Each criterion's
     # declared falsifier first, then the threat model's other shapes.
     def setup_api(name, module, old, new, row, also=()):
