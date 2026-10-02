@@ -444,7 +444,7 @@ sys.exit(payload.get('code', 0))
             return dict(ActiveState=state, Result=result, **dict(zip(stamp_names, ('100', '200', '300'))))
 
         @contextlib.contextmanager
-        def manager_sequence(sequence):
+        def manager_sequence(sequence, show_seconds=0, reset_timeout=False):
             clock, calls, resets = [0.0], [], []
             group = C.Group.__new__(C.Group)
             group.unit, group.systemctl, group.environment = 'fake.scope', 'fake-systemctl', {}
@@ -453,9 +453,13 @@ sys.exit(payload.get('code', 0))
             def run(command, **kwargs):
                 if 'reset-failed' in command:
                     resets.append(dict(group.timestamps))
+                    if reset_timeout:
+                        clock[0] += kwargs['timeout']
+                        raise subprocess.TimeoutExpired('reset-failed', kwargs['timeout'])
                     return types.SimpleNamespace(returncode=0)
                 assert 'show' in command
                 calls.append(kwargs['timeout'])
+                clock[0] += min(show_seconds, kwargs['timeout'])
                 item = sequence[min(len(calls) - 1, len(sequence) - 1)]
                 if isinstance(item, Exception):
                     if isinstance(item, subprocess.TimeoutExpired):
@@ -472,7 +476,7 @@ sys.exit(payload.get('code', 0))
             with patch.object(C, 'subprocess', fake_subprocess), patch.object(C, 'time', fake_time):
                 yield group, clock, calls, resets
 
-        def reap_sequence(sequence, explicit=None, requested=False):
+        def reap_sequence(sequence, explicit=None):
             with manager_sequence(sequence) as (group, clock, calls, resets):
                 population = iter((True, False))
                 group.populated = lambda: next(population)
@@ -485,8 +489,6 @@ sys.exit(payload.get('code', 0))
 
                 def stop_factory(*args):
                     stop = original_stop(*args)
-                    if explicit:
-                        stop.begin(explicit, clock[0], False)
                     stops.append(stop)
                     return stop
 
@@ -496,10 +498,24 @@ sys.exit(payload.get('code', 0))
 
                 worker = types.SimpleNamespace(pid=44, stdin=io.BytesIO(), stdout=Output(),
                                                group=group, wait=lambda: 143)
-                receiver = types.SimpleNamespace(metering=None, recorder=None, control=None,
-                                                 _graces=lambda: (1, 1), _stop_asked=lambda: requested)
+                # Drive Receiver._reap's begin(), which sets both local cause and Stop.cause.
+                meter = None
+                if explicit in ('usage_cap', 'configuration_stop', 'paid_api'):
+                    login = types.SimpleNamespace(opening=lambda packet: (packet, True), release=lambda: None)
+                    meter = types.SimpleNamespace(login_guard=login, terminal=types.SimpleNamespace(),
+                                                  login_stop='configuration_stop:test' if explicit == 'configuration_stop'
+                                                  else 'paid_api:test',
+                                                  guarded=lambda chunk: explicit != 'usage_cap',
+                                                  feed=lambda chunk: explicit == 'usage_cap')
+                if explicit == 'heartbeat_missing':
+                    worker.heartbeat = types.SimpleNamespace(fd=14, due=lambda: 0, expired=lambda now: True,
+                                                             lapse=lambda now: None, summary=lambda: {})
+                receiver = types.SimpleNamespace(metering=meter, recorder=None, control=None,
+                                                 _graces=lambda: (1, 1), _stop_asked=lambda: explicit == 'requested')
+                # Let the real deadline/heartbeat check run while the adapter is still alive.
+                events = iter(([], [(13, 1)])) if explicit in ('deadline', 'heartbeat_missing') else iter(([(13, 1)],))
                 poller = types.SimpleNamespace(register=lambda *args: None, unregister=lambda *args: None,
-                                              poll=lambda timeout: [(13, 1)])
+                                              poll=lambda timeout: next(events))
                 fake_os = types.SimpleNamespace(**vars(os))
                 fake_os.pidfd_open = lambda pid: 13
                 fake_os.close = lambda fd: None
@@ -507,7 +523,8 @@ sys.exit(payload.get('code', 0))
                 fake_os.read = lambda *args: b''
                 fake_os.kill = lambda *args: None
                 contract = dict(dispatch_id='fake', unit='unit', station='build', source={},
-                                input={'payload': {}}, capability={'configuration': {}}, deadline=2000)
+                                input={'payload': {}}, capability={'configuration': {}},
+                                deadline=999 if explicit == 'deadline' else 2000)
                 with patch.object(L, 'C', C), patch.object(C, 'Stop', stop_factory), \
                         patch.object(C, 'os', fake_os), patch.object(L, 'os', fake_os), \
                         patch.object(L, 'select', types.SimpleNamespace(poll=lambda: poller, POLLIN=1,
@@ -519,11 +536,10 @@ sys.exit(payload.get('code', 0))
 
         with region('containment/manager-cap-after-adapter-exit'):
             caps = {result: reap_sequence([manager_record(result=result)]) for result in ('timeout', 'oom-kill')}
-            # Every explicit decision made by begin() or the prompt-write guard keeps precedence.
+            # Real request, meter, deadline and heartbeat paths all call the receiver's begin().
             reasons = ('requested', 'usage_cap', 'deadline', 'heartbeat_missing', 'configuration_stop', 'paid_api')
             explicit = {reason: reap_sequence([manager_record()], explicit=reason) for reason in reasons}
-            requested = reap_sequence([manager_record()], requested=True)
-            observed['manager_cap_after_adapter_exit'] = dict(caps=caps, explicit=explicit, requested=requested)
+            observed['manager_cap_after_adapter_exit'] = dict(caps=caps, explicit=explicit)
             check('containment/manager-cap-after-adapter-exit',
                   all(row['inferred'] == 'exit' and row['supervision']['empty']
                       and row['supervision']['cause'] == cause
@@ -531,9 +547,10 @@ sys.exit(payload.get('code', 0))
                       and row['supervision']['result'] == result
                       for result, cause in (('timeout', 'runtime_cap'), ('oom-kill', 'memory_cap'))
                       for row in (caps[result],))
-                  and all(row['supervision']['cause'] == reason for reason, row in explicit.items())
-                  and requested['supervision']['cause'] == 'requested'
-                  and not requested['termination']['deadline_stop'])
+                  and all(row['supervision']['cause'] == row['inferred'] == reason
+                          and row['supervision']['steps'][0]['step'] == 'cooperative'
+                          and row['termination']['deadline_stop'] == (reason == 'deadline')
+                          for reason, row in explicit.items()))
 
         with region('containment/conclude-settles'):
             settling = []
@@ -542,15 +559,30 @@ sys.exit(payload.get('code', 0))
             for first in (manager_record('deactivating', 'success'), OSError('busy manager'), bad):
                 for state in ('failed', 'inactive'):
                     with manager_sequence([first, manager_record(state)]) as (group, clock, calls, resets):
-                        result = group.conclude()
+                        error = None
+                        try:
+                            result = group.conclude()
+                        except Exception as exc:  # report a broken conclude as assertion evidence
+                            result, error = None, repr(exc)
                         settling.append(dict(result=result, timestamps=group.timestamps, calls=len(calls),
-                                             elapsed=clock[0], resets=resets, state=state))
+                                             elapsed=clock[0], resets=resets, state=state, error=error))
+            reset_budget = []
+            for show_seconds in (C.SETTLE_SECONDS - 0.01, C.SETTLE_SECONDS):
+                with manager_sequence([manager_record()], show_seconds, reset_timeout=True) as (group, clock, calls, resets):
+                    result = group.conclude()
+                    reset_budget.append(dict(result=result, elapsed=clock[0], resets=resets,
+                                             timestamps=group.timestamps, show_seconds=show_seconds))
             observed['conclude_settles'] = settling
+            observed['conclude_reset_budget'] = reset_budget
             check('containment/conclude-settles', all(
                 row['result'] == 'timeout' and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
                 and row['calls'] == 2 and 0 < row['elapsed'] <= C.SETTLE_SECONDS
                 and row['resets'] == ([row['timestamps']] if row['state'] == 'failed' else [])
-                for row in settling))
+                and row['error'] is None for row in settling) and all(
+                row['result'] == 'timeout' and row['elapsed'] <= C.SETTLE_SECONDS
+                and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
+                and len(row['resets']) == (row['show_seconds'] < C.SETTLE_SECONDS)
+                for row in reset_budget), dict(settling=settling, reset_budget=reset_budget))
 
         with region('containment/conclude-unknown'):
             unreadable = [reap_sequence([item]) for item in (

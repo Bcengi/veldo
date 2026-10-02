@@ -1,0 +1,48 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -499,30 +499,21 @@
+         return True
+ 
+     def conclude(self):
+-        """After empty, wait boundedly for the manager's final result before clearing the scope.
+-        An empty cgroup can precede the scope's terminal state. Unreadable evidence stays unknown."""
+-        end = time.monotonic() + SETTLE_SECONDS
+-        names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+-                 'InactiveEnterTimestampMonotonic')
+-        self.timestamps = {}
+-        while (remaining := end - time.monotonic()) > 0:
+-            try:
+-                shown = self._show(self.unit, ('Result', 'ActiveState', *names),
+-                                   timeout=min(TOOL_SECONDS, remaining))
+-                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
+-                    timestamps = {name: int(shown.get(name) or 0) for name in names}
+-                    self.timestamps = timestamps
+-                    remaining = end - time.monotonic()
+-                    if shown.get('ActiveState') == 'failed' and remaining > 0:
+-                        with contextlib.suppress(OSError, subprocess.SubprocessError):
+-                            subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
+-                                           timeout=min(TOOL_SECONDS, remaining), env=self.environment,
+-                                           stdin=subprocess.DEVNULL)
+-                    return shown['Result']
+-            except (OSError, subprocess.SubprocessError, ValueError):
+-                pass
+-            time.sleep(min(0.05, max(0, end - time.monotonic())))
+-        return 'unknown'
++        """After the group is empty: the scope's result as systemd recorded it (`timeout` for the
++        runtime cap, `oom-kill` for the memory cap), clearing a failed scope so it is not left loaded."""
++        try:
++            # Retain the manager's clock at the stop we already observe, before reset-failed
++            # unloads the scope. Receiver scheduling must not become the scope's runtime origin.
++            names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
++                     'InactiveEnterTimestampMonotonic')
++            shown = self._show(self.unit, ('Result', 'ActiveState', *names))
++            self.timestamps = {name: int(shown.get(name) or 0) for name in names}
++            if shown.get('ActiveState') == 'failed':
++                subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
++                               timeout=TOOL_SECONDS, env=self.environment, stdin=subprocess.DEVNULL)
++            return shown.get('Result')
++        except (OSError, subprocess.SubprocessError):
++            return None
+ 
+     def close(self):
+         if self.events is not None:

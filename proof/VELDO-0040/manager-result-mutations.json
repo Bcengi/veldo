@@ -5,41 +5,46 @@
     "--suite",
     "63_veldo_0040_containment"
   ],
-  "source_head": "d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515",
+  "pre_fix_commit": "ffb12c22",
+  "source_head": "08fa3b672f9c3b86535261d26dc74e0378e59b8a",
   "mutations": [
     {
-      "name": "containment-inferred-exit-hides-cap",
+      "name": "containment-resolved-exit-hides-cap",
       "target": "VELDO-0040 containment/manager-cap-after-adapter-exit",
       "exit_code": 1,
       "failed_details": [
         "VELDO-0040 containment/manager-cap-after-adapter-exit",
-        "VELDO-0040 containment/runtime-cap: {\"active\": 2635066.542352, \"beats\": [1790934488.7586637, 1790934488.858834, 1790934488.9590018, 1790934489.0591693, 1790934489.159431, 1790934489.2596884, 1790934489.3598444, 1790934489.4600031, 1790934489.5601614, 1790934489.6605139, 1790934489.7608154, 1790934489.8610756, 1790934489.9612658, 1790934490.0614777, 1790934490.1617444, 1790934490.2619712, 1790934490.3621538, 1790934490.4624062], \"beats_monotonic\": [2635066.631295584, 2635066.731475132, 2635066.831638968, 2635066.931809077, 2635067.032069675, 2635067.132326607, 2635067.232479377, 2635067.33263974, 2635067.432790162, 2635067.533162667, 2635067.633462783, 2635067.733714247, 2635067.83390368, 2635067.934113342, 2635068.03438241, 2635068.134610515, 2635068.234798626, 2635068.33504609], \"began\": 1790934488.508328, \"bound\": 2.7, \"checks\": {\"beats_present\": true, \"cause_runtime_cap\": false, \"deadline_stop\": false, \"first_beat_after_active\": true, \"last_beat_before_inactive\": true, \"result_timeout\": true, \"runtime_bound\": true, \"state_exited\": true, \"stubborn_not_living\": true, \"stubborn_present\": true, \"supervision_empty\": true, \"term_present\": true, \"timestamps_ordered\": true, \"unit_not_found\": true}, \"false_conjuncts\": [\"deadline_stop\", \"cause_runtime_cap\"], \"inactive\": 2635068.424933, \"last_beat_after_active\": 1.7926940903998911, \"last_beat_after_running\": 1.7329514026641846, \"running_at\": 1790934488.7294548, \"state\": \"exited\", \"stopping\": 2635067.921768, \"stubborn\": {\"at\": 1790934488.7585769, \"caps\": {\"CapAmb\": \"0000000000000000\", \"CapEff\": \"0000000000000000\", \"CapInh\": \"0000000000000000\", \"CapPrm\": \"0000000000000000\"}, \"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v409c7339c0a.slice/veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\", \"fsize\": [8388608, 8388608], \"gid\": [\"1000\", \"1000\", \"1000\", \"1000\"], \"pgid\": 311202, \"pid\": 311202, \"ppid\": 311192, \"role\": \"stubborn\", \"sid\": 311202, \"start\": \"263506661\", \"uid\": [\"1000\", \"1000\", \"1000\", \"1000\"]}, \"stubborn_living\": false, \"supervision\": {\"cause\": \"exit\", \"empty\": true, \"empty_at\": 1790934490.5521863, \"empty_monotonic\": 2635068.424795889, \"graces\": {\"kill_grace_seconds\": 0.5, \"stop_grace_seconds\": 0.6}, \"group\": {\"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v409c7339c0a.slice/veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\", \"slice\": \"v409c7339c0a.slice\", \"unit\": \"veldo-dispatch-66dc065573781da4e40e2b2b0697b6ef.scope\"}, \"heartbeat\": {\"beats\": 1, \"channel_open\": false, \"first\": 2635066.616287814, \"interval_seconds\": 10, \"last\": 2635066.616287814, \"liveness\": \"live\", \"max_gap\": null, \"pid\": 311196, \"recent\": [{\"renewed\": true, \"sent\": 2635066.61620201, \"seq\": 1, \"taken\": 2635066.616287814}], \"released\": 2635066.601994027, \"renewal_refusals\": [], \"renewed\": 1, \"uncertain_at\": null, \"window_seconds\": 30}, \"result\": \"timeout\", \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 2635066542352, \"ActiveExitTimestampMonotonic\": 2635067921768, \"InactiveEnterTimestampMonotonic\": 2635068424933}, \"steps\": [{\"at\": 1790934490.0500743, \"monotonic\": 2635067.922681143, \"step\": \"terminate\"}, {\"at\": 1790934490.5514963, \"monotonic\": 2635068.424093767, \"step\": \"kill\"}]}, \"term_count\": 2, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 143, \"signal\": null}, \"terms\": [1790934490.0492792, 1790934490.050203], \"unit_after\": \"not-found\", \"unit_error\": null}"
+        "VELDO-0040 containment/runtime-cap: {\"active\": 2635686.623296, \"beats\": [1790935108.8396916, 1790935108.9399588, 1790935109.0401928, 1790935109.1404397, 1790935109.2406034, 1790935109.340796, 1790935109.440949, 1790935109.541135, 1790935109.6413722, 1790935109.7415981, 1790935109.8418634, 1790935109.9420106, 1790935110.0422244, 1790935110.1424623, 1790935110.2426188, 1790935110.3428068, 1790935110.4429736], \"beats_monotonic\": [2635686.712322923, 2635686.812596281, 2635686.912829253, 2635687.013076829, 2635687.113241597, 2635687.213427696, 2635687.313584776, 2635687.413780637, 2635687.514062258, 2635687.614228423, 2635687.714498968, 2635687.814644094, 2635687.9148634, 2635688.015098407, 2635688.115254819, 2635688.215444661, 2635688.315612037], \"began\": 1790935108.5747013, \"bound\": 2.7, \"checks\": {\"beats_present\": true, \"cause_runtime_cap\": false, \"deadline_stop\": false, \"first_beat_after_active\": true, \"last_beat_before_inactive\": true, \"result_timeout\": true, \"runtime_bound\": true, \"state_exited\": true, \"stubborn_not_living\": true, \"stubborn_present\": true, \"supervision_empty\": true, \"term_present\": true, \"timestamps_ordered\": true, \"unit_not_found\": true}, \"false_conjuncts\": [\"deadline_stop\", \"cause_runtime_cap\"], \"inactive\": 2635688.326105, \"last_beat_after_active\": 1.6923160371370614, \"last_beat_after_running\": 1.6328346729278564, \"running_at\": 1790935108.810139, \"state\": \"exited\", \"stopping\": 2635687.823453, \"stubborn\": {\"at\": 1790935108.8396032, \"caps\": {\"CapAmb\": \"0000000000000000\", \"CapEff\": \"0000000000000000\", \"CapInh\": \"0000000000000000\", \"CapPrm\": \"0000000000000000\"}, \"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v40b1436e3da.slice/veldo-dispatch-203cee3300721e9bbb17cd158404724a.scope\", \"fsize\": [8388608, 8388608], \"gid\": [\"1000\", \"1000\", \"1000\", \"1000\"], \"pgid\": 380471, \"pid\": 380471, \"ppid\": 380461, \"role\": \"stubborn\", \"sid\": 380471, \"start\": \"263568669\", \"uid\": [\"1000\", \"1000\", \"1000\", \"1000\"]}, \"stubborn_living\": false, \"supervision\": {\"cause\": \"exit\", \"empty\": true, \"empty_at\": 1790935110.4531376, \"empty_monotonic\": 2635688.32574712, \"graces\": {\"kill_grace_seconds\": 0.5, \"stop_grace_seconds\": 0.6}, \"group\": {\"cgroup\": \"/user.slice/user-1000.slice/user@1000.service/v40b1436e3da.slice/veldo-dispatch-203cee3300721e9bbb17cd158404724a.scope\", \"slice\": \"v40b1436e3da.slice\", \"unit\": \"veldo-dispatch-203cee3300721e9bbb17cd158404724a.scope\"}, \"heartbeat\": {\"beats\": 1, \"channel_open\": false, \"first\": 2635686.702220798, \"interval_seconds\": 10, \"last\": 2635686.702220798, \"liveness\": \"live\", \"max_gap\": null, \"pid\": 380465, \"recent\": [{\"renewed\": true, \"sent\": 2635686.702129558, \"seq\": 1, \"taken\": 2635686.702220798}], \"released\": 2635686.682686209, \"renewal_refusals\": [], \"renewed\": 1, \"uncertain_at\": null, \"window_seconds\": 30}, \"result\": \"timeout\", \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 2635686623296, \"ActiveExitTimestampMonotonic\": 2635687823453, \"InactiveEnterTimestampMonotonic\": 2635688326105}, \"steps\": [{\"at\": 1790935109.951526, \"monotonic\": 2635687.824132691, \"step\": \"terminate\"}, {\"at\": 1790935110.452428, \"monotonic\": 2635688.325026881, \"step\": \"kill\"}]}, \"term_count\": 2, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 143, \"signal\": null}, \"terms\": [1790935109.9508462, 1790935109.9517708], \"unit_after\": \"not-found\", \"unit_error\": null}"
       ],
       "target_red": true,
+      "target_raised": false,
       "raised_regions": [],
+      "purpose": "regression guard",
       "passed": 50,
       "failed": 2,
       "source_sha256": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
       "mutated_sha256": "21f09d5f4271dec3a67678c4610d2d48205ae70a8957986c60c398ab9ce9674c",
-      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
-      "diff": "mutations/containment-inferred-exit-hides-cap.diff",
-      "log": "/tmp/flake0040-manual-containment-inferred-exit-hides-cap.log"
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
+      "diff": "mutations/containment-resolved-exit-hides-cap.diff",
+      "log": "/tmp/flake0040-manual-containment-resolved-exit-hides-cap.log"
     },
     {
       "name": "containment-result-before-settled",
       "target": "VELDO-0040 containment/conclude-settles",
       "exit_code": 1,
       "failed_details": [
-        "VELDO-0040 containment/conclude-settles",
+        "VELDO-0040 containment/conclude-settles: {\"reset_budget\": [{\"elapsed\": 5.0, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"show_seconds\": 4.99, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"elapsed\": 5.0, \"resets\": [], \"result\": \"timeout\", \"show_seconds\": 5.0, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}], \"settling\": [{\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": \"success\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": \"success\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [], \"result\": \"timeout\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [], \"result\": \"timeout\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}]}",
         "VELDO-0040 containment/conclude-unknown"
       ],
       "target_red": true,
+      "target_raised": false,
       "raised_regions": [],
+      "purpose": "regression guard",
       "passed": 50,
       "failed": 2,
-      "source_sha256": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
-      "mutated_sha256": "8673bf1c51edb3bc86b0b04df2e9a8231571edf406651c3192529a21d19a33f2",
-      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
+      "source_sha256": "c2fddc9bb0e094c9d4d6232bb1e492827037f350f1405b5d87ef71aa0b77a6b7",
+      "mutated_sha256": "adf067e1badb9cb2505ec1d0207268baa0ebb51a25d5fcbfe06e02c5fc586f6d",
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
       "diff": "mutations/containment-result-before-settled.diff",
       "log": "/tmp/flake0040-manual-containment-result-before-settled.log"
     },
@@ -51,14 +56,77 @@
         "VELDO-0040 containment/conclude-unknown"
       ],
       "target_red": true,
+      "target_raised": false,
       "raised_regions": [],
+      "purpose": "regression guard",
       "passed": 51,
       "failed": 1,
-      "source_sha256": "905010cb64da5ed8ab5eb9d4950e8bf31439fbaa83261d8429c3f0434e9c3ef2",
-      "mutated_sha256": "76d36092d24fcddb2f526e7e918257946312770e857736a7e2a487061fe08032",
-      "suite_sha256": "e39acf25bd40a98a6476bc0dfa8a1cd90ba72d61a5e30c4b4e302bdc408c01d8",
+      "source_sha256": "c2fddc9bb0e094c9d4d6232bb1e492827037f350f1405b5d87ef71aa0b77a6b7",
+      "mutated_sha256": "08576f08fbf9e098c1f7c8357d63422b9d12947ada16075098f5c4dafb80d6bd",
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
       "diff": "mutations/containment-unreadable-result-silent.diff",
       "log": "/tmp/flake0040-manual-containment-unreadable-result-silent.log"
+    },
+    {
+      "name": "containment-pre-fix-conclude",
+      "target": "VELDO-0040 containment/conclude-settles",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/conclude-settles: {\"reset_budget\": [{\"elapsed\": 24.990000000000002, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": null, \"show_seconds\": 4.99, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"elapsed\": 25.0, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": null, \"show_seconds\": 5.0, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}], \"settling\": [{\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": \"success\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": \"success\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": null, \"state\": \"failed\", \"timestamps\": {}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": null, \"resets\": [], \"result\": null, \"state\": \"inactive\", \"timestamps\": {}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": \"ValueError(\\\"invalid literal for int() with base 10: 'unreadable'\\\")\", \"resets\": [], \"result\": null, \"state\": \"failed\", \"timestamps\": {}}, {\"calls\": 1, \"elapsed\": 0.0, \"error\": \"ValueError(\\\"invalid literal for int() with base 10: 'unreadable'\\\")\", \"resets\": [], \"result\": null, \"state\": \"inactive\", \"timestamps\": {}}]}",
+        "VELDO-0040 containment/conclude-unknown",
+        "VELDO-0040 ran/containment/conclude-unknown"
+      ],
+      "target_red": true,
+      "target_raised": false,
+      "raised_regions": [
+        "VELDO-0040 ran/containment/conclude-unknown"
+      ],
+      "purpose": "historical rebuild",
+      "passed": 49,
+      "failed": 3,
+      "source_sha256": "c2fddc9bb0e094c9d4d6232bb1e492827037f350f1405b5d87ef71aa0b77a6b7",
+      "mutated_sha256": "58632cda5f704bb83374205d444ce16d75bc047a109195de820d43ad6dda0c4f",
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
+      "diff": "mutations/containment-pre-fix-conclude.diff",
+      "log": "/tmp/flake0040-manual-containment-pre-fix-conclude.log"
+    },
+    {
+      "name": "containment-pre-fix-receiver-control",
+      "target": "VELDO-0040 containment/manager-cap-after-adapter-exit",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/conclude-unknown"
+      ],
+      "target_red": false,
+      "target_raised": false,
+      "raised_regions": [],
+      "purpose": "historical rebuild",
+      "passed": 51,
+      "failed": 1,
+      "source_sha256": "74c7819af05b03020654889aae00572d5440e4f3b48514f818eccc138a5a406d",
+      "mutated_sha256": "3f635eaa5af3cdd65857730cb13655ace595cfb3e6a1322c77b6d81dfdc616b9",
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
+      "diff": "mutations/containment-pre-fix-receiver-control.diff",
+      "log": "/tmp/flake0040-manual-containment-pre-fix-receiver-control.log"
+    },
+    {
+      "name": "containment-reset-past-budget",
+      "target": "VELDO-0040 containment/conclude-settles",
+      "exit_code": 1,
+      "failed_details": [
+        "VELDO-0040 containment/conclude-settles: {\"reset_budget\": [{\"elapsed\": 24.990000000000002, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"show_seconds\": 4.99, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"elapsed\": 25.0, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"show_seconds\": 5.0, \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}], \"settling\": [{\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [], \"result\": \"timeout\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [], \"result\": \"timeout\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [{\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}], \"result\": \"timeout\", \"state\": \"failed\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}, {\"calls\": 2, \"elapsed\": 0.05, \"error\": null, \"resets\": [], \"result\": \"timeout\", \"state\": \"inactive\", \"timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}}]}"
+      ],
+      "target_red": true,
+      "target_raised": false,
+      "raised_regions": [],
+      "purpose": "regression guard",
+      "passed": 51,
+      "failed": 1,
+      "source_sha256": "c2fddc9bb0e094c9d4d6232bb1e492827037f350f1405b5d87ef71aa0b77a6b7",
+      "mutated_sha256": "b30c8580a229daa42a41a761312b2a3bbdc68e6f091f17f5657e9f70c83f1155",
+      "suite_sha256": "d127b5c0c8640fc4c63b6d51b6b3b4cf97f103ac611783c21b40206e00a6eb2f",
+      "diff": "mutations/containment-reset-past-budget.diff",
+      "log": "/tmp/flake0040-manual-containment-reset-past-budget.log"
     }
   ]
 }

@@ -3714,6 +3714,13 @@
     "source_head": "8fe7f0ca19e5ba64700481694a35ba4db0042ca8",
     "suite_copies_per_round": 2
   },
+  "diagnosis_correction": {
+    "evidence": "manager-result-mutations.json",
+    "falsifier": "Rebuild ffb12c22 Group.conclude in a temporary current tree and require containment/conclude-settles red by assertion.",
+    "initial_run_limit": "These initial suite observations did not reproduce the historical red; counts and measurements are unchanged.",
+    "precedence_guard": "containment-resolved-exit-hides-cap tests the restructured precedence, not a pre-existing bug.",
+    "source_fact": "Stop.adapter_exited sets Stop.cause, not local cause. The pre-fix receiver already classifies a successfully read timeout as runtime_cap."
+  },
   "gate_environment": {
     "load": [],
     "load_reaped": true,
@@ -7560,7 +7567,7 @@
     "source_head": "8fe7f0ca19e5ba64700481694a35ba4db0042ca8",
     "suite_copies_per_round": 1
   },
-  "status": "historical red not reproduced; cause unknown",
+  "status": "Historical initial runs; superseded by the measured conclude evidence loss and proof correction",
   "summary": {
     "bound": 2.7,
     "busy_cpus": 20,
@@ -7568,7 +7575,7 @@
     "current_rounds": 10,
     "green_suite_runs": 42,
     "historical_red_reproduced": false,
-    "measured_cause": null,
+    "measured_cause": "Reviewer cd3df736 measured missing final manager evidence from conclude; early or failed final read, not adapter-exit cause precedence",
     "new_mutations": [],
     "original_max_gap": 1.6435189247131348,
     "original_rounds": 10,

@@ -60,9 +60,9 @@ and 50 pass, 154 rows; findings 39 (30), 40 (22), 49 (36) and 50 (24) all reject
 The Mac profile is VELDO-0124. Aggregate resource-exhaustion qualification and recovery after
 authority loss are Release 2. Production receiver configuration names its profile at installation.
 
-## Runtime-cap investigation, 2026-10-02
+## Initial runtime-cap investigation, 2026-10-02 (historical)
 
-The reported gate red is not yet explained. The late-origin diagnosis was wrong:
+At this stage the reported gate red was not yet explained. The late-origin diagnosis was wrong:
 the receiver records running after activation, so subtracting running_at makes
 the old gap smaller. It cannot explain an old-row upper-bound failure.
 
@@ -134,7 +134,7 @@ not run. The gate byproducts are excluded. This is selected-suite evidence, not
 a gate stamp or a reproduced fix. The reported historical red remains unresolved;
 a future red should now carry the missing per-conjunct evidence.
 
-## Measured manager-result race, 2026-10-02
+## Measured manager-result loss, 2026-10-02
 
 This continuation supersedes the unresolved diagnosis above. The reviewer's
 gate on cd3df736 (which includes ffb12c22) measured six false runtime-cap
@@ -150,7 +150,8 @@ remaining budget, and reads Result and all clocks from the same terminal
 snapshot. ValueError from a malformed clock is retried too. Evidence still
 unreadable at the deadline is recorded as result unknown and cause unknown
 unless an explicit stop decision already explains the stop. A reset-failed
-failure cannot discard a successfully captured result.
+failure cannot discard a successfully captured result. Its timeout is capped by
+the remaining settle budget, and reset is skipped when that budget is exhausted.
 
 The receiver now resolves its local cause and Stop.cause before applying
 manager cap precedence. Timeout maps to runtime_cap and deadline_stop true;
@@ -159,15 +160,18 @@ causes retain precedence: requested, deadline, usage_cap, heartbeat_missing,
 configuration_stop and paid_api. Source inspection qualifies the reported
 mechanism: in ffb12c22 Stop.adapter_exited sets Stop.cause, not the receiver's
 local cause. A successfully read timeout already overrides that particular
-inference in that version. The measured missing result is the reproduced
-production defect; the explicit precedence rule protects both cause sources.
+inference in that version. The measured missing result identifies conclude as the production defect.
+The old local-cause cap check already handled a successfully read timeout after
+adapter exit. The renamed containment-resolved-exit-hides-cap mutation guards
+the restructured precedence after resolving both cause sources; it does not
+recreate a historical production bug.
 
 Three deterministic rows use a fake systemctl show sequence and fake monotonic
 clock, with no timing thresholds or live process scheduling:
 
 | Row | Evidence | Registered mutation |
 |-|-|-|
-| containment/manager-cap-after-adapter-exit | Adapter exit while populated, then empty; timeout and oom-kill classification; every explicit cause preserved | containment-inferred-exit-hides-cap |
+| containment/manager-cap-after-adapter-exit | Adapter exit while populated, then empty; timeout and oom-kill classification; every explicit cause preserved | containment-resolved-exit-hides-cap |
 | containment/conclude-settles | Deactivating, failed show or malformed clock followed by failed or inactive; final result and clocks retained before reset | containment-result-before-settled |
 | containment/conclude-unknown | Persistent unreadable, timed-out, missing, deactivating or malformed evidence; bounded unknown result and cause | containment-unreadable-result-silent |
 
@@ -177,7 +181,7 @@ the harness's shared assertions. The load driver now runs one suite at a time
 with one pinned burner per available CPU, per the owner's run constraint.
 Earlier simultaneous-load records above remain historical evidence.
 
-Verification for this continuation: manager-result-runs.json records the exact
+Historical verification before this proof correction: manager-result-runs.json records the exact
 suite and production hashes, all three deterministic observations and the live
 runtime-cap diagnostics. Normal and inherited gate shell runs each passed
 52 assertions with zero failures or raised regions. Three sequential loaded
@@ -187,20 +191,54 @@ largest loaded activation-based last-beat gap was 1.8039589929394424 seconds,
 below the unchanged 2.7 second bound. The proof driver uses the gate's bash -c
 shell with the inherited environment, not the canonical gate itself.
 
-manager_result_check.py reads only the three new registrations as AST data,
-applies each single edit to a temporary production copy and invokes only
-suite 63, sequentially. It never imports or executes the teeth driver.
-manager-result-mutations.json and the three named diffs in mutations/ retain
-the edits, source and mutated hashes, exact failing rows and assertion counts:
+manager_result_check.py reads only the three manager-result registrations as
+AST data, applies each edit to a temporary production copy and invokes only
+suite 63, sequentially. It also rebuilds the pre-fix conclude and receiver
+methods from ffb12c22 and removes the reset budget guard in separate copies.
+It never imports or executes the teeth driver.
+manager-result-mutations.json retains the corrected runs and rebuild evidence
+with each exact diff, source hash and target row. The renamed guard replaces
+the old inferred-exit-hides-cap artifact; its historical red only demonstrated
+the new precedence structure, not the pre-fix defect.
+The precedence row now drives requested, usage_cap, deadline, heartbeat_missing,
+configuration_stop and paid_api through the receiver's real begin() path. It
+asserts the resulting cause, cooperative first step and deadline_stop value.
+The settlement row records per-case exceptions as assertion evidence so a
+pre-fix malformed clock cannot bypass the target assertion. The same row checks
+reset-failed timing near and at budget exhaustion.
 
-| Mutation | Passed | Failed | Target red by assertion | Raised regions |
-|-|-:|-:|-|-:|
-| containment-inferred-exit-hides-cap | 50 | 2 | yes | 0 |
-| containment-result-before-settled | 50 | 2 | yes | 0 |
-| containment-unreadable-result-silent | 51 | 1 | yes | 0 |
+The rebuilt ffb12c22 conclude makes containment/conclude-settles red by
+assertion, with that region completing. It returns success after a single
+deactivating read, returns None after a failed show, and raises ValueError on
+malformed clocks. All six settlement cases fail the expected final snapshot.
+The separate conclude-unknown region also raises with the pre-fix malformed
+clock; this does not substitute for the settlement assertion failure.
+Rebuilding the pre-fix receiver with the fixed conclude leaves the precedence
+row green, confirming that the old local-cause check already handled caps.
 
-Only these new mutations were driven in this continuation. The full selftest,
-canonical gate and both gate mutation drivers were not run; their result and
+| Temporary-copy case | Passed | Failed | Target red by assertion |
+|-|-:|-:|-|
+| containment-resolved-exit-hides-cap | 50 | 2 | yes |
+| containment-result-before-settled | 50 | 2 | yes |
+| containment-unreadable-result-silent | 51 | 1 | yes |
+| containment-pre-fix-conclude | 49 | 3 | yes |
+| containment-pre-fix-receiver-control | 51 | 1 | no, expected green control |
+| containment-reset-past-budget | 51 | 1 | yes |
+
+Every target region completes; only the pre-fix conclude's separate unknown
+region raises. The pre-fix receiver's only failure is conclude-unknown, since
+that receiver predates explicit unknown classification. The reset-only negative
+control preserves all ordinary settlement cases but fails the reset budget.
+
+Review correction verification is in review-correction-runs.json: normal and
+inherited gate-shell suite 63 runs each passed 52 assertions with zero failures
+or raised regions. Both reset budget cases ended at SETTLE_SECONDS (5 seconds),
+retained timeout and all clocks, and skipped reset when no time remained. The
+live runtime-cap row passed unchanged in both runs. No load mode ran during
+this review correction. Source hashes bind these observations to the tested
+suite and production modules; earlier loaded observations remain historical.
+
+The full selftest, canonical gate and both gate mutation drivers were not run; their result and
 the merged-tree stamp belong to the reviewer. Selected-suite exit code 2 on
 all-green partial runs is the harness's expected partial-run status, not a
 canonical verification claim.

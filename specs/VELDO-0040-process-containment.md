@@ -167,11 +167,14 @@ in the inherited gate shell environment and in ten matching loaded rounds. The
 runtime-cap-disabled mutation failed by assertion with complete diagnostics;
 the historical gate red remains unreproduced and its cause unknown.
 
-2026-10-02, measured manager-result race (fix-flake-0040): the reviewer's gate
+2026-10-02, measured manager-result loss (fix-flake-0040): the reviewer's gate
 on cd3df736 measured a stopped descendant within the runtime bound, but an
 exited dispatch with deadline_stop false, cause exit, no retained scope clocks,
 and six false runtime-cap conjuncts. The cap worked; final manager evidence
-was lost. Group.conclude now waits within SETTLE_SECONDS for failed or inactive,
+was lost in conclude's early or failed final read. Stop.adapter_exited only
+sets Stop.cause; the old local cause check already mapped a successfully read
+timeout to runtime_cap. The precedence restructuring is a regression guard,
+not the measured defect. Group.conclude now waits within SETTLE_SECONDS for failed or inactive,
 bounds each show call by the remaining budget, retries tool and timestamp parse
 failures, and records unknown when evidence remains unreadable. The receiver
 resolves both cause sources explicitly: manager timeout and oom-kill outrank
@@ -182,3 +185,15 @@ settlement from deactivating and unreadable evidence; each has a registered
 mutation. The live runtime-cap row and its diagnostics and bounds are retained.
 Selected-suite verification and manual mutation results are in proof/VELDO-0040;
 the canonical gate remains the reviewer's responsibility.
+
+2026-10-02, proof review correction (fix-flake-0040): the precedence mutation
+is named containment-resolved-exit-hides-cap to identify its role as a guard
+on the restructured receiver. Explicit causes in its suite row now come from
+the real request, meter, deadline and heartbeat paths through receiver begin().
+The conclude-settles falsifier is also checked against the complete pre-fix
+conclude rebuilt from ffb12c22 in a temporary copy: the target fails by
+assertion and its region completes. Restoring only the pre-fix receiver leaves
+the precedence row green with the fixed conclude. reset-failed shares the
+remaining SETTLE_SECONDS budget and is skipped when no time remains. Only
+suite 63 normal, gate-environment and temporary-copy checks run in this review
+continuation; no load mode or canonical gate runs here.
