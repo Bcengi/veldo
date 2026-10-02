@@ -1764,7 +1764,7 @@ class Receiver:
         group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
         stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
-        settle, emptied = None, (None, None)
+        settle, emptied, adapter_exit_monotonic = None, (None, None), None
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
         # VELDO-0141: the worker's error stream, read here like its output, and the run's execution record.
         errors = worker.stderr.fileno() if getattr(worker, 'stderr', None) is not None else None
@@ -1852,6 +1852,7 @@ class Receiver:
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
+                        adapter_exit_monotonic = time.monotonic()
                         if stop is not None and group.populated():
                             if group.members() or watch is None:
                                 stop.adapter_exited(time.monotonic())
@@ -1925,21 +1926,48 @@ class Receiver:
             # The record's last lines, and what the exit commits of it.
             self.committed = recorder.close()
         code = worker.poll() if code is None else code
+        if group is not None:
+            # The last populated read can observe an OOM after its memory.events sample.
+            group.sample_memory()
         result = group.conclude() if group is not None and empty else None
+        manager_result = result
+        start = getattr(group, 'start_evidence', {})
+        active = start.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+        runtime = start.get('RuntimeMaxUSec')
+        # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
+        signaled = code is not None and (code < 0 or 128 < code <= 192)
+        stop_times = [step['monotonic'] for step in (stop.steps if stop is not None else [])
+                      if step['step'] in ('terminate', 'kill')]
+        if signaled and adapter_exit_monotonic is not None:
+            stop_times.append(adapter_exit_monotonic)
+        runtime_reached = (active > 0 and runtime is not None
+                           and any(at >= active + runtime / 10 ** 6 for at in stop_times))
         # Explicit receiver or owner decisions win; an adapter exit is only an inference.
         cause = cause or (stop.cause if stop is not None else None)
-        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):
-            # systemd stopped the group at a cap: the runtime cap is a deadline, the memory cap is not.
-            cause = {'timeout': 'runtime_cap', 'oom-kill': 'memory_cap'}[result]
-            stopped = cause == 'runtime_cap'
-        if cause in (None, 'exit') and result == 'unknown':
-            cause = 'unknown'
+        if cause in (None, 'exit'):
+            if manager_result == 'oom-kill' or getattr(group, 'oom_kill', 0) > 0:
+                cause, result = 'memory_cap', 'oom-kill'
+            elif manager_result == 'timeout' or runtime_reached:
+                cause, result, stopped = 'runtime_cap', 'timeout', True
+            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None
+                  and adapter_exit_monotonic is not None
+                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):
+                # An ordinary status can be a handled cap signal; missing evidence is not success.
+                cause = 'unknown'
+            elif code == 0:
+                cause = 'exit'
+            elif result == 'unknown':
+                cause = 'unknown'
         self.supervision = {'cause': cause,
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
                                         'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
                             'empty_at': emptied[0], 'empty_monotonic': emptied[1], 'result': result,
                             'scope_timestamps': getattr(group, 'timestamps', {}),
+                            'scope_start': start, 'manager_result': manager_result,
+                            'adapter_exit_monotonic': adapter_exit_monotonic,
+                            'stop_monotonic': min(stop_times) if stop_times else None,
+                            'oom_kill': getattr(group, 'oom_kill', 0), 'deadline': contract['deadline'],
                             'group': group.report() if group is not None else None,
                             'heartbeat': watch.summary() if watch is not None else None}
         if group is not None and empty:

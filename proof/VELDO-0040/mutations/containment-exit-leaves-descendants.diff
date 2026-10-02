@@ -3,7 +3,7 @@
 @@ -1821 +1821 @@
 -                if code is not None and (group is None or not group.populated()):
 +                if code is not None:  # defect: the exit ends the reap while the group still runs
-@@ -1855,6 +1854,0 @@
+@@ -1856,6 +1855,0 @@
 -                        if stop is not None and group.populated():
 -                            if group.members() or watch is None:
 -                                stop.adapter_exited(time.monotonic())

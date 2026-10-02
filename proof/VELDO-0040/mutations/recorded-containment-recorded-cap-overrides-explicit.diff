@@ -2,4 +2,4 @@
 +++ b/.veldo/control_launch.py
 @@ -1944 +1944 @@
 -        if cause in (None, 'exit'):
-+        if cause is None:
++        if True:

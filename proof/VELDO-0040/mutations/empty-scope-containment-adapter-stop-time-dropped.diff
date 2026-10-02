@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1942 +1942 @@
+-            stop_times.append(adapter_exit_monotonic)
++            pass

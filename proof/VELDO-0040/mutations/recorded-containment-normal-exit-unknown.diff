@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1950 +1950 @@
+-                cause = 'exit'
++                cause = 'unknown'

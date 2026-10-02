@@ -134,111 +134,177 @@ not run. The gate byproducts are excluded. This is selected-suite evidence, not
 a gate stamp or a reproduced fix. The reported historical red remains unresolved;
 a future red should now carry the missing per-conjunct evidence.
 
-## Measured manager-result loss, 2026-10-02
+## Recorded cause after scope collection, 2026-10-02
 
-This continuation supersedes the unresolved diagnosis above. The reviewer's
-gate on cd3df736 (which includes ffb12c22) measured six false runtime-cap
-conjuncts: deadline_stop, cause_runtime_cap, result_timeout, timestamps_ordered,
-last_beat_before_inactive and runtime_bound. The descendant did stop: its last
-beat was 2.04 seconds after running, term_count was 2, it was no longer living,
-and the scope was not-found afterward. The receiver instead recorded exited,
-returncode 143, deadline_stop false, cause exit and zero scope clocks.
+The measured sequence at the reviewer's 074dbdcd supersedes the earlier
+conclude-too-early explanation. RuntimeMaxSec sent SIGTERM; the adapter exited
+143; Stop.adapter_exited started terminate then cgroup.kill; the group emptied;
+and conclude read a collected scope. The not-found unit supplied inactive,
+success and zero clocks. The six false conjuncts were deadline_stop,
+cause_runtime_cap, result_timeout, timestamps_ordered,
+last_beat_before_inactive and runtime_bound. The reported last beat was 2.74
+seconds after running, term_count was 2, and the stubborn process was dead.
+The earlier settlement change cannot recover collected evidence, and cleanup
+can also change the manager result. More waiting is not a solution.
 
-The production final read could precede the manager's terminal state or fail.
-It now retries within SETTLE_SECONDS, with each show timeout capped by the
-remaining budget, and reads Result and all clocks from the same terminal
-snapshot. ValueError from a malformed clock is retried too. Evidence still
-unreadable at the deadline is recorded as result unknown and cause unknown
-unless an explicit stop decision already explains the stop. A reset-failed
-failure cannot discard a successfully captured result. Its timeout is capped by
-the remaining settle budget, and reset is skipped when that budget is exhausted.
+Group.attach records scope_start from the loaded scope before engine release:
+ActiveEnterTimestampMonotonic, installed RuntimeMaxUSec and TimeoutStopUSec.
+Receiver._reap retains the adapter-exit monotonic time and its own escalation
+steps. A signal exit (negative signal or shell-style 128 plus signal), terminate
+or kill at or after activation plus the installed runtime cap establishes
+runtime_cap and deadline_stop. The explicit causes requested, usage_cap,
+deadline, paid_api, configuration_stop and heartbeat_missing win over inferred
+caps. The receiver also retains its contract deadline.
 
-The receiver now resolves its local cause and Stop.cause before applying
-manager cap precedence. Timeout maps to runtime_cap and deadline_stop true;
-oom-kill maps to memory_cap. Both outrank inferred exit. All existing explicit
-causes retain precedence: requested, deadline, usage_cap, heartbeat_missing,
-configuration_stop and paid_api. Source inspection qualifies the reported
-mechanism: in ffb12c22 Stop.adapter_exited sets Stop.cause, not the receiver's
-local cause. A successfully read timeout already overrides that particular
-inference in that version. The measured missing result identifies conclude as the production defect.
-The old local-cause cap check already handled a successfully read timeout after
-adapter exit. The renamed containment-resolved-exit-hides-cap mutation guards
-the restructured precedence after resolving both cause sources; it does not
-recreate a historical production bug.
+For memory, the minimal additional witness is memory.events oom_kill, sampled
+on population observations and immediately before terminate or kill. The maximum
+observed count survives removal of the cgroup. A retained OOM kill or loaded
+manager oom-kill establishes memory_cap, ahead of elapsed runtime evidence.
+This does not claim to recover a counter that disappeared before any observation.
 
-Three deterministic rows use a fake systemctl show sequence and fake monotonic
-clock, with no timing thresholds or live process scheduling:
+Group.conclude accepts manager results and terminal clocks only with
+LoadState=loaded. Not-found ends the read as unknown. Supervision preserves
+manager_result separately from the effective result: inferred runtime_cap
+records timeout, even when manager_result is unknown or success. No manager
+clock is synthesized. The live row uses saved scope_start activation,
+stop_monotonic and empty_monotonic. All existing predicates remain, including
+the timeout result, timestamp order, empty group, absent unit and unchanged
+1.2 + 0.5 + 1.0 runtime bound.
 
-| Row | Evidence | Registered mutation |
-|-|-|-|
-| containment/manager-cap-after-adapter-exit | Adapter exit while populated, then empty; timeout and oom-kill classification; every explicit cause preserved | containment-resolved-exit-hides-cap |
-| containment/conclude-settles | Deactivating, failed show or malformed clock followed by failed or inactive; final result and clocks retained before reset | containment-result-before-settled |
-| containment/conclude-unknown | Persistent unreadable, timed-out, missing, deactivating or malformed evidence; bounded unknown result and cause | containment-unreadable-result-silent |
+| Deterministic row | Mutation |
+|-|-|
+| containment/start-evidence | containment-start-activation-lost |
+| containment/recorded-runtime-after-collection | containment-recorded-runtime-ignored |
+| containment/not-found-unknown | containment-not-found-is-success |
+| containment/normal-exit-before-cap | containment-normal-exit-unknown |
+| containment/recorded-cap-explicit-precedence | containment-recorded-cap-overrides-explicit |
+| containment/retained-oom-before-cleanup | containment-oom-evidence-lost |
 
-The live runtime-cap assertion and diagnostics are unchanged. Suite 63 now adds
-six assertions, including the three region-completion rows, for 52 total with
-the harness's shared assertions. The load driver now runs one suite at a time
-with one pinned burner per available CPU, per the owner's run constraint.
-Earlier simultaneous-load records above remain historical evidence.
+The fake receiver drives real begin(), adapter exit, terminate and kill, with
+both 143 and negative SIGTERM statuses. The ordinary-exit row uses both collected and loaded units before the cap. The precedence row
+drives all six explicit paths with both runtime and memory evidence. Existing
+manager precedence, bounded settlement and unreadable-result rows remain.
 
-Historical verification before this proof correction: manager-result-runs.json records the exact
-suite and production hashes, all three deterministic observations and the live
-runtime-cap diagnostics. Normal and inherited gate shell runs each passed
-52 assertions with zero failures or raised regions. Three sequential loaded
-runs also passed 52 each. All 20 pinned burners accumulated CPU ticks (minimum
-4292), and all were terminated and reaped by their recorded child PIDs. The
-largest loaded activation-based last-beat gap was 1.8039589929394424 seconds,
-below the unchanged 2.7 second bound. The proof driver uses the gate's bash -c
-shell with the inherited environment, not the canonical gate itself.
+recorded_cause_check.py runs only suite 63, one copy at a time. It reads the
+nine selected mutation registrations as AST data without importing or running
+the mutation driver, and saves exact diffs and source hashes. Its pre-fix mode
+replaces both complete production files with engine sources from 9a48b4ea in
+a temporary copy, keeping the current suite. The normal and gate modes run
+the selected suite directly and through the gate's bash -c shell with inherited
+environment. Detailed observations and results are in recorded-cause-runs.json.
 
-manager_result_check.py reads only the three manager-result registrations as
-AST data, applies each edit to a temporary production copy and invokes only
-suite 63, sequentially. It also rebuilds the pre-fix conclude and receiver
-methods from ffb12c22 and removes the reset budget guard in separate copies.
-It never imports or executes the teeth driver.
-manager-result-mutations.json retains the corrected runs and rebuild evidence
-with each exact diff, source hash and target row. The renamed guard replaces
-the old inferred-exit-hides-cap artifact; its historical red only demonstrated
-the new precedence structure, not the pre-fix defect.
-The precedence row now drives requested, usage_cap, deadline, heartbeat_missing,
-configuration_stop and paid_api through the receiver's real begin() path. It
-asserts the resulting cause, cooperative first step and deadline_stop value.
-The settlement row records per-case exceptions as assertion evidence so a
-pre-fix malformed clock cannot bypass the target assertion. The same row checks
-reset-failed timing near and at budget exhaustion.
+Earlier manager-result-runs.json, manager-result-mutations.json and
+review-correction-runs.json are historical evidence for the superseded approach.
+Their old loaded passes did not establish a reliable cause witness. No load
+mode, full selftest, canonical gate, gate mutation driver or VELDO-0127 live
+capture runs in this continuation. Partial-suite all-green status exits 2 by
+design; these results are not a gate stamp or independent approval.
 
-The rebuilt ffb12c22 conclude makes containment/conclude-settles red by
-assertion, with that region completing. It returns success after a single
-deactivating read, returns None after a failed show, and raises ValueError on
-malformed clocks. All six settlement cases fail the expected final snapshot.
-The separate conclude-unknown region also raises with the pre-fix malformed
-clock; this does not substitute for the settlement assertion failure.
-Rebuilding the pre-fix receiver with the fixed conclude leaves the precedence
-row green, confirming that the old local-cause check already handled caps.
+Verification for implementation commit 0f289ab8: normal and inherited gate-shell
+suite 63 each passed 64 assertions with zero failures and no raised regions.
+Both live runtime rows passed every conjunct. The recorded activation-based
+last-beat gaps were 1.683642 seconds normally and 1.683204 seconds in the gate shell,
+against the unchanged 2.7 second bound.
 
-| Temporary-copy case | Passed | Failed | Target red by assertion |
+| Temporary-copy check | Passed | Failed | Named row red by assertion |
 |-|-:|-:|-|
-| containment-resolved-exit-hides-cap | 50 | 2 | yes |
-| containment-result-before-settled | 50 | 2 | yes |
-| containment-unreadable-result-silent | 51 | 1 | yes |
-| containment-pre-fix-conclude | 49 | 3 | yes |
-| containment-pre-fix-receiver-control | 51 | 1 | no, expected green control |
-| containment-reset-past-budget | 51 | 1 | yes |
+| containment-normal-exit-unknown | 62 | 2 | yes |
+| containment-not-found-is-success | 61 | 3 | yes |
+| containment-oom-evidence-lost | 63 | 1 | yes |
+| containment-recorded-cap-overrides-explicit | 60 | 4 | yes |
+| containment-recorded-runtime-ignored | 63 | 1 | yes |
+| containment-resolved-exit-hides-cap | 59 | 5 | yes |
+| containment-result-before-settled | 59 | 5 | yes |
+| containment-start-activation-lost | 55 | 9 | yes |
+| containment-unreadable-result-silent | 60 | 4 | yes |
+| pre-fix | 58 | 6 | yes, both required rows |
 
-Every target region completes; only the pre-fix conclude's separate unknown
-region raises. The pre-fix receiver's only failure is conclude-unknown, since
-that receiver predates explicit unknown classification. The reset-only negative
-control preserves all ordinary settlement cases but fails the reset budget.
+All nine registered mutations complete every region. The complete pre-fix
+rebuild fails recorded-runtime-after-collection and not-found-unknown by
+assertion, with both regions completing. It reports cause exit and raw success
+for the collected scope. Its separate retained-OOM region raises because the
+old Group has no sample_memory method; that exception is not counted as either
+required falsification. Source and rebuilt hashes and the exact rebuild diff
+are retained with the results.
 
-Review correction verification is in review-correction-runs.json: normal and
-inherited gate-shell suite 63 runs each passed 52 assertions with zero failures
-or raised regions. Both reset budget cases ended at SETTLE_SECONDS (5 seconds),
-retained timeout and all clocks, and skipped reset when no time remained. The
-live runtime-cap row passed unchanged in both runs. No load mode ran during
-this review correction. Source hashes bind these observations to the tested
-suite and production modules; earlier loaded observations remain historical.
+All 31 current mutation registrations match their source anchors. Saved current
+mutation diffs were refreshed and checked for application with zero-context
+diff support; only the nine recorded here were executed in this continuation.
+Both production files in .veldo are byte-identical to engine/.veldo. The initial
+development run had one exit-notified failure while absent units consumed the
+settle budget. Returning unknown immediately for not-found resolved that
+failure; the recorded final runs use that version.
 
-The full selftest, canonical gate and both gate mutation drivers were not run; their result and
-the merged-tree stamp belong to the reviewer. Selected-suite exit code 2 on
-all-green partial runs is the harness's expected partial-run status, not a
-canonical verification claim.
+
+## Empty collected scope review, 2026-10-02
+
+Implementation d38ab988 closes D1, D2 and the final memory sample race without
+changing the installed caps, escalation or existing precedence. Seven new
+named rows in suite 63 cover the review findings:
+
+| Row suffix under containment/ | Behavior checked |
+|-|-|
+| empty-shell-signal-after-cap | Status 143 at activation plus cap plus 0.1 seconds establishes runtime_cap |
+| empty-native-signal-after-cap | Status -15 at the same instant establishes runtime_cap |
+| empty-shell-signal-before-cap | Status 143 before the cap does not establish runtime_cap |
+| empty-native-signal-before-cap | Status -15 before the cap does not establish runtime_cap |
+| empty-failure-after-cap | Status 1 after the cap does not establish runtime_cap |
+| empty-ordinary-after-cap-unknown | Ordinary statuses 0 and 1 at or after the boundary remain unknown when manager evidence is unavailable |
+| oom-after-final-populated-sample | A final memory sample retains an OOM that occurs between memory.events and cgroup.events reads |
+
+The five D1 rows make populated false immediately after the pidfd event and
+again when the receive loop checks for emptiness. Every row requires an empty
+group, zero receiver steps and no inferred Stop cause. Thus the two positive
+rows can obtain the stop clock only from the signaled adapter exit. The first
+two rows test behavior added since 9572210b; the next three guard existing
+behavior. Negative rows assert absence of runtime_cap, timeout and deadline_stop,
+without requiring a new unknown-result representation from the old code.
+
+D2 distinguishes an ordinary exit before the cap from one at or after it.
+When manager_result is unknown or absent, and the adapter exit was observed
+at or beyond saved activation plus RuntimeMaxSec, the ordinary exit remains
+unknown, including status 0. Signal, receiver stop or manager cap evidence
+still applies first. The row covers collected and unreadable units and an
+absent result, both statuses, the exact boundary and 0.1 seconds afterward.
+Controls retain status-0 exit before the boundary and with loaded success.
+An unknown ordinary exit does not assert deadline_stop without cap evidence.
+
+The minor fix calls sample_memory after the receive loop and before conclude.
+Its row uses the real Group.populated and sample_memory methods with a
+controlled read sequence: memory 0, populated 1, memory 0, populated 0,
+memory 1, conclude. The last member dies between the final memory and
+population reads, and the manager result is collected/unknown. The final
+sample makes the result oom-kill and cause memory_cap. This is a deterministic
+read-order check; it does not claim recovery after memory.events has vanished.
+
+empty_scope_check.py runs only suite 63, one copy at a time. Its normal and
+gate modes use the direct command and the gate's inherited bash shell,
+respectively. Both passed 78 assertions, zero failures and no raised regions;
+both live runtime rows passed every conjunct. The initial development run also
+passed 78 assertions. These are partial-suite results, not a gate stamp or
+independent approval. The full gate, load modes, global mutation drivers and
+VELDO-0127 live capture were not run in this continuation.
+
+The proof helper reads just the four new registrations as AST data, without
+executing the global mutation driver. Each temporary copy has one defect.
+Exact source hashes, observations and applied diffs are recorded in
+empty-scope-runs.json and mutations/empty-scope-*.diff.
+
+| Mutation | Named row suffix | Passed | Failed |
+|-|-|-:|-:|
+| containment-adapter-stop-time-dropped | empty-shell-signal-after-cap | 76 | 2 |
+| containment-adapter-signal-guard-dropped | empty-failure-after-cap | 76 | 2 |
+| containment-ordinary-after-cap-is-exit | empty-ordinary-after-cap-unknown | 77 | 1 |
+| containment-final-memory-sample-dropped | oom-after-final-populated-sample | 77 | 1 |
+
+Every named row failed by assertion, with no raised regions. Dropping the
+adapter clock append also fails the native-signal row. Dropping the signal
+guard also fails D2 by misclassifying ordinary statuses as runtime_cap.
+
+The pre-fix mode replaces both complete production modules with engine sources
+from 9572210b in a temporary copy, keeping the new suite. It passed 68 assertions
+and failed 10. Both positive D1 rows failed by assertion and all three negative
+D1 rows passed. Source hashes and the exact rebuild diff are retained. The old
+retained-oom-before-cleanup region raises because that Group lacks sample_memory;
+that unrelated exception is not counted as a D1 falsification. The current
+engine and repository copies of both production modules are byte-identical.

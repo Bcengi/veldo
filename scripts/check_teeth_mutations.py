@@ -3106,13 +3106,61 @@ def cases():
     # Regression guard for the restructured cause precedence, not the pre-fix defect.
     # The old receiver tested local cause before falling back to Stop.cause.
     contain('containment-resolved-exit-hides-cap', 'control_launch.py',
-            "        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):\n",
-            "        if cause is None and result in ('timeout', 'oom-kill'):\n",
+            "        if cause in (None, 'exit'):\n",
+            "        if cause is None:\n",
             'manager-cap-after-adapter-exit')
     contain('containment-result-before-settled', 'control_containment.py',
-            "                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):\n",
+            "                if (shown.get('LoadState') == 'loaded'\n"
+            "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",
             "                if shown.get('Result'):\n",
             'conclude-settles')
+    contain('containment-adapter-stop-time-dropped', 'control_launch.py',
+            '            stop_times.append(adapter_exit_monotonic)\n',
+            '            pass\n',
+            'empty-shell-signal-after-cap')
+    contain('containment-adapter-signal-guard-dropped', 'control_launch.py',
+            '        if signaled and adapter_exit_monotonic is not None:\n',
+            '        if adapter_exit_monotonic is not None:\n',
+            'empty-failure-after-cap')
+    contain('containment-ordinary-after-cap-is-exit', 'control_launch.py',
+            "            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None\n"
+            "                  and adapter_exit_monotonic is not None\n"
+            "                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):\n"
+            "                # An ordinary status can be a handled cap signal; missing evidence is not success.\n"
+            "                cause = 'unknown'\n",
+            '',
+            'empty-ordinary-after-cap-unknown')
+    contain('containment-final-memory-sample-dropped', 'control_launch.py',
+            '        if group is not None:\n'
+            '            # The last populated read can observe an OOM after its memory.events sample.\n'
+            '            group.sample_memory()\n',
+            '',
+            'oom-after-final-populated-sample')
+    contain('containment-recorded-runtime-ignored', 'control_launch.py',
+            "            elif manager_result == 'timeout' or runtime_reached:\n",
+            "            elif manager_result == 'timeout':\n",
+            'recorded-runtime-after-collection')
+    contain('containment-not-found-is-success', 'control_containment.py',
+            "                if (shown.get('LoadState') == 'loaded'\n",
+            '                if (True\n',
+            'not-found-unknown')
+    contain('containment-normal-exit-unknown', 'control_launch.py',
+            "            elif code == 0:\n                cause = 'exit'\n",
+            "            elif code == 0:\n                cause = 'unknown'\n",
+            'normal-exit-before-cap')
+    contain('containment-recorded-cap-overrides-explicit', 'control_launch.py',
+            "        if cause in (None, 'exit'):\n",
+            '        if True:\n',
+            'recorded-cap-explicit-precedence')
+    contain('containment-start-activation-lost', 'control_containment.py',
+            "            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),\n",
+            "            'ActiveEnterTimestampMonotonic': 0,\n",
+            'start-evidence')
+    contain('containment-oom-evidence-lost', 'control_containment.py',
+            '                    self.oom_kill = max(self.oom_kill, int(value))\n',
+            '                    self.oom_kill = 0\n',
+            'retained-oom-before-cleanup')
+
     contain('containment-unreadable-result-silent', 'control_containment.py',
             "        return 'unknown'\n",
             "        return None  # defect: unreadable evidence silently becomes an ordinary exit\n",

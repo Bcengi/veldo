@@ -1,0 +1,90 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -356 +355,0 @@
+-        self.start_evidence, self.oom_kill = {}, 0
+@@ -439 +438 @@
+-                                       'KillMode', 'LoadState', 'ActiveEnterTimestampMonotonic'))
++                                       'KillMode'))
+@@ -451,3 +449,0 @@
+-        self.start_evidence = {
+-            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),
+-            'RuntimeMaxUSec': read['RuntimeMaxUSec'], 'TimeoutStopUSec': read['TimeoutStopUSec']}
+@@ -455,2 +450,0 @@
+-        if shown.get('LoadState') != 'loaded' or self.start_evidence['ActiveEnterTimestampMonotonic'] <= 0:
+-            problems.append('spawn_failed:containment:activation')
+@@ -468,9 +461,0 @@
+-    def sample_memory(self):
+-        """Retain OOM kills while the cgroup exists, before receiver cleanup can remove it."""
+-        if self.cgroup:
+-            text = _read(CGROUP / self.cgroup.lstrip('/') / 'memory.events') or ''
+-            for line in text.splitlines():
+-                key, value = line.split()
+-                if key == 'oom_kill':
+-                    self.oom_kill = max(self.oom_kill, int(value))
+-
+@@ -480 +464,0 @@
+-        self.sample_memory()
+@@ -490 +473,0 @@
+-        self.sample_memory()
+@@ -497 +479,0 @@
+-        self.sample_memory()
+@@ -528 +510 @@
+-                shown = self._show(self.unit, ('LoadState', 'Result', 'ActiveState', *names),
++                shown = self._show(self.unit, ('Result', 'ActiveState', *names),
+@@ -530,2 +512 @@
+-                if (shown.get('LoadState') == 'loaded'
+-                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):
++                if shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result'):
+@@ -541,2 +521,0 @@
+-                if shown.get('LoadState') == 'not-found':
+-                    break
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1767 +1767 @@
+-        settle, emptied, adapter_exit_monotonic = None, (None, None), None
++        settle, emptied = None, (None, None)
+@@ -1855 +1854,0 @@
+-                        adapter_exit_monotonic = time.monotonic()
+@@ -1929,3 +1927,0 @@
+-        if group is not None:
+-            # The last populated read can observe an OOM after its memory.events sample.
+-            group.sample_memory()
+@@ -1933,12 +1928,0 @@
+-        manager_result = result
+-        start = getattr(group, 'start_evidence', {})
+-        active = start.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+-        runtime = start.get('RuntimeMaxUSec')
+-        # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
+-        signaled = code is not None and (code < 0 or 128 < code <= 192)
+-        stop_times = [step['monotonic'] for step in (stop.steps if stop is not None else [])
+-                      if step['step'] in ('terminate', 'kill')]
+-        if signaled and adapter_exit_monotonic is not None:
+-            stop_times.append(adapter_exit_monotonic)
+-        runtime_reached = (active > 0 and runtime is not None
+-                           and any(at >= active + runtime / 10 ** 6 for at in stop_times))
+@@ -1947,14 +1931,6 @@
+-        if cause in (None, 'exit'):
+-            if manager_result == 'oom-kill' or getattr(group, 'oom_kill', 0) > 0:
+-                cause, result = 'memory_cap', 'oom-kill'
+-            elif manager_result == 'timeout' or runtime_reached:
+-                cause, result, stopped = 'runtime_cap', 'timeout', True
+-            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None
+-                  and adapter_exit_monotonic is not None
+-                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):
+-                # An ordinary status can be a handled cap signal; missing evidence is not success.
+-                cause = 'unknown'
+-            elif code == 0:
+-                cause = 'exit'
+-            elif result == 'unknown':
+-                cause = 'unknown'
++        if cause in (None, 'exit') and result in ('timeout', 'oom-kill'):
++            # systemd stopped the group at a cap: the runtime cap is a deadline, the memory cap is not.
++            cause = {'timeout': 'runtime_cap', 'oom-kill': 'memory_cap'}[result]
++            stopped = cause == 'runtime_cap'
++        if cause in (None, 'exit') and result == 'unknown':
++            cause = 'unknown'
+@@ -1967,4 +1942,0 @@
+-                            'scope_start': start, 'manager_result': manager_result,
+-                            'adapter_exit_monotonic': adapter_exit_monotonic,
+-                            'stop_monotonic': min(stop_times) if stop_times else None,
+-                            'oom_kill': getattr(group, 'oom_kill', 0), 'deadline': contract['deadline'],
