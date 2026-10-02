@@ -234,3 +234,77 @@ Both production files in .veldo are byte-identical to engine/.veldo. The initial
 development run had one exit-notified failure while absent units consumed the
 settle budget. Returning unknown immediately for not-found resolved that
 failure; the recorded final runs use that version.
+
+
+## Empty collected scope review, 2026-10-02
+
+Implementation d38ab988 closes D1, D2 and the final memory sample race without
+changing the installed caps, escalation or existing precedence. Seven new
+named rows in suite 63 cover the review findings:
+
+| Row suffix under containment/ | Behavior checked |
+|-|-|
+| empty-shell-signal-after-cap | Status 143 at activation plus cap plus 0.1 seconds establishes runtime_cap |
+| empty-native-signal-after-cap | Status -15 at the same instant establishes runtime_cap |
+| empty-shell-signal-before-cap | Status 143 before the cap does not establish runtime_cap |
+| empty-native-signal-before-cap | Status -15 before the cap does not establish runtime_cap |
+| empty-failure-after-cap | Status 1 after the cap does not establish runtime_cap |
+| empty-ordinary-after-cap-unknown | Ordinary statuses 0 and 1 at or after the boundary remain unknown when manager evidence is unavailable |
+| oom-after-final-populated-sample | A final memory sample retains an OOM that occurs between memory.events and cgroup.events reads |
+
+The five D1 rows make populated false immediately after the pidfd event and
+again when the receive loop checks for emptiness. Every row requires an empty
+group, zero receiver steps and no inferred Stop cause. Thus the two positive
+rows can obtain the stop clock only from the signaled adapter exit. The first
+two rows test behavior added since 9572210b; the next three guard existing
+behavior. Negative rows assert absence of runtime_cap, timeout and deadline_stop,
+without requiring a new unknown-result representation from the old code.
+
+D2 distinguishes an ordinary exit before the cap from one at or after it.
+When manager_result is unknown or absent, and the adapter exit was observed
+at or beyond saved activation plus RuntimeMaxSec, the ordinary exit remains
+unknown, including status 0. Signal, receiver stop or manager cap evidence
+still applies first. The row covers collected and unreadable units and an
+absent result, both statuses, the exact boundary and 0.1 seconds afterward.
+Controls retain status-0 exit before the boundary and with loaded success.
+An unknown ordinary exit does not assert deadline_stop without cap evidence.
+
+The minor fix calls sample_memory after the receive loop and before conclude.
+Its row uses the real Group.populated and sample_memory methods with a
+controlled read sequence: memory 0, populated 1, memory 0, populated 0,
+memory 1, conclude. The last member dies between the final memory and
+population reads, and the manager result is collected/unknown. The final
+sample makes the result oom-kill and cause memory_cap. This is a deterministic
+read-order check; it does not claim recovery after memory.events has vanished.
+
+empty_scope_check.py runs only suite 63, one copy at a time. Its normal and
+gate modes use the direct command and the gate's inherited bash shell,
+respectively. Both passed 78 assertions, zero failures and no raised regions;
+both live runtime rows passed every conjunct. The initial development run also
+passed 78 assertions. These are partial-suite results, not a gate stamp or
+independent approval. The full gate, load modes, global mutation drivers and
+VELDO-0127 live capture were not run in this continuation.
+
+The proof helper reads just the four new registrations as AST data, without
+executing the global mutation driver. Each temporary copy has one defect.
+Exact source hashes, observations and applied diffs are recorded in
+empty-scope-runs.json and mutations/empty-scope-*.diff.
+
+| Mutation | Named row suffix | Passed | Failed |
+|-|-|-:|-:|
+| containment-adapter-stop-time-dropped | empty-shell-signal-after-cap | 76 | 2 |
+| containment-adapter-signal-guard-dropped | empty-failure-after-cap | 76 | 2 |
+| containment-ordinary-after-cap-is-exit | empty-ordinary-after-cap-unknown | 77 | 1 |
+| containment-final-memory-sample-dropped | oom-after-final-populated-sample | 77 | 1 |
+
+Every named row failed by assertion, with no raised regions. Dropping the
+adapter clock append also fails the native-signal row. Dropping the signal
+guard also fails D2 by misclassifying ordinary statuses as runtime_cap.
+
+The pre-fix mode replaces both complete production modules with engine sources
+from 9572210b in a temporary copy, keeping the new suite. It passed 68 assertions
+and failed 10. Both positive D1 rows failed by assertion and all three negative
+D1 rows passed. Source hashes and the exact rebuild diff are retained. The old
+retained-oom-before-cleanup region raises because that Group lacks sample_memory;
+that unrelated exception is not counted as a D1 falsification. The current
+engine and repository copies of both production modules are byte-identical.

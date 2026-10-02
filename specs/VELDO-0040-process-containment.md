@@ -196,3 +196,23 @@ cause, and retained OOM evidence. Each has a named mutation. Two complete
 production modules from 9a48b4ea are rebuilt in a temporary copy against the
 new rows. Proof records selected-suite results and assertion failures; the
 reviewer owns full verification and the VELDO-0127 digest-bound live recapture.
+
+
+2026-10-02, empty collected groups (fix-flake-0040): seven deterministic rows
+close the review gaps. Two pidfd rows use 143 and negative SIGTERM at saved
+activation plus RuntimeMaxSec plus 0.1 seconds with the group already empty,
+so only the adapter exit clock can establish runtime_cap. The same signals
+before the cap and status 1 after it guard against false cap classification.
+When manager_result is unknown or absent and an ordinary adapter exit was
+observed at or beyond the saved runtime boundary, cause remains unknown,
+including status 0; missing evidence must not turn a handled cap into exit.
+Loaded success and ordinary success before the cap retain their behavior.
+The receiver samples memory.events once more after the receive loop, before
+conclude. A deterministic memory/cgroup read sequence covers an OOM of the last
+member between the final two reads. Four registered mutations isolate the
+adapter clock append, signal guard, unknown-result rule and final memory sample.
+Proof rebuilds both complete production modules from 9572210b: the two post-cap
+signal rows test new behavior; the three negative D1 rows guard existing
+behavior. Selected suite results and mutation evidence live in
+proof/VELDO-0040/empty-scope-runs.json. Full gate and live capture remain with
+the reviewer.
