@@ -62,7 +62,8 @@ def _v148_suite():
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
             'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines',
             'receiver/normal-exit', 'receiver/settled-scope', 'receiver/fast-exit',
-            'receiver/placement-error', 'receiver/placement-timeout')
+            'receiver/placement-error', 'receiver/placement-timeout',
+            'receiver/report-timeout', 'receiver/late-wrapper', 'receiver/wrapper-exited')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1325,8 +1326,12 @@ sys.exit(chosen['code'])
         # Exercise the real contained-launch interface with a placement destination
         # that is absent or never accepts its writer. Each probe owns a fresh module
         # tree and scope; its outer timeout becomes a row assertion, never a driver hang.
-        for fault in ('error', 'timeout'):
-            row = 'receiver/placement-' + fault
+        for fault, row, cause in (
+                ('error', 'receiver/placement-error', 'heartbeat_setup'),
+                ('timeout', 'receiver/placement-timeout', 'heartbeat_timeout'),
+                ('stopped', 'receiver/report-timeout', 'heartbeat_report_timeout'),
+                ('late', 'receiver/late-wrapper', 'heartbeat_timeout'),
+                ('exited', 'receiver/wrapper-exited', 'heartbeat_wrapper_exited')):
             with region(row):
                 probe = base / ('placement-' + fault)
                 shutil.copytree(mods, probe)
@@ -1336,11 +1341,25 @@ sys.exit(chosen['code'])
                 destination.mkdir()
                 if fault == 'timeout':
                     os.mkfifo(destination / 'cgroup.procs')
-                with (probe / 'control_heartbeat.py').open('a') as hook:
-                    hook.write("\n_placement_parent = os.getpid()\n_placement_path = group_path\n"
-                               "def group_path(cgroup):\n"
-                               "    return _placement_path(cgroup) if os.getpid() == _placement_parent else Path(%r)\n"
-                               % str(destination if fault == 'timeout' else destination / 'absent'))
+                if fault in ('error', 'timeout'):
+                    with (probe / 'control_heartbeat.py').open('a') as hook:
+                        hook.write("\n_placement_parent = os.getpid()\n_placement_path = group_path\n"
+                                   "def group_path(cgroup):\n"
+                                   "    return _placement_path(cgroup) if os.getpid() == _placement_parent else Path(%r)\n"
+                                   % str(destination if fault == 'timeout' else destination / 'absent'))
+                else:
+                    # Hold the real wrapper just after it reads the real release.
+                    # SIGSTOP prevents even the wrapper's own timeout from running.
+                    action = {'stopped': 'os.kill(os.getpid(), signal.SIGSTOP)',
+                              'late': 'time.sleep(5.25)', 'exited': 'os._exit(125)'}[fault]
+                    with (probe / 'control_containment.py').open('a') as hook:
+                        hook.write("\n_probe_released = released\n"
+                                   "def released(fd=0):\n"
+                                   "    result = _probe_released(fd)\n"
+                                   "    if result:\n"
+                                   "        Path(%r).write_text(str(os.getpid()))\n"
+                                   "        %s\n"
+                                   "    return result\n" % (str(probe / 'released'), action))
                 marker = probe / 'engine-ran'
                 driver = probe / 'probe.py'
                 driver.write_text("""
@@ -1358,6 +1377,7 @@ try:
     worker = receiver._contained(sys.argv[2], [sys.executable, '-c',
         'from pathlib import Path; Path(%r).write_text("ran")' % sys.argv[3]], dict(os.environ))
     result = {'refusal': None}
+    worker.wait(timeout=5)
 except L.C.Refused as error:
     result = {'refusal': error.code, 'settled': error.settled, 'group': error.group}
 finally:
@@ -1376,9 +1396,10 @@ print(json.dumps(result))
                     child.wait(timeout=5)
                     result = {'row_timeout': True}
                 check(row, 'bounded receiver refusal before engine exec: %s' % result,
-                      result.get('refusal') == 'spawn_failed:containment:heartbeat_' +
-                      ('setup' if fault == 'error' else 'timeout')
+                      result.get('refusal') == 'spawn_failed:containment:' + cause
                       and result.get('settled') is True and not marker.exists())
+                if fault in ('stopped', 'late', 'exited'):
+                    check(row, 'the real wrapper reached the post-release fault', (probe / 'released').is_file())
 
         with region('receiver/fast-exit'):
             held = [json.loads(path.read_text()).get('held_heartbeat')

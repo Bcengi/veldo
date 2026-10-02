@@ -175,6 +175,15 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, report-handshake review repair from 1ab79713: add suite-86 probes
+that stop the real wrapper immediately after release, delay it past its startup
+budget, and exit it before the setup report. The read-only baseline replay makes
+late-wrapper and wrapper-exited red by assertion. Report-timeout is a green
+baseline control because that receiver bound already exists; its falsifier is an
+unbounded report poll. The repair will start the wrapper budget before its
+identity report, check it immediately before success and exec, and distinguish
+wrapper EOF from report timeout. All changes fit the existing footprint.
+
 2026-10-02, bounded placement regression repair from 5935c652: the heartbeat
 placement child now has a five-second pidfd wait and a bounded kill/reap. The
 wrapper reports setup success, failure or timeout on a private pipe; the receiver
