@@ -1,8 +1,12 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -718 +718 @@
+@@ -1821 +1821 @@
 -                if code is not None and (group is None or not group.populated()):
 +                if code is not None:  # defect: the exit ends the reap while the group still runs
-@@ -737,2 +736,0 @@
+@@ -1855,6 +1854,0 @@
 -                        if stop is not None and group.populated():
--                            stop.adapter_exited(time.time())
+-                            if group.members() or watch is None:
+-                                stop.adapter_exited(time.monotonic())
+-                            else:
+-                                # Only the wrapper's heartbeat is left, and it ends on the worker's exit.
+-                                settle = time.monotonic() + HB.SETTLE_SECONDS

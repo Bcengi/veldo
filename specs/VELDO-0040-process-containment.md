@@ -162,4 +162,7 @@ The monotonic scope-activation origin remains a correct, stricter measurement,
 not an established flake fix. The existing result read retains activation,
 stop and inactive timestamps before clearing the scope. Installed controls,
 assertion bounds and timeouts are unchanged. Proof records observations and
-limitations separately from the reviewer's gate.
+limitations separately from the reviewer's gate. The current row passed normally,
+in the inherited gate shell environment and in ten matching loaded rounds. The
+runtime-cap-disabled mutation failed by assertion with complete diagnostics;
+the historical gate red remains unreproduced and its cause unknown.

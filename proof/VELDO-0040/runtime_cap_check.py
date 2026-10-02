@@ -21,30 +21,6 @@ SUITE = 'scripts/suites/63_veldo_0040_containment.py'
 COMMAND = ['python3', 'scripts/selftest.py', '--suite', '63_veldo_0040_containment']
 
 
-def original_diagnostics(original, current):
-    """Retain the original predicates and wall-clock origin, adding named observations."""
-    start = current.index("                wall_beats = times(capped")
-    end = current.index('\n\n            # AC3:', start)
-    detail = current[start:end]
-    detail = detail.replace("wall_beats = times(capped, 'stubborn', 'beat')", 'wall_beats = beats')
-    detail = detail.replace('gap = beats[-1] - active if beats and active else None',
-                            'gap = beats[-1] - running_at if beats and running_at is not None else None')
-    detail = detail.replace("                    'timestamps_ordered': 0 < active <= stopping <= inactive,\n"
-                            "                    'first_beat_after_active': bool(beats) and active <= beats[0],\n"
-                            "                    'last_beat_before_inactive': bool(beats) and beats[-1] <= inactive,\n",
-                            "                    'running_at_present': running_at is not None,\n")
-    detail = detail.replace("'beats_monotonic': beats, 'beats': wall_beats,", "'beats': wall_beats,")
-    detail = detail.replace("                    'active': active, 'stopping': stopping, 'inactive': inactive,\n", '')
-    detail = detail.replace("                    'last_beat_after_active': gap,\n", '')
-    start = original.index("                observed['runtime_cap'] =")
-    end = original.index('\n\n            # AC3:', start)
-    original = original[:start] + detail + original[end:]
-    old = "def check(label, condition):\n            emitted.add(label)\n            expect('VELDO-0040 ' + label, bool(condition))"
-    new = "def check(label, condition, detail=None):\n            emitted.add(label)\n            suffix = ': ' + json.dumps(detail, sort_keys=True) if not condition and detail else ''\n            expect('VELDO-0040 ' + label + suffix, bool(condition))"
-    assert old in original
-    return original.replace(old, new)
-
-
 def copy_tree(destination):
     (destination / '.veldo').mkdir(parents=True)
     for source in (ROOT / '.veldo').glob('*.py'):
@@ -85,8 +61,9 @@ atexit.register(capture)
                 subprocess.run(['git', 'archive', 'f1e1abb9', '.veldo', 'scripts'], stdout=stream, check=True)
             with tarfile.open(archive) as tar:
                 tar.extractall(cwd, filter='data')
-            suite = cwd / SUITE
-            suite.write_text(original_diagnostics(suite.read_text(), (ROOT / SUITE).read_text()))
+            patch = ROOT / 'proof/VELDO-0040/original-row-diagnostics.diff'
+            subprocess.run(['git', 'apply', str(patch)], cwd=cwd, capture_output=True, check=True)
+            report['diagnostic_patch'] = patch.name
             report['original_commit'] = 'f1e1abb9'
         elif mode == 'mutation':
             cwd = temporary / 'mutated'

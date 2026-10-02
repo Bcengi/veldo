@@ -74,7 +74,8 @@ and the exact LoadState observation used by the assertion is recorded.
 
 The original suite and all production modules at f1e1abb9 were extracted with
 git archive into a temporary tree. Only the row's diagnostics were added; its
-wall-clock beats, running_at origin and predicates were retained. Ten rounds
+wall-clock beats, running_at origin and predicates were retained. The saved
+original-row-diagnostics.diff recreates the exact measured suite hash. Ten rounds
 ran two suite copies simultaneously with one pinned busy loop on each of the
 20 available CPUs. All 20 suite runs passed 46 rows. No conjunct failed.
 The closest original gap was 1.6435189247131348 seconds, leaving
@@ -105,5 +106,30 @@ Mutation mode changes a temporary module copy with both registered edits of
 containment-runtime-cap-ignored. Partial selftest exit code 2 is expected even
 when all rows pass; PASS, FAIL, raised regions and row details are recorded.
 
+The current suite passed normally, in the inherited gate shell environment,
+and in ten loaded rounds with the same two suite copies and 20 pinned burners.
+All 22 current-code runs passed 46 rows without raised regions. The largest
+activation-based gap in the loaded series was 1.9125582007691264 seconds,
+leaving 0.7874417992308738 seconds below the unchanged bound. Both loaded series
+reaped all 20 burners, and every burner's CPU tick count was positive.
+
+The runtime-cap-disabled mutation was applied only to a temporary production
+copy. It produced 44 passed and 2 failed, with no raised region. Both
+caps-installed and runtime-cap failed by assertion. The runtime row named all
+six false conjuncts: deadline_stop, cause_runtime_cap, result_timeout,
+timestamps_ordered, last_beat_before_inactive and runtime_bound. The dispatch
+exited with deadline_stop false, cause exit and result success. The manager
+timestamps were zero after the successful scope was collected; the old-style
+wall gap was 9.955755949020386 seconds. There was one term marker, the group was
+empty and LoadState was not-found. The emitted JSON failed_details was checked
+against the captured runtime observation, including every false predicate.
+No new mutation was introduced.
+
+All 22 saved mutation diffs apply to the current sources. Their refreshed source
+positions and context preserve the registered defect targets. Only the runtime
+mutation was rerun here; the other mutation results above are historical.
+
 The canonical gate and mutation drivers are reserved for the reviewer and were
-not run. This is selected-suite evidence, not a gate stamp or a reproduced fix.
+not run. The gate byproducts are excluded. This is selected-suite evidence, not
+a gate stamp or a reproduced fix. The reported historical red remains unresolved;
+a future red should now carry the missing per-conjunct evidence.
