@@ -41,7 +41,7 @@ SUITE = '86_veldo_0148_re_land.py'
 PREFIX = 'VELDO-0148 '
 FINDING = 148
 MODULES = ('control_service.py', 'control_landing_station.py', 'control_landing.py', 'control_effect_executor.py',
-           'lander.py', 'control_launch.py', 'control_containment.py')
+           'lander.py', 'control_launch.py', 'control_containment.py', 'control_heartbeat.py')
 
 
 def _load(name, path):

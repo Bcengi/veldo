@@ -9333,6 +9333,13 @@ def cases():
     # row of suite 86, then the seams the rows rest on.
     def reland148(name, module, old, new, rows, also=()):
         add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-heartbeat-moves-after-exec', 'control_heartbeat.py',
+              "                (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))\n", "",
+              ('receiver/fast-exit',), also=((
+                  "        signal.signal(signal.SIGPIPE, signal.SIG_IGN)\n",
+                  "        own = next(line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines() if line.startswith('0::'))\n"
+                  "        (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))\n"
+                  "        signal.signal(signal.SIGPIPE, signal.SIG_IGN)\n"),))
     reland148('receiver148-clean-exit-invents-stop', 'control_launch.py',
               "                cause = stop.cause if stop is not None else None\n",
               "                cause = 'exit'\n", ['receiver/normal-exit'])

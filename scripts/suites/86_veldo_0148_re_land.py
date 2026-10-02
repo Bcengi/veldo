@@ -55,12 +55,13 @@ def _v148_suite():
         'lander.py': ROOT / ".veldo" / "lander.py",
         'control_containment.py': ROOT / ".veldo" / "control_containment.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
+        'control_heartbeat.py': ROOT / ".veldo" / "control_heartbeat.py",
     }
     ROWS = ('install/land-station', 'reland/stale-subject', 'reland/review-kept', 'reland/conflict-rebuild',
             'reland/never-forced', 'reland/end-wakes-pass', 'lease/trunk-moved', 'lease/contains-unknown', 'grant/fresh-request',
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
             'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines',
-            'receiver/normal-exit', 'receiver/settled-scope')
+            'receiver/normal-exit', 'receiver/settled-scope', 'receiver/fast-exit')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -118,6 +119,49 @@ def _v148_suite():
             # A production module the change under test adds is absent before it (the red record).
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        # Hold the real heartbeat at _beat entry, before descriptor enumeration. The
+        # fake engine consumes its ready message and exits; the receiver samples the
+        # real cgroup members before releasing it. FIFOs establish the ordering, not
+        # scheduler delays. Only these disposable module copies get the test hooks.
+        beat_ready, beat_release = base / 'beat-ready', base / 'beat-release'
+        beat_samples = base / 'beat-samples.jsonl'
+        os.mkfifo(beat_ready)
+        os.mkfifo(beat_release)
+        with (mods / 'control_heartbeat.py').open('a') as hook:
+            hook.write("""
+_v148_beat = _beat
+def _beat(fd, seconds, engine):
+    release = os.open(%r, os.O_RDWR)
+    own = Path('/proc/self/cgroup').read_text()
+    with open(%r, 'w') as ready:
+        ready.write(json.dumps({'pid': os.getpid(), 'cgroup': own}) + chr(10))
+    poller = select.poll()
+    poller.register(release, select.POLLIN)
+    if not poller.poll(60000):
+        os._exit(91)
+    os.read(release, 1)
+    os.close(release)
+    _v148_beat(fd, seconds, engine)
+""" % (str(beat_release), str(beat_ready)))
+        with (mods / 'control_containment.py').open('a') as hook:
+            hook.write("""
+import json
+_v148_members = Group.members
+def _v148_sample_members(self):
+    members = _v148_members(self)
+    try:
+        release = os.open(%r, os.O_WRONLY | os.O_NONBLOCK)
+    except OSError:
+        return members
+    try:
+        with open(%r, 'a') as samples:
+            samples.write(json.dumps({'cgroup': self.cgroup, 'members': members}) + chr(10))
+        os.write(release, b'1')
+    finally:
+        os.close(release)
+    return members
+Group.members = _v148_sample_members
+""" % (str(beat_release), str(beat_samples)))
         CS = load('v148_service', mods / 'control_service.py')
         CC = load('v148_client', mods / 'control_client.py')
         E = load('v148_enrollment', mods / 'control_enrollment.py')
@@ -651,6 +695,10 @@ try:
 except (OSError, ValueError):
     attempts = [{'script': [], 'code': 3}]
 chosen = attempts[min(attempt, len(attempts) - 1)]
+if packet.get('unit') == FAST_UNIT:
+    with open(BEAT_READY) as ready:
+        own['held_heartbeat'] = json.loads(ready.readline())
+    (markers / ('%%s.%%d.json' %% (key, attempt))).write_text(json.dumps(own))
 for step in chosen['script']:
     sys.stdout.write(json.dumps(step['line']) + chr(10))
     sys.stdout.flush()
@@ -661,7 +709,8 @@ sys.exit(chosen['code'])
         vendored.parent.mkdir(parents=True)
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
         vendored.write_text(fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
-                            .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts)))
+                            .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts))
+                            .replace('FAST_UNIT', repr(C)).replace('BEAT_READY', repr(str(beat_ready))))
         vendored.chmod(0o755)
 
         def fake_engine(name):
@@ -1271,6 +1320,27 @@ sys.exit(chosen['code'])
                       and 0 < dig(row, 'supervision', 'scope_timestamps', 'ActiveEnterTimestampMonotonic')
                       <= dig(row, 'supervision', 'scope_timestamps', 'InactiveEnterTimestampMonotonic')
                       for row in completed))
+
+        with region('receiver/fast-exit'):
+            held = [json.loads(path.read_text()).get('held_heartbeat')
+                    for path in markers.glob(C + '.*.json')]
+            samples = [json.loads(line) for line in beat_samples.read_text().splitlines()] \
+                if beat_samples.is_file() else []
+            check('receiver/fast-exit', 'both engines exited with heartbeat held before descriptor enumeration',
+                  len(held) == 2 and all(isinstance(item, dict) for item in held)
+                  and len(samples) >= 2)
+            check('receiver/fast-exit', 'heartbeat already belongs to veldo-wrapper before either engine can exit: %s'
+                  % held, len(held) == 2 and all(
+                      (item or {}).get('cgroup', '').strip().endswith('/veldo-wrapper') for item in held))
+            check('receiver/fast-exit', 'actual receiver membership reads exclude the held heartbeat: %s' % samples,
+                  len(samples) >= 2 and all(not sample['members'] for sample in samples))
+            check('receiver/fast-exit', 'both fast clean exits retain clean supervision',
+                  len(completed) == 2 and all(
+                      dig(item, 'record', 'state') == 'exited'
+                      and dig(item, 'record', 'termination', 'returncode') == 0
+                      and item['supervision'].get('cause') is None
+                      and item['supervision'].get('steps') == []
+                      and item['supervision'].get('empty') is True for item in completed))
 
         with region('format/fake-lines'):
             codex_table = FORMATS['codex']

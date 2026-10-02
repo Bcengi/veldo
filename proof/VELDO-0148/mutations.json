@@ -28,6 +28,19 @@
  "mutants": [
   {
    "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-heartbeat-moves-after-exec.diff",
+   "module": ".veldo/control_heartbeat.py",
+   "mutant_sha256": "27023c2d6b57a182314a03bc3858abbf1c5723b2db10130b9e517e166174bea1",
+   "name": "receiver148-heartbeat-moves-after-exec",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/fast-exit"
+   ],
+   "source_sha256": "c82877e3213062da21ab697b85908fbbc2fae6778cb85e8e932ddaea134deb89",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-clean-exit-invents-stop.diff",
    "module": ".veldo/control_launch.py",
    "mutant_sha256": "d5b089b5782f4c7ce90adbdc414acbca372ad40161d476a5481d496d9cae1e5a",
@@ -303,7 +316,7 @@
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "All 21 registrations statically refreshed, including two receiver regression falsifiers. No mutation execution is claimed for this repair; the reviewer runs findings 40 and 148.",
+ "status": "22 registrations statically checked; no mutation execution in this repair",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
- "suite_sha256": "eab4ec732bb4415f6df4d32b94cad448e97c8a14851e59f456ec5c267122d058"
+ "suite_sha256": "32ec652ab1f8c70fbecbc628fdcdac1dd0eba3cf636458a4e2dbda8ec241ab9a"
 }

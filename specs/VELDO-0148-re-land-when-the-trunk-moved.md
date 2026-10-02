@@ -14,6 +14,8 @@ depends_on: [VELDO-0056, VELDO-0057, VELDO-0058, VELDO-0154]
 placement: [distribution, fleet, contracts, metrics, project_runner]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_heartbeat.py"
+  - ".veldo/control_heartbeat.py"
   - "engine/.veldo/control_containment.py"
   - ".veldo/control_containment.py"
   - "engine/.veldo/control_launch.py"
@@ -172,6 +174,16 @@ the authority service (VELDO-0154 AC1), which this concern extends for a refused
 to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
+
+2026-10-02, fast-exit review repair: extend AC1's receiver proof with a FIFO
+handshake holding the heartbeat before descriptor enumeration while the real
+rebuild and review engines exit. The receiver samples actual cgroup membership
+before releasing the heartbeat. Add control_heartbeat.py and its engine copy to
+the footprint because the wrapper must establish heartbeat cgroup membership
+before exec for these clean conflict rebuild and review exits. The intermediate
+child moves before forking the heartbeat; the wrapper waits for successful setup.
+Containment membership, caps, descendant cleanup and stop classification remain
+production decisions. No criterion changes.
 
 2026-10-02, receiver repair verification: dcf48b53 passes suites 62 dispatch,
 63 containment, 67 heartbeat, 80 Claude baseline, 81 Codex baseline and 86 re-land
