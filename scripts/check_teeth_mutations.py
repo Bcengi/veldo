@@ -3114,6 +3114,28 @@ def cases():
             "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",
             "                if shown.get('Result'):\n",
             'conclude-settles')
+    contain('containment-adapter-stop-time-dropped', 'control_launch.py',
+            '            stop_times.append(adapter_exit_monotonic)\n',
+            '            pass\n',
+            'empty-shell-signal-after-cap')
+    contain('containment-adapter-signal-guard-dropped', 'control_launch.py',
+            '        if signaled and adapter_exit_monotonic is not None:\n',
+            '        if adapter_exit_monotonic is not None:\n',
+            'empty-failure-after-cap')
+    contain('containment-ordinary-after-cap-is-exit', 'control_launch.py',
+            "            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None\n"
+            "                  and adapter_exit_monotonic is not None\n"
+            "                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):\n"
+            "                # An ordinary status can be a handled cap signal; missing evidence is not success.\n"
+            "                cause = 'unknown'\n",
+            '',
+            'empty-ordinary-after-cap-unknown')
+    contain('containment-final-memory-sample-dropped', 'control_launch.py',
+            '        if group is not None:\n'
+            '            # The last populated read can observe an OOM after its memory.events sample.\n'
+            '            group.sample_memory()\n',
+            '',
+            'oom-after-final-populated-sample')
     contain('containment-recorded-runtime-ignored', 'control_launch.py',
             "            elif manager_result == 'timeout' or runtime_reached:\n",
             "            elif manager_result == 'timeout':\n",

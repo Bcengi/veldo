@@ -1926,6 +1926,9 @@ class Receiver:
             # The record's last lines, and what the exit commits of it.
             self.committed = recorder.close()
         code = worker.poll() if code is None else code
+        if group is not None:
+            # The last populated read can observe an OOM after its memory.events sample.
+            group.sample_memory()
         result = group.conclude() if group is not None and empty else None
         manager_result = result
         start = getattr(group, 'start_evidence', {})
@@ -1946,6 +1949,11 @@ class Receiver:
                 cause, result = 'memory_cap', 'oom-kill'
             elif manager_result == 'timeout' or runtime_reached:
                 cause, result, stopped = 'runtime_cap', 'timeout', True
+            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None
+                  and adapter_exit_monotonic is not None
+                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):
+                # An ordinary status can be a handled cap signal; missing evidence is not success.
+                cause = 'unknown'
             elif code == 0:
                 cause = 'exit'
             elif result == 'unknown':

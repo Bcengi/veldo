@@ -448,7 +448,7 @@ sys.exit(payload.get('code', 0))
             clock, calls, resets = [0.0], [], []
             group = C.Group.__new__(C.Group)
             group.unit, group.systemctl, group.environment = 'fake.scope', 'fake-systemctl', {}
-            group.events, group.timestamps = 12, {}
+            group.events, group.timestamps, group.cgroup = 12, {}, None
             group.start_evidence, group.oom_kill = {}, 0
 
             def run(command, **kwargs):
@@ -477,16 +477,42 @@ sys.exit(payload.get('code', 0))
             with patch.object(C, 'subprocess', fake_subprocess), patch.object(C, 'time', fake_time):
                 yield group, clock, calls, resets
 
-        def reap_sequence(sequence, explicit=None, start=None, code=143, exit_at=0, kill_rest=False, oom=0):
+        def reap_sequence(sequence, explicit=None, start=None, code=143, exit_at=0, kill_rest=False, oom=0,
+                          empty_on_exit=False, missing_result=False, late_oom=False):
             with manager_sequence(sequence) as (group, clock, calls, resets):
                 group.start_evidence, group.oom_kill = start or {}, oom
-                population = iter((True, True, False) if kill_rest else (True, False))
+                population = iter((False, False) if empty_on_exit else
+                                  (True, True, False) if kill_rest else (True, False))
                 group.populated = lambda: next(population)
                 group.members = lambda: [44]
                 group.terminate = lambda: None
                 group.kill = lambda: None
                 group.report = lambda: {'unit': group.unit}
                 group.close = lambda: None
+                reads, memory = [], [0]
+                original_conclude = group.conclude
+
+                def conclude():
+                    reads.append('conclude')
+                    return None if missing_result else original_conclude()
+
+                group.conclude = conclude
+                if late_oom:
+                    group.cgroup = '/fake.scope'
+                    group.populated = lambda: C.Group.populated(group)
+
+                def read_memory(path):
+                    assert path.name == 'memory.events'
+                    reads.append('memory:' + str(memory[0]))
+                    return 'oom_kill ' + str(memory[0])
+
+                def read_population(*args):
+                    populated = next(population)
+                    reads.append('population:' + str(int(populated)))
+                    if not populated:
+                        memory[0] = 1  # Last member dies after the preceding memory sample.
+                    return b'populated 1' if populated else b'populated 0'
+
                 stops = []
                 original_stop = C.Stop
 
@@ -530,6 +556,7 @@ sys.exit(payload.get('code', 0))
                 fake_os.close = lambda fd: None
                 fake_os.set_blocking = lambda *args: None
                 fake_os.read = lambda *args: b''
+                fake_os.pread = read_population
                 fake_os.kill = lambda *args: None
                 contract = dict(dispatch_id='fake', unit='unit', station='build', source={},
                                 input={'payload': {}}, capability={'configuration': {}},
@@ -538,10 +565,10 @@ sys.exit(payload.get('code', 0))
                         patch.object(C, 'os', fake_os), patch.object(L, 'os', fake_os), \
                         patch.object(L, 'select', types.SimpleNamespace(poll=lambda: poller, POLLIN=1,
                                                                       POLLPRI=2, POLLERR=8)), \
-                        patch.object(L, 'time', C.time):
+                        patch.object(L, 'time', C.time), patch.object(C, '_read', read_memory):
                     termination = L.Receiver._reap(receiver, worker, contract)
                 return dict(termination=termination, supervision=receiver.supervision,
-                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0])
+                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads)
 
         gone = dict(LoadState='not-found', ActiveState='inactive', Result='success',
                     **dict.fromkeys(stamp_names, '0'))
@@ -576,6 +603,49 @@ sys.exit(payload.get('code', 0))
                 and row['supervision']['scope_start'] == start and row['supervision']['empty']
                 and [step['step'] for step in row['supervision']['steps']] == ['terminate', 'kill']
                 for row in rows), rows)
+
+        # KillMode=control-group can empty the group before the receiver sees the pidfd.
+        # No receiver step may supply the signal timestamp for these rows.
+        for label, code, exit_at, expected in (
+                ('empty-shell-signal-after-cap', 143, 11.3, 'runtime_cap'),
+                ('empty-native-signal-after-cap', -signal.SIGTERM, 11.3, 'runtime_cap'),
+                ('empty-shell-signal-before-cap', 143, 10.5, 'unknown'),
+                ('empty-native-signal-before-cap', -signal.SIGTERM, 10.5, 'unknown'),
+                ('empty-failure-after-cap', 1, 11.3, 'unknown')):
+            with region('containment/' + label):
+                row = reap_sequence([gone], start=start, code=code, exit_at=exit_at, empty_on_exit=True)
+                observed[label.replace('-', '_')] = row
+                check('containment/' + label, (row['supervision']['cause'] == 'runtime_cap') == (expected == 'runtime_cap')
+                      and row['termination']['deadline_stop'] == (expected == 'runtime_cap')
+                      and (row['supervision']['result'] == 'timeout') == (expected == 'runtime_cap')
+                      and row['supervision']['empty'] and row['supervision']['steps'] == []
+                      and row['inferred'] is None, row)
+
+        with region('containment/empty-ordinary-after-cap-unknown'):
+            rows = [reap_sequence([record], start=start, code=code, exit_at=exit_at,
+                                  empty_on_exit=True, missing_result=missing)
+                    for record, missing in ((gone, False), (OSError('unreadable unit'), False), (gone, True))
+                    for code in (0, 1) for exit_at in (11.2, 11.3)]
+            controls = [reap_sequence([record], start=start, code=0, exit_at=exit_at, empty_on_exit=True)
+                        for record, exit_at in ((gone, 10.5), (manager_record('inactive', 'success'), 11.3))]
+            observed['empty_ordinary_after_cap_unknown'] = dict(rows=rows, controls=controls)
+            check('containment/empty-ordinary-after-cap-unknown', all(
+                row['supervision']['cause'] == 'unknown' and not row['termination']['deadline_stop']
+                and row['supervision']['manager_result'] in (None, 'unknown')
+                and row['supervision']['empty'] and row['supervision']['steps'] == []
+                for row in rows) and all(row['supervision']['cause'] == 'exit'
+                                        and not row['termination']['deadline_stop'] for row in controls),
+                observed['empty_ordinary_after_cap_unknown'])
+
+        with region('containment/oom-after-final-populated-sample'):
+            row = reap_sequence([gone], start=start, code=0, exit_at=10.5, late_oom=True)
+            observed['oom_after_final_populated_sample'] = row
+            check('containment/oom-after-final-populated-sample', row['supervision']['cause'] == 'memory_cap'
+                  and row['supervision']['result'] == 'oom-kill' and row['supervision']['oom_kill'] == 1
+                  and row['supervision']['manager_result'] == 'unknown'
+                  and not row['termination']['deadline_stop'] and row['supervision']['empty']
+                  and row['reads'] == ['memory:0', 'population:1', 'memory:0', 'population:0',
+                                       'memory:1', 'conclude'], row)
 
         with region('containment/not-found-unknown'):
             with manager_sequence([gone]) as (group, clock, calls, resets):
