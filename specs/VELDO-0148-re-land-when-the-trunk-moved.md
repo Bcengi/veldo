@@ -181,6 +181,13 @@ All C signatures, call arguments, cleanup and named errors are preserved. The
 engine copy is byte-identical. VELDO-0169 census/writers fails by assertion on
 the baseline and passes after this production-only binding change; its suite
 selector is 84_veldo_0169_project_handouts. The census is unchanged.
+That suite plus 86, 63 (containment), 67 (heartbeat), 80, 81 and 62 (dispatch)
+pass alone in ordinary and empty gate environments, 14 runs with zero failures
+and partial-run exit 2. Requires.json is unchanged after regeneration, Git
+boundary and validate.py all pass, and mutation anchors report 0 bad. The 58
+footprint exceptions are inherited unchanged from 3caa6d1c; this repair has none.
+The whole selftest, gate and mutation runners remain with the reviewer.
+See proof/VELDO-0148/census-binding.json for scoped results.
 
 2026-10-02, report-handshake proof complete at a45269eb: all three new falsifiers
 are rejected by assertion, each with only its named suite-86 row red. The manual

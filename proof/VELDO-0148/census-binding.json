@@ -17,5 +17,143 @@
     "summary": "selftest (PARTIAL, 1 of 142 suites): 53 passed, 0 failed in 12.30s",
     "failed_rows": [],
     "details": []
-  }
+  },
+  "implementation_commit": "dc1764f25482be62f572b1e88d14a7ad40c46ac3",
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "fresh /dev/shm/veldo0148-home.YOJXcj",
+    "TMPDIR": "/dev/shm",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONHASHSEED": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"
+  },
+  "checks": [
+    {
+      "environment": "gate",
+      "suite": "84_veldo_0169_project_handouts",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 53 passed, 0 failed in 12.30s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "86_veldo_0148_re_land",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 50 passed, 0 failed in 39.96s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "63_veldo_0040_containment",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 10.47s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "67_veldo_0041_heartbeat",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 12.66s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "80_veldo_0155_claude_baseline",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 18.22s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "81_veldo_0156_codex_baseline",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 4.73s",
+      "failed_rows": []
+    },
+    {
+      "environment": "gate",
+      "suite": "62_veldo_0039_dispatch",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 11.73s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "84_veldo_0169_project_handouts",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 53 passed, 0 failed in 11.39s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "86_veldo_0148_re_land",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 50 passed, 0 failed in 36.97s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "63_veldo_0040_containment",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 6.98s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "67_veldo_0041_heartbeat",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 11.21s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "80_veldo_0155_claude_baseline",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 10.65s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "81_veldo_0156_codex_baseline",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 2.70s",
+      "failed_rows": []
+    },
+    {
+      "environment": "ordinary",
+      "suite": "62_veldo_0039_dispatch",
+      "exit": 2,
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 8.68s",
+      "failed_rows": []
+    }
+  ],
+  "containment_sha256": {
+    ".veldo/control_containment.py": "bcb2a3bbe4fdec038fba687cacbb481de82d47acf24e892119363e69659f0c0d",
+    "engine/.veldo/control_containment.py": "bcb2a3bbe4fdec038fba687cacbb481de82d47acf24e892119363e69659f0c0d"
+  },
+  "static_checks": {
+    "requires": "Regenerated unchanged",
+    "git_boundary": "pass",
+    "anchors": "0 bad anchors",
+    "validate_all_exit": 0,
+    "footprint": {
+      "baseline_outside_count": 58,
+      "current_outside_count": 58,
+      "same_inherited_paths": true,
+      "repair_outside": []
+    },
+    "alternate_anchor_path": "Missing scratchpadanchor_check.py; scratchpad/anchor_check.py passes"
+  },
+  "not_run": [
+    "Whole selftest and gate: prohibited by token rules",
+    "Mutation runners and proof driver: not rerun; existing 27 finding-148 registrations unchanged"
+  ]
 }

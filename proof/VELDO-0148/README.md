@@ -29,6 +29,19 @@ the baseline assertion failure in VELDO-0169 census/writers and its passing
 rerun in the empty gate environment. The matching suite selector is
 84_veldo_0169_project_handouts. These scoped runs are not a full gate verdict.
 
+The census suite and suites 86 (re-land), 63 (containment), 67 (heartbeat),
+80, 81 and 62 (dispatch) each pass alone in ordinary and empty gate
+environments: 14 runs, zero failures, expected partial-run exit 2. The gate
+environment includes the supplied runtime directory and session bus.
+Requires.json regenerated unchanged; Git boundary and validate.py all pass,
+and the anchor check reports 0 bad anchors. The footprint checker still reports
+the same 58 inherited paths outside the footprint as at 3caa6d1c; this repair
+adds none. The alternate scratchpadanchor_check.py path is absent.
+
+The existing criterion red records and 27 finding-148 mutations are preserved.
+The proof driver, mutation runners, full selftest and gate were not rerun, in
+accordance with the token rules. No proof/VELDO-0127 files were changed.
+
 ## Report handshake review repair at 1ab79713
 
 The wrapper starts its five-second startup budget before its identity line, which
