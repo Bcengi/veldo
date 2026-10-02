@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -334 +334 @@
+-        for path in list(self.subscribers):
++        for path in list(self.subscribers)[:1]:

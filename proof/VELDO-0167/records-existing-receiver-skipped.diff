@@ -1,0 +1,4 @@
+--- a/.veldo/control_factory_setup_records.py
++++ b/.veldo/control_factory_setup_records.py
+@@ -71,0 +72 @@
++        continue

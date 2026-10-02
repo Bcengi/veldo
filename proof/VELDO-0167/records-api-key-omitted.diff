@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -621 +621 @@
+-                         records=os.path.join(plan['root'], 'records')))
++                         **{}))

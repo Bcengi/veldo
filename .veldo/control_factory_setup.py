@@ -518,7 +518,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
                                    api_service=api_service)
         with step('record_configuration'):
-            organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
+            record_steps = organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
         with step('engine_pins'):
             engines = organ('control_factory_setup_engines').install(
                 root, Path(installed['home']) / 'bin', plan['engines'], Refused)
@@ -546,7 +546,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'binding_digest': binding.get('binding_digest'), 'chat_enrolled': True,
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
-            'engines': engines, 'runtime_assets': installed['runtime_assets'],
+            'records': record_steps, 'engines': engines, 'runtime_assets': installed['runtime_assets'],
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
@@ -949,6 +949,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
             next_step = 'start it explicitly: systemctl --user start %s (the API unit %s starts with it)' % (
                 authority_unit, api['unit'])
+        if running and states['installed_service_config'] == 'upgrade':
+            next_step = 'the service reads its new record configuration on restart: systemctl --user restart %s' % authority_unit
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, name, port))
         mark('tailscale_serve', transport['serve'] == 'free')

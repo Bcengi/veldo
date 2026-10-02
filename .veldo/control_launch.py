@@ -160,7 +160,7 @@ worker's error stream (piped to this receiver, never discarded) and the trusted 
 redacted before it is kept, first of every value in the run's set of resolved credential values (`Resolved`,
 filled by RESOLVERS when the worker is spawned: the account's subscription token, and whatever a resolver adds),
 then by the secret scanner. After each batch the API is hinted with the last sequence (the configuration's
-`record_hints`), the exit record commits the record's line count, byte count and digest, and once the end is
+`record_hint_service`, or legacy `record_hints`), the exit record commits the record's line count, byte count and digest, and once the end is
 recorded a last hint marks it ended, before the runner is told. The record lives under the configuration's
 `records`, else the factory state root's `records`.
 

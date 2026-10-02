@@ -40,8 +40,9 @@ header excluded), the file's size and the SHA-256 of its bytes. The receiver com
 exit record (control_dispatch.exit, `execution_record`), so a record served after the run is checked against
 what the authority committed.
 
-LIVE, WITHOUT POLLING. After each batch the recorder sends each configured API hint socket (the receiver's
-`record_hints`: the API process's own hint socket, control_client_api.Hints) a hint naming the dispatch and
+LIVE, WITHOUT POLLING. After each batch the recorder sends the configured authority socket
+(`record_hint_service`) a hint for the service to fan out to its current API subscribers. Legacy
+`record_hints` sends directly to fixed API sockets. The hint names the dispatch and
 the last sequence (`HINT_SCHEMA`), and one more, marked ended, once the dispatch's end is recorded. A hint
 only wakes the API, which reads the lines after its cursor through the authority (`read`); a lost hint is
 caught up by the next. A socket is written only when it is this account's own, in a directory nobody else

@@ -1,0 +1,78 @@
+{
+ "by_assertion": true,
+ "commit": "f1e1abb9ed0006b7d97948aed943c044b0b616cc",
+ "details": [
+  "VELDO-0167 installed-record detail: one private records directory exists at setup",
+  "VELDO-0167 installed-record detail: receiver-71464bc9e82912c6.json shares records",
+  "VELDO-0167 installed-record detail: api-service.json shares records",
+  "VELDO-0167 installed-record detail: api-service.json shares records",
+  "VELDO-0167 installed-record detail: installed route serves while worker is running",
+  "VELDO-0167 installed-record detail: installed API serves lines: {'error': 'unavailable_service', 'refusal': 'unavailable_service:records'}",
+  "VELDO-0167 late-subscriber detail: receiver names service, no subscriber registry or fixed list",
+  "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
+  "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
+  "VELDO-0167 older-host detail: older host upgrades: invalid_input:state_root:differs:/dev/shm/b171-ipdrwcd8/state-records/host/api-service.json",
+  "VELDO-0167 older-host detail: creates private records directory",
+  "VELDO-0167 older-host detail: receiver-71464bc9e82912c6.json adds keys",
+  "VELDO-0167 older-host detail: api-service.json adds keys",
+  "VELDO-0167 older-host detail: api-service.json adds keys",
+  "VELDO-0167 older-host detail: second rerun is byte-identical",
+  "VELDO-0167 older-host detail: names differing receiver-71464bc9e82912c6.json",
+  "VELDO-0167 older-host detail: names differing api-service.json"
+ ],
+ "failed_rows": [
+  "VELDO-0167 installed-record",
+  "VELDO-0167 late-subscriber",
+  "VELDO-0167 older-host"
+ ],
+ "modules": {
+  ".veldo/control_execution_record.py": {
+   "at_commit": "61baf99c45ffbaef4f8d7bce357eadcb29f4a2d01f26db44792857cec1760940",
+   "now": "74c6fad9e9d58212a55111bbe6a417d0de4852f70996c372663e8cde77f2503b"
+  },
+  ".veldo/control_factory_setup.py": {
+   "at_commit": "573dc6a72fc799a2e540818ca45b00ad1fc89dee3dcc2df2293a327b243ca335",
+   "now": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+  },
+  ".veldo/control_factory_setup_records.py": {
+   "at_commit": null,
+   "now": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "08ce9911ecbbf29f70a61874b80f45a340aa8850e16f0fe2c2021e76af459f0f",
+   "now": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "f187362587b7794b50a47df5c27de6377bd717ba0129d72fb32cb57cbb29b4e6"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "d8c840be13c0b8bbe304620ddc6f8bd073743e5a156f89a158a598945e106d1d",
+   "now": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "347bb13958771368f103f763a041a033033d4840627daee7eb5c0b7531c9ef65",
+   "now": "08dfcffbc86ff2abc8ba8cdf6b7f787f1ed957563c33b9157175da7bccfbcc03"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0167 installed-record",
+   false
+  ],
+  [
+   "VELDO-0167 late-subscriber",
+   false
+  ],
+  [
+   "VELDO-0167 older-host",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 14.485,
+ "spec_id": "VELDO-0167",
+ "suite": "scripts/suites/91_veldo_0167_setup_records.py",
+ "tree": "git archive f1e1abb9ed0006b7d97948aed943c044b0b616cc, unchanged; the current suite file run against it"
+}

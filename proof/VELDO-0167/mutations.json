@@ -1,0 +1,392 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0167 installed-record",
+    true
+   ],
+   [
+    "VELDO-0167 late-subscriber",
+    true
+   ],
+   [
+    "VELDO-0167 older-host",
+    true
+   ]
+  ],
+  "seconds": 6.446
+ },
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 installed-record detail: api-service.json shares records",
+    "VELDO-0167 installed-record detail: api-service.json shares records",
+    "VELDO-0167 installed-record detail: installed route serves while worker is running",
+    "VELDO-0167 installed-record detail: installed API serves lines: {'error': 'unavailable_service', 'refusal': 'unavailable_service:records'}",
+    "VELDO-0167 older-host detail: api-service.json adds keys",
+    "VELDO-0167 older-host detail: api-service.json adds keys"
+   ],
+   "diff": "proof/VELDO-0167/records-api-key-omitted.diff",
+   "failed_rows": [
+    "VELDO-0167 installed-record",
+    "VELDO-0167 older-host"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "5d2b78cc368552ad93e3298c9b426aa9f244dfc1aef3421a48d94fdacd569962",
+   "name": "records-api-key-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "installed-record"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     false
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     false
+    ]
+   ],
+   "seconds": 6.961,
+   "source_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 late-subscriber detail: receiver names service, no subscriber registry or fixed list",
+    "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
+    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
+    "VELDO-0167 older-host detail: receiver-2ba88177e109a8af.json adds keys"
+   ],
+   "diff": "proof/VELDO-0167/records-fixed-subscriber-list.diff",
+   "failed_rows": [
+    "VELDO-0167 late-subscriber",
+    "VELDO-0167 older-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "7ae2cbc3e0e17137e88c831c9778a04ecf5855d9d8042edf80c7fc9cb0ab9f4f",
+   "name": "records-fixed-subscriber-list",
+   "named_row_red": true,
+   "named_rows": [
+    "late-subscriber"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     false
+    ],
+    [
+     "VELDO-0167 older-host",
+     false
+    ]
+   ],
+   "seconds": 14.457,
+   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
+    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines",
+    "VELDO-0167 older-host detail: receiver-867bcf8bdd1cae1e.json adds keys",
+    "VELDO-0167 older-host detail: names differing receiver-867bcf8bdd1cae1e.json"
+   ],
+   "diff": "proof/VELDO-0167/records-existing-receiver-skipped.diff",
+   "failed_rows": [
+    "VELDO-0167 late-subscriber",
+    "VELDO-0167 older-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "e16493775481e038cdbcc4e6cc4d41116dc50fcec74619a965f9b5103f2da175",
+   "name": "records-existing-receiver-skipped",
+   "named_row_red": true,
+   "named_rows": [
+    "older-host"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     false
+    ],
+    [
+     "VELDO-0167 older-host",
+     false
+    ]
+   ],
+   "seconds": 14.553,
+   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
+    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines"
+   ],
+   "diff": "proof/VELDO-0167/records-fanout-first-only.diff",
+   "failed_rows": [
+    "VELDO-0167 late-subscriber"
+   ],
+   "module": ".veldo/control_service_api.py",
+   "mutant_sha256": "10c4c503ddf2712cb5c52dca11c153a61e05d98fdb5f4b713be22e9cdebd1e46",
+   "name": "records-fanout-first-only",
+   "named_row_red": true,
+   "named_rows": [
+    "late-subscriber"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     false
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 14.965,
+   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint"
+   ],
+   "diff": "proof/VELDO-0167/records-service-number-omitted.diff",
+   "failed_rows": [
+    "VELDO-0167 late-subscriber"
+   ],
+   "module": ".veldo/control_service_api.py",
+   "mutant_sha256": "9813f15b10f4ff464bf61feea2fa9eea21c9779a1025f24f7f359c9758a1b622",
+   "name": "records-service-number-omitted",
+   "named_row_red": true,
+   "named_rows": [
+    "late-subscriber"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     false
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 7.902,
+   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 late-subscriber detail: both live APIs receive the next record hint",
+    "VELDO-0167 late-subscriber detail: service records fan-out counts, dispatch and instance, never lines"
+   ],
+   "diff": "proof/VELDO-0167/records-receiver-service-ignored.diff",
+   "failed_rows": [
+    "VELDO-0167 late-subscriber"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "649d7cf3df0a3014c7bb68415924fbce92130c0eceeb2a8e7e04b7be1dcf5f58",
+   "name": "records-receiver-service-ignored",
+   "named_row_red": true,
+   "named_rows": [
+    "late-subscriber"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     false
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 14.935,
+   "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0167 older-host detail: names differing receiver-994b49a3e401692c.json",
+    "VELDO-0167 older-host detail: names differing api-service.json"
+   ],
+   "diff": "proof/VELDO-0167/records-rerun-difference-accepted.diff",
+   "failed_rows": [
+    "VELDO-0167 older-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "b5cfe880128d0d9cc7774bed11021877bf376d23afce57c8ce17c8e39bedcc76",
+   "name": "records-rerun-difference-accepted",
+   "named_row_red": true,
+   "named_rows": [
+    "older-host"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     false
+    ]
+   ],
+   "seconds": 6.89,
+   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+  }
+ ],
+ "mutations_per_row": {
+  "installed-record": [
+   "records-api-key-omitted"
+  ],
+  "late-subscriber": [
+   "records-fixed-subscriber-list",
+   "records-fanout-first-only",
+   "records-service-number-omitted",
+   "records-receiver-service-ignored"
+  ],
+  "older-host": [
+   "records-existing-receiver-skipped",
+   "records-rerun-difference-accepted"
+  ]
+ },
+ "noop": {
+  "control_factory_setup.py": {
+   "copy_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 6.9,
+   "source_sha256": "3eb305115bf50a5b8b28c1192fccb8ef8e9ddcb10bed08acde4570e4e05891c7"
+  },
+  "control_factory_setup_records.py": {
+   "copy_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 6.401,
+   "source_sha256": "110c8c47ee1f6439adef8329d40f6fc2de7e7f6af136adc8d27c67f49a364ab5"
+  },
+  "control_launch.py": {
+   "copy_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 6.434,
+   "source_sha256": "b33263f49f4a5aa19aa9993d677d9db5408cebe29d7651f55d58d789181e8e9e"
+  },
+  "control_service_api.py": {
+   "copy_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294",
+   "details": [],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0167 installed-record",
+     true
+    ],
+    [
+     "VELDO-0167 late-subscriber",
+     true
+    ],
+    [
+     "VELDO-0167 older-host",
+     true
+    ]
+   ],
+   "seconds": 6.427,
+   "source_sha256": "b9a116c7302c1b8c40e04c9c2e20fa85b1d8453be176e8524e0c952d3b7e6294"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 167",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 113.271,
+ "spec_id": "VELDO-0167",
+ "suite": "scripts/suites/91_veldo_0167_setup_records.py"
+}

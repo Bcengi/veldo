@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1023 +1023 @@
+-                                    hint_service=self.config.get('record_hint_service'))
++                                    hint_service=None)

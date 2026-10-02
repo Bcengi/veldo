@@ -59,7 +59,8 @@ def patch(path, expected, owned, differs):
                 raise differs(str(path))
         else:
             end = text.rfind('}')
-            text = text[:end].rstrip() + ',\n ' + json.dumps(key) + ': ' + json.dumps(owned[key]) + '\n' + text[end:]
+            at = len(text[:end].rstrip())
+            text = text[:at] + ',\n ' + json.dumps(key) + ': ' + json.dumps(owned[key]) + text[at:]
     return ('upgrade' if added else 'equal'), text, added
 
 
@@ -69,8 +70,13 @@ def prepare(root, installed, receivers, api, service_text, differs):
     files = []
     for path, expected in sorted(receivers.items()):
         # Earlier engine keys are added by the engine upgrade before this step writes.
-        held = json.loads(Path(path).read_text())
-        expected = {k: v for k, v in expected.items() if k in held}
+        try:
+            held = json.loads(Path(path).read_text())
+        except (OSError, ValueError):
+            raise differs(str(path)) from None
+        if not isinstance(held, dict):
+            raise differs(str(path))
+        expected = {k: v for k, v in expected.items() if k in held or k not in ('host_trust', 'state_root')}
         if 'runs' in held:
             expected['runs'] = str(Path(installed['store_path']).parent / 'runs')
         expected.update(owned)
@@ -79,7 +85,7 @@ def prepare(root, installed, receivers, api, service_text, differs):
     api_states = {}
     for name in ('service_config', 'installed_service_config'):
         expected = json.loads(service_text)
-        own = {'records': expected['records']}
+        own = {k: expected[k] for k in ('records',) if k in expected}
         state, text, added = patch(api[name], expected, own, differs)
         api_states[name] = state
         files.append((api[name], expected, own, state, text, added))

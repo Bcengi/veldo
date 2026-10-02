@@ -1236,7 +1236,7 @@ def _v171_suite():
                                                root_b / 'edge' / 'api-auth.pub', config_b / 'api-service.json',
                                                config_b / 'api-process.json', units_b / api_unit_b,
                                                units_b / (unit_b + '.wants'), units_b / (unit_b + '.wants') / api_unit_b,
-                                               host_b / 'engines.json', root_b / 'engines', root_b / 'engines/claude_code',
+                                               host_b / 'engines.json', root_b / 'records', root_b / 'engines', root_b / 'engines/claude_code',
                                                root_b / 'engines/claude_code' / engines186['version']))
             added_outside = [p for p in added if not p.startswith(bin_b + '/')]
             check(OB, 'the files it added outside the installed engine are exactly the API steps\' [%s]'

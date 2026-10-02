@@ -9813,6 +9813,22 @@ def cases():
         if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
                 and not case.get('fixture') and not case.get('siblings')):
             case['companions'] = list(RENDERER_COMPANIONS)
+    # VELDO-0167: installed records, current subscribers, additive setup.
+    add(167, 'records-api-key-omitted', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
+        "records=os.path.join(plan['root'], 'records')", '**{}', ['installed-record'])
+    add(167, 'records-fixed-subscriber-list', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        "'record_hint_service': socket", "'record_hints': []", ['late-subscriber'])
+    add(167, 'records-existing-receiver-skipped', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        '    for path, expected in sorted(receivers.items()):', '    for path, expected in sorted(receivers.items()):\n        continue', ['older-host'])
+    add(167, 'records-fanout-first-only', '91_veldo_0167_setup_records.py', 'control_service_api.py',
+        '        for path in list(self.subscribers):', '        for path in list(self.subscribers)[:1]:', ['late-subscriber'])
+    add(167, 'records-service-number-omitted', '91_veldo_0167_setup_records.py', 'control_service_api.py',
+        'json.dumps(dict(hint, sequence=self.sequence[path]), sort_keys=True).encode()', 'json.dumps(hint, sort_keys=True).encode()', ['late-subscriber'])
+    add(167, 'records-receiver-service-ignored', '91_veldo_0167_setup_records.py', 'control_launch.py',
+        "hint_service=self.config.get('record_hint_service')", 'hint_service=None', ['late-subscriber'])
+    add(167, 'records-rerun-difference-accepted', '91_veldo_0167_setup_records.py', 'control_factory_setup_records.py',
+        '    if merged != expected:', '    if False:', ['older-host'])
+
     return result
 
 

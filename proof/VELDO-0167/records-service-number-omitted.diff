@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -336 +336 @@
+-            outcome = self._push(path, json.dumps(dict(hint, sequence=self.sequence[path]), sort_keys=True).encode())
++            outcome = self._push(path, json.dumps(hint, sort_keys=True).encode())
