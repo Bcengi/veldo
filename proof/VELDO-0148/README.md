@@ -19,6 +19,62 @@ run the installed launch executable. Another local clone moves the remote before
 publication clone's pre-push hook. Engine output comes from a generated fake; no real model,
 login, external service or real credential is used. Each row reports once.
 
+## Fast-exit review repair at e1009abc
+
+The heartbeat previously moved itself only after enumerating its inherited file
+descriptors. The intermediate child had already exited, so the wrapper could exec
+a fast engine while the heartbeat still belonged to the worker cgroup. That made
+an ordinary exit look like a surviving engine descendant needing termination.
+
+The intermediate child now enters `veldo-wrapper` before its second fork. Its
+heartbeat inherits that membership. The wrapper waits for successful intermediate
+child exit before exec, and refuses startup if setup failed. Session separation,
+pidfd lifetime, descriptor isolation, scope caps and subtree cleanup stay intact.
+The engine copy is byte-identical. Only control_heartbeat.py and its engine copy
+were added to the footprint, for AC1's clean conflict rebuild and review exits.
+
+The new `receiver/fast-exit` row instruments disposable module copies with FIFOs.
+At `_beat` entry, before descriptor enumeration, the heartbeat announces its real
+PID and cgroup to the fake engine and blocks. The engine consumes that announcement
+and exits zero. The receiver samples real `Group.members()` before releasing the
+heartbeat. The row asserts that both heartbeat PIDs already belong to the wrapper
+cgroup, both membership samples are empty, and both exits have no cause or stop
+steps. There is no scheduler sleep. Existing normal-exit and settled-scope rows
+continue to check real launch records, live supervision and retained manager state.
+
+[red-at-e1009abc.json](red-at-e1009abc.json) records the pre-fix replay: the new
+fast-exit row and existing normal-exit row fail by assertion, all other suite rows
+pass. Both launches return zero yet receive cause `exit` and a terminate step;
+the recorded cgroup samples contain the held heartbeat PIDs. The red driver uses
+a read-only archive and neither checks out nor changes another branch or worktree.
+Earlier red records below cover the original AC1, AC2 and AC3 behavior changes.
+
+Finding 148 now has 22 registered mutations. The new
+`receiver148-heartbeat-moves-after-exec` restores late movement and targets
+`receiver/fast-exit`. [mutations.json](mutations.json) records current source and
+mutant digests, exact diffs and named rows. All anchors and mutant syntax were
+checked, including finding 40's existing anchors. Mutation execution, five
+consecutive finding-148 baselines, finding 40 execution and the whole selftest
+remain for the reviewer under the explicit token rules. No new mutation rejection
+or gate verdict is claimed.
+
+[fast-exit-verification.json](fast-exit-verification.json) records all 12 serial
+selector runs: suites 86, 63, 67, 80, 81 and 62 each pass in the ordinary environment
+and the exact empty gate environment with a fresh HOME in /dev/shm and the named
+session bus. All return the expected partial-run exit 2 with zero failures.
+Suite 86 reports 19 rows, 45 including the shared preamble. These scoped runs do
+not constitute gate evidence. The saved pre-fix replay predates the production
+edit, so its source hashes labeled `now` still equal the archived pre-fix hashes.
+
+The anchor checker reports 0 bad anchors and no duplicate names; validation and
+the Git boundary check pass. Suite registration is unchanged and requires.json
+regenerates unchanged. The single-spec footprint checker still reports 58
+inherited VELDO-0040 and VELDO-0127 paths; this repair has none outside VELDO-0148,
+and checking all three merged concerns reports none outside. The separately
+requested scratchpadanchor_check.py path does not exist; the supplied
+scratchpad/anchor_check.py is the working checker. Gate byproducts are restored
+and excluded before the final commit. Nothing was pushed.
+
 ## Receiver regression repair at a90e5a85
 
 The read-only archive bisect in [receiver-bisect.json](receiver-bisect.json) identifies

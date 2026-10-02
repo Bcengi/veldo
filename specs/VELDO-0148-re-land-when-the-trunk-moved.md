@@ -175,6 +175,25 @@ to the candidate tree, so the re-merged tree needs its own grant.
 
 ## History
 
+2026-10-02, fast-exit proof complete: implementation 58dca632 passes suites 86,
+63, 67, 80, 81 and 62 serially in both ordinary and exact empty gate environments,
+12 selectors with zero failures and expected partial-run exit 2. Suite 86 has
+19 passing rows. Its FIFO-controlled pre-fix replay at e1009abc makes normal-exit
+and fast-exit red by assertion: both zero-exit engines receive cause exit and a
+terminate step while the heartbeat remains in their worker cgroup. Other rows
+stay green. The saved replay predates the production edit. Registered the late
+heartbeat movement falsifier; all 22 finding-148 diffs and digests are current,
+with 0 bad anchors across the registry. Mutation execution, five finding-148
+baselines, finding 40 and whole-gate execution remain reserved for the reviewer;
+no new mutation rejection is claimed. Saved fast-exit-verification.json and
+updated the proof README. Engine copies match; registration and regenerated
+requires.json are unchanged. Validation and Git boundary pass. The supplied
+single-spec footprint checker reports 58 inherited paths from merged concerns,
+none added by this repair; checking all three merged concerns reports none
+outside. The alternate scratchpadanchor_check.py is absent; the working
+scratchpad/anchor_check.py reports 0 bad anchors. Gate byproducts are restored
+and excluded. No protected path, other branch or worktree was changed.
+
 2026-10-02, fast-exit review repair: extend AC1's receiver proof with a FIFO
 handshake holding the heartbeat before descriptor enumeration while the real
 rebuild and review engines exit. The receiver samples actual cgroup membership

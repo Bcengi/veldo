@@ -1,0 +1,394 @@
+{
+ "audits": {
+  "alternate_anchor_path": {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpadanchor_check.py"
+   ],
+   "exit": 2
+  },
+  "anchors": {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+   ],
+   "exit": 0
+  },
+  "combined_footprint": {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+    "VELDO-0148",
+    "VELDO-0040",
+    "VELDO-0127"
+   ],
+   "exit": 0
+  },
+  "footprint": {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+    "VELDO-0148"
+   ],
+   "exit": 1
+  },
+  "git_boundary": {
+   "command": [
+    "python3",
+    "scripts/check_git_boundary.py"
+   ],
+   "exit": 0
+  },
+  "requires": {
+   "command": [
+    "python3",
+    "scripts/run_scope.py",
+    "--emit-requires"
+   ],
+   "exit": 0
+  },
+  "validation": {
+   "command": [
+    "python3",
+    ".veldo/validate.py",
+    "all"
+   ],
+   "exit": 0
+  },
+  "whitespace": {
+   "command": [
+    "git",
+    "diff",
+    "--check"
+   ],
+   "exit": 0
+  }
+ },
+ "checks": [
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "86_veldo_0148_re_land"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "ccd8b26f0374dd49d4fdeb56554c835a6b1c01dcec9e99342bb154619031060c",
+   "mode": "ordinary",
+   "suite": "86_veldo_0148_re_land",
+   "suite_sha256": "32ec652ab1f8c70fbecbc628fdcdac1dd0eba3cf636458a4e2dbda8ec241ab9a",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 45 passed, 0 failed in 18.06s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "63_veldo_0040_containment"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "c40249dcffdc9a5786db1a26579a20a2923d08ef3a6fe2564d35a0d5a934153f",
+   "mode": "ordinary",
+   "seconds": 6.789,
+   "suite": "63_veldo_0040_containment",
+   "suite_sha256": "261bffeed9f00a74fdb02352f0340fa7f62359b8873e900cca825d28ad0d10d2",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 6.72s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "67_veldo_0041_heartbeat"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "14862ef255959ba9cd470494142b313d97500ec6230a79f60799e502491257be",
+   "mode": "ordinary",
+   "seconds": 11.203,
+   "suite": "67_veldo_0041_heartbeat",
+   "suite_sha256": "68cabb0d1c043ca58c413781b1fe657d743aea3cd5ca48d9bd8cfff684e984a9",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 11.14s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "80_veldo_0155_claude_baseline"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "27a065cdda49d94d720c6be47f085ff2e2b8262a8708aeced1f652814c3e4b61",
+   "mode": "ordinary",
+   "seconds": 10.368,
+   "suite": "80_veldo_0155_claude_baseline",
+   "suite_sha256": "8737f17f30898d6af1a2507d73105c3abf0e79b17ee39ac7356977e478493f43",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 10.30s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "81_veldo_0156_codex_baseline"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "fbba4db2b4b3ffbd5832a0ee90cab7baec16bcbff2af6fed60630ce8d0f1b28e",
+   "mode": "ordinary",
+   "seconds": 2.664,
+   "suite": "81_veldo_0156_codex_baseline",
+   "suite_sha256": "58b508e668d253eabe4e6b666a48bfd7a56aa5b6d58192e48fbc1c9343bf9dad",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 2.60s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "62_veldo_0039_dispatch"
+   ],
+   "environment": "inherited",
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "8df669f0b79d06e4f232f74c06a282872777d2ba9f6e1f2fc98ab865780275e4",
+   "mode": "ordinary",
+   "seconds": 8.58,
+   "suite": "62_veldo_0039_dispatch",
+   "suite_sha256": "9b1b31cfa52808f0b6d06a05167d62b508fa43df59e67ba0696bacd715e9bf3f",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 8.51s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "86_veldo_0148_re_land"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-3azi8jfm",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "e9f5f81550e72a9d37edecbdfd541055356afe59f9747ee24f23837c323c620c",
+   "mode": "gate",
+   "seconds": 20.513,
+   "suite": "86_veldo_0148_re_land",
+   "suite_sha256": "32ec652ab1f8c70fbecbc628fdcdac1dd0eba3cf636458a4e2dbda8ec241ab9a",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 45 passed, 0 failed in 20.42s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "63_veldo_0040_containment"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-1vctf4r9",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "b63c40e9ed6452d6fdc9219d4874a235d98a25e04b3d2b7c1e4983e9a1723e8a",
+   "mode": "gate",
+   "seconds": 10.366,
+   "suite": "63_veldo_0040_containment",
+   "suite_sha256": "261bffeed9f00a74fdb02352f0340fa7f62359b8873e900cca825d28ad0d10d2",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 78 passed, 0 failed in 10.29s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "67_veldo_0041_heartbeat"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-7y94wirf",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "64bd84b5d38ba08aeab0fb458734d2399be462d671339160e936e1d23ade0f5c",
+   "mode": "gate",
+   "seconds": 12.701,
+   "suite": "67_veldo_0041_heartbeat",
+   "suite_sha256": "68cabb0d1c043ca58c413781b1fe657d743aea3cd5ca48d9bd8cfff684e984a9",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 12.64s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "80_veldo_0155_claude_baseline"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-r8yesa64",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "f05e4c6cf180c5755a2e92306d4bf03cc99a07e3335a3dd607df5c7e36a42823",
+   "mode": "gate",
+   "seconds": 18.579,
+   "suite": "80_veldo_0155_claude_baseline",
+   "suite_sha256": "8737f17f30898d6af1a2507d73105c3abf0e79b17ee39ac7356977e478493f43",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 44 passed, 0 failed in 18.52s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "81_veldo_0156_codex_baseline"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-oqc6k50r",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "ed8265aa1cf5f250448c9a7068fb9e35cc6884bbac7f822661fb348954fbe64c",
+   "mode": "gate",
+   "seconds": 4.792,
+   "suite": "81_veldo_0156_codex_baseline",
+   "suite_sha256": "58b508e668d253eabe4e6b666a48bfd7a56aa5b6d58192e48fbc1c9343bf9dad",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 4.73s"
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "62_veldo_0039_dispatch"
+   ],
+   "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/dev/shm/v148-gate-home-0mcodbmf",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0",
+    "PYTHONNOUSERSITE": "1",
+    "TMPDIR": "/dev/shm",
+    "TZ": "UTC",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+   },
+   "exit": 2,
+   "failures": [],
+   "log_sha256": "6b12d433f7fbf4537e8f0bf12d725f91cc5fb3294319f45710e4e45139d5ddc4",
+   "mode": "gate",
+   "seconds": 11.893,
+   "suite": "62_veldo_0039_dispatch",
+   "suite_sha256": "9b1b31cfa52808f0b6d06a05167d62b508fa43df59e67ba0696bacd715e9bf3f",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 47 passed, 0 failed in 11.83s"
+  }
+ ],
+ "engine_copy_identical": true,
+ "footprint": {
+  "inherited_outside_count": 58,
+  "repair_outside": [],
+  "repair_paths": [
+   ".veldo/control_heartbeat.py",
+   "engine/.veldo/control_heartbeat.py",
+   "proof/VELDO-0148/README.md",
+   "proof/VELDO-0148/drive.py",
+   "proof/VELDO-0148/fast-exit-verification.json",
+   "proof/VELDO-0148/mutations.json",
+   "proof/VELDO-0148/receiver148-heartbeat-moves-after-exec.diff",
+   "proof/VELDO-0148/red-at-e1009abc.json",
+   "scripts/check_teeth_mutations.py",
+   "scripts/suites/86_veldo_0148_re_land.py",
+   "specs/VELDO-0148-re-land-when-the-trunk-moved.md"
+  ]
+ },
+ "gate_verdict": null,
+ "implementation_commit": "58dca632",
+ "modules": {
+  ".veldo/control_heartbeat.py": "c82877e3213062da21ab697b85908fbbc2fae6778cb85e8e932ddaea134deb89",
+  "engine/.veldo/control_heartbeat.py": "c82877e3213062da21ab697b85908fbbc2fae6778cb85e8e932ddaea134deb89"
+ },
+ "mutation_execution": "Not run: reserved for reviewer by token rules",
+ "partial_run": true,
+ "red_note": "Saved before the production edit, so its now source hashes equal the archived pre-fix hashes.",
+ "red_record": "proof/VELDO-0148/red-at-e1009abc.json",
+ "schema": "veldo.scoped-verification/v1",
+ "serial": true,
+ "spec_id": "VELDO-0148",
+ "suite_registered_once": true
+}
