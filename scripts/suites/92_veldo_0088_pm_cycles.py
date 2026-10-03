@@ -33,7 +33,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
              'review/review-refusal', 'review/pending-budget')
     names = tuple(n for n in names if n.startswith('review/') == review_only)
     if setup_only:
-        names = ('followup/setup-pm',)
+        names = ('followup/setup-pm', 'followup/setup-pm-authority')
     if fault_only:
         names = ('followup/initial-fault', 'followup/pending-fault')
     rows = {name: [] for name in names}
@@ -57,7 +57,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     try:
         with helper.fixture(ROOT, PRODUCTION, cycle_budget=5 if review_only else 12, production_setup=setup_only) as f:
             if setup_only and not f['production_pm']:
-                expect('VELDO-0088 followup/setup-pm', False)
+                for name in names:
+                    expect('VELDO-0088 ' + name, False)
                 return
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
             domain, repository, ids = (f[k] for k in ('DOMAIN', 'REPO', 'ids'))
@@ -68,6 +69,9 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             G = load('v88_graph', mods / 'control_graph.py')
             GP = load('v88_git', mods / 'git_process.py')
             sign = f['journal_sign']
+            if setup_only:
+                setup_checks = load('v88_setup_checks', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/setup_fixture.py')
+                setup_checks.observe_pm_authority(f, check)
             source = base / 'source'
             source.mkdir()
             (source / 'README').write_text('Accepted project source.\n')
@@ -80,7 +84,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             revisions.accept('revision-88', repository, commit, 'pm',
                 documents={'README': PM.SN.digest((source / 'README').read_bytes())}, signer='authority', sign=sign,
                 authority_generation=1)
-            common = dict(domain=domain, repository=repository, principal='pm', signer='authority', sign=sign)
+            common = dict(domain=domain, repository=repository, principal='team-service', signer='authority', sign=sign)
             dispatches = L.D.Dispatches(S, conn, **common)
             reservations = L.D.RES.Reservations(S, conn, authorize=L.D.RES.service_authority, **common)
             for scope, subject in (('account', 'fixture-account'), ('project', 'proj-a')):

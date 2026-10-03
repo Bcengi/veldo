@@ -177,8 +177,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-setup-pm-unenrolled.diff",
    "module": ".veldo/control_factory_setup.py",
-   "source_sha256": "a40877e2bf8d1f30444bc001c62aca98d78308c6ab3b6e2a49daf4cad8485f49",
-   "mutant_sha256": "673360fc612b0414b89a5ba8a072060f065a31c6d2b00a76ed85cfd7dc207b3f",
+   "source_sha256": "2b66fa64e2c922760a19ee3f551edfd5cfbc954b7f81f5921026c2e471b52a33",
+   "mutant_sha256": "47c03ba1a0e7775ead05fb04a84edbfbf09a1bae5557586d56895918a55bead4",
    "status": "not run; reviewer only"
   },
   {
@@ -202,6 +202,17 @@
    "source_sha256": "082eccc37dc836f968350294505314811d0365fe267b619c3b7741a811f6f34e",
    "mutant_sha256": "610ab3b649d86a7e4b3cfae99301207b80ea35bee5380d71cad3eb84a0a871cf",
    "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-setup-pm-service-role",
+   "named_rows": [
+    "followup/setup-pm-authority"
+   ],
+   "diff": "proof/VELDO-0088/v88-setup-pm-service-role.diff",
+   "module": ".veldo/control_factory_setup.py",
+   "status": "not run; reviewer only",
+   "source_sha256": "2b66fa64e2c922760a19ee3f551edfd5cfbc954b7f81f5921026c2e471b52a33",
+   "mutant_sha256": "a40877e2bf8d1f30444bc001c62aca98d78308c6ab3b6e2a49daf4cad8485f49"
   }
  ]
 }

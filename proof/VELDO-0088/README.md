@@ -139,6 +139,7 @@ its engine copy because enrollment belongs at that production boundary.
 | Row | Observation |
 | :--- | :--- |
 | followup/setup-pm | Fresh production setup, then real project and team commands and Line.run accept an assignment signed as the default PM. This fixture branch never enrolls the PM itself. |
+| followup/setup-pm-authority | The setup-enrolled PM is refused with missing_authority when recording a Runner reservation or reporting an account limit window; neither changes the protected state. The service principal succeeds with the same operations and valid inputs. |
 | followup/initial-fault | An injected RuntimeError from starting a real project's next cycle reaches the pass_once caller unchanged. |
 | followup/pending-fault | A real owner answer changes input during a dispatched cycle; after completion, an injected follow-up start fault reaches the caller unchanged. |
 
@@ -170,3 +171,22 @@ Validation and the Git boundary pass; the final anchor check reports zero bad
 anchors. All eighteen finding-88 mutation diffs are current, including the three
 new follow-up mutations. No mutation rejection result is claimed without the
 reviewer's run.
+
+
+### PM enrollment role follow-up
+
+Setup now enrolls the PM with `roles: []`, retaining the journal key and `scope: '*'`.
+The PM can still author proposals and assignments, but cannot record Runner
+reservations or report account limit windows. Suite preparation uses the service
+principal for reservation policy configuration.
+
+`role-checks.json` records the new `followup/setup-pm-authority` row failing with
+the old role (50 passed, 1 failed), with `followup/setup-pm` still passing. After
+the fix, suite 92 passes 51 checks and factory setup suite 73 passes 43 checks,
+with no failures. The suites ran alone and sequentially; successful partial runs
+return 2 by design. No gate stamp is claimed.
+
+Finding 88 registers `v88-setup-pm-service-role`, restoring `reservation_service`
+and targeting the new row. Its diff and digests are in `mutations.json`; the
+existing setup-enrollment mutation digests are refreshed for the new source.
+No mutation driver was run; mutation execution remains reviewer-owned.

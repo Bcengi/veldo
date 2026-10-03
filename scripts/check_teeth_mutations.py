@@ -9971,6 +9971,7 @@ def cases():
     add(88, 'v88-staging-from-earlier-cycle', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "        if unit['unit'] not in published:\n", '        if False:\n', ['review/current-publication'], ())
 
     # VELDO-0088 production enrollment and scheduler faults.
+    add(88, 'v88-setup-pm-service-role', '92_veldo_0088_pm_cycles.py', 'control_factory_setup.py', "                                       'roles': [], 'public_key': public['journal'],\n", "                                       'roles': ['reservation_service'], 'public_key': public['journal'],\n", ['followup/setup-pm-authority'], ())
     add(88, 'v88-setup-pm-unenrolled', '92_veldo_0088_pm_cycles.py', 'control_factory_setup.py', "        with step('project_manager_enrollment'):\n", '        if False:  # defect: setup omits PM membership\n', ['followup/setup-pm'], ())
     add(88, 'v88-swallow-initial-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '\n                except Refused as error:\n', '\n                except Exception as error:\n', ['followup/initial-fault'], ())
     add(88, 'v88-swallow-pending-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Refused as error:\n', '                        except Exception as error:\n', ['followup/pending-fault'], ())

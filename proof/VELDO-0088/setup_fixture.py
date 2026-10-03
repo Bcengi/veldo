@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import time
 
 
 def load(name, path):
@@ -11,6 +12,48 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def observe_pm_authority(f, check):
+    """Real setup membership must deny service operations with otherwise valid inputs."""
+    R = load('v88_setup_reservations', f['mods'] / 'control_reservations.py')
+    A = R.ACC
+    S, conn, now = f['S'], f['conn'], time.time()
+    signed = dict(signer='authority', sign=f['journal_sign'])
+    common = dict(domain=f['DOMAIN'], repository=f['REPO'], authorize=R.service_authority, **signed)
+    account, project, unit = 'pm-authority-account', 'proj-a', 'pm-authority-unit'
+    service = R.Reservations(S, conn, principal='team-service', **common)
+    for scope, subject in (('account', account), ('project', project), ('unit', unit)):
+        service.configure(f['next_id']('pm-policy'), scope, subject,
+                          dict(capacity=5, invocations=20, wall_seconds=1000), now=now)
+    owner = A.Accounts(S, conn, principal='steward', **signed)
+    owner.register(f['next_id']('pm-account'), account, 'codex', 'PM authority check',
+                   {'fixture-host': str(f['base'] / 'pm-account-profile')}, now=now)
+    # Positive controls prove these same operations and inputs are usable by the service.
+    service.reserve_worker(f['next_id']('service-reservation'), 'service-authority-dispatch',
+                           account, project, unit, now=now)
+    window = dict(status='rejected', reset_at=now + 60, utilization=1,
+                  source_dispatch='service-authority-dispatch', now=now)
+    observer = A.Accounts(S, conn, principal='team-service', **signed)
+    observer.observe(f['next_id']('service-window'), account, 'service-window', **window)
+    before = observer.get(account)
+    pm = R.Reservations(S, conn, principal='pm', **common)
+    refused = False
+    try:
+        pm.reserve_worker(f['next_id']('pm-reservation'), 'pm-authority-dispatch',
+                          account, project, unit, now=now)
+    except (R.Refused, S.StoreRefused) as error:
+        refused = error.code == 'missing_authority'
+    check('followup/setup-pm-authority', 'enrolled PM cannot record a Runner reservation',
+          refused and pm.worker('pm-authority-dispatch') is None)
+    observer = A.Accounts(S, conn, principal='pm', **signed)
+    refused = False
+    try:
+        observer.observe(f['next_id']('pm-window'), account, 'pm-window', **window)
+    except (A.Refused, S.StoreRefused) as error:
+        refused = error.code == 'missing_authority'
+    check('followup/setup-pm-authority', 'enrolled PM cannot report an account limit window',
+          refused and observer.get(account) == before)
 
 
 def setup(root, base, mods, owner_key):

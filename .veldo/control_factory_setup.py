@@ -485,7 +485,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             # The owner enrolls the default PM with the factory's command signing
             # edge. The PM authors proposals; authority still owns the receipts.
             admin('enroll_principal', {'principal': PROJECT_MANAGER, 'principal_type': 'service',
-                                       'roles': ['reservation_service'], 'public_key': public['journal'],
+                                       'roles': [], 'public_key': public['journal'],
                                        'independence_group': PROJECT_MANAGER, 'scope': '*'},
                   enrollee=ACT.ssh_signer(os.path.join(keys, JOURNAL_KEY)))
             K.publish(S, conn, projection)
