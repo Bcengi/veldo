@@ -1229,6 +1229,15 @@
    ],
    "regions": "Required and specialist team roles, accepted capability references, signed owner amendments, role assignment bindings and owner staffing requests.",
    "requires_note": "Only ROOT and expect. Real signed stores, memberships, capability writer, team service, loopback owner presentation and settlement; no model."
+  },
+  {
+   "name": "92_veldo_0088_pm_cycles",
+   "file": "92_veldo_0088_pm_cycles.py",
+   "requires": [
+    "92_veldo_0088_pm_cycles"
+   ],
+   "regions": "Project coordination snapshots, Runner dispatch, proposal authority and bounded follow-up.",
+   "requires_note": "Only ROOT and expect. Uses its own proof fixture with real signed membership, project, team and capability services."
   }
  ]
 }

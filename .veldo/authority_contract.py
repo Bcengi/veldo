@@ -48,7 +48,7 @@ PRINCIPAL_TYPES = ("person", "service", "policy", "agent_run")
 # The scoped roles R37 names. Dmitry is the only enrolled named authority; every other name is
 # enrolled by him through the bootstrap command, never invented here.
 ROLES = ("membership_steward", "project_owner", "admission_authority", "priority_authority",
-         "technical_authority", "security_authority", "operations_authority")
+         "technical_authority", "security_authority", "operations_authority", "reservation_service")
 # The boundaries R39 rechecks authorization at, and which principal types may act at each.
 BOUNDARIES = {
     "command_acceptance": ("person", "service"),

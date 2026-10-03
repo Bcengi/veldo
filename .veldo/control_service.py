@@ -1582,6 +1582,15 @@ class Line:
         if not lost and self.runner.orphans:
             released += self.runner.release_orphans()
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
+        # Coordination uses this same event-driven pass and this line's Runner.
+        if any(data.get('execution_repository') == self.repository and data.get('state') == 'ACTIVE'
+               for data in self._rows('project')) and self._rows('team'):
+            if not hasattr(self, 'pm_cycles'):
+                self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+            report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once())
+            for launch in list(self.runner.launches.values()):
+                if launch.contract['station'] == 'coordination' and launch.pump(read=False):
+                    self.loop.saw_end(self, launch)
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)

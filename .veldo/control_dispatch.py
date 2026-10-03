@@ -94,7 +94,7 @@ RECORD_KIND = 'dispatch'
 INDEX_KIND = 'dispatch_active'
 # The stations that launch a worker (control_eligibility.CALL_STATIONS), and those whose contract
 # binds the builder's claim (VELDO-0021: build requires claim_current, review does not).
-STATIONS = ('build', 'review')
+STATIONS = ('build', 'review', 'coordination')
 CLAIMED_STATIONS = ('build',)
 
 STATES = ('prepared', 'accepted', 'running', 'exited', 'refused', 'unknown')

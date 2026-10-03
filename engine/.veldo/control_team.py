@@ -547,7 +547,15 @@ class Teams:
         unit = state['entities'].get(unit_id) if _is_str(unit_id) else None
         if unit is None or unit.get('kind') != 'execution_unit' or (unit.get('data') or {}).get('project') != project['name']:
             raise Refused('invalid_input:unit', 'the unit is not an execution unit of this project')
-        data = unit['data']
+        data = dict(unit['data'])
+        # VELDO-0088: published units carry their risk in the accepted specification.
+        bound = data.get('specification_document')
+        if 'risk' not in data and bound:
+            did = 'document/%s/%s@%s' % (self.ids['repository_uuid'], bound['alias'], bound['version'])
+            document = _row(self.conn, did)
+            if document and document['kind'] == 'document_version' and document['data']['digest'] == bound['digest']:
+                data['risk'] = (_organ('yamlish').front_matter(document['data']['content']) or {}).get('risk')
+                pinned.append(did)
         subject = {'unit': unit_id, 'revision': data.get('revision'), 'scope_digest': data.get('scope_digest')}
         role = command.get('role', 'implementation')
         if not _is_str(role) or role not in team['roles']:

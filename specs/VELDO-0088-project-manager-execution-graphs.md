@@ -38,6 +38,10 @@ footprint:
   - ".veldo/control_dispatch.py"
   - "engine/.veldo/control_eligibility.py"
   - ".veldo/control_eligibility.py"
+  - ".veldo/authority_contract.py"
+  - "engine/.veldo/authority_contract.py"
+  - ".veldo/control_team.py"
+  - "engine/.veldo/control_team.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0088_*.py"
   - "scripts/suites/manifest.json"
@@ -228,3 +232,16 @@ the factory pass to offer a coordination station before an engineering unit
 exists; AC3 consumes that same pass. The mutation registry is added for finding
 88. Initial cycle and proposal code is being built and is not qualified by this
 entry. The specification remains ready.
+
+2026-10-02, integration prerequisite: AC1 uses a genuinely enrolled service with
+the Runner reservation guard. That guard already requires `reservation_service`,
+but membership rejected that role. The footprint adds the authority contract and
+its engine copy to make the existing reservation grant enrollable; no reservation
+check is weakened.
+
+2026-10-02, single-unit integration: the footprint adds the team service and its
+engine copy, a necessary change to the VELDO-0151 base. Assignment now reads the
+risk from a production-published unit's accepted specification when the unit has
+no inline risk. The earlier 0151 fixture documented its manual risk decoration;
+the PM path must use the real publication instead. Review-policy checks remain
+unchanged.

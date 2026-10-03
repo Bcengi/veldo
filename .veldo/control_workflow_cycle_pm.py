@@ -80,6 +80,70 @@ def document(value):
     return copy.deepcopy(value)
 
 
+def result_references(value, applied):
+    """Only earlier owner results can supply a subsequently allocated identity."""
+    if isinstance(value, dict) and set(value) == {'result', 'path'}:
+        held = next((r['result'] for r in applied if r['name'] == value['result']), None)
+        if held is None or not isinstance(value['path'], list):
+            raise Refused('invalid_input:proposal_reference')
+        for key in value['path']:
+            if not isinstance(held, dict) or key not in held:
+                raise Refused('invalid_input:proposal_reference')
+            held = held[key]
+        return copy.deepcopy(held)
+    if isinstance(value, dict):
+        return {key: result_references(item, applied) for key, item in value.items()}
+    if isinstance(value, list):
+        return [result_references(item, applied) for item in value]
+    return value
+
+
+def coordination_decision(gate, unit, context, ticket):
+    """Project-bound eligibility at Runner preparation and receiver acceptance."""
+    decision = dict(schema=gate.SCHEMA if hasattr(gate, 'SCHEMA') else 'veldo.control_eligibility/v1',
+        decision_id=str(uuid.uuid4()), station='coordination', unit=unit, domain_uuid=gate.domain_uuid,
+        repository_uuid=gate.repository_uuid, follows=(ticket or {}).get('decision_id'), inputs={}, watermark=0, pending=[], refusals=[])
+    with gate._reading():
+        cycle = row(gate.conn, unit)
+        if not cycle or cycle['kind'] != KIND:
+            decision['refusals'].append('missing_authority:pm_cycle')
+        else:
+            data = cycle['data']
+            project = gate._entity('project:' + data['project'])
+            owner = gate._project_owner(project)
+            decision['refusals'] += gate._project_problems(data['project'], project,
+                gate._entity(owner) if owner else None)
+            team = row(gate.conn, 'team:' + data['project'])
+            snap = row(gate.conn, data['snapshot']['id'])
+            if (data['domain'], data['repository']) != (gate.domain_uuid, gate.repository_uuid):
+                decision['refusals'].append('missing_authority:pm_coordinates')
+            if data['state'] not in ('running', 'waiting_run'):
+                decision['refusals'].append('stale_subject:cycle_final')
+            if not team or ref(team) != data['team']:
+                decision['refusals'].append('stale_subject:team')
+            if not snap or ref(snap) != data['snapshot']:
+                decision['refusals'].append('missing_evidence:snapshot')
+            manager = row(gate.conn, data['manager'])
+            entry = dict(manager['data'], principal=data['manager']) if manager else None
+            if (not entry or not organ('control_membership').AC.active_member(entry, time.time())[0]
+                    or not organ('control_membership').scope_covers(entry.get('scope'), [data['project']])
+                    or (context or {}).get('holder') != data['manager']):
+                decision['refusals'].append('missing_authority:manager')
+            for name, held in (('team', team), ('snapshot', snap), ('manager', manager)):
+                if held:
+                    decision['inputs'][name] = ref(held)
+            # The mutable receipt records observations, not new authorization.
+            decision['inputs']['cycle'] = {'id': unit, 'digest': SN.digest(SN.canonical({
+                k: data[k] for k in ('project', 'snapshot', 'team', 'configuration', 'manager', 'accepted_commit')}))}
+            decision['inputs']['project'] = gate._identity('project', project)
+            decision['watermark'] = gate.conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
+    if ticket and ticket.get('inputs') != decision['inputs']:
+        decision['refusals'].append('stale_input:coordination')
+    decision['eligible'] = not decision['refusals']
+    gate._record(decision)
+    return decision
+
+
 def transition(conn, params, before):
     identity, record = params['id'], params['record']
     old = row(conn, identity)
@@ -103,12 +167,13 @@ class ProjectCycles:
     No scheduling thread, retry timer or persistent graph checkpoint is created.
     """
     def __init__(self, store, conn, *, domain, repository, workspace, principal, sign, command_sign,
-                 runner, adapters, services, generation=1, runtime=None, stage=None, observe=None):
+                 runner, adapters, services, generation=1, runtime=None, stage=None, observe=None, execution_records=None):
         self.store, self.conn = store, conn
         self.domain, self.repository, self.workspace = domain, repository, str(workspace)
         self.principal, self.sign, self.command_sign = principal, sign, command_sign
         self.runner, self.adapters, self.services = runner, adapters, services
         self.generation, self.runtime, self.stage = generation, runtime, stage
+        self.execution_records = execution_records
         self.observe = observe or (lambda event: None)
         self.pending, self.seen = {}, {}
         self.counts = {'accepted': 0, 'refused': 0}
@@ -121,9 +186,9 @@ class ProjectCycles:
         store.COMMAND_REGISTRY.setdefault('pm_snapshot_inputs', {'transition': lambda p, b: {}, 'writes': ()})
         self.readsets.enable('pm_snapshot_inputs', {'revision': '$revision',
             'entities': {'project': '$project', 'team': '$team'}, 'collections': {
-                'objectives': {'kind': 'objective', 'where': {'project': '$name'}},
+                'objectives': {'kind': 'objective', 'where': {'project': '$name'}, 'references': ['proposal_id']},
                 'decisions': {'kind': 'assignment', 'where': {}},
-                'dispatches': {'kind': 'dispatch_record', 'where': {}}}})
+                'dispatches': {'kind': 'dispatch', 'where': {}}}})
 
     def records(self, project=None):
         records = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,))]
@@ -150,7 +215,7 @@ class ProjectCycles:
             relevant = (identity in ('project:' + project, 'team:' + project)
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
-                        or kind == 'dispatch_record' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
+                        or kind == 'dispatch' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
                         and (data.get('contract') or {}).get('station') != 'coordination'
                         and data.get('state') in ('exited', 'unknown'))
             if relevant:
@@ -203,7 +268,7 @@ class ProjectCycles:
         role = team['team']['roles']['project_manager']
         configuration = role['capability_configuration']
         accepted = CFG.read(self.conn, self.domain, self.repository, configuration['role'], configuration['revision'])
-        engine = accepted['definition']['engine']
+        engine = accepted['engine']
         adapter = next((name for name, value in sorted(self.adapters.items()) if value == engine), None)
         if adapter is None:
             raise Refused('unavailable_service:pm_adapter')
@@ -226,6 +291,8 @@ class ProjectCycles:
                        'instruction': 'Return one typed proposal document. For one unit write its requirements '
                                       'in this run, preserving the owner message and every reference verbatim. '
                                       'The builder fetches references using its configured catalog servers.'}
+            self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
+                'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
             launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
                 source=self.workspace, revision=record['accepted_commit'], payload=payload, adapter=adapter,
                 configuration={'role': configuration['role'], 'revision': configuration['revision']},
@@ -242,7 +309,12 @@ class ProjectCycles:
         team = CT.read(self.store, self.conn, record['project'])
         if ref(row(self.conn, 'team:' + record['project'])) != record['team']:
             raise Refused('stale_subject:team')
+        snapshot = SN.load(self.store, self.conn, record['snapshot']['id'], self.domain, self.repository)
+        sources = [v['value']['data'].get('text') for k, v in snapshot['inputs'].items()
+                   if k.startswith('reference/objectives/') and v.get('value')]
         for unit in value['decomposition']:
+            if unit['owner_message'] not in sources:
+                raise Refused('stale_subject:owner_message')
             for name in unit['staffing'].values():
                 if name not in team['team']['roles']:
                     raise Refused('missing_authority:staffing_role')
@@ -252,7 +324,17 @@ class ProjectCycles:
             service = self.services.get(service_name)
             if service is None:
                 raise Refused('unavailable_service:proposal_owner:' + service_name)
-            command = copy.deepcopy(proposal['command'])
+            command = result_references(proposal['command'], applied)
+            if proposal['type'] == 'assignment':
+                held = row(self.conn, command.get('unit'))
+                if not held or held['kind'] != 'execution_unit':
+                    raise Refused('missing_evidence:assignment_unit')
+                subject = dict(unit=held['id'], revision=held['data']['revision'],
+                               scope_digest=held['data']['scope_digest'])
+                command['subject'] = subject
+                command['reviewers'] = [dict(reviewer=who, subject=subject) for who in command['reviewers']]
+            if command.get('project', record['project']) != record['project']:
+                raise Refused('invalid_input:proposal_project')
             command.update(principal=self.principal, command_id='pm-proposal/' + record['cycle'] + '/' + proposal['name'],
                            nonce='pm-proposal/' + record['cycle'] + '/' + proposal['name'])
             result = getattr(service, method)({'command': command,
@@ -262,18 +344,71 @@ class ProjectCycles:
             self.save(record)
             if not result.get('ok'):
                 raise Refused('proposal_refused:' + proposal['name'], str(result.get('reason')))
+            if proposal['type'] == 'grooming':
+                outcome = service.groom(command['item'])
+                applied.append(dict(name=proposal['name'] + '/groom', type='grooming', result=outcome))
+                self.save(record)
+                if not outcome.get('ok'):
+                    raise Refused('proposal_refused:' + proposal['name'] + '/groom', str(outcome.get('reason')))
+        for unit in value['decomposition']:
+            self.staged(record, unit, team)
         record['document'] = value
         record['elaboration'] = {'state': 'done', 'dispatch': record['dispatch']} if value['decomposition'] else None
         record['state'] = 'waiting_owner' if value['owner_questions'] else ('proposed' if applied else 'no_action')
         return record
 
-    def finish(self, record, value=None):
+    def staged(self, record, unit, team):
+        held = row(self.conn, unit['unit'])
+        assignments = CT.assignments(self.conn, unit['unit'])
+        if not held or held['data'].get('state') != 'READY' or not assignments:
+            raise Refused('missing_evidence:staged_unit')
+        bound = held['data'].get('specification_document')
+        accepted = row(self.conn, 'document/%s/%s@%s' % (self.repository, bound['alias'], bound['version'])) if bound else None
+        body = accepted['data']['content'] if accepted else ''
+        if any(text not in body for text in [unit['requirements'], unit['owner_message'], *unit['references']]):
+            raise Refused('missing_evidence:requirements')
+        assignment = assignments[-1]
+        if assignment['team']['revision'] != team['revision'] or assignment['builder'] in assignment['reviewers']:
+            raise Refused('missing_evidence:staffing')
+        record['unit_roles'] = {name: {'role': selected,
+            'configuration': team['team']['roles'][selected]['capability_configuration']}
+            for name, selected in unit['staffing'].items()}
+        record['unit_assignment'] = assignment
+
+    def returned_document(self, dispatched):
+        if not self.execution_records or not dispatched.get('execution_record'):
+            raise Refused('missing_evidence:proposal_document')
+        reader = organ('control_execution_record')
+        values, after = [], 0
+        while True:
+            page = reader.read(self.execution_records, dispatched['dispatch_id'], after, 4096,
+                               committed=dispatched['execution_record'])
+            for line in page['lines']:
+                if line['stream'] != 'engine' or line.get('redacted'):
+                    continue
+                try:
+                    value = json.loads(line['payload'])
+                    if value.get('type') == 'result' and isinstance(value.get('result'), str):
+                        value = json.loads(value['result'])
+                    elif value.get('type') == 'item.completed' and value.get('item', {}).get('type') == 'agent_message':
+                        value = json.loads(value['item']['text'])
+                    if value.get('schema') == DOCUMENT:
+                        values.append(value)
+                except (ValueError, TypeError, AttributeError):
+                    continue
+            after += len(page['lines'])
+            if after >= page['total'] or not page['lines']:
+                break
+        if len(values) != 1:
+            raise Refused('missing_evidence:one_proposal_document')
+        return values[0]
+
+    def finish(self, record):
         dispatched = self.runner.dispatches.record(record['dispatch'])
         try:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
-            if value is None:
-                raise Refused('missing_evidence:proposal_document')
+            value = self.returned_document(dispatched)
             self.apply(record, value)
             # Only a digest goes into the graph process. It cannot invoke owners.
             supplied = [{'id': 'result', 'version': 1, 'digest': SN.digest(SN.canonical(value)),
@@ -287,7 +422,7 @@ class ProjectCycles:
         self.counts['refused' if record['state'] == 'refused' else 'accepted'] += 1
         return self.save(record)
 
-    def pass_once(self, results=None):
+    def pass_once(self):
         """Called by the factory pass. One active cycle and one coalesced follow-up."""
         emitted = []
         projects = [json.loads(r[0]) for r in self.conn.execute("SELECT data FROM entities WHERE kind='project'")]
@@ -302,7 +437,7 @@ class ProjectCycles:
                     self.pending[name] = current
                 dispatched = self.runner.dispatches.record(active.get('dispatch')) if active.get('dispatch') else None
                 if dispatched and dispatched['state'] not in ('prepared', 'running', 'accepted'):
-                    emitted.append(self.finish(active, (results or {}).get(active['dispatch'])))
+                    emitted.append(self.finish(active))
                     self.seen[name] = active['input_key']
                     if name in self.pending:
                         emitted.append(self.start(name, self.pending.pop(name)))
@@ -315,3 +450,37 @@ class ProjectCycles:
                     self.observe(dict(operation='pm_start', project=name,
                                       refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
         return emitted
+
+
+def from_line(line):
+    """The authority service's factory line supplies its Runner and owning services."""
+    service = line.service
+    modules = line.run.__func__.__globals__
+    store, membership, assignment = modules['S'], modules['CM'], modules['I']
+    ids = dict(domain_uuid=service.domain, repository_uuid=line.repository, store_uuid=service.store)
+    signature = lambda body: modules['SIG'].sign_bytes(service.config['journal_key'], body,
+                                                       modules['AC'].SIGNATURE_NAMESPACE)
+    inbox = service.inbox(line.repository)
+    backlog_module = organ('control_backlog')
+    backlog = backlog_module.Backlog(store, membership, service.conn, ids, service.principal, service.sign,
+                                    workspace=line.workspace, authority_generation=service.generation)
+    teams = CT.Teams(store, membership, service.conn, ids, service.principal, service.sign,
+                     inbox=inbox, assignment=assignment, requester=service.principal, request_sign=signature,
+                     authority_generation=service.generation)
+    services = {'inbox': inbox, 'backlog': backlog, 'teams': teams}
+    allocations = organ('control_alias').attach(store, service.conn, service.domain, {line.repository: line.workspace})
+    publisher = organ('control_document').Publisher(allocations, line.workspace, service.verify,
+                                                    service.config['host_identity'])
+    services['decomposition'] = organ('control_decomposition').Decomposition(backlog, allocations, publisher)
+    channel = getattr(service, 'channel', None)
+    if channel is not None:
+        ingress = channel.ingress
+        services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,
+            service.principal, service.sign, backlog=backlog_module, service=backlog, assignment=assignment,
+            inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,
+            requester=(service.principal, signature), workspace=line.workspace,
+            authority_generation=service.generation)
+    return ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
+        workspace=line.workspace, principal=service.principal, sign=service.sign, command_sign=signature,
+        runner=line.runner, adapters=line.engines, services=services, generation=service.generation,
+        execution_records=line.records, observe=service._log)

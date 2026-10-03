@@ -757,7 +757,7 @@ class Gate:
                 item = self._entity(unit)
             except (SN.Refused, self.store.StoreRefused):
                 return None
-        if not item or item['value']['kind'] != 'execution_unit':
+        if not item or item['value']['kind'] not in ('execution_unit', 'pm_cycle'):
             return None
         return self._data(item)
 
@@ -1081,6 +1081,8 @@ class Gate:
     def decide(self, station, unit, *, context=None, ticket=None):
         """{eligible, refusals, inputs, pending, ...}: the named decision of one station for one unit.
         A ticket (an earlier station's decision) makes every changed consumed input a refusal."""
+        if station == 'coordination':
+            return _organ('control_workflow_cycle_pm').coordination_decision(self, unit, context, ticket)
         decision = {'schema': SCHEMA, 'decision_id': str(uuid.uuid4()), 'station': station, 'unit': unit,
                     'domain_uuid': self.domain_uuid, 'repository_uuid': self.repository_uuid,
                     'follows': (ticket or {}).get('decision_id'), 'inputs': {}, 'watermark': None,
