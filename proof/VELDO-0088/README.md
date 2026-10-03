@@ -112,3 +112,18 @@ have unique anchors; execution and rejection results remain reviewer-owned.
 `red-at-1773b279.json` selects these five new regression rows against the unchanged
 reviewed head. The full red record remains against the original implementation
 base. `review-checks.json` records the current scoped checks and their limitations.
+
+The current review checks supersede the earlier compatibility observations above
+for the suites rerun here. All twelve direct service-consumer suites pass both
+normally and in the requested fresh gate environment, run sequentially. The
+collector's complete names, summaries and durations are in `review-checks.json`.
+The 0088 suite has twenty-one behavior rows and twenty-six shared preamble rows.
+Each scoped run exits with the intentional partial-run status, not a gate stamp.
+
+Validation passes, the Git boundary passes, and the anchor check reports zero
+bad anchors. `review-static-checks.json` records those results and the footprint
+limitation: the supplied single-spec command compares against origin/main and
+flags inherited 0151 files. The combined 0088 and 0151 footprint is clean, as is
+the 0088-only review diff from 1773b279. No unrelated inherited file was changed
+to satisfy that checker. No mutation execution, full selftest, gate, model,
+remote service, push or independent approval was performed in this follow-up.
