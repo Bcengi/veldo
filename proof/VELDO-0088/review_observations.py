@@ -112,3 +112,9 @@ def budget(v):
           not finished['faults'] and len(cycles.records('proj-a')) == limit
           and any(e.get('operation') == 'pm_start' and e.get('project') == 'proj-a'
                   and e.get('refusal') == 'budget_exceeded:coordination' for e in events))
+    # A budget-bypass defect may admit the follow-up. Reap this finite snapshot
+    # without another scheduler pass, so the failed assertion survives teardown.
+    for record in cycles.records('proj-a'):
+        if record['state'] not in v['PM'].FINAL and record.get('dispatch') in v['runner'].launches:
+            v['runner'].wait(v['runner'].launches[record['dispatch']], timeout=15)
+            cycles.finish(record)

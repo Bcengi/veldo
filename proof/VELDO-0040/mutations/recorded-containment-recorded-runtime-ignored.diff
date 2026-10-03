@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1947 +1947 @@
+-            elif manager_result == 'timeout' or runtime_reached:
++            elif manager_result == 'timeout':

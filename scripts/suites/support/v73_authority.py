@@ -38,7 +38,9 @@ def _message(st, bot, sender, chat, text, reply_to=None):
     with st['lock']:
         bot['next'] += 1
         st['tick'] += 1
-        message = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': 1791000000 + st['tick'],
+        # Enrollment uses the run's clock. A calendar constant eventually makes fresh messages
+        # predate membership; the positive tick also avoids rounding before a fractional enrollment.
+        message = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(time.time()) + st['tick'],
                    'text': text}
         if reply_to is not None:
             held = bot['messages'][(chat['id'], reply_to)]

@@ -27,6 +27,7 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0168_*.py"
+  - "scripts/suites/support/v73_authority.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/62_veldo_0065_presentations.py"
   - "scripts/suites/68_veldo_0126_intake.py"
@@ -185,3 +186,11 @@ whole at hard cuts; typed cut markers escape their opener; CRLF normalization is
 Composition rechecks and strict integer renderer versions have dedicated rows and finding 168 mutants.
 
 2026-09-28: follow-up: split inbox items, reports and intake prompts that exceed 4096 after escaping.
+
+2026-10-03: repair the shared Bot API fixture's fixed message epoch, which crossed the run's
+enrollment clock at 04:00 UTC and caused intake to refuse newly generated messages as predating
+membership. Message dates now follow the run clock; fractional-second and far-future clock probes
+guard the fixture, and intake failures print the actual results, questions and deliveries. No
+production membership rule changes. The footprint includes the shared fixture. Isolated row, suite,
+send-escape mutant and clock mutant results, plus the suite-wide timestamp audit, are recorded in
+`proof/VELDO-0168/intake-clock-recheck.md`; these are partial checks, not a gate stamp.

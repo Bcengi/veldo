@@ -82,6 +82,7 @@ def _organ(name):
     return module
 
 
+TA = _organ('control_workflow_cycle_assignment')
 AC = _organ('authority_contract')
 PJ = _organ('control_project')
 RT = _organ('control_reservation_runtime')
@@ -302,9 +303,7 @@ def read(store, conn, name):
 
 def assignments(conn, unit=None):
     """Every team assignment (of `unit` when named), on any connection."""
-    rows = conn.execute('SELECT id, version, data FROM entities WHERE kind=? ORDER BY id', (ASSIGNMENT_KIND,))
-    found = [dict(json.loads(data), id=eid, version=version) for eid, version, data in rows]
-    return [a for a in found if unit is None or a.get('unit') == unit]
+    return TA.assignments(conn, unit)
 
 
 def _row(conn, identity):

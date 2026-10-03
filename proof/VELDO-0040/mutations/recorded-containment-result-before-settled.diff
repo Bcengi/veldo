@@ -1,0 +1,6 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -530,2 +530 @@
+-                if (shown.get('LoadState') == 'loaded'
+-                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):
++                if shown.get('Result'):

@@ -69,6 +69,10 @@ GATE_PATH = "scripts/verify.sh"
 POLICY_PATH = ".veldo/policy_check.py"
 # The installation's policy source: the policy.yaml installation_at lays beside the installed module.
 POLICY_SOURCE = "policy.yaml"
+# VELDO-0148: the loader helper that loads a file from outside every installed directory by design (the
+# trusted installation's policy_check.py, in a separate process of this module's own), declared so the
+# authority service's installation, whose land station loads this module, reads it as no module of its own.
+EXTERNAL_LOADERS = ("_policy_main",)
 INSTALLED_PATHS = (GATE_PATH, ".veldo")
 # The line an installed verifier carries when it knows candidate mode. A verifier without it would
 # ignore the arguments and verify the directory it lives in, so it is refused, never run.

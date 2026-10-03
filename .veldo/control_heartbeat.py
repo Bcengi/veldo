@@ -8,7 +8,8 @@ THE HEARTBEAT (`start`, in the trusted wrapper). A contained worker's wrapper (c
 keeps the pid the receiver recorded. Just before that exec the wrapper starts its heartbeat: a process
 of its own, forked twice so it is no child the engine could wait for, in a session and process group
 of its own (taken between the two forks, before the engine exists), so an engine that signals its own
-process group leaves it beating. It writes one line
+process group leaves it beating. The first child enters the heartbeat cgroup before the second fork,
+and the wrapper waits for that child to report successful setup before exec. It writes one line
 (veldo.heartbeat/v1: a sequence number, its monotonic time and its pid) on the heartbeat channel at
 once and then every `heartbeat_seconds` of the worker profile, on a fixed monotonic schedule. It reads
 nothing the engine writes and waits on nothing the engine does, so a model call that blocks for an
@@ -61,6 +62,7 @@ OPERATION = 'dispatch_heartbeat'
 GROUP = 'veldo-wrapper'
 CGROUP = Path('/sys/fs/cgroup')
 SETTLE_SECONDS = 1.0
+SETUP_SECONDS = 5.0
 LINE_BYTES = 512
 KEEP = 64
 
@@ -89,23 +91,45 @@ def start(fd, seconds):
     try:
         first = os.fork()
         if first == 0:
+            status = 1
             try:
                 # Its own session and process group, taken before the second fork and so before the
                 # engine exists: a signal the engine sends to its own group never reaches the heartbeat.
                 os.setsid()
+                # Move before the second fork: the heartbeat inherits its own cgroup,
+                # even if it is not scheduled again until after the engine exits.
+                own = next(line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines()
+                           if line.startswith('0::'))
+                (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))
                 if os.fork() == 0:
                     _beat(fd, seconds, engine)
+                status = 0
             finally:
-                os._exit(0)
-        os.waitpid(first, 0)
+                os._exit(status)
+        child = os.pidfd_open(first)
+        try:
+            poller = select.poll()
+            poller.register(child, select.POLLIN)
+            if not poller.poll(int(SETUP_SECONDS * 1000)):
+                # The child may still be outside the heartbeat group. Address this
+                # exact child, then bound even its reap; never exec after a timeout.
+                signal.pidfd_send_signal(child, signal.SIGKILL)
+                poller.poll(int(SETTLE_SECONDS * 1000))
+                os.waitpid(first, os.WNOHANG)
+                raise TimeoutError('heartbeat placement timed out')
+            _, status = os.waitpid(first, os.WNOHANG)
+        finally:
+            os.close(child)
+        if status != 0:
+            raise OSError('heartbeat group setup failed')
     finally:
         os.close(engine)
         os.close(fd)
 
 
 def _beat(fd, seconds, engine):
-    """The heartbeat process. It keeps only its channel and the engine's pidfd, moves itself into the
-    heartbeat group and beats until the engine ends or the channel is closed. Never returns."""
+    """The heartbeat process, already in its group. It keeps only its channel and the engine's
+    pidfd and beats until the engine ends or the channel is closed. Never returns."""
     try:
         signal.signal(signal.SIGPIPE, signal.SIG_IGN)
         null = os.open(os.devnull, os.O_RDWR)
@@ -116,8 +140,6 @@ def _beat(fd, seconds, engine):
             if int(name) not in keep:
                 with contextlib.suppress(OSError):
                     os.close(int(name))
-        own = next(line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines() if line.startswith('0::'))
-        (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))
         poller = select.poll()
         poller.register(engine, select.POLLIN)
         started, seq = time.monotonic(), 0

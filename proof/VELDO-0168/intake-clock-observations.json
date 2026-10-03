@@ -1,0 +1,285 @@
+[
+  {
+    "case": "baseline",
+    "summary": [
+      "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
+      "  86_veldo_0168_text                              25 passed    3.06s",
+      "selftest (PARTIAL, 1 of 142 suites): 51 passed, 1 failed in 3.06s"
+    ],
+    "observations": {
+      "delivered_messages": [],
+      "message_date": 1791000018,
+      "questions": [],
+      "taken": [
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:09e8e8cb2908ec9d6ceec3f765614458"
+        },
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:3300d4b08da4c544da3377c7e138c313"
+        },
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:f534a648bef68a09e55b727ebf4f8827"
+        }
+      ],
+      "owner_key_effective_at": [
+        1791009210.3877325
+      ]
+    }
+  },
+  {
+    "case": "row",
+    "summary": [
+      "  86_veldo_0168_text                               1 passed    0.90s",
+      "selftest (PARTIAL, 1 of 142 suites): 27 passed, 0 failed in 0.90s",
+      "RECHECK case=row dispatcher_exit=2"
+    ],
+    "observations": {
+      "delivered_messages": [
+        {
+          "date": 1791009388,
+          "message_id": 9002,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+003C>U+200B>."
+        }
+      ],
+      "message_date": 1791009387,
+      "owner_key_effective_at": [
+        1791009386.0101364
+      ],
+      "questions": [
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009388,
+            "message_id": 9002
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:3e71bcff9831f656624142126147afbb"
+        }
+      ],
+      "taken": [
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:4f3ea50caa3cf3f73a5f423a1c27c132",
+          "question_id": "intake_question:3e71bcff9831f656624142126147afbb",
+          "source": "intake_source:92df1ff9bcf48a437ad49414f12695bb"
+        }
+      ]
+    }
+  },
+  {
+    "case": "send-mutant",
+    "summary": [
+      "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
+      "  86_veldo_0168_text                              25 passed    3.08s",
+      "selftest (PARTIAL, 1 of 142 suites): 51 passed, 1 failed in 3.08s",
+      "RECHECK case=send-mutant dispatcher_exit=1"
+    ],
+    "observations": {
+      "delivered_messages": [
+        {
+          "date": 1791009416,
+          "message_id": 9019,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+003C>U+200B>.\n\nI took your message as new work, not as an answer to a request.\nTo answer a waiting request, press Reply on the request message itself and write <choice>: <your reason>.\nWaiting for your answer:\nRequest: assignment:activation-repository:text-13 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-51 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-56 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-61 (version 1), choices accept | reject"
+        },
+        {
+          "date": 1791009417,
+          "message_id": 9020,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>."
+        },
+        {
+          "date": 1791009418,
+          "message_id": 9021,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>."
+        }
+      ],
+      "message_date": 1791009415,
+      "owner_key_effective_at": [
+        1791009396.8632448
+      ],
+      "questions": [
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009416,
+            "message_id": 9019
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:5dc4894ca8f142b1d944062b83d6639a"
+        },
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009417,
+            "message_id": 9020
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:dfbab741cde61e5a6d2f87fc258d1ddc"
+        },
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009418,
+            "message_id": 9021
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:850bfab41940abb7cf7aaebad86b162f"
+        }
+      ],
+      "taken": [
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:d1890bf3d4892ff47d4a7d6556ef3065",
+          "question_id": "intake_question:5dc4894ca8f142b1d944062b83d6639a",
+          "source": "intake_source:09e8e8cb2908ec9d6ceec3f765614458"
+        },
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:b27b600d987efd9dccd07a9cfff997d1",
+          "question_id": "intake_question:dfbab741cde61e5a6d2f87fc258d1ddc",
+          "source": "intake_source:3300d4b08da4c544da3377c7e138c313"
+        },
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:a74c5ad2ed8b5522c0c7afcca299ca58",
+          "question_id": "intake_question:850bfab41940abb7cf7aaebad86b162f",
+          "source": "intake_source:f534a648bef68a09e55b727ebf4f8827"
+        }
+      ]
+    }
+  },
+  {
+    "case": "clock-mutant",
+    "summary": [
+      "VELDO-0168 detail: intake/delivery: fixture messages follow the run clock and fractional enrollment time",
+      "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
+      "  86_veldo_0168_text                              25 passed    2.99s",
+      "selftest (PARTIAL, 1 of 142 suites): 51 passed, 1 failed in 2.99s",
+      "RECHECK case=clock-mutant dispatcher_exit=1"
+    ],
+    "observations": {
+      "delivered_messages": [],
+      "message_date": 1791000018,
+      "owner_key_effective_at": [
+        1791009407.156281
+      ],
+      "questions": [],
+      "taken": [
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:09e8e8cb2908ec9d6ceec3f765614458"
+        },
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:3300d4b08da4c544da3377c7e138c313"
+        },
+        {
+          "outcome": "refused",
+          "reason": "unauthorized:not_member_when_sent",
+          "source": "intake_source:f534a648bef68a09e55b727ebf4f8827"
+        }
+      ]
+    }
+  },
+  {
+    "case": "suite",
+    "summary": [
+      "  86_veldo_0168_text                              26 passed    3.08s",
+      "selftest (PARTIAL, 1 of 142 suites): 52 passed, 0 failed in 3.08s",
+      "RECHECK case=suite dispatcher_exit=2"
+    ],
+    "observations": {
+      "delivered_messages": [
+        {
+          "date": 1791009437,
+          "message_id": 9019,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+003C>U+200B>.\n\nI took your message as new work, not as an answer to a request.\nTo answer a waiting request, press Reply on the request message itself and write <choice>: <your reason>.\nWaiting for your answer:\nRequest: assignment:activation-repository:text-13 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-51 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-56 (version 1), choices accept | reject\nRequest: assignment:activation-repository:text-61 (version 1), choices accept | reject"
+        },
+        {
+          "date": 1791009438,
+          "message_id": 9020,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+003C>U+200B>."
+        },
+        {
+          "date": 1791009439,
+          "message_id": 9021,
+          "text": "Which project is this for? Reply to this message with one of: project-a, literal<U+003C>U+200B>."
+        }
+      ],
+      "message_date": 1791009436,
+      "owner_key_effective_at": [
+        1791009417.4030647
+      ],
+      "questions": [
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009437,
+            "message_id": 9019
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:5dc4894ca8f142b1d944062b83d6639a"
+        },
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009438,
+            "message_id": 9020
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:dfbab741cde61e5a6d2f87fc258d1ddc"
+        },
+        {
+          "delivery": {
+            "bot_id": 80168,
+            "channel": "telegram_chat",
+            "chat_id": 55168,
+            "date": 1791009439,
+            "message_id": 9021
+          },
+          "prompt": "Which project is this for? Reply to this message with one of: project-a, literal<U+200B>.",
+          "question_id": "intake_question:850bfab41940abb7cf7aaebad86b162f"
+        }
+      ],
+      "taken": [
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:d1890bf3d4892ff47d4a7d6556ef3065",
+          "question_id": "intake_question:5dc4894ca8f142b1d944062b83d6639a",
+          "source": "intake_source:09e8e8cb2908ec9d6ceec3f765614458"
+        },
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:b27b600d987efd9dccd07a9cfff997d1",
+          "question_id": "intake_question:dfbab741cde61e5a6d2f87fc258d1ddc",
+          "source": "intake_source:3300d4b08da4c544da3377c7e138c313"
+        },
+        {
+          "outcome": "inbox",
+          "proposal_id": "intake_proposal:a74c5ad2ed8b5522c0c7afcca299ca58",
+          "question_id": "intake_question:850bfab41940abb7cf7aaebad86b162f",
+          "source": "intake_source:f534a648bef68a09e55b727ebf4f8827"
+        }
+      ]
+    }
+  }
+]

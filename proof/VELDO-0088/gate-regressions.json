@@ -1,0 +1,381 @@
+{
+  "scope": "diagnostic scoped suites only; no aggregate gate, passed unit-evidence or landing claim",
+  "baseline": "07008bc1",
+  "main": "352df040f078c77724de36e254872b3482ddcb7e",
+  "implementation_commit": "e3325634f8147ae1a330f1ca05dfd75b337b748c",
+  "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/f88home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite NAME",
+  "methodology": [
+    "Wall seconds use time.monotonic around one foreground subprocess; no timeout or budget change.",
+    "Main and before-diagnostic runs use git archive exports, not another branch or git worktree. No other worktree was modified.",
+    "The architecture baseline and serial decisions baseline add only temporary failure-output diagnostics to existing check helpers, removed from the working tree. All assertions and production bytes are unchanged.",
+    "An initial main-62 command was accidentally started during the first branch-62 command. Both timings are excluded from the comparison. Main and branch 62 were rerun serially; all remaining suites ran one at a time.",
+    "Exit 2 with zero failures is the selector-enforced PARTIAL result, not a gate success. Exit 1 records failed assertions.",
+    "Four affected suites are compared with main. Suite 92 does not exist on main. Suite 50 and suite 92 are additional scoped checks, not a full-suite timing estimate."
+  ],
+  "runs": [
+    {
+      "label": "main",
+      "suite": "62_veldo_0054_decisions",
+      "seconds": 5.356,
+      "exit_code": 2,
+      "log_sha256": "31f8762f118d1b8e33c59a22fb92a590665fc8004826f5b4f83662a9837d321f",
+      "summary": [
+        "  62_veldo_0054_decisions                         39 passed    5.24s",
+        "selftest (PARTIAL, 1 of 143 suites): 65 passed, 0 failed in 5.24s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": false
+    },
+    {
+      "label": "before",
+      "suite": "62_veldo_0054_decisions",
+      "seconds": 148.085,
+      "exit_code": 1,
+      "log_sha256": "f8d66c3638932bc7cf2a4cb86a155d773f9e24a7447ddeeb871e7a13c60bab05",
+      "summary": [
+        "  62_veldo_0054_decisions                         37 passed  147.99s",
+        "selftest (PARTIAL, 1 of 144 suites): 63 passed, 2 failed in 147.99s"
+      ],
+      "failing_rows": [
+        "SELFTEST FAIL: VELDO-0054 decisions/minor-shapes",
+        "SELFTEST FAIL: VELDO-0054 decisions/deep-blocks-named"
+      ],
+      "details": [],
+      "timing_comparison": false
+    },
+    {
+      "label": "main-serial",
+      "suite": "62_veldo_0054_decisions",
+      "seconds": 5.205,
+      "exit_code": 2,
+      "log_sha256": "9deed43c91a4825a82d68a7d392d6dba473a1d15bef5b5b047adf3678fac1700",
+      "summary": [
+        "  62_veldo_0054_decisions                         39 passed    5.09s",
+        "selftest (PARTIAL, 1 of 143 suites): 65 passed, 0 failed in 5.09s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "before",
+      "suite": "60_veldo_0053_architecture",
+      "seconds": 36.272,
+      "exit_code": 1,
+      "log_sha256": "4468cc142d0a73c6dcf46285b9466173dcc28bd79e229329711abef48533dee8",
+      "summary": [
+        "  60_veldo_0053_architecture                      37 passed   36.15s",
+        "selftest (PARTIAL, 1 of 144 suites): 63 passed, 2 failed in 36.15s"
+      ],
+      "failing_rows": [
+        "SELFTEST FAIL: VELDO-0053 architecture/snapshot-in-memory",
+        "SELFTEST FAIL: VELDO-0053 architecture/identity-keyed-by-module"
+      ],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "before-diagnostic",
+      "suite": "68_veldo_0134_acceptance",
+      "seconds": 1.887,
+      "exit_code": 1,
+      "log_sha256": "24e403b58f30684e121b55dfa5fbb966f0ed0208236c0538bb2b356dca9baef4",
+      "summary": [
+        "  68_veldo_0134_acceptance                        26 passed    1.77s",
+        "selftest (PARTIAL, 1 of 144 suites): 52 passed, 1 failed in 1.77s"
+      ],
+      "failing_rows": [
+        "SELFTEST FAIL: VELDO-0134 acceptance/signers"
+      ],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "before-diagnostic",
+      "suite": "84_veldo_0169_project_handouts",
+      "seconds": 13.134,
+      "exit_code": 1,
+      "log_sha256": "a430dc86e197e78e398f1e626d3c62ad730becdf94d2439343ecc656a380db8a",
+      "summary": [
+        "  84_veldo_0169_project_handouts                  26 passed   12.62s",
+        "selftest (PARTIAL, 1 of 144 suites): 52 passed, 1 failed in 12.62s"
+      ],
+      "failing_rows": [
+        "SELFTEST FAIL: VELDO-0169 census/writers"
+      ],
+      "details": [
+        "VELDO-0169 detail: census/writers: control_workflow_cycle_pm.ProjectCycles.apply:407 getattr(method) may name a claim or station contract writer: not resolved"
+      ],
+      "timing_comparison": true
+    },
+    {
+      "label": "before-diagnostic",
+      "suite": "62_veldo_0054_decisions",
+      "seconds": 152.216,
+      "exit_code": 1,
+      "log_sha256": "94ef97d1e041434f1673857da7f107bb4139f6b5a531f24684be069d7e1f5fec",
+      "summary": [
+        "  62_veldo_0054_decisions                         37 passed  152.09s",
+        "selftest (PARTIAL, 1 of 144 suites): 63 passed, 2 failed in 152.09s"
+      ],
+      "failing_rows": [
+        "SELFTEST FAIL: VELDO-0054 decisions/minor-shapes",
+        "SELFTEST FAIL: VELDO-0054 decisions/deep-blocks-named"
+      ],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "main-serial",
+      "suite": "60_veldo_0053_architecture",
+      "seconds": 3.221,
+      "exit_code": 2,
+      "log_sha256": "a89220261dec2e601ca77df467f1630a339864b70dfbc04106d0ba9f4c1a9200",
+      "summary": [
+        "  60_veldo_0053_architecture                      39 passed    3.09s",
+        "selftest (PARTIAL, 1 of 143 suites): 65 passed, 0 failed in 3.09s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "main-serial",
+      "suite": "68_veldo_0134_acceptance",
+      "seconds": 1.942,
+      "exit_code": 2,
+      "log_sha256": "80b2d8e498c8e3c399a3a4376ef3ee6c1387db680ee829d4b75d4f093ad12394",
+      "summary": [
+        "  68_veldo_0134_acceptance                        27 passed    1.82s",
+        "selftest (PARTIAL, 1 of 143 suites): 53 passed, 0 failed in 1.82s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "main-serial",
+      "suite": "84_veldo_0169_project_handouts",
+      "seconds": 12.803,
+      "exit_code": 2,
+      "log_sha256": "a0bd997ddd2ecb113b2abef797dc620963766b2ea02b3a8c3e44bfce975a5229",
+      "summary": [
+        "  84_veldo_0169_project_handouts                  27 passed   12.30s",
+        "selftest (PARTIAL, 1 of 143 suites): 53 passed, 0 failed in 12.30s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "60_veldo_0053_architecture",
+      "seconds": 3.15,
+      "exit_code": 2,
+      "log_sha256": "4ae9f3bb9a5e8d3d041af8240ba2baa134ea111f43cabd7b8d60d39139990fb1",
+      "summary": [
+        "  60_veldo_0053_architecture                      39 passed    3.06s",
+        "selftest (PARTIAL, 1 of 144 suites): 65 passed, 0 failed in 3.06s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "62_veldo_0054_decisions",
+      "seconds": 5.448,
+      "exit_code": 2,
+      "log_sha256": "1bba8b7ca3e92908f04a6b36fa8bf524957dcfdf666875e647806139c9976b02",
+      "summary": [
+        "  62_veldo_0054_decisions                         39 passed    5.37s",
+        "selftest (PARTIAL, 1 of 144 suites): 65 passed, 0 failed in 5.37s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "68_veldo_0134_acceptance",
+      "seconds": 1.988,
+      "exit_code": 2,
+      "log_sha256": "47ff7816a38ecc2d4745724677257ef673865b43c3850e41a63f4025502f0ee0",
+      "summary": [
+        "  68_veldo_0134_acceptance                        27 passed    1.91s",
+        "selftest (PARTIAL, 1 of 144 suites): 53 passed, 0 failed in 1.91s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "84_veldo_0169_project_handouts",
+      "seconds": 12.817,
+      "exit_code": 2,
+      "log_sha256": "7819552739bb15dd2be97dfa98d67ac8446431b824f74641176db10ee672404c",
+      "summary": [
+        "  84_veldo_0169_project_handouts                  27 passed   12.35s",
+        "selftest (PARTIAL, 1 of 144 suites): 53 passed, 0 failed in 12.35s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "92_veldo_0088_pm_cycles",
+      "seconds": 69.857,
+      "exit_code": 2,
+      "log_sha256": "3c599ad1813680a5a7cf2ed5807c9cd2de37c7cf93543c4aabc18139076a35ce",
+      "summary": [
+        "  92_veldo_0088_pm_cycles                         25 passed   69.76s",
+        "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 69.76s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    },
+    {
+      "label": "after",
+      "suite": "50_git_environment",
+      "seconds": 2.309,
+      "exit_code": 2,
+      "log_sha256": "0238b21cab1a2e16f36c0defb537dccedd0a1fe7a953ef3ce68ead97205d85b7",
+      "summary": [
+        "  50_git_environment                               4 passed    2.25s",
+        "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.25s"
+      ],
+      "failing_rows": [],
+      "details": [],
+      "timing_comparison": true
+    }
+  ],
+  "implementation_sha256": {
+    ".veldo/control_eligibility.py": "c97963d32e8a8808d4baef61ec702eafa108b0b0fe69764288f6093fecc89fd4",
+    ".veldo/control_team.py": "e0ff848157d9c7d5bffd98cf676749f53c43d8844ff649fc9338cd9255afec49",
+    ".veldo/control_workflow_cycle_assignment.py": "ba1b865bc51212c8ad0238faeae2916688dfe599dd3139d07043fa66bae7f6a8",
+    ".veldo/control_workflow_cycle_pm.py": "5539ae7948d7ada65c7c8548a7e91009003e050ca5f20cf7bcf24765c09b3ace",
+    ".veldo/init_scaffold.py": "2ed59a86bef535ed9891f0cf01f33ce86b85ad4be60778be1e6c0285e4ad6042",
+    "engine/.veldo/control_eligibility.py": "c97963d32e8a8808d4baef61ec702eafa108b0b0fe69764288f6093fecc89fd4",
+    "engine/.veldo/control_team.py": "e0ff848157d9c7d5bffd98cf676749f53c43d8844ff649fc9338cd9255afec49",
+    "engine/.veldo/control_workflow_cycle_assignment.py": "ba1b865bc51212c8ad0238faeae2916688dfe599dd3139d07043fa66bae7f6a8",
+    "engine/.veldo/control_workflow_cycle_pm.py": "5539ae7948d7ada65c7c8548a7e91009003e050ca5f20cf7bcf24765c09b3ace",
+    "engine/.veldo/init_scaffold.py": "2ed59a86bef535ed9891f0cf01f33ce86b85ad4be60778be1e6c0285e4ad6042",
+    "scripts/suites/68_veldo_0134_acceptance.py": "fa88d810250fbe29e1884d64f7d577428e0c936f11e5c5645dbb7309c8c2afe9",
+    "scripts/suites/92_veldo_0088_pm_cycles.py": "77a361091cd18bf543deb2cbe8c959613d2f4965b13074c450581a16eb2b0420",
+    "specs/VELDO-0088-project-manager-execution-graphs.md": "159b5e212d1381e482376ac1287f919fc35d8254dd71648db0d6398cd5b30409"
+  },
+  "architecture_diagnostics": {
+    "architecture/snapshot-in-memory": {
+      "refusals": [
+        "invalid_input:architecture/invalid_structure"
+      ],
+      "engine_loads_from_disk": 882,
+      "swapped": 0,
+      "left_on_disk": [],
+      "recorded_is_installed": true,
+      "writes_after_the_one_read": 2,
+      "link_farm": {
+        "refusals": [
+          "invalid_input:architecture/invalid_structure"
+        ],
+        "recorded_arch_is_bytes_read": true
+      },
+      "rewritten_after_read": {
+        "refusals": [
+          "invalid_input:architecture/invalid_structure"
+        ],
+        "recorded_is_bytes_read": true
+      }
+    },
+    "architecture/identity-keyed-by-module": {
+      "both_recorded": false,
+      "keyed_by_module": true,
+      "roles_kept": false,
+      "events_record_both": false,
+      "decisions": false,
+      "recorded": [
+        []
+      ]
+    }
+  },
+  "decisions_diagnostics": {
+    "decisions/minor-shapes": {
+      "sweep": {
+        "VELDO-9401": [
+          "missing_authority:claim"
+        ],
+        "VELDO-9501": [
+          "invalid_input:decision:D-9501/blocks"
+        ],
+        "VELDO-9502": [
+          "invalid_input:decision:D-9501/blocks"
+        ],
+        "VELDO-9503": [
+          "invalid_input:decision:D-9503/blocks"
+        ],
+        "VELDO-9504": [
+          "invalid_input:decision:D-REFLIST/decision_id",
+          "invalid_input:decision_reference"
+        ]
+      },
+      "invalid_records": [
+        "decision:D-9471",
+        "decision:D-9485",
+        "decision:D-9486",
+        "decision:D-9487",
+        "decision:D-9501",
+        "decision:D-9503",
+        "decision:D-NOBODY",
+        "decision:D-REFLIST",
+        "plan:PLAN-9406",
+        "plan:PLAN-9413",
+        "settlement:malformed-data",
+        "settlement:malformed-decision"
+      ]
+    },
+    "decisions/deep-blocks-named": {
+      "sweep": {
+        "VELDO-9401": [
+          "missing_authority:claim"
+        ],
+        "VELDO-9496": [
+          "invalid_input:decision:D-DEEP/blocks"
+        ]
+      },
+      "unexpected": [
+        "ok",
+        [
+          "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
+        ],
+        [
+          "unknown_outcome:evaluation_error/RuntimeError/a verifier fault nobody named"
+        ]
+      ]
+    }
+  },
+  "static_checks": [
+    {
+      "name": "validation",
+      "command": [
+        "python3",
+        ".veldo/validate.py",
+        "all"
+      ],
+      "exit_code": 0,
+      "seconds": 3.921
+    },
+    {
+      "name": "engine_sync",
+      "command": [
+        "bash",
+        "scripts/check_template_sync.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.155
+    }
+  ]
+}

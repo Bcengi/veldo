@@ -1,0 +1,44 @@
+{
+ "cpus": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+ ],
+ "failed": 0,
+ "load_cpu_seconds": 429.6,
+ "load_pid": 579037,
+ "load_returncode": -15,
+ "load_threads": 18,
+ "loadavg_after": [
+  10.138671875,
+  4.7568359375,
+  3.05908203125
+ ],
+ "loadavg_before": [
+  3.5126953125,
+  3.16357421875,
+  2.513671875
+ ],
+ "passed": 42,
+ "seconds": 25.288,
+ "subset_exit": 2,
+ "suite": "86_veldo_0148_re_land",
+ "suite_sha256": "3efa86a7f7b37d654726f0066b357233cb62861b40112b259baeb8eeda13b79b"
+}

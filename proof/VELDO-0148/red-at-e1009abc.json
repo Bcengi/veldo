@@ -1,0 +1,129 @@
+{
+ "by_assertion": true,
+ "commit": "e1009abc5b8a37c7cb955486eb4256a65fdb9d9e",
+ "details": [
+  "VELDO-0148 receiver/normal-exit detail: real rebuild and review end cleanly without an imposed stop: [{'dispatch_id': 'dispatch/VELDO-9482/8b82b38b89c942418705ba8dc03f2890', 'record': {'state': 'exited', 'termination': {'deadline_stop': False, 'output_bytes': 252, 'output_digest': 'sha256:6587b8619dcb1f93e2c86a7163b5278ef0ad3a75ed8b9adae72561da71023115', 'returncode': 0, 'signal': None}}, 'supervision': {'cause': 'exit', 'steps': [{'step': 'terminate', 'at': 1790958739.392094, 'monotonic': 2659317.264701547}], 'empty': True, 'graces': {'stop_grace_seconds': 1, 'kill_grace_seconds': 1}, 'empty_at': 1790958739.3933012, 'empty_monotonic': 2659317.265910763, 'result': 'success', 'scope_timestamps': {'ActiveEnterTimestampMonotonic': 2659317093287, 'ActiveExitTimestampMonotonic': 2659317266071, 'InactiveEnterTimestampMonotonic': 2659317266071}, 'scope_start': {'ActiveEnterTimestampMonotonic': 2659317093287, 'RuntimeMaxUSec': 600000000, 'TimeoutStopUSec': 1000000}, 'manager_result': 'success', 'adapter_exit_monotonic': 2659317.264552732, 'stop_monotonic': 2659317.264701547, 'oom_kill': 0, 'deadline': 1790959338.952381, 'group': {'unit': 'veldo-dispatch-ef8940a08e4e178357411b3d83a627e5.scope', 'slice': 'v1482d0732af.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-ef8940a08e4e178357411b3d83a627e5.scope'}, 'heartbeat': {'interval_seconds': 10, 'window_seconds': 30, 'released': 2659317.24603927, 'beats': 0, 'first': None, 'last': None, 'max_gap': None, 'recent': [], 'pid': None, 'channel_open': False, 'liveness': 'live', 'uncertain_at': None, 'renewed': 0, 'renewal_refusals': []}}}, {'dispatch_id': 'dispatch/VELDO-9482/169fcd3d73d0491a9743a8310a5f4783', 'record': {'state': 'exited', 'termination': {'deadline_stop': False, 'output_bytes': 252, 'output_digest': 'sha256:6587b8619dcb1f93e2c86a7163b5278ef0ad3a75ed8b9adae72561da71023115', 'returncode': 0, 'signal': None}}, 'supervision': {'cause': 'exit', 'steps': [{'step': 'terminate', 'at': 1790958739.8664248, 'monotonic': 2659317.739032457}], 'empty': True, 'graces': {'stop_grace_seconds': 1, 'kill_grace_seconds': 1}, 'empty_at': 1790958739.8674254, 'empty_monotonic': 2659317.740034944, 'result': 'success', 'scope_timestamps': {'ActiveEnterTimestampMonotonic': 2659317569214, 'ActiveExitTimestampMonotonic': 2659317740163, 'InactiveEnterTimestampMonotonic': 2659317740163}, 'scope_start': {'ActiveEnterTimestampMonotonic': 2659317569214, 'RuntimeMaxUSec': 600000000, 'TimeoutStopUSec': 1000000}, 'manager_result': 'success', 'adapter_exit_monotonic': 2659317.738897145, 'stop_monotonic': 2659317.739032457, 'oom_kill': 0, 'deadline': 1790959339.4228554, 'group': {'unit': 'veldo-dispatch-265f695080df20dff1d16f73320c185c.scope', 'slice': 'v1482d0732af.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-265f695080df20dff1d16f73320c185c.scope'}, 'heartbeat': {'interval_seconds': 10, 'window_seconds': 30, 'released': 2659317.7210119, 'beats': 0, 'first': None, 'last': None, 'max_gap': None, 'recent': [], 'pid': None, 'channel_open': False, 'liveness': 'live', 'uncertain_at': None, 'renewed': 0, 'renewal_refusals': []}}}]",
+  "VELDO-0148 receiver/fast-exit detail: heartbeat already belongs to veldo-wrapper before either engine can exit: [{'pid': 2032337, 'cgroup': '0::/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-265f695080df20dff1d16f73320c185c.scope\\n'}, {'pid': 2032263, 'cgroup': '0::/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-ef8940a08e4e178357411b3d83a627e5.scope\\n'}]",
+  "VELDO-0148 receiver/fast-exit detail: actual receiver membership reads exclude the held heartbeat: [{'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-ef8940a08e4e178357411b3d83a627e5.scope', 'members': [2032263]}, {'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-ef8940a08e4e178357411b3d83a627e5.scope', 'members': [2032263]}, {'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1482d0732af.slice/veldo-dispatch-265f695080df20dff1d16f73320c185c.scope', 'members': [2032337]}]",
+  "VELDO-0148 receiver/fast-exit detail: both fast clean exits retain clean supervision"
+ ],
+ "failed_rows": [
+  "VELDO-0148 receiver/normal-exit",
+  "VELDO-0148 receiver/fast-exit"
+ ],
+ "modules": {
+  ".veldo/control_containment.py": {
+   "at_commit": "0ce0999cec6df282d81cd71f4de2a9e8d14df9b6cba20dbc577576571be08534",
+   "now": "0ce0999cec6df282d81cd71f4de2a9e8d14df9b6cba20dbc577576571be08534"
+  },
+  ".veldo/control_effect_executor.py": {
+   "at_commit": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "now": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+  },
+  ".veldo/control_heartbeat.py": {
+   "at_commit": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea",
+   "now": "b1ed1ad6e77eb0a342df5390f43955144442e1ddc89bf0dc532f26eaa922b3ea"
+  },
+  ".veldo/control_landing.py": {
+   "at_commit": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "now": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475"
+  },
+  ".veldo/control_landing_station.py": {
+   "at_commit": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "now": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "f5848e16b8e0ac7b5df087adc2d0b1b18da73ec71cf523981d121341e0833d83",
+   "now": "f5848e16b8e0ac7b5df087adc2d0b1b18da73ec71cf523981d121341e0833d83"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "now": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75"
+  },
+  ".veldo/lander.py": {
+   "at_commit": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6",
+   "now": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6"
+  }
+ },
+ "preamble_rows": 27,
+ "receiver_regressions": [],
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 reland/end-wakes-pass",
+   true
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   true
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   true
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   true
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/normal-exit",
+   false
+  ],
+  [
+   "VELDO-0148 receiver/settled-scope",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/fast-exit",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 19.834,
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "tree": "git archive e1009abc5b8a37c7cb955486eb4256a65fdb9d9e, unchanged; the current suite file run against it"
+}

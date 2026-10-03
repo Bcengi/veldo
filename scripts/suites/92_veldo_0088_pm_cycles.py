@@ -16,6 +16,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     PRODUCTION = {
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
+        'control_workflow_cycle_assignment.py': ROOT / ".veldo" / "control_workflow_cycle_assignment.py",
         'control_graph_pm.py': ROOT / ".veldo" / "control_graph_pm.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
         'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
@@ -359,16 +360,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             else:
                 extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
                 extra.observe(locals())
-            budget = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
-            for unused in range(budget - len(cycles.records('proj-a'))):
-                run(empty)
-            try:
-                cycles.start('proj-a', cycles.inputs('proj-a'))
-                bounded = False
-            except Exception as error:
-                bounded = getattr(error, 'code', None) == 'budget_exceeded:coordination'
-            check('cycle/budget', 'the project cycle budget stops further dispatch',
-                  bounded and len(cycles.records('proj-a')) == budget)
+                extra.budget(locals())
     except Exception as error:
         print('  VELDO-0088 detail: fixture did not run to its end: ' + repr(error))
         for name in names:

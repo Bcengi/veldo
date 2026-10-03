@@ -1,0 +1,8 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1952,5 +1951,0 @@
+-            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None
+-                  and adapter_exit_monotonic is not None
+-                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):
+-                # An ordinary status can be a handled cap signal; missing evidence is not success.
+-                cause = 'unknown'
