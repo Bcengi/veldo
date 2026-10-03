@@ -1,6 +1,124 @@
 {
  "schema": "veldo.scoped-checks/v1",
+ "review_base": "ed630cd0",
+ "command": "python3 scripts/selftest.py --suite NAME",
  "checks": [
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 45 passed, 0 failed in 109.59s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "68_veldo_0126_intake",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 1.69s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "68_veldo_0136_hints",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 33 passed, 0 failed in 4.95s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "69_veldo_0133_dispositions",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 59 passed, 0 failed in 5.87s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 68 passed, 0 failed in 21.67s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "72_veldo_0077_objectives",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 3.27s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "72_veldo_0128_reports",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 4.09s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 7.25s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "75_veldo_0150_own_message_acceptance",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 39 passed, 0 failed in 2.02s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 48 passed, 0 failed in 14.61s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 41 passed, 0 failed in 3.11s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "84_veldo_0169_project_handouts",
+   "environment": "review-followup",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 52 passed, 1 failed in 14.04s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0169 census/writers"
+   ],
+   "exit_code": 1
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 1.80s",
+   "failures": [],
+   "exit_code": 2
+  },
+  {
+   "suite": "50_git_environment",
+   "environment": "review-followup",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.21s",
+   "failures": [],
+   "exit_code": 2
+  }
+ ],
+ "prior_checks": [
   {
    "suite": "68_veldo_0126_intake",
    "environment": "normal",
@@ -260,26 +378,6 @@
    "passed": true,
    "summary": "selftest (PARTIAL, 1 of 144 suites): 42 passed, 0 failed in 58.95s",
    "failures": []
-  }
- ],
- "baseline_consumers": [
-  {
-   "suite": "84_veldo_0169_project_handouts",
-   "environment": "baseline-16a91069",
-   "passed": false,
-   "summary": "selftest (PARTIAL, 1 of 143 suites): 52 passed, 1 failed in 10.92s",
-   "failures": [
-    "SELFTEST FAIL: VELDO-0169 census/writers"
-   ]
-  },
-  {
-   "suite": "86_veldo_0168_text",
-   "environment": "baseline-16a91069",
-   "passed": false,
-   "summary": "selftest (PARTIAL, 1 of 143 suites): 51 passed, 1 failed in 2.94s",
-   "failures": [
-    "SELFTEST FAIL: VELDO-0168 intake/delivery"
-   ]
   }
  ]
 }

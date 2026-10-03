@@ -1,4 +1,55 @@
-# VELDO-0152 builder evidence
+# VELDO-0152 review follow-up evidence
+
+Review base: ed630cd023ac8fb20140631b6a0c7cec39c6dbdc, branch build-veldo-0152b.
+The README and repository operating instructions were read before implementation. No push,
+merge, other branch, other worktree, full selftest or gate run was performed.
+
+Three review regressions were driven against unchanged production and mutation-catalog code at
+ed630cd0. Only the suite assertions were added. red-at-ed630cd0.json records exactly these three
+rows red by assertion, with all sixteen previous 0152 rows green:
+
+| Finding | Proof row | Registered mutant | Fix commit |
+| --- | --- | --- | --- |
+| Codex telemetry treated as a final route document | route/codex-result | v152-codex-nonmessage-final | 3c7f01f3 |
+| Isolated intake mutations lack their imports | proof/intake-companions | v152-intake-companions-missing | 4228fc7a |
+| Scoped member context exposes unrelated project versions | intake/scoped-context | v152-context-all-projects | ff0b84bd |
+
+The Codex row accepts a Codex PM configuration and team through the real writers, dispatches the
+fake CLI through the Runner, and emits reasoning, command_execution and agent_message completions.
+Only the parsed agent message reaches the routing command. The row checks the resulting state,
+reason, dispatch correlation and selected adapter. Claude result-string journeys remain covered.
+Route mode accepts only parsed final-message content; the legacy raw proposal-document path stays
+available to non-route PM cycles.
+
+The companion row enumerates every control_intake.py mutation case and materializes/imports each
+distinct dependency layout. Companion assignment now follows all case registrations, including
+0152. Every intake case names control_project.py and control_intake_routes.py, and uses the existing
+full-sibling-copy option because control_project imports eligibility and further local organs.
+A missing companion becomes a false named row, not a mutation-worker exception.
+
+The scoped-context row sends both unresolved and ticket-key messages through Telegram and API as
+the scoped member. Both proposal context and decision must contain the exact versions of only
+project:bcengi and project:factory; project:other must be absent. Intake reads the same restricted
+set for transaction version checks.
+
+All nineteen 0152 rows pass after the fixes (45 total assertions including the shared preamble).
+Current scoped suite results, validation, engine sync and footprint are recorded in checks.json,
+static-checks.json and footprint.json. Partial selftests intentionally return exit 2 when green;
+assertion summaries, not a zero process exit, determine their result.
+
+The requested suite list contains twelve neighboring suites. Eleven pass; 0169 census/writers
+remains red, as already recorded and reproduced at the earlier base below. No unrelated assertion
+was suppressed. The 0088 timeout case and all timeout values are unchanged.
+
+Mutation anchors and Python syntax were checked for all 130 cases in findings 136, 168, 126, 133,
+128 and 152; all passed. Fourteen finding-152 mutants are registered. Mutation execution is NOT
+claimed: the task's TOKEN RULES explicitly prohibit check_teeth_mutations.py, conflicting with its
+later request for those six findings. Clarification was requested. No mutation runner or gate
+runner was executed, and no mutant is described as rejected without execution.
+
+Earlier build evidence follows; its counts and base describe the previous implementation run.
+
+## Earlier builder evidence
 
 Base: 16a91069, on build-veldo-0152b. No push or other worktree changes.
 

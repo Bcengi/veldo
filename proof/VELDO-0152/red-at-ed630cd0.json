@@ -22,5 +22,28 @@
   "VELDO-0152 detail: route/codex-result one route document survives reasoning and command events",
   "VELDO-0152 detail: intake/scoped-context telegram_message: unresolved member work; telegram_message: please do BCG-123; api_request: unresolved member work; api_request: please do BCG-123",
   "VELDO-0152 detail: proof/intake-companions plain-message-not-hinted: [Errno 2] No such file or directory: '/tmp/v152-companions-05_mg2c3/plain-message-not-hinted/control_project.py'; v152-name-decides: [Errno 2] No such file or directory: '/tmp/v152-companions-05_mg2c3/v152-name-decides/control_channel_presentation_text.py'"
- ]
+ ],
+ "after_fix": {
+  "summary": "selftest (PARTIAL, 1 of 144 suites): 45 passed, 0 failed in 109.59s",
+  "rows": [
+   [
+    "VELDO-0152 route/codex-result",
+    true
+   ],
+   [
+    "VELDO-0152 intake/scoped-context",
+    true
+   ],
+   [
+    "VELDO-0152 proof/intake-companions",
+    true
+   ]
+  ],
+  "sha256": {
+   ".veldo/control_workflow_cycle_pm.py": "ef070083a88847b1022414f812816856e702ac15b3d5ec89a2e59279bcf2b146",
+   ".veldo/control_intake.py": "f5a98a8b9cf8c4da11e8b5f74f7f51515d81f4631521eedcbce8702b5916468e",
+   "scripts/check_teeth_mutations.py": "36039c0c39fc2c9b2d0e2fb5fb3cc8cf17d27768b1a7f481ead9d680685df3f3",
+   "scripts/suites/93_veldo_0152_intake_routes.py": "07678085b288e4efcde374d9d1bb68deb7d25c41f89587f0d44cbb45438d3da0"
+  }
+ }
 }

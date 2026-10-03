@@ -20,5 +20,30 @@
  },
  "engine_sync": {
   "mismatched": []
+ },
+ "review_followup": {
+  "base": "ed630cd0",
+  "validate": {
+   "exit_code": 0,
+   "command": "python3 .veldo/validate.py all"
+  },
+  "git_boundary": {
+   "suite": "50_git_environment",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.21s"
+  },
+  "engine_sync": {
+   "exit_code": 0,
+   "summary": "template sync: pass (250 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+  },
+  "mutation_anchors": {
+   "cases": 130,
+   "errors": []
+  },
+  "whitespace": {
+   "exit_code": 0
+  },
+  "full_gate": "not run; reviewer-owned",
+  "mutation_execution": "not run; task TOKEN RULES prohibit the runner; clarification requested"
  }
 }

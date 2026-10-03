@@ -16,11 +16,15 @@
   "engine/.veldo/control_workflow_cycle_pm.py",
   "engine/.veldo/init_scaffold.py",
   "proof/VELDO-0152/README.md",
+  "proof/VELDO-0152/checks.json",
   "proof/VELDO-0152/drive.py",
   "proof/VELDO-0152/fixture.py",
   "proof/VELDO-0152/footprint.json",
   "proof/VELDO-0152/mutations.json",
   "proof/VELDO-0152/neighbors.py",
+  "proof/VELDO-0152/red-at-16a91069.json",
+  "proof/VELDO-0152/red-at-ed630cd0.json",
+  "proof/VELDO-0152/static-checks.json",
   "scripts/check_teeth_mutations.py",
   "scripts/suites/68_veldo_0126_intake.py",
   "scripts/suites/68_veldo_0136_hints.py",
@@ -37,9 +41,23 @@
   "scripts/suites/93_veldo_0152_intake_routes.py",
   "scripts/suites/manifest.json",
   "scripts/suites/requires.json",
-  "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md",
-  "proof/VELDO-0152/checks.json",
-  "proof/VELDO-0152/red-at-16a91069.json"
+  "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md"
  ],
- "outside": []
+ "outside": [],
+ "review_base": "ed630cd023ac8fb20140631b6a0c7cec39c6dbdc",
+ "review_changed": [
+  ".veldo/control_intake.py",
+  ".veldo/control_workflow_cycle_pm.py",
+  "engine/.veldo/control_intake.py",
+  "engine/.veldo/control_workflow_cycle_pm.py",
+  "proof/VELDO-0152/README.md",
+  "proof/VELDO-0152/checks.json",
+  "proof/VELDO-0152/footprint.json",
+  "proof/VELDO-0152/mutations.json",
+  "proof/VELDO-0152/red-at-ed630cd0.json",
+  "proof/VELDO-0152/static-checks.json",
+  "scripts/check_teeth_mutations.py",
+  "scripts/suites/93_veldo_0152_intake_routes.py"
+ ],
+ "review_outside": []
 }

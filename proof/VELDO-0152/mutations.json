@@ -109,8 +109,8 @@
    "named_rows": [
     "route/runner-input"
    ],
-   "source_sha256": "bafa15fd071180688f704e65e9b27449e27e7af1dce8cc42e2ce5e9da01c87fa",
-   "mutant_sha256": "d2e2ac4152386c8bef820d91616e0e85c5227e9b44312d990ce6a75b78d3b5fb",
+   "source_sha256": "ef070083a88847b1022414f812816856e702ac15b3d5ec89a2e59279bcf2b146",
+   "mutant_sha256": "79c67ce07188a0c4667cfa792b01605b3bdadf2fa3ee007840914c29d242fc97",
    "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
@@ -131,8 +131,8 @@
    "named_rows": [
     "route/codex-result"
    ],
-   "source_sha256": "bafa15fd071180688f704e65e9b27449e27e7af1dce8cc42e2ce5e9da01c87fa",
-   "mutant_sha256": "6fc35f4340551cbb1b8f3e8176a2ffb91710bd746507c55efbb89ffbab346c03",
+   "source_sha256": "ef070083a88847b1022414f812816856e702ac15b3d5ec89a2e59279bcf2b146",
+   "mutant_sha256": "1a12b9bba8c6a6145ccfdca20df41e39f210c7da16916496f9c51ad31a596d76",
    "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
@@ -169,5 +169,37 @@
   ],
   "cases": 130,
   "errors": []
- }
+ },
+ "requested_findings": [
+  {
+   "finding": 136,
+   "cases": 10,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  },
+  {
+   "finding": 126,
+   "cases": 18,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  },
+  {
+   "finding": 133,
+   "cases": 21,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  },
+  {
+   "finding": 128,
+   "cases": 23,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  },
+  {
+   "finding": 168,
+   "cases": 44,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  },
+  {
+   "finding": 152,
+   "cases": 14,
+   "status": "not executed; TOKEN RULES prohibit mutation runner"
+  }
+ ]
 }

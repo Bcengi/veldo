@@ -494,7 +494,7 @@ class ProjectCycles:
                     elif value.get('type') == 'item.completed' and value.get('item', {}).get('type') == 'agent_message':
                         value = json.loads(value['item']['text'])
                         final = True
-                    if route and final or isinstance(value, dict) and value.get('schema') == DOCUMENT:
+                    if (route and final) or (not route and isinstance(value, dict) and value.get('schema') == DOCUMENT):
                         values.append(value)
                 except (ValueError, TypeError, AttributeError):
                     continue
