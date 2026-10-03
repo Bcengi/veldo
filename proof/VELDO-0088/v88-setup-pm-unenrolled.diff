@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -481,7 +481,7 @@
+                   enrollee=ACT.ssh_signer(os.path.join(keys, REQUESTER_KEY)))
+             K.publish(S, conn, projection)
+             os.chmod(projection, 0o600)
+-        with step('project_manager_enrollment'):
++        if False:  # defect: setup omits PM membership
+             # The owner enrolls the default PM with the factory's command signing
+             # edge. The PM authors proposals; authority still owns the receipts.
+             admin('enroll_principal', {'principal': PROJECT_MANAGER, 'principal_type': 'service',

@@ -127,3 +127,24 @@ flags inherited 0151 files. The combined 0088 and 0151 footprint is clean, as is
 the 0088-only review diff from 1773b279. No unrelated inherited file was changed
 to satisfy that checker. No mutation execution, full selftest, gate, model,
 remote service, push or independent approval was performed in this follow-up.
+
+## Production setup follow-up
+
+The default PM is enrolled during owner-run factory setup with the service journal
+key, through the same signed membership command and possession co-signature used
+for other service members. Setup republishes the verification-key projection.
+The team writer remains unable to grant membership. The footprint adds setup and
+its engine copy because enrollment belongs at that production boundary.
+
+| Row | Observation |
+| :--- | :--- |
+| followup/setup-pm | Fresh production setup, then real project and team commands and Line.run accept an assignment signed as the default PM. This fixture branch never enrolls the PM itself. |
+| followup/initial-fault | An injected RuntimeError from starting a real project's next cycle reaches the pass_once caller unchanged. |
+| followup/pending-fault | A real owner answer changes input during a dispatched cycle; after completion, an injected follow-up start fault reaches the caller unchanged. |
+
+The original fixture remains for the earlier rows. The setup row uses generated
+owner keys, a fresh store, inert installation engine bytes, scratch install paths
+and a local manager stand-in. No model or external channel is contacted.
+Three additional finding-88 mutations remove setup enrollment or broaden each
+scheduler catch. The existing budget-refusal mutation now targets except Refused.
+Mutation execution remains reviewer-owned.

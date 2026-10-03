@@ -1,5 +1,5 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
 @@ -402,7 +402,7 @@
                  command['reviewers'] = [dict(reviewer=who, subject=subject) for who in command['reviewers']]
              if command.get('project', record['project']) != record['project']:

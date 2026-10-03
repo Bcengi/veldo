@@ -9967,8 +9967,13 @@ def cases():
     add(88, 'v88-proposals-as-service', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "command.update(principal=record['manager'], command_id=", 'command.update(principal=self.principal, command_id=', ['review/pm-principal'], ())
     add(88, 'v88-unhandled-build-adapter', '92_veldo_0088_pm_cycles.py', 'control_service.py', '\n            except pm.Refused as error:\n', '\n            except KeyError as error:\n', ['review/build-refusal'], ())
     add(88, 'v88-unhandled-review-adapter', '92_veldo_0088_pm_cycles.py', 'control_service.py', '\n        except pm.Refused as error:\n', '\n        except KeyError as error:\n', ['review/review-refusal'], ())
-    add(88, 'v88-unhandled-pending-budget', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Exception as error:\n', '                        except KeyError as error:\n', ['review/pending-budget'], ())
+    add(88, 'v88-unhandled-pending-budget', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Refused as error:\n', '                        except KeyError as error:\n', ['review/pending-budget'], ())
     add(88, 'v88-staging-from-earlier-cycle', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "        if unit['unit'] not in published:\n", '        if False:\n', ['review/current-publication'], ())
+
+    # VELDO-0088 production enrollment and scheduler faults.
+    add(88, 'v88-setup-pm-unenrolled', '92_veldo_0088_pm_cycles.py', 'control_factory_setup.py', "        with step('project_manager_enrollment'):\n", '        if False:  # defect: setup omits PM membership\n', ['followup/setup-pm'], ())
+    add(88, 'v88-swallow-initial-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '\n                except Refused as error:\n', '\n                except Exception as error:\n', ['followup/initial-fault'], ())
+    add(88, 'v88-swallow-pending-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Refused as error:\n', '                        except Exception as error:\n', ['followup/pending-fault'], ())
 
     return result
 

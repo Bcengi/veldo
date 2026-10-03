@@ -516,7 +516,7 @@ class ProjectCycles:
                     if name in self.pending:
                         try:
                             emitted.append(self.start(name, self.pending.pop(name)))
-                        except Exception as error:
+                        except Refused as error:
                             self.observe(dict(operation='pm_start', project=name,
                                 refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
                 continue
@@ -537,7 +537,7 @@ class ProjectCycles:
                     continue
                 try:
                     emitted.append(self.start(name, current))
-                except Exception as error:
+                except Refused as error:
                     self.observe(dict(operation='pm_start', project=name,
                                       refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
         return emitted

@@ -1236,7 +1236,7 @@
    "requires": [
     "92_veldo_0088_pm_cycles"
    ],
-   "regions": "Project coordination snapshots, Runner dispatch, proposal authority and bounded follow-up.",
+   "regions": "Project coordination snapshots, Runner dispatch, proposal authority, production PM enrollment and bounded follow-up with surfaced faults.",
    "requires_note": "Only ROOT and expect. Uses its own proof fixture with real signed membership, project, team and capability services."
   }
  ]

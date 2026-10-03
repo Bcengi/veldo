@@ -1,5 +1,5 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
 @@ -39,7 +39,7 @@
              'backlog': ('backlog', 'apply'), 'grooming': ('grooming', 'apply'),
              'assignment': ('teams', 'apply')}

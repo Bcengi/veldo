@@ -14,6 +14,8 @@ depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
+  - ".veldo/control_factory_setup.py"
+  - "engine/.veldo/control_factory_setup.py"
   - "engine/.veldo/request.py"
   - ".veldo/request.py"
   - "packs/*/.veldo/request.py"
@@ -286,3 +288,12 @@ all five new review rows; the original 24c0c90b archive is red by assertion on a
 twenty-one rows. The review cases use a fresh five-cycle project fixture, keeping
 the original sixteen rows and twelve-cycle fixture intact. Mutation execution,
 the full gate and the independent landing decision remain reviewer-owned.
+
+2026-10-03, production enrollment follow-up: AC1 and AC4 require the default PM
+created by factory setup to sign proposals with the service journal key. Add the
+setup module and its engine copy to the footprint because owner-run setup is the
+membership enrollment writer; team revisions deliberately cannot grant membership.
+A fresh production setup must accept a PM-signed assignment without fixture PM
+enrollment. AC3 also requires unexpected start faults to propagate on both the
+initial and pending-input paths; only named Refused outcomes are observed locally.
+Three finding-88 mutations and three behavior rows cover these corrections.

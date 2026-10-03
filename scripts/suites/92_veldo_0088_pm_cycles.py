@@ -4,7 +4,7 @@ It makes no model call and supplies only predetermined proposal documents.
 """
 
 
-def _v88_suite(review_only=False):
+def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     import copy
     import importlib.util
     import json
@@ -14,6 +14,7 @@ def _v88_suite(review_only=False):
     import time
 
     PRODUCTION = {
+        'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
         'control_graph_pm.py': ROOT / ".veldo" / "control_graph_pm.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
@@ -31,6 +32,10 @@ def _v88_suite(review_only=False):
              'review/pm-principal', 'review/current-publication', 'review/build-refusal',
              'review/review-refusal', 'review/pending-budget')
     names = tuple(n for n in names if n.startswith('review/') == review_only)
+    if setup_only:
+        names = ('followup/setup-pm',)
+    if fault_only:
+        names = ('followup/initial-fault', 'followup/pending-fault')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -50,7 +55,10 @@ def _v88_suite(review_only=False):
         return
     helper = load('v88_fixture', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/fixture.py')
     try:
-        with helper.fixture(ROOT, PRODUCTION, cycle_budget=5 if review_only else 12) as f:
+        with helper.fixture(ROOT, PRODUCTION, cycle_budget=5 if review_only else 12, production_setup=setup_only) as f:
+            if setup_only and not f['production_pm']:
+                expect('VELDO-0088 followup/setup-pm', False)
+                return
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
             domain, repository, ids = (f[k] for k in ('DOMAIN', 'REPO', 'ids'))
             PM = load('v88_pm', mods / 'control_workflow_cycle_pm.py')
@@ -161,6 +169,12 @@ def _v88_suite(review_only=False):
             check('cycle/no-action', 'empty result produces bound receipt and actual graph trace',
                   first['state'] == 'no_action' and first['trace'] == list(PM.PIPELINE)
                   and PM.row(conn, 'pm-cycle:' + first['cycle'])['data'] == first)
+            if fault_only:
+                faults = load('v88_faults', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/fault_observations.py')
+                faults.observe(locals())
+                for name in names:
+                    expect('VELDO-0088 ' + name, bool(rows[name]) and all(ok for _, ok in rows[name]))
+                return
             snap = PM.SN.load(S, conn, first['snapshot']['id'], domain, repository)
             (source / 'README').write_text('Unaccepted edited source.\n')
             check('cycle/snapshot', 'snapshot keeps accepted source, watermark and input versions',
@@ -191,7 +205,7 @@ def _v88_suite(review_only=False):
                 scope=['proj-a'], deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 1},
                 brief='Choose a scope.', choices=['yes', 'no'], subject={'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'question')}))
-            if not review_only:
+            if not review_only and not setup_only:
                 refused = dict(question, operation='open', assignment={})
                 failed = run(dict(empty, proposals=[dict(name='first', type='question', command=refused),
                                                     dict(name='second', type='question', command=question)]))
@@ -322,6 +336,18 @@ def _v88_suite(review_only=False):
                 and staged.get('elaboration') == {'state': 'done', 'dispatch': staged['dispatch']}
                 and len([r for r in line._rows('dispatch') if r['contract']['station'] == 'coordination']) == before_dispatches + 1
                 and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY')
+            if setup_only:
+                check('followup/setup-pm', 'fresh owner setup enrolls the PM and Line.run assignment verifies',
+                      f['setup_report']['outcome'] == 'set_up' and staged['state'] == 'proposed'
+                      and staged.get('unit_assignment', {}).get('assigned_by') == 'pm'
+                      and line.service.principal != 'pm'
+                      and f['production_pm']['enrolled_by'] == 'steward')
+                (base / 'engineering-hold').unlink()
+                for launch in tuple(runner.launches.values()):
+                    runner.wait(launch, timeout=15)
+                for name in names:
+                    expect('VELDO-0088 ' + name, bool(rows[name]) and all(ok for _, ok in rows[name]))
+                return
             if review_only:
                 review = load('v88_review', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/review_observations.py')
                 review.observe(locals())
@@ -352,3 +378,6 @@ def _v88_suite(review_only=False):
 
 _v88_suite()
 _v88_suite(review_only=True)
+
+_v88_suite(setup_only=True)
+_v88_suite(fault_only=True)

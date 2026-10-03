@@ -1,5 +1,5 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
 @@ -360,6 +360,10 @@
                                        'The builder fetches references using its configured catalog servers.'}
              self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',

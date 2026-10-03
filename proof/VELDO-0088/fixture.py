@@ -18,7 +18,7 @@ import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION, cycle_budget=12):
+def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -110,8 +110,19 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12):
                                check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
-            # The trusted factory signing edge is enrolled for the PM as well as
-            # its separate service principal, through the real membership writer.
+            setup_report = None
+            if production_setup:
+                helper = load('v88_setup_fixture', Path(__file__).with_name('setup_fixture.py'))
+                setup_report = helper.setup(ROOT, base, mods, keyfile['steward'])
+                ids = setup_report['authority_ids']
+                DOMAIN, REPO = ids['domain_uuid'], ids['repository_uuid']
+                keyfile['authority'] = Path(setup_report['state_root']) / 'keys' / 'journal'
+                edge = load('v88_setup_edge', mods / 'control_channel_enrollment.py')
+                keyfile['api-edge'] = Path(setup_report['state_root']) / 'keys' / edge.edge_key_id('api')
+                public['api-edge'] = ' '.join(keyfile['api-edge'].with_suffix('.pub').read_text().split()[:2])
+                public['authority'] = ' '.join(keyfile['authority'].with_suffix('.pub').read_text().split()[:2])
+            # Signing uses the service edge; the production-setup branch never
+            # enrolls the PM here. Setup owns that membership and possession proof.
             for who in ('pm', 'team-service'):
                 keyfile[who], public[who] = keyfile['authority'], public['authority']
 
@@ -128,8 +139,11 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12):
                 serial[0] += 1
                 return '%s-%d' % (prefix, serial[0])
 
-            (base / 'authority').mkdir()
-            db = base / 'authority' / 'control.sqlite3'
+            if setup_report:
+                db = Path(setup_report['store'])
+            else:
+                (base / 'authority').mkdir()
+                db = base / 'authority' / 'control.sqlite3'
             conn = S.open_store(str(db))
             connections.append(conn)
             CM.attach(S)
@@ -162,17 +176,25 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12):
                                                       'public_key': public[who], 'independence_group': group or who,
                                                       'scope': scope}, enrollee=who)
 
-            admin('steward', 'enroll_principal', {'principal': 'steward', 'principal_type': 'person',
-                                                  'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
-                                                  'independence_group': 'steward', 'scope': '*'})
+            if not production_setup:
+                admin('steward', 'enroll_principal', {'principal': 'steward', 'principal_type': 'person',
+                                                      'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
+                                                      'independence_group': 'steward', 'scope': '*'})
             enroll('olga', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-a'])
             enroll('zed', 'person', ['project_owner'], ['proj-a'])
             for who in services:
+                if production_setup and who in ('pm', 'api-edge'):
+                    continue
                 enroll(who, 'service', ['reservation_service'], ['proj-a', 'proj-b', REPO])
             for who in ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-late'):
                 enroll(who, 'agent_run', [], ['proj-a'])
             enroll('w-rev3', 'agent_run', [], ['proj-a'], group='w-build')
             enroll('outsider', 'agent_run', [], ['proj-b'])
+
+            production_pm = CM.AC.membership_entry(CM.authority_state(S, conn)['membership'], 'pm')
+            if production_setup and not production_pm:
+                yield locals()
+                return
 
             def fixture(eid, kind, data):
                 row = conn.execute('SELECT version FROM entities WHERE id=?', (eid,)).fetchone()

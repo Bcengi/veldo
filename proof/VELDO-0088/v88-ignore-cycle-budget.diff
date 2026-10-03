@@ -1,5 +1,5 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
 @@ -329,7 +329,7 @@
          if not p or p['data'].get('state') != 'ACTIVE' or not team:
              raise Refused('missing_authority:active_project_team')

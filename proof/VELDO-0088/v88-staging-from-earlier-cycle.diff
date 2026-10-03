@@ -1,5 +1,5 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
 @@ -428,7 +428,7 @@
      def staged(self, record, unit, team):
          published = [p['result'].get('unit', {}).get('unit') for p in record['proposals']

@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '92_veldo_0088_pm_cycles.py'
 PREFIX = 'VELDO-0088 '
 FINDING = 88
-MODULES = ('control_workflow_cycle_pm.py', 'control_graph_pm.py', 'control_dispatch.py', 'control_eligibility.py', 'control_service.py', 'control_launch.py', 'control_team.py', 'authority_contract.py', 'init_scaffold.py')
+MODULES = ('control_factory_setup.py', 'control_workflow_cycle_pm.py', 'control_graph_pm.py', 'control_dispatch.py', 'control_eligibility.py', 'control_service.py', 'control_launch.py', 'control_team.py', 'authority_contract.py', 'init_scaffold.py')
 
 
 def _load(name, path):
@@ -34,7 +34,7 @@ def _load(name, path):
 _git_process = _load('v88_drive_git_process', ROOT / '.veldo' / 'git_process.py')
 
 
-def one(paths, root, review=False):
+def one(paths, root, review=False, followup=False):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
@@ -48,8 +48,11 @@ def one(paths, root, review=False):
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         source = (ROOT / 'scripts/suites' / SUITE).read_text()
+        if followup:
+            source = source.replace('\n_v88_suite()\n', '\n').replace('\n_v88_suite(review_only=True)\n', '\n')
         if review:
             source = source.replace('\n_v88_suite()\n', '\n')
+            source = source.replace('\n_v88_suite(setup_only=True)\n', '\n').replace('\n_v88_suite(fault_only=True)\n', '\n')
         for module, path in paths.items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
             if source.count(anchor) != 1:
@@ -62,11 +65,13 @@ def one(paths, root, review=False):
             'preamble_rows': len(rows) - len(mine)}
 
 
-def run(paths=None, root=None, review=False):
+def run(paths=None, root=None, review=False, followup=False):
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
     if review:
         command.append('--review')
+    if followup:
+        command.append('--followup')
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -81,7 +86,7 @@ def _raised(observed):
     return any('did not run to its end' in d for d in observed['details'])
 
 
-def red(commit, review=False):
+def red(commit, review=False, followup=False):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
@@ -91,7 +96,7 @@ def red(commit, review=False):
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
-        observed = run({}, tree, review=review)
+        observed = run({}, tree, review=review, followup=followup)
     if review:
         observed['other_rows'] = [r for r in observed['rows'] if not r[0].startswith(PREFIX + 'review/')]
         observed['rows'] = [r for r in observed['rows'] if r[0].startswith(PREFIX + 'review/')]
@@ -109,10 +114,10 @@ def red(commit, review=False):
 
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
-        red(sys.argv[2], review='--review' in sys.argv[3:])
+        red(sys.argv[2], review='--review' in sys.argv[3:], followup='--followup' in sys.argv[3:])
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], review='--review' in sys.argv[4:])))
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], review='--review' in sys.argv[4:], followup='--followup' in sys.argv[4:])))
         return
     raise SystemExit('Use the red option; mutation execution belongs to the reviewer.')
 
