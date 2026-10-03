@@ -6,6 +6,24 @@ import sys
 import time
 
 
+def budget(v):
+    """Drive at most the remaining allowance plus one attempt, even if ignored."""
+    f, cycles, check = (v[k] for k in ('f', 'cycles', 'check'))
+    limit = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
+    remaining = max(0, limit - len(cycles.records('proj-a')))
+    refusal = None
+    for unused in range(remaining + 1):
+        try:
+            # An incorrectly admitted attempt still finishes its bounded worker
+            # before the fixture disappears; never leave a launch in teardown.
+            v['run'](v['empty'])
+        except Exception as error:
+            refusal = getattr(error, 'code', None)
+            break
+    check('cycle/budget', 'the project cycle budget stops further dispatch',
+          refusal == 'budget_exceeded:coordination' and len(cycles.records('proj-a')) == limit)
+
+
 def observe(v):
     check, f, PM, base, cycles, runner, conn = (v[k] for k in
         ('check', 'f', 'PM', 'base', 'cycles', 'runner', 'conn'))
