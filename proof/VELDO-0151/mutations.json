@@ -2,7 +2,7 @@
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0151",
  "suite": "scripts/suites/91_veldo_0151_specialists.py",
- "status": "registered; execution reserved for reviewer by token rules",
+ "status": "17 registered; two review follow-ups hand-applied and rejected by suite 91; mutation runner reserved for reviewer",
  "mutants": [
   {
    "name": "v151-missing-reference-accepted",
@@ -174,6 +174,30 @@
    "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
    "mutant_sha256": "2c94122c6ab4dcbe38f306aaacc83b09cb4fa71b3ec08b3d194b8272479d0ec8",
    "status": "not run"
+  },
+  {
+   "name": "v151-specialist-roster-unchecked",
+   "named_rows": [
+    "roles/specialist-outside-project"
+   ],
+   "diff": "proof/VELDO-0151/v151-specialist-roster-unchecked.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "194568f4ec7c80a038ac6269fe002fbcf30f178dba10ebcefa3b96820ed91c68",
+   "status": "hand-applied; named row fails by assertion in suite 91 alone",
+   "evidence": "proof/VELDO-0151/review-followup.json"
+  },
+  {
+   "name": "v151-reviewer-capability-binding-dropped",
+   "named_rows": [
+    "assignment/reviewer-capability-binding"
+   ],
+   "diff": "proof/VELDO-0151/v151-reviewer-capability-binding-dropped.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "b6b1ef5a7ab0b025e6ab563d9ac06d4f7e13c489ef03914e56acaf5201ea6151",
+   "status": "hand-applied; named row fails by assertion in suite 91 alone",
+   "evidence": "proof/VELDO-0151/review-followup.json"
   }
  ]
 }

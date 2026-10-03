@@ -1,0 +1,11 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -229,7 +229,7 @@
+     for m in membership:
+         if isinstance(m, dict):
+             entries[m.get('principal')] = m
+-    for role in (*REQUIRED_ROLES, *(r for r in roles if r not in REQUIRED_ROLES)):
++    for role in REQUIRED_ROLES:
+         spec = roles.get(role)
+         if not spec or not spec.get('workers'):
+             problems.append('missing_staffing:%s' % role)
