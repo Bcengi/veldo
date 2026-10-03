@@ -1,5 +1,47 @@
 # VELDO-0152 review follow-up evidence
 
+## Hint/question contract review at cf1ebfc9
+
+Implementation: `470a7821` on `build-veldo-0152b`.
+
+Decision: preserve VELDO-0152's explicit amendment, rather than restore the earlier merged
+hint/question path. The controlling spec, `specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md`
+lines 300-308 (especially 304-306), says the owner gets the note at intake, the unclear route's
+question is its own reply, and `question-and-note-apart` is retired. This deliberately supersedes
+VELDO-0136 lines 122-127's merged-question history. VELDO-0168 AC1 (lines 55-66) and AC2
+(lines 73-85) still require the delivered question to preserve and escape the original text once.
+No acceptance criterion or specification text was changed in this follow-up.
+
+The receipt comment and `_ask` docstring now describe the specified timing. `_ask` sends only
+the rendered question, removing the obsolete merged-hint fallback (including when its asker is
+unavailable). Receipt-time hints remain unchanged. Suite 68 requires the later question to contain
+only its prompt; suite 86 checks the entire delivered text against an independent escape oracle,
+as well as its literal escape and original stored prompt.
+
+The historical mutant identifier `text168-hint-lead-double-escaped` is retained deliberately.
+Its old defect supplied an already rendered lead to the retired merged-hint path, so it no longer
+exercised the actual question delivery. Its new defect renders the question twice in `_ask`,
+keeping the same `intake/delivery` row and the same once-only escaping obligation. This is an
+intentional mutation migration under the spec lines above, not a claim that the old mutant reds.
+
+All four requested suites passed individually in the exact clean environment supplied by the owner:
+
+| Suite | Total assertions | Failures | Exit |
+| --- | --- | --- | --- |
+| 86_veldo_0168_text | 52 | 0 | 2 |
+| 93_veldo_0152_intake_routes | 45 | 0 | 2 |
+| 68_veldo_0136_hints | 33 | 0 | 2 |
+| 50_git_environment | 30 | 0 | 2 |
+
+Exit 2 is the dispatcher's deliberate successful partial-suite result. Validation passed (exit 0),
+and engine sync passed (250 pairs compared, exit 0). The migrated mutant was applied by hand in a
+scratch archive under `/dev/shm`, byte-identically in both module copies. Suite 86 then reported
+`SELFTEST FAIL: VELDO-0168 intake/delivery`, specifically "real question writer and send escape once,
+retaining original prompt": 51 passed, 1 failed, exit 1, with no traceback. The scratch copy was
+deleted. Exact commands, mutation replacement and result excerpts are in `hint-question-review.json`.
+These checks are review evidence only; no full gate, full selftest or mutation runner was run.
+The reviewer must verify the merged tree and produce its real gate stamp.
+
 ## Further review fixes at 5d90b5b5
 
 Both requested fixes are committed on build-veldo-0152b:
