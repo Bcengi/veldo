@@ -534,3 +534,71 @@ The missing receiver-timer mutation is a diagnostic of actual enforcement: merel
 inferring timeout afterward from a late adapter signal cannot satisfy its
 `Stop.cause == runtime_cap` assertion. The late-cap mutation changes no test
 assertion or owner profile. No whole selftest, gate, mutation checker or push ran.
+
+## Heartbeat setup clock follow-up
+
+The original gate0148o failure has **not been reproduced**. Its 43 invalid case
+results reuse two failed no-op controls (34 dispatch.py cases and nine executor.py
+cases). Neither the original record nor the journal identifies a heartbeat
+refusal for those controls, so attributing them to the five-second bound would
+exceed the evidence.
+
+[load-followup.json](load-followup.json) records the comparisons on 62adf17b and
+f1e1abb9, with sixteen disposable clones, one selected suite per process, and the
+gate environment. It also records five no-op rounds, a private-bin gate-environment
+round, three mixed rounds with containment, and six further rounds without
+receiver/wrapper timing instrumentation. All completed suites passed. The initial
+comparison's PATH was /usr/bin:/bin; the later gate-environment runs reproduce the
+private python3 symlink as well. Some of the further untraced rounds overlapped the
+new deterministic regression and are explicitly not quiet-machine comparisons.
+Temporary phase/refusal instrumentation existed only in the disposable clones.
+
+The largest identity-to-final-setup-check interval in the branch's ordinary
+sixteen-way runs was 0.135501 seconds. Across the five no-op rounds, the maximum
+was 0.129836 seconds, including heartbeat placement of at most 0.038162 seconds.
+Main's maximum identity-to-release interval was 0.071123 seconds. These measurements
+do not justify increasing SETUP_SECONDS.
+
+A separate deterministic regression proves a clock-origin defect. Delaying the
+receiver's preparation by 5.250 seconds before release causes the old wrapper to
+refuse a healthy launch with `spawn_failed:containment:heartbeat_timeout`; the
+engine never starts. [release-origin-red.json](release-origin-red.json) records
+that sole failing row against unchanged production. This injected delay proves
+the defect but does not establish the cause of gate0148o.
+
+The receiver now sends an absolute monotonic deadline with its release, after
+containment preparation. The wrapper uses that deadline at its existing final
+setup check. The five-second setup allowance, placement timeout, seven-second
+report wait, and activation-based runtime cap remain in force. A wrapper delayed
+after consuming the release cannot reset its deadline. The release parser rejects
+nonfinite or invalid deadlines and leaves the following engine packet unread.
+
+The new row tests delayed preparation and the release parser. Two new launch
+mutations restore the early origin or restart the deadline after reading the
+release; a third accepts an infinite deadline. The existing late-wrapper, frozen
+wrapper, placement failure, placement timeout, and containment escape falsifiers
+continue to exercise the production boundary.
+
+[review_parallel.py](review_parallel.py) reproduces the honest comparison without
+instrumentation or fault injection, for example:
+
+```
+python3 proof/VELDO-0148/review_parallel.py --ref 07ffafc4 --out /tmp/review-origin-check --rounds 5
+```
+
+It invokes only the two selected selftests, writes every log under the fresh output
+directory, and records each run in results.json. Selected selftest exit 2 is
+expected; none of these results is a gate stamp or landing approval.
+
+[release-origin-verification.json](release-origin-verification.json) records the
+completed checks on implementation 07ffafc4:
+
+- Five rounds of sixteen honest runs for each review suite: 80/80 floor and 80/80
+  proof runs green, with no timing instrumentation or concurrent extra workload.
+- Suite 86: 51 assertions passed, including the shared preamble; suite 40: 80.
+- Ten named mutants rejected at their designated rows: nine finding-148 setup,
+  report, placement, deadline and heartbeat mutants, plus the finding-40 wrapper
+  escape mutant whose source anchor changed. Both honest mutation controls passed.
+  Each driver command uses `--finding`, `--worker NAME`, and `--jobs 2`; mutant
+  invocations ran through a two-worker pool. The exact commands and row outcomes
+  are in the evidence record. No full mutation run or repository gate was run.

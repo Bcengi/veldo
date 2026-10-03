@@ -73,362 +73,56 @@
         "failures": []
       },
       "runs": {
-        "49": [
-          {
-            "slot": 0,
-            "returncode": 2,
-            "elapsed": 21.65,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.51s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.51s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
+        "49": {
+          "count": 16,
+          "exit_counts": {
+            "2": 16
           },
-          {
-            "slot": 1,
-            "returncode": 2,
-            "elapsed": 22.21,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   22.05s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.05s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
+          "failed_runs": [],
+          "seconds_by_slot": [
+            21.65,
+            22.21,
+            21.81,
+            22.21,
+            22.1,
+            21.86,
+            21.96,
+            21.91,
+            21.76,
+            21.95,
+            22.06,
+            21.61,
+            21.65,
+            21.75,
+            21.75,
+            21.7
+          ]
+        },
+        "50": {
+          "count": 16,
+          "exit_counts": {
+            "2": 16
           },
-          {
-            "slot": 2,
-            "returncode": 2,
-            "elapsed": 21.81,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.66s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.66s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 3,
-            "returncode": 2,
-            "elapsed": 22.21,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   22.05s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.05s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 4,
-            "returncode": 2,
-            "elapsed": 22.1,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.95s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.95s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 5,
-            "returncode": 2,
-            "elapsed": 21.86,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.69s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 6,
-            "returncode": 2,
-            "elapsed": 21.96,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.81s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.81s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 7,
-            "returncode": 2,
-            "elapsed": 21.91,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.76s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.76s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 8,
-            "returncode": 2,
-            "elapsed": 21.76,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.62s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.62s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 9,
-            "returncode": 2,
-            "elapsed": 21.95,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.80s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.80s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 10,
-            "returncode": 2,
-            "elapsed": 22.06,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.92s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.92s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 11,
-            "returncode": 2,
-            "elapsed": 21.61,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.45s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.45s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 12,
-            "returncode": 2,
-            "elapsed": 21.65,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.48s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.48s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 13,
-            "returncode": 2,
-            "elapsed": 21.75,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.62s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.62s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 14,
-            "returncode": 2,
-            "elapsed": 21.75,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.59s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.59s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 15,
-            "returncode": 2,
-            "elapsed": 21.7,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.55s",
-              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.55s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          }
-        ],
-        "50": [
-          {
-            "slot": 0,
-            "returncode": 2,
-            "elapsed": 12.6,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.44s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 1,
-            "returncode": 2,
-            "elapsed": 12.39,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.22s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.22s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 2,
-            "returncode": 2,
-            "elapsed": 12.59,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.44s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 3,
-            "returncode": 2,
-            "elapsed": 12.44,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.27s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.27s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 4,
-            "returncode": 2,
-            "elapsed": 12.59,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.44s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 5,
-            "returncode": 2,
-            "elapsed": 12.69,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.51s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.51s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 6,
-            "returncode": 2,
-            "elapsed": 12.53,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.38s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 7,
-            "returncode": 2,
-            "elapsed": 12.43,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.28s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.28s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 8,
-            "returncode": 2,
-            "elapsed": 12.38,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.20s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.20s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 9,
-            "returncode": 2,
-            "elapsed": 12.64,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.46s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.46s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 10,
-            "returncode": 2,
-            "elapsed": 12.54,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.38s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 11,
-            "returncode": 2,
-            "elapsed": 12.48,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.32s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 12,
-            "returncode": 2,
-            "elapsed": 12.54,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.39s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.39s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 13,
-            "returncode": 2,
-            "elapsed": 12.48,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.34s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.34s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 14,
-            "returncode": 2,
-            "elapsed": 12.64,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.50s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.50s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 15,
-            "returncode": 2,
-            "elapsed": 12.18,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.06s",
-              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.06s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          }
-        ]
+          "failed_runs": [],
+          "seconds_by_slot": [
+            12.6,
+            12.39,
+            12.59,
+            12.44,
+            12.59,
+            12.69,
+            12.53,
+            12.43,
+            12.38,
+            12.64,
+            12.54,
+            12.48,
+            12.54,
+            12.48,
+            12.64,
+            12.18
+          ]
+        }
       }
     },
     "f1e1abb9": {
@@ -472,363 +166,1324 @@
         "failures": []
       },
       "runs": {
-        "49": [
-          {
-            "slot": 0,
-            "returncode": 2,
-            "elapsed": 21.56,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.41s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.41s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
+        "49": {
+          "count": 16,
+          "exit_counts": {
+            "2": 16
           },
-          {
-            "slot": 1,
-            "returncode": 2,
-            "elapsed": 21.56,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.38s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.38s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
+          "failed_runs": [],
+          "seconds_by_slot": [
+            21.56,
+            21.56,
+            21.5,
+            21.56,
+            21.36,
+            21.55,
+            21.35,
+            21.6,
+            21.45,
+            20.95,
+            21.4,
+            20.9,
+            21.05,
+            21.25,
+            21.6,
+            21.55
+          ]
+        },
+        "50": {
+          "count": 16,
+          "exit_counts": {
+            "2": 16
           },
-          {
-            "slot": 2,
-            "returncode": 2,
-            "elapsed": 21.5,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.33s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.33s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 3,
-            "returncode": 2,
-            "elapsed": 21.56,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.39s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.39s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 4,
-            "returncode": 2,
-            "elapsed": 21.36,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.15s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.15s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 5,
-            "returncode": 2,
-            "elapsed": 21.55,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.36s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.36s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 6,
-            "returncode": 2,
-            "elapsed": 21.35,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.18s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.18s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 7,
-            "returncode": 2,
-            "elapsed": 21.6,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.47s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.47s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 8,
-            "returncode": 2,
-            "elapsed": 21.45,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.30s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.30s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 9,
-            "returncode": 2,
-            "elapsed": 20.95,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   20.78s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.78s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 10,
-            "returncode": 2,
-            "elapsed": 21.4,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.26s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.26s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 11,
-            "returncode": 2,
-            "elapsed": 20.9,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   20.71s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.71s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 12,
-            "returncode": 2,
-            "elapsed": 21.05,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   20.91s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.91s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 13,
-            "returncode": 2,
-            "elapsed": 21.25,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.10s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.10s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 14,
-            "returncode": 2,
-            "elapsed": 21.6,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.47s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.47s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 15,
-            "returncode": 2,
-            "elapsed": 21.55,
-            "failures": [],
-            "tail": [
-              "  63_veldo_0049_floor                             20 passed   21.39s",
-              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.39s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          }
-        ],
-        "50": [
-          {
-            "slot": 0,
-            "returncode": 2,
-            "elapsed": 12.34,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.15s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.15s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 1,
-            "returncode": 2,
-            "elapsed": 12.28,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.13s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.13s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 2,
-            "returncode": 2,
-            "elapsed": 12.23,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.04s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.04s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 3,
-            "returncode": 2,
-            "elapsed": 12.18,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.04s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.04s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 4,
-            "returncode": 2,
-            "elapsed": 11.84,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.66s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.66s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 5,
-            "returncode": 2,
-            "elapsed": 12.08,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.93s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.93s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 6,
-            "returncode": 2,
-            "elapsed": 12.38,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.22s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.22s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 7,
-            "returncode": 2,
-            "elapsed": 12.13,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.99s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.99s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 8,
-            "returncode": 2,
-            "elapsed": 12.28,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.12s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.12s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 9,
-            "returncode": 2,
-            "elapsed": 12.03,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.86s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.86s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 10,
-            "returncode": 2,
-            "elapsed": 12.33,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.17s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.17s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 11,
-            "returncode": 2,
-            "elapsed": 12.13,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.96s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.96s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 12,
-            "returncode": 2,
-            "elapsed": 12.28,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.11s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.11s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 13,
-            "returncode": 2,
-            "elapsed": 12.23,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   12.11s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.11s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 14,
-            "returncode": 2,
-            "elapsed": 11.93,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.77s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.77s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          },
-          {
-            "slot": 15,
-            "returncode": 2,
-            "elapsed": 12.03,
-            "failures": [],
-            "tail": [
-              "  64_veldo_0050_proof                             14 passed   11.90s",
-              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.90s",
-              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
-            ]
-          }
-        ]
+          "failed_runs": [],
+          "seconds_by_slot": [
+            12.34,
+            12.28,
+            12.23,
+            12.18,
+            11.84,
+            12.08,
+            12.38,
+            12.13,
+            12.28,
+            12.03,
+            12.33,
+            12.13,
+            12.28,
+            12.23,
+            11.93,
+            12.03
+          ]
+        }
       }
     }
-  }
+  },
+  "baseline_environment_note": "The initial measurements use /usr/bin:/bin. gate-noop-0148 additionally reproduces the gate private bin/python3 symlink, -B -s, and new session.",
+  "additional_baselines": {
+    "baseline-noop-0148": {
+      "revision": "62adf17b",
+      "batches": [
+        {
+          "batch": "r1-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              22.47,
+              22.45,
+              22.88,
+              22.37,
+              22.82,
+              22.1,
+              22.84,
+              22.67,
+              22.92,
+              22.37,
+              22.27,
+              22.28,
+              22.69,
+              22.33,
+              22.62,
+              21.97
+            ]
+          }
+        },
+        {
+          "batch": "r1-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.74,
+              12.49,
+              12.49,
+              12.69,
+              12.69,
+              12.59,
+              12.69,
+              12.54,
+              12.74,
+              12.59,
+              12.64,
+              12.64,
+              12.33,
+              12.63,
+              12.19,
+              12.59
+            ]
+          }
+        },
+        {
+          "batch": "r2-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.5,
+              22.05,
+              21.65,
+              21.86,
+              22.05,
+              21.96,
+              22.05,
+              22.05,
+              21.45,
+              21.8,
+              22.06,
+              21.85,
+              21.95,
+              21.9,
+              21.95,
+              21.9
+            ]
+          }
+        },
+        {
+          "batch": "r2-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.84,
+              12.64,
+              12.64,
+              12.24,
+              12.79,
+              12.74,
+              12.79,
+              12.84,
+              12.74,
+              12.59,
+              12.84,
+              12.59,
+              12.79,
+              12.19,
+              12.74,
+              12.59
+            ]
+          }
+        },
+        {
+          "batch": "r3-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.95,
+              22.0,
+              22.26,
+              22.16,
+              22.05,
+              22.05,
+              22.1,
+              21.9,
+              22.1,
+              21.6,
+              22.26,
+              22.15,
+              22.11,
+              21.85,
+              22.1,
+              21.95
+            ]
+          }
+        },
+        {
+          "batch": "r3-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.65,
+              12.49,
+              12.59,
+              12.74,
+              12.64,
+              12.49,
+              12.79,
+              12.54,
+              12.34,
+              12.7,
+              12.54,
+              12.39,
+              12.59,
+              12.59,
+              12.59,
+              12.39
+            ]
+          }
+        },
+        {
+          "batch": "r4-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              22.31,
+              22.41,
+              21.91,
+              22.27,
+              22.26,
+              22.36,
+              22.42,
+              22.06,
+              21.87,
+              22.31,
+              22.36,
+              22.42,
+              22.16,
+              22.06,
+              22.12,
+              22.21
+            ]
+          }
+        },
+        {
+          "batch": "r4-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.49,
+              12.48,
+              12.48,
+              12.68,
+              12.64,
+              12.43,
+              12.43,
+              12.64,
+              12.63,
+              12.69,
+              12.53,
+              12.48,
+              12.54,
+              12.53,
+              12.43,
+              12.53
+            ]
+          }
+        },
+        {
+          "batch": "r5-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              22.45,
+              22.32,
+              21.85,
+              22.42,
+              21.81,
+              22.4,
+              22.45,
+              22.21,
+              22.36,
+              22.21,
+              22.31,
+              22.26,
+              21.81,
+              22.35,
+              22.16,
+              21.95
+            ]
+          }
+        },
+        {
+          "batch": "r5-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.44,
+              12.58,
+              12.63,
+              12.68,
+              12.68,
+              12.73,
+              12.53,
+              12.63,
+              12.58,
+              12.49,
+              12.23,
+              12.43,
+              12.53,
+              12.33,
+              12.73,
+              12.54
+            ]
+          }
+        }
+      ],
+      "analysis": {
+        "timings": {
+          "identity_to_release": {
+            "count": 2960,
+            "min": 0.005611998960375786,
+            "p50": 0.017052306793630123,
+            "p95": 0.050570306833833456,
+            "max": 0.1227037450298667
+          },
+          "attach": {
+            "count": 2960,
+            "min": 0.003306405618786812,
+            "p50": 0.007561990991234779,
+            "p95": 0.03319511003792286,
+            "max": 0.1088655898347497
+          },
+          "retain": {
+            "count": 2960,
+            "min": 0.0017120861448347569,
+            "p50": 0.005392550025135279,
+            "p95": 0.02522597787901759,
+            "max": 0.08654018444940448
+          },
+          "placement": {
+            "count": 2960,
+            "min": 0.0017922022379934788,
+            "p50": 0.0034551527351140976,
+            "p95": 0.01887473976239562,
+            "max": 0.038162019569426775
+          },
+          "identity_to_check": {
+            "count": 2960,
+            "min": 0.008695153053849936,
+            "p50": 0.026283725630491972,
+            "p95": 0.05696538183838129,
+            "max": 0.129835968837142
+          },
+          "release_to_exec": {
+            "count": 2960,
+            "min": 0.0020618410781025887,
+            "p50": 0.0037925830110907555,
+            "p95": 0.01922851987183094,
+            "max": 0.03849252825602889
+          }
+        },
+        "launches": {
+          "s50": 560,
+          "s49": 2400
+        },
+        "refused": [],
+        "late": [],
+        "failures": []
+      }
+    },
+    "gate-noop-0148": {
+      "revision": "62adf17b",
+      "batches": [
+        {
+          "batch": "r1-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              22.11,
+              22.12,
+              21.95,
+              21.66,
+              21.55,
+              21.6,
+              21.81,
+              21.6,
+              21.45,
+              22.1,
+              22.16,
+              22.1,
+              21.95,
+              21.65,
+              21.91,
+              21.95
+            ]
+          }
+        },
+        {
+          "batch": "r1-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.64,
+              12.64,
+              12.54,
+              12.49,
+              12.48,
+              12.53,
+              12.48,
+              12.59,
+              12.48,
+              12.28,
+              12.68,
+              12.68,
+              12.63,
+              12.28,
+              12.39,
+              12.48
+            ]
+          }
+        }
+      ],
+      "analysis": {
+        "timings": {
+          "identity_to_release": {
+            "count": 592,
+            "min": 0.005789866670966148,
+            "p50": 0.01873396011069417,
+            "p95": 0.048389764968305826,
+            "max": 0.09907746268436313
+          },
+          "attach": {
+            "count": 592,
+            "min": 0.0034648976288735867,
+            "p50": 0.008647311013191938,
+            "p95": 0.03420753311365843,
+            "max": 0.07176538603380322
+          },
+          "retain": {
+            "count": 592,
+            "min": 0.0017260238528251648,
+            "p50": 0.005919608753174543,
+            "p95": 0.0265435422770679,
+            "max": 0.06475271284580231
+          },
+          "placement": {
+            "count": 592,
+            "min": 0.0017401017248630524,
+            "p50": 0.0032812883146107197,
+            "p95": 0.0187865998595953,
+            "max": 0.02498077228665352
+          },
+          "identity_to_check": {
+            "count": 592,
+            "min": 0.009433549828827381,
+            "p50": 0.027979768812656403,
+            "p95": 0.05768362293019891,
+            "max": 0.1017964156344533
+          },
+          "release_to_exec": {
+            "count": 592,
+            "min": 0.0020362231880426407,
+            "p50": 0.0036102687008678913,
+            "p95": 0.019118224270641804,
+            "max": 0.025252658873796463
+          }
+        },
+        "launches": {
+          "s49": 480,
+          "s50": 112
+        },
+        "refused": [],
+        "late": [],
+        "failures": []
+      }
+    },
+    "mixed-noop-0148": {
+      "revision": "62adf17b",
+      "batches": [
+        {
+          "batch": "r1-smixed",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              13.96,
+              13.8,
+              13.94,
+              13.97,
+              13.99,
+              14.0,
+              13.3,
+              13.49,
+              13.7,
+              14.07,
+              13.8,
+              13.74,
+              20.65,
+              20.51,
+              15.74,
+              13.95
+            ]
+          }
+        },
+        {
+          "batch": "r2-smixed",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.94,
+              13.04,
+              13.04,
+              12.79,
+              12.95,
+              13.0,
+              13.09,
+              12.89,
+              12.79,
+              13.04,
+              12.69,
+              12.89,
+              19.66,
+              19.81,
+              12.19,
+              12.69
+            ]
+          }
+        },
+        {
+          "batch": "r3-smixed",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              13.09,
+              12.69,
+              12.94,
+              13.04,
+              12.47,
+              13.04,
+              13.12,
+              12.84,
+              13.04,
+              13.09,
+              12.79,
+              12.54,
+              19.85,
+              19.51,
+              12.24,
+              12.34
+            ]
+          }
+        }
+      ],
+      "analysis": {
+        "timings": {
+          "identity_to_release": {
+            "count": 654,
+            "min": 0.006167897023260593,
+            "p50": 0.012945310212671757,
+            "p95": 0.053795003797858953,
+            "max": 0.09678238909691572
+          },
+          "attach": {
+            "count": 654,
+            "min": 0.003577711060643196,
+            "p50": 0.006062365602701902,
+            "p95": 0.030913901049643755,
+            "max": 0.0884983018040657
+          },
+          "retain": {
+            "count": 654,
+            "min": 0.001820041798055172,
+            "p50": 0.003608972765505314,
+            "p95": 0.027912992984056473,
+            "max": 0.061756337992846966
+          },
+          "placement": {
+            "count": 654,
+            "min": 0.0020846379920840263,
+            "p50": 0.004647806752473116,
+            "p95": 0.01976156421005726,
+            "max": 0.0899607976898551
+          },
+          "identity_to_check": {
+            "count": 654,
+            "min": 0.009099680930376053,
+            "p50": 0.024507307913154364,
+            "p95": 0.0640423409640789,
+            "max": 0.12948779109865427
+          },
+          "release_to_exec": {
+            "count": 654,
+            "min": 0.0023531378246843815,
+            "p50": 0.005106634926050901,
+            "p95": 0.02013847418129444,
+            "max": 0.09022981487214565
+          }
+        },
+        "launches": {
+          "s40": 432,
+          "s50": 42,
+          "s49": 180
+        },
+        "refused": [
+          {
+            "file": "r2-s40-11.trace",
+            "phase": "refused",
+            "at": 2724033.732608897,
+            "pid": 493719,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/974487098fa2446db6ca38fefbf2a0fc",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-9.trace",
+            "phase": "refused",
+            "at": 2724053.910473519,
+            "pid": 505806,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/15abeb8bba0f49528d4a0913b817dd47",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-8.trace",
+            "phase": "refused",
+            "at": 2724033.720591875,
+            "pid": 493708,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/3296eba927db42609f533f3ebf56c91a",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-5.trace",
+            "phase": "refused",
+            "at": 2724014.112880815,
+            "pid": 482235,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/48525c8a8e70490685e956dd2af10c11",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-6.trace",
+            "phase": "refused",
+            "at": 2724033.974086373,
+            "pid": 493945,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/0d674ad496474ea4b06ed130fe484f02",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-2.trace",
+            "phase": "refused",
+            "at": 2724033.89585236,
+            "pid": 493960,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/d2537f296c6947d6b829db8d0d6cf222",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-3.trace",
+            "phase": "refused",
+            "at": 2724033.72860801,
+            "pid": 493734,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/6a6cd30e531f454a8bceaa03e34b46f4",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-10.trace",
+            "phase": "refused",
+            "at": 2724053.599890091,
+            "pid": 505540,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/5c7da651910a4602b1fcdd53afa35ea9",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-4.trace",
+            "phase": "refused",
+            "at": 2724014.073275611,
+            "pid": 482234,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/ca3f65fc9014465e82235cf5cbe43a51",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-11.trace",
+            "phase": "refused",
+            "at": 2724053.458007776,
+            "pid": 505435,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/0af7016ebc4a43659a2edd203c0220c8",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-10.trace",
+            "phase": "refused",
+            "at": 2724033.594856329,
+            "pid": 493653,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/be3b5d08afe34ee1b79519765f6d0b12",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-7.trace",
+            "phase": "refused",
+            "at": 2724033.848818203,
+            "pid": 493842,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/405147b6e5d2444b89b1a90e25f1518e",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-4.trace",
+            "phase": "refused",
+            "at": 2724033.81030709,
+            "pid": 493802,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/dbd5eb1c79b940829da885f76e66b989",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-8.trace",
+            "phase": "refused",
+            "at": 2724013.957986816,
+            "pid": 482096,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/8c1a3b96222443feab195d8ff8cc1a71",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-9.trace",
+            "phase": "refused",
+            "at": 2724014.156101209,
+            "pid": 482245,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/126d5c81bbcd4941a54267bda530917a",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-0.trace",
+            "phase": "refused",
+            "at": 2724053.903465156,
+            "pid": 505798,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/c5822ca0c076486b9749b39a9fd574ad",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-3.trace",
+            "phase": "refused",
+            "at": 2724053.836573059,
+            "pid": 505720,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/89f14d8322fd40f3b0ce5de6cce7fd7a",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-3.trace",
+            "phase": "refused",
+            "at": 2724014.077771531,
+            "pid": 482236,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/a7d47cb7b9ab46fd8635c169fc2442ed",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-2.trace",
+            "phase": "refused",
+            "at": 2724013.957917173,
+            "pid": 482068,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/5deeb07d51914c74862b21ee517ffe55",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-7.trace",
+            "phase": "refused",
+            "at": 2724013.897345471,
+            "pid": 481976,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/ec1918469e904194ab5cf8878a62cbc8",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-7.trace",
+            "phase": "refused",
+            "at": 2724053.822880701,
+            "pid": 505718,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/d2b3c3a2ba394c36922c0297df449265",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-0.trace",
+            "phase": "refused",
+            "at": 2724033.867778393,
+            "pid": 493900,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/89ca2906cff045a3a03bdd199e30b159",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-2.trace",
+            "phase": "refused",
+            "at": 2724053.825735471,
+            "pid": 505712,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/14a6c71e507a4cfaa958ed24d7ed501a",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-8.trace",
+            "phase": "refused",
+            "at": 2724053.824238793,
+            "pid": 505716,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/d522b23e02d54dabb6b41f8d0b5de99f",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-0.trace",
+            "phase": "refused",
+            "at": 2724014.113210613,
+            "pid": 482249,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/edfb3ec7942a41f482f5926b6eb1828d",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-4.trace",
+            "phase": "refused",
+            "at": 2724053.397672245,
+            "pid": 505409,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/97b7326910204476af7110ceabcccabf",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-1.trace",
+            "phase": "refused",
+            "at": 2724053.620354812,
+            "pid": 505539,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/213dd922baa54487bdf2b7b018651d60",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-9.trace",
+            "phase": "refused",
+            "at": 2724033.989605556,
+            "pid": 493970,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/93322c1ce8c844d5a3e77ce7ce7b6732",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-5.trace",
+            "phase": "refused",
+            "at": 2724053.821995316,
+            "pid": 505622,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/a94650cad9b440d3a888eff6046ab45e",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-6.trace",
+            "phase": "refused",
+            "at": 2724013.678512983,
+            "pid": 481925,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/e43d731ec7aa4f52ac0c93d01c6b7f1a",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-10.trace",
+            "phase": "refused",
+            "at": 2724014.003172765,
+            "pid": 482144,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/4c67f08cfce1452bb6fd3687b634deb0",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-5.trace",
+            "phase": "refused",
+            "at": 2724033.926951657,
+            "pid": 493925,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/6b7b207c806b4c75a9bc7f9553dc2d21",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r3-s40-6.trace",
+            "phase": "refused",
+            "at": 2724053.909147032,
+            "pid": 505818,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/15b90cdad5d64cdaa0dc4ac8e632a582",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-1.trace",
+            "phase": "refused",
+            "at": 2724013.995823588,
+            "pid": 482066,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/59ce442fd8c74efba9619aec3116da68",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r1-s40-11.trace",
+            "phase": "refused",
+            "at": 2724013.957774163,
+            "pid": 482067,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/3fa5ca35e6f84f82bce98b46030916e0",
+            "reason": "unavailable_service:concurrency"
+          },
+          {
+            "file": "r2-s40-1.trace",
+            "phase": "refused",
+            "at": 2724033.944297358,
+            "pid": 493949,
+            "dispatch": null,
+            "launch": "dispatch/VELDO-9409/2890bc7e3f15448e8b086c68bef36eab",
+            "reason": "unavailable_service:concurrency"
+          }
+        ],
+        "late": [],
+        "failures": []
+      },
+      "schedule": "12 containment suites, 2 floor suites, 2 proof suites per 16-worker round."
+    },
+    "raw-noop-0148": {
+      "revision": "62adf17b",
+      "batches": [
+        {
+          "batch": "r1-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.96,
+              22.51,
+              22.41,
+              22.41,
+              22.41,
+              22.51,
+              22.5,
+              22.25,
+              22.5,
+              22.31,
+              22.5,
+              22.3,
+              22.26,
+              22.15,
+              22.4,
+              22.35
+            ]
+          }
+        },
+        {
+          "batch": "r1-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.54,
+              12.24,
+              12.69,
+              12.48,
+              12.49,
+              12.69,
+              12.48,
+              12.44,
+              12.69,
+              12.33,
+              12.48,
+              12.68,
+              12.59,
+              12.68,
+              12.38,
+              12.53
+            ]
+          }
+        },
+        {
+          "batch": "r2-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.66,
+              21.6,
+              21.2,
+              21.7,
+              21.86,
+              21.9,
+              21.65,
+              21.85,
+              21.75,
+              21.76,
+              21.75,
+              21.9,
+              21.85,
+              21.51,
+              21.3,
+              21.81
+            ]
+          }
+        },
+        {
+          "batch": "r2-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.54,
+              12.74,
+              12.74,
+              12.69,
+              12.49,
+              12.64,
+              12.73,
+              12.74,
+              12.63,
+              12.74,
+              12.49,
+              12.53,
+              12.23,
+              12.54,
+              12.18,
+              12.33
+            ]
+          }
+        },
+        {
+          "batch": "r3-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.81,
+              21.96,
+              21.55,
+              21.61,
+              22.1,
+              21.9,
+              22.15,
+              22.06,
+              22.1,
+              21.6,
+              21.7,
+              21.5,
+              21.3,
+              21.5,
+              21.55,
+              22.0
+            ]
+          }
+        },
+        {
+          "batch": "r3-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.84,
+              12.74,
+              12.68,
+              12.79,
+              12.79,
+              12.63,
+              12.74,
+              12.18,
+              12.84,
+              12.54,
+              12.79,
+              12.83,
+              12.49,
+              12.34,
+              12.53,
+              12.59
+            ]
+          }
+        },
+        {
+          "batch": "r4-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.96,
+              21.41,
+              21.91,
+              21.81,
+              22.05,
+              21.61,
+              21.65,
+              21.55,
+              21.51,
+              22.01,
+              21.91,
+              21.76,
+              21.95,
+              21.66,
+              21.81,
+              21.8
+            ]
+          }
+        },
+        {
+          "batch": "r4-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.74,
+              12.23,
+              12.59,
+              12.44,
+              12.59,
+              12.59,
+              12.53,
+              12.54,
+              12.54,
+              12.59,
+              12.68,
+              12.69,
+              12.44,
+              12.73,
+              12.43,
+              12.69
+            ]
+          }
+        },
+        {
+          "batch": "r5-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              22.51,
+              21.95,
+              22.4,
+              22.42,
+              22.77,
+              22.61,
+              22.37,
+              22.64,
+              22.41,
+              22.23,
+              22.12,
+              22.31,
+              22.51,
+              22.36,
+              22.19,
+              22.36
+            ]
+          }
+        },
+        {
+          "batch": "r5-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.99,
+              12.99,
+              12.84,
+              12.59,
+              13.04,
+              12.89,
+              12.94,
+              13.04,
+              12.84,
+              12.84,
+              12.84,
+              12.69,
+              12.94,
+              13.04,
+              12.84,
+              13.09
+            ]
+          }
+        },
+        {
+          "batch": "r6-s49",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              21.96,
+              22.15,
+              21.85,
+              21.9,
+              22.3,
+              22.26,
+              22.21,
+              22.06,
+              22.2,
+              22.06,
+              22.0,
+              22.0,
+              22.15,
+              22.25,
+              22.3,
+              22.1
+            ]
+          }
+        },
+        {
+          "batch": "r6-s50",
+          "runs": {
+            "count": 16,
+            "exit_counts": {
+              "2": 16
+            },
+            "failed_runs": [],
+            "seconds_by_slot": [
+              12.64,
+              12.64,
+              12.74,
+              12.38,
+              12.64,
+              12.29,
+              12.54,
+              12.53,
+              12.13,
+              12.59,
+              12.54,
+              12.53,
+              12.49,
+              12.68,
+              12.64,
+              12.43
+            ]
+          }
+        }
+      ],
+      "method": "No receiver/wrapper timing instrumentation; suite observations only. Six full rounds completed before an orderly KeyboardInterrupt during round seven. The deterministic suite-0148 regression ran alongside some of these rounds; these are not claimed as quiet comparisons."
+    }
+  },
+  "conclusion": "No natural gate0148o launch refusal reproduced. Normal setup measurements do not support increasing the five-second bound. The deterministic regression separately proves pre-release preparation can wrongly consume that budget; it does not establish the cause of the original two no-op failures."
 }

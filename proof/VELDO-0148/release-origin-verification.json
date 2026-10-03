@@ -1,0 +1,1718 @@
+{
+  "implementation": "07ffafc4",
+  "gate_run": false,
+  "honest_parallel": {
+    "revision": "07ffafc4",
+    "workers": 16,
+    "rounds": [
+      {
+        "round": 1,
+        "suite": "63_veldo_0049_floor",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.86,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.71s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.954,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.78s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.055,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.92s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.856,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.71s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.703,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.53s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.852,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.053,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.90s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.052,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.89s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.953,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.77s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.053,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.88s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.501,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.33s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.751,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.62s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.004,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.85s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.851,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.05,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.91s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.55,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.37s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 1,
+        "suite": "64_veldo_0050_proof",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.538,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.589,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.40s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.488,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.30s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.393,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.24s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.339,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.17s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.586,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.586,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.436,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.25s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.485,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.34s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.485,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.33s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.386,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.24s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.536,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.42s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.436,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.29s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.286,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.10s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.384,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.20s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.487,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.36s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "suite": "63_veldo_0049_floor",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.908,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.72s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.961,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.81s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.013,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.85s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.958,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.77s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.105,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.95s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.105,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.92s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.057,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.88s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.859,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.70s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.803,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.67s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.853,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.953,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.78s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.056,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.88s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.452,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.27s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.452,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.28s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.861,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.952,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.82s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "suite": "64_veldo_0050_proof",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.588,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.41s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.588,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.43s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.538,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.40s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.436,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.26s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.241,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.06s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.69,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.54s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.687,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.49s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.74,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.55s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.538,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.538,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.535,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.37s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.438,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.31s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.591,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.42s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.339,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.18s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.483,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.686,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.51s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "suite": "63_veldo_0049_floor",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.918,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.73s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.956,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.80s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.106,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.91s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.005,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.85s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.704,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.55s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.155,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.97s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.06,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.90s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.855,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.71s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.904,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.77s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.506,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.32s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.856,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.053,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.92s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.104,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.94s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.006,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.87s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.406,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.23s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.01,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.84s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "suite": "64_veldo_0050_proof",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.486,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.486,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.437,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.26s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.587,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.39s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.636,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.43s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.736,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.55s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.588,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.41s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.635,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.47s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.436,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.27s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.486,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.35s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.593,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.41s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.54,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.333,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.15s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.392,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.25s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.333,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.17s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.684,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.52s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 4,
+        "suite": "63_veldo_0049_floor",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.256,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.12s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.967,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.82s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.255,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.09s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.255,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.07s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.939,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.76s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.407,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.23s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.212,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.02s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.155,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.99s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.053,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.89s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.136,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.97s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.311,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.17s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.203,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.07s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.236,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.09s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.354,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.19s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.153,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.01s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.063,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.91s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 4,
+        "suite": "64_veldo_0050_proof",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.088,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.92s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.837,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.68s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.04,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.84s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.14,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.98s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.14,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.99s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.137,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.99s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.145,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.95s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.938,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.79s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.889,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.72s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.939,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.78s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.088,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.94s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 13.144,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.98s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.235,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.07s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.841,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.69s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.889,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.73s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.75,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.58s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 5,
+        "suite": "63_veldo_0049_floor",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.01,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.82s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.263,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.10s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.008,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.84s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.357,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.17s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.159,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.99s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.307,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.15s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.206,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.06s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.31,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.16s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.106,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.94s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.355,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.18s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.666,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.53s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.804,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.65s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.755,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.60s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.865,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.74s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 21.805,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.64s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 22.359,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.17s",
+            "failures": []
+          }
+        ]
+      },
+      {
+        "round": 5,
+        "suite": "64_veldo_0050_proof",
+        "runs": [
+          {
+            "slot": 0,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.638,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.45s",
+            "failures": []
+          },
+          {
+            "slot": 1,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.687,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.52s",
+            "failures": []
+          },
+          {
+            "slot": 2,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.488,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
+            "failures": []
+          },
+          {
+            "slot": 3,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.49,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.33s",
+            "failures": []
+          },
+          {
+            "slot": 4,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.385,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.25s",
+            "failures": []
+          },
+          {
+            "slot": 5,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.739,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.54s",
+            "failures": []
+          },
+          {
+            "slot": 6,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.537,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+            "failures": []
+          },
+          {
+            "slot": 7,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.487,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.30s",
+            "failures": []
+          },
+          {
+            "slot": 8,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.288,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.12s",
+            "failures": []
+          },
+          {
+            "slot": 9,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.537,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.36s",
+            "failures": []
+          },
+          {
+            "slot": 10,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.336,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.16s",
+            "failures": []
+          },
+          {
+            "slot": 11,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.686,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.56s",
+            "failures": []
+          },
+          {
+            "slot": 12,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.486,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.34s",
+            "failures": []
+          },
+          {
+            "slot": 13,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.185,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.02s",
+            "failures": []
+          },
+          {
+            "slot": 14,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.736,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.56s",
+            "failures": []
+          },
+          {
+            "slot": 15,
+            "passed": true,
+            "exit": 2,
+            "seconds": 12.435,
+            "summary": "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.29s",
+            "failures": []
+          }
+        ]
+      }
+    ]
+  },
+  "selected_suites": {
+    "86_veldo_0148_re_land": {
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 51 passed, 0 failed in 41.78s",
+      "log_sha256": "43d00503e4f1306db38c12c6c04151e7df6463a4da3743f08743b661e7d7a404"
+    },
+    "63_veldo_0040_containment": {
+      "summary": "selftest (PARTIAL, 1 of 142 suites): 80 passed, 0 failed in 6.82s",
+      "log_sha256": "edb89a0fe7603f4266c4ff8aea7834e54e175c2dcd6aa87c94b50b34013acef7"
+    }
+  },
+  "production_sha256": {
+    "control_launch.py": "05cbecb3a6ef083f761677d16075a5bc4c90e32239c6c0453c934899c88ea482",
+    "control_containment.py": "aa31a64bcb54fdacfbbf843fd6cfa7bdb909122589b5b931f20046dc53cbb43c",
+    "control_heartbeat.py": "15938e9b89ae2e54f2828b4e6be57f956a778b9f435d4391224da74efdc365ef"
+  },
+  "mutations": {
+    "jobs": 2,
+    "honest": {
+      "148": {
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-setup-clock-before-release",
+          "--jobs",
+          "2"
+        ],
+        "count": 51,
+        "failed_rows": []
+      },
+      "40": {
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "40",
+          "--worker",
+          "containment-wrapper-leaves-group",
+          "--jobs",
+          "2"
+        ],
+        "count": 80,
+        "failed_rows": []
+      }
+    },
+    "results": [
+      {
+        "name": "receiver148-setup-clock-before-release",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-setup-clock-before-release",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-setup-clock-before-release/control_launch.py"
+        ],
+        "seconds": 44.99941192474216,
+        "expected_rows": [
+          "receiver/pre-release-budget"
+        ],
+        "targets": {
+          "receiver/pre-release-budget": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/pre-release-budget"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-release-deadline-restarted",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-release-deadline-restarted",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-release-deadline-restarted/control_launch.py"
+        ],
+        "seconds": 45.05008451221511,
+        "expected_rows": [
+          "receiver/late-wrapper"
+        ],
+        "targets": {
+          "receiver/late-wrapper": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/late-wrapper"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-release-deadline-not-finite",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-release-deadline-not-finite",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-release-deadline-not-finite/control_containment.py"
+        ],
+        "seconds": 44.691586217842996,
+        "expected_rows": [
+          "receiver/pre-release-budget"
+        ],
+        "targets": {
+          "receiver/pre-release-budget": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/pre-release-budget"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-report-wait-unbounded",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-report-wait-unbounded",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-report-wait-unbounded/control_launch.py"
+        ],
+        "seconds": 57.33643340785056,
+        "expected_rows": [
+          "receiver/report-timeout"
+        ],
+        "targets": {
+          "receiver/report-timeout": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/report-timeout"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-late-wrapper-execs",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-late-wrapper-execs",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-late-wrapper-execs/control_launch.py"
+        ],
+        "seconds": 44.61852738587186,
+        "expected_rows": [
+          "receiver/late-wrapper"
+        ],
+        "targets": {
+          "receiver/late-wrapper": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/late-wrapper"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-wrapper-eof-is-timeout",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-wrapper-eof-is-timeout",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-wrapper-eof-is-timeout/control_launch.py"
+        ],
+        "seconds": 44.711382269859314,
+        "expected_rows": [
+          "receiver/wrapper-exited"
+        ],
+        "targets": {
+          "receiver/wrapper-exited": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/wrapper-exited"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-placement-wait-unbounded",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-placement-wait-unbounded",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-placement-wait-unbounded/control_heartbeat.py"
+        ],
+        "seconds": 46.712946576066315,
+        "expected_rows": [
+          "receiver/placement-timeout"
+        ],
+        "targets": {
+          "receiver/placement-timeout": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/placement-timeout"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-placement-report-ignored",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-placement-report-ignored",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-placement-report-ignored/control_launch.py"
+        ],
+        "seconds": 49.61301832832396,
+        "expected_rows": [
+          "receiver/placement-error",
+          "receiver/placement-timeout"
+        ],
+        "targets": {
+          "receiver/placement-error": [
+            false
+          ],
+          "receiver/placement-timeout": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/placement-error",
+          "VELDO-0148 receiver/placement-timeout",
+          "VELDO-0148 receiver/report-timeout",
+          "VELDO-0148 receiver/late-wrapper",
+          "VELDO-0148 receiver/wrapper-exited"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "receiver148-heartbeat-moves-after-exec",
+        "finding": 148,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "148",
+          "--worker",
+          "receiver148-heartbeat-moves-after-exec",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/receiver148-heartbeat-moves-after-exec/control_heartbeat.py"
+        ],
+        "seconds": 39.6995139750652,
+        "expected_rows": [
+          "receiver/fast-exit"
+        ],
+        "targets": {
+          "receiver/fast-exit": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0148 receiver/normal-exit",
+          "VELDO-0148 receiver/fast-exit",
+          "VELDO-0148 receiver/placement-error",
+          "VELDO-0148 receiver/placement-timeout"
+        ],
+        "rejected": true,
+        "count": 51
+      },
+      {
+        "name": "containment-wrapper-leaves-group",
+        "finding": 40,
+        "command": [
+          "/usr/bin/python3",
+          "/home/dmitry/projects/veldo-worktrees/build-veldo-0148/scripts/check_teeth_mutations.py",
+          "--finding",
+          "40",
+          "--worker",
+          "containment-wrapper-leaves-group",
+          "--jobs",
+          "2",
+          "--mutant",
+          "/tmp/veldo0148-target-mutants/containment-wrapper-leaves-group/control_launch.py"
+        ],
+        "seconds": 9.638252126984298,
+        "expected_rows": [
+          "containment/dedicated-group"
+        ],
+        "targets": {
+          "containment/dedicated-group": [
+            false
+          ]
+        },
+        "failed_rows": [
+          "VELDO-0040 containment/dedicated-group",
+          "VELDO-0040 containment/ordinary-exit",
+          "VELDO-0040 containment/exit-notified",
+          "VELDO-0040 containment/caps-installed",
+          "VELDO-0040 containment/runtime-cap",
+          "VELDO-0040 containment/cooperative-stop",
+          "VELDO-0040 containment/stop-escalation",
+          "VELDO-0040 containment/observations"
+        ],
+        "rejected": true,
+        "count": 80
+      }
+    ]
+  }
+}
