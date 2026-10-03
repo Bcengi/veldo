@@ -18,7 +18,12 @@
   "VELDO-0088 proposal/graph-process",
   "VELDO-0088 cycle/combined-inputs",
   "VELDO-0088 cycle/receipts",
-  "VELDO-0088 cycle/waiting-release"
+  "VELDO-0088 cycle/waiting-release",
+  "VELDO-0088 review/pm-principal",
+  "VELDO-0088 review/current-publication",
+  "VELDO-0088 review/build-refusal",
+  "VELDO-0088 review/review-refusal",
+  "VELDO-0088 review/pending-budget"
  ],
  "modules": {
   ".veldo/authority_contract.py": {
@@ -43,7 +48,7 @@
   },
   ".veldo/control_service.py": {
    "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
-   "now": "960d9681847ac5b03e6bfe3e75edab0ea45fae7f6542803f0254bc6b5bba86a3"
+   "now": "4b73a8d78751142c0b9660300007a3b12e7a87d8f92c51a7b0ebaa2e51167354"
   },
   ".veldo/control_team.py": {
    "at_commit": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
@@ -51,7 +56,7 @@
   },
   ".veldo/control_workflow_cycle_pm.py": {
    "at_commit": null,
-   "now": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f"
+   "now": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "347bb13958771368f103f763a041a033033d4840627daee7eb5c0b7531c9ef65",
@@ -123,10 +128,30 @@
   [
    "VELDO-0088 cycle/waiting-release",
    false
+  ],
+  [
+   "VELDO-0088 review/pm-principal",
+   false
+  ],
+  [
+   "VELDO-0088 review/current-publication",
+   false
+  ],
+  [
+   "VELDO-0088 review/build-refusal",
+   false
+  ],
+  [
+   "VELDO-0088 review/review-refusal",
+   false
+  ],
+  [
+   "VELDO-0088 review/pending-budget",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.1,
+ "seconds": 0.099,
  "spec_id": "VELDO-0088",
  "suite": "scripts/suites/92_veldo_0088_pm_cycles.py",
  "tree": "git archive 24c0c90b150caefcdce3ac0bfae258073663c71a, unchanged; the current suite file run against it"

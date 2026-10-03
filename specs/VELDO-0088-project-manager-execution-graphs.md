@@ -279,3 +279,10 @@ without aborting the factory pass. Elaboration requires this cycle's successful
 publication to name the claimed unit. Five review rows and five finding-88
 mutations cover these corrections. The existing footprint covers every file;
 no specification status, assignment authorization or protected path changes.
+
+2026-10-03, review evidence: all twenty-one behavior rows pass in the normal and
+clean gate environments. The unchanged 1773b279 archive is red by assertion on
+all five new review rows; the original 24c0c90b archive is red by assertion on all
+twenty-one rows. The review cases use a fresh five-cycle project fixture, keeping
+the original sixteen rows and twelve-cycle fixture intact. Mutation execution,
+the full gate and the independent landing decision remain reviewer-owned.
