@@ -18,6 +18,7 @@ def _v168_suite():
     import shutil
     import socket
     import tempfile
+    import time
     import unicodedata
 
     production = {
@@ -309,9 +310,17 @@ def _v168_suite():
                                A.AC, ing.acquirer, ing.conn, domain=A.ids['domain_uuid'],
                                projects=['project-a', 'literal<U+200B>'], api_edge='api-edge',
                                journal_signer=ing.inbox.journal_signer, sign=ing.inbox.sign, asker=ing.presenter.edge)
-            H.deliver(api, token, owner, 'Please build a new calendar view')
+            # VELDO-0152 asks only after the factory PM returns an unclear route.
+            neighbor152 = load('v168_intake_setup', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py')
+            neighbor152.factory(intake, A.ids, 'owner', A.sign_as)
+            incoming = H.deliver(api, token, owner, 'Please build a new calendar view')
+            # The stand-in's fixed date can precede this run's signed membership enrollment.
+            incoming['message']['date'] = int(time.time()) + 1
             ing.acquirer.acquire()
             taken = intake.take_telegram()
+            routes = [neighbor152.unclear(intake, result) for result in taken if result.get('outcome') == 'inbox']
+            check('intake/delivery', 'factory inbox proposals accept the unclear route',
+                  bool(routes) and all(result.get('ok') for result in routes))
             questions = [json.loads(r[0]) for r in ing.conn.execute("SELECT data FROM entities WHERE kind='intake_question'")]
             delivered = []
             for q in questions:

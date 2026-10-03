@@ -37,6 +37,7 @@ footprint:
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0152_*.py"
   - "scripts/suites/84_veldo_0169_project_handouts.py"
+  - "scripts/suites/86_veldo_0168_text.py"
   - "scripts/suites/82_veldo_0085_decomposition.py"
   - "scripts/suites/91_veldo_0151_specialists.py"
   - "scripts/suites/72_veldo_0128_reports.py"
@@ -410,3 +411,11 @@ at the starting commit. Eleven finding-152 mutations are registered, with execut
 the reviewer. Validation, Git boundary, engine synchronization and zero bad anchors pass. The
 0152 diff is within its footprint; the origin/main comparison includes the inherited 0088 and
 0151 work. The full gate was not run, no landing claim is made, and status remains ready.
+
+2026-10-03, further review: the footprint adds 86_veldo_0168_text.py. Its intake/delivery fixture
+now activates the factory project and applies an unclear route, as AC2 and the landed-suite notes
+require. The question-delivery and escaping assertion is unchanged. The suite 93 companion check
+binds its loaded mutation catalog to the real repository root so a temporary catalog copy reads
+the repository's qualification fixture and missing companions fail the named row rather than crash.
+The 0168 intake message is dated after this run's membership enrollment; the shared stand-in's fixed
+date otherwise refuses it as not_member_when_sent before it can exercise question delivery.
