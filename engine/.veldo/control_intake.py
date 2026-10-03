@@ -1,75 +1,16 @@
-"""One intake for owner messages from Telegram and the authenticated API (VELDO-0126, PLAN-0019 W89).
+"""Common authenticated Telegram and API intake (VELDO-0126, amended by VELDO-0152).
 
-WHAT THIS MODULE IS. The common intake operation that turns an owner's message into a proposal. There
-are exactly two source kinds, `telegram_message` and `api_request`, and each has one adapter. Both
-adapters build the same normalized intake command (source kind and identity, the exact text, the
-authenticated principal, the requested project and the proposal it clarifies, plus the source's own
-provenance) and hand it to the one common service, `_submit`, whose store command `intake_record` is
-the only writer of intake sources, proposals and questions (control_store.declare_owners). Nothing
-else in this module writes to the store except `intake_question_asked`, which records where a
-question was delivered.
+Only the command's project field and a unique ticket key prefix decide an ordinary
+project. Names in prose are hints. Every undecided message is a factory inbox
+proposal awaiting a dispatched PM route; intake runs no model or wording rule.
+Only an unclear route asks a project question. Replies naming an offered project
+resolve it; other replies are retained as input for the next PM run.
 
-ONE PUBLIC ATTESTED SUBMISSION (VELDO-0133). A person's signed answer elsewhere (a disposition
-question's `other`) carries an instruction the person signed and names the source it arrived on.
-`submit_attested` takes it only after this intake authenticates that source itself, exactly as its
-adapters do: a `telegram_message` source is the id of kept VELDO-0066 evidence, attributed again by
-the Acquirer, whose sender must resolve to the answering person in that person's own private chat;
-an `api_request` source is the request packet the API edge signed, verified by the API adapter,
-whose principal must be the answering person. Only then does the common service take the signed
-instruction as the text, the caller's project, and the source's own provenance with the caller's
-(the question and the answer command identities) beside it. The caller never supplies a source
-identity, a chat or a sender, and nothing else reaches `_submit` from outside this module.
-
-WHO IS SPEAKING. A Telegram message counts only as the VELDO-0066 Acquirer attributes it: kept
-canonical evidence, a person account in person, in that person's own private chat, mapped by the
-stable sender id to one enrolled, active person member. The attribution is re-derived from the kept
-evidence each time, never read from a label, a display name or anything written in the text. Only an
-ordinary message is intake: one that replies to nothing, or replies to a message that is not a
-presentation (the owner's own earlier message, or a question this module asked). An answer to a
-presentation belongs to settlement, never to intake. An API request counts only when it is signed by
-the configured API edge principal (the authenticated API of VELDO-0130, a trusted channel edge) with
-its active key in the store's keyring, and the principal it asserts is an active person member. Both
-sources then pass the same person check, the Acquirer's, inside the store transaction. Authority
-holds at both ends: a Telegram message whose sender was not a member at the message's platform date
-stays refused after the sender is enrolled, read from the effective time of the key the enrollment
-wrote (VELDO-0025 keeps none on the membership entity).
-
-THE TEXT IS KEPT AS WRITTEN. No ticket identifier, command syntax or structure is required, and the
-text is never trimmed or rewritten. A ticket link in the text is data an agent may fetch later with
-its configured tools; intake fetches nothing and watches nothing.
-
-PROJECT CONTEXT. The candidate projects are the configured projects the principal's membership scope
-covers. The project is the one the API request names (it must be a candidate), else the one candidate
-the text names as a word, else the principal's only candidate. When none of these decides, intake does
-not choose: it keeps an inbox proposal and a question naming the candidates. A Telegram question is
-sent back as a reply to the owner's message through the VELDO-0065 edge; an API question is the
-response. A follow-up that clarifies a proposal (a Telegram reply to the original message or to the
-question, or an API request naming the proposal) is kept with its own source. It resolves an inbox
-proposal into a proposed objective when it names one of the question's candidates, and is otherwise
-kept on the proposal it clarifies. A follow-up to an inbox proposal already resolved lands on the
-objective it was resolved to, never on the retired inbox record.
-
-ONE REPLY ABOUT WAITING REQUESTS (VELDO-0136). A Telegram message the Acquirer refused as replying
-to no presentation (NOT_A_REPLY) gets its one decision here, after intake has seen it, and at most one
-bot reply, through the presenter's `hint_owner`: a message intake takes as a clarification or as the
-answer to its own question gets none; one taken as a new proposal while requests of the owner wait
-gets one note that it was taken as new work, not as an answer, naming the waiting requests, merged
-into the project question when intake asks one; the plain hint goes only to a message intake does not
-take. Each waiting request version is named once, and a later pass never decides a message again.
-
-INTAKE PROPOSES AND NOTHING ELSE. It writes only intake sources, proposals (state PROPOSED,
-AWAITING_PROJECT or RESOLVED) and questions: never an execution unit, a backlog item, an admission, a
-priority, a claim, a reservation or an effect. Admission and priority are later owner decisions.
-
-ONE SOURCE REQUEST, ONE PROPOSAL. A source's identity (bot, chat and message id; or the API request
-id) names one intake source record. The same request again with the same content returns the proposal
-it produced and writes nothing; changed content under the same identity, a Telegram edit included, is
-refused `identity_conflict` and the record is unchanged.
-
-WHAT IT IS NOT. Not the API server (VELDO-0130), not Jira intake, polling or webhooks (dropped by the
-owner), not elaboration, admission or priority, and not redelivery or outage recovery (Release 2).
-Observations carry identities, versions and outcomes, never the token or key material. Standard
-library only.
+Sources preserve exact text, provenance and the membership and project versions
+read in the transaction. The owning commands write proposals and questions only,
+never admission, priority or executable units. Repeated source identities preserve
+the original result. The owner receives the existing taken-as-work hint for an
+inbox proposal, and questions are delivered on the original channel.
 """
 import hashlib
 import importlib.util
@@ -254,6 +195,9 @@ class Intake(RT.Routes):
 
         conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
         self.route_refused = Refused
+
+    def _route_transition(self, conn, params, before):
+        return self._route_plan(params)[0]
 
     # reading
 
@@ -593,7 +537,7 @@ class Intake(RT.Routes):
                             'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
                             'sources': list(data['sources']) + [key], 'clarifications': data['clarifications'],
                             'question_id': None, 'resolves': live, 'resolved_to': None}
-                resolved.update(route=dict(data.get('route') or {}, route='existing_project', project=chosen,
+                resolved.update(context=data.get('context', {}), decision=data.get('decision'), route=dict(data.get('route') or {}, route='existing_project', project=chosen,
                                            reason='The principal answered the offered project question.'), hints=data.get('hints', []))
                 data.update(state='ROUTED', resolved_to=pid, route=resolved['route'])
                 changes[pid] = {'kind': PROPOSAL_KIND, 'data': resolved}

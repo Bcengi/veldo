@@ -222,7 +222,7 @@ sys.exit(4)
             def entity(eid):
                 return S.materialized_state(conn)['entities'].get(eid)
 
-            members = {'olga': ('person', ['project_owner'], ['proj-a', 'ops']), 'alice': ('person', [], ['proj-a']),
+            members = {'olga': ('person', ['project_owner'], ['proj-a', 'ops', 'factory']), 'alice': ('person', [], ['proj-a']),
                        'pete': ('person', [], ['proj-a']), 'paula': ('person', ['project_owner'], ['ops']),
                        'sam': ('person', [], ['ops']), 'rita': ('person', [], ['proj-a']), 'dora': ('person', [], ['proj-a']),
                        'mallory': ('person', [], ['proj-a', 'ops']), 'zed1': ('person', ['project_owner'], ['proj-z']),
@@ -244,9 +244,17 @@ sys.exit(4)
                 fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
                         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
                              revoked_at=None))
-            fixture('project:proj-a', 'project', dict(name='proj-a', state='ACTIVE', owner='olga'))
+            project_module = load('v133_project152', mods / 'control_project.py')
+            project_service = project_module.Projects(S, CM, conn, ids, 'authority', journal_sign,
+                                                      stop=lambda dispatch, reason: False)
+            for project_name, project_owner in (('proj-a', 'olga'), ('proj-z', 'zed1')):
+                body = dict(ids, operation='activate', project=project_name, principal=project_owner,
+                    command_id='activate-' + project_name, nonce='activate-' + project_name, owner=project_owner,
+                    charter={'purpose': 'Disposition fixture'}, execution_repository=REPO,
+                    authority_policy={'admission': ['project_owner']},
+                    coordination_budget={'capacity': 1, 'invocations': 10, 'wall_seconds': 60})
+                project_service.apply({'command': body, 'signature': sign_as(project_owner, S.canonical_bytes(body))})
             fixture('objective:a1', 'objective', dict(project_uuid='project:proj-a', state='ACTIVE'))
-            fixture('project:proj-z', 'project', dict(name='proj-z', state='ACTIVE'))
             fixture('objective:z1', 'objective', dict(project_uuid='project:proj-z', state='ACTIVE'))
 
             # The AC1 set: (reason, principal type that ended it, role), with the person expected to be asked.
@@ -301,6 +309,8 @@ sys.exit(4)
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=('proj-a', 'proj-z'), api_edge='api-edge',
                                journal_signer='authority', sign=journal_sign,
                                asker=V.TelegramPresentationEdge(P, url, api['token']))
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             try:
                 inbox = I.Inbox(S, CM, claims, contract, conn, ids, 'authority', journal_sign, intake=intake)
             except TypeError:  # the pre-change inbox takes no intake
@@ -917,7 +927,7 @@ sys.exit(4)
                     ('its dispose is refused not_authorized: the request is not the answering person\'s',
                      borrowed_dispose[0] == refused),
                     ('the refused disposes write nothing to the intake', forged_dispose[1] and borrowed_dispose[1]),
-                    ('the genuine request is later proposed, as pete\'s', later.get('outcome') == 'proposed'
+                    ('the genuine request is later proposed, as pete\'s', later.get('outcome') == 'inbox'
                      and (pete_proposal or {}).get('principal') == 'pete'
                      and (intake.source('api_request', 'req-pete-genuine') or {}).get('principal') == 'pete'),
                     ('the units stay parked, waiting to be disposed', all(
@@ -962,6 +972,8 @@ sys.exit(4)
                 own_said = sent(chats['wide'], chats['wide'], 'Wide writes in their own chat.')
                 own = answer_other(w3, {'source_kind': 'telegram_message', 'evidence_id': own_said})
                 own_dispose = dispose(w3)
+                neighbor152['unclear'](intake, own_dispose[0])
+                own_dispose = (own_dispose[0], own_dispose[1], api['requests'][region_sends:])
                 kept = acquirer.evidence(own_said) or {}
                 asked = intake.question(((intake.proposal(own_dispose[0].get('proposal_id') or '') or {}).get('question_id')) or '') or {}
                 delivery = asked.get('delivery') or {}

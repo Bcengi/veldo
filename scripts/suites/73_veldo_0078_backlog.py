@@ -264,7 +264,7 @@ def _v78_suite():
                                                   'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                                   'independence_group': 'steward', 'scope': '*'})
             deciders = ['project_owner', 'admission_authority', 'priority_authority']
-            enroll('olga', 'person', deciders, ['proj-a'])
+            enroll('olga', 'person', deciders, ['proj-a', 'factory'])
             enroll('zed', 'person', deciders, ['proj-a'])
             enroll('pm', 'service', [], ['proj-a'])
             # VELDO-0079's grooming service, which opens and presents the admission and priority requests.
@@ -314,6 +314,8 @@ def _v78_suite():
                                    journal_sign, 'telegram-edge', lambda m: sign_as('edge', m, 'veldo-command'))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a'], api_edge='api-edge',
                                journal_signer='authority', sign=journal_sign)
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
             receiver = claims.Receiver(conn, ids, 'authority', journal_sign)
 
@@ -541,7 +543,7 @@ def _v78_suite():
 
             # The accepted objective the backlog items are taken from, and its RAW features.
             body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': 'api-78-2', 'edge': 'api-edge',
-                    'principal': 'olga', 'text': 'For proj-a: travelers can buy a pass in two taps.', 'project': None,
+                    'principal': 'olga', 'text': 'For proj-a: travelers can buy a pass in two taps.', 'project': 'proj-a',
                     'clarifies': None}
             m1 = intake.receive('api_request', {'request': body, 'signature': sign_as('api-edge', S.canonical_bytes(body))})
 

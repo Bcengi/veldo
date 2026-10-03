@@ -1238,6 +1238,15 @@
    ],
    "regions": "Project coordination snapshots, Runner dispatch, proposal authority, production PM enrollment and bounded follow-up with surfaced faults.",
    "requires_note": "Only ROOT and expect. Uses its own proof fixture with real signed membership, project, team and capability services."
+  },
+  {
+   "name": "93_veldo_0152_intake_routes",
+   "file": "93_veldo_0152_intake_routes.py",
+   "regions": "none - added after the cut",
+   "requires": [
+    "93_veldo_0152_intake_routes"
+   ],
+   "requires_note": "Standalone fragment using shared preamble and its own signed fixture."
   }
  ]
 }

@@ -1,0 +1,85 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0152",
+ "finding": 152,
+ "status": "registered, execution reserved for reviewer",
+ "mutants": [
+  {
+   "name": "v152-name-decides",
+   "module": "control_intake.py",
+   "rows": [
+    "intake/name-is-a-hint"
+   ]
+  },
+  {
+   "name": "v152-only-candidate",
+   "module": "control_intake.py",
+   "rows": [
+    "intake/factory-inbox"
+   ]
+  },
+  {
+   "name": "v152-new-project-asks",
+   "module": "control_intake_routes.py",
+   "rows": [
+    "route/asked-only-when-unclear"
+   ]
+  },
+  {
+   "name": "v152-scope-unchecked",
+   "module": "control_intake_routes.py",
+   "rows": [
+    "route/scope-refusal"
+   ]
+  },
+  {
+   "name": "v152-factory-ordinary",
+   "module": "control_intake_routes.py",
+   "rows": [
+    "route/factory-refusal"
+   ]
+  },
+  {
+   "name": "v152-route-reason-empty",
+   "module": "control_intake_routes.py",
+   "rows": [
+    "route/malformed"
+   ]
+  },
+  {
+   "name": "v152-route-stale",
+   "module": "control_intake_routes.py",
+   "rows": [
+    "route/stale"
+   ]
+  },
+  {
+   "name": "v152-ticket-disabled",
+   "module": "control_intake.py",
+   "rows": [
+    "intake/ticket-key"
+   ]
+  },
+  {
+   "name": "v152-prefix-not-bound",
+   "module": "control_project.py",
+   "rows": [
+    "project/prefixes"
+   ]
+  },
+  {
+   "name": "v152-hint-dropped",
+   "module": "control_workflow_cycle_pm.py",
+   "rows": [
+    "route/runner-input"
+   ]
+  },
+  {
+   "name": "v152-route-report-omitted",
+   "module": "control_telegram_report.py",
+   "rows": [
+    "route/read-and-report"
+   ]
+  }
+ ]
+}

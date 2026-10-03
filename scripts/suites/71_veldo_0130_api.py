@@ -500,7 +500,7 @@ def _v130_checks(base):
                                           'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                           'independence_group': 'steward', 'scope': '*'})
     enroll_member('owner', 'person', ['project_owner', 'admission_authority', 'priority_authority', 'technical_authority'],
-                  ['project-a', 'project-b'])
+                  ['project-a', 'project-b', 'factory'])
     enroll_member('owner2', 'person', ['project_owner'], ['project-a'])
     enroll_member('member', 'person', [], ['project-z'])
     enroll_member('steward2', 'person', ['membership_steward'], ['project-b'])
@@ -562,6 +562,8 @@ def _v130_checks(base):
                            journal_sign, 'telegram-edge', adapter)
     intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=PROJECTS, api_edge='api-edge',
                        journal_signer='authority', sign=journal_sign)
+    neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+    neighbor152['factory'](intake, ids, 'owner', sign_as)
     absent = _V130Absent()
     credentials = (CR.Credentials(S, conn, ids, 'authority', journal_sign, rp_id=_V130_HOST, origin=_V130_ORIGIN,
                                   state_dir=base / 'authority-state') if here else absent)
@@ -1272,7 +1274,7 @@ def _v130_checks(base):
             ok_save = call('POST', SAVE, save_body('rf-flow', 0), cookie=owner_cookie, token=owner_token)
             check(RF, 'a valid current enrollment is served in every family%s%s%s%s%s%s'
                   % (seen(ok_auth), seen(ok_message), seen(ok_answer), seen(ok_read), seen(ok_events), seen(ok_save)),
-                  ok_auth[0] == 200 and ok_message[0] == 200 and ok_message[2].get('outcome') == 'proposed'
+                  ok_auth[0] == 200 and ok_message[0] == 200 and ok_message[2].get('outcome') == 'inbox'
                   and ok_answer[0] == 200 and ok_answer[2].get('outcome') == 'settled'
                   and ok_read[0] == 200 and ok_read[2].get('model') == 'objectives'
                   and ok_events[0] == 200 and bool(ok_events[2].get('events'))
@@ -1500,7 +1502,9 @@ def _v130_checks(base):
             inboxed = call('POST', MESSAGES, {'text': 'Something for later'}, cookie=owner_cookie, token=owner_token)
             check(MS, 'a message naming no project is kept with the question naming the candidates' + seen(inboxed),
                   inboxed[0] == 200 and inboxed[2].get('outcome') == 'inbox'
-                  and (inboxed[2].get('question') or {}).get('candidates') == ['project-a', 'project-b'])
+                  and not inboxed[2].get('question')
+                  and intake.proposal(inboxed[2]['proposal_id'])['state'] == 'AWAITING_ROUTE')
+            neighbor152['unclear'](intake, inboxed[2])
             resolved = call('POST', MESSAGES, {'text': 'It is for project-a', 'clarifies': inboxed[2].get('proposal_id')},
                             cookie=owner_cookie, token=owner_token)
             check(MS, 'a follow-up naming the proposal resolves it into an objective' + seen(resolved),
@@ -1689,7 +1693,7 @@ def _v130_checks(base):
                                    api_edge='api-edge', journal_signer='authority', sign=journal_sign)
             message = {'schema': IN.API_SCHEMA, 'domain': ids['domain_uuid'], 'request_id': next_id('rw-request'),
                        'edge': 'api-edge', 'principal': 'owner', 'text': 'For project-a: travelers buy a pass in two taps.',
-                       'project': None, 'clarifies': None}
+                       'project': 'project-a', 'clarifies': None}
             sent_rw = own_intake.receive('api_request', {'request': message,
                                                          'signature': sign_as('api-edge', S.canonical_bytes(message))})
             objectives = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)
@@ -2826,6 +2830,16 @@ def _v130_service_checks(base):
     try:
         A = H.build(base / 'a', mods, 5590130, url, 'bot130s')
         ids = A.ids
+        project_module = _v130_load('v130s_project152', mods / 'control_project.py')
+        project_service = project_module.Projects(A.S, A.CM, A.conn, ids, 'authority', A.journal_sign,
+                                                  stop=lambda dispatch, reason: False)
+        body = dict(ids, operation='activate', project='factory', principal='steward',
+            command_id='activate-factory', nonce='activate-factory', owner='steward',
+            charter={'purpose': 'Route messages'}, execution_repository=ids['repository_uuid'],
+            authority_policy={'admission': ['project_owner']},
+            coordination_budget={'capacity': 1, 'invocations': 10, 'wall_seconds': 60})
+        project_service.apply({'command': body, 'signature': A.sign_as('steward', A.S.canonical_bytes(body))})
+
         # The API's own edge: channel "api", its signing key in the protected key directory beside the
         # Telegram edge's, its connection key outside it.
         for who, path in (('api-gate', A.keyfile['edge'].with_name('edge-api')),
@@ -2862,7 +2876,7 @@ def _v130_service_checks(base):
                                                                                       journal=journal)))
         service_values = {'schema': 'veldo.api_service/v1', 'store_path': str(A.db), 'authority_ids': ids,
                           'authority_generation': 1, 'journal': journal, 'api_edge': 'api-gate', 'domain': DOMAIN,
-                          'projects': ['project-a'], 'rp_id': _V130_HOST, 'origin': _V130_ORIGIN,
+                          'projects': ['project-a', 'factory'], 'rp_id': _V130_HOST, 'origin': _V130_ORIGIN,
                           'workflows_repository': 'project-a', 'publication_root': str(clone)}
         api_service = private(A.host / 'api-service.json', _v130_json.dumps(service_values))
         profile = {'kind': 'linux-systemd', 'slice': 'v130%s.slice' % _v130_os.urandom(3).hex(),

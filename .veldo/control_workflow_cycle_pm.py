@@ -474,7 +474,7 @@ class ProjectCycles:
             for name, selected in unit['staffing'].items()}
         record['unit_assignment'] = assignment
 
-    def returned_document(self, dispatched):
+    def returned_document(self, dispatched, route=False):
         if not self.execution_records or not dispatched.get('execution_record'):
             raise Refused('missing_evidence:proposal_document')
         reader = organ('control_execution_record')
@@ -487,11 +487,12 @@ class ProjectCycles:
                     continue
                 try:
                     value = json.loads(line['payload'])
+                    final = value.get('type') == 'result' or value.get('type') == 'item.completed'
                     if value.get('type') == 'result' and isinstance(value.get('result'), str):
                         value = json.loads(value['result'])
                     elif value.get('type') == 'item.completed' and value.get('item', {}).get('type') == 'agent_message':
                         value = json.loads(value['item']['text'])
-                    if value.get('schema') in (DOCUMENT, IR.SCHEMA) or 'route' in value or 'proposal_id' in value:
+                    if route and final or isinstance(value, dict) and value.get('schema') == DOCUMENT:
                         values.append(value)
                 except (ValueError, TypeError, AttributeError):
                     continue
@@ -499,6 +500,8 @@ class ProjectCycles:
             if after >= page['total'] or not page['lines']:
                 break
         if len(values) != 1:
+            if route:
+                return values
             raise Refused('missing_evidence:one_proposal_document')
         return values[0]
 
@@ -507,7 +510,7 @@ class ProjectCycles:
         try:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
-            value = self.returned_document(dispatched)
+            value = self.returned_document(dispatched, route=bool(record.get('route_subject')))
             if not record.get('route_subject'):
                 document(value)
             # Only a digest goes into the graph process. It cannot invoke owners.
@@ -601,12 +604,13 @@ def from_line(line):
     channel = getattr(service, 'channel', None)
     if channel is not None:
         ingress = channel.ingress
-        intake_module = organ('control_intake')
-        services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
-            domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
-                "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
-            journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
-            authority_generation=service.generation)
+        if row(service.conn, 'project:factory') is not None:
+            intake_module = organ('control_intake')
+            services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
+                domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
+                    "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
+                journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
+                authority_generation=service.generation)
         services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,
             service.principal, service.sign, backlog=backlog_module, service=backlog, assignment=assignment,
             inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,

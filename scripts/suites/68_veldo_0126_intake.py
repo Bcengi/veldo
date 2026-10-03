@@ -30,7 +30,8 @@ def _v126_suite():
     import time
 
     # Literal anchor: the registered mutation driver substitutes the production copy here.
-    PRODUCTION = {'control_intake.py': ROOT / ".veldo" / "control_intake.py"}
+    PRODUCTION = {'control_intake.py': ROOT / ".veldo" / "control_intake.py",
+                  'control_intake_routes.py': ROOT / ".veldo" / "control_intake_routes.py"}
     PREFIX = 'VELDO-0126 '
 
     def load(name, path):
@@ -158,7 +159,8 @@ def _v126_suite():
             shutil.copyfile(source, mods / source.name)
         present = PRODUCTION['control_intake.py'].is_file()
         if present:
-            shutil.copyfile(PRODUCTION['control_intake.py'], mods / 'control_intake.py')
+            for module, source in PRODUCTION.items():
+                shutil.copyfile(source, mods / module)
         conn = None
         try:
             with region('install/assets'):
@@ -212,7 +214,7 @@ def _v126_suite():
                                      expected_versions={eid: current.get(eid, {}).get('version', 0)}, artifact_digests=[],
                                      nonce='fixture-n-%d' % serial[0]), 'authority', journal_sign, 1)
 
-            members = {'owner': ('person', ['project-a'], None), 'multi': ('person', ['project-a', 'project-b'], None),
+            members = {'owner': ('person', ['project-a', 'factory'], None), 'multi': ('person', ['project-a', 'project-b'], None),
                        'colleague': ('person', ['project-a'], None), 'retired': ('person', ['project-a'], 1.0),
                        'pm': ('service', ['project-a'], None), 'telegram-edge': ('service', ['project-a'], None),
                        'api-edge': ('service', ['*'], None)}
@@ -294,6 +296,8 @@ def _v126_suite():
                 intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=PROJECTS, api_edge='api-edge',
                                    journal_signer='authority', sign=journal_sign,
                                    asker=V.TelegramPresentationEdge(P, url, api['token']), observe=events.append)
+                neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+                neighbor152['factory'](intake, ids, 'owner', sign_as)
             else:
                 intake = Absent()
             INTAKE_KINDS = {'intake_source', 'intake_proposal', 'intake_question'}
@@ -353,12 +357,12 @@ def _v126_suite():
                 c_t, c_a = r_t.get('command') or {}, r_a.get('command') or {}
                 s_t = intake.source('telegram_message', '%d:%d:%d' % (api['bot']['id'], chats['owner'], m_t['message_id']))
                 s_a = intake.source('api_request', 'req-common')
-                submits = [e for e in events if e.get('operation') == 'submit' and e.get('outcome') == 'proposed']
+                submits = [e for e in events if e.get('operation') == 'submit' and e.get('outcome') == 'inbox']
                 observed['common'] = {'telegram': r_t.get('outcome'), 'api': r_a.get('outcome')}
                 check('intake/common-command', [
                     ('two allowed source kinds', getattr(IN, 'SOURCE_KINDS', None) == ('telegram_message', 'api_request')),
-                    ('telegram proposed', r_t.get('outcome') == 'proposed'),
-                    ('api proposed', r_a.get('outcome') == 'proposed'),
+                    ('telegram proposed', r_t.get('outcome') == 'inbox'),
+                    ('api proposed', r_a.get('outcome') == 'inbox'),
                     ('one normalized command shape', c_t and set(c_t) == set(c_a) and c_t.get('schema') == c_a.get('schema')),
                     ('same text, principal and context', all(c.get('text') == t1 and c.get('principal') == 'owner'
                                                             and c.get('project') is None for c in (c_t, c_a))),
@@ -368,8 +372,8 @@ def _v126_suite():
                     ('telegram provenance', (c_t.get('provenance') or {}).get('message_id') == m_t['message_id']
                      and acquirer.evidence((c_t.get('provenance') or {}).get('evidence_id') or '') is not None),
                     ('api provenance', (c_a.get('provenance') or {}).get('request_id') == 'req-common'),
-                    ('equal proposals', same_shape(p_t, p_a) and p_t.get('proposal') == 'objective'
-                     and p_t.get('state') == 'PROPOSED' and p_t.get('project') == 'project-a'),
+                    ('equal proposals', same_shape(p_t, p_a) and p_t.get('proposal') == 'inbox'
+                     and p_t.get('state') == 'AWAITING_ROUTE' and p_t.get('project') == 'factory'),
                     ('distinct proposals per source', p_t and p_a and p_t['proposal_id'] != p_a['proposal_id']),
                     ('sources retained', s_t and s_a and s_t.get('text') == t1 and s_a.get('text') == t1
                      and s_t.get('principal') == s_a.get('principal') == 'owner'
@@ -388,6 +392,9 @@ def _v126_suite():
                 sends = len([c for c in api['calls'] if c[0] == 'sendMessage'])
                 r_mt, m_mt = telegram(multi_user, t2)
                 r_ma = via_api('multi', t2, request_id='req-multi')
+                before_routes = [proposal_of(r_mt), proposal_of(r_ma)]
+                neighbor152['unclear'](intake, r_mt)
+                neighbor152['unclear'](intake, r_ma)
                 p_mt, p_ma = proposal_of(r_mt), proposal_of(r_ma)
                 q_mt, q_ma = intake.question((p_mt or {}).get('question_id')), intake.question((p_ma or {}).get('question_id'))
                 sent = [c for c in api['calls'] if c[0] == 'sendMessage'][sends:]
@@ -396,18 +403,17 @@ def _v126_suite():
                 check('intake/unresolved-project-asks', [
                     ('telegram inbox', r_mt.get('outcome') == 'inbox'),
                     ('api inbox', r_ma.get('outcome') == 'inbox'),
-                    ('no project invented', all(p and p.get('project') is None and p.get('state') == 'AWAITING_PROJECT'
+                    ('no project invented', all(p and p.get('project') == 'factory' and p.get('state') == 'AWAITING_PROJECT'
                                                 and p.get('proposal') == 'inbox' and p.get('text') == t2 for p in (p_mt, p_ma))),
                     ('questions open with every candidate', all(q and q.get('state') == 'open'
-                                                                and q.get('candidates') == ['project-a', 'project-b']
+                                                                and q.get('candidates') == ['project-a', 'project-b', 'a new project']
                                                                 and q.get('principal') == 'multi' for q in (q_mt, q_ma))),
                     ('telegram question sent as a reply', len(sent) == 1 and sent[0][1].get('chat_id') == chats['multi']
                      and (sent[0][1].get('reply_parameters') or {}).get('message_id') == m_mt['message_id']
                      and sent[0][1].get('text') == (q_mt or {}).get('prompt')),
                     ('telegram delivery recorded', delivered.get('channel') == 'telegram_chat'
                      and delivered.get('chat_id') == chats['multi'] and type(delivered.get('message_id')) is int),
-                    ('api question answered in the response', (r_ma.get('question') or {}).get('candidates')
-                     == ['project-a', 'project-b'] and ((q_ma or {}).get('delivery') or {}).get('request_id') == 'req-multi'),
+                    ('api question answered in the response', not r_ma.get('question') and all(p['state'] == 'AWAITING_ROUTE' for p in before_routes) and ((q_ma or {}).get('delivery') or {}).get('request_id') == 'req-multi'),
                     ('no objective for the unresolved owner', not [p for p in (json.loads(t) for (t,) in conn.execute(
                         "SELECT data FROM entities WHERE kind='intake_proposal'"))
                         if p.get('principal') == 'multi' and p.get('state') != 'AWAITING_PROJECT']),
@@ -429,14 +435,14 @@ def _v126_suite():
                     text, prop = texts[name], proposal_of(result)
                     src = intake.source(((result.get('command') or {}).get('source_kind') or ''),
                                         (result.get('command') or {}).get('source_id') or '')
-                    parts += [('%s via %s proposed' % (name, leg), result.get('outcome') == 'proposed'),
+                    parts += [('%s via %s proposed' % (name, leg), result.get('outcome') == 'inbox'),
                               ('%s via %s text exact' % (name, leg), prop and prop.get('text') == text
                                and src and src.get('text') == text and (result.get('command') or {}).get('text') == text)]
                 check('intake/plain-objective', parts + [
                     ('no ticket id needed', not any(ch.isdigit() for ch in texts['prose'] + texts['incomplete'])),
                     ('the ticket host was never contacted', ticket_hits == []),
                     ('nothing watches the ticket', kinds_now <= fixture_kinds | INTAKE_KINDS | {
-                        'channel_evidence', 'channel_acquisition_cursor', 'authority_versions'}),
+                        'channel_evidence', 'channel_acquisition_cursor', 'authority_versions', 'project'}),
                 ])
 
             # AC2: follow-ups clarify, and resolve an inbox proposal only by naming a candidate.
@@ -451,6 +457,7 @@ def _v126_suite():
                 r_ct, _ = telegram(owner_user, 'Also include refunds.', reply_to=m_t['message_id'])
                 r_ca = via_api('owner', 'and keep it weekly', clarifies=(r_a or {}).get('proposal_id'))
                 r_open = via_api('multi', 'Tidy up the release notes.', request_id='req-open')
+                neighbor152['unclear'](intake, r_open)
                 r_vague = via_api('multi', 'not sure yet', clarifies=(r_open or {}).get('proposal_id'))
                 f_t, f_a = proposal_of(r_ft), proposal_of(r_fa)
                 p_mt2, p_ma2, p_t2, p_a2 = (intake.proposal((p or {}).get('proposal_id')) for p in (p_mt, p_ma, p_t, p_a))
@@ -470,7 +477,7 @@ def _v126_suite():
                     ('follow-up text kept', f_t and {'source': (r_ft.get('source')), 'text': 'project-b please'}
                      in f_t.get('clarifications', []) and f_a and 'This one is for project-a.'
                      in [c.get('text') for c in f_a.get('clarifications', [])]),
-                    ('inbox proposals resolved', all(p and p.get('state') == 'RESOLVED' and p.get('text') == t2
+                    ('inbox proposals resolved', all(p and p.get('state') == 'ROUTED' and p.get('text') == t2
                                                      for p in (p_mt2, p_ma2))
                      and (intake.question((p_mt or {}).get('question_id')) or {}).get('state') == 'answered'),
                     ('clarifications on objectives kept', r_ct.get('outcome') == 'clarification'
@@ -479,7 +486,7 @@ def _v126_suite():
                      and p_a2 and [c.get('text') for c in p_a2.get('clarifications', [])] == ['and keep it weekly']),
                     ('a vague follow-up keeps the question open', r_vague.get('outcome') == 'clarification'
                      and (intake.question((open_p or {}).get('question_id')) or {}).get('state') == 'open'
-                     and (intake.proposal((open_p or {}).get('proposal_id')) or {}).get('state') == 'AWAITING_PROJECT'),
+                     and (intake.proposal((open_p or {}).get('proposal_id')) or {}).get('state') == 'AWAITING_ROUTE'),
                     ('telegram follow-up after resolution lands on the live objective', r_lt.get('outcome') == 'clarification'
                      and f_t and r_lt.get('proposal_id') == f_t.get('proposal_id')
                      and said(f_t) == ['project-b please', 'Also add a checklist'] and f_t.get('state') == 'PROPOSED'),
@@ -545,12 +552,12 @@ def _v126_suite():
                     ('%s refused %s' % (k, wanted[k]), refusals[k].get('outcome') == 'refused'
                      and refusals[k].get('reason') == wanted[k]) for k in wanted] + [
                     ('refusals wrote nothing', rows1 == rows0 and seq1 == seq0),
-                    ('the valid request is taken', r_valid.get('outcome') == 'proposed'
+                    ('the valid request is taken', r_valid.get('outcome') == 'inbox'
                      and (proposal_of(r_valid) or {}).get('text') == 'Refresh the partner list.'),
-                    ('forged text never makes the owner the principal', r_colleague.get('outcome') == 'proposed'
+                    ('forged text never makes the owner the principal', r_colleague.get('outcome') == 'inbox'
                      and (proposal_of(r_colleague) or {}).get('principal') == 'colleague'),
                     ('refused before enrollment, taken once a member', r_early.get('reason') == 'unauthenticated:unknown_sender'
-                     and r_late.get('outcome') == 'proposed' and (proposal_of(r_late) or {}).get('principal') == 'late'),
+                     and r_late.get('outcome') == 'inbox' and (proposal_of(r_late) or {}).get('principal') == 'late'),
                 ])
 
             # AC3: the same source request returns the same proposal; changed content is a conflict.
@@ -593,14 +600,14 @@ def _v126_suite():
                 for (t,) in conn.execute("SELECT transition FROM journal WHERE command_id LIKE 'intake%'"):
                     touched |= {v.get('kind') for v in json.loads(t).values()}
                 fields = {'schema', 'proposal_id', 'proposal', 'state', 'domain', 'project', 'principal', 'text', 'sources',
-                          'clarifications', 'question_id', 'resolves', 'resolved_to'}
+                          'clarifications', 'question_id', 'resolves', 'resolved_to', 'context', 'decision', 'route', 'hints'}
                 observed['admission'] = {'kinds': sorted(kinds), 'touched': sorted(touched), 'proposals': len(proposals)}
                 check('intake/no-admission', [
                     ('proposals were made', len(proposals) >= 10),
                     ('no unit, backlog item, admission, priority or claim', not kinds & {
                         'execution_unit', 'unit', 'backlog_item', 'admission', 'priority', 'claim', 'assignment'}),
                     ('intake writes only intake records', touched == INTAKE_KINDS),
-                    ('only proposal states', {p.get('state') for p in proposals} <= {'PROPOSED', 'AWAITING_PROJECT', 'RESOLVED'}),
+                    ('only proposal states', {p.get('state') for p in proposals} <= {'PROPOSED', 'AWAITING_PROJECT', 'RESOLVED', 'AWAITING_ROUTE', 'ROUTED'}),
                     ('no priority or admission field', all(set(p) == fields for p in proposals)),
                     ('no reservation or effect', conn.execute('SELECT COUNT(*) FROM reservations').fetchone()[0] == 0
                      and conn.execute('SELECT COUNT(*) FROM effects').fetchone()[0] == 0),
@@ -624,6 +631,8 @@ def _v126_suite():
                     ('counts are the events', metrics.get('accepted') == sum(1 for e in events if e.get('refusal') is None)
                      and metrics.get('refused') == sum(1 for e in events if e.get('refusal'))),
                     ('pending is the store', metrics.get('pending') == {
+                        'awaiting_route': sum(p['state'] == 'AWAITING_ROUTE' for p in proposals),
+                        'new_project': 0,
                         'proposed': sum(1 for p in proposals if p['state'] == 'PROPOSED'),
                         'awaiting_project': sum(1 for p in proposals if p['state'] == 'AWAITING_PROJECT'),
                         'open_questions': 1}),

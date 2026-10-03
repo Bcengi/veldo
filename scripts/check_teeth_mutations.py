@@ -4171,7 +4171,7 @@ def cases():
     # Review of VELDO-0136: one decision per owner message, taken after intake has seen it.
     # New work is told it answers nothing, as if intake had not taken it.
     hints('new-work-told-answers-nothing', 'control_intake.py',
-          "                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)\n",
+          "                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)\n",
           "                self._hint(payload, None)  # defect: new work is told it answers nothing\n",
           'hint/new-work-one-reply')
     # The finding itself: the Acquirer hints when it refuses, before intake has seen the message.
@@ -4184,14 +4184,10 @@ def cases():
           "                                           update_id=record.get('update_id')))\n"
           "        # A message refused as NOT_A_REPLY is not hinted here: the VELDO-0126 intake pass, which sees\n",
           'hint/answer-without-reply-one-reply')
-    # Intake's project question and the note go out as two replies.
-    hints('question-and-note-apart', 'control_intake.py',
-          "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
-          "        hinted = dict(self._hint(where.get('evidence_id'), 'proposed'), attempted=False)  # defect: two replies\n",
-          'hint/two-projects-one-reply')
+    # VELDO-0152 retires question-and-note-apart: the PM question is a later reply.
     # A clarification and a Reply to intake's own question are hinted as if intake had not taken them.
     hints('intake-replies-hinted', 'control_intake.py',
-          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):\n",
+          "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):\n",
           "            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused', 'clarification',\n"
           "                                                                         'resolved'):  # defect\n",
           'hint/intake-replies-not-hinted')
@@ -4242,11 +4238,12 @@ def cases():
     intake('api-principal-from-edge', "                'principal': request['principal'], 'text': request['text'],",
            "                'principal': request['edge'], 'text': request['text'],", 'common-command')
     intake('unresolved-first-candidate-wins',
-           "or (candidates[0] if len(candidates) == 1 else None)\n",
-           "or candidates[0]  # defect: the first candidate project is taken as the owner's\n",
-           'unresolved-project-asks')
-    intake('question-not-sent', "            self._ask(result['question_id'], command)\n",
-           "            pass  # defect: the question is never sent\n", 'unresolved-project-asks')
+           "            project = explicit or (keyed[0] if len(keyed) == 1 else None)\n",
+           "            project = explicit or (keyed[0] if len(keyed) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)\n",
+           'common-command')
+    add(126, 'question-not-sent', '68_veldo_0126_intake.py', 'control_intake_routes.py',
+        "                self._ask(question['question_id'], source['command'])\n",
+        "                pass  # defect: omit the unclear question\n", ['intake/unresolved-project-asks'], ())
     # AC2, declared: every message must carry a Jira ticket id.
     intake('ticket-id-required',
            "    if type(text) is not str or not text.strip() or len(text) > TEXT_LIMIT:\n        return 'invalid_input:text'\n",
@@ -4271,8 +4268,8 @@ def cases():
            "        changes['unit:' + key] = {'kind': 'execution_unit', 'data': {'state': 'READY',  # defect\n"
            "                                                                     'proposal': result['proposal_id']}}\n"
            "        changes[key] = {'kind': SOURCE_KIND, 'data': source}\n", 'no-admission')
-    intake('accepted-message-prioritized', "'state': 'PROPOSED' if project else",
-           "'state': 'PRIORITIZED' if project else", 'no-admission')
+    intake('accepted-message-prioritized', "'state': 'PROPOSED' if project else 'AWAITING_ROUTE'",
+           "'state': 'PROPOSED' if project else 'PRIORITIZED'", 'no-admission')
     intake('changed-content-overwrites', "            raise Refused('identity_conflict', key)\n",
            "            pass  # defect: changed content overwrites the recorded request\n", 'same-request-same-proposal')
     intake('repeat-refused-as-conflict', "                raise _Repeated(existing['data'])\n",
@@ -4280,7 +4277,7 @@ def cases():
            'same-request-same-proposal')
     # Review of 8607f50: a follow-up to an inbox proposal already resolved lands on the live objective.
     intake('follow-up-lands-on-retired-inbox',
-           "            if target['data'].get('state') != 'RESOLVED':\n",
+           "            if target['data'].get('state') not in ('RESOLVED', 'ROUTED'):\n",
            "            if True:  # defect: a resolved inbox proposal is not followed to its objective\n",
            'follow-up-clarification')
     intake('follow-up-to-resolved-refused', "            pid = onward\n",
@@ -9975,6 +9972,19 @@ def cases():
     add(88, 'v88-setup-pm-unenrolled', '92_veldo_0088_pm_cycles.py', 'control_factory_setup.py', "        with step('project_manager_enrollment'):\n", '        if False:  # defect: setup omits PM membership\n', ['followup/setup-pm'], ())
     add(88, 'v88-swallow-initial-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '\n                except Refused as error:\n', '\n                except Exception as error:\n', ['followup/initial-fault'], ())
     add(88, 'v88-swallow-pending-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Refused as error:\n', '                        except Exception as error:\n', ['followup/pending-fault'], ())
+
+    # VELDO-0152: criterion falsifiers and the route boundaries.
+    add(152, 'v152-name-decides', '93_veldo_0152_intake_routes.py', 'control_intake.py', '            project = explicit or (keyed[0] if len(keyed) == 1 else None)\n', '            project = explicit or (hints[0] if len(hints) == 1 else None) or (keyed[0] if len(keyed) == 1 else None)\n', ['intake/name-is-a-hint'], ())
+    add(152, 'v152-only-candidate', '93_veldo_0152_intake_routes.py', 'control_intake.py', '            project = explicit or (keyed[0] if len(keyed) == 1 else None)\n', '            project = explicit or (keyed[0] if len(keyed) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)\n', ['intake/factory-inbox'], ())
+    add(152, 'v152-new-project-asks', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "        if doc['route'] == 'new_project':\n", '        if False:  # defect: new-project falls through to the question\n', ['route/asked-only-when-unclear'], ())
+    add(152, 'v152-scope-unchecked', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', '            if chosen not in candidates:\n', '            if False:\n', ['route/scope-refusal'], ())
+    add(152, 'v152-factory-ordinary', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "            if chosen == 'factory':\n", '            if False:\n', ['route/factory-refusal'], ())
+    add(152, 'v152-route-reason-empty', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "or not isinstance(doc.get('reason'), str) or not doc['reason'].strip()", "or not isinstance(doc.get('reason'), str)", ['route/malformed'], ())
+    add(152, 'v152-route-stale', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "        if (data.get('state') != 'AWAITING_ROUTE' or data.get('project') != 'factory'\n", "        if (data.get('project') != 'factory'\n", ['route/stale'], (("or params.get('version') not in (None, held['version'])", "or False"),))
+    add(152, 'v152-ticket-disabled', '93_veldo_0152_intake_routes.py', 'control_intake.py', '        keyed, shared = keyed_projects(text, candidates, prefixes)\n', '        keyed, shared = [], []\n', ['intake/ticket-key'], ())
+    add(152, 'v152-prefix-not-bound', '93_veldo_0152_intake_routes.py', 'control_project.py', '                data[TICKET_PREFIXES] = list(params[TICKET_PREFIXES])\n', '                data[TICKET_PREFIXES] = []\n', ['project/prefixes'], ())
+    add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],", "clarifications=proposal['clarifications'], hints=[],", ['route/runner-input'], ())
+    add(152, 'v152-route-report-omitted', '93_veldo_0152_intake_routes.py', 'control_telegram_report.py', "    ('intake_routed', ('intake_proposal',), '_intake_route'),\n", '', ['route/read-and-report'], ())
 
     return result
 

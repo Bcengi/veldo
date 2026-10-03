@@ -35,10 +35,6 @@ class Routes:
         return dict(ok=True, outcome='applied', proposal_id=held.get('resolved_to') or proposal_id,
                     route=held['route'])
 
-    def _route_transition(self, conn, params, before):
-        changes, _ = self._route_plan(params)
-        return changes
-
     def _route_plan(self, params):
         doc, pid = params.get('document'), params.get('proposal_id')
         fail = self.route_refused

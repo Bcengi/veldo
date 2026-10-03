@@ -276,7 +276,7 @@ def _v79_suite():
                                                   'public_key': public['steward'], 'independence_group': 'steward',
                                                   'scope': '*'})
             # olga owns proj-a with both decision roles; zed owns proj-b and holds admission, never priority.
-            enroll('olga', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-a'])
+            enroll('olga', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-a', 'factory'])
             enroll('zed', 'person', ['project_owner', 'admission_authority'], ['proj-b'])
             enroll('asha', 'person', [], ['proj-a', 'proj-b'])
             enroll('pm', 'service', [], ['proj-a', 'proj-b'])
@@ -326,6 +326,8 @@ def _v79_suite():
                                    journal_sign, 'telegram-edge', lambda m: sign_as('edge', m, 'veldo-command'))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a', 'proj-b'],
                                api_edge='api-edge', journal_signer='authority', sign=journal_sign)
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
 
             def signed(who, body):
@@ -497,7 +499,7 @@ def _v79_suite():
 
             def by_api(principal, text):
                 body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': next_id('req'), 'edge': 'api-edge',
-                        'principal': principal, 'text': text, 'project': None, 'clarifies': None}
+                        'principal': principal, 'text': text, 'project': next((p for p in ('proj-a', 'proj-b', 'proj-c') if text.startswith('For ' + p + ':')), None), 'clarifies': None}
                 result = intake.receive('api_request', {'request': body,
                                                         'signature': sign_as('api-edge', S.canonical_bytes(body))})
                 return result, body

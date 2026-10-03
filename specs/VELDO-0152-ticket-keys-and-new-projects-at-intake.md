@@ -36,6 +36,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0152_*.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/68_veldo_0126_intake.py"
   - "scripts/suites/68_veldo_0136_hints.py"
   - "scripts/suites/69_veldo_0133_dispositions.py"
@@ -384,3 +385,8 @@ within the existing footprint. The 0088 base's production cycle lives in control
 so that file consumes inbox snapshots and hands PM output to intake; no graph runner or 0151 file is
 changed. API models already serve the complete intake proposal. Route reporting extends the existing
 report registry. This is an implementation checkpoint, not completed proof or a landing claim.
+
+2026-10-03, reporting integration: the footprint adds 72_veldo_0128_reports.py because AC3 adds
+a reporting event and that suite enumerates the complete registry. The API read model retains a
+route dispatch identity only when it names a stored dispatch, avoiding entropy-only redaction of
+this public correlation field. No credential redaction rule changes.
