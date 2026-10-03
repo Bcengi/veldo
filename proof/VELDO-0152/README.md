@@ -1,5 +1,47 @@
 # VELDO-0152 review follow-up evidence
 
+## Further review fixes at 5d90b5b5
+
+Both requested fixes are committed on build-veldo-0152b:
+
+- `7d96d036`: suite 93 sets the loaded mutation catalog's ROOT to the real repository before
+  calling cases(). A temporary mutant catalog therefore reads the real qualification fixtures.
+  The companion check still materializes each distinct intake dependency layout and imports it;
+  its existing missing-import assertion remains intact. No mutation runner was executed here,
+  so rejection of v152-intake-companions-missing remains for the reviewer to execute.
+- `299e0742`: suite 86 activates the factory project through the existing signed helper and
+  applies an unclear route through intake before checking the question. The original delivery
+  assertion is unchanged: a question must actually arrive, its literal escape must be escaped
+  once, and the stored prompt must retain the original text. An additional assertion requires
+  an applied route. The incoming fixture message is dated after membership enrollment because
+  the stand-in's fixed date otherwise yields unauthorized:not_member_when_sent.
+
+The fixture change follows VELDO-0152 AC2, lines 114-116: "A store with no factory project refuses
+an undecided message `unsupported_configuration:factory_project` and routes it nowhere."
+Its landed-suite guidance, lines 278-281, explicitly requires a factory project and an unclear
+route for rows needing a question. VELDO-0168 AC1 includes the intake question send, and AC2
+requires escaping the literal `<U+` prefix. Production routing therefore stays unchanged.
+The earlier classification below of 0168 intake/delivery as inherited is superseded by this
+review finding; reproducing it at an earlier 0152 build did not establish that the failure
+predated the 0152 routing change.
+
+Requested suites ran individually with `python3 scripts/selftest.py --suite NAME`:
+
+| Suite | Behavior rows | Total assertions | Result |
+| --- | --- | --- | --- |
+| 93_veldo_0152_intake_routes | 19 | 45 | pass, zero failures |
+| 86_veldo_0168_text | 26 | 52 | pass, zero failures |
+| 50_git_environment | 4 | 30 | pass, zero failures |
+
+The partial-suite success exit is 2 by design. Suite 86 initially failed intake/delivery after
+factory setup; a diagnostic rerun identified the stale platform date, and the final run above
+passed after that fixture correction. Validation (`python3 .veldo/validate.py all`) and engine
+sync (`bash scripts/check_template_sync.sh`) pass. No .veldo implementation files changed in
+these fixes. checks.json and footprint.json record this follow-up separately from prior results.
+No full gate, full selftest, mutation runner, push, merge or other worktree operation was run.
+
+## Previous review evidence
+
 Review base: ed630cd023ac8fb20140631b6a0c7cec39c6dbdc, branch build-veldo-0152b.
 The README and repository operating instructions were read before implementation. No push,
 merge, other branch, other worktree, full selftest or gate run was performed.

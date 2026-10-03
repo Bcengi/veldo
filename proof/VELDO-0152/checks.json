@@ -379,5 +379,50 @@
    "summary": "selftest (PARTIAL, 1 of 144 suites): 42 passed, 0 failed in 58.95s",
    "failures": []
   }
- ]
+ ],
+ "further_review": {
+  "base": "5d90b5b50fcf04935d4bed12171daa535425e7df",
+  "fix_commits": [
+   "7d96d036",
+   "299e0742"
+  ],
+  "checks": [
+   {
+    "suite": "93_veldo_0152_intake_routes",
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 144 suites): 45 passed, 0 failed in 91.81s",
+    "exit_code": 2
+   },
+   {
+    "suite": "86_veldo_0168_text",
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 144 suites): 52 passed, 0 failed in 3.08s",
+    "exit_code": 2
+   },
+   {
+    "suite": "50_git_environment",
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.07s",
+    "exit_code": 2
+   }
+  ],
+  "intermediate_failures": {
+   "86_veldo_0168_text": {
+    "runs": 2,
+    "row": "intake/delivery",
+    "reason": "Fixture message predates membership enrollment; fixed before final passing run."
+   }
+  },
+  "validation": {
+   "command": "python3 .veldo/validate.py all",
+   "exit_code": 0
+  },
+  "engine_sync": {
+   "command": "bash scripts/check_template_sync.sh",
+   "exit_code": 0,
+   "summary": "template sync: pass (250 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+  },
+  "full_gate": "not run; reviewer-owned",
+  "mutation_execution": "not run; reviewer-owned"
+ }
 }
