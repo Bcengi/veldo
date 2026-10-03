@@ -34,6 +34,9 @@ timed on the monotonic clock. The profile also declares the trusted wrapper's he
 the receiver's missed-heartbeat window (VELDO-0041, control_heartbeat.py). The worker's own exit
 ends its dispatch: anything left in its group is terminated and killed the same way. A group that is
 still populated SETTLE_SECONDS after the kill is reported not empty, never as ended.
+The runtime cap starts at scope activation. The receiver also arms that absolute
+deadline in its event wait, sending group TERM without cooperative grace and then
+KILL after kill_grace_seconds, so a shared manager reload cannot defer the cap.
 
 EXIT DETECTION. The worker's exit is a pidfd becoming readable and the group's emptiness is the
 cgroup.events `populated 0` change (poll POLLPRI); the receiver sleeps in poll until one of those, its
@@ -84,7 +87,8 @@ SETTINGS = {
     'runtime_seconds': dict(required=True, kind='seconds', controls=['RuntimeMaxUSec'],
                             mechanism='systemd RuntimeMaxSec on the dispatch scope: the user manager stops the '
                                       'whole group at the cap whether or not the receiver runs; TimeoutStopSec '
-                                      'then escalates to SIGKILL'),
+                                      'then escalates to SIGKILL; the receiver also enforces the saved activation '
+                                      'deadline directly with group SIGTERM and cgroup.kill during manager reloads'),
     'memory_bytes': dict(required=True, kind='bytes', controls=['memory.max', 'memory.swap.max', 'OOMPolicy'],
                          mechanism='cgroup v2 memory.max (MemoryMax) with memory.swap.max 0 (MemorySwapMax), '
                                    'charged across every descendant; OOMPolicy=stop ends the group on a breach'),
@@ -630,11 +634,11 @@ class Stop:
         self.cause, self.stage, self.due, self.steps = None, None, math.inf, []
 
     def begin(self, cause, now, adapter_alive):
-        """Start stopping for `cause`; when the adapter has already exited, its group is terminated at once."""
+        """Start stopping for `cause`; an expired runtime cap or an exited adapter terminates the group at once."""
         if self.cause is None:
             self.cause = cause
         if self.stage is None:
-            self._step('cooperative' if adapter_alive else 'terminate', now)
+            self._step('cooperative' if adapter_alive and cause != 'runtime_cap' else 'terminate', now)
 
     def adapter_exited(self, now):
         """The adapter ended while its group is not empty: what is left is terminated now."""

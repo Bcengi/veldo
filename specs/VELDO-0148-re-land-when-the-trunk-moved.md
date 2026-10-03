@@ -505,3 +505,18 @@ requires.json is regenerated, and the diff has no whitespace errors. Audited pro
 and writers of approval subjects, replacement names, grant events and loop dispatch states.
 No other suite, full gate or mutation runner ran. Gate byproducts are restored before the final
 commit. No footprint expansion was necessary.
+
+
+### Runtime-cap concurrency follow-up (2026-10-02)
+
+The original gate journal and sixteen-way clone replay isolate synchronous user
+manager reloads across the cap deadline on both 8af57369 and f1e1abb9. The activation
+origin is correct; the new setup handshake, RefUnit and conclusion do not account
+for the delayed signals. The receiver now independently enforces that saved
+activation deadline through its event wait and existing group escalation, preserving
+the owner's cap during manager reloads. No bound was widened. Suite 63 adds a
+manager-unavailable deterministic timer row and an actual child TERM deadline;
+the one-second-late cap and missing receiver timer are registered falsifiers.
+Evidence and replay commands are in proof/VELDO-0148/README.md. The serial scoped
+check passes 54 suite rows (80 with shared preamble); concurrent final validation
+is recorded separately. The full gate remains reserved for the reviewer.

@@ -6,6 +6,8 @@ observations, including successful rows. No gate or mutation runner is invoked.
 """
 import argparse
 import concurrent.futures
+import difflib
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -61,7 +63,7 @@ def _trace_method(name):
             if selected:
                 _runtime_trace(name + ':end', unit=self.unit, seconds=time.monotonic() - start)
     setattr(Group, name, timed)
-for _name in ('attach', 'retain', 'conclude'):
+for _name in ('attach', 'retain', 'sample_memory', 'conclude'):
     if hasattr(Group, _name):
         _trace_method(_name)
 ''')
@@ -102,14 +104,27 @@ def main():
             source = source.replace('            emitted.add(label)',
                                     "            observed.setdefault('assertions', {})[label] = bool(condition)\n"
                                     '            emitted.add(label)')
-            if args.delay_cap:
-                old = "config('runtime', profile(runtime_seconds=1.2, kill_grace_seconds=0.5))"
-                assert source.count(old) == 1
-                source = source.replace(old, old.replace('1.2', '2.2'))
             suite.write_text(source)
             with suite.open('a') as handle:
                 handle.write('\n__import__("pathlib").Path(__import__("os").environ["HOME"], '
                              '"observed.json").write_text(__import__("json").dumps(_V40_OBSERVED))\n')
+            if args.delay_cap:
+                # Delay the actual installed timer AND its installation readback
+                # expectation, so the live engine runs instead of being refused at
+                # attach. The owner's profile and the row's assertions stay 1.2s.
+                target = clone / '.veldo/control_containment.py'
+                source = target.read_text()
+                old = "s['runtime_seconds']"
+                assert source.count(old) == 2
+                mutant = source.replace(old, "(s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0))")
+                target.write_text(mutant)
+                if index == 0:
+                    (args.out / 'delay-cap.diff').write_text(''.join(difflib.unified_diff(
+                        source.splitlines(True), mutant.splitlines(True),
+                        fromfile='a/.veldo/control_containment.py', tofile='b/.veldo/control_containment.py')))
+                    (args.out / 'mutation.json').write_text(json.dumps(dict(
+                        source_sha256=hashlib.sha256(source.encode()).hexdigest(),
+                        mutant_sha256=hashlib.sha256(mutant.encode()).hexdigest()), indent=2) + '\n')
             if args.trace or args.reload:
                 instrument(clone, args.out / ('trace-%02d.jsonl' % index))
             clones.append(clone)

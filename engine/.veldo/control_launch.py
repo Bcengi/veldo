@@ -1784,6 +1784,13 @@ class Receiver:
         feeder.start()
         group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
         stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
+        start = getattr(group, 'start_evidence', {})
+        active = start.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+        runtime = start.get('RuntimeMaxUSec')
+        # The shared manager cannot dispatch RuntimeMaxSec while it reloads. Keep
+        # the same activation-based deadline in this receiver's OS-event wait;
+        # startup/heartbeat setup must never restart the owner's runtime clock.
+        runtime_deadline = active + runtime / 10 ** 6 if active > 0 and runtime is not None else math.inf
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
         settle, emptied, adapter_exit_monotonic = None, (None, None), None
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
@@ -1806,7 +1813,7 @@ class Receiver:
             nonlocal cause, stopped, code
             if cause is not None or code is not None:
                 return
-            cause, stopped = reason, reason == 'deadline'
+            cause, stopped = reason, reason in ('deadline', 'runtime_cap')
             if stop is not None:
                 stop.begin(reason, time.monotonic(), True)
             else:
@@ -1847,6 +1854,8 @@ class Receiver:
                     break
                 live = cause is None and code is None
                 waits = [contract['deadline'] - time.time()] if live else []
+                if live and runtime_deadline != math.inf:
+                    waits.append(runtime_deadline - time.monotonic())
                 if live and getattr(login, 'init_deadline', None) is not None and not login.released:
                     waits.append(login.init_deadline - time.monotonic())
                 waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
@@ -1902,6 +1911,8 @@ class Receiver:
                     # uncertain, and it is stopped (the supervision records when and why).
                     watch.lapse(now)
                     begin('heartbeat_missing')
+                elif cause is None and code is None and now >= runtime_deadline:
+                    begin('runtime_cap')
                 elif stop is not None:
                     if settle is not None and now >= settle:
                         settle = None
@@ -1952,9 +1963,6 @@ class Receiver:
             group.sample_memory()
         result = group.conclude() if group is not None and empty else None
         manager_result = result
-        start = getattr(group, 'start_evidence', {})
-        active = start.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
-        runtime = start.get('RuntimeMaxUSec')
         # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
         signaled = code is not None and (code < 0 or 128 < code <= 192)
         stop_times = [step['monotonic'] for step in (stop.steps if stop is not None else [])
@@ -1980,6 +1988,10 @@ class Receiver:
                 cause = stop.cause if stop is not None else None
             elif result == 'unknown':
                 cause = 'unknown'
+        if cause == 'runtime_cap':
+            # Direct enforcement can empty the scope before the manager resumes
+            # and records its own timeout. Preserve both observations separately.
+            result = 'timeout'
         self.supervision = {'cause': cause,
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],

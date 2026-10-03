@@ -464,3 +464,48 @@ control: apply it to the repaired suite, run the same suite selector with byteco
 writes disabled, then restore the suite. It changes only the cache cell's relocated
 engine diagnostic to omit the cache filename, leaving every assertion unchanged.
 The patch is evidence for replay and is not applied to the committed suite.
+
+
+## Runtime cap during concurrent manager reloads
+
+The gate0148l journal identifies a shared-manager stall, not a later cap origin or
+late receiver observation. At monotonic 2695544.483654 the user manager began a
+994 ms daemon-reload across three scope deadlines. All three scopes then received
+TERM at 2695545.862, as both manager ActiveExitTimestampMonotonic and the children's
+TERM logs attest. Their activations were 2695543.301358, .375281 and .447167.
+[The journal excerpt](runtime-cap-manager-journal.txt) preserves the original host
+evidence; [the investigation](runtime-cap-investigation.json) preserves the clone
+comparisons. The mutation stage reused shared controls across its 22 failing cases.
+
+Sixteen simultaneous suite-63 runs in separate detached clones and the gate's fixed
+environment pass on both 8af57369 and f1e1abb9 without reloads. Replaying the observed
+reload interference delays enforcement on both: five branch runtime rows fail the
+existing beat bound; main's sixteen runtime rows fail its older result attribution,
+and its actual first TERM is also delayed. Thus VELDO-0148 did not introduce the
+manager stall, and measuring from activation is correct. On the branch, traced
+attach, retain and heartbeat setup maxima were 51, 24 and 30 ms respectively.
+Conclusion runs after the group is empty and cannot cause continued child beats.
+
+The receiver now includes the saved scope activation plus RuntimeMaxUSec in its
+existing event wait. At expiry it sends TERM directly to the whole group and uses
+the existing kill grace, without waiting for the manager or adding cooperative
+grace. RuntimeMaxSec remains installed. Receiver enforcement records timeout even
+when the manager, resuming later, records success; manager_result remains separate.
+The new deterministic row proves enforcement with a live adapter and a manager
+that reports success, including 0.4 seconds of startup already spent.
+
+The live runtime row retains the original 2.7-second last-beat bound. It also checks
+the child's first monotonic TERM by activation +1.2+0.5 seconds: the former bound
+alone could hide a one-second enforcement delay inside its grace and slack. The
+new mutation installs a cap one second late and changes its readback expectation
+so the engine really runs; it leaves the owner's profile and every row assertion
+unchanged. The receiver-only omission has a separate deterministic falsifier.
+
+[runtime_parallel.py](runtime_parallel.py) invokes only
+`python3 scripts/selftest.py --suite 63_veldo_0040_containment`; `--ref` selects a
+commit and `--out` a new absolute scratch directory. It never runs a gate or mutation
+checker. `--rounds 5` repeats sixteen concurrent runs, `--trace` times the startup
+paths, `--reload` reproduces the observed manager interference, and `--delay-cap`
+applies the exact timing fault to disposable production copies. Successful row
+observations are exported without changing assertions. Scoped subset exit 2 is
+expected; these results never certify a gate or landing.

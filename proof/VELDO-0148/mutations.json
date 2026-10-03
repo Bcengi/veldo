@@ -27,46 +27,46 @@
  },
  "mutants": [
   {
-   "by_assertion": true,
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-report-wait-unbounded.diff",
    "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "88dd7e1eb0af8c6b5336cca21045e7911767fda4afc830308ae86c512eadae49",
+   "mutant_sha256": "1a0ca61c877e44b8c3503f7f134f62560500b7c55738b9734809561ea0a3b910",
    "name": "receiver148-report-wait-unbounded",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "receiver/report-timeout"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-late-wrapper-execs.diff",
    "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "36f399307c4871629581575ca221d2f4d9d0edb066b1dadc657183cf543bf8ba",
+   "mutant_sha256": "94e53aa63fca66861e9f2cb3fff48568f4182f5a1c2f8ddd2114d5f19c5d8ed5",
    "name": "receiver148-late-wrapper-execs",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "receiver/late-wrapper"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
-   "by_assertion": true,
+   "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-wrapper-eof-is-timeout.diff",
    "evidence": "proof/VELDO-0148/manual-report-mutants.json",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "bcc6a818e967d6a39addf8c6ecf8ec9b7e71cef82e01b94a4d720638a9682a0a",
+   "mutant_sha256": "92e1427a7079dd91f0630179305ce095334ea4c2e7b19b04924350ffc827dd61",
    "name": "receiver148-wrapper-eof-is-timeout",
-   "named_row_red": true,
+   "named_row_red": null,
    "named_rows": [
     "receiver/wrapper-exited"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
-   "status": "rejected by serial suite-86 selector in disposable archive; checker not executed"
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
@@ -85,14 +85,14 @@
    "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-placement-report-ignored.diff",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "09dde8bc2f35b1d6df270557eb5cdadea02aa966f349dc738f2aac47267470f7",
+   "mutant_sha256": "b6d88dcb7fde30d67dd3f197ef65ae47a74ef46b975b83a40553b94d28155da7",
    "name": "receiver148-placement-report-ignored",
    "named_row_red": null,
    "named_rows": [
     "receiver/placement-error",
     "receiver/placement-timeout"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
    "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
@@ -112,26 +112,26 @@
    "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-clean-exit-invents-stop.diff",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "1c91e6f4fea081b523210effd7a413cb3e80703e24593bb76780f6885c6f3375",
+   "mutant_sha256": "53762f3951d27ad26dae4f6c1f76962b00b11f9e8fa797a4aaf387619294b64f",
    "name": "receiver148-clean-exit-invents-stop",
    "named_row_red": null,
    "named_rows": [
     "receiver/normal-exit"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
    "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
    "by_assertion": null,
    "diff": "proof/VELDO-0148/receiver148-success-collected-before-read.diff",
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "2bc38cbed74ff573938b0d28aa767aaaa494413f9d13319340de5f39e71a305f",
+   "mutant_sha256": "6d771e42ceb61a0631b36a7e45d1499e6bdcaf7e172179ac0dd459bb91b084e9",
    "name": "receiver148-success-collected-before-read",
    "named_row_red": null,
    "named_rows": [
     "receiver/settled-scope"
    ],
-   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
    "status": "static refresh; mutation checker execution reserved for reviewer"
   },
   {
@@ -385,7 +385,7 @@
  "registry": "scripts/check_teeth_mutations.py --finding 148",
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0148",
- "status": "All 27 registrations statically refreshed; three report-handshake mutants rejected by assertion in serial suite-86 runs. Full mutation checker execution remains reserved for the reviewer.",
+ "status": "All 27 registrations statically refreshed. Mutation checker execution remains reserved for the reviewer.",
  "suite": "scripts/suites/86_veldo_0148_re_land.py",
  "suite_sha256": "10517aca0f667f010efbf5aafeafad597f51768f5911c3408c59ed8b834ff2be"
 }

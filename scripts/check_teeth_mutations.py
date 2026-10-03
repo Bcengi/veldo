@@ -3201,6 +3201,16 @@ def cases():
             "                 ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),  # defect: the runtime cap is ignored\n",
             'runtime-cap',
             also=[("            'runtime_seconds': {'RuntimeMaxUSec': round(s['runtime_seconds'] * 10 ** 6)},\n", "")])
+    contain('containment-receiver-runtime-cap-ignored', 'control_launch.py',
+            "                elif cause is None and code is None and now >= runtime_deadline:\n",
+            "                elif False:  # defect: rely only on the shared manager's timer\n",
+            'receiver-runtime-cap')
+    contain('containment-runtime-cap-one-second-late', 'control_containment.py',
+            "('RuntimeMaxSec', _usec(s['runtime_seconds']))",
+            "('RuntimeMaxSec', _usec(s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)))",
+            'runtime-cap',
+            also=[("round(s['runtime_seconds'] * 10 ** 6)",
+                   "round((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)) * 10 ** 6)")])
     contain('containment-memory-cap-ignored', 'control_containment.py',
             "        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),\n",
             "        props = [('CPUQuota', '%d%%' % s['cpu_percent']),  # defect: the memory cap is ignored\n",
@@ -3245,7 +3255,7 @@ def cases():
             "{'cooperative': stop_grace, 'terminate': kill_grace,",
             "{'cooperative': stop_grace, 'terminate': 0,", 'stop-escalation')
     contain('containment-no-cooperative-step', 'control_containment.py',
-            "            self._step('cooperative' if adapter_alive else 'terminate', now)\n",
+            "            self._step('cooperative' if adapter_alive and cause != 'runtime_cap' else 'terminate', now)\n",
             "            self._step('terminate', now)  # defect: the adapter is not asked first\n", 'cooperative-stop')
     # Re-pointed by VELDO-0041 at the loop's least-timer wait and at the worker's exit, which leaves the
     # wrapper's own heartbeat SETTLE_SECONDS to end before what is left is stopped.

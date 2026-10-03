@@ -190,6 +190,7 @@ elif kind == 'pgroup':
     os.setpgid(0, 0)
 def on_term(signum, frame):
     log(markers, tag, name, 'term')
+    log(markers, tag, name, 'term_monotonic', time.monotonic)
     if kind != 'stubborn':
         os._exit(143)
 def on_usr1(signum, frame):
@@ -542,10 +543,16 @@ sys.exit(payload.get('code', 0))
                 receiver = types.SimpleNamespace(metering=meter, recorder=None, control=None,
                                                  _graces=lambda: (1, 1), _stop_asked=lambda: explicit == 'requested')
                 # Let the real deadline/heartbeat check run while the adapter is still alive.
-                events = iter(([], [(13, 1)])) if explicit in ('deadline', 'heartbeat_missing') else iter(([(13, 1)],))
+                events = iter(([], [(13, 1)])) if explicit in ('deadline', 'heartbeat_missing', 'runtime_cap') else iter(([(13, 1)],))
+                waits = []
+                if explicit == 'runtime_cap':
+                    clock[0] = 10.4  # Setup consumed 0.4s of the scope's 1.2s, before this reaper began.
                 def poll(timeout):
+                    waits.append(timeout)
                     clock[0] = max(clock[0], exit_at)
                     event = next(events, [])
+                    if explicit == 'runtime_cap' and len(waits) == 1:
+                        clock[0] += timeout / 1000
                     if not event and stops[0].stage == 'terminate':
                         clock[0] = stops[0].due
                     return event
@@ -568,7 +575,7 @@ sys.exit(payload.get('code', 0))
                         patch.object(L, 'time', C.time), patch.object(C, '_read', read_memory):
                     termination = L.Receiver._reap(receiver, worker, contract)
                 return dict(termination=termination, supervision=receiver.supervision,
-                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads)
+                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads, waits=waits)
 
         gone = dict(LoadState='not-found', ActiveState='inactive', Result='success',
                     **dict.fromkeys(stamp_names, '0'))
@@ -603,6 +610,21 @@ sys.exit(payload.get('code', 0))
                 and row['supervision']['scope_start'] == start and row['supervision']['empty']
                 and [step['step'] for step in row['supervision']['steps']] == ['terminate', 'kill']
                 for row in rows), rows)
+
+        with region('containment/receiver-runtime-cap'):
+            # The manager has not enforced its timer (e.g. daemon-reload). A live
+            # adapter supplies no exit notification until the receiver sends TERM.
+            row = reap_sequence([manager_record('inactive', 'success')], start=start,
+                                explicit='runtime_cap', kill_rest=True)
+            observed['receiver_runtime_cap'] = row
+            check('containment/receiver-runtime-cap',
+                  row['inferred'] == 'runtime_cap' and row['termination']['deadline_stop']
+                  and row['supervision']['result'] == 'timeout'
+                  and row['supervision']['manager_result'] == 'success'
+                  and row['waits'][0] == 800
+                  and [step['step'] for step in row['supervision']['steps']] == ['terminate', 'kill']
+                  and abs(row['supervision']['steps'][0]['monotonic'] - 11.2) < 0.001
+                  and row['supervision']['empty'], row)
 
         # KillMode=control-group can empty the group before the receiver sees the pidfd.
         # No receiver step may supply the signal timestamp for these rows.
@@ -1002,6 +1024,7 @@ sys.exit(payload.get('code', 0))
                 wall_beats = times(capped, 'stubborn', 'beat')
                 running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
                 terms = times(capped, 'stubborn', 'term')
+                term_monotonic = times(capped, 'stubborn', 'term_monotonic')
                 unit_error = None
                 try:
                     unit_after = show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')
@@ -1021,6 +1044,10 @@ sys.exit(payload.get('code', 0))
                     'first_beat_after_active': bool(beats) and active <= beats[0],
                     'last_beat_before_inactive': bool(beats) and beats[-1] <= inactive,
                     'runtime_bound': gap is not None and gap <= 1.2 + 0.5 + 1.0,
+                    # Stop itself must begin at the cap, with at most 0.5s of
+                    # scheduler delay. The existing beat bound includes kill grace
+                    # and by itself can hide an entire second of late enforcement.
+                    'cap_stop_bound': bool(term_monotonic) and active <= term_monotonic[0] <= active + 1.2 + 0.5,
                     'term_present': len(terms) >= 1,
                     'supervision_empty': supervision.get('empty') is True,
                     'unit_not_found': unit_after == 'not-found',
@@ -1034,6 +1061,7 @@ sys.exit(payload.get('code', 0))
                     'last_beat_after_running': wall_beats[-1] - running_at if wall_beats and running_at else None,
                     'bound': 1.2 + 0.5 + 1.0, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
                     'terms': terms, 'term_count': len(terms), 'unit_after': unit_after, 'unit_error': unit_error,
+                    'term_monotonic': term_monotonic,
                     'checks': checks, 'false_conjuncts': [name for name, ok in checks.items() if not ok],
                 }
                 check('containment/runtime-cap', all(checks.values()), observed['runtime_cap'])
