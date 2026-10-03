@@ -12,16 +12,30 @@ def budget(v):
     limit = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
     remaining = max(0, limit - len(cycles.records('proj-a')))
     refusal = None
-    for unused in range(remaining + 1):
-        try:
-            # An incorrectly admitted attempt still finishes its bounded worker
-            # before the fixture disappears; never leave a launch in teardown.
-            v['run'](v['empty'])
-        except Exception as error:
-            refusal = getattr(error, 'code', None)
-            break
+    exchange = cycles.exchange
+    launches = len(v['runner'].launches)
+
+    def unavailable_graph(*args, **kwargs):
+        # Failed cycles consume the same project budget as successful cycles.
+        # Keep the real start/receipt writers, but cap the external graph work
+        # at zero even when the production budget predicate is bypassed.
+        raise v['PM'].Refused('unavailable_service:budget_fixture')
+
+    cycles.exchange = unavailable_graph
+    try:
+        for unused in range(remaining + 1):
+            try:
+                record = cycles.start('proj-a', cycles.inputs('proj-a'))
+            except Exception as error:
+                refusal = getattr(error, 'code', None)
+                break
+            check('cycle/budget', 'admitted attempt records the bounded graph refusal',
+                  record['state'] == 'refused' and record['refusal'] == 'unavailable_service:budget_fixture')
+    finally:
+        cycles.exchange = exchange
     check('cycle/budget', 'the project cycle budget stops further dispatch',
-          refusal == 'budget_exceeded:coordination' and len(cycles.records('proj-a')) == limit)
+          refusal == 'budget_exceeded:coordination' and len(cycles.records('proj-a')) == limit
+          and len(v['runner'].launches) == launches)
 
 
 def observe(v):
