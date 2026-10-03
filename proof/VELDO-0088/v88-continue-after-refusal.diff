@@ -1,6 +1,6 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
-@@ -344,7 +344,7 @@
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
+@@ -405,7 +405,7 @@
              record['proposals'] = applied
              self.save(record)
              if not result.get('ok'):

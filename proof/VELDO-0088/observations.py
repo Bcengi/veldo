@@ -67,12 +67,14 @@ def observe(v):
           not v['gate'].decide('review', uid, context={'holder': 'w-build', 'reviewer': 'w-build'})['eligible'])
     check('unit/independent-review', 'one build and one review consume the staged unit',
           len([r for r in line._rows('dispatch') if r['contract']['unit'] == uid]) == 2)
-    waiting_value = dict(v['empty'], owner_questions=['Choose the next step.'])
+    waiting_value = dict(v['empty'], owner_questions=['Choose the next step.'],
+        proposals=[dict(name='ask-owner', type='question', command=v['question'])])
     waiting = v['run'](waiting_value)
     worker_id = v['L'].D.RES.entity('worker', [v['domain'], waiting['dispatch']])
     worker = PM.row(conn, worker_id)
     check('cycle/waiting-release', 'waiting on a person has an exited worker and released slot',
           waiting['state'] == 'waiting_owner'
+          and f['inbox'].read(f['I'].assignment_id(v['repository'], 'question-88')) is not None
           and v['dispatches'].record(waiting['dispatch'])['state'] == 'exited'
           and worker and worker['data'].get('retired') is True)
     for receipt in cycles.records('proj-a'):
@@ -98,12 +100,12 @@ def attacks(v):
     extension = (v['mods'] / 'control_graph_pm.py').read_text()
     database = base / 'attack.sqlite'
     with sqlite3.connect(database) as db:
-        db.execute('CREATE TABLE unit (priority INTEGER)')
-        db.execute('INSERT INTO unit VALUES (1)')
+        v['conn'].backup(db)
+        original = db.execute('SELECT data FROM entities WHERE id=?', (v['uid'],)).fetchone()
     marker = base / 'shell-marker'
     attempts = {
         'shell': "subprocess.run([sys.executable, '-c', " + repr('from pathlib import Path; Path(' + repr(str(marker)) + ').touch()') + "]) ",
-        'SQL priority': 'sqlite3.connect(' + repr(str(database)) + ").execute('UPDATE unit SET priority=9').connection.commit()",
+        'SQL priority': 'sqlite3.connect(' + repr(str(database)) + ").execute(" + repr("UPDATE entities SET data=json_set(data, '$.priority', 9) WHERE id='" + v['uid'] + "'") + " ).connection.commit()",
         'store read': 'open(' + repr(str(v['f']['db'])) + ", 'rb').read(16)",
         'invented role': "return {'role': 'priority_owner', 'next': None}",
         'direct priority output': "return {'priority': 9, 'next': None}",
@@ -121,5 +123,5 @@ def attacks(v):
         check('proposal/graph-process', name + ' is refused inside the child',
               answer['outcome'] == 'failure' and answer['runtime']['name'] == 'langgraph')
     with sqlite3.connect(database) as db:
-        unchanged = db.execute('SELECT priority FROM unit').fetchone()[0] == 1
+        unchanged = db.execute('SELECT data FROM entities WHERE id=?', (v['uid'],)).fetchone() == original
     check('proposal/graph-process', 'no shell side effect or direct priority change', not marker.exists() and unchanged)

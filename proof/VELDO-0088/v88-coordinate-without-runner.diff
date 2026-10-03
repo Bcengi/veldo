@@ -1,10 +1,12 @@
---- a/.veldo/control_workflow_cycle_pm.py
-+++ b/.veldo/control_workflow_cycle_pm.py
-@@ -294,6 +294,8 @@
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
+@@ -355,6 +355,10 @@
                                        'The builder fetches references using its configured catalog servers.'}
              self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
                  'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
-+            record.update(state='no_action')
++            # Defect: an inline model fixture reasons over the snapshot in the authority process.
++            inline_model = lambda prompt: dict(schema=DOCUMENT, owner_questions=[], decomposition=[], proposals=[])
++            record.update(state='no_action', document=inline_model(payload))
 +            return self.save(record)
              launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
                  source=self.workspace, revision=record['accepted_commit'], payload=payload, adapter=adapter,

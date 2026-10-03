@@ -1,70 +1,86 @@
-# VELDO-0088 partial implementation evidence
+# VELDO-0088 coordination and factory evidence
 
-This branch is not ready to land as a completed VELDO-0088. These observations
-cover the bounded coordination substrate and one-run publication and staging.
-They do not establish the entire criterion set.
+The continuation closes the four previously named integration gaps with real
+production interfaces: factory dispatch from an accepted team assignment, a
+builder fetching the referenced ticket, a distinct assigned review run,
+graph-process capability attacks, and combined owner-answer plus engineering
+completion input. Specification status remains ready, pending reviewer checks.
 
-The suite uses real signed membership, project and team enrollment, accepted
-source revisions and immutable snapshots, an installed LangGraph process,
-Runner dispatch, launch receiver, execution records, reservation settlement,
-loopback decision presentation and settlement, document publication, backlog
-and grooming commands, and the team assignment writer. Its worker is a generic
-protocol process emitting predetermined documents, not a Claude Code or Codex
-fake and not live engine qualification. All fixture keys are generated locally.
+The fixture uses signed membership, project and team enrollment, accepted source
+revisions and immutable snapshots, the installed LangGraph process, FactoryLoop
+and Line, Runner, launch receiver, execution records, reservation settlement,
+loopback owner presentation and settlement, document publication, backlog and
+grooming commands, team assignment and MCP catalog writers. Fixture keys are
+generated locally. FactoryLoop uses an assembled Line with these real services;
+the network authority daemon and production account pool are not started.
+
+Workers are generic protocol processes with predetermined output. They are not
+Claude Code or Codex fakes and this is not live engine qualification. The builder
+reads its accepted role's catalog selection, resolves the matching catalog record
+exported by the real catalog writer, and invokes that fixture stdio server with a
+tools/call request for BCG-123. The server records the request from that child.
+The review is a separate assigned process using its own role configuration and
+following the completed build. No live model, real credential or remote endpoint
+was used, and no review verdict about this implementation is claimed.
 
 ## Criterion observations
 
 | Criterion | Rows | Observed behavior |
 | :--- | :--- | :--- |
-| AC1 | cycle/runner, cycle/snapshot, cycle/no-action, cycle/failure | Team configuration and accepted input enter an ordinary coordination dispatch; immutable source survives working-tree edits; persisted receipts include the actual graph trace; owner refusal is named. |
-| AC2 | proposal/unauthorized, proposal/stop-on-refusal | Closed proposal vocabulary rejects shell, SQL, priority and completion operations; owning command refusal stops subsequent commands. |
-| AC3 | cycle/serialized, cycle/pending-follow-up, cycle/budget | Store rejects concurrent cycles; an owner answer during a held worker produces one newer-snapshot follow-up without a self-loop; finite invocation ceiling stops another dispatch. |
-| AC4 | unit/one-run-staging | An admitted objective preserves the exact message `please do BCG-123`; one PM dispatch publishes its requirements, grooms and stages a unit with all four role references and independent builder/reviewer assignment; the same dispatch records elaboration done. |
+| AC1 | cycle/runner, cycle/snapshot, cycle/no-action, cycle/failure, cycle/receipts | Ordinary coordination dispatch uses the PM role and immutable snapshot. Actual LangGraph traverses the default pipeline for proposal and empty outcomes; refusal is named. Every cycle receipt is compared with its store record, accepted source, snapshot inputs and watermark, workflow and dispatch reservation. |
+| AC2 | proposal/unauthorized, proposal/stop-on-refusal, proposal/graph-process, cycle/waiting-release | Closed proposal handlers reject unauthorized operations and stop after owner refusal. Hostile nodes run in the LangGraph child: shell execution, SQL priority writes, store reads, invented roles and direct priority output are refused. The SQL target is a copy of the real writer-produced unit. A real owner request leaves an exited dispatch and retired worker reservation. |
+| AC3 | cycle/serialized, cycle/pending-follow-up, cycle/combined-inputs, cycle/budget | One active cycle is enforced. A held PM run overlaps an accepted owner answer and a real builder completion; both change the input fingerprint, coalesce into one newer-snapshot follow-up, and cause no self-loop once consumed. The finite project cycle budget refuses another dispatch. |
+| AC4 | unit/one-run-staging, unit/factory-builder-ticket, unit/independent-review | The factory starts the PM cycle for the admitted objective with exact text `please do BCG-123`. That coordination run publishes requirements, grooms and stages the unit with all four role references, marks elaboration done, and launches no extra elaboration run. The factory then dispatches the assigned builder, which fetches BCG-123, and one distinct assigned reviewer. The gate refuses a builder reviewing its own work. |
 
-Each name reports once. The suite has ten behavior rows in addition to the
-shared preamble. Rows use actual owning writers wherever those writers exist.
+Sixteen behavior names each report once. The shared suite preamble is separate.
+The factory requires the existing account, project and unit spending policies;
+fixtures configure them through the reservation service. Assignment consumption
+does not confer unlimited spend or claim that an engineering exit proves landing.
 
-## Missing observations and behavior
+## Authority and graph boundaries
 
-The staged-unit test invokes ProjectCycles directly. It does not yet drive that
-journey from the factory loop, start the assigned builder and independent
-reviewer, or observe a builder fetching BCG-123 from its role's catalog server.
-The factory still enumerates builder claims; accepted team assignments need the
-corresponding engineering-dispatch bridge. The graph visits build, prove and
-gate, review and land as routing nodes, without executing those stations.
+Factory Line consumes accepted team assignments alongside the existing claim
+path. Its build and review use the assignment's accepted role revisions and team
+budgets. The gate binds the current assignment, team and active members; the
+Runner carries that accepted authority and the dispatch writer rechecks it at
+preparation and acceptance. Legacy claim dispatches retain their claim checks.
+The footprint adds only the launch module and its engine copy to the prior scope.
 
-The unauthorized row tests document vocabulary, not shell, SQL or store access
-attempts inside the graph process. Waiting-person resource release and combined
-owner-answer plus engineering-completion coalescing need dedicated observations.
-The scheduler observes engineering completions, but this suite only drives the
-owner-answer half of that set. Receipts also need a complete field-by-field
-comparison for every cycle class.
+The installed graph is trusted. Its node wrapper denies filesystem, process,
+SQL and network audit events while a node executes, and the existing graph
+response contract rejects invented authority outputs. This does not claim an
+arbitrary Python-code sandbox against modification of the installed runtime.
 
 ## Red record and mutations
 
-`drive.py` follows the recent proof-driver pattern. `red-at-24c0c90b.json`
-records ten behavior rows red by assertion against the unchanged archive of
-that commit. The new cycle and graph modules are absent there.
+`red-at-24c0c90b.json` records all sixteen current behavior rows red by assertion
+against the unchanged archive before the original implementation. No row fails
+by a fixture exception. The proof driver stays in this proof directory.
 
-Finding 88 registers seven uniquely named mutations and retains their diffs in
-`mutations.json`. No mutation was executed in this builder run; rejection is
-unverified and belongs to the reviewer. The missing Runner dispatch and allowed
-priority-vocabulary controls are proxies: they do not execute the exact inline
-reasoning and graph-process direct-priority-write falsifiers required by AC1
-and AC2. Pending-input discard and an extra elaboration dispatch have dedicated
-mutations. Additional controls cover continuation after refusal, budget bypass,
-and omitted trace evidence.
+Finding 88 registers ten unique mutations with current diffs and hashes in
+`mutations.json`. Controls cover inline coordinate reasoning through an in-process
+model fixture instead of Runner dispatch, a graph node directly changing SQL
+priority, discarded pending inputs, and an extra elaboration dispatch. Additional
+controls cover allowed priority vocabulary, continuation after refusal, budget
+bypass, omitted traces, ignored team assignments and a builder dispatched as its
+own reviewer. No mutations were executed here; rejection results belong to the
+reviewer. The inline control uses a deterministic model fixture, not a live model.
 
 ## Checks and scope
 
-`checks.json` records scoped suites in normal and clean gate environments.
-Exit status 2 is the repository's deliberate successful-partial-run status.
-There is no gate stamp, full selftest, mutation-run result or landing claim.
-Engine copies must remain byte-identical to their installed counterparts.
+`checks.json` records normal and clean-environment scoped suites. Exit status 2
+is the selftest command's successful partial-run status. The capability-configuration
+suite reports two failures, live/claude and live/codex, because its live captures
+are missing or stale. Its other rows pass. Refreshing those captures requires
+the live model execution prohibited in this run. These results are not a
+gate stamp or a completed proof manifest. The full selftest, gate, mutation runs,
+live engine qualification and independent review of this implementation were
+not performed. The owner reserved the first three checks for the reviewer and
+prohibited live model execution in this run.
 
-The only change to the VELDO-0151 implementation is the team assignment reader:
-it reads risk from the accepted, digest-bound specification document when the
-unit has no inline risk. Real grooming units carry that document binding.
-The authority role vocabulary now admits the reservation service grant that
-the existing reservation writer already requires; its exact role-set test is
-updated. Both necessary footprint additions are recorded in the spec History.
+The required single-spec footprint checker compares against origin/main, so it
+also reports the inherited VELDO-0151 changes in this branch. Those files were
+not changed by this continuation. Checking the combined 0088 and 0151 footprints
+reports none outside; checking changes since continuation head 925003f1 against
+0088 alone also reports none outside. This discrepancy is recorded rather than
+adding unrelated inherited files to the specification's footprint.
