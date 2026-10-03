@@ -1,0 +1,73 @@
+{
+ "spec": "VELDO-0088",
+ "continuation_base": "925003f1",
+ "implementation_commit": "07160d8b",
+ "continuation_footprint": {
+  "outside": []
+ },
+ "required_footprint_check": {
+  "passed": false,
+  "reason": "origin/main comparison includes inherited VELDO-0151 changes",
+  "outside": [
+   "proof/VELDO-0151/README.md",
+   "proof/VELDO-0151/checks.json",
+   "proof/VELDO-0151/drive.py",
+   "proof/VELDO-0151/mutations.json",
+   "proof/VELDO-0151/red-at-f1e1abb9.json",
+   "proof/VELDO-0151/review-followup.json",
+   "proof/VELDO-0151/v151-capability-binding-dropped.diff",
+   "proof/VELDO-0151/v151-capability-reference-not-pinned.diff",
+   "proof/VELDO-0151/v151-capability-resolution-floats.diff",
+   "proof/VELDO-0151/v151-kind-unchecked.diff",
+   "proof/VELDO-0151/v151-missing-reference-accepted.diff",
+   "proof/VELDO-0151/v151-missing-specialist-assigned.diff",
+   "proof/VELDO-0151/v151-owner-request-omitted.diff",
+   "proof/VELDO-0151/v151-review-count-unchecked.diff",
+   "proof/VELDO-0151/v151-reviewer-capability-binding-dropped.diff",
+   "proof/VELDO-0151/v151-revision-metrics-omitted.diff",
+   "proof/VELDO-0151/v151-role-binding-dropped.diff",
+   "proof/VELDO-0151/v151-roster-admission-permission.diff",
+   "proof/VELDO-0151/v151-specialist-brief-omitted.diff",
+   "proof/VELDO-0151/v151-specialist-roster-unchecked.diff",
+   "proof/VELDO-0151/v151-specialist-worker-unchecked.diff",
+   "proof/VELDO-0151/v151-team-binding-stale.diff",
+   "proof/VELDO-0151/v151-unresolved-reference-accepted.diff",
+   "scripts/suites/71_veldo_0130_api.py",
+   "scripts/suites/73_veldo_0089_team.py",
+   "scripts/suites/75_veldo_0150_own_message_acceptance.py",
+   "scripts/suites/76_veldo_0079_grooming.py",
+   "scripts/suites/91_veldo_0151_specialists.py",
+   "specs/VELDO-0151-specialist-roles-with-capability-configurations.md"
+  ]
+ },
+ "combined_0088_0151_footprint": {
+  "passed": true,
+  "outside": []
+ },
+ "validation": {
+  "command": "python3 .veldo/validate.py all",
+  "returncode": 0
+ },
+ "git_boundary": {
+  "passed": true
+ },
+ "anchors": {
+  "bad": 0
+ },
+ "mutations": {
+  "registered": 10,
+  "executed": 0,
+  "reason": "Execution reserved for reviewer"
+ },
+ "engine_sync": {
+  "passed": true,
+  "modules": [
+   "control_dispatch.py",
+   "control_eligibility.py",
+   "control_graph_pm.py",
+   "control_launch.py",
+   "control_service.py",
+   "control_workflow_cycle_pm.py"
+  ]
+ }
+}

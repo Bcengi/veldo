@@ -43,7 +43,7 @@
   },
   ".veldo/control_service.py": {
    "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
-   "now": "83aaecdcde8de729d95314d01b3aa367113dc40f17c2262d73bc06c5ee351fa3"
+   "now": "960d9681847ac5b03e6bfe3e75edab0ea45fae7f6542803f0254bc6b5bba86a3"
   },
   ".veldo/control_team.py": {
    "at_commit": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
@@ -51,7 +51,7 @@
   },
   ".veldo/control_workflow_cycle_pm.py": {
    "at_commit": null,
-   "now": "bba68fd2c8e3a4ca8e40eaefeb2052eaccf3a9a6d3f7e34114547937cf0b57da"
+   "now": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "347bb13958771368f103f763a041a033033d4840627daee7eb5c0b7531c9ef65",
@@ -126,7 +126,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.105,
+ "seconds": 0.1,
  "spec_id": "VELDO-0088",
  "suite": "scripts/suites/92_veldo_0088_pm_cycles.py",
  "tree": "git archive 24c0c90b150caefcdce3ac0bfae258073663c71a, unchanged; the current suite file run against it"

@@ -1,28 +1,12 @@
 {
- "scope": "partial suites only; not gate evidence",
+ "scope": "Scoped suites only; not gate or live engine qualification.",
  "results": [
   {
    "mode": "normal",
-   "suite": "92_veldo_0088_pm_cycles",
+   "suite": "60_veldo_0052_eligibility",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 36 passed, 0 failed in 12.83s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "33_veldo_0020_authority",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 0 failed in 0.04s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "38_veldo_0025_membership",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 1.52s"
+    "selftest (PARTIAL, 1 of 143 suites): 80 passed, 0 failed in 5.28s"
    ]
   },
   {
@@ -30,120 +14,158 @@
    "suite": "62_veldo_0039_dispatch",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 8.99s"
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 9.83s"
    ]
   },
   {
    "mode": "normal",
+   "suite": "59_veldo_0043_graph",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 11.62s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "normal",
+   "suite": "67_veldo_0041_heartbeat",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 49 passed, 0 failed in 11.69s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "normal",
+   "suite": "82_veldo_0129_worker_wiring",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 55 passed, 0 failed in 22.41s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "normal",
+   "suite": "82_veldo_0141_execution_record",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 66 passed, 0 failed in 19.14s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "normal",
+   "suite": "86_veldo_0127_agent_configuration",
+   "returncode": 1,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 2 failed in 40.83s"
+   ],
+   "failures": [
+    "  SELFTEST FAIL: VELDO-0127 live/claude",
+    "  SELFTEST FAIL: VELDO-0127 live/codex"
+   ]
+  },
+  {
+   "mode": "clean",
    "suite": "60_veldo_0052_eligibility",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 80 passed, 0 failed in 1.17s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "83_veldo_0154_factory_loop",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 18.25s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "73_veldo_0089_team",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 52 passed, 0 failed in 2.94s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "91_veldo_0151_specialists",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 0 failed in 1.96s"
-   ]
-  },
-  {
-   "mode": "normal",
-   "suite": "26_veldo_0009_install_stamp",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 0.46s"
-   ]
-  },
-  {
-   "mode": "clean",
-   "suite": "92_veldo_0088_pm_cycles",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 36 passed, 0 failed in 17.07s"
-   ]
-  },
-  {
-   "mode": "clean",
-   "suite": "33_veldo_0020_authority",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 0 failed in 0.04s"
-   ]
-  },
-  {
-   "mode": "clean",
-   "suite": "38_veldo_0025_membership",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 0.91s"
-   ]
+    "selftest (PARTIAL, 1 of 143 suites): 80 passed, 0 failed in 51.03s"
+   ],
+   "failures": []
   },
   {
    "mode": "clean",
    "suite": "62_veldo_0039_dispatch",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 14.31s"
-   ]
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 15.79s"
+   ],
+   "failures": []
   },
   {
    "mode": "clean",
-   "suite": "60_veldo_0052_eligibility",
+   "suite": "59_veldo_0043_graph",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 80 passed, 0 failed in 2.73s"
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 12.30s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "clean",
+   "suite": "67_veldo_0041_heartbeat",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 49 passed, 0 failed in 15.00s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "clean",
+   "suite": "82_veldo_0129_worker_wiring",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 55 passed, 0 failed in 61.48s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "clean",
+   "suite": "82_veldo_0141_execution_record",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 66 passed, 0 failed in 21.19s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "clean",
+   "suite": "86_veldo_0127_agent_configuration",
+   "returncode": 1,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 2 failed in 54.00s"
+   ],
+   "failures": [
+    "  SELFTEST FAIL: VELDO-0127 live/claude",
+    "  SELFTEST FAIL: VELDO-0127 live/codex"
    ]
+  },
+  {
+   "mode": "normal",
+   "suite": "92_veldo_0088_pm_cycles",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 42 passed, 0 failed in 39.85s"
+   ],
+   "failures": []
+  },
+  {
+   "mode": "normal",
+   "suite": "83_veldo_0154_factory_loop",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 65.99s"
+   ],
+   "failures": []
   },
   {
    "mode": "clean",
    "suite": "83_veldo_0154_factory_loop",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 18.41s"
-   ]
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 59.81s"
+   ],
+   "failures": []
   },
   {
    "mode": "clean",
-   "suite": "73_veldo_0089_team",
+   "suite": "92_veldo_0088_pm_cycles",
    "returncode": 2,
    "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 52 passed, 0 failed in 3.13s"
-   ]
-  },
-  {
-   "mode": "clean",
-   "suite": "91_veldo_0151_specialists",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 0 failed in 2.06s"
-   ]
-  },
-  {
-   "mode": "clean",
-   "suite": "26_veldo_0009_install_stamp",
-   "returncode": 2,
-   "summary": [
-    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 0.39s"
-   ]
+    "selftest (PARTIAL, 1 of 143 suites): 42 passed, 0 failed in 46.70s"
+   ],
+   "failures": []
   }
  ]
 }
