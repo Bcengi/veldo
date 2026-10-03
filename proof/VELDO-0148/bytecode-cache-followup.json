@@ -1,0 +1,162 @@
+{
+  "kind": "scoped regression record; not a gate result or landing verdict",
+  "implementation_commit": "64ec366fcb323003018b0b86833c7623f2d912f1",
+  "suite": "scripts/suites/12_warp_1210_hardening_four.py",
+  "repaired_suite_sha256": "fc8f058dca1a3e5d88cc54bd86e5dee9238225e35da6124bef7017cf587861eb",
+  "cause": "The FIFO fixture relied on a metrics invocation to create __pycache__, but PYTHONDONTWRITEBYTECODE=1 suppresses that side effect.",
+  "repair": "Create the cache_from_source path parent explicitly and place the FIFO directly; remove the metrics warm-up. No real .pyc is needed before a FIFO replaces the cache entry.",
+  "audit": {
+    "searches": [
+      "rg -n \"cache_from_source|__pycache__\" scripts/suites",
+      "rg -n \"pyc|bytecode|compileall|py_compile\" scripts/suites"
+    ],
+    "other_changes_required": [],
+    "findings": [
+      "Suite 12 is the only executable cache_from_source fixture match; its other __pycache__ matches exclude copied caches.",
+      "Suite 13 measures historical explicit py_compile output (which does not depend on automatic caching); its interpreter-cache control runs inside env -i, so the caller flag cannot suppress it.",
+      "Suites 16 and 53 create their cache directories and fixture files explicitly.",
+      "Suite 62 validates bytecode only when an existing file is observed and does not require one to exist.",
+      "Suites 15 and 24 suppress automatic caching for read-only checks and restore the prior setting.",
+      "Remaining matches are copy exclusions, gitignore entries, inventory/documentation, or checks for absent cache artifacts."
+    ],
+    "matched_files": [
+      "scripts/suites/06_capabilities_manifest_honesty_veldo.py",
+      "scripts/suites/12_warp_1210_hardening_four.py",
+      "scripts/suites/13_warp_0623_codified_live.py",
+      "scripts/suites/15_warp_1407_judgment_load.py",
+      "scripts/suites/15_warp_1409_cost_to_change_per_area.py",
+      "scripts/suites/16_warp_1403_sizing_pass.py",
+      "scripts/suites/21_veldo_0004_promise_corpus.py",
+      "scripts/suites/22_veldo_0005_declared_vs_shipped.py",
+      "scripts/suites/24_veldo_0007_install_and_run.py",
+      "scripts/suites/53_veldo_0123_mutations.py",
+      "scripts/suites/57_veldo_0120_policygrammar.py",
+      "scripts/suites/59_veldo_0037_aliases.py",
+      "scripts/suites/62_veldo_0045_runtime.py",
+      "scripts/suites/64_veldo_0050_proof.py",
+      "scripts/suites/66_veldo_0051_events.py",
+      "scripts/suites/67_veldo_0056_candidates.py",
+      "scripts/suites/69_veldo_0058_gate_output.py",
+      "scripts/suites/70_veldo_0057_landing.py",
+      "scripts/suites/86_veldo_0148_re_land.py",
+      "scripts/suites/86_veldo_0186_setup_assets.py"
+    ]
+  },
+  "runs": [
+    {
+      "name": "no-bytecode",
+      "command": [
+        "env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "HOME=/dev/shm/x",
+        "TMPDIR=/dev/shm",
+        "LANG=C.UTF-8",
+        "TZ=UTC",
+        "PYTHONNOUSERSITE=1",
+        "PYTHONHASHSEED=0",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "12_warp_1210_hardening_four"
+      ],
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 11 of 142 suites): 3302 passed, 0 failed in 135.02s",
+      "suite_summary": "12_warp_1210_hardening_four                    249 passed  102.71s",
+      "failures": [],
+      "log_sha256": "fd32ad43a2ff465e163bd7899dff81b972d7732071e5038e0742b2d2c21a6b1a"
+    },
+    {
+      "name": "bytecode",
+      "command": [
+        "env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "HOME=/dev/shm/x",
+        "TMPDIR=/dev/shm",
+        "LANG=C.UTF-8",
+        "TZ=UTC",
+        "PYTHONNOUSERSITE=1",
+        "PYTHONHASHSEED=0",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "12_warp_1210_hardening_four"
+      ],
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 11 of 142 suites): 3302 passed, 0 failed in 123.82s",
+      "suite_summary": "12_warp_1210_hardening_four                    249 passed   92.22s",
+      "failures": [],
+      "log_sha256": "a0606e088202adf27d8eb000a2c05af07200d59c78a67fe83115cb0c5ce5f272"
+    },
+    {
+      "name": "mutant",
+      "command": [
+        "env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "HOME=/dev/shm/x",
+        "TMPDIR=/dev/shm",
+        "LANG=C.UTF-8",
+        "TZ=UTC",
+        "PYTHONNOUSERSITE=1",
+        "PYTHONHASHSEED=0",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "12_warp_1210_hardening_four"
+      ],
+      "exit_code": 1,
+      "summary": "selftest (PARTIAL, 11 of 142 suites): 3301 passed, 1 failed in 133.62s",
+      "suite_summary": "12_warp_1210_hardening_four                    248 passed  101.54s",
+      "failures": [
+        "SELFTEST FAIL: WARP-1210 R11-B1 THE CLOSURE OVER THE SHIPPED ENGINE: FIVE roots of the hand-off's closure made a FIFO x FOUR REAL SURFACES, and all TWENTY runs exit 0 with NON-EMPTY stdout and THE OFFENDING PATH NAMED on every surface - the four DATA roots the delegated corpus owner opens with a bare read_text() also naming the DECLARED SOURCE spec_corpus, and the fifth being the BYTECODE CACHE of .veldo/validate.py, because a module LOAD opens the cache as well as the source"
+      ],
+      "log_sha256": "3abe85f557e8bac6ec9c460a7780ed133c266257808d7d78bcede72970623574",
+      "surfaces": {
+        ".veldo/dashboard.py": {
+          "hung": false,
+          "named": false,
+          "nonempty": true,
+          "rc": 0
+        },
+        ".veldo/dashboard.py --html": {
+          "hung": false,
+          "named": false,
+          "nonempty": true,
+          "rc": 0
+        },
+        ".veldo/metrics.py": {
+          "hung": false,
+          "named": false,
+          "nonempty": true,
+          "rc": 0
+        },
+        ".veldo/metrics.py --json": {
+          "hung": false,
+          "named": false,
+          "nonempty": true,
+          "rc": 0
+        }
+      }
+    }
+  ],
+  "mutant": {
+    "patch": "proof/VELDO-0148/bytecode-cache-mutant.patch",
+    "target": "Only the bytecode cell relocated engine .veldo/metrics_read_closure.py",
+    "edit": "Replace printable(c) in the refused-cache diagnostic with '<cache path omitted>'; retain detection, return codes, stdout, timeouts and all suite assertions.",
+    "result": "All four surfaces exit 0 with nonempty stdout but no cache filename; the existing closure assertion alone fails.",
+    "restored": true
+  },
+  "integration": "scripts/check_first_use.py runs this same suite in copied trees. It was inspected, not executed, because it invokes the full selftest.",
+  "not_run": [
+    "full selftest",
+    "scripts/verify.sh",
+    "scripts/check_first_use.py",
+    "scripts/check_teeth_mutations.py",
+    "scripts/check_gate_mutations.py"
+  ],
+  "exit_semantics": "Scoped passes intentionally exit 2; scoped failures exit 1."
+}

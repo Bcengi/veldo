@@ -1,0 +1,391 @@
+{
+ "all_by_assertion": null,
+ "all_named_rows_red": null,
+ "controls_green": null,
+ "historical_evidence": "proof/VELDO-0148/mutations-before-review.json",
+ "lead_run": {
+  "commit": "f59b3136",
+  "names": [
+   "reland148-stale-left-failed",
+   "lease148-loss-unknown",
+   "grant148-old-tree-accepted",
+   "reland148-loop-offers-nothing",
+   "reland148-conflict-relanded",
+   "reland148-rebuild-not-reviewed",
+   "reland148-landed-rebuilt",
+   "reland148-end-wakes-nothing",
+   "lease148-contained-refused",
+   "lease148-tip-not-fetched",
+   "never148-forced-push",
+   "grant148-asked-every-pass",
+   "grant148-missing-treated-as-replacement",
+   "grant148-replacement-includes-missing"
+  ],
+  "rejected": 14,
+  "reported_by": "lead, supplied in owner re-check brief",
+  "total": 14
+ },
+ "mutants": [
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-report-wait-unbounded.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "1a0ca61c877e44b8c3503f7f134f62560500b7c55738b9734809561ea0a3b910",
+   "name": "receiver148-report-wait-unbounded",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/report-timeout"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-late-wrapper-execs.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "94e53aa63fca66861e9f2cb3fff48568f4182f5a1c2f8ddd2114d5f19c5d8ed5",
+   "name": "receiver148-late-wrapper-execs",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/late-wrapper"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-wrapper-eof-is-timeout.diff",
+   "evidence": "proof/VELDO-0148/manual-report-mutants.json",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "92e1427a7079dd91f0630179305ce095334ea4c2e7b19b04924350ffc827dd61",
+   "name": "receiver148-wrapper-eof-is-timeout",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/wrapper-exited"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-placement-wait-unbounded.diff",
+   "module": ".veldo/control_heartbeat.py",
+   "mutant_sha256": "baccfb7a8ab1169acc216af6e33aa932e903f9fbf3c65d2e48253905906f2b5d",
+   "name": "receiver148-placement-wait-unbounded",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/placement-timeout"
+   ],
+   "source_sha256": "15938e9b89ae2e54f2828b4e6be57f956a778b9f435d4391224da74efdc365ef",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-placement-report-ignored.diff",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "b6d88dcb7fde30d67dd3f197ef65ae47a74ef46b975b83a40553b94d28155da7",
+   "name": "receiver148-placement-report-ignored",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/placement-error",
+    "receiver/placement-timeout"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-heartbeat-moves-after-exec.diff",
+   "module": ".veldo/control_heartbeat.py",
+   "mutant_sha256": "e4867fbc815adae9221686397691b41276a049af80da90f9a4cfddef985ffbd7",
+   "name": "receiver148-heartbeat-moves-after-exec",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/fast-exit"
+   ],
+   "source_sha256": "15938e9b89ae2e54f2828b4e6be57f956a778b9f435d4391224da74efdc365ef",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-clean-exit-invents-stop.diff",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "53762f3951d27ad26dae4f6c1f76962b00b11f9e8fa797a4aaf387619294b64f",
+   "name": "receiver148-clean-exit-invents-stop",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/normal-exit"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/receiver148-success-collected-before-read.diff",
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "6d771e42ceb61a0631b36a7e45d1499e6bdcaf7e172179ac0dd459bb91b084e9",
+   "name": "receiver148-success-collected-before-read",
+   "named_row_red": null,
+   "named_rows": [
+    "receiver/settled-scope"
+   ],
+   "source_sha256": "1d49b620df76ce16307babaa8b554d9cb7872886e49295ec4a5aa5edbb805791",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-stale-left-failed.diff",
+   "module": ".veldo/control_landing_station.py",
+   "mutant_sha256": "83f80fa50d28954e6dc90ce18e85259d115a6f74202c43c9b9ca1ab1b56446a1",
+   "name": "reland148-stale-left-failed",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/stale-subject"
+   ],
+   "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/lease148-loss-unknown.diff",
+   "module": ".veldo/control_effect_executor.py",
+   "mutant_sha256": "166ddd37ad2be5a7a01674a4695032d9481897635cdb46f3b24d4b57c1bc98fe",
+   "name": "lease148-loss-unknown",
+   "named_row_red": null,
+   "named_rows": [
+    "lease/trunk-moved"
+   ],
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-old-tree-accepted.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "797f3e1fcc2f973494ad30e6c52c0ea5df6702a1b376f25b4dce06bdfea63ed1",
+   "name": "grant148-old-tree-accepted",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/fresh-request"
+   ],
+   "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-loop-offers-nothing.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "5d0d1eb788bdfb4f5d29b92c3b8b7fdd34a31c1698b59f24b0e142133cf7cbb8",
+   "name": "reland148-loop-offers-nothing",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/stale-subject"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-conflict-relanded.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "80c05fa5e9b3560121a80f62c0ce7f4fa62952fa74be4e98a78c7bf4430411ec",
+   "name": "reland148-conflict-relanded",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/conflict-rebuild"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-rebuild-not-reviewed.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "98d64f0fcf3d5a1c8fd04d147e86a2cb62232fc4ffad8dd020595d040788ef97",
+   "name": "reland148-rebuild-not-reviewed",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/conflict-rebuild"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-landed-rebuilt.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "b876afcdb765a13e3702dfbf9bd9c18263b36c2f232865dbc89f1e60962fb341",
+   "name": "reland148-landed-rebuilt",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/review-kept"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/reland148-end-wakes-nothing.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "32241743c85e27c17e6e0007e2cd83679cc89a6d4a85747a86c5312738a2ab27",
+   "name": "reland148-end-wakes-nothing",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/end-wakes-pass"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/lease148-contained-refused.diff",
+   "module": ".veldo/control_effect_executor.py",
+   "mutant_sha256": "09c59c376974244bbbbb2f695f96852c291638105ef90cc0c58bee0c45cb71a2",
+   "name": "lease148-contained-refused",
+   "named_row_red": null,
+   "named_rows": [
+    "lease/contains-unknown"
+   ],
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/lease148-tip-not-fetched.diff",
+   "module": ".veldo/control_effect_executor.py",
+   "mutant_sha256": "d81e1db3b6f32da1bca0277dcaa5d9e7e0203552ccabda7cd5164d145367acd4",
+   "name": "lease148-tip-not-fetched",
+   "named_row_red": null,
+   "named_rows": [
+    "lease/trunk-moved"
+   ],
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/never148-forced-push.diff",
+   "module": ".veldo/control_effect_executor.py",
+   "mutant_sha256": "c0a149add47b9753d8ff4f1e8ae09479ca7a4bd3b62dbe10f84027192db0c7d2",
+   "name": "never148-forced-push",
+   "named_row_red": null,
+   "named_rows": [
+    "reland/never-forced"
+   ],
+   "source_sha256": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-asked-every-pass.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "d492c58754e8a4e059898564b8d421cc92e9b34418f9787d394deaa47e3fefa6",
+   "name": "grant148-asked-every-pass",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/fresh-request"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-missing-treated-as-replacement.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "eb8ec5dc55b4992c04ec54af27fb0bc08947921cac1aac86d8db5be8d077d62c",
+   "name": "grant148-missing-treated-as-replacement",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/never-granted"
+   ],
+   "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-replacement-includes-missing.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "8de35319dfdf42b69900d57bb66ce741e62e3e8f169e66a21e13b4afeb095ac5",
+   "name": "grant148-replacement-includes-missing",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/mixed-approvals"
+   ],
+   "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-mixed-question-restored.diff",
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "8673bbc946d54e75e12b0de3a5c682a5cac3d3af7198e94a7e451eb606b0514a",
+   "name": "grant148-mixed-question-restored",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/mixed-approvals"
+   ],
+   "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-proof-mismatch-replaceable.diff",
+   "module": ".veldo/control_landing.py",
+   "mutant_sha256": "ea10ab663234f112d45d2b9a45b9a1740b27e9b12bb3a57974ab71b5e766650d",
+   "name": "grant148-proof-mismatch-replaceable",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/mixed-proof"
+   ],
+   "source_sha256": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-applied-again.diff",
+   "module": ".veldo/control_landing_station.py",
+   "mutant_sha256": "6b9afc57a5e6fea55380ba9ce1f69e919b6104f7d2defbd6236bd302da681940",
+   "name": "grant148-applied-again",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/once-per-dispatch"
+   ],
+   "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-failed-dispatch-accepted.diff",
+   "module": ".veldo/control_landing_station.py",
+   "mutant_sha256": "4b67d78b3d560f6124729fecf6341ad86ce57a90fb4b19e1e899cd63a6135276",
+   "name": "grant148-failed-dispatch-accepted",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/once-per-dispatch"
+   ],
+   "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  },
+  {
+   "by_assertion": null,
+   "diff": "proof/VELDO-0148/grant148-revoked-overwritten.diff",
+   "module": ".veldo/control_landing_station.py",
+   "mutant_sha256": "840a72db71901bb1a1efc2f11d9d2edf0dbaaf7ee532b09cd6638ce48f664a9c",
+   "name": "grant148-revoked-overwritten",
+   "named_row_red": null,
+   "named_rows": [
+    "grant/revoked-before-answer"
+   ],
+   "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "status": "static refresh; mutation checker execution reserved for reviewer"
+  }
+ ],
+ "registry": "scripts/check_teeth_mutations.py --finding 148",
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0148",
+ "status": "All 27 registrations statically refreshed. Mutation checker execution remains reserved for the reviewer.",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "suite_sha256": "10517aca0f667f010efbf5aafeafad597f51768f5911c3408c59ed8b834ff2be"
+}

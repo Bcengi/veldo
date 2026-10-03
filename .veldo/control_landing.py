@@ -33,7 +33,11 @@ land dispatch. Landing.publish then, in order:
      the tip, refused before anything reached a destination, or unknown;
   5. reads that recorded answer back from the store. Refused is a failed publication: named, nothing
      completed. Unknown (or no answer) is a stop under the original dispatch: nothing completed, no
-     further attempt. Only a completed publication goes on to completion.
+     further attempt. Only a completed publication goes on to completion. A publication refused
+     because another push moved the trunk (VELDO-0148: `stale-subject` at the listing, `trunk-moved`
+     after it) names the watermark, the tip found now and that classification; it ends this dispatch,
+     and the land station (control_landing_station) re-lands the unit under a new one. A refusal of
+     the subject for a missing grant alone names the exact subject a fresh grant would be bound to.
 
 Landing.complete then decides success from the remote's own answer, re-read from the remote now (the
 receiver's ref must be exactly the candidate commit), re-derives every link of the R76 evidence chain
@@ -110,7 +114,13 @@ EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'miss
                      'unauthenticated-worker': 'missing_authority', 'revoked': 'missing_authority',
                      'revoked-reviewer': 'missing_authority', 'stale-authority': 'stale_subject',
                      'stale-handle': 'stale_subject', 'expired-contract': 'stale_subject',
-                     'effect-service-unavailable': 'unavailable_service'}
+                     'effect-service-unavailable': 'unavailable_service', 'trunk-moved': 'stale_subject'}
+# VELDO-0148: the executor's refusals that mean another push moved the trunk: at its listing (the trunk no
+# longer at the watermark) or between the listing and the push (the lease lost to a commit that does not
+# contain the candidate). A publication refused so is followed by a re-land (control_landing_station).
+TRUNK_MOVED = ('stale-subject', 'trunk-moved')
+# The refusals of the subject that only a grant for the re-merged tree answers (VELDO-0148 AC3).
+APPROVAL_CODES = ('binding_mismatch:approval/',)
 
 
 def taxonomy(code):
@@ -405,6 +415,7 @@ class Landing:
                 dependencies[dep] = {'version': row['version'], 'digest': row['digest']}
         exact = {'tree': tree, 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}
         approvals = self._kind('approval')
+        replacements = []
         for name in data.get('approvals_required') or []:
             granted = [a['data'] for a in approvals if a['data'].get('unit') == sid and a['data'].get('name') == name
                        and a['data'].get('state') == 'granted' and a['data'].get('revision') == data.get('revision')]
@@ -417,8 +428,15 @@ class Landing:
                 differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])
             closest = min(differences, key=len)
             codes.extend('binding_mismatch:approval/%s/%s' % (name, f) for f in closest)
+            if closest == ['tree']:
+                replacements.append(name)
         if codes:
-            raise Refused(codes)
+            error = Refused(codes)
+            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:
+                # Every problem must be only an older tree's prior grant at this revision.
+                error.subject = dict(exact, unit=sid, revision=data.get('revision'),
+                                     approvals=replacements)
+            raise error
         return dict(exact, unit=sid, revision=data.get('revision'), commit=fields['commit'], old_tip=fields['watermark'],
                     implementation=fields['implementation'], observation=reference,
                     reviewers=list(handoff.get('reviewers') or []))
@@ -490,7 +508,15 @@ class Landing:
         publication, anything but a confirmed one a stop; a confirmed one goes on to completion."""
         data = effect['data']
         if data.get('status') == 'refused':
-            raise Refused(executor_code(data.get('refusal')), 'the publication was refused before anything was pushed')
+            word = data.get('refusal')
+            if word not in TRUNK_MOVED:
+                raise Refused(executor_code(word), 'the publication was refused before anything was pushed')
+            # VELDO-0148: the trunk moved, at the listing or after it; the tip found now is recorded
+            # with its classification.
+            error = Refused(executor_code(word), 'the trunk moved from the watermark; nothing was published')
+            error.observed = {'classification': word, 'watermark': (data.get('payload') or {}).get('old_tip'),
+                              'tip': self._remote_tip()}
+            raise error
         if not PJ.confirmed(data):
             raise Refused('unknown_outcome:publication/' + str(data.get('status')),
                           'stopped under dispatch %s; no further attempt' % dispatch)
@@ -688,11 +714,14 @@ class Landing:
         published = True if effect and PJ.confirmed(effect['data']) else (False if effect is None or status == 'refused' else None)
         kind = taxonomy(error.code)
         outcome = 'unknown' if kind == 'unknown_outcome' else ('failed' if status == 'refused' else 'refused')
+        # VELDO-0148: a refused publication's watermark, the tip found and its classification, and the exact
+        # subject a refusal for a missing grant names.
+        extra = {k: getattr(error, k) for k in ('observed', 'subject') if getattr(error, k, None) is not None}
         self._emit(operation, sid, dispatch, candidate, outcome=outcome, refusal=error.code, refusals=error.codes,
-                   taxonomy=kind, detail=error.detail)
-        return {'ok': False, 'outcome': outcome, 'unit': sid, 'dispatch': dispatch, 'published': published,
-                'refusal': error.code, 'refusals': list(error.codes), 'taxonomy': kind, 'detail': error.detail,
-                'receipt': None}
+                   taxonomy=kind, detail=error.detail, **extra)
+        return dict({'ok': False, 'outcome': outcome, 'unit': sid, 'dispatch': dispatch, 'published': published,
+                     'refusal': error.code, 'refusals': list(error.codes), 'taxonomy': kind, 'detail': error.detail,
+                     'receipt': None}, **extra)
 
     def _emit(self, operation, sid, dispatch, candidate, **fields):
         c = candidate if isinstance(candidate, dict) else {}
@@ -703,13 +732,18 @@ class Landing:
 
     def status(self):
         """Metrics: accepted and refused operations, the publications of this repository with no
-        conclusive answer (pending, each a stop), and the landings not yet projected."""
-        pending = sorted(row['data'].get('dispatch_id') for row in self._kind(EFFECT_KIND)
-                         if row['data'].get('kind') == 'publication' and row['data'].get('repository_uuid') == self.repository
-                         and row['data'].get('status') != 'refused' and not PJ.confirmed(row['data']))
+        conclusive answer (pending, each a stop), the publications refused because the trunk moved, by
+        the executor's word (VELDO-0148: stale-subject at the listing, trunk-moved after it), and the
+        landings not yet projected."""
+        mine = [row['data'] for row in self._kind(EFFECT_KIND)
+                if row['data'].get('kind') == 'publication' and row['data'].get('repository_uuid') == self.repository]
+        pending = sorted(data.get('dispatch_id') for data in mine
+                         if data.get('status') != 'refused' and not PJ.confirmed(data))
+        moved = {word: sum(data.get('status') == 'refused' and data.get('refusal') == word for data in mine)
+                 for word in TRUNK_MOVED}
         try:
             unprojected = PJ.Projection(self.store, self.database, domain=self.domain, repository=self.repository,
                                         root=self.events_root).status()['pending_events']
         except PJ.Refused as error:
             unprojected = [error.code]
-        return dict(self.counts, pending=pending, unprojected=unprojected)
+        return dict(self.counts, pending=pending, trunk_moved=moved, unprojected=unprojected)

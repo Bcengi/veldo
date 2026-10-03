@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1641 +1641 @@
+-            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
++            acknowledged = poller.poll()

@@ -1,0 +1,85 @@
+{
+ "by_assertion": true,
+ "details": [
+  "VELDO-0148 reland/end-wakes-pass detail: land end alone starts the immediate next pass with each dispatch wake"
+ ],
+ "failed_rows": [
+  "VELDO-0148 reland/end-wakes-pass"
+ ],
+ "mutant_sha256": "32241743c85e27c17e6e0007e2cd83679cc89a6d4a85747a86c5312738a2ab27",
+ "name": "reland148-end-wakes-nothing",
+ "named_rows": [
+  "reland/end-wakes-pass"
+ ],
+ "new": "            pass  # defect: a land's end wakes no pass\n",
+ "old": "            self.loop.wake('run_end', record['dispatch_id'])\n",
+ "only_named_row_red": true,
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 reland/end-wakes-pass",
+   false
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   true
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   true
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   true
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.manual-mutation/v1",
+ "seconds": 19.862,
+ "source_sha256": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+ "spec_id": "VELDO-0148",
+ "suite_sha256": "3efa86a7f7b37d654726f0066b357233cb62861b40112b259baeb8eeda13b79b"
+}
