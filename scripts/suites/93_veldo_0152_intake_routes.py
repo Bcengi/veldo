@@ -34,6 +34,8 @@ def _v152_suite():
     # Exercise the runner's isolated copies without executing any mutation suite.
     import tempfile
     driver = load('v152_mutation_catalog', MUTATIONS)
+    # A mutated catalog lives in a temporary directory; its fixtures still belong to this repo.
+    driver.ROOT = ROOT
     intake_cases = [case for case in driver.cases() if case['module'] == 'control_intake.py']
     check('proof/intake-companions', 'registered intake cases exist', bool(intake_cases))
     with tempfile.TemporaryDirectory(prefix='v152-companions-') as directory:
