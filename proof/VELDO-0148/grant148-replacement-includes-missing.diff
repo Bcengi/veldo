@@ -1,0 +1,8 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -435 +435 @@
+-            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:
++            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):
+@@ -438 +438 @@
+-                                     approvals=replacements)
++                                     approvals=list(data.get('approvals_required') or []))

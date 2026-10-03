@@ -1,0 +1,7 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -103 +102,0 @@
+-                (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))
+@@ -133,0 +133,2 @@
++        own = next(line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines() if line.startswith('0::'))
++        (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))

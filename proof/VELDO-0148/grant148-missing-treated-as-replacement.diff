@@ -1,0 +1,7 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -423,0 +424 @@
++                replacements.append(name)  # defect: a missing grant is replaceable
+@@ -435 +436 @@
+-            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:
++            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):

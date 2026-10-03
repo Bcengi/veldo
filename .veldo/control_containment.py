@@ -34,6 +34,9 @@ timed on the monotonic clock. The profile also declares the trusted wrapper's he
 the receiver's missed-heartbeat window (VELDO-0041, control_heartbeat.py). The worker's own exit
 ends its dispatch: anything left in its group is terminated and killed the same way. A group that is
 still populated SETTLE_SECONDS after the kill is reported not empty, never as ended.
+The runtime cap starts at scope activation. The receiver also arms that absolute
+deadline in its event wait, sending group TERM without cooperative grace and then
+KILL after kill_grace_seconds, so a shared manager reload cannot defer the cap.
 
 EXIT DETECTION. The worker's exit is a pidfd becoming readable and the group's emptiness is the
 cgroup.events `populated 0` change (poll POLLPRI); the receiver sleeps in poll until one of those, its
@@ -84,7 +87,8 @@ SETTINGS = {
     'runtime_seconds': dict(required=True, kind='seconds', controls=['RuntimeMaxUSec'],
                             mechanism='systemd RuntimeMaxSec on the dispatch scope: the user manager stops the '
                                       'whole group at the cap whether or not the receiver runs; TimeoutStopSec '
-                                      'then escalates to SIGKILL'),
+                                      'then escalates to SIGKILL; the receiver also enforces the saved activation '
+                                      'deadline directly with group SIGTERM and cgroup.kill during manager reloads'),
     'memory_bytes': dict(required=True, kind='bytes', controls=['memory.max', 'memory.swap.max', 'OOMPolicy'],
                          mechanism='cgroup v2 memory.max (MemoryMax) with memory.swap.max 0 (MemorySwapMax), '
                                    'charged across every descendant; OOMPolicy=stop ends the group on a breach'),
@@ -208,10 +212,10 @@ def _tool(profile, name, env):
     return path if path and os.path.isfile(path) and os.access(path, os.X_OK) else None
 
 
-def _show(systemctl, env, unit, names):
+def _show(systemctl, env, unit, names, timeout=TOOL_SECONDS):
     """Properties of a unit (or of the manager itself when unit is None) from the user manager."""
     command = [systemctl, '--user', 'show'] + [a for n in names for a in ('-p', n)] + ([unit] if unit else [])
-    result = subprocess.run(command, capture_output=True, text=True, timeout=TOOL_SECONDS, env=env,
+    result = subprocess.run(command, capture_output=True, text=True, timeout=timeout, env=env,
                             stdin=subprocess.DEVNULL)
     if result.returncode:
         raise OSError('systemctl show failed')
@@ -353,6 +357,7 @@ class Group:
         self.systemctl = qualification['host']['systemctl']
         self.settings = {name: entry['value'] for name, entry in qualification['settings'].items()}
         self.cgroup, self.events, self.installed = None, None, {}
+        self.start_evidence, self.oom_kill = {}, 0
 
     def report(self):
         return {'unit': self.unit, 'slice': self.slice, 'cgroup': self.cgroup}
@@ -371,6 +376,52 @@ class Group:
         """What the trusted wrapper applies to itself before the engine runs; every descendant inherits it."""
         return {'file_bytes': self.settings['file_bytes']}
 
+    def retain(self):
+        """Keep this scope loaded until close, including after a successful emptying.
+
+        RefUnit belongs to this private bus connection. Closing it releases the reference,
+        including when the receiver dies. The engine never inherits the connection.
+        libsystemd is the Linux provider's own bus client; no Python package is needed.
+        """
+        import ctypes as ct
+
+        lib = ct.CDLL('libsystemd.so.0')
+        pointer = ct.c_void_p
+        signatures = (
+            (lib.sd_bus_new, [ct.POINTER(pointer)], ct.c_int),
+            (lib.sd_bus_set_address, [pointer, ct.c_char_p], ct.c_int),
+            (lib.sd_bus_set_bus_client, [pointer, ct.c_int], ct.c_int),
+            (lib.sd_bus_set_method_call_timeout, [pointer, ct.c_uint64], ct.c_int),
+            (lib.sd_bus_start, [pointer], ct.c_int),
+            (lib.sd_bus_call_method, [pointer, ct.c_char_p, ct.c_char_p, ct.c_char_p,
+                                     ct.c_char_p, pointer, pointer, ct.c_char_p], ct.c_int),
+            (lib.sd_bus_flush_close_unref, [pointer], pointer),
+        )
+        for function, arguments, result in signatures:
+            function.argtypes, function.restype = arguments, result
+
+        def checked(function, *args):
+            result = function(*args)
+            if result < 0:
+                raise OSError(-result, function.__name__)
+
+        bus = pointer()
+        try:
+            checked(lib.sd_bus_new, ct.byref(bus))
+            address = self.environment.get('DBUS_SESSION_BUS_ADDRESS') or (
+                'unix:path=' + self.environment['XDG_RUNTIME_DIR'] + '/bus')
+            checked(lib.sd_bus_set_address, bus, address.encode())
+            checked(lib.sd_bus_set_bus_client, bus, 1)
+            checked(lib.sd_bus_set_method_call_timeout, bus, round(TOOL_SECONDS * 10 ** 6))
+            checked(lib.sd_bus_start, bus)
+            checked(lib.sd_bus_call_method, bus, b'org.freedesktop.systemd1', b'/org/freedesktop/systemd1',
+                    b'org.freedesktop.systemd1.Manager', b'RefUnit', None, None, b's',
+                    ct.c_char_p(self.unit.encode()))
+        except BaseException:
+            lib.sd_bus_flush_close_unref(bus)
+            raise
+        self.reference = (lib, bus)
+
     def command(self, argv):
         """systemd-run creates this dispatch's scope with every cap installed, moves itself into it and
         then becomes `argv` (the trusted wrapper) by exec: the same pid, already contained."""
@@ -380,8 +431,8 @@ class Group:
             head += ['-p', '%s=%s' % (name, value)]
         return head + ['--'] + list(argv)
 
-    def _show(self, unit, names):
-        return _show(self.systemctl, self.environment, unit, names)
+    def _show(self, unit, names, timeout=TOOL_SECONDS):
+        return _show(self.systemctl, self.environment, unit, names, timeout=timeout)
 
     def live(self):
         """The populated dispatch groups in this profile's slice, read from the kernel."""
@@ -435,7 +486,7 @@ class Group:
         declared control is installed, from the kernel's files and the manager's unit; then open the
         group's populated events. Returns the named problems, [] when contained as declared."""
         shown = self._show(self.unit, ('ControlGroup', 'Slice', 'RuntimeMaxUSec', 'TimeoutStopUSec', 'OOMPolicy',
-                                       'KillMode'))
+                                       'KillMode', 'LoadState', 'ActiveEnterTimestampMonotonic'))
         cgroup = shown.get('ControlGroup') or ''
         if (not cgroup or cgroup_of(pid) != cgroup or cgroup.rsplit('/', 1)[-1] != self.unit
                 or shown.get('Slice') != self.slice):
@@ -447,7 +498,12 @@ class Group:
                 'RuntimeMaxUSec': span_us(shown.get('RuntimeMaxUSec')),
                 'TimeoutStopUSec': span_us(shown.get('TimeoutStopUSec')),
                 'OOMPolicy': shown.get('OOMPolicy'), 'KillMode': shown.get('KillMode'), 'Max file size': file_limit(pid)}
+        self.start_evidence = {
+            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),
+            'RuntimeMaxUSec': read['RuntimeMaxUSec'], 'TimeoutStopUSec': read['TimeoutStopUSec']}
         problems = []
+        if shown.get('LoadState') != 'loaded' or self.start_evidence['ActiveEnterTimestampMonotonic'] <= 0:
+            problems.append('spawn_failed:containment:activation')
         for name, controls in self._expected().items():
             self.installed[name] = {control: read[control] for control in controls}
             if self.installed[name] != controls:
@@ -459,9 +515,19 @@ class Group:
         text = _read(CGROUP / self.cgroup.lstrip('/') / 'cgroup.procs') if self.cgroup else None
         return [int(line) for line in (text or '').split()]
 
+    def sample_memory(self):
+        """Retain OOM kills while the cgroup exists, before receiver cleanup can remove it."""
+        if self.cgroup:
+            text = _read(CGROUP / self.cgroup.lstrip('/') / 'memory.events') or ''
+            for line in text.splitlines():
+                key, value = line.split()
+                if key == 'oom_kill':
+                    self.oom_kill = max(self.oom_kill, int(value))
+
     def populated(self):
         """Whether any process is left in the group (read from its cgroup.events, which also consumes
         the pending event); False once the group directory is gone."""
+        self.sample_memory()
         if self.events is not None:
             try:
                 return b'populated 1' in os.pread(self.events, 4096, 0).splitlines()
@@ -471,12 +537,14 @@ class Group:
 
     def terminate(self):
         """SIGTERM to every process in the group."""
+        self.sample_memory()
         for pid in self.members():
             with contextlib.suppress(ProcessLookupError, PermissionError):
                 os.kill(pid, signal.SIGTERM)
 
     def kill(self):
         """Kill every process in the group and its descendants at once (cgroup.kill)."""
+        self.sample_memory()
         if self.cgroup:
             with contextlib.suppress(OSError):
                 (CGROUP / self.cgroup.lstrip('/') / 'cgroup.kill').write_text('1')
@@ -499,18 +567,39 @@ class Group:
         return True
 
     def conclude(self):
-        """After the group is empty: the scope's result as systemd recorded it (`timeout` for the
-        runtime cap, `oom-kill` for the memory cap), clearing a failed scope so it is not left loaded."""
-        try:
-            shown = self._show(self.unit, ('Result', 'ActiveState'))
-            if shown.get('ActiveState') == 'failed':
-                subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
-                               timeout=TOOL_SECONDS, env=self.environment, stdin=subprocess.DEVNULL)
-            return shown.get('Result')
-        except (OSError, subprocess.SubprocessError):
-            return None
+        """After empty, wait boundedly for the manager's final result before clearing the scope.
+        An empty cgroup can precede the scope's terminal state. Unreadable evidence stays unknown."""
+        end = time.monotonic() + SETTLE_SECONDS
+        names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+                 'InactiveEnterTimestampMonotonic')
+        self.timestamps = {}
+        while (remaining := end - time.monotonic()) > 0:
+            try:
+                shown = self._show(self.unit, ('LoadState', 'Result', 'ActiveState', *names),
+                                   timeout=min(TOOL_SECONDS, remaining))
+                if (shown.get('LoadState') == 'loaded'
+                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):
+                    timestamps = {name: int(shown.get(name) or 0) for name in names}
+                    self.timestamps = timestamps
+                    remaining = end - time.monotonic()
+                    if shown.get('ActiveState') == 'failed' and remaining > 0:
+                        with contextlib.suppress(OSError, subprocess.SubprocessError):
+                            subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
+                                           timeout=min(TOOL_SECONDS, remaining), env=self.environment,
+                                           stdin=subprocess.DEVNULL)
+                    return shown['Result']
+                if shown.get('LoadState') == 'not-found':
+                    break
+            except (OSError, subprocess.SubprocessError, ValueError):
+                pass
+            time.sleep(min(0.05, max(0, end - time.monotonic())))
+        return 'unknown'
 
     def close(self):
+        reference = getattr(self, 'reference', None)
+        if reference is not None:
+            self.reference = None
+            reference[0].sd_bus_flush_close_unref(reference[1])
         if self.events is not None:
             os.close(self.events)
             self.events = None
@@ -545,11 +634,11 @@ class Stop:
         self.cause, self.stage, self.due, self.steps = None, None, math.inf, []
 
     def begin(self, cause, now, adapter_alive):
-        """Start stopping for `cause`; when the adapter has already exited, its group is terminated at once."""
+        """Start stopping for `cause`; an expired runtime cap or an exited adapter terminates the group at once."""
         if self.cause is None:
             self.cause = cause
         if self.stage is None:
-            self._step('cooperative' if adapter_alive else 'terminate', now)
+            self._step('cooperative' if adapter_alive and cause != 'runtime_cap' else 'terminate', now)
 
     def adapter_exited(self, now):
         """The adapter ended while its group is not empty: what is left is terminated now."""
@@ -587,14 +676,25 @@ def hold(held):
 
 def released(fd=0):
     """In the trusted wrapper: wait for the receiver's release line on `fd`, read byte by byte so the
-    engine's packet after it stays unread. True for `go`."""
+    engine's packet after it stays unread. Return the sender's absolute monotonic heartbeat
+    deadline for a timed release, True for legacy `go`, or False for a malformed/closed release.
+    The sender fixes the deadline: a wrapper delayed after reading it cannot restart the clock."""
     line = b''
     while not line.endswith(b'\n') and len(line) < 64:
         chunk = os.read(fd, 1)
         if not chunk:
             return False
         line += chunk
-    return line == b'go\n'
+    if line == b'go\n':
+        return True
+    try:
+        command, value = line.split()
+        deadline = float(value)
+        if line.endswith(b'\n') and command == b'go' and math.isfinite(deadline) and deadline > 0:
+            return deadline
+    except ValueError:
+        pass
+    return False
 
 
 def retirement(group, process):

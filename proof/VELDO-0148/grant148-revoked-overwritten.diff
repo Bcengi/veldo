@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing_station.py
++++ b/.veldo/control_landing_station.py
+@@ -400 +400 @@
+-            if not any(isinstance(data.get('subject'), dict)
++            if False and not any(isinstance(data.get('subject'), dict)

@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -546 +546 @@
+-        return 'unknown'
++        return None  # defect: unreadable evidence silently becomes an ordinary exit

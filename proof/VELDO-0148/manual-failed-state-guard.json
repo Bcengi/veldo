@@ -1,0 +1,83 @@
+{
+ "base_commit": "41340bc1",
+ "by_assertion": true,
+ "details": [
+  "VELDO-0148 grant/once-per-dispatch detail: a failed dispatch with an eligible subject cannot be granted or write an approval"
+ ],
+ "diff": "proof/VELDO-0148/grant148-failed-dispatch-accepted.diff",
+ "failed_rows": [
+  "VELDO-0148 grant/once-per-dispatch"
+ ],
+ "method": "Copy module into a temporary tree, replace only the state guard by hand, run current suite through drive.run production-copy anchor; original module unchanged.",
+ "module": ".veldo/control_landing_station.py",
+ "mutant_sha256": "4b67d78b3d560f6124729fecf6341ad86ce57a90fb4b19e1e899cd63a6135276",
+ "name": "grant148-failed-dispatch-accepted",
+ "named_row_red": true,
+ "new": "        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)\n",
+ "old": "        if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)\n",
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   true
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   false
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   true
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-manual-mutation/v1",
+ "seconds": 20.312,
+ "source_sha256": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "suite_sha256": "97629c37f6c5737172700e0877a8bb9d6d9aecefd60da0dac9b9ac629c32ffcd"
+}

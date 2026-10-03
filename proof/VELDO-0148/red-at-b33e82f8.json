@@ -1,0 +1,88 @@
+{
+ "by_assertion": true,
+ "commit": "b33e82f86646066ed6317ef1d2dff3415087bae1",
+ "details": [
+  "VELDO-0148 grant/never-granted detail: the real policy accepted before the new requirement, then final publication refused the never-granted security approval by name",
+  "VELDO-0148 grant/never-granted detail: no owner question, approval write, retry or publication for a never-granted name",
+  "VELDO-0148 grant/mixed-approvals detail: mixed approval failures stay refused with both named reasons; only the mismatched owner grant is offered for replacement",
+  "VELDO-0148 grant/mixed-approvals detail: answering replaces only owner at this exact tree and still refuses security without another dispatch or publication [True, [('owner', '929efcd3389ed080e519bdd2d8bc5d9dae24ef8c'), ('security', '929efcd3389ed080e519bdd2d8bc5d9dae24ef8c')]]"
+ ],
+ "failed_rows": [
+  "VELDO-0148 grant/never-granted",
+  "VELDO-0148 grant/mixed-approvals"
+ ],
+ "modules": {
+  ".veldo/control_effect_executor.py": {
+   "at_commit": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "now": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+  },
+  ".veldo/control_landing.py": {
+   "at_commit": "fa55cc2c3ce66dc9f3269476a8d0d1b4c6088f2a4ab4ef0d6fdda3aeeac54aa5",
+   "now": "7306600e9f1ec7dce38f2203bd7dd9ae4b2c22180324b9239314981e4795b5b5"
+  },
+  ".veldo/control_landing_station.py": {
+   "at_commit": "d8528492ca3e75b833edec76e58fe4a9d0787faf869624b75f55b55d40a83aaf",
+   "now": "e89fff63a515fcb317da4ee361ba62edf339c9708bede966592479f4c9db3e39"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "da06773f6652900aa00215815908bc87cbffe3193dcadd1a81fd9d20f5ff227f",
+   "now": "2d9459f37c781efd6ed04a2bdffb09371a16c15d20bf2a6d01a63003b2e1f165"
+  },
+  ".veldo/lander.py": {
+   "at_commit": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6",
+   "now": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   false
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   false
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 19.458,
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "tree": "git archive b33e82f86646066ed6317ef1d2dff3415087bae1, unchanged; the current suite file run against it"
+}

@@ -88,6 +88,18 @@ def _organ(name):
     return _ORGANS[name]
 
 
+def _validator():
+    """validate.py, the one structural validator, loaded on first use through control_eligibility's
+    ValidatorSnapshot of this module's own directory (VELDO-0053): every module the validator loads is
+    answered by its name from that directory, so it runs wherever the engine is laid down, a repository's
+    .veldo or an installation's fixed executable (VELDO-0148: the authority service's land station asks
+    this module about a candidate's proof, and validate.py loads its organs from a repository tree)."""
+    if "validate" not in _ORGANS:
+        snapshot = _organ("control_eligibility").ValidatorSnapshot(Path(__file__).resolve().parent)
+        _ORGANS["validate"] = snapshot.validate
+    return _ORGANS["validate"]
+
+
 SCHEMA = "veldo.proof_bundle/v1"
 OBSERVATION_SCHEMA = "veldo.gate_observation/v1"
 PROOF_SCHEMA = "veldo.proof/v1"
@@ -329,7 +341,7 @@ def accepted_spec(repo, base, spec_path, unit):
     body = blob(repo, base, spec_path) if _safe(spec_path) else None
     if body is None:
         return None, ["missing_authority:spec/absent"]
-    V = _organ("validate")
+    V = _validator()
     try:
         fm = V.front_matter(body.decode("utf-8"), spec_path) or {}
         criteria = [c["id"] for c in fm.get("acceptance_criteria") or [] if isinstance(c, dict) and "id" in c]
@@ -468,7 +480,7 @@ def contextual(repo, *, unit, commit, base, spec_path, manifest, observation, ob
         if (status in PASSED) != (name in observed):
             problems.append("binding_mismatch:check_claim/%s" % name)
     # The required evidence kinds, each an artifact type or an observed passing check.
-    aliases = _organ("validate").EVIDENCE_KIND_ALIASES
+    aliases = _validator().EVIDENCE_KIND_ALIASES
     kinds = {a["type"] for a in artifacts} | observed
     for kind in spec["required_evidence"]:
         if kind not in aliases:

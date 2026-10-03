@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -517 +517 @@
--        self.emit({'event': 'running', 'process': process, 'group': group.report() if group else None})
-+        self.emit({'event': 'running', 'process': process, 'group': None})  # defect
+@@ -1186 +1186 @@
+-                   'group': group.report() if group else None})
++                   'group': None})  # defect: the receiver does not report the worker's group

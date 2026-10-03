@@ -99,18 +99,19 @@ import time
 import uuid
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
 LAND_LOCK_UNIT = "__land_lock__"
 
 
-def _load(name, rel):
-    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+def _load(name, file):
+    """A sibling module, loaded by its path beside this file (VELDO-0148: the authority service's land
+    station loads the lander from its installed directory, where no repository tree surrounds it)."""
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().with_name(file))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 
-CL = _load("veldo_claim_ld", ".veldo/claim.py")
+CL = _load("veldo_claim_ld", "claim.py")
 _VERIFICATION = []
 
 
@@ -832,8 +833,8 @@ class CandidatePolicy:
     def __init__(self, store, conn, *, domain, repository, floor, settlement_trust=None):
         self.store, self.conn, self.floor = store, conn, floor
         self.domain, self.repository, self.settlement_trust = domain, repository, settlement_trust
-        self.CP = _load("veldo_proof_ld", ".veldo/control_proof.py")
-        self.EL = _load("veldo_eligibility_ld", ".veldo/control_eligibility.py")
+        self.CP = _load("veldo_proof_ld", "control_proof.py")
+        self.EL = _load("veldo_eligibility_ld", "control_eligibility.py")
 
     def __call__(self, unit, candidate):
         sid = _unit_id(unit)

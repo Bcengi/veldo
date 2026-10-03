@@ -1,0 +1,5 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -475 +475 @@
+-                    self.oom_kill = max(self.oom_kill, int(value))
++                    self.oom_kill = 0

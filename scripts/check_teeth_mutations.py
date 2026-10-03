@@ -3025,11 +3025,13 @@ def cases():
              "            refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n"
              "            self.dispatches.unknown(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n",
              'launch-results')
+    # A transport can deliver the wrapper identity and worker output in one read. Suite 62
+    # coalesces those lines after the contained wrapper's release, so this records the worker's
+    # forged identity without waiting for output during the containment/heartbeat handshake.
     dispatch('dispatch-identity-from-worker-output', 'control_launch.py',
              "        line, _, carry = pending.partition(b'\\n')\n        message = json.loads(line)\n",
              "        line, _, carry = pending.partition(b'\\n')\n"
-             "        if b'\\n' in carry or select.select([worker.stdout], [], [], 5)[0]:  # defect: a later line is read\n"
-             "            carry += b'' if b'\\n' in carry else os.read(worker.stdout.fileno(), 65536)\n"
+             "        if b'\\n' in carry:  # defect: worker output replaces the wrapper's identity\n"
              "            line, _, carry = carry.partition(b'\\n')\n"
              "        message = json.loads(line)\n",
              'launch-results')
@@ -3103,13 +3105,78 @@ def cases():
     def contain(name, module, old, new, row, also=()):
         add(40, name, '63_veldo_0040_containment.py', module, old, new, ['containment/' + row], also)
 
+    # Regression guard for the restructured cause precedence, not the pre-fix defect.
+    # The old receiver tested local cause before falling back to Stop.cause.
+    contain('containment-resolved-exit-hides-cap', 'control_launch.py',
+            "        if cause in (None, 'exit'):\n",
+            "        if cause is None:\n",
+            'manager-cap-after-adapter-exit')
+    contain('containment-result-before-settled', 'control_containment.py',
+            "                if (shown.get('LoadState') == 'loaded'\n"
+            "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",
+            "                if shown.get('Result'):\n",
+            'conclude-settles')
+    contain('containment-adapter-stop-time-dropped', 'control_launch.py',
+            '            stop_times.append(adapter_exit_monotonic)\n',
+            '            pass\n',
+            'empty-shell-signal-after-cap')
+    contain('containment-adapter-signal-guard-dropped', 'control_launch.py',
+            '        if signaled and adapter_exit_monotonic is not None:\n',
+            '        if adapter_exit_monotonic is not None:\n',
+            'empty-failure-after-cap')
+    contain('containment-ordinary-after-cap-is-exit', 'control_launch.py',
+            "            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None\n"
+            "                  and adapter_exit_monotonic is not None\n"
+            "                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):\n"
+            "                # An ordinary status can be a handled cap signal; missing evidence is not success.\n"
+            "                cause = 'unknown'\n",
+            '',
+            'empty-ordinary-after-cap-unknown')
+    contain('containment-final-memory-sample-dropped', 'control_launch.py',
+            '        if group is not None:\n'
+            '            # The last populated read can observe an OOM after its memory.events sample.\n'
+            '            group.sample_memory()\n',
+            '',
+            'oom-after-final-populated-sample')
+    contain('containment-recorded-runtime-ignored', 'control_launch.py',
+            "            elif manager_result == 'timeout' or runtime_reached:\n",
+            "            elif manager_result == 'timeout':\n",
+            'recorded-runtime-after-collection')
+    contain('containment-not-found-is-success', 'control_containment.py',
+            "                if (shown.get('LoadState') == 'loaded'\n",
+            '                if (True\n',
+            'not-found-unknown')
+    contain('containment-normal-exit-unknown', 'control_launch.py',
+            "            elif code == 0:\n"
+            "                # A clean adapter exit adds no stop cause. Keep any actual cleanup stop.\n"
+            "                cause = stop.cause if stop is not None else None\n",
+            "            elif code == 0:\n                cause = 'unknown'\n",
+            'normal-exit-before-cap')
+    contain('containment-recorded-cap-overrides-explicit', 'control_launch.py',
+            "        if cause in (None, 'exit'):\n",
+            '        if True:\n',
+            'recorded-cap-explicit-precedence')
+    contain('containment-start-activation-lost', 'control_containment.py',
+            "            'ActiveEnterTimestampMonotonic': int(shown.get('ActiveEnterTimestampMonotonic') or 0),\n",
+            "            'ActiveEnterTimestampMonotonic': 0,\n",
+            'start-evidence')
+    contain('containment-oom-evidence-lost', 'control_containment.py',
+            '                    self.oom_kill = max(self.oom_kill, int(value))\n',
+            '                    self.oom_kill = 0\n',
+            'retained-oom-before-cleanup')
+
+    contain('containment-unreadable-result-silent', 'control_containment.py',
+            "        return 'unknown'\n",
+            "        return None  # defect: unreadable evidence silently becomes an ordinary exit\n",
+            'conclude-unknown')
+
     # AC1, declared: the worker is launched outside its dispatch group.
     contain('containment-launch-outside-group', 'control_containment.py',
             "        return head + ['--'] + list(argv)\n",
             "        return list(argv)  # defect: the worker is launched outside its dispatch group\n", 'dedicated-group')
     contain('containment-wrapper-leaves-group', 'control_launch.py',
-            "    if held is not None and not C.released(0):\n        os._exit(125)\n",
-            "    if held is not None and not C.released(0):\n        os._exit(125)\n"
+            "    if not release:\n        os._exit(125)\n",
+            "    if not release:\n        os._exit(125)\n"
             "    if held is not None:  # defect: the engine is started in the receiver's group, not its own\n"
             "        Path('/sys/fs/cgroup', C.cgroup_of(os.getppid()).lstrip('/'), 'cgroup.procs').write_text(str(os.getpid()))\n",
             'dedicated-group')
@@ -3134,6 +3201,16 @@ def cases():
             "                 ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),  # defect: the runtime cap is ignored\n",
             'runtime-cap',
             also=[("            'runtime_seconds': {'RuntimeMaxUSec': round(s['runtime_seconds'] * 10 ** 6)},\n", "")])
+    contain('containment-receiver-runtime-cap-ignored', 'control_launch.py',
+            "                elif cause is None and code is None and now >= runtime_deadline:\n",
+            "                elif False:  # defect: rely only on the shared manager's timer\n",
+            'receiver-runtime-cap')
+    contain('containment-runtime-cap-one-second-late', 'control_containment.py',
+            "('RuntimeMaxSec', _usec(s['runtime_seconds']))",
+            "('RuntimeMaxSec', _usec(s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)))",
+            'runtime-cap',
+            also=[("round(s['runtime_seconds'] * 10 ** 6)",
+                   "round((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)) * 10 ** 6)")])
     contain('containment-memory-cap-ignored', 'control_containment.py',
             "        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),\n",
             "        props = [('CPUQuota', '%d%%' % s['cpu_percent']),  # defect: the memory cap is ignored\n",
@@ -3178,7 +3255,7 @@ def cases():
             "{'cooperative': stop_grace, 'terminate': kill_grace,",
             "{'cooperative': stop_grace, 'terminate': 0,", 'stop-escalation')
     contain('containment-no-cooperative-step', 'control_containment.py',
-            "            self._step('cooperative' if adapter_alive else 'terminate', now)\n",
+            "            self._step('cooperative' if adapter_alive and cause != 'runtime_cap' else 'terminate', now)\n",
             "            self._step('terminate', now)  # defect: the adapter is not asked first\n", 'cooperative-stop')
     # Re-pointed by VELDO-0041 at the loop's least-timer wait and at the worker's exit, which leaves the
     # wrapper's own heartbeat SETTLE_SECONDS to end before what is left is stopped.
@@ -9402,6 +9479,141 @@ def cases():
              "                       or (n.startswith(FACTORY_PREFIX) and not n.startswith(DELIVERY_PREFIX)))\n",
              "                       )  # defect: a factory VELDO_ name set after the baseline may be replaced\n",
              ['refusal/env-collision'])
+    # VELDO-0148: a land refused because another factory moved main is re-landed on the new tip, re-merged and
+    # re-gated, and nothing ever forces. Each criterion's declared falsifier first (AC1 to AC3), each on its named
+    # row of suite 86, then the seams the rows rest on.
+    def reland148(name, module, old, new, rows, also=()):
+        add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-setup-clock-before-release', 'control_launch.py',
+              '        heartbeat_deadline = release\n',
+              '        pass  # defect: preparation consumes the heartbeat budget\n',
+              ('receiver/pre-release-budget',))
+    reland148('receiver148-release-deadline-restarted', 'control_launch.py',
+              '        heartbeat_deadline = release\n',
+              '        heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS\n',
+              ('receiver/late-wrapper',))
+    reland148('receiver148-release-deadline-not-finite', 'control_containment.py',
+              'and math.isfinite(deadline) and deadline > 0:',
+              'and deadline > 0:', ('receiver/pre-release-budget',))
+    reland148('receiver148-report-wait-unbounded', 'control_launch.py',
+              '            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))\n',
+              '            acknowledged = poller.poll()\n', ('receiver/report-timeout',))
+    reland148('receiver148-late-wrapper-execs', 'control_launch.py',
+              '        if time.monotonic() >= heartbeat_deadline:\n',
+              '        if False:\n', ('receiver/late-wrapper',))
+    reland148('receiver148-wrapper-eof-is-timeout', 'control_launch.py',
+              "                           b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')\n",
+              "                           b'': 'heartbeat_report_timeout'}.get(status, 'heartbeat_setup')\n",
+              ('receiver/wrapper-exited',))
+    reland148('receiver148-placement-wait-unbounded', 'control_heartbeat.py',
+              '            if not poller.poll(int(SETUP_SECONDS * 1000)):\n',
+              '            if not poller.poll():\n', ('receiver/placement-timeout',))
+    reland148('receiver148-placement-report-ignored', 'control_launch.py',
+              "            if status != b'1':\n", "            if False:\n",
+              ('receiver/placement-error', 'receiver/placement-timeout'))
+    reland148('receiver148-heartbeat-moves-after-exec', 'control_heartbeat.py',
+              "                (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))\n", "",
+              ('receiver/fast-exit',), also=((
+                  "        signal.signal(signal.SIGPIPE, signal.SIG_IGN)\n",
+                  "        own = next(line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines() if line.startswith('0::'))\n"
+                  "        (group_path(own) / 'cgroup.procs').write_text(str(os.getpid()))\n"
+                  "        signal.signal(signal.SIGPIPE, signal.SIG_IGN)\n"),))
+    reland148('receiver148-clean-exit-invents-stop', 'control_launch.py',
+              "                cause = stop.cause if stop is not None else None\n",
+              "                cause = 'exit'\n", ['receiver/normal-exit'])
+    reland148('receiver148-success-collected-before-read', 'control_launch.py',
+              '                        group.retain()\n', '', ['receiver/settled-scope'])
+    # AC1: a stale-subject refusal leaves the land failed, so nothing re-lands it.
+    reland148('reland148-stale-left-failed', 'control_landing_station.py',
+              "                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):\n",
+              "                and (landing.get('observed') or {}).get('classification') == 'trunk-moved'):"
+              "  # defect: a stale-subject refusal leaves the land failed\n", ['reland/stale-subject'])
+    # AC2: a lease lost between the listing and the push is recorded unknown, whatever the new tip holds.
+    reland148('lease148-loss-unknown', 'control_effect_executor.py',
+              "        if not complete and push.returncode and pushed and all(\n",
+              "        if False and not complete and push.returncode and pushed and all(  # defect: a lost lease is unknown\n",
+              ['lease/trunk-moved'])
+    # AC3: the approval bound to the old candidate tree is accepted for the re-merged tree.
+    reland148('grant148-old-tree-accepted', 'control_landing.py',
+              "                differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])\n",
+              "                differences.append([f for f in SUBJECT_FIELDS if f != 'tree' and bound.get(f) != exact[f]])"
+              "  # defect: the old tree's grant publishes the re-merged tree\n", ['grant/fresh-request'])
+    # The loop's next-station rule: nothing offered after the trunk moved; a conflict re-landed rather than rebuilt;
+    # the rebuild never reviewed; a clean landing rebuilt; a land's end waking no pass.
+    reland148('reland148-loop-offers-nothing', 'control_service.py',
+              "        if last['state'] == LS.TRUNK_MOVED:\n            return self.reland(unit, last, report)\n",
+              "        if last['state'] == LS.TRUNK_MOVED:\n            return None  # defect: no land is offered after the trunk moved\n",
+              ['reland/stale-subject'])
+    reland148('reland148-conflict-relanded', 'control_service.py',
+              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
+              "            return self.reland(unit, last, report)  # defect: a conflicting re-merge is re-landed\n        return None\n",
+              ['reland/conflict-rebuild'])
+    reland148('reland148-rebuild-not-reviewed', 'control_service.py',
+              "        if review is not None and follows(review) == build['dispatch_id']:\n"
+              "            return None if review['state'] in L.D.HOLDING else self.limited(review, report)\n",
+              "        if True:\n            return None  # defect: the rebuilt unit is never reviewed again\n",
+              ['reland/conflict-rebuild'])
+    reland148('reland148-landed-rebuilt', 'control_service.py',
+              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
+              "            return self.rebuild(unit, last, latest, report)\n"
+              "        return self.rebuild(unit, last, latest, report)  # defect: a clean landing is built and reviewed again\n",
+              ['reland/review-kept'])
+    reland148('reland148-end-wakes-nothing', 'control_service.py',
+              "            self.loop.wake('run_end', record['dispatch_id'])\n",
+              "            pass  # defect: a land's end wakes no pass\n", ['reland/end-wakes-pass'])
+    # The executor: a tip that contains the candidate judged moved; the moved tip never fetched; the push forced.
+    reland148('lease148-contained-refused', 'control_effect_executor.py',
+              "            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode == 1\n",
+              "            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode in (0, 1)"
+              "  # defect: a tip containing the candidate is judged moved\n", ['lease/contains-unknown'])
+    reland148('lease148-tip-not-fetched', 'control_effect_executor.py',
+              "                                '+%s:%s' % (ref, observed))\n",
+              "                                '+%s-unfetched:%s' % (ref, observed))  # defect: the moved tip is never fetched\n",
+              ['lease/trunk-moved'])
+    # A forced push that overwrites a trunk that moved: no lease and no refusal at the listing (the push protocol
+    # alone still refuses a move made after the push connected, so both guards go together).
+    reland148('never148-forced-push', 'control_effect_executor.py',
+              "                         '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),\n",
+              "                         '--force',  # defect: the push is forced\n", ['reland/never-forced'],
+              also=[("            raise E.Refused('stale-subject')\n",
+                     "            pass  # defect: a trunk that moved is not refused at the listing\n")])
+    # The question: a new one opened on every pass.
+    reland148('grant148-asked-every-pass', 'control_service.py',
+              "        alias = 'land-grant-' + hashlib.sha256(last['dispatch_id'].encode()).hexdigest()[:24]\n",
+              "        alias = 'land-grant-' + os.urandom(12).hex()  # defect: a new question on every pass\n",
+              ['grant/fresh-request'],
+              also=[("'loop-grant/' + last['dispatch_id'])", "'loop-grant/' + alias)")])
+    # AC3 re-check findings: mixed refusals, repeated grants and revocation after the question.
+    reland148('grant148-missing-treated-as-replacement', 'control_landing.py',
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
+              ['grant/never-granted'],
+              also=[("                codes.append('missing_authority:approval/' + name)\n", "                codes.append('missing_authority:approval/' + name)\n                replacements.append(name)  # defect: a missing grant is replaceable\n")])
+    reland148('grant148-replacement-includes-missing', 'control_landing.py',
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
+              ['grant/mixed-approvals'],
+              also=[('                                     approvals=replacements)\n', "                                     approvals=list(data.get('approvals_required') or []))\n")])
+    reland148('grant148-mixed-question-restored', 'control_service.py',
+              "        if last['state'] == LS.AWAITING:\n",
+              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        if last['state'] == LS.AWAITING:\n",
+              ['grant/mixed-approvals'])
+    reland148('grant148-proof-mismatch-replaceable', 'control_landing.py',
+              "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
+              "            if replacements and all(code.startswith(APPROVAL_CODES + ('missing_authority:approval/',)) for code in codes):\n",
+              ['grant/mixed-proof'])
+    reland148('grant148-applied-again', 'control_landing_station.py',
+              '        if applied:\n            return applied\n',
+              '        if False and applied:\n            return applied\n',
+              ['grant/once-per-dispatch'])
+    reland148('grant148-failed-dispatch-accepted', 'control_landing_station.py',
+              "        if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)\n",
+              "        if ((record or {}).get('state') not in (AWAITING, FAILED) or not isinstance(subject, dict)\n",
+              ['grant/once-per-dispatch'])
+    reland148('grant148-revoked-overwritten', 'control_landing_station.py',
+              "            if not any(isinstance(data.get('subject'), dict)\n",
+              "            if False and not any(isinstance(data.get('subject'), dict)\n",
+              ['grant/revoked-before-answer'])
     # VELDO-0127 catalog controls and effective Code Mode definitions.
     catalog_suite = '86_veldo_0127_agent_configuration.py'
     add(127, 'role127-resource-grant-omitted', catalog_suite, 'control_agent_config_handoff.py',

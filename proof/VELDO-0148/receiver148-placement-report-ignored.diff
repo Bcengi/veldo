@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1643 +1643 @@
+-            if status != b'1':
++            if False:

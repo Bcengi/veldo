@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1941 +1941 @@
+-        if signaled and adapter_exit_monotonic is not None:
++        if adapter_exit_monotonic is not None:
