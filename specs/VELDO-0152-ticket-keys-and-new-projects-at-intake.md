@@ -36,6 +36,9 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0152_*.py"
+  - "scripts/suites/84_veldo_0169_project_handouts.py"
+  - "scripts/suites/82_veldo_0085_decomposition.py"
+  - "scripts/suites/91_veldo_0151_specialists.py"
   - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/68_veldo_0126_intake.py"
   - "scripts/suites/68_veldo_0136_hints.py"
@@ -390,3 +393,20 @@ report registry. This is an implementation checkpoint, not completed proof or a 
 a reporting event and that suite enumerates the complete registry. The API read model retains a
 route dispatch identity only when it names a stored dispatch, avoiding entropy-only redaction of
 this public correlation field. No credential redaction rule changes.
+
+2026-10-03, consumer inventory: two additional fixture requests relied on prose project names.
+The footprint adds the 0085 decomposition and 0151 specialist suites so each request can carry its
+explicit project field. This single request field is the only change to a 0151 file; its roles and
+capability behavior are unchanged. The 0088 suite remains unchanged.
+
+2026-10-03, paused-disposition consumer: the footprint adds the 0169 suite to activate the factory
+project through its existing signed helper before the undecided disposition-intake control.
+The claim and station-contract behavior remains unchanged.
+
+2026-10-03, builder evidence: all sixteen behavior rows pass normally and in the clean gate
+interface environment and are red by assertion at 16a91069. Eighteen scoped suites ran in each
+environment; sixteen pass, while 0169 census/writers and 0168 intake/delivery reproduce unchanged
+at the starting commit. Eleven finding-152 mutations are registered, with execution reserved for
+the reviewer. Validation, Git boundary, engine synchronization and zero bad anchors pass. The
+0152 diff is within its footprint; the origin/main comparison includes the inherited 0088 and
+0151 work. The full gate was not run, no landing claim is made, and status remains ready.

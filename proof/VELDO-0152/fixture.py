@@ -18,7 +18,7 @@ import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
+def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -225,6 +225,10 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
 
             def signed(who, body):
                 return {'command': body, 'signature': sign_as(who, S.canonical_bytes(body))}
+
+            if not factory_project:
+                yield locals()
+                return
 
             projects.apply(signed('olga', dict(
                 ids, operation='activate', project='factory', principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),

@@ -1,0 +1,121 @@
+{
+ "by_assertion": true,
+ "commit": "16a910690b9d45e65d415893d4c3228301a184e6",
+ "details": [],
+ "failed_rows": [
+  "VELDO-0152 intake/ticket-key",
+  "VELDO-0152 intake/name-is-a-hint",
+  "VELDO-0152 intake/request-field",
+  "VELDO-0152 intake/factory-inbox",
+  "VELDO-0152 intake/factory-refusals",
+  "VELDO-0152 project/prefixes",
+  "VELDO-0152 route/new-project",
+  "VELDO-0152 route/existing-project",
+  "VELDO-0152 route/asked-only-when-unclear",
+  "VELDO-0152 route/answers",
+  "VELDO-0152 route/read-and-report",
+  "VELDO-0152 route/runner-input",
+  "VELDO-0152 route/scope-refusal",
+  "VELDO-0152 route/malformed",
+  "VELDO-0152 route/stale",
+  "VELDO-0152 route/factory-refusal"
+ ],
+ "modules": {
+  ".veldo/control_api_models.py": {
+   "at_commit": "5c69710145f6bf5da67c61ca6146f7f064ea578ebedea54fc8bb46594d122376",
+   "now": "1e9b63b41d0489df083e1acc0b1ecb94b0ce258ab3bf057a3752d79f5c1541ed"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "4425070c899af3cf00f0973b29942e8ccd29b32e3d745d23316bfad6cb519435",
+   "now": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f"
+  },
+  ".veldo/control_intake_routes.py": {
+   "at_commit": null,
+   "now": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea"
+  },
+  ".veldo/control_project.py": {
+   "at_commit": "7f7a29997b2b3327f11c790f77e6898a0a22056ec1ef49a7db5cf6815db14d93",
+   "now": "2f00d0413cea74b8bf0e91e82471a5d887300f84a98965ef6489b956efc37d75"
+  },
+  ".veldo/control_telegram_report.py": {
+   "at_commit": "32f2948341677fe15b748bd809b92c6448290ed4062ae9269795d77d8c253839",
+   "now": "1490288c336e4ae752bb8833b55c4f083fee77e4566af94f18333f41febb7083"
+  },
+  ".veldo/control_workflow_cycle_pm.py": {
+   "at_commit": "082eccc37dc836f968350294505314811d0365fe267b619c3b7741a811f6f34e",
+   "now": "0fb77b5d2ac257f5d425518591c24345304a690e002297a65203d447ea0a8180"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0152 intake/ticket-key",
+   false
+  ],
+  [
+   "VELDO-0152 intake/name-is-a-hint",
+   false
+  ],
+  [
+   "VELDO-0152 intake/request-field",
+   false
+  ],
+  [
+   "VELDO-0152 intake/factory-inbox",
+   false
+  ],
+  [
+   "VELDO-0152 intake/factory-refusals",
+   false
+  ],
+  [
+   "VELDO-0152 project/prefixes",
+   false
+  ],
+  [
+   "VELDO-0152 route/new-project",
+   false
+  ],
+  [
+   "VELDO-0152 route/existing-project",
+   false
+  ],
+  [
+   "VELDO-0152 route/asked-only-when-unclear",
+   false
+  ],
+  [
+   "VELDO-0152 route/answers",
+   false
+  ],
+  [
+   "VELDO-0152 route/read-and-report",
+   false
+  ],
+  [
+   "VELDO-0152 route/runner-input",
+   false
+  ],
+  [
+   "VELDO-0152 route/scope-refusal",
+   false
+  ],
+  [
+   "VELDO-0152 route/malformed",
+   false
+  ],
+  [
+   "VELDO-0152 route/stale",
+   false
+  ],
+  [
+   "VELDO-0152 route/factory-refusal",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.099,
+ "spec_id": "VELDO-0152",
+ "suite": "scripts/suites/93_veldo_0152_intake_routes.py",
+ "tree": "git archive 16a910690b9d45e65d415893d4c3228301a184e6, unchanged; the current suite file run against it"
+}

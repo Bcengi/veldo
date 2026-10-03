@@ -1,0 +1,285 @@
+{
+ "schema": "veldo.scoped-checks/v1",
+ "checks": [
+  {
+   "suite": "68_veldo_0126_intake",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 1.66s",
+   "failures": []
+  },
+  {
+   "suite": "68_veldo_0136_hints",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 33 passed, 0 failed in 4.14s",
+   "failures": []
+  },
+  {
+   "suite": "69_veldo_0133_dispositions",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 59 passed, 0 failed in 4.55s",
+   "failures": []
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 68 passed, 0 failed in 19.64s",
+   "failures": []
+  },
+  {
+   "suite": "72_veldo_0077_objectives",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 2.58s",
+   "failures": []
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 5.86s",
+   "failures": []
+  },
+  {
+   "suite": "75_veldo_0150_own_message_acceptance",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 39 passed, 0 failed in 1.96s",
+   "failures": []
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 48 passed, 0 failed in 12.71s",
+   "failures": []
+  },
+  {
+   "suite": "71_veldo_0076_projects",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 58 passed, 0 failed in 3.61s",
+   "failures": []
+  },
+  {
+   "suite": "77_veldo_0149_adopted_activation",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 39 passed, 0 failed in 2.10s",
+   "failures": []
+  },
+  {
+   "suite": "72_veldo_0128_reports",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 3.14s",
+   "failures": []
+  },
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 68.17s",
+   "failures": []
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 37 passed, 0 failed in 17.72s",
+   "failures": []
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 41 passed, 0 failed in 2.61s",
+   "failures": []
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 1.68s",
+   "failures": []
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "environment": "normal",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 1 failed in 2.97s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0168 intake/delivery"
+   ]
+  },
+  {
+   "suite": "68_veldo_0126_intake",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 1.66s",
+   "failures": []
+  },
+  {
+   "suite": "68_veldo_0136_hints",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 33 passed, 0 failed in 4.05s",
+   "failures": []
+  },
+  {
+   "suite": "69_veldo_0133_dispositions",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 59 passed, 0 failed in 4.84s",
+   "failures": []
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 68 passed, 0 failed in 32.63s",
+   "failures": []
+  },
+  {
+   "suite": "72_veldo_0077_objectives",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 2.76s",
+   "failures": []
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 46 passed, 0 failed in 11.52s",
+   "failures": []
+  },
+  {
+   "suite": "75_veldo_0150_own_message_acceptance",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 39 passed, 0 failed in 2.02s",
+   "failures": []
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 48 passed, 0 failed in 12.49s",
+   "failures": []
+  },
+  {
+   "suite": "71_veldo_0076_projects",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 58 passed, 0 failed in 8.63s",
+   "failures": []
+  },
+  {
+   "suite": "77_veldo_0149_adopted_activation",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 39 passed, 0 failed in 2.14s",
+   "failures": []
+  },
+  {
+   "suite": "72_veldo_0128_reports",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 44 passed, 0 failed in 4.11s",
+   "failures": []
+  },
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 97.62s",
+   "failures": []
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 37 passed, 0 failed in 18.51s",
+   "failures": []
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 41 passed, 0 failed in 4.14s",
+   "failures": []
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 1.95s",
+   "failures": []
+  },
+  {
+   "suite": "84_veldo_0169_project_handouts",
+   "environment": "clean",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 52 passed, 1 failed in 13.08s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0169 census/writers"
+   ]
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "environment": "clean",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 1 failed in 3.10s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0168 intake/delivery"
+   ]
+  },
+  {
+   "suite": "84_veldo_0169_project_handouts",
+   "environment": "normal",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 52 passed, 1 failed in 11.19s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0169 census/writers"
+   ]
+  },
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "environment": "clean",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 42 passed, 0 failed in 86.05s",
+   "failures": []
+  },
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "environment": "normal",
+   "passed": true,
+   "summary": "selftest (PARTIAL, 1 of 144 suites): 42 passed, 0 failed in 58.95s",
+   "failures": []
+  }
+ ],
+ "baseline_consumers": [
+  {
+   "suite": "84_veldo_0169_project_handouts",
+   "environment": "baseline-16a91069",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 143 suites): 52 passed, 1 failed in 10.92s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0169 census/writers"
+   ]
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "environment": "baseline-16a91069",
+   "passed": false,
+   "summary": "selftest (PARTIAL, 1 of 143 suites): 51 passed, 1 failed in 2.94s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0168 intake/delivery"
+   ]
+  }
+ ]
+}

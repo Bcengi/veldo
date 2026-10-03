@@ -2,84 +2,127 @@
  "schema": "veldo.proof-mutations/v1",
  "spec_id": "VELDO-0152",
  "finding": 152,
- "status": "registered, execution reserved for reviewer",
  "mutants": [
   {
    "name": "v152-name-decides",
    "module": "control_intake.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "intake/name-is-a-hint"
-   ]
+   ],
+   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
+   "mutant_sha256": "1940cd8ec16985230500d6e1b58756745f63b159f868348fc0b4cf32a47d0a48",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-only-candidate",
    "module": "control_intake.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "intake/factory-inbox"
-   ]
+   ],
+   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
+   "mutant_sha256": "b716218899cbce0640135af07888338194e16e595127ac27aa545d9baefdcf2f",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-new-project-asks",
    "module": "control_intake_routes.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/asked-only-when-unclear"
-   ]
+   ],
+   "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "mutant_sha256": "44c523deaf9e9c697599997689df8edc10ec1726bc98e0816d4d9d3ac6f0b5c1",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-scope-unchecked",
    "module": "control_intake_routes.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/scope-refusal"
-   ]
+   ],
+   "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "mutant_sha256": "3d7c717fe3d999a67d1a2e17714c25367de7d2b52a29cddcb5672a60ed9f242b",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-factory-ordinary",
    "module": "control_intake_routes.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/factory-refusal"
-   ]
+   ],
+   "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "mutant_sha256": "17760ab46c5e5986a5932ba143acf1078a480c5be9f540ff7a8ec696b121a741",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-route-reason-empty",
    "module": "control_intake_routes.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/malformed"
-   ]
+   ],
+   "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "mutant_sha256": "b3b9a724f4771f28a17fe91ad0430c4d1cabc88ee319dfdfd6aef788be24abab",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-route-stale",
    "module": "control_intake_routes.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/stale"
-   ]
+   ],
+   "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "mutant_sha256": "7c023d16ef771b69d00249f83e7f23355b2832e6e3cfba8ba536f6cdeb80af12",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-ticket-disabled",
    "module": "control_intake.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "intake/ticket-key"
-   ]
+   ],
+   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
+   "mutant_sha256": "5651e76f72fe89d82984c86cb35c9db6f7ea066885d99f5fba5839840f881b66",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-prefix-not-bound",
    "module": "control_project.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "project/prefixes"
-   ]
+   ],
+   "source_sha256": "2f00d0413cea74b8bf0e91e82471a5d887300f84a98965ef6489b956efc37d75",
+   "mutant_sha256": "846f159b262eb2fe34b99259d7bae74894ebb8f135c7f6566ff49e95a3c2c43a",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-hint-dropped",
    "module": "control_workflow_cycle_pm.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/runner-input"
-   ]
+   ],
+   "source_sha256": "0fb77b5d2ac257f5d425518591c24345304a690e002297a65203d447ea0a8180",
+   "mutant_sha256": "9c85066108929e66951f134ce27c360dd46a76b754571d81a2173c00c420b79a",
+   "status": "not executed; reviewer-owned"
   },
   {
    "name": "v152-route-report-omitted",
    "module": "control_telegram_report.py",
-   "rows": [
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
     "route/read-and-report"
-   ]
+   ],
+   "source_sha256": "1490288c336e4ae752bb8833b55c4f083fee77e4566af94f18333f41febb7083",
+   "mutant_sha256": "a437b2f1995a10626b35007114ad2f441ebda8ec7399ac1811e17d51d56a1f25",
+   "status": "not executed; reviewer-owned"
   }
  ]
 }

@@ -488,7 +488,7 @@ c.close()
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a'],
                               api_edge='api-edge', journal_signer='authority', sign=journal_sign)
             message_body = dict(schema=IN.API_SCHEMA, domain=DOMAIN, request_id=next_id('intake'),
-                edge='api-edge', principal='olga', text='For proj-a: design the checkout.', project=None, clarifies=None)
+                edge='api-edge', principal='olga', text='For proj-a: design the checkout.', project='proj-a', clarifies=None)
             received = intake.receive('api_request', dict(request=message_body,
                 signature=sign_as('api-edge', S.canonical_bytes(message_body))))
             objectives = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)

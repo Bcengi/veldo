@@ -15,6 +15,12 @@
   "engine/.veldo/control_telegram_report.py",
   "engine/.veldo/control_workflow_cycle_pm.py",
   "engine/.veldo/init_scaffold.py",
+  "proof/VELDO-0152/README.md",
+  "proof/VELDO-0152/drive.py",
+  "proof/VELDO-0152/fixture.py",
+  "proof/VELDO-0152/footprint.json",
+  "proof/VELDO-0152/mutations.json",
+  "proof/VELDO-0152/neighbors.py",
   "scripts/check_teeth_mutations.py",
   "scripts/suites/68_veldo_0126_intake.py",
   "scripts/suites/68_veldo_0136_hints.py",
@@ -25,14 +31,15 @@
   "scripts/suites/73_veldo_0078_backlog.py",
   "scripts/suites/75_veldo_0150_own_message_acceptance.py",
   "scripts/suites/76_veldo_0079_grooming.py",
+  "scripts/suites/82_veldo_0085_decomposition.py",
+  "scripts/suites/84_veldo_0169_project_handouts.py",
+  "scripts/suites/91_veldo_0151_specialists.py",
+  "scripts/suites/93_veldo_0152_intake_routes.py",
   "scripts/suites/manifest.json",
   "scripts/suites/requires.json",
   "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md",
-  "proof/VELDO-0152/drive.py",
-  "proof/VELDO-0152/fixture.py",
-  "proof/VELDO-0152/mutations.json",
-  "proof/VELDO-0152/neighbors.py",
-  "scripts/suites/93_veldo_0152_intake_routes.py"
+  "proof/VELDO-0152/checks.json",
+  "proof/VELDO-0152/red-at-16a91069.json"
  ],
  "outside": []
 }

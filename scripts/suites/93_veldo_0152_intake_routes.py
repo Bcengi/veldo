@@ -114,9 +114,11 @@ def _v152_suite():
             check('intake/factory-refusals', 'explicit factory', send('api_request', 'work', project='factory').get('reason') == 'invalid_input:factory_project')
             saved = intake.projects
             intake.projects = ('bcengi',)
-            check('intake/factory-refusals', 'missing factory', send('api_request', 'work').get('reason') == 'unsupported_configuration:factory_project')
+            for channel in channels:
+                check('intake/factory-refusals', 'missing factory ' + channel, send(channel, 'work').get('reason') == 'unsupported_configuration:factory_project')
             intake.projects = ('factory',)
-            check('intake/factory-refusals', 'member has no project', send('api_request', 'work', who='zed').get('reason') == 'unauthorized:no_project')
+            for channel in channels:
+                check('intake/factory-refusals', 'member has no project ' + channel, send(channel, 'work', who='zed').get('reason') == 'unauthorized:no_project')
             intake.projects = saved
             # Close the matrix inboxes with production commands before the cycle journeys.
             def doc(pid, route='new_project', **extra):
@@ -212,8 +214,13 @@ def _v152_suite():
                                       reply=(q.get('delivery') or {}).get('message_id'))
                         check('route/answers', 'offered name or ticket key', proposal(answer).get('project') == 'other'
                               and intake.proposal(pid).get('state') == 'ROUTED')
-                    models = load('v152_models', mods / 'control_api_models.py')
-                    read = models.read_model(S, conn, 'objectives')
+                    api_authority = load('v152_api_authority', mods / 'control_api_authority.py')
+                    with (Path(f['db']).parent / api_authority.LOCK_NAME).open('a+') as authority_lock:
+                        api = api_authority.ApiAuthority(S, f['CM'], conn, ids=ids, domain=domain, edge='api-edge',
+                            intake=intake, settlement=f['settlement'], credentials=None, authority_lock=authority_lock.fileno())
+                        answer = api.read('objectives', 'olga')
+                        check('route/read-and-report', 'authorized API authority read', answer.get('ok'))
+                        read = answer
                     served = next((x for x in read['items']['intake_proposal'] if x['id'] == pid), {})
                     facts = [fact for fact in reporter.sources(since=0) if fact['event'] == 'intake_routed'
                              and fact['source']['entity_id'] == pid and 'Fixture PM reason.' in fact['fact']]
@@ -224,7 +231,7 @@ def _v152_suite():
             # Each refusal comes back from the dispatched fake and leaves the proposal unchanged.
             bads = [('scope-refusal', 'unauthorized:project', 'zed', {'route': 'existing_project', 'project': 'other'}),
                     ('factory-refusal', 'invalid_input:factory_project', 'olga', {'route': 'existing_project', 'project': 'factory'})]
-            malformed = ({'route': None}, {'routes': ['new_project', 'unclear']}, {'route': 'unknown'}, {'reason': ''}, {'reason': None}, {'project': 'bcengi'},
+            malformed = ({'_omit': 'route'}, {'_omit': 'reason'}, {'_two': True}, {'route': None}, {'routes': ['new_project', 'unclear']}, {'route': 'unknown'}, {'reason': ''}, {'reason': None}, {'project': 'bcengi'},
                          {'unexpected': True}, {'proposal_id': 'another'}, {'route': 'existing_project', 'project': 'absent'},
                          {'route': ['new_project', 'unclear']})
             bads += [('malformed', 'invalid_input:route', who, bad) for who in ('olga', 'zed') for bad in malformed]
@@ -232,6 +239,10 @@ def _v152_suite():
                 pid = send('api_request', 'unresolved work', who=who)['proposal_id']
                 before = copy.deepcopy(intake.proposal(pid))
                 value = dict(doc(pid), **bad)
+                if '_omit' in value:
+                    value.pop(value.pop('_omit'), None)
+                if '_two' in value:
+                    value = [doc(pid), doc(pid)]
                 record = run(pid, value)
                 results = record.get('proposals') or []
                 check('route/' + name, repr(bad), intake.proposal(pid) == before and record.get('state') == 'refused'
@@ -253,6 +264,22 @@ def _v152_suite():
             check('route/answers', 'other answer saved for next PM run', answer.get('outcome') == 'clarification'
                   and held['state'] == 'AWAITING_ROUTE' and held['clarifications'][-1]['text'] == 'a new project called tidepool')
             run(pid, doc(pid))
+        # This store truly has no factory project record, rather than merely excluding it from configuration.
+        with helper.fixture(ROOT, PRODUCTION, factory_project=False) as f:
+            S, conn, mods = f['S'], f['conn'], f['mods']
+            IN = load('v152_missing_intake', mods / 'control_intake.py')
+            EV = load('v152_missing_attribution', mods / 'control_channel_attribution.py')
+            acquirer = EV.Acquirer(S, f['CM'], f['P'], f['V'], f['presenter'],
+                EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
+                'api-edge', lambda b: f['sign_as']('api-edge', b))
+            intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory', 'bcengi'],
+                api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
+            for channel in channels:
+                result = send(channel, 'fix the login bug')
+                check('intake/factory-refusals', 'no factory record ' + channel,
+                      intake._entity('project:factory') is None
+                      and result.get('reason') == 'unsupported_configuration:factory_project'
+                      and not intake._all(IN.PROPOSAL_KIND))
     except Exception as error:
         print('  VELDO-0152 detail: suite did not run to its end:', repr(error))
         import traceback

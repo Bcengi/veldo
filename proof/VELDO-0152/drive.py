@@ -22,7 +22,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '93_veldo_0152_intake_routes.py'
 PREFIX = 'VELDO-0152 '
 FINDING = 152
-MODULES = ('control_intake.py', 'control_intake_routes.py', 'control_project.py', 'control_workflow_cycle_pm.py', 'control_telegram_report.py')
+MODULES = ('control_api_models.py', 'control_intake.py', 'control_intake_routes.py', 'control_project.py', 'control_workflow_cycle_pm.py', 'control_telegram_report.py')
 
 
 def _load(name, path):
