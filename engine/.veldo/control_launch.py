@@ -1626,16 +1626,20 @@ class Receiver:
                         raise FileNotFoundError(errno.ENOENT, 'no engine: ' + str(argv[0]))
                     raise C.Refused(problems[0], settled=settled, group=group.report())
             try:
-                worker.stdin.write(b'go\n')
+                # Fix the placement deadline at the sender's release, after the
+                # receiver's separately bounded containment preparation. A wrapper
+                # descheduled after release cannot give itself a fresh budget.
+                release_deadline = time.monotonic() + HB.SETUP_SECONDS
+                worker.stdin.write(('go %r\n' % release_deadline).encode())
                 worker.stdin.flush()
             except OSError:
                 settled = group.discard(worker)
                 raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
             # The wrapper reports only after placement has completed. Until then it
             # cannot be reported running, even when it has left the scope or died.
-            # Its startup budget starts before its identity report, hence before
-            # this release. The same bound plus reap time and one second of report
-            # margin is strictly later, even if the wrapper stalls after release.
+            # Its startup budget is the absolute deadline sent with this release.
+            # The same bound plus reap time and one second of report margin is
+            # strictly later, even if the wrapper stalls after release.
             poller = select.poll()
             poller.register(setup, select.POLLIN)
             acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
@@ -2241,13 +2245,16 @@ def wrap(argv):
         os._exit(127)
     if held is not None:
         C.hold(held)
-    # Start before the identity line that allows the receiver to release us. This
-    # deadline cannot move later when a released wrapper is stopped or frozen.
+    # Legacy untimed releases and uncontained transports keep the pre-report
+    # deadline. A contained receiver supplies its own absolute release deadline.
     heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS if beat is not None else None
     sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
     sys.stdout.flush()
-    if held is not None and not C.released(0):
+    release = C.released(0) if held is not None else True
+    if not release:
         os._exit(125)
+    if beat is not None and type(release) is float:
+        heartbeat_deadline = release
     if beat is not None:
         # Released: the heartbeat starts now, in a process of its own, and this process closes the
         # channel before it becomes the engine, so liveness never waits on anything the engine does.

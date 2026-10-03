@@ -676,14 +676,25 @@ def hold(held):
 
 def released(fd=0):
     """In the trusted wrapper: wait for the receiver's release line on `fd`, read byte by byte so the
-    engine's packet after it stays unread. True for `go`."""
+    engine's packet after it stays unread. Return the sender's absolute monotonic heartbeat
+    deadline for a timed release, True for legacy `go`, or False for a malformed/closed release.
+    The sender fixes the deadline: a wrapper delayed after reading it cannot restart the clock."""
     line = b''
     while not line.endswith(b'\n') and len(line) < 64:
         chunk = os.read(fd, 1)
         if not chunk:
             return False
         line += chunk
-    return line == b'go\n'
+    if line == b'go\n':
+        return True
+    try:
+        command, value = line.split()
+        deadline = float(value)
+        if line.endswith(b'\n') and command == b'go' and math.isfinite(deadline) and deadline > 0:
+            return deadline
+    except ValueError:
+        pass
+    return False
 
 
 def retirement(group, process):

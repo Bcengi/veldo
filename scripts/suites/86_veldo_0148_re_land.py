@@ -1408,6 +1408,20 @@ print(json.dumps(result))
                     child.wait(timeout=5)
                     result = {'row_timeout': True}
                 if fault == 'held':
+                    reader = load('v148_release_reader', PRODUCTION['control_containment.py'])
+                    for line, expected in ((b'go 17.5\n', 17.5), (b'go\n', True),
+                                           (b'go nan\n', False), (b'go inf\n', False),
+                                           (b'go -1\n', False), (b'go bad\n', False)):
+                        read_fd, write_fd = os.pipe()
+                        try:
+                            os.write(write_fd, line + b'engine packet\n')
+                            os.close(write_fd)
+                            received = reader.released(read_fd)
+                            check(row, 'release parser preserves packet and rejects invalid deadlines: %r' % line,
+                                  type(received) is type(expected) and received == expected
+                                  and os.read(read_fd, 64) == b'engine packet\n')
+                        finally:
+                            os.close(read_fd)
                     seconds = float((probe / 'held-seconds').read_text())
                     check(row, 'healthy preparation took %.3fs before release: %s' % (seconds, result),
                           seconds >= 5.25 and result.get('refusal') is None and marker.exists())

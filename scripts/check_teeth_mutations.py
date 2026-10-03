@@ -3175,8 +3175,8 @@ def cases():
             "        return head + ['--'] + list(argv)\n",
             "        return list(argv)  # defect: the worker is launched outside its dispatch group\n", 'dedicated-group')
     contain('containment-wrapper-leaves-group', 'control_launch.py',
-            "    if held is not None and not C.released(0):\n        os._exit(125)\n",
-            "    if held is not None and not C.released(0):\n        os._exit(125)\n"
+            "    if not release:\n        os._exit(125)\n",
+            "    if not release:\n        os._exit(125)\n"
             "    if held is not None:  # defect: the engine is started in the receiver's group, not its own\n"
             "        Path('/sys/fs/cgroup', C.cgroup_of(os.getppid()).lstrip('/'), 'cgroup.procs').write_text(str(os.getpid()))\n",
             'dedicated-group')
@@ -9345,6 +9345,17 @@ def cases():
     # row of suite 86, then the seams the rows rest on.
     def reland148(name, module, old, new, rows, also=()):
         add(148, name, '86_veldo_0148_re_land.py', module, old, new, list(rows), also)
+    reland148('receiver148-setup-clock-before-release', 'control_launch.py',
+              '        heartbeat_deadline = release\n',
+              '        pass  # defect: preparation consumes the heartbeat budget\n',
+              ('receiver/pre-release-budget',))
+    reland148('receiver148-release-deadline-restarted', 'control_launch.py',
+              '        heartbeat_deadline = release\n',
+              '        heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS\n',
+              ('receiver/late-wrapper',))
+    reland148('receiver148-release-deadline-not-finite', 'control_containment.py',
+              'and math.isfinite(deadline) and deadline > 0:',
+              'and deadline > 0:', ('receiver/pre-release-budget',))
     reland148('receiver148-report-wait-unbounded', 'control_launch.py',
               '            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))\n',
               '            acknowledged = poller.poll()\n', ('receiver/report-timeout',))
