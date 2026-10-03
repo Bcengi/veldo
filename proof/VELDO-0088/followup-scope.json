@@ -1,0 +1,9 @@
+{
+ "base": "37dcd381",
+ "followup_outside": [],
+ "inherited_footprint_limitation": "The mandated checker compares origin/main...HEAD, including earlier VELDO-0151 changes. The combined 0088/0151 footprint check passes.",
+ "engine_copies": {
+  "control_factory_setup.py": true,
+  "control_workflow_cycle_pm.py": true
+ }
+}
