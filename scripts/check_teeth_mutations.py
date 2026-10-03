@@ -9906,9 +9906,12 @@ def cases():
             "        text = V.TEXT.message(text, free_text=False)\n",
             "        text = text  # defect: renewal text bypasses rendering\n",
             ['inventory/sends-and-assets'])
+    # VELDO-0152 Notes (hint/two-projects-one-reply) sends the note at receipt and the
+    # unclear-route question separately. Keep this finding's identifier, but move its
+    # double-render defect from the retired hint lead to the actual question send.
     text168('hint-lead-double-escaped', 'control_intake.py',
-            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])\n",
-            "        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=prompt)  # defect: already rendered\n",
+            "        prompt = render_prompt(question['prompt'])\n",
+            "        prompt = render_prompt(render_prompt(question['prompt']))  # defect: already rendered\n",
             ['intake/delivery'])
     text168('escape-split-at-cut', 'control_channel_presentation.py',
             "            if opener >= 0 and text.find('>', opener) >= at:\n",

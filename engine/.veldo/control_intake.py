@@ -275,8 +275,9 @@ class Intake(RT.Routes):
         if source_kind == 'telegram_message' and type(payload) is str:
             result['evidence_id'] = payload
             # The one decision about what the owner is told, now that intake has seen the message: a
-            # proposal gets the new-work note, a message intake did not take the plain hint; an inbox
-            # proposal's note rides on its question (_ask); a clarification or a resolution gets none.
+            # proposal (including a factory inbox proposal) gets the new-work note here; a message
+            # intake did not take gets the plain hint. The PM's later unclear-route question is a
+            # separate reply (VELDO-0152); a clarification or a resolution gets no hint.
             if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):
                 self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
         return result
@@ -638,24 +639,16 @@ class Intake(RT.Routes):
 
     def _ask(self, qid, command):
         """Send an inbox proposal's question to the owner's chat as a reply to the message, and record
-        where the platform put it. When requests of the owner wait, the note that his message was taken
-        as new work is merged into the question and the one message goes through the presenter's hint
-        (VELDO-0136). A failed send leaves the question open and undelivered, by name."""
+        where the platform put it. VELDO-0152 decides the new-work hint at receipt; this later
+        unclear-route question is its own reply. A failed send leaves it open and undelivered, by name."""
         where, question = command['provenance'], self.question(qid)
         if self.asker is None:
-            self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
         prompt = render_prompt(question['prompt'])
-        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
-        if hinted.get('attempted'):
-            sent = hinted.get('delivery')
-            if not isinstance(sent, dict):
-                return self._event('ask', 'refused', hinted.get('reason') or 'unknown_outcome', question_id=qid)
-        else:
-            try:
-                sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
-            except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
-                return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
+        try:
+            sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
+        except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
+            return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
         delivery = {'channel': 'telegram_chat', 'bot_id': where['bot_id'], 'chat_id': sent['chat_id'],
                     'message_id': sent['message_id'], 'date': sent['date']}
         row = self._entity(qid)

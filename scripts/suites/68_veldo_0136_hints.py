@@ -542,6 +542,7 @@ def _v136_checks(base):
                 asked = sent_since(mark)
                 check(two, 'unclear route sends its own reply with every choice', len(asked) == 1
                       and question.get('candidates') == ['project-a', 'project-b', 'a new project']
+                      and asked[0]['text'] == question['prompt']
                       and (question.get('delivery') or {}).get('message_id') == asked[0]['message_id'])
                 mark = len(api['sent'])
                 reply = say(owner_user, 'project-b', reply_to=asked[0]['message_id'] if asked else None)

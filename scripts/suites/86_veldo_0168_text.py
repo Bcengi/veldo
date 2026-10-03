@@ -326,7 +326,9 @@ def _v168_suite():
             for q in questions:
                 d = q.get('delivery') or {}
                 msg = api['bots'][token]['messages'].get((d.get('chat_id'), d.get('message_id')), {})
-                delivered.append('literal<U+003C>U+200B>' in msg.get('text', '') and 'literal<U+200B>' in q['prompt'])
+                delivered.append(msg.get('text') == expected(q['prompt'])
+                                 and 'literal<U+003C>U+200B>' in msg['text']
+                                 and 'literal<U+200B>' in q['prompt'])
             check('intake/delivery', 'real question writer and send escape once, retaining original prompt',
                   bool(taken) and bool(delivered) and all(delivered))
 
