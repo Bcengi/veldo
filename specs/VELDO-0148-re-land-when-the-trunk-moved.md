@@ -520,3 +520,15 @@ the one-second-late cap and missing receiver timer are registered falsifiers.
 Evidence and replay commands are in proof/VELDO-0148/README.md. The serial scoped
 check passes 54 suite rows (80 with shared preamble); concurrent final validation
 is recorded separately. The full gate remains reserved for the reviewer.
+
+
+Final scoped validation of fb7a9cd1: five successive sixteen-way honest clone
+rounds (80/80) and five successive sixteen-way manager-reload rounds (80/80) pass
+all suite-63 rows; the one-second-late production cap fails the runtime row in
+16/16 clones. Omitting the receiver timer fails only the new deterministic row.
+Suite 86 passes 24 rows (50 including the shared preamble). All honest scoped
+checks exit 2 with zero failures; mutants exit 1. Source-bound timing records,
+registered mutation anchors and the applied timing diff are in
+proof/VELDO-0148/runtime-cap-verification.json and runtime-cap-one-second-late.diff.
+No whole selftest, gate, mutation checker or push ran. The unchanged 2.7s beat
+bound and the new actual-TERM bound remain enforced.

@@ -509,3 +509,28 @@ paths, `--reload` reproduces the observed manager interference, and `--delay-cap
 applies the exact timing fault to disposable production copies. Successful row
 observations are exported without changing assertions. Scoped subset exit 2 is
 expected; these results never certify a gate or landing.
+
+
+Final checks on implementation `fb7a9cd1` are recorded in
+[runtime-cap-verification.json](runtime-cap-verification.json), with source digests,
+per-run assertions, activation/TERM/beat times, reload intervals and mutant hashes:
+
+- Five successive sixteen-way honest rounds: 80/80 runtime rows green and zero
+  failures in every complete scoped suite. Latest first TERM: activation +1.2040s.
+- Five successive sixteen-way rounds with three manager reloads across the cap in
+  each round: 80/80 runtime rows green, zero scoped-suite failures. Latest first
+  TERM: activation +1.2024s; maximum memory sample time: 0.000223s.
+- The [one-second-late production mutant](runtime-cap-one-second-late.diff) fails
+  `containment/runtime-cap` in all sixteen clones, always including cap_stop_bound.
+  The independent receiver timer omission fails only its new deterministic row.
+- Serial suite 63: 54 suite rows, 80 including shared preamble, zero failures.
+  Suite 86: 24 suite rows, 50 including shared preamble, zero failures. Honest
+  scoped runs exit 2 as required; both negative controls exit 1.
+- Canonical/root production copies match, changed modules compile, the 27 existing
+  finding-148 mutation diffs and hashes are statically refreshed, and the new
+  registrations plus the updated cooperative-stop anchor are unique and compile.
+
+The missing receiver-timer mutation is a diagnostic of actual enforcement: merely
+inferring timeout afterward from a late adapter signal cannot satisfy its
+`Stop.cause == runtime_cap` assertion. The late-cap mutation changes no test
+assertion or owner profile. No whole selftest, gate, mutation checker or push ran.
