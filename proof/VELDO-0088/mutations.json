@@ -11,8 +11,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-coordinate-without-runner.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "69dd41feafb8518b1c606d5406edb8ecb12ddf38ed2781da8cd579e5f7ef5ec4",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "4991030fc201da32540bd6b3e8f38ca20b250931753d1bb7056abad36f654279",
    "status": "not run; reviewer only"
   },
   {
@@ -22,8 +22,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-priority-proposal-allowed.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "c25dff1a0f4775bc3a28b6357ca960e58d79e207ab4b448ed4820ce140d08399",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "40dbf9e0d98bc3f28f06dd647bc278f9a51f4fcd791f3bb5224be744726adf95",
    "status": "not run; reviewer only"
   },
   {
@@ -34,8 +34,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-drop-pending-input.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "77801e72b3dfa538028208607f6e3aad27834b08df469e64b1f0d08433279597",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "e213ca87682ddc56d93a82c378d6dcc41b37625f3b1c3c95fd7bec413aedbb6f",
    "status": "not run; reviewer only"
   },
   {
@@ -45,8 +45,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-extra-elaboration-run.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "649bc0046d09390ada50fdbaa8a95f6a2ae26d82085253f9e35cd7c69ffc48ba",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "4b5c8a300ea48305bac1e045352089f0246d3a441c9cb88f5087ba147a1c6e38",
    "status": "not run; reviewer only"
   },
   {
@@ -56,8 +56,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-continue-after-refusal.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "d82e20b95cf2d9995cacb87c4c3f120edcc15a62e5a41ccceb055b727cc93287",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "0afdfc65dbcd02b6dabda365464d1d6dcc53407dfe0feb386e3b58784098083c",
    "status": "not run; reviewer only"
   },
   {
@@ -67,8 +67,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-ignore-cycle-budget.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "93603ddec486482d4f9c9d30dcee242f604521db1cd7c21666734ce50dd159fc",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "565f050583575ffcdfac1766b1a13f0721174be430624c619b39252f580cc2ee",
    "status": "not run; reviewer only"
   },
   {
@@ -78,8 +78,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-empty-cycle-trace-omitted.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "39cacae1189c79d1eb228d5ad3d1c0530c0f369667f6101b683c242ca4788e5d",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "7d8ab30406046d8bde08379908627e82267b4855a5935023528dcbedc95b0ec3",
    "status": "not run; reviewer only"
   },
   {
@@ -100,8 +100,8 @@
    ],
    "diff": "proof/VELDO-0088/v88-factory-ignores-team-assignments.diff",
    "module": ".veldo/control_service.py",
-   "source_sha256": "960d9681847ac5b03e6bfe3e75edab0ea45fae7f6542803f0254bc6b5bba86a3",
-   "mutant_sha256": "902f9727b8cd9a54b875d2c9aa6992169e84b9895f857cfd3409d4f79f91a1e5",
+   "source_sha256": "4b73a8d78751142c0b9660300007a3b12e7a87d8f92c51a7b0ebaa2e51167354",
+   "mutant_sha256": "390f666c8cc95ff2b6cef853674760c0ab939914e89e352e919159f00dce9eb6",
    "status": "not run; reviewer only"
   },
   {
@@ -111,8 +111,63 @@
    ],
    "diff": "proof/VELDO-0088/v88-review-dispatched-as-builder.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "source_sha256": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
-   "mutant_sha256": "17a9559b0ef328bad18e99f78fc851ff1ca34398c8705b3e2e1aa337546e3fe1",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "1b0685bcfb3addb0bbad0da0c53a15e3b1083d647da51484809a692160031686",
+   "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-proposals-as-service",
+   "named_rows": [
+    "review/pm-principal"
+   ],
+   "diff": "proof/VELDO-0088/v88-proposals-as-service.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "016d8d0a124202b1df31af8ddd5ccf024b5dd2ffd3b8c6e9915a154eee298102",
+   "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-unhandled-build-adapter",
+   "named_rows": [
+    "review/build-refusal"
+   ],
+   "diff": "proof/VELDO-0088/v88-unhandled-build-adapter.diff",
+   "module": ".veldo/control_service.py",
+   "source_sha256": "4b73a8d78751142c0b9660300007a3b12e7a87d8f92c51a7b0ebaa2e51167354",
+   "mutant_sha256": "53692227d67d935de474318543f2a17a8ab3c4efb90aa7a9d95a94d8e00e633d",
+   "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-unhandled-review-adapter",
+   "named_rows": [
+    "review/review-refusal"
+   ],
+   "diff": "proof/VELDO-0088/v88-unhandled-review-adapter.diff",
+   "module": ".veldo/control_service.py",
+   "source_sha256": "4b73a8d78751142c0b9660300007a3b12e7a87d8f92c51a7b0ebaa2e51167354",
+   "mutant_sha256": "8e4af4b6ddb3f0082e1e1c3177e993b0aefb7a6fadf29bf4e63cbdeb7eabd9ef",
+   "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-unhandled-pending-budget",
+   "named_rows": [
+    "review/pending-budget"
+   ],
+   "diff": "proof/VELDO-0088/v88-unhandled-pending-budget.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "a998c6a1781a85b5e131087ad866d6e6573048ec0c51d7ecad8c3657c2eb4c80",
+   "status": "not run; reviewer only"
+  },
+  {
+   "name": "v88-staging-from-earlier-cycle",
+   "named_rows": [
+    "review/current-publication"
+   ],
+   "diff": "proof/VELDO-0088/v88-staging-from-earlier-cycle.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46",
+   "mutant_sha256": "f65df79e13f3c0853f7c01dc715b6c071a6727cd41a7d1bb76883e09d0703309",
    "status": "not run; reviewer only"
   }
  ]

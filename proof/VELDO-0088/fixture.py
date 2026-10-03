@@ -110,6 +110,11 @@ def fixture(ROOT, PRODUCTION):
                                check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
+            # The trusted factory signing edge is enrolled for the PM as well as
+            # its separate service principal, through the real membership writer.
+            for who in ('pm', 'team-service'):
+                keyfile[who], public[who] = keyfile['authority'], public['authority']
+
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
                                       capture_output=True, check=True, timeout=20).stdout.decode()

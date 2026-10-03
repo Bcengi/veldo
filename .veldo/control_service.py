@@ -1606,7 +1606,12 @@ class Line:
         pm = _organ('control_workflow_cycle_pm')
         assignment = pm.assigned(self.service.conn, unit)
         if build is None:
-            role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
+            try:
+                role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
+            except pm.Refused as error:
+                report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'build',
+                                          'refusals': [error.code]})
+                return None
             return self.offer(report, unit, 'build', role, revision='HEAD')
         if build['state'] in L.D.HOLDING:
             return None
@@ -1616,8 +1621,13 @@ class Line:
         if review is not None:
             return None if review['state'] in L.D.HOLDING else self.limited(review, report)
         holder = (build['contract']['input']['context'] or {}).get('holder')
-        reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
-                    next((role for role in self.roles['reviewers'] if role['identity'] != holder), None))
+        try:
+            reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
+                        next((role for role in self.roles['reviewers'] if role['identity'] != holder), None))
+        except pm.Refused as error:
+            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
+                                      'refusals': [error.code]})
+            return None
         if reviewer is None:
             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
                                       'refusals': ['missing_authority:independent_reviewer']})

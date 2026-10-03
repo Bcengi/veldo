@@ -269,3 +269,13 @@ through the factory without another idle PM run. Completion during an active PM
 cycle still joins an owner answer in one follow-up. The suite counts all
 dispatch attempts through review launch, so an extra elaboration or coordination
 run cannot hide behind the latest-attempt reader.
+
+2026-10-03, independent review follow-up: proposals now name the accepted team's
+PM worker, whose membership enrolls the trusted service signing edge key; cycle
+receipts remain owned by the distinct service principal. The suite constructs
+Service and Line and reaches from_line through Line.run. A refused engineering
+adapter is reported per unit, and an exhausted pending follow-up is observed
+without aborting the factory pass. Elaboration requires this cycle's successful
+publication to name the claimed unit. Five review rows and five finding-88
+mutations cover these corrections. The existing footprint covers every file;
+no specification status, assignment authorization or protected path changes.

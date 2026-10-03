@@ -11,8 +11,13 @@ revisions and immutable snapshots, the installed LangGraph process, FactoryLoop
 and Line, Runner, launch receiver, execution records, reservation settlement,
 loopback owner presentation and settlement, document publication, backlog and
 grooming commands, team assignment and MCP catalog writers. Fixture keys are
-generated locally. FactoryLoop uses an assembled Line with these real services;
-the network authority daemon and production account pool are not started.
+generated locally. FactoryLoop uses a constructed Service and Line; Line.run
+builds from_line and all proposal owners. The protocol adapter mapping and account
+selection are fixtures; the network authority daemon and account pool are not started.
+The existing membership writer enrolls the service signing edge public key for
+the PM and the separate factory service principal. PM proposals name the team
+worker; journal and cycle receipts name the service. This requires that PM key
+enrollment in an installation; changing the team roster does not grant a key.
 
 Workers are generic protocol processes with predetermined output. They are not
 Claude Code or Codex fakes and this is not live engine qualification. The builder
@@ -32,7 +37,7 @@ was used, and no review verdict about this implementation is claimed.
 | AC3 | cycle/serialized, cycle/pending-follow-up, cycle/combined-inputs, cycle/budget | One active cycle is enforced. A held PM run overlaps an accepted owner answer and a real reviewer completion; both change the input fingerprint, coalesce into one newer-snapshot follow-up, and cause no self-loop once consumed. The finite project cycle budget refuses another dispatch. |
 | AC4 | unit/one-run-staging, unit/factory-builder-ticket, unit/independent-review | The factory starts the PM cycle for the admitted objective with exact text `please do BCG-123`. That coordination run publishes requirements, grooms and stages the unit with all four role references, marks elaboration done, and launches no extra elaboration run. The factory then dispatches the assigned builder, which fetches BCG-123, and one distinct assigned reviewer, with no idle PM rerun between them. The gate refuses a builder reviewing its own work. |
 
-Sixteen behavior names each report once. The shared suite preamble is separate.
+Twenty-one behavior names each report once. The shared suite preamble is separate.
 The factory requires the existing account, project and unit spending policies;
 fixtures configure them through the reservation service. Assignment consumption
 does not confer unlimited spend or claim that an engineering exit proves landing.
@@ -59,7 +64,7 @@ arbitrary Python-code sandbox against modification of the installed runtime.
 against the unchanged archive before the original implementation. No row fails
 by a fixture exception. The proof driver stays in this proof directory.
 
-Finding 88 registers ten unique mutations with current diffs and hashes in
+Finding 88 registers fifteen unique mutations with current diffs and hashes in
 `mutations.json`. Controls cover inline coordinate reasoning through an in-process
 model fixture instead of Runner dispatch, a graph node directly changing SQL
 priority, discarded pending inputs, and an extra elaboration dispatch. Additional

@@ -1,0 +1,11 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -516,7 +516,7 @@
+                     if name in self.pending:
+                         try:
+                             emitted.append(self.start(name, self.pending.pop(name)))
+-                        except Exception as error:
++                        except KeyError as error:
+                             self.observe(dict(operation='pm_start', project=name,
+                                 refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
+                 continue

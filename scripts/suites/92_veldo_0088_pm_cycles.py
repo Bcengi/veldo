@@ -27,7 +27,9 @@ def _v88_suite():
     names = ('cycle/runner', 'cycle/snapshot', 'cycle/no-action', 'cycle/failure',
              'proposal/unauthorized', 'proposal/stop-on-refusal', 'cycle/serialized',
              'cycle/pending-follow-up', 'cycle/budget', 'unit/one-run-staging', 'unit/factory-builder-ticket', 'unit/independent-review',
-             'proposal/graph-process', 'cycle/combined-inputs', 'cycle/receipts', 'cycle/waiting-release')
+             'proposal/graph-process', 'cycle/combined-inputs', 'cycle/receipts', 'cycle/waiting-release',
+             'review/pm-principal', 'review/current-publication', 'review/build-refusal',
+             'review/review-refusal', 'review/pending-budget')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -108,14 +110,34 @@ def _v88_suite():
             runtime = G.resolve_runtime()
             if runtime:
                 runtime['stage'] = str(base / 'graph-stage')
-            cycles = PM.ProjectCycles(S, conn, domain=domain, repository=repository, workspace=source,
-                principal='pm', sign=sign, command_sign=lambda b: f['sign_as']('pm', b), runner=runner,
-                adapters={'protocol': 'claude_code'}, services={'inbox': f['inbox'], 'teams': f['service']},
-                runtime=runtime, stage=str(base / 'graph-stage'), execution_records=base / 'records')
-            first = cycles.start('proj-a', cycles.inputs('proj-a'))
+            EN = load('v88_enrollment', mods / 'control_enrollment.py')
+            from types import SimpleNamespace
+            SV = load('v88_factory', mods / 'control_service.py')
+            enrollment_signers = base / 'service-enrollment-signers'
+            enrollment_signers.write_text('olga ' + f['public']['olga'] + '\n')
+            EN.enroll(source, domain, ids['store_uuid'], str(f['db']), 'fixture-host', 1,
+                lambda b: f['sign_as']('olga', b, SV.EL.ENROLLMENT_NAMESPACE),
+                'olga', '2026-10-02T00:00:00Z', repository_uuid=repository)
+            service = SV.Service(dict(domain_uuid=domain, store_uuid=ids['store_uuid'],
+                principal='team-service', authority_generation=1, repositories={repository: [str(source)]},
+                journal_key=str(f['keyfile']['authority']), host_identity='fixture-host',
+                enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
+            service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
+                presenter=f['presenter'], settlement=f['settlement']))
+            factory = SV.FactoryLoop(service, {'repositories': {}})
+            line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
+            # Only the account selection is fixed; Line.run constructs the production PM services.
+            line.runner.account = 'fixture-account'
+            line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': 'fixture-host'}
+            factory.lines[repository] = line
+            runner, gate, dispatches, reservations = line.runner, line.gate, line.dispatches, line.reservations
+            factory.wake('accepted_project')
+            initial = factory.run()
+            cycles = line.pm_cycles
+            first = cycles.records('proj-a')[-1]
             dispatch = dispatches.record(first.get('dispatch')) if first.get('dispatch') else None
             check('cycle/runner', 'coordination launch accepted', first['state'] == 'waiting_run')
-            if dispatch:
+            if dispatch and first.get('dispatch') in runner.launches:
                 binding = dispatch['contract']
                 check('cycle/runner', 'ordinary Runner contract and team configuration',
                       binding['station'] == 'coordination' and binding['capability']['configuration']['role_revision']['role']
@@ -241,27 +263,6 @@ def _v88_suite():
             EN = load('v88_enrollment', mods / 'control_enrollment.py')
             DP = load('v88_decomposition', mods / 'control_decomposition.py')
             GR = load('v88_grooming', mods / 'control_grooming.py')
-            allocations = AL.attach(S, conn, domain, {repository: str(source)})
-            EN.enroll(source, domain, ids['store_uuid'], str(f['db']), 'fixture-host', 1,
-                      sign, 'olga', '2026-10-02T00:00:00Z', repository_uuid=repository)
-            allowed = base / 'enrollment-signers'
-            allowed.write_text('authority ' + f['public']['authority'] + '\n')
-
-            def verify(body, signature):
-                path = base / 'enrollment.sig'
-                path.write_text(signature)
-                return subprocess.run(['ssh-keygen', '-Y', 'verify', '-f', str(allowed), '-I', 'authority',
-                    '-n', 'veldo-journal', '-s', str(path)], input=body, capture_output=True).returncode == 0
-
-            publisher = DOC.Publisher(allocations, source, verify, 'fixture-host')
-            allocations.enable_kind(dict(request_id='kind-88', principal='olga', repository_uuid=repository,
-                kind='specification', prefix='VELDO', width=4, path_template='specs/{alias}-{slug}.md',
-                revision_id='revision-88'), signer='authority', sign=sign, authority_generation=1)
-            decomposition = DP.Decomposition(backlog, allocations, publisher)
-            grooming = GR.Grooming(S, f['CM'], conn, ids, 'authority', sign, backlog=CB, service=backlog,
-                assignment=f['I'], inbox=f['inbox'], presenter=f['presenter'], settlement=f['settlement'],
-                requester=('pm', lambda b: f['sign_as']('pm', b)), workspace=source)
-            cycles.services.update(backlog=backlog, decomposition=decomposition, grooming=grooming)
             policy = f['DSP'].review_policy_record(ROOT / '.veldo/policy.yaml')
             f['fixture'](f['DSP'].review_policy_id(repository), f['DSP'].REVIEW_POLICY_KIND, policy)
             uid = 'VELDO-8801'
@@ -286,24 +287,14 @@ def _v88_suite():
             reservations.configure('engineering-ceiling', 'unit', uid, dict(capacity=2, invocations=4, wall_seconds=500), now=time.time())
             (base / 'engineering-hold').write_text('hold')
             before_dispatches = conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0]
-            from types import SimpleNamespace
-            SV = load('v88_factory', mods / 'control_service.py')
-            service = SimpleNamespace(conn=conn, domain=domain, store=ids['store_uuid'], principal='pm',
-                generation=1, config={}, _log=lambda report: None)
-            factory = SV.FactoryLoop(service, {'repositories': {}})
-            line = SV.Line.__new__(SV.Line)
-            line.loop, line.service, line.repository = factory, service, repository
-            line.workspace, line.records = str(source), base / 'records'
-            line.runner, line.gate, line.dispatches, line.reservations = runner, gate, dispatches, reservations
-            line.registration = SV.S.COMMAND_REGISTRY.get('subscription_reservation',
-                                                        S.COMMAND_REGISTRY['subscription_reservation'])
-            line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': 'fixture-host'}
-            line.roles = {'builder': {'identity': 'unassigned'}, 'reviewers': []}
-            line.pm_cycles = cycles
-            factory.lines[repository] = line
             result_file.write_text(json.dumps(doc))
             factory.wake('accepted_objective')
             started = factory.run()
+            cycles = line.pm_cycles
+            cycles.services['decomposition'].allocations.enable_kind(dict(request_id='kind-88', principal='olga',
+                repository_uuid=repository, kind='specification', prefix='VELDO', width=4,
+                path_template='specs/{alias}-{slug}.md', revision_id='revision-88'),
+                signer='authority', sign=sign, authority_generation=1)
             active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
             check('unit/factory-builder-ticket', 'factory starts one PM dispatch',
                   len(active) == 1 and not started['faults'])
@@ -323,14 +314,17 @@ def _v88_suite():
                 and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY')
             extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
             extra.observe(locals())
+            review = load('v88_review', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/review_observations.py')
+            review.observe(locals())
+            review.budget(locals())
             budget = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
             for unused in range(budget - len(cycles.records('proj-a'))):
                 run(empty)
             try:
                 cycles.start('proj-a', cycles.inputs('proj-a'))
                 bounded = False
-            except PM.Refused as error:
-                bounded = error.code == 'budget_exceeded:coordination'
+            except Exception as error:
+                bounded = getattr(error, 'code', None) == 'budget_exceeded:coordination'
             check('cycle/budget', 'the project cycle budget stops further dispatch',
                   bounded and len(cycles.records('proj-a')) == budget)
     except Exception as error:

@@ -9963,6 +9963,13 @@ def cases():
     add(88, 'v88-graph-direct-priority-write', '92_veldo_0088_pm_cycles.py', 'control_graph_pm.py', "    if _pm_active and (event == 'open'", "    if False and (event == 'open'", ['proposal/graph-process'], ())
     add(88, 'v88-factory-ignores-team-assignments', '92_veldo_0088_pm_cycles.py', 'control_service.py', "        return sorted(units | {claim.get('unit_id')", "        return sorted(set() | {claim.get('unit_id')", ['unit/factory-builder-ticket'], ())
     add(88, 'v88-review-dispatched-as-builder', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "    who = assignment['reviewers'][0] if review else assignment['builder']", "    who = assignment['builder']", ['unit/independent-review'], ())
+    # VELDO-0088 independent review regressions.
+    add(88, 'v88-proposals-as-service', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "command.update(principal=record['manager'], command_id=", 'command.update(principal=self.principal, command_id=', ['review/pm-principal'], ())
+    add(88, 'v88-unhandled-build-adapter', '92_veldo_0088_pm_cycles.py', 'control_service.py', '\n            except pm.Refused as error:\n', '\n            except KeyError as error:\n', ['review/build-refusal'], ())
+    add(88, 'v88-unhandled-review-adapter', '92_veldo_0088_pm_cycles.py', 'control_service.py', '\n        except pm.Refused as error:\n', '\n        except KeyError as error:\n', ['review/review-refusal'], ())
+    add(88, 'v88-unhandled-pending-budget', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Exception as error:\n', '                        except KeyError as error:\n', ['review/pending-budget'], ())
+    add(88, 'v88-staging-from-earlier-cycle', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "        if unit['unit'] not in published:\n", '        if False:\n', ['review/current-publication'], ())
+
     return result
 
 

@@ -224,7 +224,8 @@ class ProjectCycles:
     """One repository, one authority scheduler, the existing Runner and command owners.
 
     `services` are the actual owning services, never callbacks running node code.
-    `command_sign` signs ordinary commands as the enrolled scheduling principal.
+    `command_sign` signs commands as the cycle's enrolled team PM. The signing
+    edge key must be enrolled for that PM; receipts remain service-owned.
     No scheduling thread, retry timer or persistent graph checkpoint is created.
     """
     def __init__(self, store, conn, *, domain, repository, workspace, principal, sign, command_sign,
@@ -401,7 +402,7 @@ class ProjectCycles:
                 command['reviewers'] = [dict(reviewer=who, subject=subject) for who in command['reviewers']]
             if command.get('project', record['project']) != record['project']:
                 raise Refused('invalid_input:proposal_project')
-            command.update(principal=self.principal, command_id='pm-proposal/' + record['cycle'] + '/' + proposal['name'],
+            command.update(principal=record['manager'], command_id='pm-proposal/' + record['cycle'] + '/' + proposal['name'],
                            nonce='pm-proposal/' + record['cycle'] + '/' + proposal['name'])
             result = getattr(service, method)({'command': command,
                 'signature': self.command_sign(self.store.canonical_bytes(command))})
@@ -411,6 +412,7 @@ class ProjectCycles:
             if not result.get('ok'):
                 raise Refused('proposal_refused:' + proposal['name'], str(result.get('reason')))
             if proposal['type'] == 'grooming':
+                service.requester = (record['manager'], self.command_sign)
                 outcome = service.groom(command['item'])
                 applied.append(dict(name=proposal['name'] + '/groom', type='grooming', result=outcome))
                 self.save(record)
@@ -424,6 +426,10 @@ class ProjectCycles:
         return record
 
     def staged(self, record, unit, team):
+        published = [p['result'].get('unit', {}).get('unit') for p in record['proposals']
+                     if p['type'] == 'decomposition' and p['result'].get('ok')]
+        if unit['unit'] not in published:
+            raise Refused('missing_evidence:cycle_publication')
         held = row(self.conn, unit['unit'])
         assignments = CT.assignments(self.conn, unit['unit'])
         if not held or held['data'].get('state') != 'READY' or not assignments:
@@ -508,7 +514,11 @@ class ProjectCycles:
                     emitted.append(self.finish(active))
                     self.seen[name] = active['input_key']
                     if name in self.pending:
-                        emitted.append(self.start(name, self.pending.pop(name)))
+                        try:
+                            emitted.append(self.start(name, self.pending.pop(name)))
+                        except Exception as error:
+                            self.observe(dict(operation='pm_start', project=name,
+                                refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
                 continue
             if self.seen.get(name) != current:
                 # Successful assigned engineering advances through the factory without
@@ -534,7 +544,11 @@ class ProjectCycles:
 
 
 def from_line(line):
-    """The authority service's factory line supplies its Runner and owning services."""
+    """Use the service signing edge, enrolled for each team PM by membership.
+
+    The PM authors proposals; the service principal owns journal and cycle receipts.
+    Team membership and its accepted PM worker still authorize every command.
+    """
     service = line.service
     modules = line.run.__func__.__globals__
     store, membership, assignment = modules['S'], modules['CM'], modules['I']

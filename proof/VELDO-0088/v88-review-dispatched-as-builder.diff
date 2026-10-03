@@ -1,5 +1,5 @@
---- .veldo/control_workflow_cycle_pm.py
-+++ .veldo/control_workflow_cycle_pm.py
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
 @@ -96,7 +96,7 @@
  def engineering_role(line, assignment, station):
      """Use the accepted team's capability and budget at the engineering boundary."""
