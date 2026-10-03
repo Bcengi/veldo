@@ -2,6 +2,30 @@
 Only plain snapshots and result digests enter; no store or command owner exists here.
 """
 import hashlib as _pm_hashlib
+import sys as _pm_sys
+
+_pm_active = False
+
+
+def _pm_audit(event, args):
+    if _pm_active and (event == 'open' or event.startswith(('os.', 'subprocess.', 'sqlite3.', 'socket.'))):
+        raise PermissionError('graph_capability_denied:' + event)
+
+
+_pm_sys.addaudithook(_pm_audit)
+
+
+def _pm_bounded(function):
+    def bounded(view):
+        global _pm_active
+        _pm_active = True
+        try:
+            return function(view)
+        except PermissionError as error:
+            return {'failure': {'code': 'node_failed', 'detail': str(error)}}
+        finally:
+            _pm_active = False
+    return bounded
 
 _PM_PIPELINE = ('intake', 'coordinate', 'elaborate', 'admit', 'assign', 'build',
                 'prove_and_gate', 'review', 'land', 'report')
@@ -22,7 +46,7 @@ def _pm_step(name):
                 'evidence': [view['supplied_results'][0]['digest'],
                     'sha256:' + _pm_hashlib.sha256(json.dumps(trace, separators=(',', ':')).encode()).hexdigest()]}]}
         return {'next': _PM_PIPELINE[index + 1], 'notes': {'pm_trace': trace}}
-    return step
+    return _pm_bounded(step)
 
 
 WORKFLOWS['default_pipeline'] = {'version': 1, 'entry': 'intake',

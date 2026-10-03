@@ -793,6 +793,7 @@ class Gate:
                 inputs['project_owner'] = self._entity(owner)
             inputs['authority'] = self._entity('authority:' + self.domain_uuid)
             inputs['claim'] = self._entity(self.claims.claim_id(self.repository_uuid, unit))
+            inputs.update(_organ('control_workflow_cycle_pm').assignment_inputs(self, unit, data))
             for dep in data.get('depends_on') or []:
                 inputs['dependency/' + dep] = self._entity(dep)
                 inputs['receipts/' + dep] = self._receipts(dep)
@@ -953,6 +954,8 @@ class Gate:
         if name == 'no_blockers':
             return ['blocked:' + b['id'] for b in inputs['blockers'] if not self._data(b).get('cleared')]
         if name == 'claim_current':
+            if inputs.get('team_assignment'):
+                return _organ('control_workflow_cycle_pm').assignment_problems(self, unit, inputs, context)
             holder = (context or {}).get('holder')
             claim = self._data(inputs.get('claim')) or {}
             status = self.claims.ownership(claim, data, self._data(inputs.get('backlog')) or {})
@@ -964,6 +967,11 @@ class Gate:
             return ['stale_claim'] if wanted is not None and claim.get('generation') != wanted else []
         if name == 'reviewer_independent':
             reviewer, producer = (context or {}).get('reviewer'), data.get('producer')
+            if inputs.get('team_assignment'):
+                problems = _organ('control_workflow_cycle_pm').assignment_problems(self, unit, inputs, context)
+                if problems:
+                    return problems
+                producer = self._data(inputs['team_assignment']).get('builder')
             if not producer:
                 return ['missing_evidence:producer']
             if not isinstance(reviewer, str) or not reviewer.strip() or reviewer.strip().lower() == str(producer).strip().lower():

@@ -12,6 +12,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import sys
 import tempfile
 import threading
 import time
@@ -202,7 +203,7 @@ def fixture(ROOT, PRODUCTION):
                 ids, operation='activate', project='proj-a', principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),
                 owner='olga', charter={'purpose': 'Sell passes to travelers.'}, execution_repository=REPO,
                 authority_policy={'team_amendment': ['project_owner'], 'admission': ['admission_authority']},
-                coordination_budget={'capacity': 5, 'invocations': 8, 'wall_seconds': 500})))
+                coordination_budget={'capacity': 5, 'invocations': 12, 'wall_seconds': 500})))
 
             service = (CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
                                 requester='team-service', request_sign=lambda m: sign_as('team-service', m))
@@ -237,8 +238,21 @@ def fixture(ROOT, PRODUCTION):
             CG = load('team_fixture_config', mods / 'control_agent_config.py')
             configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
                 repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            catalog_worker = base / 'catalog.py'
+            catalog_worker.write_text('import json,sys,os\nfrom pathlib import Path\n'
+                'q=json.load(sys.stdin)\n'
+                'Path(sys.argv[1]).write_text(json.dumps(dict(request=q,pid=os.getpid())))\n'
+                'print(json.dumps(dict(jsonrpc="2.0",id=q["id"],result={"content":[{"type":"text","text":"BCG-123: change one line"}]})))\n')
+            catalog = CG.MC.Catalog(S, conn, domain=DOMAIN, repository=REPO, signer='authority', sign=journal_sign)
+            catalog.save(dict(id='tickets', label='Fixture ticket catalog', transport='stdio', command=sys.executable,
+                arguments=[str(catalog_worker), str(base / 'ticket-fetch.json')], url=None, environment={},
+                headers={}, hosts=['linux'], read_only_tools=['jira.get']), principal='steward', base=0,
+                command_id=next_id('catalog'))
+            catalog_row = entity(CG.MC.revision_id(DOMAIN, 'tickets', 1))['data']
+            (base / 'catalog.json').write_text(json.dumps(catalog_row))
             configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
-                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                mcp=[dict(server='tickets', revision=1, tools=['jira.get'], load='when assigned')],
+                skills=[], instructions=[], settings={}), principal='steward', base=0,
                 command_id=next_id('capability'))
 
             def role(workers, resp, perms=('feature',), engines=('claude_code',), budget=None, distinct=()):

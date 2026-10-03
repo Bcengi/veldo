@@ -221,7 +221,7 @@ def contract_problems(contract):
         problems.append('reservation')
     claim = contract['claim']
     if claim is None:
-        if contract['station'] in CLAIMED_STATIONS:
+        if contract['station'] in CLAIMED_STATIONS and not (decision.get('inputs') or {}).get('team_assignment'):
             problems.append('claim')
     elif (not isinstance(claim, dict) or not _text(contract['repository']) or not _text(contract['unit'])
             or claim.get('entity') != CLM.claim_id(contract['repository'], contract['unit'])
@@ -323,6 +323,18 @@ def _reservation_bound(conn, contract):
 def _claim_bound(conn, contract):
     """The claim the contract binds: still owned by its holder at its generation (VELDO-0031)."""
     binding = contract['claim']
+    assignment = contract['input']['decision']['inputs'].get('team_assignment')
+    if assignment:
+        # Re-read the authority at the write boundary, never trust a caller's ticket alone.
+        pm = _organ('control_workflow_cycle_pm')
+        gate_module = _organ('control_eligibility')
+        gate = gate_module.Gate(CLM.S, conn, domain_uuid=contract['domain'], repository_uuid=contract['repository'])
+        inputs, unused = gate.read(contract['unit'])
+        current = inputs.get('team_assignment')
+        if (not current or any(current[k] != assignment.get(k) for k in ('id', 'version', 'digest'))
+                or pm.assignment_problems(gate, contract['unit'], inputs, contract['input']['context'])):
+            raise Refused('stale_subject:team_assignment')
+        return
     if binding is None:
         return
     unit = _entity(conn, contract['unit']) or {}

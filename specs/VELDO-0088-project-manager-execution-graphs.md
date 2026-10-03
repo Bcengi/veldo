@@ -34,6 +34,8 @@ footprint:
   - "packs/*/.veldo/init_scaffold.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - ".veldo/control_launch.py"
+  - "engine/.veldo/control_launch.py"
   - "engine/.veldo/control_dispatch.py"
   - ".veldo/control_dispatch.py"
   - "engine/.veldo/control_eligibility.py"
@@ -254,3 +256,10 @@ service grant. Ten scoped behavior rows pass. This is partial implementation
 evidence: the builder catalog fetch, factory-started single-unit journey and
 graph-process capability attacks still need direct integration observations.
 No landing or completed-criterion claim is made.
+
+2026-10-02, continuation: the factory consumes accepted team assignments for build
+and independent review. The footprint adds the launch module and engine copy
+because Runner preparation must bind that authority instead of requiring a
+legacy claim. Dispatch preparation and acceptance recheck the assignment.
+Graph node capability attacks, combined input coalescing and complete receipts
+receive direct process observations in the scoped suite.

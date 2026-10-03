@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 SUITE = '92_veldo_0088_pm_cycles.py'
 PREFIX = 'VELDO-0088 '
 FINDING = 88
-MODULES = ('control_workflow_cycle_pm.py', 'control_graph_pm.py', 'control_dispatch.py', 'control_eligibility.py', 'control_service.py', 'control_team.py', 'authority_contract.py', 'init_scaffold.py')
+MODULES = ('control_workflow_cycle_pm.py', 'control_graph_pm.py', 'control_dispatch.py', 'control_eligibility.py', 'control_service.py', 'control_launch.py', 'control_team.py', 'authority_contract.py', 'init_scaffold.py')
 
 
 def _load(name, path):

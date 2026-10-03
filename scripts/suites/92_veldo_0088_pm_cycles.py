@@ -20,12 +20,14 @@ def _v88_suite():
         'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
         'control_team.py': ROOT / ".veldo" / "control_team.py",
         'authority_contract.py': ROOT / ".veldo" / "authority_contract.py",
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     names = ('cycle/runner', 'cycle/snapshot', 'cycle/no-action', 'cycle/failure',
              'proposal/unauthorized', 'proposal/stop-on-refusal', 'cycle/serialized',
-             'cycle/pending-follow-up', 'cycle/budget', 'unit/one-run-staging')
+             'cycle/pending-follow-up', 'cycle/budget', 'unit/one-run-staging', 'unit/factory-builder-ticket', 'unit/independent-review',
+             'proposal/graph-process', 'cycle/combined-inputs', 'cycle/receipts', 'cycle/waiting-release')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -79,14 +81,28 @@ def _v88_suite():
             worker = base / 'worker.py'
             worker.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
                 'Path(sys.argv[2]).write_text(json.dumps(p))\nimport time\n'
-                'if Path(sys.argv[3]).exists(): time.sleep(1)\nprint(Path(sys.argv[1]).read_text())\n')
+                'if Path(sys.argv[3]).exists(): time.sleep(1)\n'
+                'if p["station"] == "coordination": print(Path(sys.argv[1]).read_text())\n'
+                'else:\n'
+                ' import subprocess,os\n'
+                ' until=time.monotonic()+10\n'
+                ' while Path(sys.argv[4]).with_name("engineering-hold").exists() and time.monotonic()<until: time.sleep(.02)\n'
+                ' if p["station"] == "build":\n'
+                '  selection=p["configuration"]["role_revision"]["mcp"][0]\n'
+                '  catalog=json.loads(Path(sys.argv[4]).read_text())\n'
+                '  assert selection["server"] == catalog["id"] and selection["revision"] == catalog["revision"]\n'
+                '  assert "BCG-123" in p["payload"]["requirements"]\n'
+                '  q={"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"jira.get","arguments":{"key":"BCG-123"}}}\n'
+                '  fetched=subprocess.run([catalog["command"],*catalog["arguments"]],input=json.dumps(q),text=True,capture_output=True,check=True)\n'
+                '  print(fetched.stdout.strip())\n'
+                ' print(json.dumps({"station":p["station"],"dispatch":p["dispatch_id"],"pid":os.getpid()}))\n')
             packet_file = base / 'packet.json'
             config = base / 'receiver.json'
             config.write_text(json.dumps(dict(store=str(f['db']), journal_key=str(f['keyfile']['authority']),
                 principal='pm', workspace=str(source), domain=domain, repository=repository, records=str(base / 'records'),
                 adapters={'protocol': {'identity': 'reported', 'argv': [sys.executable, '-B',
                     str(mods / 'control_launch.py'), 'exec', sys.executable, '-B', str(worker), str(result_file),
-                    str(packet_file), str(base / 'hold')]}})))
+                    str(packet_file), str(base / 'hold'), str(base / 'catalog.json')]}})))
             runner = L.Runner(gate, reservations, dispatches,
                               lambda contract: L.invoke(config, contract, dispatches), account='fixture-account')
             runtime = G.resolve_runtime()
@@ -267,15 +283,45 @@ def _v88_suite():
                 dict(name='assign', type='assignment', command=dict(ids, operation='assign', project='proj-a',
                     team_version=f['version'](), team_revision=f['team_record']()['revision'], unit=uid,
                     role='implementation', builder='w-build', reviewers=['w-rev1']))])
+            reservations.configure('engineering-ceiling', 'unit', uid, dict(capacity=2, invocations=4, wall_seconds=500), now=time.time())
+            (base / 'engineering-hold').write_text('hold')
             before_dispatches = conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0]
-            staged = run(doc)
+            from types import SimpleNamespace
+            SV = load('v88_factory', mods / 'control_service.py')
+            service = SimpleNamespace(conn=conn, domain=domain, store=ids['store_uuid'], principal='pm',
+                generation=1, config={}, _log=lambda report: None)
+            factory = SV.FactoryLoop(service, {'repositories': {}})
+            line = SV.Line.__new__(SV.Line)
+            line.loop, line.service, line.repository = factory, service, repository
+            line.workspace, line.records = str(source), base / 'records'
+            line.runner, line.gate, line.dispatches, line.reservations = runner, gate, dispatches, reservations
+            line.registration = SV.S.COMMAND_REGISTRY.get('subscription_reservation',
+                                                        S.COMMAND_REGISTRY['subscription_reservation'])
+            line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': 'fixture-host'}
+            line.roles = {'builder': {'identity': 'unassigned'}, 'reviewers': []}
+            line.pm_cycles = cycles
+            factory.lines[repository] = line
+            result_file.write_text(json.dumps(doc))
+            factory.wake('accepted_objective')
+            started = factory.run()
+            active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
+            check('unit/factory-builder-ticket', 'factory starts one PM dispatch',
+                  len(active) == 1 and not started['faults'])
+            if active:
+                runner.wait(runner.launches[active[0]['dispatch']], timeout=15)
+            factory.wake('run_end')
+            staged_pass = factory.run()
+            staged = next(r for r in cycles.records('proj-a') if r['cycle'] == active[0]['cycle'])
+            print('  VELDO-0088 detail: factory staging:', staged_pass['refused'], staged_pass['faults'])
             print('  VELDO-0088 detail: staging:', staged['state'], staged.get('refusal'),
                   [(r['name'], r['result'].get('reason')) for r in staged['proposals']])
             check('unit/one-run-staging', 'one coordination run publishes requirements and stages all four roles',
                 staged['state'] == 'proposed' and set(staged.get('unit_roles', {})) == set(PM.CT.REQUIRED_ROLES)
                 and staged.get('elaboration') == {'state': 'done', 'dispatch': staged['dispatch']}
-                and conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0] == before_dispatches + 1
+                and len([r for r in line.latest().values() if r['contract']['station'] == 'coordination']) == before_dispatches + 1
                 and f['entity'](uid)['data']['state'] == 'READY')
+            extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
+            extra.observe(locals())
             budget = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
             for unused in range(budget - len(cycles.records('proj-a'))):
                 run(empty)

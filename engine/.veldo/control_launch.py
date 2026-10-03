@@ -572,7 +572,7 @@ class Runner:
         if not D._text(project):
             raise D.Refused('missing_authority:project', 'the unit has no accepted project')
         claim = None
-        if station in D.CLAIMED_STATIONS:
+        if station in D.CLAIMED_STATIONS and not decision['inputs'].get('team_assignment'):
             entity = D.CLM.claim_id(self.dispatches.repository, unit)
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
