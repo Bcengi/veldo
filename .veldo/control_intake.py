@@ -75,6 +75,7 @@ import hashlib
 import importlib.util
 from pathlib import Path
 import json
+import re
 import sqlite3
 import time
 
@@ -87,6 +88,8 @@ def _renderer_module(name):
 
 
 TEXT = _renderer_module('control_channel_presentation_text')
+PJ = _renderer_module('control_project')
+RT = _renderer_module('control_intake_routes')
 
 COMMAND_SCHEMA = 'veldo.intake_command/v1'
 API_SCHEMA = 'veldo.intake_api_request/v1'
@@ -100,7 +103,8 @@ OWNER = 'VELDO-0126 intake'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 COMMAND_FIELDS = ('schema', 'source_kind', 'source_id', 'principal', 'text', 'project', 'clarifies', 'provenance')
 API_FIELDS = ('schema', 'domain', 'request_id', 'edge', 'principal', 'text', 'project', 'clarifies')
-PROPOSAL_STATES = ('PROPOSED', 'AWAITING_PROJECT', 'RESOLVED')
+PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED')
+TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-Za-z0-9_-])')
 # The attribution's own reasons for a message it attributed to a person but that is no presentation
 # answer: it replies to nothing, or to a message that is not a presentation.
 ORDINARY = ('missing_reply_reference', 'unknown_presentation')
@@ -108,7 +112,7 @@ EVIDENCE_KIND = 'channel_evidence'  # VELDO-0066's kept Telegram evidence
 TEXT_LIMIT = 16384
 ID_LIMIT = 128
 PUNCTUATION = ',.;:!?()[]{}"\'<>'
-TAXONOMY = {'unauthenticated': 'unauthenticated', 'unauthorized': 'unauthorized', 'identity_conflict': 'stale_version',
+TAXONOMY = {'unsupported_configuration': 'unsupported_configuration', 'unauthenticated': 'unauthenticated', 'unauthorized': 'unauthorized', 'identity_conflict': 'stale_version',
             'stale_version': 'stale_version', 'unsupported_source': 'unsupported_configuration',
             'not_intake': 'unsupported_configuration', 'invalid_input': 'unsupported_configuration',
             'missing_evidence': 'missing_evidence', 'unavailable_service': 'unavailable_service',
@@ -180,6 +184,21 @@ def named_projects(text, candidates):
     return [p for p in candidates if p.casefold() in words]
 
 
+def keyed_projects(text, candidates, prefixes):
+    """(the candidates a ticket key in the text names, the prefixes several candidates list). A key
+    names a candidate when exactly that one candidate lists its prefix, compared without case."""
+    listed = {p: {x.casefold() for x in prefixes.get(p) or []} for p in candidates}
+    named, shared = [], []
+    for match in TICKET_KEY.finditer(text):
+        prefix = match.group(1).casefold()
+        listers = [p for p in candidates if prefix in listed[p]]
+        if len(listers) == 1 and listers[0] not in named:
+            named.append(listers[0])
+        elif len(listers) > 1 and prefix not in shared:
+            shared.append(prefix)
+    return named, shared
+
+
 def _identifier(value):
     return type(value) is str and 0 < len(value) <= ID_LIMIT and value.isascii() and value.isprintable()
 
@@ -204,7 +223,7 @@ def command_problem(command):
     return None
 
 
-class Intake:
+class Intake(RT.Routes):
     """The intake of one domain over a real control store connection.
 
     `store`, `membership` and `contract` are the control_store, control_membership and
@@ -228,10 +247,13 @@ class Intake:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._adapters = {'telegram_message': self._telegram, 'api_request': self._api}
-        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD,),
-                                                 QUESTION_KIND: (RECORD, ASKED)}, module=__file__)
+        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD, RT.ROUTE),
+                                                 QUESTION_KIND: (RECORD, ASKED, RT.ROUTE)}, module=__file__)
         conn.command_registry[RECORD] = {'transaction_transition': self._record_transition, 'writes': WRITES}
         conn.command_registry[ASKED] = {'transaction_transition': self._asked_transition, 'writes': WRITES}
+
+        conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
+        self.route_refused = Refused
 
     # reading
 
@@ -280,7 +302,14 @@ class Intake:
                 refused[e['refusal']] = refused.get(e['refusal'], 0) + 1
         proposals = self._all(PROPOSAL_KIND)
         return dict(self.counts, refused_by_reason=refused,
-                    pending={'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
+                    routes={r: sum(e['operation'] == 'route' and e.get('route', {}).get('route') == r and not e['refusal']
+                                   for e in self.observations) for r in RT.ROUTES},
+                    decisions={r: sum(e['operation'] == 'submit' and not e.get('repeated') and
+                                      (e.get('decision') or {}).get('decided_by') == r for e in self.observations)
+                               for r in ('request', 'ticket_key', None)},
+                    pending={'awaiting_route': sum(p.get('state') == 'AWAITING_ROUTE' for p in proposals),
+                             'new_project': sum(p.get('state') == 'NEW_PROJECT' for p in proposals),
+                             'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
                              'awaiting_project': sum(1 for p in proposals if p.get('state') == 'AWAITING_PROJECT'),
                              'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open')})
 
@@ -304,8 +333,8 @@ class Intake:
             # The one decision about what the owner is told, now that intake has seen the message: a
             # proposal gets the new-work note, a message intake did not take the plain hint; an inbox
             # proposal's note rides on its question (_ask); a clarification or a resolution gets none.
-            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):
-                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)
+            if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):
+                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
         return result
 
     def take_telegram(self):
@@ -491,10 +520,8 @@ class Intake:
         except sqlite3.Error:
             return self._event('submit', 'refused', 'unavailable_service', accepted_versions=expected, **about)
         done = self._event('submit', result['outcome'], None, accepted_versions=expected, project=result.get('project'),
-                           command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
+                           decision=result.get('decision'), command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
                                                              if k in result}))
-        if result['outcome'] == 'inbox' and command['source_kind'] == 'telegram_message':
-            self._ask(result['question_id'], command)
         return done
 
     def _record_transition(self, conn, params, before):
@@ -530,19 +557,28 @@ class Intake:
                 raise Refused('unauthorized:' + why, principal)
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
-        candidates = [p for p in self.projects if self.CM.scope_covers(scope, p)]
-        if not candidates:
+        candidates = [p for p in self.projects if p != PJ.FACTORY_PROJECT and self.CM.scope_covers(scope, p)]
+        records = {p: read(PJ.project_id(p)) for p in self.projects}
+        factory = records.get(PJ.FACTORY_PROJECT)
+        owner = factory and factory['kind'] == PJ.KIND and factory['data'].get('owner') == principal
+        if not candidates and not owner:
             raise Refused('unauthorized:no_project', principal)
         explicit = command['project']
+        if explicit == PJ.FACTORY_PROJECT:
+            raise Refused('invalid_input:factory_project')
         if explicit is not None and explicit not in candidates:
             raise Refused('unauthorized:project', explicit)
-        named = named_projects(text, candidates)
-        context = {'domain': self.domain, 'candidates': candidates, 'membership_version': member['version']}
+        prefixes = {p: PJ.ticket_key_prefixes(records[p]['data']) if records.get(p) else [] for p in candidates}
+        keyed, shared = keyed_projects(text, candidates, prefixes)
+        hints = named_projects(text, candidates)
+        context = {'domain': self.domain, 'candidates': candidates, 'membership_version': member['version'],
+                   'project_versions': {PJ.project_id(p): r['version'] if r else 0 for p, r in records.items()},
+                   'projects': [{'id': p, 'name': p, 'ticket_key_prefixes': prefixes[p]} for p in candidates]}
         pid = proposal_id(key)
         source = {'schema': SOURCE_SCHEMA, 'source_id': key, 'source_kind': command['source_kind'],
                   'source_ref': command['source_id'], 'principal': principal, 'text': text,
                   'content_digest': content_digest(command), 'command': command, 'context': context}
-        changes, reads = {}, [principal]
+        changes, reads = {}, [principal] + [PJ.project_id(p) for p in records]
         clarifies = command['clarifies']
         if clarifies is not None:
             live, target = self._live_proposal(clarifies, principal, read, reads)
@@ -550,39 +586,39 @@ class Intake:
             data['clarifications'] = list(data.get('clarifications') or []) + [{'source': key, 'text': text}]
             question = read(data['question_id']) if data.get('question_id') else None
             options = [p for p in (question['data']['candidates'] if question else []) if p in candidates]
-            said = named_projects(text, options)
+            said = list(dict.fromkeys(named_projects(text, options) + keyed_projects(text, options, prefixes)[0]))
             chosen = explicit if explicit in options else (said[0] if len(said) == 1 else None)
             if data['state'] == 'AWAITING_PROJECT' and question is not None and chosen is not None:
                 resolved = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective', 'state': 'PROPOSED',
                             'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
                             'sources': list(data['sources']) + [key], 'clarifications': data['clarifications'],
                             'question_id': None, 'resolves': live, 'resolved_to': None}
-                data.update(state='RESOLVED', resolved_to=pid)
+                resolved.update(route=dict(data.get('route') or {}, route='existing_project', project=chosen,
+                                           reason='The principal answered the offered project question.'), hints=data.get('hints', []))
+                data.update(state='ROUTED', resolved_to=pid, route=resolved['route'])
                 changes[pid] = {'kind': PROPOSAL_KIND, 'data': resolved}
                 changes[question['data']['question_id']] = {'kind': QUESTION_KIND, 'data': dict(
                     question['data'], state='answered', answered_by=key, project=chosen)}
                 result = {'outcome': 'resolved', 'proposal_id': pid, 'project': chosen}
             else:
+                if data['state'] == 'AWAITING_PROJECT':
+                    data['state'] = 'AWAITING_ROUTE'
                 result = {'outcome': 'clarification', 'proposal_id': live, 'project': data.get('project')}
             changes[live] = {'kind': PROPOSAL_KIND, 'data': data}
         else:
-            project = explicit or (named[0] if len(named) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)
+            project = explicit or (keyed[0] if len(keyed) == 1 else None)
+            rule = 'request' if explicit else ('ticket_key' if project else None)
+            if project is None and (factory is None or factory['kind'] != PJ.KIND):
+                raise Refused('unsupported_configuration:factory_project')
+            decision = dict(context, decided_by=rule, unresolved=None if project else 'undecided', hints=hints,
+                            shared_ticket_keys=shared)
             proposal = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective' if project else 'inbox',
-                        'state': 'PROPOSED' if project else 'AWAITING_PROJECT', 'domain': self.domain, 'project': project,
-                        'principal': principal, 'text': text, 'sources': [key], 'clarifications': [],
-                        'question_id': None, 'resolves': None, 'resolved_to': None}
-            result = {'outcome': 'proposed' if project else 'inbox', 'proposal_id': pid, 'project': project}
-            if project is None:
-                qid = question_id(key)
-                prompt = 'Which project is this for? Reply to this message with one of: %s.' % ', '.join(candidates)
-                proposal['question_id'] = qid
-                ask = {'schema': QUESTION_SCHEMA, 'question_id': qid, 'proposal_id': pid, 'principal': principal,
-                       'asks': 'project', 'candidates': candidates, 'prompt': prompt, 'state': 'open',
-                       'asked_on': command['source_kind'], 'answered_by': None, 'project': None,
-                       'delivery': ({'channel': 'api', 'request_id': command['source_id']}
-                                    if command['source_kind'] == 'api_request' else None)}
-                changes[qid] = {'kind': QUESTION_KIND, 'data': ask}
-                result.update(question_id=qid, question={'question_id': qid, 'prompt': prompt, 'candidates': candidates})
+                        'state': 'PROPOSED' if project else 'AWAITING_ROUTE', 'domain': self.domain,
+                        'project': project or PJ.FACTORY_PROJECT, 'principal': principal, 'text': text,
+                        'sources': [key], 'clarifications': [], 'question_id': None, 'resolves': None,
+                        'resolved_to': None, 'hints': hints, 'context': context, 'decision': decision, 'route': None}
+            result = {'outcome': 'proposed' if project else 'inbox', 'proposal_id': pid,
+                      'project': proposal['project'], 'decision': decision}
             changes[pid] = {'kind': PROPOSAL_KIND, 'data': proposal}
         source.update(proposal_id=result['proposal_id'], question_id=result.get('question_id'),
                       result={k: v for k, v in result.items() if k != 'project'})
@@ -605,7 +641,7 @@ class Intake:
             seen.append(pid)
             reads.append(pid)
             onward = target['data'].get('resolved_to')
-            if target['data'].get('state') != 'RESOLVED':
+            if target['data'].get('state') not in ('RESOLVED', 'ROUTED'):
                 return pid, target
             if not _identifier(onward) or onward in seen:
                 raise Refused('missing_evidence:clarifies', 'a resolved proposal names no live proposal: ' + str(pid))

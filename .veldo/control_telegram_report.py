@@ -134,6 +134,7 @@ STOP_KIND, STOPPED = 'andon_stop', 'stopped'                          # control_
 # The declared event set: (event, source entity kinds, handler). The completion handler reads VELDO-0051's
 # journal projection instead of one entity kind.
 REGISTRY = (
+    ('intake_routed', ('intake_proposal',), '_intake_route'),
     ('objective_accepted', (OBJECTIVE_KIND,), '_objective'),
     ('decision_awaiting', (ASSIGNMENT_KIND,), '_awaiting'),
     ('work_progress', (DISPATCH_KIND,), '_progress'),
@@ -384,6 +385,17 @@ class Reporter:
         """The accepted project of the unit a record names, as committed so far, or None."""
         found = state.get(unit) if _text(unit) else None
         return self._data(found).get('project') if _dict(found).get('kind') == UNIT_KIND else None
+
+    def _intake_route(self, eid, entry, prior, state):
+        data, before = self._data(entry), self._data(prior)
+        route = data.get('route')
+        if not route or route == before.get('route') or data.get('resolves'):
+            return None
+        return {'unit': None, 'run': route.get('dispatch'), 'project': route.get('project', data.get('project')),
+                'headline': 'Message routed',
+                'fact': '%s: %s. %s' % (eid, route['route'], route['reason']),
+                'next': 'Answer the project question.' if route['route'] == 'unclear' else 'Follow the proposal.',
+                'evidence': 'PM dispatch %s' % route.get('dispatch')}
 
     def _objective(self, eid, entry, prior, state):
         data, before = self._data(entry), self._data(prior)

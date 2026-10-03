@@ -27,6 +27,7 @@ RS = organ('control_readset')
 CT = organ('control_team')
 CFG = organ('control_agent_config')
 CY = organ('control_workflow_cycle')
+IR = organ('control_intake_routes')
 SCHEMA = 'veldo.pm_cycle/v1'
 DOCUMENT = 'veldo.pm_proposals/v1'
 KIND = 'pm_cycle'
@@ -249,6 +250,7 @@ class ProjectCycles:
         self.readsets.enable('pm_snapshot_inputs', {'revision': '$revision',
             'entities': {'project': '$project', 'team': '$team'}, 'collections': {
                 'objectives': {'kind': 'objective', 'where': {'project': '$name'}, 'references': ['proposal_id']},
+                'inbox': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': 'AWAITING_ROUTE'}},
                 'decisions': {'kind': 'assignment', 'where': {}},
                 'dispatches': {'kind': 'dispatch', 'where': {}}}})
 
@@ -276,6 +278,7 @@ class ProjectCycles:
             data = json.loads(raw)
             relevant = (identity in ('project:' + project, 'team:' + project)
                         or kind == 'accepted_revision' and data.get('repository_uuid') == self.repository
+                        or kind == 'intake_proposal' and data.get('project') == project and data.get('state') == 'AWAITING_ROUTE'
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
                         or kind == 'dispatch' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
@@ -353,11 +356,23 @@ class ProjectCycles:
             if answer['outcome'] != 'suspended' or record['resume']['position'] != 'coordinate':
                 raise Refused('invalid_response:coordinate')
             record['trace'] = ['intake']
+            inbox = snap['data']['inputs'].get('collection/inbox', []) if project == 'factory' else []
+            if inbox:
+                selected = inbox[0]
+                record['route_subject'] = dict(id=selected['value']['data']['proposal_id'], version=selected['version'])
             payload = {'operation': 'coordinate', 'snapshot': snap['data'], 'workflow': record['workflow'],
                        'output_schema': DOCUMENT, 'required_roles': list(CT.REQUIRED_ROLES),
                        'instruction': 'Return one typed proposal document. For one unit write its requirements '
                                       'in this run, preserving the owner message and every reference verbatim. '
                                       'The builder fetches references using its configured catalog servers.'}
+            if inbox:
+                proposal = selected['value']['data']
+                payload = dict(operation='route', proposal_id=proposal['proposal_id'], text=proposal['text'],
+                    clarifications=proposal['clarifications'], hints=proposal['hints'],
+                    projects=proposal['context']['projects'], output_schema=IR.SCHEMA,
+                    instruction='Return exactly one route document with schema, proposal_id, route and a nonempty reason. '
+                                'Route is new_project, existing_project or unclear. Only existing_project includes project, '
+                                'the id of one listed project.')
             self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
                 'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
             launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
@@ -372,6 +387,18 @@ class ProjectCycles:
         return self.save(record)
 
     def apply(self, record, value):
+        if record.get('route_subject'):
+            intake = self.services.get('intake')
+            if intake is None:
+                raise Refused('unavailable_service:proposal_owner:intake')
+            subject = record['route_subject']
+            result = intake.route(value, dispatch=record['dispatch'], proposal_id=subject['id'], version=subject['version'])
+            record['proposals'] = [dict(name=subject['id'], type='route', result=result)]
+            self.save(record)
+            if not result.get('ok'):
+                raise Refused('proposal_refused:' + subject['id'], str(result.get('reason')))
+            record.update(document=value, state='proposed')
+            return record
         value = document(value)
         team = CT.read(self.store, self.conn, record['project'])
         if ref(row(self.conn, 'team:' + record['project'])) != record['team']:
@@ -464,7 +491,7 @@ class ProjectCycles:
                         value = json.loads(value['result'])
                     elif value.get('type') == 'item.completed' and value.get('item', {}).get('type') == 'agent_message':
                         value = json.loads(value['item']['text'])
-                    if value.get('schema') == DOCUMENT:
+                    if value.get('schema') in (DOCUMENT, IR.SCHEMA) or 'route' in value or 'proposal_id' in value:
                         values.append(value)
                 except (ValueError, TypeError, AttributeError):
                     continue
@@ -481,7 +508,8 @@ class ProjectCycles:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
             value = self.returned_document(dispatched)
-            document(value)
+            if not record.get('route_subject'):
+                document(value)
             # Only a digest goes into the graph process. It cannot invoke owners.
             supplied = [{'id': 'result', 'version': 1, 'digest': SN.digest(SN.canonical(value)),
                          'value': {'unit': record['project']}}]
@@ -519,6 +547,9 @@ class ProjectCycles:
                         except Refused as error:
                             self.observe(dict(operation='pm_start', project=name,
                                 refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
+                continue
+            if name == 'factory' and not any(r[0].startswith('intake_proposal:') for r in self.input_members(name)):
+                self.seen[name] = current
                 continue
             if self.seen.get(name) != current:
                 # Successful assigned engineering advances through the factory without
@@ -570,6 +601,12 @@ def from_line(line):
     channel = getattr(service, 'channel', None)
     if channel is not None:
         ingress = channel.ingress
+        intake_module = organ('control_intake')
+        services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
+            domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
+                "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
+            journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
+            authority_generation=service.generation)
         services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,
             service.principal, service.sign, backlog=backlog_module, service=backlog, assignment=assignment,
             inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,

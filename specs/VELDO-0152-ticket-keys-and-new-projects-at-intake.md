@@ -377,3 +377,10 @@ among what "decides nothing", since AC2 refuses that request; AC3 names the prop
 route (`AWAITING_ROUTE`, then `NEW_PROJECT`, `ROUTED` or `AWAITING_PROJECT`, the state intake's existing
 answer path resolves from); the `unsupported_configuration:factory_project` refusal gets its taxonomy
 class and AC2's rows.
+
+2026-10-03, build on 16a91069: intake now reserves ordinary project selection for the request field
+and unique ticket prefixes. Factory inbox routes are owned by the new control_intake_routes module,
+within the existing footprint. The 0088 base's production cycle lives in control_workflow_cycle_pm,
+so that file consumes inbox snapshots and hands PM output to intake; no graph runner or 0151 file is
+changed. API models already serve the complete intake proposal. Route reporting extends the existing
+report registry. This is an implementation checkpoint, not completed proof or a landing claim.
