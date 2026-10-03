@@ -6143,6 +6143,23 @@ def cases():
 
     # VELDO-0151: declared falsifiers and specialist role bindings.
     add(151,
+        'v151-specialist-roster-unchecked',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        '    for role in (*REQUIRED_ROLES, *(r for r in roles if r not in REQUIRED_ROLES)):\n',
+        '    for role in REQUIRED_ROLES:\n',
+        ['roles/specialist-outside-project'],
+        ())
+    add(151,
+        'v151-reviewer-capability-binding-dropped',
+        '91_veldo_0151_specialists.py',
+        'control_team.py',
+        "            'reviewer_capability_configuration': copy.deepcopy(\n"
+        "                team['roles']['independent_review'].get('capability_configuration')),\n",
+        '',
+        ['assignment/reviewer-capability-binding'],
+        ())
+    add(151,
         'v151-missing-reference-accepted',
         '91_veldo_0151_specialists.py',
         'control_team.py',

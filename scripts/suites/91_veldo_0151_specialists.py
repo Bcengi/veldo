@@ -422,6 +422,7 @@ c.close()
             def rejected_team(label, value, problem):
                 with region(label):
                     before = team_record()
+                    before_assignments = CT.assignments(conn)
                     first = propose(value)
                     second = propose(value)
                     rid = first.get('owner_request')
@@ -432,7 +433,12 @@ c.close()
                             and request.get('owner') == 'olga' and request.get('state') == 'OFFERED'),
                         ('request names problem', problem in request.get('brief', '')),
                         ('no team revision accepted', team_record() == before),
+                        ('assigns nothing', CT.assignments(conn) == before_assignments),
                         ('no worker or authority invented', authority_rows() == authority_before)])
+
+            value = copy.deepcopy(roster)
+            value['roles']['designer']['workers'] = ['outsider']
+            rejected_team('roles/specialist-outside-project', value, 'unknown_worker:designer/outsider')
 
             for name in ('implementation', 'designer'):
                 value = copy.deepcopy(roster)
@@ -568,6 +574,21 @@ c.close()
                     ('stale team refuses', refused(stale, 'stale_subject:team_revision')),
                     ('stored reader sees exact binding', any(a.get('role') == 'designer' and
                         a.get('capability_configuration') == {'role': 'designer', 'revision': 2}
+                        for a in other_process().get('assignments', [])))])
+
+            with region('assignment/reviewer-capability-binding'):
+                bound = assign()
+                value = bound.get('assignment', {})
+                expected = {'role': 'team-fixture', 'revision': 1}
+                check('assignment/reviewer-capability-binding', [
+                    ('specialist assignment accepted', bound.get('ok')),
+                    ('reviewer reference differs from builder',
+                        value.get('capability_configuration') == {'role': 'designer', 'revision': 2}),
+                    ('reviewer configuration revision bound',
+                        value.get('reviewer_capability_configuration') == expected),
+                    ('stored reader sees exact reviewer binding', any(
+                        {k: v for k, v in a.items() if k not in ('id', 'version')} == value
+                        and a.get('reviewer_capability_configuration') == expected
                         for a in other_process().get('assignments', [])))])
 
             with region('assignment/unlisted-worker'):
