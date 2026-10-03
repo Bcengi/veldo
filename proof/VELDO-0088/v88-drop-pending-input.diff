@@ -1,0 +1,11 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -437,7 +437,7 @@
+             active = next((r for r in self.records(name) if r['state'] not in FINAL), None)
+             if active:
+                 if current != active['input_key']:
+-                    self.pending[name] = current
++                    self.pending.pop(name, None)
+                 dispatched = self.runner.dispatches.record(active.get('dispatch')) if active.get('dispatch') else None
+                 if dispatched and dispatched['state'] not in ('prepared', 'running', 'accepted'):
+                     emitted.append(self.finish(active))

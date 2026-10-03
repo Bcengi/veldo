@@ -1,0 +1,11 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -294,6 +294,8 @@
+                                       'The builder fetches references using its configured catalog servers.'}
+             self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
+                 'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
++            record.update(state='no_action')
++            return self.save(record)
+             launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
+                 source=self.workspace, revision=record['accepted_commit'], payload=payload, adapter=adapter,
+                 configuration={'role': configuration['role'], 'revision': configuration['revision']},

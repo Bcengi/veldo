@@ -1,0 +1,99 @@
+{
+ "by_assertion": true,
+ "commit": "24c0c90b150caefcdce3ac0bfae258073663c71a",
+ "details": [],
+ "failed_rows": [
+  "VELDO-0088 cycle/runner",
+  "VELDO-0088 cycle/snapshot",
+  "VELDO-0088 cycle/no-action",
+  "VELDO-0088 cycle/failure",
+  "VELDO-0088 proposal/unauthorized",
+  "VELDO-0088 proposal/stop-on-refusal",
+  "VELDO-0088 cycle/serialized",
+  "VELDO-0088 cycle/pending-follow-up",
+  "VELDO-0088 cycle/budget",
+  "VELDO-0088 unit/one-run-staging"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "b41df235efc4b6a5a97ea82936b4573e4e07693c0020423572ce10cb35079cf9",
+   "now": "84f01e9592e86568b98dc74a94c1e877cdf80a825d25d05b13f2b19e1a8387e9"
+  },
+  ".veldo/control_dispatch.py": {
+   "at_commit": "3998d7a29e1fd30ad0449d62fc8488b3b8e27ed665d1dbebae72aaf2017179de",
+   "now": "b635dc8bc08d69b9dbc99828d88ed7ddd6fd5a9c25e542a38e48aff2bf55d7c2"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "affa2acc2d63662d7314c0d0edb09adbe12cb3c265abd10b467b0901aa148bd1",
+   "now": "6393abdd4401ad990f6f4ab85c79c8ca7d172bd5095d04f0f16007d22445052f"
+  },
+  ".veldo/control_graph_pm.py": {
+   "at_commit": null,
+   "now": "11c1fa2738ed5636b77349fddea60e6399d0b319c590116508fa665d2ff1312d"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "22cdd59721cf5ba8d843bf5abb43ea67f5a223a009138d67b3cbf1dacf580728",
+   "now": "6a21cc077477c915691087c93fff9188681213449a71fe3aff5e4fddc74fa186"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "now": "9393acb2673a92532ccc86c913d18d0ad70dd1f3fab68004a96c659518d8c320"
+  },
+  ".veldo/control_workflow_cycle_pm.py": {
+   "at_commit": null,
+   "now": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "347bb13958771368f103f763a041a033033d4840627daee7eb5c0b7531c9ef65",
+   "now": "082c60e53ada0296d0d5d9355302fe4ffd837065ef2f3f3d0c43c54d11aead68"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0088 cycle/runner",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/snapshot",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/no-action",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/failure",
+   false
+  ],
+  [
+   "VELDO-0088 proposal/unauthorized",
+   false
+  ],
+  [
+   "VELDO-0088 proposal/stop-on-refusal",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/serialized",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/pending-follow-up",
+   false
+  ],
+  [
+   "VELDO-0088 cycle/budget",
+   false
+  ],
+  [
+   "VELDO-0088 unit/one-run-staging",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.108,
+ "spec_id": "VELDO-0088",
+ "suite": "scripts/suites/92_veldo_0088_pm_cycles.py",
+ "tree": "git archive 24c0c90b150caefcdce3ac0bfae258073663c71a, unchanged; the current suite file run against it"
+}

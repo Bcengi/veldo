@@ -43,6 +43,7 @@ footprint:
   - ".veldo/control_team.py"
   - "engine/.veldo/control_team.py"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/33_veldo_0020_authority.py"
   - "scripts/suites/*_veldo_0088_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -245,3 +246,11 @@ risk from a production-published unit's accepted specification when the unit has
 no inline risk. The earlier 0151 fixture documented its manual risk decoration;
 the PM path must use the real publication instead. Review-policy checks remain
 unchanged.
+
+2026-10-02, contract evidence: the authority suite footprint is extended for the
+reservation service role now admitted by the real membership writer. Its matrix
+still enumerates all seven R37 roles and additionally this existing reservation
+service grant. Ten scoped behavior rows pass. This is partial implementation
+evidence: the builder catalog fetch, factory-started single-unit journey and
+graph-process capability attacks still need direct integration observations.
+No landing or completed-criterion claim is made.

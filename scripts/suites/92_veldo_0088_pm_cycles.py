@@ -112,7 +112,8 @@ def _v88_suite():
                 print('  VELDO-0088 detail: first cycle: ' + str(first.get('refusal')))
             print('  VELDO-0088 detail: result:', first['state'], first.get('refusal'))
             check('cycle/no-action', 'empty result produces bound receipt and actual graph trace',
-                  first['state'] == 'no_action' and first['trace'] == list(PM.PIPELINE))
+                  first['state'] == 'no_action' and first['trace'] == list(PM.PIPELINE)
+                  and PM.row(conn, 'pm-cycle:' + first['cycle'])['data'] == first)
             snap = PM.SN.load(S, conn, first['snapshot']['id'], domain, repository)
             (source / 'README').write_text('Unaccepted edited source.\n')
             check('cycle/snapshot', 'snapshot keeps accepted source, watermark and input versions',

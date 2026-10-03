@@ -213,6 +213,7 @@ class ProjectCycles:
                 'SELECT id, kind, version, digest, data FROM entities ORDER BY id'):
             data = json.loads(raw)
             relevant = (identity in ('project:' + project, 'team:' + project)
+                        or kind == 'accepted_revision' and data.get('repository_uuid') == self.repository
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
                         or kind == 'dispatch' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
@@ -409,13 +410,15 @@ class ProjectCycles:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
             value = self.returned_document(dispatched)
-            self.apply(record, value)
+            document(value)
             # Only a digest goes into the graph process. It cannot invoke owners.
             supplied = [{'id': 'result', 'version': 1, 'digest': SN.digest(SN.canonical(value)),
                          'value': {'unit': record['project']}}]
             answer = self.exchange(record, 'advance', supplied)
-            if answer['outcome'] != 'proposal':
+            if (answer['outcome'] != 'proposal' or len(answer['proposals']) != 1
+                    or answer['proposals'][0]['evidence'] != [supplied[0]['digest'], WORKFLOW['digest']]):
                 raise Refused('invalid_response:report')
+            self.apply(record, value)
             record['trace'] = list(PIPELINE)
         except Exception as error:
             record.update(state='refused', refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__))

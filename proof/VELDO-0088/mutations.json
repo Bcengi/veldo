@@ -1,0 +1,85 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0088",
+ "suite": "scripts/suites/92_veldo_0088_pm_cycles.py",
+ "status": "Seven registered; execution reserved for reviewer. The dispatch-bypass and priority-vocabulary controls do not yet exercise inline reasoning or a graph-process direct priority write.",
+ "mutants": [
+  {
+   "name": "v88-coordinate-without-runner",
+   "named_rows": [
+    "cycle/runner"
+   ],
+   "diff": "proof/VELDO-0088/v88-coordinate-without-runner.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "12589fed4bf7d3ef341d1ccc7ed6f840ae06a0a4d4c6e3ac8ed148792493a4a5",
+   "status": "not run"
+  },
+  {
+   "name": "v88-priority-proposal-allowed",
+   "named_rows": [
+    "proposal/unauthorized"
+   ],
+   "diff": "proof/VELDO-0088/v88-priority-proposal-allowed.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "57bb60508ff3d71c11d85e262f611f7ed55d8b39c97166b219e4a49df44f1037",
+   "status": "not run"
+  },
+  {
+   "name": "v88-drop-pending-input",
+   "named_rows": [
+    "cycle/pending-follow-up"
+   ],
+   "diff": "proof/VELDO-0088/v88-drop-pending-input.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "548243c29bb9122e0b893ce0a94367637f505d0e9bea950c9f4d61bf04b56049",
+   "status": "not run"
+  },
+  {
+   "name": "v88-extra-elaboration-run",
+   "named_rows": [
+    "unit/one-run-staging"
+   ],
+   "diff": "proof/VELDO-0088/v88-extra-elaboration-run.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "0b8e0590b1bab92f65ab2edf13cffb2a94b5a4ec526d8abd9fa1e857c3d7cf0c",
+   "status": "not run"
+  },
+  {
+   "name": "v88-continue-after-refusal",
+   "named_rows": [
+    "proposal/stop-on-refusal"
+   ],
+   "diff": "proof/VELDO-0088/v88-continue-after-refusal.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "8168d9f5de663405fa1b4f454cb6f9f872cf80e13f3fdf8d0c7c0b881cb4f73f",
+   "status": "not run"
+  },
+  {
+   "name": "v88-ignore-cycle-budget",
+   "named_rows": [
+    "cycle/budget"
+   ],
+   "diff": "proof/VELDO-0088/v88-ignore-cycle-budget.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "b98fd04632115b39bb95dfdeb3f96125557dacd71a2e8742ad7922298c336b2e",
+   "status": "not run"
+  },
+  {
+   "name": "v88-empty-cycle-trace-omitted",
+   "named_rows": [
+    "cycle/no-action"
+   ],
+   "diff": "proof/VELDO-0088/v88-empty-cycle-trace-omitted.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "source_sha256": "d739821a1b96f3620feaa6da64577100b077f007894d700bc31e276a17f37e3c",
+   "mutant_sha256": "c7c52ad52711c89ebc17f793365889f0b4425e950841858ec2d192542c24d055",
+   "status": "not run"
+  }
+ ]
+}

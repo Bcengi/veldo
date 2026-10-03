@@ -1,0 +1,17 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -354,6 +354,14 @@
+         for unit in value['decomposition']:
+             self.staged(record, unit, team)
+         record['document'] = value
++        if value['decomposition']:
++            previous = self.runner.dispatches.record(record['dispatch'])['contract']
++            extra = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination',
++                holder=record['manager'], source=self.workspace, revision=record['accepted_commit'],
++                payload={'operation': 'elaborate'}, adapter=previous['capability']['adapter'],
++                configuration={'role': record['configuration']['role'], 'revision': record['configuration']['revision']},
++                deadline=time.time() + 30, context={'project': record['project']})
++            self.runner.wait(extra, timeout=15)
+         record['elaboration'] = {'state': 'done', 'dispatch': record['dispatch']} if value['decomposition'] else None
+         record['state'] = 'waiting_owner' if value['owner_questions'] else ('proposed' if applied else 'no_action')
+         return record
