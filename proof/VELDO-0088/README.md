@@ -190,3 +190,33 @@ Finding 88 registers `v88-setup-pm-service-role`, restoring `reservation_service
 and targeting the new row. Its diff and digests are in `mutations.json`; the
 existing setup-enrollment mutation digests are refreshed for the new source.
 No mutation driver was run; mutation execution remains reviewer-owned.
+
+### Bounded cycle-budget mutation fixture
+
+The `cycle/budget` row now drives at most the remaining project allowance plus
+one attempt. Its graph fixture returns a deterministic named refusal before any
+external graph or worker launch. It still calls the production `ProjectCycles.start`
+and signed receipt writers: admitted failed cycles consume the project budget,
+and the next attempt must raise `budget_exceeded:coordination`. The row asserts
+the exact final receipt count and that no worker was launched. With the budget
+predicate bypassed, the finite drive records one excess cycle and the named row
+fails by assertion. The other rows still exercise real graph and worker runs.
+
+The review fixture retains its separate `review/pending-budget` assertion. If a
+defect admits its follow-up, cleanup waits for that finite set of workers and
+finishes their receipts without driving another scheduler pass. The redundant
+budget probe whose row was not selected in review mode is removed.
+
+`budget-checks.json` records the final scoped suites and a targeted injection of
+the exact registered `v88-ignore-cycle-budget` replacement, obtained by parsing
+the registry rather than executing its driver. The mutant completed in 75.45s
+with 49 checks passing and exactly `cycle/budget` and `review/pending-budget`
+failing by assertion; it neither timed out nor raised a fixture exception. The
+temporary replacement was mirrored into the engine copy and both originals were
+restored in `finally`. No production change, Runner timeout increase, mutation
+registration change, or live capture change is included in this repair.
+
+The suites use the owner's clean environment; the targeted mutation run also
+sets `PYTHONUNBUFFERED=1` for progress output. Full finding-88 mutation execution
+is still reserved for the reviewer by the owner's token rules. This proof does
+not claim rejection results for the other registered mutants or a gate pass.

@@ -1,0 +1,81 @@
+{
+  "spec_id": "VELDO-0088",
+  "base_commit": "7c416c2e",
+  "implementation_commits": [
+    "f2350cc6",
+    "79960e64"
+  ],
+  "scope": "Scoped suites only, run sequentially. Successful partial suites return 2. No gate stamp or independent review claimed.",
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/dev/shm/c88home",
+    "TMPDIR": "/dev/shm",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONHASHSEED": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "mutation": {
+    "mutation": "v88-ignore-cycle-budget",
+    "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+    "returncode": 1,
+    "seconds": 75.582,
+    "source_sha256": "082eccc37dc836f968350294505314811d0365fe267b619c3b7741a811f6f34e",
+    "mutated_sha256": "7f64609beba2ca7b90a461cd9d26ddc2c4e9d415332a947a9e87eeb7cc6ad5ec",
+    "summary": "selftest (PARTIAL, 1 of 144 suites): 49 passed, 2 failed in 75.45s",
+    "failed_rows": [
+      "VELDO-0088 cycle/budget",
+      "VELDO-0088 review/pending-budget"
+    ],
+    "fixture_exception": false,
+    "traceback": false,
+    "by_assertion": true,
+    "timeout_seconds": 110,
+    "method": "Extract the registered old/new literals with ast; temporarily apply the exact replacement to both production copies; run only the scoped suite; restore both copies in finally.",
+    "environment_additions": {
+      "PYTHONUNBUFFERED": "1"
+    }
+  },
+  "checks": [
+    {
+      "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+      "returncode": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 51 passed, 0 failed in 73.97s",
+      "failed_rows": [],
+      "fixture_exception": false,
+      "traceback": false
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 50_git_environment",
+      "returncode": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.13s",
+      "failed_rows": [],
+      "fixture_exception": false,
+      "traceback": false
+    }
+  ],
+  "static_checks": [
+    {
+      "command": "python3 .veldo/validate.py all",
+      "returncode": 0
+    },
+    {
+      "command": "bash scripts/check_template_sync.sh",
+      "returncode": 0,
+      "summary": "template sync: pass (250 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+    }
+  ],
+  "finding_88_status": "Full registered mutation run NOT EXECUTED: owner token rules reserve scripts/check_teeth_mutations.py for the reviewer. Only v88-ignore-cycle-budget was exercised through the allowed suite.",
+  "file_sha256": {
+    "scripts/suites/92_veldo_0088_pm_cycles.py": "9d09208f63a149aaeed33f5dec62bc3235847151b833c03dfa32c80dd6f2fcd6",
+    "proof/VELDO-0088/observations.py": "d09034ac08e0db4bb0c6b0e9fb99c8456924d2614b10c5e39915fb4821aaba8f",
+    "proof/VELDO-0088/review_observations.py": "d46f9eea30256a42b78d02b36963e8cbbe36a03d8c730f7762613befa0773d6b",
+    ".veldo/control_workflow_cycle_pm.py": "082eccc37dc836f968350294505314811d0365fe267b619c3b7741a811f6f34e",
+    "engine/.veldo/control_workflow_cycle_pm.py": "082eccc37dc836f968350294505314811d0365fe267b619c3b7741a811f6f34e"
+  }
+}
