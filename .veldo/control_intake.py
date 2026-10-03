@@ -502,7 +502,8 @@ class Intake(RT.Routes):
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
         candidates = [p for p in self.projects if p != PJ.FACTORY_PROJECT and self.CM.scope_covers(scope, p)]
-        records = {p: read(PJ.project_id(p)) for p in self.projects}
+        records = {p: read(PJ.project_id(p)) for p in self.projects
+                   if p in candidates or p == PJ.FACTORY_PROJECT}
         factory = records.get(PJ.FACTORY_PROJECT)
         owner = factory and factory['kind'] == PJ.KIND and factory['data'].get('owner') == principal
         if not candidates and not owner:
