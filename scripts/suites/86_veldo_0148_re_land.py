@@ -62,7 +62,7 @@ def _v148_suite():
             'grant/never-granted', 'grant/mixed-approvals', 'grant/mixed-proof',
             'grant/once-per-dispatch', 'grant/revoked-before-answer', 'format/fake-lines',
             'receiver/normal-exit', 'receiver/settled-scope', 'receiver/fast-exit',
-            'receiver/placement-error', 'receiver/placement-timeout',
+            'receiver/pre-release-budget', 'receiver/placement-error', 'receiver/placement-timeout',
             'receiver/report-timeout', 'receiver/late-wrapper', 'receiver/wrapper-exited')
     rows = {name: [] for name in ROWS}
 
@@ -1327,6 +1327,7 @@ sys.exit(chosen['code'])
         # that is absent or never accepts its writer. Each probe owns a fresh module
         # tree and scope; its outer timeout becomes a row assertion, never a driver hang.
         for fault, row, cause in (
+                ('held', 'receiver/pre-release-budget', None),
                 ('error', 'receiver/placement-error', 'heartbeat_setup'),
                 ('timeout', 'receiver/placement-timeout', 'heartbeat_timeout'),
                 ('stopped', 'receiver/report-timeout', 'heartbeat_report_timeout'),
@@ -1341,7 +1342,18 @@ sys.exit(chosen['code'])
                 destination.mkdir()
                 if fault == 'timeout':
                     os.mkfifo(destination / 'cgroup.procs')
-                if fault in ('error', 'timeout'):
+                if fault == 'held':
+                    # Legitimate receiver preparation happens before release. It must
+                    # not spend the wrapper's heartbeat placement budget.
+                    with (probe / 'control_containment.py').open('a') as hook:
+                        hook.write("\n_probe_retain = Group.retain\n"
+                                   "def _held_retain(self):\n"
+                                   "    _probe_retain(self)\n"
+                                   "    began = time.monotonic()\n"
+                                   "    time.sleep(5.25)\n"
+                                   "    Path(%r).write_text(str(time.monotonic() - began))\n"
+                                   "Group.retain = _held_retain\n" % str(probe / 'held-seconds'))
+                elif fault in ('error', 'timeout'):
                     with (probe / 'control_heartbeat.py').open('a') as hook:
                         hook.write("\n_placement_parent = os.getpid()\n_placement_path = group_path\n"
                                    "def group_path(cgroup):\n"
@@ -1395,9 +1407,14 @@ print(json.dumps(result))
                     child.kill()
                     child.wait(timeout=5)
                     result = {'row_timeout': True}
-                check(row, 'bounded receiver refusal before engine exec: %s' % result,
-                      result.get('refusal') == 'spawn_failed:containment:' + cause
-                      and result.get('settled') is True and not marker.exists())
+                if fault == 'held':
+                    seconds = float((probe / 'held-seconds').read_text())
+                    check(row, 'healthy preparation took %.3fs before release: %s' % (seconds, result),
+                          seconds >= 5.25 and result.get('refusal') is None and marker.exists())
+                else:
+                    check(row, 'bounded receiver refusal before engine exec: %s' % result,
+                          result.get('refusal') == 'spawn_failed:containment:' + cause
+                          and result.get('settled') is True and not marker.exists())
                 if fault in ('stopped', 'late', 'exited'):
                     check(row, 'the real wrapper reached the post-release fault', (probe / 'released').is_file())
 
