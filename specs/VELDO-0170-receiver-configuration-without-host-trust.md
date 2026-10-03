@@ -49,6 +49,7 @@ footprint:
   - "specs/VELDO-0170-receiver-configuration-without-host-trust.md"
   - "specs/index.md"
   - "proof/VELDO-0170/*"
+  - "proof/VELDO-0127/factory.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -177,3 +178,9 @@ receiver fixtures lacked host trust. AC1 requires every receiver to name it, so 
 fixtures now write a generated host trust with no settlement signers. Their behavior
 assertions and explicit missing-trust tests are unchanged. Broader suite execution is
 reserved to the reviewer under the owner's test scope restriction.
+
+2026-10-02: review follow-up adds proof/VELDO-0127/factory.py to the footprint.
+Its ordinary receiver now names generated host trust without settlement signers.
+Suite 86 clears the launch failures; its two live-capture assertions remain stale
+for control_launch.py from commit 600f9ec9 and require the owner's real-login recapture.
+No production launch code or live captures change in this follow-up.
