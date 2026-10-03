@@ -148,3 +148,25 @@ and a local manager stand-in. No model or external channel is contacted.
 Three additional finding-88 mutations remove setup enrollment or broaden each
 scheduler catch. The existing budget-refusal mutation now targets except Refused.
 Mutation execution remains reviewer-owned.
+
+`red-at-37dcd381.json` runs only these three follow-up rows against the unchanged
+pre-fix archive; all three fail by assertion, with no fixture exception.
+`followup-checks.json` records the sequential scoped runs in normal and clean
+gate environments. Each successful scoped run has the required partial-run exit
+status, not a gate stamp. `followup-static-checks.json` records the final validators.
+
+The single-spec footprint checker still includes inherited VELDO-0151 changes
+because its comparison starts at origin/main. The combined 0088/0151 check has
+no outside paths, and `followup-scope.json` separately shows that this follow-up
+from 37dcd381 stays entirely within 0088. No inherited footprint was expanded.
+
+The completed follow-up checks pass for 0088, factory setup (0139), standing
+delegation (0140), setup API (0171), setup assets (0186) and engine upgrade (0189)
+in both environments. The text suite (0168), which inventories setup send sites,
+passes its inventory row but fails intake/delivery in both environments. An
+unchanged archive of 37dcd381 fails that identical assertion. This pre-existing
+failure is recorded in followup-checks.json and was not changed under 0088.
+Validation and the Git boundary pass; the final anchor check reports zero bad
+anchors. All eighteen finding-88 mutation diffs are current, including the three
+new follow-up mutations. No mutation rejection result is claimed without the
+reviewer's run.

@@ -297,3 +297,12 @@ A fresh production setup must accept a PM-signed assignment without fixture PM
 enrollment. AC3 also requires unexpected start faults to propagate on both the
 initial and pending-input paths; only named Refused outcomes are observed locally.
 Three finding-88 mutations and three behavior rows cover these corrections.
+
+2026-10-03, production enrollment evidence: all twenty-four 0088 behavior rows
+pass normally and in the clean gate environment. All three new rows are red by
+assertion against unchanged 37dcd381. The six affected behavior suites pass in
+both environments. The 0168 send-inventory consumer retains its pre-existing
+intake/delivery failure, reproduced on 37dcd381. Validation and the Git boundary
+pass, with zero bad mutation anchors. The single-spec footprint comparison still
+includes inherited 0151 files; this follow-up and the combined footprint are
+clean. Full gate and mutation execution remain reviewer-owned; status is unchanged.
