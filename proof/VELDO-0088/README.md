@@ -220,3 +220,60 @@ The suites use the owner's clean environment; the targeted mutation run also
 sets `PYTHONUNBUFFERED=1` for progress output. Full finding-88 mutation execution
 is still reserved for the reviewer by the owner's token rules. This proof does
 not claim rejection results for the other registered mutants or a gate pass.
+
+## Gate regression repair at e3325634 (2026-10-03)
+
+Implementation commit: `e3325634f8147ae1a330f1ca05dfd75b337b748c`.
+[gate-regressions.json](gate-regressions.json) records the clean environment,
+serial wall-clock measurements, scoped summaries, failing rows, diagnostic
+observations, implementation digests and validation results. This is diagnostic
+subset evidence, not passed unit evidence, a green gate or a landing decision.
+No timeout, mutation budget, heartbeat window or existing assertion was relaxed.
+
+Causes below name lines at the failing `07008bc1` tree. Every fix is in
+`e3325634`; the older architecture and decision assertions are unchanged.
+
+| Failing row | Branch cause | Fix and observed evidence |
+| :--- | :--- | :--- |
+| architecture/snapshot-in-memory | `.veldo/control_eligibility.py:796` loaded the entire PM module on every read; `.veldo/control_workflow_cycle_pm.py:25-29` loaded its command-owner dependencies. | Move assignment reads/checks to `control_workflow_cycle_assignment.py`, load the parser-free helper at eligibility initialization, and continue reading current authority records on every decision. The baseline observed 882 disk module loads during the watched window; the unchanged row now proves zero loads, no scratch writes and correct held-byte digests. |
+| architecture/identity-keyed-by-module | The same `Gate.read` import reached the parser outside the architecture snapshot. The fixture parser's relative module load then left empty validator records and the wrong decisions. | The same helper separation restores both named parser identities, role labels, durable observations and expected refusals, as asserted by the unchanged row. |
+| decisions/minor-shapes | The repeated imports at `.veldo/control_eligibility.py:796` made the suite outlast the 90-second claim heartbeat window (`.veldo/claim.py:52`). | Remove that repeated work. Baseline diagnostics show `VELDO-9401` incorrectly held by `missing_authority:claim`; all malformed-record refusals were already correct. The unchanged row now passes without changing claim age or fixture timestamps. |
+| decisions/deep-blocks-named | The same delay expired the healthy control unit's claim before this later region. | The same fix restores the healthy control unit; the 5000-deep malformed-block refusal and named unexpected-verifier error remain asserted and pass. |
+| acceptance/signers | `.veldo/authority_contract.py:51` added `reservation_service`, while `scripts/suites/68_veldo_0134_acceptance.py:338-342` still enumerated seven roles. | Extend the exhaustive matrix with `reservation_service: False`; actually sign and submit that case and require the role refusal with unchanged store state. AC1 requires Runner dispatch (spec lines 85-89), and the spec's integration prerequisite at lines 242-246 explicitly requires enrolling this existing reservation role. No architecture-acceptance permission changes. |
+| census/writers | `.veldo/control_workflow_cycle_pm.py:407` invoked `getattr(service, method)`, which the complete writer census could not resolve. | Explicit `service.publish(packet)` / `service.apply(packet)` calls preserve the closed handler registry and owner checks. The unchanged census and all planted-writer controls now pass. |
+
+All `.veldo` changes have byte-identical `engine/.veldo` copies. The new helper is
+registered in `init_scaffold.py` and in suite 92's production-file map; the team
+reader delegates to that helper so assignment enumeration still has one source.
+`.veldo/control_launch.py` and its engine copy are unchanged from `07008bc1`.
+
+Serial wall times in seconds (including the shared preamble and dispatcher):
+
+| Suite | Main 352df040 | Before 07008bc1 | After e3325634 | Suite rows after |
+| :--- | ---: | ---: | ---: | ---: |
+| 60_veldo_0053_architecture | 3.221 | 36.272 | 3.150 | 39 |
+| 62_veldo_0054_decisions | 5.205 | 152.216 | 5.448 | 39 |
+| 68_veldo_0134_acceptance | 1.942 | 1.887 | 1.988 | 27 |
+| 84_veldo_0169_project_handouts | 12.803 | 13.134 | 12.817 | 27 |
+
+Additional scoped checks: `92_veldo_0088_pm_cycles` has 25 passing rows in
+69.857 seconds; `50_git_environment` has four in 2.309 seconds. Every after-run
+has zero failed assertions and exits 2, the required PARTIAL refusal to claim a
+gate pass. Main has no suite 92. Validation (`python3 .veldo/validate.py all`)
+exits 0; engine sync exits 0 with 251 pairs compared, six declared per-repo and
+131 engine-only files.
+
+The first branch-62 reproduction took 148.085 seconds, matching the reviewer's
+148-second report. An initial main-62 measurement was accidentally started
+before that branch run finished; both measurements are excluded from the table.
+Both were rerun serially. Temporary diagnostic prints on the baseline's existing
+failure paths captured the causes; no assertions or production bytes changed.
+Main and baseline comparisons used archive exports, never another worktree.
+
+Suite 62 is now about 28 times faster and architecture about 12 times faster,
+back near main's measurements. The common repeated-import path affected every
+ordinary eligibility read, not just these rows. These observations explain a
+substantial branch regression but do not establish a new full-gate duration.
+The 1800-second first-use run and mutation baseline deadline remain for the
+reviewer to verify. Neither full selftest nor either mutation checker nor
+`scripts/verify.sh` was run here.
