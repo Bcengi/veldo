@@ -487,11 +487,13 @@ class ProjectCycles:
                     continue
                 try:
                     value = json.loads(line['payload'])
-                    final = value.get('type') == 'result' or value.get('type') == 'item.completed'
+                    final = False
                     if value.get('type') == 'result' and isinstance(value.get('result'), str):
                         value = json.loads(value['result'])
+                        final = True
                     elif value.get('type') == 'item.completed' and value.get('item', {}).get('type') == 'agent_message':
                         value = json.loads(value['item']['text'])
+                        final = True
                     if route and final or isinstance(value, dict) and value.get('schema') == DOCUMENT:
                         values.append(value)
                 except (ValueError, TypeError, AttributeError):

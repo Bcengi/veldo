@@ -16,7 +16,9 @@ def _v152_suite():
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
         'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
     }
-    names = ('intake/ticket-key', 'intake/name-is-a-hint', 'intake/request-field',
+    MUTATIONS = ROOT / "scripts" / "check_teeth_mutations.py"
+    names = ('route/codex-result', 'intake/scoped-context', 'proof/intake-companions',
+             'intake/ticket-key', 'intake/name-is-a-hint', 'intake/request-field',
              'intake/factory-inbox', 'intake/factory-refusals', 'project/prefixes',
              'route/new-project', 'route/existing-project', 'route/asked-only-when-unclear',
              'route/answers', 'route/read-and-report', 'route/runner-input',
@@ -29,6 +31,25 @@ def _v152_suite():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+    # Exercise the runner's isolated copies without executing any mutation suite.
+    import tempfile
+    driver = load('v152_mutation_catalog', MUTATIONS)
+    intake_cases = [case for case in driver.cases() if case['module'] == 'control_intake.py']
+    check('proof/intake-companions', 'registered intake cases exist', bool(intake_cases))
+    with tempfile.TemporaryDirectory(prefix='v152-companions-') as directory:
+        layouts = set()
+        for case in intake_cases:
+            layout = (case.get('siblings', False), tuple(case.get('companions', ())))
+            if layout in layouts:
+                continue
+            layouts.add(layout)
+            try:
+                made = driver.materialize(case, 'noop', Path(directory) / case['name'], root=ROOT)
+                module = load('v152_isolated_' + case['name'], made['mutant'])
+                check('proof/intake-companions', case['name'],
+                      module.PJ.FACTORY_PROJECT == 'factory' and bool(module.RT.SCHEMA))
+            except (ImportError, OSError) as error:
+                check('proof/intake-companions', case['name'] + ': ' + str(error), False)
     if not PRODUCTION['control_intake_routes.py'].is_file():
         for name in names:
             expect('VELDO-0152 ' + name, False)
@@ -100,6 +121,15 @@ def _v152_suite():
                 for text in ('please do ZZZ-123', 'please do FAC-123'):
                     p = proposal(send(channel, text))
                     check('intake/ticket-key', text, p.get('state') == 'AWAITING_ROUTE')
+            for channel in channels:
+                for text in ('unresolved member work', 'please do BCG-123'):
+                    p = proposal(send(channel, text, who='zed'))
+                    expected = {name: f['entity'](name)['version']
+                                for name in ('project:bcengi', 'project:factory')}
+                    check('intake/scoped-context', channel + ': ' + text,
+                          p.get('context', {}).get('project_versions') == expected
+                          and p.get('decision', {}).get('project_versions') == expected
+                          and p.get('decision', {}).get('candidates') == ['bcengi'])
             check('project/prefixes', 'record retains prefixes', f['entity']('project:bcengi')['data'].get('ticket_key_prefixes') == ['BCG'])
             for bad in ('BCG', ['lower'], ['BCG', 'BCG'], [3]):
                 check('project/prefixes', repr(bad), activate(f['next_id']('bad'), bad).get('reason') == 'invalid_input:ticket_key_prefixes')
@@ -151,15 +181,32 @@ def _v152_suite():
             fake.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
                 'Path(sys.argv[2]).write_text(json.dumps(p))\n'
                 'print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":Path(sys.argv[1]).read_text()}))\n')
+            codex_fake = base / 'codex'
+            # Same command/reasoning/final-message event shapes as VELDO-0061's fake.
+            codex_fake.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
+                'Path(sys.argv[2]).write_text(json.dumps(p))\n'
+                'events=[{"type":"thread.started","thread_id":"route-thread"},{"type":"turn.started"},'
+                '{"type":"item.completed","item":{"id":"item_0","type":"reasoning"}},'
+                '{"type":"item.completed","item":{"id":"item_1","type":"command_execution",'
+                '"aggregated_output":"README\\n","exit_code":0,"status":"completed"}},'
+                '{"type":"item.completed","item":{"id":"item_2","type":"agent_message",'
+                '"text":Path(sys.argv[1]).read_text()}},'
+                '{"type":"turn.completed","usage":{"input_tokens":1200,"output_tokens":300}}]\n'
+                'for e in events: print(json.dumps(e))\n')
             config = base / 'receiver.json'
             config.write_text(json.dumps(dict(store=str(f['db']), journal_key=str(f['keyfile']['authority']), principal='pm',
                 workspace=str(source), domain=domain, repository=repository, records=str(base / 'records'),
                 adapters={'claude': {'identity': 'reported', 'argv': [sys.executable, '-B', str(mods / 'control_launch.py'),
                     'exec', sys.executable, '-B', str(fake), str(result_file), str(packet_file)]}})))
+            receiver = json.loads(config.read_text())
+            receiver['adapters']['codex'] = {'identity': 'reported', 'argv': [sys.executable, '-B',
+                str(mods / 'control_launch.py'), 'exec', sys.executable, '-B', str(codex_fake),
+                str(result_file), str(packet_file)]}
+            config.write_text(json.dumps(receiver))
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
             line.runner.account = 'fixture-account'
-            line.engines, line.hosts = {'claude': 'claude_code'}, {'claude': 'fixture-host'}
+            line.engines, line.hosts = {'claude': 'claude_code', 'codex': 'codex'}, {'claude': 'fixture-host', 'codex': 'fixture-host'}
             factory.lines[repository] = line
             for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                 line.reservations.configure('policy/' + subject, scope, subject, dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())
@@ -264,6 +311,23 @@ def _v152_suite():
             check('route/answers', 'other answer saved for next PM run', answer.get('outcome') == 'clarification'
                   and held['state'] == 'AWAITING_ROUTE' and held['clarifications'][-1]['text'] == 'a new project called tidepool')
             run(pid, doc(pid))
+            # Accept a Codex PM configuration through the ordinary configuration/team writers.
+            configured = f['configurations'].save(dict(role='codex-pm', engine='codex', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=f['next_id']('capability'))
+            pm_role = f['role'](['pm'], 'coordinate', ('objective', 'feature', 'team_amendment'), engines=('codex',))
+            pm_role['capability_configuration'] = {'role': 'codex-pm', 'revision': 1}
+            accepted = f['accept'](f['team'](project_manager=pm_role))
+            check('route/codex-result', 'Codex PM configuration and team accepted', configured.get('engine') == 'codex' and accepted.get('ok'))
+            pid = send('api_request', 'start another project')['proposal_id']
+            record = run(pid, doc(pid))
+            routed = intake.proposal(pid)
+            dispatched = line.runner.dispatches.record(record['dispatch'])
+            check('route/codex-result', 'one route document survives reasoning and command events',
+                  record.get('state') == 'proposed' and routed.get('state') == 'NEW_PROJECT'
+                  and (routed.get('route') or {}).get('reason') == 'Fixture PM reason.'
+                  and (routed.get('route') or {}).get('dispatch') == record['dispatch']
+                  and dispatched['contract']['capability']['adapter'] == 'codex')
         # This store truly has no factory project record, rather than merely excluding it from configuration.
         with helper.fixture(ROOT, PRODUCTION, factory_project=False) as f:
             S, conn, mods = f['S'], f['conn'], f['mods']

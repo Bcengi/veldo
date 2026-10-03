@@ -1,0 +1,26 @@
+{
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0152",
+ "commit": "ed630cd023ac8fb20140631b6a0c7cec39c6dbdc",
+ "suite": "scripts/suites/93_veldo_0152_intake_routes.py",
+ "command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+ "tree": "Unchanged ed630cd0 production and mutation catalog; current regression assertions only.",
+ "by_assertion": true,
+ "failed_rows": [
+  "VELDO-0152 route/codex-result",
+  "VELDO-0152 intake/scoped-context",
+  "VELDO-0152 proof/intake-companions"
+ ],
+ "summary": "selftest (PARTIAL, 1 of 144 suites): 42 passed, 3 failed in 104.50s",
+ "sha256": {
+  ".veldo/control_workflow_cycle_pm.py": "0fb77b5d2ac257f5d425518591c24345304a690e002297a65203d447ea0a8180",
+  ".veldo/control_intake.py": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
+  "scripts/check_teeth_mutations.py": "d08bedf77ece4857aa20d165a569ab5d44f4e562ef7346eb9cc0b002ce6c4f5b",
+  "scripts/suites/93_veldo_0152_intake_routes.py": "07678085b288e4efcde374d9d1bb68deb7d25c41f89587f0d44cbb45438d3da0"
+ },
+ "details": [
+  "VELDO-0152 detail: route/codex-result one route document survives reasoning and command events",
+  "VELDO-0152 detail: intake/scoped-context telegram_message: unresolved member work; telegram_message: please do BCG-123; api_request: unresolved member work; api_request: please do BCG-123",
+  "VELDO-0152 detail: proof/intake-companions plain-message-not-hinted: [Errno 2] No such file or directory: '/tmp/v152-companions-05_mg2c3/plain-message-not-hinted/control_project.py'; v152-name-decides: [Errno 2] No such file or directory: '/tmp/v152-companions-05_mg2c3/v152-name-decides/control_channel_presentation_text.py'"
+ ]
+}
