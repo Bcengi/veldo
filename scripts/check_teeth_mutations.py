@@ -9943,12 +9943,6 @@ def cases():
             "DIRECT = 'https://api.telegram.org/bot%s/sendMessage'  # defect: a send the inventory does not name\n"
             "SCHEMA = 'veldo.telegram_report/v1'\n",
             ['inventory/sends-and-assets'])
-    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
-    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
-    for case in result:
-        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
-                and not case.get('fixture') and not case.get('siblings')):
-            case['companions'] = list(RENDERER_COMPANIONS)
     # VELDO-0088: bounded coordination and one-run staging.
     add(88, 'v88-coordinate-without-runner', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "            launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],", "            # Defect: an inline model fixture reasons over the snapshot in the authority process.\n            inline_model = lambda prompt: dict(schema=DOCUMENT, owner_questions=[], decomposition=[], proposals=[])\n            record.update(state='no_action', document=inline_model(payload))\n            return self.save(record)\n            launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],", ['cycle/runner'], ())
     add(88, 'v88-priority-proposal-allowed', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "'backlog': ('take', 'prepare', 'request_grooming'),", "'backlog': ('take', 'prepare', 'request_grooming', 'prioritize'),", ['proposal/unauthorized'], ())
@@ -9985,6 +9979,34 @@ def cases():
     add(152, 'v152-prefix-not-bound', '93_veldo_0152_intake_routes.py', 'control_project.py', '                data[TICKET_PREFIXES] = list(params[TICKET_PREFIXES])\n', '                data[TICKET_PREFIXES] = []\n', ['project/prefixes'], ())
     add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],", "clarifications=proposal['clarifications'], hints=[],", ['route/runner-input'], ())
     add(152, 'v152-route-report-omitted', '93_veldo_0152_intake_routes.py', 'control_telegram_report.py', "    ('intake_routed', ('intake_proposal',), '_intake_route'),\n", '', ['route/read-and-report'], ())
+
+    add(152, 'v152-codex-nonmessage-final', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py',
+        "                    final = False\n",
+        "                    final = value.get('type') == 'result' or value.get('type') == 'item.completed'\n",
+        ['route/codex-result'])
+    add(152, 'v152-context-all-projects', '93_veldo_0152_intake_routes.py', 'control_intake.py',
+        "        records = {p: read(PJ.project_id(p)) for p in self.projects\n                   if p in candidates or p == PJ.FACTORY_PROJECT}\n",
+        "        records = {p: read(PJ.project_id(p)) for p in self.projects}\n",
+        ['intake/scoped-context'])
+    add(152, 'v152-intake-companions-missing', '93_veldo_0152_intake_routes.py', 'check_teeth_mutations.py',
+        "        if case['module'] == 'control_intake.py':\n",
+        "        if False:  # defect: intake copies lose their project dependencies\n",
+        ['proof/intake-companions'])
+    result[-1]['dir'] = 'scripts'
+
+    # Apply dependency metadata after every case is registered, including VELDO-0152.
+    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
+    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
+    for case in result:
+        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
+                and not case.get('fixture') and not case.get('siblings')):
+            case['companions'] = list(RENDERER_COMPANIONS)
+    for case in result:
+        if case['module'] == 'control_intake.py':
+            case['companions'] = list(dict.fromkeys([*case.get('companions', ()),
+                'control_project.py', 'control_intake_routes.py']))
+            # control_project also loads eligibility and its transitive organs beside itself.
+            case['siblings'] = True
 
     return result
 

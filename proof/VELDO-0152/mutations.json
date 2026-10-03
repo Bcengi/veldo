@@ -10,9 +10,9 @@
    "named_rows": [
     "intake/name-is-a-hint"
    ],
-   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
-   "mutant_sha256": "1940cd8ec16985230500d6e1b58756745f63b159f868348fc0b4cf32a47d0a48",
-   "status": "not executed; reviewer-owned"
+   "source_sha256": "f5a98a8b9cf8c4da11e8b5f74f7f51515d81f4631521eedcbce8702b5916468e",
+   "mutant_sha256": "77850148bf30edab6d214b7a2ab6e4cd088b70656584d06a0b42d0c6fa5ced34",
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-only-candidate",
@@ -21,9 +21,9 @@
    "named_rows": [
     "intake/factory-inbox"
    ],
-   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
-   "mutant_sha256": "b716218899cbce0640135af07888338194e16e595127ac27aa545d9baefdcf2f",
-   "status": "not executed; reviewer-owned"
+   "source_sha256": "f5a98a8b9cf8c4da11e8b5f74f7f51515d81f4631521eedcbce8702b5916468e",
+   "mutant_sha256": "db9597294aff5620a146949624304b92850f580cba4f1b6fca902b1072ad5880",
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-new-project-asks",
@@ -34,7 +34,7 @@
    ],
    "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
    "mutant_sha256": "44c523deaf9e9c697599997689df8edc10ec1726bc98e0816d4d9d3ac6f0b5c1",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-scope-unchecked",
@@ -45,7 +45,7 @@
    ],
    "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
    "mutant_sha256": "3d7c717fe3d999a67d1a2e17714c25367de7d2b52a29cddcb5672a60ed9f242b",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-factory-ordinary",
@@ -56,7 +56,7 @@
    ],
    "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
    "mutant_sha256": "17760ab46c5e5986a5932ba143acf1078a480c5be9f540ff7a8ec696b121a741",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-route-reason-empty",
@@ -67,7 +67,7 @@
    ],
    "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
    "mutant_sha256": "b3b9a724f4771f28a17fe91ad0430c4d1cabc88ee319dfdfd6aef788be24abab",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-route-stale",
@@ -78,7 +78,7 @@
    ],
    "source_sha256": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
    "mutant_sha256": "7c023d16ef771b69d00249f83e7f23355b2832e6e3cfba8ba536f6cdeb80af12",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-ticket-disabled",
@@ -87,9 +87,9 @@
    "named_rows": [
     "intake/ticket-key"
    ],
-   "source_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
-   "mutant_sha256": "5651e76f72fe89d82984c86cb35c9db6f7ea066885d99f5fba5839840f881b66",
-   "status": "not executed; reviewer-owned"
+   "source_sha256": "f5a98a8b9cf8c4da11e8b5f74f7f51515d81f4631521eedcbce8702b5916468e",
+   "mutant_sha256": "d5af1d3722bba6d2479cf7debcc56ab8e6100fa0b17f494339561ac703cef328",
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-prefix-not-bound",
@@ -100,7 +100,7 @@
    ],
    "source_sha256": "2f00d0413cea74b8bf0e91e82471a5d887300f84a98965ef6489b956efc37d75",
    "mutant_sha256": "846f159b262eb2fe34b99259d7bae74894ebb8f135c7f6566ff49e95a3c2c43a",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-hint-dropped",
@@ -109,9 +109,9 @@
    "named_rows": [
     "route/runner-input"
    ],
-   "source_sha256": "0fb77b5d2ac257f5d425518591c24345304a690e002297a65203d447ea0a8180",
-   "mutant_sha256": "9c85066108929e66951f134ce27c360dd46a76b754571d81a2173c00c420b79a",
-   "status": "not executed; reviewer-owned"
+   "source_sha256": "bafa15fd071180688f704e65e9b27449e27e7af1dce8cc42e2ce5e9da01c87fa",
+   "mutant_sha256": "d2e2ac4152386c8bef820d91616e0e85c5227e9b44312d990ce6a75b78d3b5fb",
+   "status": "not executed; mutation-run prohibition pending clarification"
   },
   {
    "name": "v152-route-report-omitted",
@@ -122,7 +122,52 @@
    ],
    "source_sha256": "1490288c336e4ae752bb8833b55c4f083fee77e4566af94f18333f41febb7083",
    "mutant_sha256": "a437b2f1995a10626b35007114ad2f441ebda8ec7399ac1811e17d51d56a1f25",
-   "status": "not executed; reviewer-owned"
+   "status": "not executed; mutation-run prohibition pending clarification"
+  },
+  {
+   "name": "v152-codex-nonmessage-final",
+   "module": "control_workflow_cycle_pm.py",
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
+    "route/codex-result"
+   ],
+   "source_sha256": "bafa15fd071180688f704e65e9b27449e27e7af1dce8cc42e2ce5e9da01c87fa",
+   "mutant_sha256": "6fc35f4340551cbb1b8f3e8176a2ffb91710bd746507c55efbb89ffbab346c03",
+   "status": "not executed; mutation-run prohibition pending clarification"
+  },
+  {
+   "name": "v152-context-all-projects",
+   "module": "control_intake.py",
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
+    "intake/scoped-context"
+   ],
+   "source_sha256": "f5a98a8b9cf8c4da11e8b5f74f7f51515d81f4631521eedcbce8702b5916468e",
+   "mutant_sha256": "6f707e018e82ffde439c2fb83cdf93f30662b4e6d4bf3835755711f6af2f250f",
+   "status": "not executed; mutation-run prohibition pending clarification"
+  },
+  {
+   "name": "v152-intake-companions-missing",
+   "module": "check_teeth_mutations.py",
+   "suite": "93_veldo_0152_intake_routes.py",
+   "named_rows": [
+    "proof/intake-companions"
+   ],
+   "source_sha256": "36039c0c39fc2c9b2d0e2fb5fb3cc8cf17d27768b1a7f481ead9d680685df3f3",
+   "mutant_sha256": "777b3c480ec8f7bb43590ed4e4dc870b454efbd2bf75a9bf7b67fa67a6260d29",
+   "status": "not executed; mutation-run prohibition pending clarification"
   }
- ]
+ ],
+ "anchor_check": {
+  "findings": [
+   136,
+   168,
+   126,
+   133,
+   128,
+   152
+  ],
+  "cases": 130,
+  "errors": []
+ }
 }
