@@ -1,5 +1,9 @@
 # VELDO-0168 proof
 
+The 2026-10-03 fixture-clock diagnosis and partial rechecks are in
+[intake-clock-recheck.md](intake-clock-recheck.md), with actual intake observations and a reproducible
+single-suite runner. They do not replace the gate or the existing proof manifest.
+
 The suite `86_veldo_0168_text` reports 26 rows, once each, through the signed inbox, framing,
 presentation, report and intake writers, a loopback Bot API stand-in and a signed SQLite authority.
 Only generated fixtures and loopback networking are used. The renderer probes start from real writer
