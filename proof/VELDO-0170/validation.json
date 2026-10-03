@@ -103,7 +103,7 @@
  ],
  "gate": "not run: reserved to reviewer",
  "whole_selftest": "not run: reserved to reviewer",
- "mutations": "ten registered, not executed: reserved to reviewer",
+ "mutations": "fourteen registered, not executed: reserved to reviewer",
  "additional_fixture_suites": {
   "paths": [
    "scripts/suites/63_veldo_0040_containment.py",
@@ -146,6 +146,13 @@
      "live/codex"
     ],
     "meaning": "Launch fixture failures fixed; both live captures require owner recapture for control_launch.py."
+   },
+   {
+    "suite": "87_veldo_0170_receiver_trust",
+    "environment": "ordinary",
+    "summary": "selftest (PARTIAL, 1 of 142 suites): 37 passed, 0 failed in 8.31s",
+    "exit_code": 2,
+    "meaning": "partial success; not gate evidence"
    }
   ],
   "live_capture_blocker": {
@@ -155,6 +162,12 @@
    "changed_in_commit": "600f9ec9",
    "changed_in_followup": false,
    "recapture": "not run: real-login captures reserved to owner"
+  },
+  "comparison_rows": {
+   "principal": "rerun/differs",
+   "workspace": "rerun/differs/workspace",
+   "store": "rerun/differs/store",
+   "journal_key": "rerun/differs/journal_key"
   }
  }
 }

@@ -114,6 +114,50 @@
    "diff": "proof/VELDO-0170/receiver170-repair-world-readable.diff",
    "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
    "mutant_sha256": "407cc04edf7178c8c9df38ce687b4893786a5dafb2b9f322e6230ce952965754"
+  },
+  {
+   "name": "receiver170-principal-uncompared",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/differs"
+   ],
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-principal-uncompared.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "c6cfdb477a69dac55699ce18e029298be97661b61b50e1f8e9320dd0ddc33c44"
+  },
+  {
+   "name": "receiver170-workspace-uncompared",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/differs/workspace"
+   ],
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-workspace-uncompared.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "ce68db8072a89105a89dc7d5b3b181651f763320d14cb04bf2ea37341f6bfe14"
+  },
+  {
+   "name": "receiver170-store-uncompared",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/differs/store"
+   ],
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-store-uncompared.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "b441b61d14c919efe2c44805f50510e7a01c930dceea0ddbb9bdc0ab33c6f618"
+  },
+  {
+   "name": "receiver170-journal-key-uncompared",
+   "module": ".veldo/control_factory_setup_trust.py",
+   "named_rows": [
+    "rerun/differs/journal_key"
+   ],
+   "status": "registered_not_run",
+   "diff": "proof/VELDO-0170/receiver170-journal-key-uncompared.diff",
+   "source_sha256": "42f25c822e8865eb40c6e24d145f628f3443b512dd4d213ddc7a7522f77b1e30",
+   "mutant_sha256": "cf4943f1931da13d9f43f23194b916b9955bdf12dd22967361a2bcd8663bfd86"
   }
  ]
 }

@@ -184,3 +184,7 @@ Its ordinary receiver now names generated host trust without settlement signers.
 Suite 86 clears the launch failures; its two live-capture assertions remain stale
 for control_launch.py from commit 600f9ec9 and require the owner's real-login recapture.
 No production launch code or live captures change in this follow-up.
+The comparison proof now perturbs principal, workspace, store and journal_key
+separately, each with a named no-write refusal assertion and its own registered
+finding-170 mutation. Suite 87 passes all eleven specification rows alone;
+mutation execution remains reserved to the reviewer.

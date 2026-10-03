@@ -30,7 +30,8 @@ def _v170_suite():
     }
     names = ('launch/governed', 'launch/ungoverned', 'status/configurations',
              'rerun/launch-after-repair', 'rerun/no-installed-trust', 'rerun/host-identity',
-             'rerun/differs', 'rerun/default-trust')
+             'rerun/differs', 'rerun/differs/workspace', 'rerun/differs/store',
+             'rerun/differs/journal_key', 'rerun/default-trust')
     rows = {name: [] for name in names}
 
     def check(row, label, ok):
@@ -199,13 +200,18 @@ def _v170_suite():
                   refused.get('reason') == ('host_trust_required:host_identity' if mode == 'identity' else 'host_trust_required')
                   and snapshot(base) == before)
             ingress_path.write_bytes(ingress_bytes)
-        changed = dict(legacy, principal='different-receiver')
-        write(old, changed)
-        before = snapshot(base)
-        refused = setup()
-        check('rerun/differs', 'a changed receiver is refused before any writes: ' + str(refused.get('reason')) + differences(before, snapshot(base)),
-              refused.get('reason') == 'invalid_input:state_root:differs:' + str(old) and snapshot(base) == before)
-        old.write_bytes(old_bytes)
+        for field in ('principal', 'workspace', 'store', 'journal_key'):
+            # Start from the same legacy file each time so every comparison stands alone.
+            changed = dict(legacy, **{field: legacy[field] + '-different'})
+            write(old, changed)
+            before = snapshot(base)
+            refused = setup()
+            after = snapshot(base)
+            row = 'rerun/differs' if field == 'principal' else 'rerun/differs/' + field
+            check(row, 'changed ' + field + ' is refused before any writes: '
+                  + str(refused.get('reason')) + differences(before, after),
+                  refused.get('reason') == 'invalid_input:state_root:differs:' + str(old) and after == before)
+            old.write_bytes(old_bytes)
         # Missing ingress key uses the installed default, with its identity still checked.
         ingress = json.loads(ingress_bytes)
         ingress.pop('host_trust')

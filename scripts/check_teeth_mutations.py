@@ -9004,6 +9004,14 @@ def cases():
     add(170, 'receiver170-differing-config-accepted', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
         '        if actual != expected:\n',
         '        if False:\n', ['rerun/differs'], ())
+    for field in ('principal', 'workspace', 'store', 'journal_key'):
+        row = 'rerun/differs' if field == 'principal' else 'rerun/differs/' + field
+        add(170, 'receiver170-' + field.replace('_', '-') + '-uncompared',
+            '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+            '        if actual != expected:\n',
+            '        actual.pop(' + repr(field) + ', None)\n'
+            '        expected.pop(' + repr(field) + ', None)\n'
+            '        if actual != expected:\n', [row], ())
     add(170, 'receiver170-current-rewritten', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
         '        else:\n            current.append(path)\n',
         '        else:\n            API.replace_file(path, API.text(held), 0o600)\n            current.append(path)\n', ['rerun/launch-after-repair'], ())
