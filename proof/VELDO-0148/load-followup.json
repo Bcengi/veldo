@@ -1,0 +1,834 @@
+{
+  "purpose": "VELDO-0148 gate0148o follow-up; scoped reproductions, not a gate result",
+  "environment": {
+    "workers": 16,
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONHASHSEED": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME_and_TMPDIR": "private per-clone temporary directory"
+  },
+  "method": "16 disposable detached clones per revision; suites run one at a time via python3 scripts/selftest.py --suite NAME. Temporary receiver/wrapper phase timestamps and refusal tracing in the clones only. All selected selftests return the expected partial-run code 2.",
+  "original_record": "gate0148o_mutation_stage.json",
+  "original_failures": "43 invalid case results reuse two failed no-op controls: dispatch.py / suite 0049 (34 cases), executor.py / suite 0050 (9 cases).",
+  "baseline": {
+    "62adf17b": {
+      "analysis": {
+        "timings": {
+          "identity_to_release": {
+            "count": 592,
+            "min": 0.0061925738118588924,
+            "p50": 0.01804217090830207,
+            "p95": 0.05170739721506834,
+            "max": 0.13241586228832603
+          },
+          "attach": {
+            "count": 592,
+            "min": 0.003534953575581312,
+            "p50": 0.007270947098731995,
+            "p95": 0.033486990723758936,
+            "max": 0.06892852718010545
+          },
+          "retain": {
+            "count": 592,
+            "min": 0.0018108389340341091,
+            "p50": 0.006789034232497215,
+            "p95": 0.028443851973861456,
+            "max": 0.11871850304305553
+          },
+          "placement": {
+            "count": 592,
+            "min": 0.0018868222832679749,
+            "p50": 0.003374979365617037,
+            "p95": 0.019143148325383663,
+            "max": 0.023634685203433037
+          },
+          "identity_to_check": {
+            "count": 592,
+            "min": 0.008384624030441046,
+            "p50": 0.02677301876246929,
+            "p95": 0.059204412158578634,
+            "max": 0.13550146389752626
+          },
+          "release_to_exec": {
+            "count": 592,
+            "min": 0.0021576350554823875,
+            "p50": 0.0037059029564261436,
+            "p95": 0.019472284708172083,
+            "max": 0.023938947822898626
+          }
+        },
+        "launches": {
+          "s49": 480,
+          "s50": 112
+        },
+        "refused": [],
+        "late": [],
+        "failures": []
+      },
+      "runs": {
+        "49": [
+          {
+            "slot": 0,
+            "returncode": 2,
+            "elapsed": 21.65,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.51s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.51s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 1,
+            "returncode": 2,
+            "elapsed": 22.21,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   22.05s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.05s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 2,
+            "returncode": 2,
+            "elapsed": 21.81,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.66s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.66s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 3,
+            "returncode": 2,
+            "elapsed": 22.21,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   22.05s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 22.05s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 4,
+            "returncode": 2,
+            "elapsed": 22.1,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.95s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.95s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 5,
+            "returncode": 2,
+            "elapsed": 21.86,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.69s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.69s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 6,
+            "returncode": 2,
+            "elapsed": 21.96,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.81s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.81s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 7,
+            "returncode": 2,
+            "elapsed": 21.91,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.76s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.76s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 8,
+            "returncode": 2,
+            "elapsed": 21.76,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.62s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.62s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 9,
+            "returncode": 2,
+            "elapsed": 21.95,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.80s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.80s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 10,
+            "returncode": 2,
+            "elapsed": 22.06,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.92s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.92s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 11,
+            "returncode": 2,
+            "elapsed": 21.61,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.45s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.45s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 12,
+            "returncode": 2,
+            "elapsed": 21.65,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.48s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.48s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 13,
+            "returncode": 2,
+            "elapsed": 21.75,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.62s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.62s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 14,
+            "returncode": 2,
+            "elapsed": 21.75,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.59s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.59s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 15,
+            "returncode": 2,
+            "elapsed": 21.7,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.55s",
+              "selftest (PARTIAL, 1 of 142 suites): 46 passed, 0 failed in 21.55s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          }
+        ],
+        "50": [
+          {
+            "slot": 0,
+            "returncode": 2,
+            "elapsed": 12.6,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.44s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 1,
+            "returncode": 2,
+            "elapsed": 12.39,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.22s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.22s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 2,
+            "returncode": 2,
+            "elapsed": 12.59,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.44s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 3,
+            "returncode": 2,
+            "elapsed": 12.44,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.27s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.27s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 4,
+            "returncode": 2,
+            "elapsed": 12.59,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.44s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.44s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 5,
+            "returncode": 2,
+            "elapsed": 12.69,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.51s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.51s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 6,
+            "returncode": 2,
+            "elapsed": 12.53,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.38s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 7,
+            "returncode": 2,
+            "elapsed": 12.43,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.28s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.28s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 8,
+            "returncode": 2,
+            "elapsed": 12.38,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.20s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.20s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 9,
+            "returncode": 2,
+            "elapsed": 12.64,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.46s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.46s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 10,
+            "returncode": 2,
+            "elapsed": 12.54,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.38s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.38s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 11,
+            "returncode": 2,
+            "elapsed": 12.48,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.32s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.32s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 12,
+            "returncode": 2,
+            "elapsed": 12.54,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.39s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.39s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 13,
+            "returncode": 2,
+            "elapsed": 12.48,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.34s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.34s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 14,
+            "returncode": 2,
+            "elapsed": 12.64,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.50s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.50s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 15,
+            "returncode": 2,
+            "elapsed": 12.18,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.06s",
+              "selftest (PARTIAL, 1 of 142 suites): 40 passed, 0 failed in 12.06s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          }
+        ]
+      }
+    },
+    "f1e1abb9": {
+      "analysis": {
+        "timings": {
+          "identity_to_release": {
+            "count": 592,
+            "min": 0.003797130659222603,
+            "p50": 0.01140724029392004,
+            "p95": 0.03718977468088269,
+            "max": 0.07112296624109149
+          },
+          "attach": {
+            "count": 592,
+            "min": 0.0034442818723618984,
+            "p50": 0.008783373050391674,
+            "p95": 0.03594322316348553,
+            "max": 0.07068342715501785
+          },
+          "retain": {
+            "count": 592,
+            "min": 9.773718193173409e-05,
+            "p50": 0.00016036583110690117,
+            "p95": 0.010244136210530996,
+            "max": 0.016559910960495472
+          },
+          "release_to_exec": {
+            "count": 592,
+            "min": 0.001743899192661047,
+            "p50": 0.0027764602564275265,
+            "p95": 0.00414250697940588,
+            "max": 0.01092554023489356
+          }
+        },
+        "launches": {
+          "s49": 480,
+          "s50": 112
+        },
+        "refused": [],
+        "late": [],
+        "failures": []
+      },
+      "runs": {
+        "49": [
+          {
+            "slot": 0,
+            "returncode": 2,
+            "elapsed": 21.56,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.41s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.41s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 1,
+            "returncode": 2,
+            "elapsed": 21.56,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.38s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.38s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 2,
+            "returncode": 2,
+            "elapsed": 21.5,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.33s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.33s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 3,
+            "returncode": 2,
+            "elapsed": 21.56,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.39s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.39s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 4,
+            "returncode": 2,
+            "elapsed": 21.36,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.15s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.15s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 5,
+            "returncode": 2,
+            "elapsed": 21.55,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.36s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.36s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 6,
+            "returncode": 2,
+            "elapsed": 21.35,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.18s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.18s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 7,
+            "returncode": 2,
+            "elapsed": 21.6,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.47s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.47s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 8,
+            "returncode": 2,
+            "elapsed": 21.45,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.30s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.30s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 9,
+            "returncode": 2,
+            "elapsed": 20.95,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   20.78s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.78s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 10,
+            "returncode": 2,
+            "elapsed": 21.4,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.26s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.26s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 11,
+            "returncode": 2,
+            "elapsed": 20.9,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   20.71s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.71s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 12,
+            "returncode": 2,
+            "elapsed": 21.05,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   20.91s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 20.91s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 13,
+            "returncode": 2,
+            "elapsed": 21.25,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.10s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.10s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 14,
+            "returncode": 2,
+            "elapsed": 21.6,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.47s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.47s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 15,
+            "returncode": 2,
+            "elapsed": 21.55,
+            "failures": [],
+            "tail": [
+              "  63_veldo_0049_floor                             20 passed   21.39s",
+              "selftest (PARTIAL, 1 of 141 suites): 46 passed, 0 failed in 21.39s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          }
+        ],
+        "50": [
+          {
+            "slot": 0,
+            "returncode": 2,
+            "elapsed": 12.34,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.15s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.15s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 1,
+            "returncode": 2,
+            "elapsed": 12.28,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.13s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.13s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 2,
+            "returncode": 2,
+            "elapsed": 12.23,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.04s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.04s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 3,
+            "returncode": 2,
+            "elapsed": 12.18,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.04s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.04s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 4,
+            "returncode": 2,
+            "elapsed": 11.84,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.66s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.66s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 5,
+            "returncode": 2,
+            "elapsed": 12.08,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.93s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.93s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 6,
+            "returncode": 2,
+            "elapsed": 12.38,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.22s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.22s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 7,
+            "returncode": 2,
+            "elapsed": 12.13,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.99s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.99s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 8,
+            "returncode": 2,
+            "elapsed": 12.28,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.12s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.12s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 9,
+            "returncode": 2,
+            "elapsed": 12.03,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.86s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.86s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 10,
+            "returncode": 2,
+            "elapsed": 12.33,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.17s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.17s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 11,
+            "returncode": 2,
+            "elapsed": 12.13,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.96s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.96s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 12,
+            "returncode": 2,
+            "elapsed": 12.28,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.11s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.11s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 13,
+            "returncode": 2,
+            "elapsed": 12.23,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   12.11s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 12.11s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 14,
+            "returncode": 2,
+            "elapsed": 11.93,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.77s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.77s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          },
+          {
+            "slot": 15,
+            "returncode": 2,
+            "elapsed": 12.03,
+            "failures": [],
+            "tail": [
+              "  64_veldo_0050_proof                             14 passed   11.90s",
+              "selftest (PARTIAL, 1 of 141 suites): 40 passed, 0 failed in 11.90s",
+              "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
