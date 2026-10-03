@@ -32,6 +32,13 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/*_veldo_0088_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -214,3 +221,10 @@ VELDO-0129 and the loop references follow. Criterion meaning and status unchange
 2026-09-25, PLAN-0019 revision 4, third review: the footprint named `control_project_cycle*.py`, which
 does not exist; the cycle runner is `.veldo/control_workflow_cycle.py`, so the footprint names
 `control_workflow_cycle*.py`. Criteria and status unchanged.
+
+2026-10-02, implementation on build-veldo-0088: the footprint adds the factory
+service, dispatch and eligibility modules and their engine copies. AC1 requires
+the factory pass to offer a coordination station before an engineering unit
+exists; AC3 consumes that same pass. The mutation registry is added for finding
+88. Initial cycle and proposal code is being built and is not qualified by this
+entry. The specification remains ready.
