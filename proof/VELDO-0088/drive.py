@@ -34,7 +34,7 @@ def _load(name, path):
 _git_process = _load('v88_drive_git_process', ROOT / '.veldo' / 'git_process.py')
 
 
-def one(paths, root):
+def one(paths, root, review=False):
     """Run the shared preamble of `root` and the current suite once, in this interpreter."""
     shared = Path(root) / 'scripts/suites/shared.py'
     rows = []
@@ -48,6 +48,8 @@ def one(paths, root):
     with contextlib.redirect_stdout(out):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         source = (ROOT / 'scripts/suites' / SUITE).read_text()
+        if review:
+            source = source.replace('\n_v88_suite()\n', '\n')
         for module, path in paths.items():
             anchor = 'ROOT / ".veldo" / "' + module + '"'
             if source.count(anchor) != 1:
@@ -60,9 +62,11 @@ def one(paths, root):
             'preamble_rows': len(rows) - len(mine)}
 
 
-def run(paths=None, root=None):
+def run(paths=None, root=None, review=False):
     started = time.monotonic()
     command = [sys.executable, '-B', __file__, '--one', json.dumps(paths or {}), str(root or ROOT)]
+    if review:
+        command.append('--review')
     proc = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if proc.returncode:
         raise RuntimeError('run did not complete its assertions: ' + proc.stderr[-2000:])
@@ -77,7 +81,7 @@ def _raised(observed):
     return any('did not run to its end' in d for d in observed['details'])
 
 
-def red(commit):
+def red(commit, review=False):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                 capture_output=True, text=True, check=True).stdout.strip()
@@ -87,7 +91,11 @@ def red(commit):
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=_sha(tree / '.veldo' / m), now=_sha(ROOT / '.veldo' / m)) for m in MODULES}
-        observed = run({}, tree)
+        observed = run({}, tree, review=review)
+    if review:
+        observed['other_rows'] = [r for r in observed['rows'] if not r[0].startswith(PREFIX + 'review/')]
+        observed['rows'] = [r for r in observed['rows'] if r[0].startswith(PREFIX + 'review/')]
+        observed['failed_rows'] = [name for name, ok in observed['rows'] if not ok]
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0088', suite='scripts/suites/' + SUITE, commit=resolved,
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
                   by_assertion=not _raised(observed), **observed)
@@ -101,10 +109,10 @@ def red(commit):
 
 def main():
     if len(sys.argv) >= 3 and sys.argv[1] == '--red':
-        red(sys.argv[2])
+        red(sys.argv[2], review='--review' in sys.argv[3:])
         return
     if len(sys.argv) >= 4 and sys.argv[1] == '--one':
-        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3])))
+        print(json.dumps(one(json.loads(sys.argv[2]), sys.argv[3], review='--review' in sys.argv[4:])))
         return
     raise SystemExit('Use the red option; mutation execution belongs to the reviewer.')
 

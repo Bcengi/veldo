@@ -4,7 +4,7 @@ It makes no model call and supplies only predetermined proposal documents.
 """
 
 
-def _v88_suite():
+def _v88_suite(review_only=False):
     import copy
     import importlib.util
     import json
@@ -30,10 +30,12 @@ def _v88_suite():
              'proposal/graph-process', 'cycle/combined-inputs', 'cycle/receipts', 'cycle/waiting-release',
              'review/pm-principal', 'review/current-publication', 'review/build-refusal',
              'review/review-refusal', 'review/pending-budget')
+    names = tuple(n for n in names if n.startswith('review/') == review_only)
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
-        rows[name].append((label, bool(condition)))
+        if name in rows:
+            rows[name].append((label, bool(condition)))
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, path)
@@ -48,7 +50,7 @@ def _v88_suite():
         return
     helper = load('v88_fixture', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/fixture.py')
     try:
-        with helper.fixture(ROOT, PRODUCTION) as f:
+        with helper.fixture(ROOT, PRODUCTION, cycle_budget=5 if review_only else 12) as f:
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
             domain, repository, ids = (f[k] for k in ('DOMAIN', 'REPO', 'ids'))
             PM = load('v88_pm', mods / 'control_workflow_cycle_pm.py')
@@ -83,7 +85,8 @@ def _v88_suite():
             worker = base / 'worker.py'
             worker.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
                 'Path(sys.argv[2]).write_text(json.dumps(p))\nimport time\n'
-                'if Path(sys.argv[3]).exists(): time.sleep(1)\n'
+                'if Path(sys.argv[3]).exists():\n'
+                ' hold=Path(sys.argv[3]).read_text(); time.sleep(float(hold) if hold.isdigit() else 1)\n'
                 'if p["station"] == "coordination": print(Path(sys.argv[1]).read_text())\n'
                 'else:\n'
                 ' import subprocess,os\n'
@@ -127,6 +130,12 @@ def _v88_suite():
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
             # Only the account selection is fixed; Line.run constructs the production PM services.
+            def receiver_observation(contract):
+                launch = line.invoke(contract)
+                if launch.result != 'accepted':
+                    print('  VELDO-0088 detail: receiver refusal:', launch.messages, 'transaction', conn.in_transaction)
+                return launch
+            line.runner.receiver = receiver_observation
             line.runner.account = 'fixture-account'
             line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': 'fixture-host'}
             factory.lines[repository] = line
@@ -182,46 +191,47 @@ def _v88_suite():
                 scope=['proj-a'], deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 1},
                 brief='Choose a scope.', choices=['yes', 'no'], subject={'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'question')}))
-            refused = dict(question, operation='open', assignment={})
-            failed = run(dict(empty, proposals=[dict(name='first', type='question', command=refused),
-                                                dict(name='second', type='question', command=question)]))
-            print('  VELDO-0088 detail: refused proposals:', failed.get('refusal'), failed['proposals'])
-            check('proposal/stop-on-refusal', 'first owning command refuses and later request is absent',
-                  failed.get('refusal') == 'proposal_refused:first' and len(failed['proposals']) == 1
-                  and f['inbox'].read(f['I'].assignment_id(repository, 'question-88')) is None)
-            check('cycle/failure', 'failed cycle retains source and named refusal',
-                  failed['state'] == 'refused' and failed['snapshot'] and failed['watermark'] > 0)
-            result_file.write_text(json.dumps(empty))
-            request_id, receipt = f['present']('pending-88', {'kind': 'pm', 'ref': 'proj-a',
-                'digest': PM.SN.digest(b'pending')}, 'Answer this coordination question.')
-            (base / 'hold').write_text('hold')
-            held = cycles.start('proj-a', cycles.inputs('proj-a'))
-            try:
-                cycles.start('proj-a', cycles.inputs('proj-a'))
-                serial = False
-            except Exception as error:
-                serial = getattr(error, 'code', '') == 'active_cycle:project'
-            check('cycle/serialized', 'store refuses a second active project cycle', serial)
-            answered = f['answer'](receipt, 'accept')
-            pending_pass = cycles.pass_once()
-            check('cycle/pending-follow-up', 'owner answer retained while one cycle holds the project',
-                  answered.get('outcome') == 'settled' and 'proj-a' in cycles.pending
-                  and len([r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]) == 1)
-            if held.get('dispatch') in runner.launches:
-                runner.wait(runner.launches[held['dispatch']], timeout=15)
-            (base / 'hold').unlink()
-            follow = cycles.pass_once()
-            active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
-            check('cycle/pending-follow-up', 'one follow-up binds a newer accepted snapshot',
-                  len(active) == 1 and active[0]['snapshot'] != held['snapshot']
-                  and active[0]['watermark'] > held['watermark'])
-            for one in active:
-                if one.get('dispatch') in runner.launches:
-                    runner.wait(runner.launches[one['dispatch']], timeout=15)
-            cycles.pass_once()
-            count = len(cycles.records('proj-a'))
-            check('cycle/pending-follow-up', 'consumed inputs do not self-trigger',
-                  not cycles.pass_once() and len(cycles.records('proj-a')) == count and not cycles.pending)
+            if not review_only:
+                refused = dict(question, operation='open', assignment={})
+                failed = run(dict(empty, proposals=[dict(name='first', type='question', command=refused),
+                                                    dict(name='second', type='question', command=question)]))
+                print('  VELDO-0088 detail: refused proposals:', failed.get('refusal'), failed['proposals'])
+                check('proposal/stop-on-refusal', 'first owning command refuses and later request is absent',
+                      failed.get('refusal') == 'proposal_refused:first' and len(failed['proposals']) == 1
+                      and f['inbox'].read(f['I'].assignment_id(repository, 'question-88')) is None)
+                check('cycle/failure', 'failed cycle retains source and named refusal',
+                      failed['state'] == 'refused' and failed['snapshot'] and failed['watermark'] > 0)
+                result_file.write_text(json.dumps(empty))
+                request_id, receipt = f['present']('pending-88', {'kind': 'pm', 'ref': 'proj-a',
+                    'digest': PM.SN.digest(b'pending')}, 'Answer this coordination question.')
+                (base / 'hold').write_text('hold')
+                held = cycles.start('proj-a', cycles.inputs('proj-a'))
+                try:
+                    cycles.start('proj-a', cycles.inputs('proj-a'))
+                    serial = False
+                except Exception as error:
+                    serial = getattr(error, 'code', '') == 'active_cycle:project'
+                check('cycle/serialized', 'store refuses a second active project cycle', serial)
+                answered = f['answer'](receipt, 'accept')
+                pending_pass = cycles.pass_once()
+                check('cycle/pending-follow-up', 'owner answer retained while one cycle holds the project',
+                      answered.get('outcome') == 'settled' and 'proj-a' in cycles.pending
+                      and len([r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]) == 1)
+                if held.get('dispatch') in runner.launches:
+                    runner.wait(runner.launches[held['dispatch']], timeout=15)
+                (base / 'hold').unlink()
+                follow = cycles.pass_once()
+                active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
+                check('cycle/pending-follow-up', 'one follow-up binds a newer accepted snapshot',
+                      len(active) == 1 and active[0]['snapshot'] != held['snapshot']
+                      and active[0]['watermark'] > held['watermark'])
+                for one in active:
+                    if one.get('dispatch') in runner.launches:
+                        runner.wait(runner.launches[one['dispatch']], timeout=15)
+                cycles.pass_once()
+                count = len(cycles.records('proj-a'))
+                check('cycle/pending-follow-up', 'consumed inputs do not self-trigger',
+                      not cycles.pass_once() and len(cycles.records('proj-a')) == count and not cycles.pending)
             IN = load('v88_intake', mods / 'control_intake.py')
             OB = load('v88_objective', mods / 'control_objective.py')
             CB = load('v88_backlog', mods / 'control_backlog.py')
@@ -312,11 +322,13 @@ def _v88_suite():
                 and staged.get('elaboration') == {'state': 'done', 'dispatch': staged['dispatch']}
                 and len([r for r in line._rows('dispatch') if r['contract']['station'] == 'coordination']) == before_dispatches + 1
                 and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY')
-            extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
-            extra.observe(locals())
-            review = load('v88_review', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/review_observations.py')
-            review.observe(locals())
-            review.budget(locals())
+            if review_only:
+                review = load('v88_review', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/review_observations.py')
+                review.observe(locals())
+                review.budget(locals())
+            else:
+                extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
+                extra.observe(locals())
             budget = f['entity']('project:proj-a')['data']['coordination_budget']['invocations']
             for unused in range(budget - len(cycles.records('proj-a'))):
                 run(empty)
@@ -339,3 +351,4 @@ def _v88_suite():
 
 
 _v88_suite()
+_v88_suite(review_only=True)

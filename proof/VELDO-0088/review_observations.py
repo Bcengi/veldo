@@ -10,6 +10,15 @@ def observe(v):
     check('review/pm-principal', 'production Line.run signs staffing as its distinct enrolled PM',
           line.service.principal != staged['manager'] and staged['state'] == 'proposed'
           and staged.get('unit_assignment', {}).get('assigned_by') == staged['manager'])
+    # Finish the original unit through the real factory before testing two more.
+    (v['base'] / 'engineering-hold').unlink()
+    v['result_file'].write_text(json.dumps(v['empty']))
+    for station in ('build', 'review'):
+        attempt = line.latest().get((v['uid'], station))
+        if attempt and attempt['dispatch_id'] in v['runner'].launches:
+            v['runner'].wait(v['runner'].launches[attempt['dispatch_id']], timeout=15)
+        factory.wake('run_end')
+        factory.run()
     units = ['VELDO-8802', 'VELDO-8803']
     engines = line.engines
     line.engines = {}
@@ -43,7 +52,9 @@ def observe(v):
         factory.wake('run_end')
         factory.run()
         result = max(cycles.records('proj-a'), key=lambda r: r['watermark'])
-        print('  VELDO-0088 detail: review publication:', unit, result['state'], result.get('refusal'))
+        print('  VELDO-0088 detail: review publication:', unit, result['state'], result.get('refusal'),
+              (v['dispatches'].record(result.get('dispatch')) or {}).get('reason'),
+              (v['dispatches'].record(result.get('dispatch')) or {}).get('refusal'))
         if index == 0:
             check('review/current-publication', 'an earlier READY assigned unit cannot stand in for this publication',
                   result['state'] == 'refused' and result.get('refusal') == 'missing_evidence:cycle_publication'
@@ -58,6 +69,7 @@ def observe(v):
         v['result_file'].write_text(json.dumps(v['empty']))
         factory.wake('adapter_unavailable')
         refused = factory.run()
+        print('  VELDO-0088 detail: adapter pass:', station, refused['refused'], refused['faults'])
         check('review/' + station + '-refusal', 'each assigned unit is considered despite an unavailable adapter',
               not refused['faults'] and all(any(r.get('unit') == unit and r.get('station') == station
                   and r.get('refusals') == ['unavailable_service:engineering_adapter']
@@ -81,8 +93,9 @@ def budget(v):
         v['run'](v['empty'])
     _, receipt = f['present']('budget-pending', {'kind': 'pm', 'ref': 'proj-a',
         'digest': v['PM'].SN.digest(b'budget-pending')}, 'Choose the remaining scope.')
-    (v['base'] / 'hold').write_text('hold')
+    (v['base'] / 'hold').write_text('5')
     held = cycles.start('proj-a', cycles.inputs('proj-a'))
+    print('  VELDO-0088 detail: last cycle:', held['state'], held.get('refusal'), (v['dispatches'].record(held.get('dispatch')) or {}).get('reason'))
     answered = f['answer'](receipt, 'accept')
     factory.wake('owner_answer')
     pending = factory.run()

@@ -18,7 +18,7 @@ import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION):
+def fixture(ROOT, PRODUCTION, cycle_budget=12):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -208,7 +208,7 @@ def fixture(ROOT, PRODUCTION):
                 ids, operation='activate', project='proj-a', principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),
                 owner='olga', charter={'purpose': 'Sell passes to travelers.'}, execution_repository=REPO,
                 authority_policy={'team_amendment': ['project_owner'], 'admission': ['admission_authority']},
-                coordination_budget={'capacity': 5, 'invocations': 12, 'wall_seconds': 500})))
+                coordination_budget={'capacity': 5, 'invocations': cycle_budget, 'wall_seconds': 500})))
 
             service = (CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
                                 requester='team-service', request_sign=lambda m: sign_as('team-service', m))

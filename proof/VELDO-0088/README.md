@@ -60,7 +60,7 @@ arbitrary Python-code sandbox against modification of the installed runtime.
 
 ## Red record and mutations
 
-`red-at-24c0c90b.json` records all sixteen current behavior rows red by assertion
+`red-at-24c0c90b.json` records all twenty-one current behavior rows red by assertion
 against the unchanged archive before the original implementation. No row fails
 by a fixture exception. The proof driver stays in this proof directory.
 
@@ -91,3 +91,24 @@ not changed by this continuation. Checking the combined 0088 and 0151 footprints
 reports none outside; checking changes since continuation head 925003f1 against
 0088 alone also reports none outside. This discrepancy is recorded rather than
 adding unrelated inherited files to the specification's footprint.
+
+## Independent review follow-up
+
+Five additional rows report once each in a fresh production fixture, whose
+project budget is five cycles. This avoids expanding the retained snapshot
+history merely to exercise another regression. The original sixteen rows keep
+their original fixture and twelve-cycle budget.
+
+| Row | Observation |
+| :--- | :--- |
+| review/pm-principal | Line.run constructs from_line, and the assignment writer records the team's PM as assigned_by while the service principal is distinct. |
+| review/build-refusal | Missing adapters produce per-unit build refusals for both assigned units, without a factory fault; restoring the adapter launches both builders. |
+| review/review-refusal | The same pass-level observation holds for independent review after real build completions. |
+| review/pending-budget | A real accepted owner answer remains pending during the last allowed PM run; completion records the budget refusal without a factory fault or another cycle. |
+| review/current-publication | A document publishing a new unit but naming the earlier READY assigned unit is refused without elaboration done; a matching subsequent publication succeeds. |
+
+The five corrections have separate finding-88 mutations. Their replacements
+have unique anchors; execution and rejection results remain reviewer-owned.
+`red-at-1773b279.json` selects these five new regression rows against the unchanged
+reviewed head. The full red record remains against the original implementation
+base. `review-checks.json` records the current scoped checks and their limitations.
