@@ -1,6 +1,6 @@
 --- .veldo/control_workflow_cycle_pm.py
 +++ .veldo/control_workflow_cycle_pm.py
-@@ -325,7 +325,7 @@
+@@ -328,7 +328,7 @@
          if not p or p['data'].get('state') != 'ACTIVE' or not team:
              raise Refused('missing_authority:active_project_team')
          budget = p['data']['coordination_budget']['invocations']

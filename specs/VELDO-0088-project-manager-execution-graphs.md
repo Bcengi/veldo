@@ -263,3 +263,9 @@ because Runner preparation must bind that authority instead of requiring a
 legacy claim. Dispatch preparation and acceptance recheck the assignment.
 Graph node capability attacks, combined input coalescing and complete receipts
 receive direct process observations in the scoped suite.
+
+2026-10-02, one-unit cost observation: successful assigned engineering advances
+through the factory without another idle PM run. Completion during an active PM
+cycle still joins an owner answer in one follow-up. The suite counts all
+dispatch attempts through review launch, so an extra elaboration or coordination
+run cannot hide behind the latest-attempt reader.

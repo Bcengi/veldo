@@ -1590,7 +1590,7 @@ class Line:
                for data in self._rows('project')) and self._rows('team'):
             if not hasattr(self, 'pm_cycles'):
                 self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
-            report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once())
+            report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once(automatic_units=self.assigned()))
             for launch in list(self.runner.launches.values()):
                 if launch.contract['station'] == 'coordination' and launch.pump(read=False):
                     self.loop.saw_end(self, launch)

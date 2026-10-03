@@ -319,7 +319,7 @@ def _v88_suite():
             check('unit/one-run-staging', 'one coordination run publishes requirements and stages all four roles',
                 staged['state'] == 'proposed' and set(staged.get('unit_roles', {})) == set(PM.CT.REQUIRED_ROLES)
                 and staged.get('elaboration') == {'state': 'done', 'dispatch': staged['dispatch']}
-                and len([r for r in line.latest().values() if r['contract']['station'] == 'coordination']) == before_dispatches + 1
+                and len([r for r in line._rows('dispatch') if r['contract']['station'] == 'coordination']) == before_dispatches + 1
                 and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY')
             extra = load('v88_observations', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/observations.py')
             extra.observe(locals())

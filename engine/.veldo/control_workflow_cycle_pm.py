@@ -267,7 +267,7 @@ class ProjectCycles:
             refusal=record.get('refusal'), watermark=result['seq']))
         return record
 
-    def inputs(self, project):
+    def input_members(self, project):
         """Relevant accepted input, excluding the cycle's own receipts and dispatch."""
         values = []
         for identity, kind, version, digest, raw in self.conn.execute(
@@ -282,7 +282,10 @@ class ProjectCycles:
                         and data.get('state') in ('exited', 'unknown'))
             if relevant:
                 values.append([identity, version, digest])
-        return SN.digest(SN.canonical(values))
+        return values
+
+    def inputs(self, project):
+        return SN.digest(SN.canonical(self.input_members(project)))
 
     def snapshot(self, project):
         revisions = [r[0] for r in self.conn.execute("SELECT id FROM entities WHERE kind='accepted_revision' ORDER BY id")
@@ -337,6 +340,7 @@ class ProjectCycles:
         snap = self.snapshot(project)
         record = dict(schema=SCHEMA, cycle='pm-' + uuid.uuid4().hex, project=project, domain=self.domain,
             repository=self.repository, workflow=dict(WORKFLOW), snapshot=ref(snap), input_key=input_key,
+            input_members=self.input_members(project),
             accepted_commit=snap['data']['accepted_commit'], watermark=snap['data']['watermark'],
             input_versions=copy.deepcopy(snap['data']['inputs']), team=ref(row(self.conn, 'team:' + project)),
             state='running', trace=[], resume=None, dispatch=None, reservation=None, proposals=[], refusal=None,
@@ -486,7 +490,7 @@ class ProjectCycles:
         self.counts['refused' if record['state'] == 'refused' else 'accepted'] += 1
         return self.save(record)
 
-    def pass_once(self):
+    def pass_once(self, automatic_units=()):
         """Called by the factory pass. One active cycle and one coalesced follow-up."""
         emitted = []
         projects = [json.loads(r[0]) for r in self.conn.execute("SELECT data FROM entities WHERE kind='project'")]
@@ -507,7 +511,20 @@ class ProjectCycles:
                         emitted.append(self.start(name, self.pending.pop(name)))
                 continue
             if self.seen.get(name) != current:
+                # Successful assigned engineering advances through the factory without
+                # another reasoning run. During an active cycle it remains pending input.
+                previous = max(self.records(name), key=lambda r: r['watermark'], default={})
+                consumed = {identity for identity, raw in self.conn.execute(
+                    "SELECT id, data FROM entities WHERE kind='dispatch'")
+                    if (json.loads(raw).get('contract') or {}).get('unit') in automatic_units
+                    and organ('control_dispatch').completed(json.loads(raw))}
+                prior = previous.get('input_members')
+                unchanged = prior is not None and (
+                    [r for r in prior if r[0] not in consumed] ==
+                    [r for r in self.input_members(name) if r[0] not in consumed])
                 self.seen[name] = current
+                if consumed and unchanged:
+                    continue
                 try:
                     emitted.append(self.start(name, current))
                 except Exception as error:

@@ -1,6 +1,6 @@
 --- .veldo/control_workflow_cycle_pm.py
 +++ .veldo/control_workflow_cycle_pm.py
-@@ -480,7 +480,7 @@
+@@ -484,7 +484,7 @@
                      or answer['proposals'][0]['evidence'] != [supplied[0]['digest'], WORKFLOW['digest']]):
                  raise Refused('invalid_response:report')
              self.apply(record, value)

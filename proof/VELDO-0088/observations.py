@@ -14,7 +14,21 @@ def observe(v):
     check('unit/factory-builder-ticket', 'assignment dispatched its builder with accepted role',
           build and build['contract']['input']['context']['holder'] == 'w-build'
           and build['contract']['capability']['configuration']['role_revision']['role'] == 'team-fixture')
-    # The real builder is held while an actual PM run, owner answer and completion overlap.
+    # The factory advances a successful build directly to its assigned reviewer.
+    (base / 'engineering-hold').unlink()
+    if build and build['dispatch_id'] in runner.launches:
+        runner.wait(runner.launches[build['dispatch_id']], timeout=15)
+    (base / 'engineering-hold').write_text('hold')
+    v['result_file'].write_text(json.dumps(v['empty']))
+    factory.wake('run_end', build['dispatch_id'] if build else None)
+    advanced = factory.run()
+    review = line.latest().get((uid, 'review'))
+    check('unit/one-run-staging', 'factory reaches review with one PM run, one build and one review',
+          not advanced['faults'] and review is not None
+          and len([r for r in line._rows('dispatch') if r['contract']['station'] == 'coordination'])
+          == v['before_dispatches'] + 1
+          and len([r for r in line._rows('dispatch') if r['contract']['unit'] == uid]) == 2)
+    # The real reviewer is held while a PM run, owner answer and completion overlap.
     v['result_file'].write_text(json.dumps(v['empty']))
     rid, receipt = f['present']('combined-88', {'kind': 'pm', 'ref': 'proj-a',
         'digest': PM.SN.digest(b'combined')}, 'Accept the combined input?')
@@ -24,8 +38,8 @@ def observe(v):
     answered = f['answer'](receipt, 'accept')
     after_answer = cycles.inputs('proj-a')
     (base / 'engineering-hold').unlink()
-    if build and build['dispatch_id'] in runner.launches:
-        runner.wait(runner.launches[build['dispatch_id']], timeout=15)
+    if review and review['dispatch_id'] in runner.launches:
+        runner.wait(runner.launches[review['dispatch_id']], timeout=15)
     after_both = cycles.inputs('proj-a')
     cycles.pass_once()
     check('cycle/combined-inputs', 'both accepted events coalesce behind one active cycle',
@@ -89,7 +103,8 @@ def observe(v):
               and receipt['workflow'] == PM.WORKFLOW
               and PM.row(conn, 'pm-cycle:' + receipt['cycle'])['data'] == receipt
               and dispatched and receipt['reservation'] == dispatched['contract']['reservation']
-              and dispatched['contract']['input']['payload']['snapshot'] == snapshot)
+              and dispatched['contract']['input']['payload']['snapshot'] == snapshot
+              and PM.SN.digest(PM.SN.canonical(receipt['input_members'])) == receipt['input_key'])
     attacks(v)
 
 

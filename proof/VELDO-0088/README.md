@@ -29,8 +29,8 @@ was used, and no review verdict about this implementation is claimed.
 | :--- | :--- | :--- |
 | AC1 | cycle/runner, cycle/snapshot, cycle/no-action, cycle/failure, cycle/receipts | Ordinary coordination dispatch uses the PM role and immutable snapshot. Actual LangGraph traverses the default pipeline for proposal and empty outcomes; refusal is named. Every cycle receipt is compared with its store record, accepted source, snapshot inputs and watermark, workflow and dispatch reservation. |
 | AC2 | proposal/unauthorized, proposal/stop-on-refusal, proposal/graph-process, cycle/waiting-release | Closed proposal handlers reject unauthorized operations and stop after owner refusal. Hostile nodes run in the LangGraph child: shell execution, SQL priority writes, store reads, invented roles and direct priority output are refused. The SQL target is a copy of the real writer-produced unit. A real owner request leaves an exited dispatch and retired worker reservation. |
-| AC3 | cycle/serialized, cycle/pending-follow-up, cycle/combined-inputs, cycle/budget | One active cycle is enforced. A held PM run overlaps an accepted owner answer and a real builder completion; both change the input fingerprint, coalesce into one newer-snapshot follow-up, and cause no self-loop once consumed. The finite project cycle budget refuses another dispatch. |
-| AC4 | unit/one-run-staging, unit/factory-builder-ticket, unit/independent-review | The factory starts the PM cycle for the admitted objective with exact text `please do BCG-123`. That coordination run publishes requirements, grooms and stages the unit with all four role references, marks elaboration done, and launches no extra elaboration run. The factory then dispatches the assigned builder, which fetches BCG-123, and one distinct assigned reviewer. The gate refuses a builder reviewing its own work. |
+| AC3 | cycle/serialized, cycle/pending-follow-up, cycle/combined-inputs, cycle/budget | One active cycle is enforced. A held PM run overlaps an accepted owner answer and a real reviewer completion; both change the input fingerprint, coalesce into one newer-snapshot follow-up, and cause no self-loop once consumed. The finite project cycle budget refuses another dispatch. |
+| AC4 | unit/one-run-staging, unit/factory-builder-ticket, unit/independent-review | The factory starts the PM cycle for the admitted objective with exact text `please do BCG-123`. That coordination run publishes requirements, grooms and stages the unit with all four role references, marks elaboration done, and launches no extra elaboration run. The factory then dispatches the assigned builder, which fetches BCG-123, and one distinct assigned reviewer, with no idle PM rerun between them. The gate refuses a builder reviewing its own work. |
 
 Sixteen behavior names each report once. The shared suite preamble is separate.
 The factory requires the existing account, project and unit spending policies;
@@ -40,7 +40,9 @@ does not confer unlimited spend or claim that an engineering exit proves landing
 ## Authority and graph boundaries
 
 Factory Line consumes accepted team assignments alongside the existing claim
-path. Its build and review use the assignment's accepted role revisions and team
+path. Successful engineering completion that this line can advance itself does
+not start another idle PM run; completion during an active PM run remains input
+for its bounded follow-up. Accepted input members are retained in the receipt. Its build and review use the assignment's accepted role revisions and team
 budgets. The gate binds the current assignment, team and active members; the
 Runner carries that accepted authority and the dispatch writer rechecks it at
 preparation and acceptance. Legacy claim dispatches retain their claim checks.
