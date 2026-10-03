@@ -48,6 +48,7 @@ footprint:
   - "engine/.veldo/control_team.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/33_veldo_0020_authority.py"
+  - "scripts/suites/68_veldo_0134_acceptance.py"
   - "scripts/suites/*_veldo_0088_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -306,3 +307,14 @@ intake/delivery failure, reproduced on 37dcd381. Validation and the Git boundary
 pass, with zero bad mutation anchors. The single-spec footprint comparison still
 includes inherited 0151 files; this follow-up and the combined footprint are
 clean. Full gate and mutation execution remain reviewer-owned; status is unchanged.
+
+2026-10-03, gate regression repair: ordinary eligibility reads use a parser-free
+assignment helper, preserving architecture snapshot isolation and the existing
+claim heartbeat window without repeatedly importing the PM command services.
+Proposal owners are called through explicit publish/apply attributes so the
+handout writer census can resolve every call. The acceptance signer matrix adds
+a refused reservation_service case: the integration prerequisite recorded above
+made that existing Runner role enrollable, but never granted it architecture
+acceptance authority. The footprint adds that consumer suite; its exact role-set
+and refusal assertions remain intact. Full-gate timing and mutation verification
+remain reviewer-owned.

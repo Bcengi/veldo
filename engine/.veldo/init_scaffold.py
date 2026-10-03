@@ -113,6 +113,7 @@ _FILES = [
     ".veldo/control_workflow.py",
     ".veldo/control_workflow_cycle.py",
     ".veldo/control_workflow_cycle_pm.py",
+    ".veldo/control_workflow_cycle_assignment.py",
     ".veldo/control_graph_pm.py",
     ".veldo/control_workflow_langgraph.py",
     # VELDO-0045: activation of that runtime against its license and provenance records (laid down

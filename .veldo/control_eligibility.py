@@ -124,6 +124,8 @@ AR = _organ('control_architecture')
 # parser, which this process runs only inside the architecture snapshot.
 BL = _organ('control_backlog_priority')
 DP = _organ('control_decomposition_binding')
+# Parser-free assignment reads: no PM service imports inside a station decision.
+TA = _organ('control_workflow_cycle_assignment')
 
 # The stations the floor's entries invoke, each with its station-specific predicates. The shipped
 # contract's set is the floor of each; current admission is added to every station because R52
@@ -793,7 +795,7 @@ class Gate:
                 inputs['project_owner'] = self._entity(owner)
             inputs['authority'] = self._entity('authority:' + self.domain_uuid)
             inputs['claim'] = self._entity(self.claims.claim_id(self.repository_uuid, unit))
-            inputs.update(_organ('control_workflow_cycle_pm').assignment_inputs(self, unit, data))
+            inputs.update(TA.assignment_inputs(self, unit, data))
             for dep in data.get('depends_on') or []:
                 inputs['dependency/' + dep] = self._entity(dep)
                 inputs['receipts/' + dep] = self._receipts(dep)
@@ -955,7 +957,7 @@ class Gate:
             return ['blocked:' + b['id'] for b in inputs['blockers'] if not self._data(b).get('cleared')]
         if name == 'claim_current':
             if inputs.get('team_assignment'):
-                return _organ('control_workflow_cycle_pm').assignment_problems(self, unit, inputs, context)
+                return TA.assignment_problems(self, unit, inputs, context, CM)
             holder = (context or {}).get('holder')
             claim = self._data(inputs.get('claim')) or {}
             status = self.claims.ownership(claim, data, self._data(inputs.get('backlog')) or {})
@@ -968,7 +970,7 @@ class Gate:
         if name == 'reviewer_independent':
             reviewer, producer = (context or {}).get('reviewer'), data.get('producer')
             if inputs.get('team_assignment'):
-                problems = _organ('control_workflow_cycle_pm').assignment_problems(self, unit, inputs, context)
+                problems = TA.assignment_problems(self, unit, inputs, context, CM)
                 if problems:
                     return problems
                 producer = self._data(inputs['team_assignment']).get('builder')

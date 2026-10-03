@@ -16,6 +16,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     PRODUCTION = {
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
+        'control_workflow_cycle_assignment.py': ROOT / ".veldo" / "control_workflow_cycle_assignment.py",
         'control_graph_pm.py': ROOT / ".veldo" / "control_graph_pm.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
         'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
