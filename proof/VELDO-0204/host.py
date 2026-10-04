@@ -13,12 +13,16 @@ whose passes run when a signed packet through Service.apply wakes them, as serve
 """
 import copy
 import importlib.util
+import contextlib
 import json
 import os
 from pathlib import Path
+import shutil
+import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from types import SimpleNamespace
 
@@ -375,8 +379,51 @@ class Host:
                 loop.wake('run_end', launch.dispatch_id)
         return ended
 
-    def start_records(self):
-        path = Path(self.config['observations'])
+    def serve(self, timeout=60):
+        """control_service serve as its own process, as the unit runs it: this host's configuration with its own
+        socket and observations, the store's lock released to it first, as setup releases it before the unit
+        starts. Waits for READY=1 (sd_notify), then stops it with SIGTERM. The answer: whether it came up, its
+        start records, its exit code and its stderr tail."""
+        if self.lock not in (None, -1):
+            os.close(self.lock)
+            self.lock = None
+        run = Path(tempfile.mkdtemp(prefix='v204s-'))
+        observations = self.base / 'v204-serve-observations.jsonl'
+        config = self.base / 'v204-serve.json'
+        config.write_text(json.dumps(dict(self.config, socket=str(run / 'authority.sock'),
+                                          observations=str(observations))))
+        config.chmod(0o600)
+        errors = self.base / 'v204-serve.err'
+        notification = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        notification.bind(str(run / 'notify.sock'))
+        notification.settimeout(0.2)
+        env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': str(self.base), 'LANG': 'C.UTF-8',
+               'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1', 'NOTIFY_SOCKET': str(run / 'notify.sock')}
+        ready = False
+        with errors.open('w') as err:
+            process = subprocess.Popen([sys.executable, '-B', str(self.mods / 'control_service.py'), 'serve', str(config)],
+                                       env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=err,
+                                       start_new_session=True)
+        try:
+            deadline = time.monotonic() + timeout
+            while not ready and process.poll() is None and time.monotonic() < deadline:
+                with contextlib.suppress(socket.timeout):
+                    ready = b'READY=1' in notification.recv(4096)
+        finally:
+            notification.close()
+            if process.poll() is None:
+                process.send_signal(signal.SIGTERM)
+                with contextlib.suppress(subprocess.TimeoutExpired):
+                    process.wait(15)
+            with contextlib.suppress(OSError):
+                os.killpg(process.pid, signal.SIGKILL)
+            process.wait(5)
+            shutil.rmtree(str(run), ignore_errors=True)
+        return SimpleNamespace(ready=ready, records=self.start_records(observations), code=process.returncode,
+                               errors=errors.read_text()[-600:])
+
+    def start_records(self, path=None):
+        path = Path(path or self.config['observations'])
         lines = path.read_text().splitlines() if path.is_file() else []
         found = []
         for text in lines:

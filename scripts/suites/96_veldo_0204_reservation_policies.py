@@ -34,7 +34,7 @@ def _v204_suite():
     names = ('derive/values', 'fresh/dispatch', 'rerun/unchanged', 'source/project', 'source/team', 'source/account',
              'source/unit', 'source/windows', 'source/absent', 'lock/second-connection', 'service/start',
              'service/added', 'service/team', 'service/pm-assigned', 'service/rerun', 'refuse/missing-source',
-             'refuse/principal', 'census/writer')
+             'refuse/principal', 'census/writer', 'service/serve')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -492,6 +492,19 @@ def _v204_suite():
                       callers == {'control_reservation_policies.py', 'control_workflow_cycle_pm.py'})
                 check('census/writer', 'no production module but control_reservations writes a subscription_reservation '
                       'entity [%s]' % sorted(writers), writers == {'control_reservations.py'})
+
+            # AC3 service/serve: serve, run as the unit runs it, hands the lock it holds to the loop it opens, so the
+            # provisioning in its start record is done on its own connection.
+            with region('service/serve'):
+                served = h.serve()
+                answers = [a for r in served.records for a in r.get('provisioning') or []]
+                check('service/serve', 'serve came up on this host\'s store and configuration [%s %s]' % (
+                    served.code, served.errors), served.ready)
+                check('service/serve', 'its start record carries one provisioning, by the start, done with no fault '
+                      '[%s]' % [(a.get('caller'), a.get('outcome'), a.get('refusal')) for a in answers],
+                      len(served.records) == 1 and len(answers) == 1 and answers[0].get('caller') == 'start'
+                      and answers[0].get('outcome') == 'done' and answers[0].get('refusal') is None
+                      and answers[0].get('subjects') and not served.records[0].get('faults'))
     except Exception as error:  # noqa: BLE001 - a fixture that did not run reds every row by assertion
         for name in names:
             check(name, 'the fixture ran to its end (it raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
