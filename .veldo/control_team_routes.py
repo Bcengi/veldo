@@ -24,6 +24,9 @@ KIND = 'default_team_revision'
 HEAD = 'default-team:head'
 TARGET = 'default_team'
 CHOICES = ['accept', 'return_for_elaboration', 'reject']
+CONSUME = 'record_team_application'
+APPLICATION = 'team_application'
+APPLICATION_PREFIX = 'team-application:'
 
 
 def default_id(revision):
@@ -45,8 +48,10 @@ class TeamRoutes:
         self.S, self.conn = teams.store, teams.conn
         self.observations = []
         self.S.declare_owners(self.conn, 'VELDO-0162 default team',
-            kinds={KIND: (SAVE,), 'default_team_head': (SAVE,)}, prefixes={'default-team:': (SAVE,)}, module=__file__)
+            kinds={KIND: (SAVE,), 'default_team_head': (SAVE,), APPLICATION: (CONSUME,)},
+            prefixes={'default-team:': (SAVE,), APPLICATION_PREFIX: (CONSUME,)}, module=__file__)
         self.conn.command_registry[SAVE] = {'transaction_transition': self._save_default, 'writes': CT.WRITES}
+        self.conn.command_registry[CONSUME] = {'transaction_transition': self._consumed, 'writes': CT.WRITES}
 
     def _signed(self, **fields):
         t = self.teams
@@ -72,7 +77,7 @@ class TeamRoutes:
     def request(self, record):
         """One request for exactly the pending proposal, found before a repeated save checks versions."""
         target, brief = CT.amendment_target(record), CT.amendment_brief(record)
-        alias = 'team-amend-' + record['proposal']['digest'].split(':')[1][:24]
+        alias = 'team-amend-' + record['proposal']['digest'].split(':')[1][:24] + '-v' + str(record['version'])
         rid = self.teams.assignment.assignment_id(self.teams.ids['repository_uuid'], alias)
         if self.teams.inbox.read(rid) is not None:
             return rid
@@ -96,7 +101,44 @@ class TeamRoutes:
                                       revision=record['proposal']['revision']))
         return rid
 
+    @staticmethod
+    def _consumed(conn, params, before):
+        identity = APPLICATION_PREFIX + params['request']
+        if identity in before:
+            raise CT.Refused('stale_subject:team_application')
+        return {identity: dict(kind=APPLICATION, data=params)}
+
     def apply_settled(self, request):
+        """Apply each settled request once, including refusals and unexpected failures.
+
+        The authority serializes application and records the result through the store writer.
+        Both API answers and publication use this durable receipt, including after restart.
+        """
+        identity = APPLICATION_PREFIX + request
+        consumed = CT._row(self.conn, identity)
+        if consumed is not None:
+            return consumed['data']['result']
+        row = CT._row(self.conn, request)
+        reference = (row['data'].get('settlement') or {}) if row and row['kind'] == CT.REQUEST_KIND else {}
+        effect = CT._row(self.conn, reference.get('effect_id'))
+        if not effect or (effect['data'].get('target') or {}).get('kind') not in (TARGET, CT.TARGET_KIND):
+            return None
+        try:
+            result = self._apply_settled(request)
+        except Exception:
+            # Exception text can contain domain data. Record only a stable refusal name.
+            result = dict(ok=False, reason='unavailable_service:team_application')
+        params = dict(request=request, settlement=reference.get('settlement_id'), result=result)
+        command_id = 'team-consumed-' + CT._digest(request).split(':')[1]
+        self.S.execute(self.conn, dict(command_id=command_id, principal=self.teams.requester,
+            operation=CONSUME, parameters=params, expected_versions={identity: 0}, artifact_digests=[],
+            nonce=command_id), self.teams.journal_signer, self.teams.sign, self.teams.authority_generation)
+        self.observations.append(dict(operation='team_answer', request=request, settlement=reference.get('settlement_id'),
+            outcome='skipped' if result is None else 'applied' if result.get('ok') else 'refused',
+            reason=result.get('reason') if result else None))
+        return result
+
+    def _apply_settled(self, request):
         """Consume the existing settlement; amend performs all owner, brief and target checks."""
         t = self.teams
         row = CT._row(self.conn, request)
@@ -119,13 +161,13 @@ class TeamRoutes:
                 command_id='team-answer-' + reference['settlement_id'], nonce='team-answer-' + reference['settlement_id']))
         else:
             return None
-        self.observations.append(dict(operation='team_answer', request=request, settlement=reference.get('settlement_id'),
-                                      outcome='applied' if result.get('ok') else 'refused', reason=result.get('reason')))
         return result
 
     def apply_pending(self):
         """The service invokes this after a journal advance, including Telegram settlement."""
-        rows = self.conn.execute("SELECT id FROM entities WHERE kind=?", (CT.REQUEST_KIND,)).fetchall()
+        rows = self.conn.execute("SELECT id FROM entities WHERE kind=? AND NOT EXISTS "
+            "(SELECT 1 FROM entities consumed WHERE consumed.id=? || entities.id)",
+            (CT.REQUEST_KIND, APPLICATION_PREFIX)).fetchall()
         return [result for (rid,) in rows if (result := self.apply_settled(rid)) is not None]
 
     def read_default(self, revision):
