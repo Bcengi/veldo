@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W151
 plan_revision: 4
-depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0139, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171]
+depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0139, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171, VELDO-0203]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:

@@ -1419,8 +1419,8 @@ work:
     spec: VELDO-0204
     title: The factory provisions the reservation policy of every registered account, every project and every engineering unit through the existing reservation writer, from the project budgets, team role budgets and account records the owner already controls, on setup's own store connection and at each pass of the running service, so work dispatches on a fresh host and keeps dispatching as accounts, projects and units are added, and a subject it cannot provision is refused by name
     feature_refs: [F8]
-    depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171]
-    order: 15172
+    depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171, VELDO-0203]
+    order: 15174
     release: 1
     stage: 5
 
