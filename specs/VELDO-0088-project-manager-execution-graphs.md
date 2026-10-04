@@ -371,5 +371,8 @@ an admit and a proposal on the second's item and asserts both refused no_such_it
 unchanged: red by assertion at 63f6a737 (the admit judged, the proposal accepted), green after.
 Finding-88 mutation v88-backlog-judges-other-repository-item (the backlog check removed), run once
 here at nice 19, reds only that row against a green 53-assertion baseline.
+Finding-88 mutation v88-grooming-proposes-other-repository-item (the grooming check removed) needed
+the suite to install control_grooming.py from its production copy, which it now does; run once here at
+nice 19, it reds only that row against a green 53-assertion baseline.
 The footprint adds control_backlog.py and control_grooming.py and their engine copies. Criteria and
 status unchanged.

@@ -246,6 +246,17 @@
    "status": "not run; reviewer only",
    "source_sha256": "df60251d4d7042895d362c1b1a2172c6a799c548fdcf3268d8c513244f077724",
    "mutant_sha256": "2b7d0b67a2d80b7857b8e81fb1aaf40dcdb8d3ffbf1127e95c492798da41ca78"
+  },
+  {
+   "name": "v88-grooming-proposes-other-repository-item",
+   "named_rows": [
+    "followup/two-repositories"
+   ],
+   "diff": "proof/VELDO-0088/v88-grooming-proposes-other-repository-item.diff",
+   "module": ".veldo/control_grooming.py",
+   "status": "not run; reviewer only",
+   "source_sha256": "bed857eaf026c0074c36ef3b10ca6f31a5e8f4650ab3fc8a565198e4f195f3ef",
+   "mutant_sha256": "9694d3692e7676ddf787ff2a97e4148fe9e6f7c2ea2803a608966e725f4a02f3"
   }
  ]
 }

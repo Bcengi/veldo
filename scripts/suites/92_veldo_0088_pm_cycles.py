@@ -17,6 +17,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
         'control_backlog.py': ROOT / ".veldo" / "control_backlog.py",
+        'control_grooming.py': ROOT / ".veldo" / "control_grooming.py",
         'control_workflow_cycle_assignment.py': ROOT / ".veldo" / "control_workflow_cycle_assignment.py",
         'control_graph_pm.py': ROOT / ".veldo" / "control_graph_pm.py",
         'control_eligibility.py': ROOT / ".veldo" / "control_eligibility.py",
