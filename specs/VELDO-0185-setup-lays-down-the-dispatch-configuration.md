@@ -196,6 +196,16 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
 
+2026-10-04, preflight on build-veldo-0185b at f63d86e5: the VELDO-0162
+capability and default-team revision writers now exist, but their authenticated
+entry point requires an API-edge signature and a current passkey credential.
+Fresh setup has the owner's SSH key and neither credential nor session. Its
+signed membership path and the service's generic command path accept neither
+revision command. AC1's owner-signed setup command interface is still missing;
+implementation stops under the owner's explicit dependency rule. Exact interfaces
+and the required prerequisite are recorded in proof/VELDO-0185/README.md.
+No production or VELDO-0167 file changed; criteria and ready status are unchanged.
+
 2026-09-27: new draft for the VELDO-0154 review finding of 2026-09-27 that a factory set up on a fresh host
 dispatches nothing. Only the owner marks a specification ready.
 
