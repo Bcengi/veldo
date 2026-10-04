@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -187 +187 @@
+-            refusal = _code(error)
++            refusal = 'unknown_outcome:' + type(error).__name__

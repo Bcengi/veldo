@@ -1,0 +1,4 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -130,0 +131 @@
++        caps = caps if caps is not None else {k: v for k, v in _budget(PJ.read(None, conn, str(record.get('project'))) or {}).items() if k in RES.KINDS}

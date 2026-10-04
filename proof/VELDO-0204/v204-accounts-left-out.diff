@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -127,2 +126,0 @@
+-    for _eid, record in _kind(conn, ACC.KIND):
+-        subjects.append(('account', record.get('id'), dict(sums), dict(projects=names)))

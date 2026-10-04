@@ -1,0 +1,4 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -84,0 +85 @@
++    return None, None

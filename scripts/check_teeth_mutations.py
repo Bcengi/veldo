@@ -10399,6 +10399,59 @@ def cases():
         '            answer = dict(ok=False, reason=error.code, result=None)\n',
         "            answer = dict(ok=False, reason='unknown_outcome:Refused', result=None)\n", ['service/writer-refusal'], ())
 
+    # VELDO-0204: reservation policies provisioned from the owner's configuration, offline and in each loop pass.
+    add(204, 'v204-accounts-left-out', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "    for _eid, record in _kind(conn, ACC.KIND):\n        subjects.append(('account', record.get('id'), dict(sums), dict(projects=names)))\n",
+        '', ['fresh/dispatch'], ())
+    add(204, 'v204-configure-every-pass', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "        if stored is not None and stored.get('caps') == caps:\n",
+        '        if False:\n', ['rerun/unchanged'], ())
+    add(204, 'v204-start-only', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        "        self.provision(report, 'pass')\n",
+        '', ['service/added'], (("        self.loop.provision(report, 'line:' + self.repository)\n", ''),))
+    add(204, 'v204-unsourced-unit-from-project', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        '        caps, source = unit_source(conn, eid, record)\n',
+        "        caps, source = unit_source(conn, eid, record)\n        caps = caps if caps is not None else {k: v for k, v in _budget(PJ.read(None, conn, str(record.get('project'))) or {}).items() if k in RES.KINDS}\n", ['refuse/missing-source'], ())
+    add(204, 'v204-lock-ignored', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        '        problem = AUTH.authority_problem(lock, conn)\n',
+        '        problem = None\n', ['lock/second-connection'], ())
+    add(204, 'v204-writer-connection-unchecked', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "        if problem is None and getattr(reservations, 'conn', None) is not conn:\n",
+        '        if False:\n', ['lock/second-connection'], ())
+    add(204, 'v204-default-team-ignored', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        '    head = CT._row(conn, TR.HEAD)\n',
+        '    return None, None\n    head = CT._row(conn, TR.HEAD)\n', ['derive/values', 'source/team', 'service/team'], ())
+    add(204, 'v204-assigned-role-ignored', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "    build = (assignment or {}).get('role') or BUILD_ROLE\n",
+        '    build = BUILD_ROLE\n', ['derive/values', 'service/pm-assigned'], ())
+    add(204, 'v204-owner-minutes-kept', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "        subjects.append(('project', record.get('name'), {k: budget[k] for k in RES.KINDS if k in budget},\n",
+        "        subjects.append(('project', record.get('name'), dict(budget),\n", ['derive/values'], ())
+    add(204, 'v204-account-sum-first-project', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects) for kind in ACCOUNT_KINDS}\n',
+        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects[:1]) for kind in ACCOUNT_KINDS}\n', ['derive/values', 'source/project'], ())
+    add(204, 'v204-windows-compared', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        "        if stored is not None and stored.get('caps') == caps:\n",
+        "        if stored is not None and stored.get('caps') == caps and not stored.get('windows'):\n", ['service/rerun'], ())
+    add(204, 'v204-start-not-provisioned', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        "        self.provision(started, 'start')\n",
+        '', ['service/start'], ())
+    add(204, 'v204-line-not-provisioned', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        "        self.loop.provision(report, 'line:' + self.repository)\n",
+        '', ['service/pm-assigned', 'service/rerun'], ())
+    add(204, 'v204-loop-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        "        loop = FactoryLoop(service, load_work(config['work']), lock)\n",
+        "        loop = FactoryLoop(service, load_work(config['work']))\n", ['service/start'], ())
+    add(204, 'v204-writer-refusal-renamed', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
+        '            refusal = _code(error)\n',
+        "            refusal = 'unknown_outcome:' + type(error).__name__\n", ['refuse/principal'], ())
+    add(204, 'v204-scaffold-absent', '96_veldo_0204_reservation_policies.py', 'init_scaffold.py',
+        '    ".veldo/control_reservation_policies.py",\n',
+        '', ['service/start'], ())
+    add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+
     return result
 
 

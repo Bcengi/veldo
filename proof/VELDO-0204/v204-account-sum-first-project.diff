@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -125 +125 @@
+-    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects) for kind in ACCOUNT_KINDS}
++    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects[:1]) for kind in ACCOUNT_KINDS}

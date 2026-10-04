@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -123 +123 @@
+-        subjects.append(('project', record.get('name'), {k: budget[k] for k in RES.KINDS if k in budget},
++        subjects.append(('project', record.get('name'), dict(budget),

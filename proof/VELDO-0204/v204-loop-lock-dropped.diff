@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2148 +2148 @@
+-        loop = FactoryLoop(service, load_work(config['work']), lock)
++        loop = FactoryLoop(service, load_work(config['work']))

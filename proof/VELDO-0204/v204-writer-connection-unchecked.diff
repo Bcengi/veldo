@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -157 +157 @@
+-        if problem is None and getattr(reservations, 'conn', None) is not conn:
++        if False:

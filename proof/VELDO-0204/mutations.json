@@ -1,0 +1,199 @@
+{
+ "schema": "veldo.mutation-registration/v1",
+ "spec_id": "VELDO-0204",
+ "status": "registered; reviewer execution required",
+ "mutations": [
+  {
+   "name": "v204-accounts-left-out",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "fresh/dispatch"
+   ],
+   "diff": "proof/VELDO-0204/v204-accounts-left-out.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "3dcaf6c9e9cd265f0efc979197a7f8988f79ac3cddefe2e8cdca2f07fe606d78",
+   "executed": false
+  },
+  {
+   "name": "v204-configure-every-pass",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "rerun/unchanged"
+   ],
+   "diff": "proof/VELDO-0204/v204-configure-every-pass.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "4fd0d38cec4030233c3e1216048ca089bcc57a9c453e6d17d7634b9560055766",
+   "executed": false
+  },
+  {
+   "name": "v204-start-only",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "service/added"
+   ],
+   "diff": "proof/VELDO-0204/v204-start-only.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "fd2da318c386c2d8a8e8a29c959652ee049d6c5be3c62c20dfe7f8468119e121",
+   "executed": false
+  },
+  {
+   "name": "v204-unsourced-unit-from-project",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "refuse/missing-source"
+   ],
+   "diff": "proof/VELDO-0204/v204-unsourced-unit-from-project.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "3a0b5d692cc81b4a6307cab2e49352515eb327fb3f4617ea5689875a5c4b24b5",
+   "executed": false
+  },
+  {
+   "name": "v204-lock-ignored",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "lock/second-connection"
+   ],
+   "diff": "proof/VELDO-0204/v204-lock-ignored.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "0ddc31576d9919feb35c5478430d3cbb82ad83543c69cab5d4719063a7750ea3",
+   "executed": false
+  },
+  {
+   "name": "v204-writer-connection-unchecked",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "lock/second-connection"
+   ],
+   "diff": "proof/VELDO-0204/v204-writer-connection-unchecked.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "9a5a64e702ff2602d283eb7b5f2d1164ee0822402f88ea4c4a51307923fc8288",
+   "executed": false
+  },
+  {
+   "name": "v204-default-team-ignored",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "derive/values",
+    "source/team",
+    "service/team"
+   ],
+   "diff": "proof/VELDO-0204/v204-default-team-ignored.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "3660b4f1f6ccedc295499005f5b9f71db70436e9f331d98b1836e42a03075b4c",
+   "executed": false
+  },
+  {
+   "name": "v204-assigned-role-ignored",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "derive/values",
+    "service/pm-assigned"
+   ],
+   "diff": "proof/VELDO-0204/v204-assigned-role-ignored.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "d6e31bbe27adbf703a8209957cf259e5e79788d0f4be029e5f73d552514b91dc",
+   "executed": false
+  },
+  {
+   "name": "v204-owner-minutes-kept",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "derive/values"
+   ],
+   "diff": "proof/VELDO-0204/v204-owner-minutes-kept.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "c971062b0a961d30bf1677e4f42f69de14fb3677401c4e5293a4a3bdb909d3f7",
+   "executed": false
+  },
+  {
+   "name": "v204-account-sum-first-project",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "derive/values",
+    "source/project"
+   ],
+   "diff": "proof/VELDO-0204/v204-account-sum-first-project.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "3895156fa60a825c28830d4ddb0d7e2f70eed72aab397314a0655304d0a88d8e",
+   "executed": false
+  },
+  {
+   "name": "v204-windows-compared",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "service/rerun"
+   ],
+   "diff": "proof/VELDO-0204/v204-windows-compared.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "9ba51214ebe976160ead3a373674f58a507f0aab5144d74a608b664e29548259",
+   "executed": false
+  },
+  {
+   "name": "v204-start-not-provisioned",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "service/start"
+   ],
+   "diff": "proof/VELDO-0204/v204-start-not-provisioned.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "057ec77c37c458c16f43237efac9313a38c7699923087819ce06b897635f4275",
+   "executed": false
+  },
+  {
+   "name": "v204-line-not-provisioned",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "service/pm-assigned",
+    "service/rerun"
+   ],
+   "diff": "proof/VELDO-0204/v204-line-not-provisioned.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "b553c0069b16fe53b957971622b3a20b89496f807ea68cdc602c55171d849039",
+   "executed": false
+  },
+  {
+   "name": "v204-loop-lock-dropped",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "service/start"
+   ],
+   "diff": "proof/VELDO-0204/v204-loop-lock-dropped.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "37707f2833815a5cbac3edd87cabf5a709f94760108742ca1b5bc196c7557256",
+   "executed": false
+  },
+  {
+   "name": "v204-writer-refusal-renamed",
+   "module": ".veldo/control_reservation_policies.py",
+   "named_rows": [
+    "refuse/principal"
+   ],
+   "diff": "proof/VELDO-0204/v204-writer-refusal-renamed.diff",
+   "source_sha256": "dcd938dbfedef5eeddc63df797ff09a32286e612ba09c5f8f4b268853eb61ab6",
+   "mutant_sha256": "fb1f222030c4fb498bca7acce587d91936181843f5de3fcb70f09dd6e8ed32e2",
+   "executed": false
+  },
+  {
+   "name": "v204-scaffold-absent",
+   "module": ".veldo/init_scaffold.py",
+   "named_rows": [
+    "service/start"
+   ],
+   "diff": "proof/VELDO-0204/v204-scaffold-absent.diff",
+   "source_sha256": "bbfc7f3e15ae2d4605ee3606b015c8a8e95b82948cd0cad87573f03436f326c8",
+   "mutant_sha256": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02",
+   "executed": false
+  },
+  {
+   "name": "v204-second-policy-writer",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "census/writer"
+   ],
+   "diff": "proof/VELDO-0204/v204-second-policy-writer.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "3a9e8e8d1a80aaa677af5abe8082893ef10dbfd8fdd7ec338278646df44f8421",
+   "executed": false
+  }
+ ]
+}

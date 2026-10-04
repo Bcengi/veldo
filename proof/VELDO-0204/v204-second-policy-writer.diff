@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1623,0 +1624,2 @@
++        if False:
++            self.reservations.configure('x', 'unit', 'x', {}, now=0)

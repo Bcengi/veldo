@@ -1,0 +1,4 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1684 +1683,0 @@
+-        self.loop.provision(report, 'line:' + self.repository)

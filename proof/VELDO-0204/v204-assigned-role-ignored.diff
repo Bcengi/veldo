@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -106 +106 @@
+-    build = (assignment or {}).get('role') or BUILD_ROLE
++    build = BUILD_ROLE

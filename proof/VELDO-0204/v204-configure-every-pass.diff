@@ -1,0 +1,5 @@
+--- a/.veldo/control_reservation_policies.py
++++ b/.veldo/control_reservation_policies.py
+@@ -181 +181 @@
+-        if stored is not None and stored.get('caps') == caps:
++        if False:
