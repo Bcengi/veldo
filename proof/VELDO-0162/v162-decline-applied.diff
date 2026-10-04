@@ -1,0 +1,5 @@
+--- .veldo/control_team.py
++++ mutant/control_team.py
+@@ -566 +566 @@
+-        if ruling not in RULINGS:
++        if False:

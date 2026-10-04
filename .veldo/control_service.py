@@ -186,6 +186,7 @@ API_SERVICE = 'api-service.json'
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
 I = _organ('control_assignment')
 ENT = _organ('entity_contract')
+TA = _organ('control_workflow_cycle_assignment')
 LIM = _organ('control_account_limit')
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station')
@@ -1606,8 +1607,7 @@ class Line:
     def assigned(self):
         """Every unit assigned to this line: those its builder identity holds a claim on (VELDO-0031)."""
         builder = self.roles['builder']['identity']
-        teams = _organ('control_workflow_cycle_pm').CT
-        units = {a['unit'] for a in teams.assignments(self.service.conn)
+        units = {a['unit'] for a in TA.assignments(self.service.conn)
                  if (self.gate.unit_record(a['unit']) or {}).get('repository_uuid') == self.repository}
         return sorted(units | {claim.get('unit_id') for claim in self._rows('claim')
                        if isinstance(claim, dict) and claim.get('repository_uuid') == self.repository

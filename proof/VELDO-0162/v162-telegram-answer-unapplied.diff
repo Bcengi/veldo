@@ -1,0 +1,5 @@
+--- .veldo/control_service_api.py
++++ mutant/control_service_api.py
+@@ -344 +344 @@
+-            self.authority.team_routes.apply_pending()
++            pass

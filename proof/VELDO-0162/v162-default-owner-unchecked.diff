@@ -1,0 +1,8 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -197 +197 @@
+-        if not project or project['data'].get('owner') != params['principal']:
++        if not project:
+@@ -200 +200 @@
+-        if problems:
++        if False:

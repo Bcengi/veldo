@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ mutant/control_api_authority.py
+@@ -381 +381 @@
+-                result['team_application'] = self.team_routes.apply_settled(derived['request_id'])
++                result['team_application'] = None

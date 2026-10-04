@@ -1,0 +1,5 @@
+--- .veldo/control_api.py
++++ mutant/control_api.py
+@@ -823 +823 @@
+-                                          configuration.KINDS[0], body['role'], revision)
++                                          configuration.KINDS[0], body['role'], 1)

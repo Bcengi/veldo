@@ -180,12 +180,23 @@ class ServiceApi:
         common['observe'] = self.observe_mcp
         catalog = AUTH.MC.Catalog(self.S, self.conn, **common)
         mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, **common)
+        configurations = AUTH.organ('control_agent_config').Configurations(self.S, self.conn, **common)
+        routes = AUTH.organ('control_team_routes')
+        # Setup enrolls pm with all-project scope and possession of the command signing key.
+        # The qualification requester is deliberately confined to channel-qualification.
+        requester = 'pm'
+        request_sign = IN.organ('control_channel_activation').ssh_signer(self.config['journal']['key'])
+        teams = routes.CT.Teams(self.S, CM, self.conn, ids, principal, sign, inbox=ingress.inbox,
+            assignment=ingress.settlement.I, requester=requester, request_sign=request_sign,
+            authority_generation=generation, clock=clock)
+        team_routes = routes.TeamRoutes(teams, ingress.settlement, ingress.presenter)
         self.edge = self.config['api_edge']
         self.authority = AUTH.ApiAuthority(self.S, CM, self.conn, ids=ids, domain=self.config['domain'], edge=self.edge,
                                            intake=intake, settlement=ingress.settlement, credentials=self.credentials,
                                            workflows=workflows, publication=publication, clock=clock,
                                            authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials,
-                                           records=self.config.get('records'))
+                                           records=self.config.get('records'), configurations=configurations,
+                                           team_routes=team_routes)
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.
@@ -329,6 +340,15 @@ class ServiceApi:
         """Send the head record's hint to every subscribed API, naming this instance and the hint's number
         for that subscriber (counted whether or not it arrives, so a lost hint is a gap the API sees).
         Returns {sent, dropped}."""
+        try:
+            self.authority.team_routes.apply_pending()
+        except Exception:  # A consumer failure cannot suppress journal hints.
+            self.counts['team_application_errors'] = self.counts.get('team_application_errors', 0) + 1
+            try:
+                self.observe_mcp(dict(operation='team_application', outcome='refused',
+                                      reason='unavailable_service:team_application'))
+            except OSError:
+                pass  # The status counter still records an unavailable observation sink.
         hint = dict(self.hint(), instance=self.instance)
         sent, dropped = 0, []
         for path in list(self.subscribers):

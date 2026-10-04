@@ -125,8 +125,10 @@ ACTIONS = (
     Action('project_pause', None, None, None, None, 'VELDO-0076'),
     Action('project_cancel', None, None, None, None, 'VELDO-0076'),
     Action('worker_stop', None, None, None, None, 'VELDO-0041'),
-    Action('team_configuration_edit', None, None, None, None, 'VELDO-0089'),
-    Action('agent_configuration_edit', None, None, None, None, 'VELDO-0127'),
+    Action('team_configuration_edit', 'teams.save', 'propose_team', 'control_team', 'OPERATION', 'VELDO-0162'),
+    Action('agent_configuration_edit', 'configurations.save', 'save_capability_configuration',
+           'control_agent_config', 'SAVE', 'VELDO-0162'),
+    Action('default_team_edit', 'teams.default_save', 'save_default_team', 'control_team_routes', 'SAVE', 'VELDO-0162'),
 )
 
 GAPS = (

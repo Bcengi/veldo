@@ -1,0 +1,6 @@
+--- .veldo/control_service_api.py
++++ mutant/control_service_api.py
+@@ -345 +345,2 @@
+-        except Exception:  # A consumer failure cannot suppress journal hints.
++        except Exception:
++            raise

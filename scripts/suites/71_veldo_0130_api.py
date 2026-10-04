@@ -582,6 +582,15 @@ def _v130_checks(base):
         common = dict(domain=ids['domain_uuid'], repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
         phase2.update(catalog=AUTH.MC.Catalog(S, conn, **common),
                       mcp_credentials=AUTH.CV.Credentials(S, conn, **common))
+    # VELDO-0162 extends the route contract; register its real owning commands in this fixture.
+    if here and 'configurations' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
+        CG = _v130_load('v130_configurations', organs / 'control_agent_config.py')
+        TR = _v130_load('v130_team_routes', organs / 'control_team_routes.py')
+        configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                           signer='authority', sign=journal_sign)
+        team_service = TR.CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
+                                  requester='pm', request_sign=lambda b: sign_as('pm', b))
+        phase2.update(configurations=configurations, team_routes=TR.TeamRoutes(team_service, settlement, presenter))
     # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
     # fixture is that authority for its own store, so it takes the lock as the service would.
     lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
@@ -1188,6 +1197,11 @@ def _v130_checks(base):
                            'mcp.credential_set': {'id': 'fixture', 'label': 'Fixture', 'base': 0,
                                                   'value': _v130_os.urandom(24).hex()},
                            'mcp.credential_delete': {'id': 'fixture', 'base': 0}})
+
+        if 'save_capability_configuration' in getattr(AS, 'OPERATIONS', {}):
+            bodies.update({'configurations.save': {'definition': {}, 'base': 0},
+                           'teams.save': {'project': 'project-a', 'team': {}, 'team_version': 0},
+                           'teams.default_save': {'team': {}, 'base': 0}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
@@ -3202,7 +3216,7 @@ def _v130_service_checks(base):
                   if (organs / 'control_service_api.py').is_file() else None)
             lock = _v130_os.open(str(A.db.parent / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
             spare.append(lock)
-            local = SA.ServiceApi(str(api_service), SimpleNamespace(ingress=ing), lock, base / 'local-state') if SA else None
+            local = SA.ServiceApi(str(api_service), SimpleNamespace(ingress=ing, requester=None), lock, base / 'local-state') if SA else None
             ASm = _v130_load('v130s_assertion2', mods / 'control_api_assertion.py')
             at = _v130_time.time()
             assertion = dict(ids, schema='veldo.api_assertion/v1', domain=DOMAIN, channel='api', edge='api-gate',

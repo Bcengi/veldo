@@ -1,0 +1,5 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -254 +254 @@
+-        default = self.read_default(target.get('revision'))
++        default = self.read_default(CT._row(self.conn, HEAD)['data']['revision'])

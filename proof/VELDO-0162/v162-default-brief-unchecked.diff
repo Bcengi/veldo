@@ -1,0 +1,5 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -261 +261 @@
+-        if default_brief(name, default) not in req['data'].get('brief', ''):
++        if False:

@@ -1,0 +1,119 @@
+{
+ "spec_id": "VELDO-0162",
+ "checks": [
+  {
+   "name": "requires",
+   "command": [
+    "python3",
+    "scripts/run_scope.py",
+    "--emit-requires"
+   ],
+   "returncode": 0,
+   "log": "/tmp/veldo0162-static-requires.log",
+   "summary": "run_scope: wrote scripts/suites/requires.json (146 suites)"
+  },
+  {
+   "name": "footprint",
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+    "VELDO-0162"
+   ],
+   "returncode": 1,
+   "log": "/tmp/veldo0162-static-footprint.log",
+   "summary": "Origin/main comparison includes inherited paths; see footprint.json"
+  },
+  {
+   "name": "anchors",
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+   ],
+   "returncode": 0,
+   "log": "/tmp/veldo0162-static-anchors.log",
+   "summary": "0 bad anchors"
+  },
+  {
+   "name": "validate",
+   "command": [
+    "python3",
+    ".veldo/validate.py",
+    "all"
+   ],
+   "returncode": 0,
+   "log": "/tmp/veldo0162-static-validate.log",
+   "summary": "validation passed"
+  },
+  {
+   "name": "git_boundary",
+   "command": [
+    "python3",
+    "scripts/check_git_boundary.py"
+   ],
+   "returncode": 0,
+   "log": "/tmp/veldo0162-static-git_boundary.log",
+   "summary": "Git subprocess boundary: pass"
+  },
+  {
+   "name": "whitespace",
+   "command": [
+    "git",
+    "diff",
+    "--check",
+    "08d7edd3"
+   ],
+   "returncode": 0,
+   "log": "/tmp/veldo0162-static-whitespace.log",
+   "summary": "Origin/main comparison includes inherited paths; see footprint.json"
+  }
+ ],
+ "engine_sha256": {
+  "engine/.veldo/control_api.py": "61f0285ea67243ab57f963d9278419c5b196f55f5c7c56b5c3d54fe83e23efc3",
+  "engine/.veldo/control_api_assertion.py": "506c4233b21cfcace1856f96b68f233d5c7292ec5fab3fefca06638a3bb5b297",
+  "engine/.veldo/control_api_authority.py": "eb7194997bdc7bed3c2cc72fc7db8c23b1128daf1ecd815666f56c7af44b3b11",
+  "engine/.veldo/control_api_models.py": "c97db1cc4f034a4a61ada7844607d48e75a24b8dade9a54bb11c8dc40a8cb59b",
+  "engine/.veldo/control_service_api.py": "87aba2b25cc0068168492b4e089ea886130f105881bab07e750540ed0ab84b1e",
+  "engine/.veldo/control_team.py": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+  "engine/.veldo/control_team_routes.py": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+  "engine/.veldo/init_scaffold.py": "b644f4d7aedd6afc11f45df2f5309e3576967cb2d88d0cfb116900a2d2daa231"
+ },
+ "engine_mismatches": [],
+ "footprint_base": "08d7edd3",
+ "own_outside": [],
+ "review_fixes": {
+  "base": "59410582",
+  "checks": [
+   {
+    "command": [
+     "python3",
+     "scripts/check_git_boundary.py"
+    ],
+    "returncode": 0,
+    "summary": "Git subprocess boundary: pass"
+   },
+   {
+    "command": [
+     "python3",
+     "proof/VELDO-0162/anchors.py"
+    ],
+    "returncode": 0,
+    "summary": "{\"registered\": 2416, \"bad\": [], \"duplicates\": []}\n0 bad anchors"
+   },
+   {
+    "command": [
+     "git",
+     "diff",
+     "--check"
+    ],
+    "returncode": 0,
+    "summary": "No whitespace errors"
+   }
+  ],
+  "production_sha256": {
+   "engine/.veldo/control_api.py": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "engine/.veldo/control_service_api.py": "703bd44c607fb31d469262ec5107ae19add6ec49d34232cf228698a268189d5b",
+   "engine/.veldo/control_team_routes.py": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190"
+  },
+  "protected_matches": []
+ }
+}
