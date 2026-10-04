@@ -274,3 +274,10 @@ load the owner revision organ once with the service's other organs. Add rows
 lock/writer-connection, input/malformed and service/malformed and two finding-190
 mutations. The existing service/saves row retains socket save and replay coverage.
 No footprint extension is needed.
+
+2026-10-04, review correction proof: suite 95 passes 35 checks in the ordinary
+and exact empty gate environments. The six admit caller suites and
+82_veldo_0172_live_formats pass individually in both. Validation and Git boundary
+checks pass in both. The current 34 behavior rows all fail by assertion against
+unchanged 4159d35b production, using the named selftest dispatcher. Fifteen
+finding-190 mutations are registered; execution remains reviewer work.

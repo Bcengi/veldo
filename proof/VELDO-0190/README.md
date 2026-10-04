@@ -60,8 +60,9 @@ explicitly identified rather than counted as successful negative controls.
 
 ## Retained records
 
-The red driver at drive.py runs the current suite against the unchanged
-4159d35b archive. red-at-4159d35b.json retains every named failed assertion and
+The red driver at drive.py uses the named selftest dispatcher against a
+4159d35b archive with unchanged production. It overlays only the current suite,
+its two fixture helpers and their suite registration. red-at-4159d35b.json retains every named failed assertion and
 source hashes. It rejects raised journeys, duplicate row reports or green
 behavior rows. This is a red record, not a gate result.
 
@@ -90,7 +91,7 @@ footprint.json instead records this task's delta from the supplied 4159d35b
 starting commit. No unrelated path is added to 0190's footprint to hide that
 inherited difference.
 
-## Completed scoped checks
+## Original implementation scoped checks
 
 The final suite passes 32 checks normally and under the empty gate environment.
 Its unchanged-baseline red record has 31 distinct rows, all false by assertion.
@@ -126,6 +127,21 @@ v190-packet-shape-unchecked; the latter targets both malformed-input rows.
 All 15 registered mutations have refreshed source hashes and exact diffs;
 execution remains reviewer work. No footprint extension was needed.
 
-The first corrected own-suite run passes 35 checks (34 behavior rows and the
-0172 format check). The required regression and refreshed baseline red record
-will follow in the next evidence commit. The 0127 proof remains untouched.
+All eight requested suites pass individually in both the ordinary and supplied
+empty gate environments: 95_veldo_0190_owner_revisions,
+38_veldo_0025_membership, 39_veldo_0026_revocation, 56_veldo_0027_signing,
+71_veldo_0138_channel_service, 73_veldo_0139_factory_setup,
+85_veldo_0171_setup_api and 82_veldo_0172_live_formats. Suite 95 passes 35
+checks, including 34 behavior rows and the 0172 format check. The refreshed
+4159d35b red record contains 34 failures by assertion with no raised journey.
+The first test attempt also sent top-level malformed values over the socket;
+the transport's existing malformed_request refusal correctly intercepted them.
+The final socket row targets the malformed fields that reach Service.apply.
+
+Validation and the Git boundary check pass in both environments. All five
+engine copies match. Literal AST inspection confirms all 15 finding-190
+mutation anchors and recorded mutant hashes without executing any mutation.
+checks.json retains the earlier implementation runs and records the new runs
+under review_fixes, with exact environment and log hashes. No full selftest,
+mutation runner or gate was run. The 0127 proof remains untouched; the reviewer
+still owns mutation execution and the merged-tree gate.

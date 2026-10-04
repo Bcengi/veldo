@@ -416,7 +416,7 @@
  },
  "production": {
   "control_owner_revisions.py": {
-   "sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
+   "sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
    "engine_identical": true
   },
   "control_membership.py": {
@@ -428,7 +428,7 @@
    "engine_identical": true
   },
   "control_service.py": {
-   "sha256": "22c1dc653725e27fef8f954188155d7cb0bef9702068ebef221b30e4a2881ba7",
+   "sha256": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd",
    "engine_identical": true
   },
   "init_scaffold.py": {
@@ -438,8 +438,7 @@
  },
  "static": {
   "anchors": {
-   "summary": "0 bad anchors",
-   "log_sha256": "1cfdd0ce240f94af8148f571045e9ff1b759267510e9debbc92fe6a0c66317c3"
+   "summary": "15 finding-190 registrations checked by AST and literal replacement; zero bad anchors; no mutation execution"
   },
   "git_boundary": {
    "summary": "Git subprocess boundary: pass",
@@ -452,12 +451,235 @@
  },
  "red": {
   "file": "red-at-4159d35b.json",
-  "rows": 31,
+  "rows": 34,
   "all_red_by_assertion": true
  },
  "mutations": {
-  "registered": 13,
+  "registered": 15,
   "executed": 0,
   "status": "Reviewer execution required"
+ },
+ "review_fixes": {
+  "base": "3d209f42",
+  "implementation_commit": "d412382d",
+  "ordinary": [
+   {
+    "suite": "95_veldo_0190_owner_revisions",
+    "passed": 61,
+    "suite_passed": 35,
+    "failed": 0,
+    "seconds": 6.37,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "d6a0b91e6a30cc79de811e946948ca5486ab99869bb32c2a7dbd2ace8e0c0819",
+    "failure_details": []
+   },
+   {
+    "suite": "38_veldo_0025_membership",
+    "passed": 43,
+    "suite_passed": 17,
+    "failed": 0,
+    "seconds": 1.25,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "96a483e08f45188d2c72ecfe9818762723f1254721e67673f614f7dc6cdeded0",
+    "failure_details": []
+   },
+   {
+    "suite": "39_veldo_0026_revocation",
+    "passed": 42,
+    "suite_passed": 16,
+    "failed": 0,
+    "seconds": 3.95,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "a1dc7f6e3cca1b725608aed2fc97e6f04361ca561821545ca73510f17ecab304",
+    "failure_details": []
+   },
+   {
+    "suite": "56_veldo_0027_signing",
+    "passed": 121,
+    "suite_passed": 95,
+    "failed": 0,
+    "seconds": 4.96,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "94a8401564a4604ed746cf815bad39f8517b3412ade37afa6dd99b62265f974c",
+    "failure_details": []
+   },
+   {
+    "suite": "71_veldo_0138_channel_service",
+    "passed": 39,
+    "suite_passed": 13,
+    "failed": 0,
+    "seconds": 31.42,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "915477ddcb7ff510cb722a5051dbaae9bd367fb2c4d5586148e5db1342259316",
+    "failure_details": []
+   },
+   {
+    "suite": "73_veldo_0139_factory_setup",
+    "passed": 43,
+    "suite_passed": 17,
+    "failed": 0,
+    "seconds": 31.88,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "24403e791ed9786b4f89e6424992d3e674806cab8cd739faa67d6e24526d7303",
+    "failure_details": []
+   },
+   {
+    "suite": "85_veldo_0171_setup_api",
+    "passed": 44,
+    "suite_passed": 18,
+    "failed": 0,
+    "seconds": 12.9,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "dcd5d56ea9bc7a0d72a74f662669b1913f97e294ede6d19df3cd902020ba9469",
+    "failure_details": []
+   },
+   {
+    "suite": "82_veldo_0172_live_formats",
+    "passed": 30,
+    "suite_passed": 4,
+    "failed": 0,
+    "seconds": 1.1,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "4fc119caaa8f5a37019574b5ad7dbf33c7595e8b05a052858905553cccf68002",
+    "failure_details": []
+   }
+  ],
+  "clean": [
+   {
+    "suite": "95_veldo_0190_owner_revisions",
+    "passed": 61,
+    "suite_passed": 35,
+    "failed": 0,
+    "seconds": 5.85,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "68ef3f8b6e19f384e34d6fa7f2055192498eddb2db871960f4d867201345bd98",
+    "failure_details": []
+   },
+   {
+    "suite": "38_veldo_0025_membership",
+    "passed": 43,
+    "suite_passed": 17,
+    "failed": 0,
+    "seconds": 0.65,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "eebf83637b4441b763a54793b5faa473584f71d603495187acf8fe3ffdc6537d",
+    "failure_details": []
+   },
+   {
+    "suite": "39_veldo_0026_revocation",
+    "passed": 42,
+    "suite_passed": 16,
+    "failed": 0,
+    "seconds": 1.32,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "ec60d1587a714d8e17381ee111b86193f4dac2c8f3e9e5ee908b96d1137c4b55",
+    "failure_details": []
+   },
+   {
+    "suite": "56_veldo_0027_signing",
+    "passed": 121,
+    "suite_passed": 95,
+    "failed": 0,
+    "seconds": 5.44,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "76ace0fd0f8e1b87a80a4093e89c683cd16ef7c6326bc0c5fb3c41d74d13d905",
+    "failure_details": []
+   },
+   {
+    "suite": "71_veldo_0138_channel_service",
+    "passed": 39,
+    "suite_passed": 13,
+    "failed": 0,
+    "seconds": 31.51,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "0c0f199adaea263b4ee2296c685b7a20fd57c4699ff6dbd5a147e8762eeeec62",
+    "failure_details": []
+   },
+   {
+    "suite": "73_veldo_0139_factory_setup",
+    "passed": 43,
+    "suite_passed": 17,
+    "failed": 0,
+    "seconds": 49.13,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "3c3e38f6df27df4645af1a6a4c265bfce7dc5cd55f009cbfb00a9c4b53cd8086",
+    "failure_details": []
+   },
+   {
+    "suite": "85_veldo_0171_setup_api",
+    "passed": 44,
+    "suite_passed": 18,
+    "failed": 0,
+    "seconds": 12.91,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "c9a5d485c9294745a2b30eb5fa9b7fa2be5c06b64a6068e8ae93567f0f2842ee",
+    "failure_details": []
+   },
+   {
+    "suite": "82_veldo_0172_live_formats",
+    "passed": 30,
+    "suite_passed": 4,
+    "failed": 0,
+    "seconds": 1.12,
+    "exit_code": 2,
+    "includes_shared_preamble": true,
+    "log_sha256": "45d51da70654c417e2531683e964aec1f5c97b6004228a28be140f4ef6807734",
+    "failure_details": []
+   }
+  ],
+  "clean_environment": {
+   "PATH": "/usr/bin:/bin",
+   "HOME": "/dev/shm/b190",
+   "TMPDIR": "/dev/shm",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "TZ": "UTC",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONNOUSERSITE": "1",
+   "PYTHONHASHSEED": "0",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_TERMINAL_PROMPT": "0",
+   "environment": "env -i"
+  },
+  "static": {
+   "normal": {
+    "validate": {
+     "exit_code": 0,
+     "log_sha256": "6a71a1841aeec2a61c8a2d19a49334f5ce00e65c7cd8063673fb6eb5a546ea9e"
+    },
+    "boundary": {
+     "exit_code": 0,
+     "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83"
+    }
+   },
+   "gate": {
+    "validate": {
+     "exit_code": 0,
+     "log_sha256": "6a71a1841aeec2a61c8a2d19a49334f5ce00e65c7cd8063673fb6eb5a546ea9e"
+    },
+    "boundary": {
+     "exit_code": 0,
+     "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83"
+    }
+   }
+  },
+  "initial_failure": "The first run included non-object top-level socket packets, which the existing transport refuses as malformed_request before service dispatch. The socket row now covers malformed command and envelope fields; the offline row retains top-level coverage.",
+  "initial_log_sha256": "66d6e091bcf682c12ec8979f459461616f1ca02a395dece0d56711c1060ad040"
  }
 }
