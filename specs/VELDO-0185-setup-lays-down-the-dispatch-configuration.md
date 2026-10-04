@@ -67,22 +67,26 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: Factory setup saves the default team, writes the launch receiver's engine adapters and a work
-      configuration whose builder and reviewer come from that team, and installs the service with both, so
-      the installed factory loop is configured on a fresh host. Set and completeness: Where the store holds
-      no default team, setup saves one by the owner's signed commands: one capability configuration revision
-      per role (VELDO-0162 AC1) and one `save_default_team` revision (VELDO-0162 AC4) with control_team's
-      four REQUIRED_ROLES, `project_manager`, `elaboration`, `implementation` on Claude Code and
-      `independent_review` on Codex, as the operating-model design's walkthrough runs them (all four on one
-      engine when the account registry names only one). It writes one adapter per engine the account
-      registry names, `claude_code` naming its pinned version and `codex` its vendor binary (both laid down
-      by VELDO-0186), and passes them through the installer's `adapters` option; it writes the work
-      configuration (`veldo.factory_work/v1`) naming the enrolled workspace's repository, its builder from
-      the team's `implementation` role and its reviewer from `independent_review`, each with control_service's
-      ROLE_FIELDS, and passes it through the installer's `work` option (VELDO-0154). After setup the running
-      service's loop status reads `available` and `configured` true with no refusal, and the receiver
-      configuration names both adapters. The suite sets up a fresh fixture host with fake accounts of both
-      engines and reads the saved team back. Falsifier: Install the service without the `work` option, and
-      the loop-configured row must fail on `configured` false.
+      configuration whose builder and reviewer come from that team, and installs the service with both, so the
+      installed factory loop is configured on a fresh host. Set and completeness: Where the store holds no
+      default team, setup activates the `factory` project with the owner as its owner by the owner's signed
+      control_project `activate` when no such project exists (refused
+      invalid_input:state_root:service_running:factory_project while the service runs, since no service route
+      takes it), then saves the team by the owner's signed commands through VELDO-0190, each envelope's nonce
+      its command id: one capability configuration revision per role (VELDO-0162 AC1) and one
+      `save_default_team` revision (VELDO-0162 AC4) with control_team's four REQUIRED_ROLES,
+      `project_manager`, `elaboration`, `implementation` on Claude Code and `independent_review` on Codex, as
+      the operating-model design's walkthrough runs them (all four on one engine when the account registry
+      names only one). It writes one adapter per engine the account registry names, `claude_code` naming its
+      pinned version and `codex` its vendor binary (both laid down by VELDO-0186), and passes them through the
+      installer's `adapters` option; it writes the work configuration (`veldo.factory_work/v1`) naming the
+      enrolled workspace's repository, its builder from the team's `implementation` role and its reviewer from
+      `independent_review`, each with control_service's ROLE_FIELDS, and passes it through the installer's
+      `work` option (VELDO-0154). After setup the running service's loop status reads `available` and
+      `configured` true with no refusal, and the receiver configuration names both adapters. The suite sets up
+      a fresh fixture host with fake accounts of both engines and reads the saved team back. Falsifier:
+      Install the service without the `work` option, and the loop-configured row must fail on `configured`
+      false.
     falsified_by: >
       Install the service without the `work` option, and the loop-configured row must fail on `configured`
       false.

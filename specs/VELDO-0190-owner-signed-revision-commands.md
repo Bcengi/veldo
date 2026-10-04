@@ -20,6 +20,8 @@ footprint:
   - ".veldo/control_membership.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0190_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -39,15 +41,15 @@ observability:
     Join each owner revision command to the journal record the writer committed (its command id and
     nonce), and an online one to the service observation that carried it.
   error_taxonomy: >
-    Distinguish a command whose envelope does not bind it to this store, its current versions, an unused
-    nonce equal to its command id and an unexpired time (missing_authority:owner_command:envelope_refused),
-    a signature that does not verify with the signer's active key
-    (missing_authority:owner_command:signature_invalid), a signer who is not the factory owner
+    Distinguish a command whose envelope does not bind it to this store, its current versions, an unused nonce
+    equal to its command id, an unexpired time and a signer with an active membership and key
+    (missing_authority:owner_command:envelope_refused), a signature that does not verify with the signer's
+    active key (missing_authority:owner_command:signature_invalid), a signer who is not the factory owner
     (missing_authority:owner_command:not_factory_owner), an operation other than the two
     (invalid_input:owner_command:operation), a command id already committed with other signed content
-    (stale_subject:owner_command:command_content_conflict), and a caller that does not hold the store's
-    lock (missing_authority:not_the_authority, control_api_authority's name). A writer's own refusal is
-    passed through unchanged.
+    (stale_subject:owner_command:command_content_conflict), and a caller that does not hold the store's lock
+    (missing_authority:not_the_authority, control_api_authority's name). A writer's own refusal is passed
+    through unchanged.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -55,49 +57,58 @@ acceptance_criteria:
       team revision through the existing writers, with nothing else enrolled: no passkey credential, no API
       session and no api edge key. Set and completeness: A new module, control_owner_revisions, takes one
       packet, a command (command_id, operation, target `authority`, parameters) with its envelope and the
-      owner's signature over the envelope, exactly the form control_membership's admit takes. It accepts
-      only two operations with the API's names and parameter sets (control_api_assertion OPERATIONS):
-      `save_capability_configuration` with `definition` and `base`, which it hands to
-      control_agent_config's Configurations.save, and `save_default_team` with `team` and `base`, which it
-      hands to control_team_routes' TeamRoutes.save_default, with the digest of the signed envelope as the
-      assertion digest. The principal it passes is the envelope's verified signer, never a parameter; the
-      command id it passes is the signed one. Each writer keeps its authorization, owner and roster checks,
-      base and versioning, schema validation and read-back as they are, and the answer is the writer's
-      read-back revision and digest; a writer's refusal is returned unchanged. The suite lays a store down
-      with VELDO-0139's setup steps and the factory project record the default team writer requires, then
-      saves one configuration revision per required role and one default team revision by the owner's
-      signed commands on a connection holding the store's lock, reads them back through Configurations
-      read and TeamRoutes read_default, and requires the journal records to name the owner as principal and
-      the envelope's nonce. Writer rows send a stale base (stale_version:agent_configuration and
-      stale_version:default_team), a team missing a required role (incomplete_roster:missing_staffing:<role>)
-      and a definition holding a credential literal (invalid_input:agent_configuration), each signed
-      correctly. Falsifier: Hand the writers the base the store's head names instead of the signed base, and
-      the stale-base row must fail on a save accepted over a newer head.
+      owner's signature over the envelope, exactly the form control_membership's admit takes. It accepts only
+      two operations with the API's names and parameter sets (control_api_assertion OPERATIONS):
+      `save_capability_configuration` with `definition` and `base`, which it hands to control_agent_config's
+      Configurations.save, and `save_default_team` with `team` and `base`, which it hands to
+      control_team_routes' TeamRoutes.save_default, with the digest of the signed envelope as the assertion
+      digest. The principal it passes is the envelope's verified signer, never a parameter; the command id it
+      passes is the signed one. Each writer keeps its authorization, owner and roster checks, base and
+      versioning, schema validation and read-back as they are, and the answer is the writer's read-back
+      revision and digest; a writer's refusal is returned unchanged. The suite lays a store down with
+      VELDO-0139's setup steps and the factory project record the default team writer requires, then saves one
+      configuration revision per required role and one default team revision by the owner's signed commands on
+      a connection holding the store's lock, with Configurations built as control_service_api builds it (this
+      store's domain_uuid and repository_uuid, the journal signer) and TeamRoutes over a control_team Teams on
+      that connection whose requester is setup's `pm` service member with its signing key and whose inbox is
+      the VELDO-0064 Inbox on that connection, reads them back through Configurations read and TeamRoutes
+      read_default, and requires the journal records to name the owner as principal and the envelope's nonce.
+      Writer rows send a stale base (the configuration stale-base row, stale_version:agent_configuration, and
+      the team stale-base row, stale_version:default_team), a team missing a required role
+      (incomplete_roster:missing_staffing:<role>) and a definition holding a credential literal
+      (invalid_input:agent_configuration), each signed correctly. Falsifier: Hand the writers the base the
+      store's head names instead of the signed base, and the configuration stale-base row must fail on a save
+      accepted over a newer head.
     falsified_by: >
-      Hand the writers the base the store's head names instead of the signed base, and the stale-base row
-      must fail on a save accepted over a newer head.
+      Hand the writers the base the store's head names instead of the signed base, and the configuration
+      stale-base row must fail on a save accepted over a newer head.
   - id: AC2
     text: >
-      Claim: The owner command is authenticated the one way control_membership authenticates an owner
-      command, and anything not signed by the current factory owner's key is refused by name with nothing
-      written. Set and completeness: The ordinary-path checks control_membership's admit runs today (the
-      executed command id is the signed one, AC.envelope_problems against this store's ids, the current
-      membership and delegation versions, the consumed nonces, the expiry and the signer's active
-      membership and key, then the signature over the canonical envelope bytes against the signer's active
-      key) move into one function, control_membership's authenticate, which admit and control_owner_revisions
-      both call; admit's bootstrap path, policy and refusal names are unchanged, and VELDO-0025's membership
-      rows stay green. control_owner_revisions then requires the signer to be the factory owner: the current
-      person member whose own enrollment is the store's owner bootstrap (enrolled_by is itself) and who
-      holds project_owner and membership_steward. Rows, each against a store with a saved head, each
+      Claim: The owner command is authenticated the one way control_membership authenticates an owner command,
+      and anything not signed by the current factory owner's key is refused by name with nothing written. Set
+      and completeness: The ordinary-path checks control_membership's admit runs today after its operation,
+      command id, journal signer and retry checks (AC.envelope_problems against this store's ids, the current
+      membership and delegation versions, the consumed nonces, the expiry and the signer's active membership
+      and key, then the signature over the canonical envelope bytes against the signer's active key) move into
+      one function, control_membership's authenticate, which returns the authority state it checked; admit and
+      control_owner_revisions both call it, and admit runs its co-signature check, policy and expected
+      versions on that same state. admit's checks before it keep their order, and its bootstrap path, policy
+      and refusal names are unchanged, so its callers, control_factory_setup and control_service_channel, see
+      no change: the rows of VELDO-0025, VELDO-0026, VELDO-0027, VELDO-0138, VELDO-0139 and VELDO-0171 stay
+      green. control_owner_revisions checks that the executed command id is the signed one before its retry
+      check, as admit does. control_owner_revisions then requires the signer to be the factory owner: the
+      current person member whose own enrollment is the store's owner bootstrap (enrolled_by is itself) and
+      who holds project_owner and membership_steward. Rows, each against a store with a saved head, each
       requiring the named refusal, an unchanged journal head and a refused observation with that refusal and
-      its class: no signature; the owner named as signer but signed by another enrolled member's key; signed
-      by the owner's key after it was revoked; signed by an enrolled person who is not the factory owner,
-      with that person's own active key (not_factory_owner); a parameter (the base, the team or the
-      definition) changed after signing; an envelope naming an earlier membership version, another store's
-      ids or an expired time; and an administrative operation or any other operation sent here
-      (invalid_input:owner_command:operation), while admit still refuses both revision operations as
-      policy_refused. Falsifier: Verify the signature against any active key in the keyring instead of the
-      signer's own, and the other-key row must fail on an accepted save.
+      its class: no signature (signature_invalid); the owner named as signer but signed by another enrolled
+      member's key (signature_invalid); signed by the owner's key after it was revoked (envelope_refused);
+      signed by an enrolled person who holds project_owner and membership_steward but is not the factory
+      owner, with that person's own active key (not_factory_owner); a parameter (the base, the team or the
+      definition) changed after signing (envelope_refused); an envelope naming an earlier membership version,
+      another store's ids or an expired time (envelope_refused); and an administrative operation or any other
+      operation sent here (invalid_input:owner_command:operation), while admit still refuses both revision
+      operations as policy_refused. Falsifier: Verify the signature against any active key in the keyring
+      instead of the signer's own, and the other-key row must fail on an accepted save.
     falsified_by: >
       Verify the signature against any active key in the keyring instead of the signer's own, and the
       other-key row must fail on an accepted save.
@@ -105,41 +116,48 @@ acceptance_criteria:
     text: >
       Claim: A signed owner command is executed at most once, and its identity is the signed content. Set and
       completeness: The envelope's nonce must equal its command id, so the nonce the owner signed is the one
-      the writer's commit consumes (both writers commit with the command id as nonce) in the same
-      transaction as the revision. Before authenticating, a command id already in the store's commands is
-      judged as admit judges a retry: when the committed record names the same signer and nonce and the
-      envelope's digest is the digest of the command presented, the answer is the committed revision with
+      the writer's commit consumes (both writers commit with the command id as nonce) in the same transaction
+      as the revision. Before authenticating, a command id already in the store's commands is judged as admit
+      judges a retry, with the committed content compared as well: when the committed record names the same
+      signer and nonce, its operation is the writer operation this command's operation names
+      (save_agent_configuration or save_default_team_revision), its committed parameters equal the presented
+      command's (definition and base, or team and base), and the envelope's digest is the digest of the
+      command presented, the answer is the committed revision, read back through the writer's read, with
       replayed true and nothing is written; otherwise it is refused
-      (stale_subject:owner_command:command_content_conflict). The suite sends a saved command again, sends
-      the same command id signed over another definition, and sends a new command id whose envelope reuses a
-      consumed nonce; the first answers replayed with the journal head unchanged, the other two are refused
-      by name with nothing written. Falsifier: Answer a committed command id from the store without comparing
-      its signed digest, and the content-conflict row must fail on a differently signed command answered as
-      replayed.
-    falsified_by: >
-      Answer a committed command id from the store without comparing its signed digest, and the
+      (stale_subject:owner_command:command_content_conflict), whatever the store would answer. The suite sends
+      a saved command again, sends the same command id signed over another definition, and sends a new command
+      id whose envelope reuses a consumed nonce; the first answers replayed with the journal head unchanged,
+      the other two are refused by name with nothing written. Falsifier: Answer a committed command id from
+      the store without comparing its committed parameters with the presented command's, and the
       content-conflict row must fail on a differently signed command answered as replayed.
+    falsified_by: >
+      Answer a committed command id from the store without comparing its committed parameters with the
+      presented command's, and the content-conflict row must fail on a differently signed command answered as
+      replayed.
   - id: AC4
     text: >
       Claim: The command obeys VELDO-0171's lock rule: it is executed only by the holder of the store's lock,
-      on setup's own connection when no service runs and by the running service when it does. Set and
-      completeness: control_owner_revisions takes the caller's lock descriptor and refuses first, writing
-      nothing, unless control_api_authority's authority_problem finds it holds authority.lock beside the
-      store its connection opened (missing_authority:not_the_authority). Offline, setup holds the lock it
-      took (control_factory_setup take_lock) and calls the module on its own connection with writers built
-      on it. Online, setup sends the same packet, command, envelope and signature, to the running service
-      over its socket, as it sends the api edge enrollment (control_client send); control_service's apply
-      routes the two operations carrying an envelope to the module, before its mutate fallback, with the
-      service's lock and its API authority's Configurations and TeamRoutes, and without an API authority
-      refuses unavailable_service:api:not_configured as its other API-backed commands do. The service's
-      observation of the command names its operation, command id, signer, outcome, refusal and class, as
-      every other packet's does. Rows: the offline saves of AC1; the same command called on a second
-      connection while the service holds the lock, refused not_the_authority with the journal head
-      unchanged; and a running service fixture that commits the saves sent over its socket, where the
-      journal shows the service committed them and setup opened no store connection for writing, and a
-      forged command sent the same way appears refused in the service's observations. Falsifier: Leave the
-      two operations to the mutate fallback, and the running-service row must fail on
-      invalid_input:operation.
+      on the lock holder's own connection (VELDO-0185's setup) when no service runs and by the running service
+      when it does. Set and completeness: control_owner_revisions takes the caller's lock descriptor and
+      refuses first, writing nothing, unless control_api_authority's authority_problem finds it holds
+      authority.lock beside the store its connection opened (missing_authority:not_the_authority). Offline, a
+      caller holding the lock (VELDO-0185's setup, after control_factory_setup take_lock; the suite here)
+      calls the module on its own connection with writers built on it. Online, the caller sends the same
+      packet, command, envelope and signature, to the running service over its socket, as setup sends the api
+      edge enrollment (control_client send); control_service's apply routes the two operations carrying an
+      envelope to the module, before its mutate fallback, with the service's lock and its API authority's
+      Configurations and TeamRoutes, and without an API authority refuses
+      unavailable_service:api:not_configured as its other API-backed commands do. control_owner_revisions is
+      an installed runtime asset (init_scaffold). The service's observation of the command names its
+      operation, command id, the envelope's principal as its signer, outcome, refusal and class, and a
+      writer's refusal is answered and observed by its own name, never as unknown_outcome. Rows: the offline
+      saves of AC1; the same command called on a second connection while the service holds the lock, refused
+      not_the_authority with the journal head unchanged; and a running service fixture that commits the saves
+      sent over its socket, where the journal shows the service committed them and the sending process opened
+      no store connection for writing, a forged command sent the same way appears refused in the service's
+      observations with the forged signer named; and a correctly signed default team command with a stale base
+      sent the same way answers stale_version:default_team. Falsifier: Leave the two operations to the mutate
+      fallback, and the running-service row must fail on invalid_input:operation.
     falsified_by: >
       Leave the two operations to the mutate fallback, and the running-service row must fail on
       invalid_input:operation.
@@ -174,7 +192,8 @@ function rather than copying them a fourth time.
 
 ## Out of scope
 
-Setup's own steps that send these commands, and the factory project record save_default requires
+Setup's own steps that send these commands, and the factory project record save_default requires, which
+VELDO-0185's setup activates by the owner's signed control_project activate on its own connection
 (VELDO-0185); any operation other than the two, a skill revision (the writer's `agent_skill` kind) and a
 team proposal among them; rate limits, key rotation and signing by any key but the owner's; moving
 control_channel_enrollment and control_api_credentials onto the shared function.
@@ -200,9 +219,16 @@ control_channel_enrollment and control_api_credentials onto the shared function.
 Using the API's operation names and parameter sets keeps one vocabulary for the two saves, so the role
 form and setup produce revisions no reader can tell apart except by the assertion digest, which names the
 signed envelope here and the API assertion there. The factory owner is read from the store, not from
-setup's arguments, so a later owner command from any host is judged by the same rule.
+setup's arguments, so a later owner command from any host is judged by the same rule. A re-enrolled owner
+is enrolled by another steward, so after the owner's key is replaced no member is the factory owner and
+this path refuses everyone; the API edge remains the writers' route then.
 
 ## History
 
 2026-10-04: new specification for the VELDO-0185 AC1 blocker recorded on build-veldo-0185b at a4dbfd8d,
 written and marked ready at the owner's request; VELDO-0185 now depends on it.
+
+2026-10-04: spec review findings F1 to F10 applied: the retry rule compares the committed content, the
+authenticate extraction keeps admit's order and snapshot, the online caller is generic, offline writer
+construction and init_scaffold are named, the rows name their refusals, and the factory project record is
+VELDO-0185's step.
