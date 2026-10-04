@@ -238,9 +238,16 @@ else:
             fake, codex_fake = fake_base / 'claude', fake_base / 'codex'
             fake.write_text(fake_source)
             codex_fake.write_text(fake_source)
+            receiver_host_trust = base / 'receiver-host-trust.json'
+            receiver_enrollment_signers = base / 'receiver-enrollment-signers'
+            receiver_enrollment_signers.write_text('')
+            receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1',
+                host_identity='fixture-host', enrollment_signers=str(receiver_enrollment_signers))))
+            receiver_host_trust.chmod(0o600)
             config = base / 'receiver.json'
             config.write_text(json.dumps(dict(store=str(f['db']), journal_key=str(f['keyfile']['authority']), principal='pm',
-                workspace=str(source), domain=domain, repository=repository, records=str(base / 'records'),
+                workspace=str(source), host_trust=str(receiver_host_trust), domain=domain,
+                repository=repository, records=str(base / 'records'),
                 adapters={'claude': {'identity': 'reported', 'argv': [sys.executable, '-B', str(mods / 'control_launch.py'),
                     'exec', sys.executable, '-B', str(fake), str(result_file), str(packet_file)]}})))
             receiver = json.loads(config.read_text())

@@ -357,8 +357,9 @@ def _v170_suite():
         for row in rows:
             check(row, 'fixture ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:240]), False)
     finally:
-        compare = load('v170_formats', Path(globals().get('__suite_file__', __file__)).resolve().parents[2] / 'proof/VELDO-0172/compare_formats.py')
-        issues, trace = compare.conform_fake(dict(base=base, fake=engines['fake']), '0170_receiver_trust')
+        conform_formats = load('v170_formats', Path(globals().get('__suite_file__', __file__)).resolve().parents[2] / 'proof/VELDO-0172/compare_formats.py')
+        fake = engines['fake']
+        issues, trace = conform_formats.conform_fake(locals(), '0170_receiver_trust')
         check('rerun/launch-after-repair', 'inert installation engines use shared constructors and conform at teardown: ' + str(issues), not issues)
         if reader is not None:
             reader.close()
