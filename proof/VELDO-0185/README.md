@@ -17,7 +17,7 @@ The actual VELDO-0162 interfaces are:
   revisions through `save_default_team_revision`, checking the factory owner,
   roster, capabilities and base. It accepts an assertion digest, but no owner
   command signature. `read_default` provides the required revision read-back.
-- `control_api_authority.Authority._apply`: the authenticated production route
+- `control_api_authority.ApiAuthority._apply`: the authenticated production route
   to those writers verifies an API-edge signature and requires a current
   credential through `control_api_credentials.current`. The HTTP edge builds
   that assertion from the owner's authenticated session. An owner SSH signature
@@ -59,4 +59,19 @@ No production files, VELDO-0167 files, acceptance criteria, status or protected
 paths changed. AC1 to AC4 remain unimplemented by this attempt. There is no
 behavior suite, red record or mutation rejection claim. No fake engine was
 added. No real engine, credential, external host or service manager was used.
-Final check results will be recorded below.
+
+Checks of this blocker-only change:
+
+- Suite `82_veldo_0172_live_formats` passes normally and in the specified empty
+  gate environment: four suite rows, 30 assertions including harness checks,
+  zero failures in each run. Its census lists the existing 16 producers; there
+  is no 0185 producer to qualify. These partial runs prove no 0185 criterion.
+- The supplied anchor checker reports 0 bad anchors. Git boundary passes.
+- The four cited production modules have identical engine counterparts.
+- The supplied footprint checker compares with local `origin/main` and reports
+  65 changed paths, 48 outside this spec, inherited from the supplied base.
+  The actual attempt's delta from f63d86e5 contains only this README and the
+  spec History entry, both inside the declared footprint. No footprint was
+  expanded to absorb inherited changes.
+- Repository validation of all records passes. The full selftest, mutation
+  runners and canonical gate were not run. No gate stamp is claimed.
