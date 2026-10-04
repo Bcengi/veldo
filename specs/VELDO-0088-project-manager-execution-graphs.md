@@ -332,4 +332,5 @@ in-store stand-in without a connection; their stand-ins now name the store conne
 row followup/real-ingress drives the factory line's PM cycle through the production channel
 (control_service_channel.open_channel) over the real ingress: red by assertion at 4869db20 with the
 pass fault unknown_outcome:Refused, green after. Finding-88 mutation v88-grooming-off-ingress-connection
-restores the earlier construction and must red that row. Criteria, footprint and status unchanged.
+restores the earlier construction; run once here at nice 19, it reds only that row against a green
+52-assertion baseline. Criteria, footprint and status unchanged.
