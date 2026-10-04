@@ -1,0 +1,11 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1624,7 +1624,7 @@
+         try:
+             reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
+                         next((role for role in self.roles['reviewers'] if role['identity'] != holder), None))
+-        except pm.Refused as error:
++        except KeyError as error:
+             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
+                                       'refusals': [error.code]})
+             return None

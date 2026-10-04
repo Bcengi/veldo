@@ -82,7 +82,8 @@ SETTLEMENT_PRINCIPAL = 'settlement'
 # named once, by the channel that signs as it.
 _CHANNEL = organ('control_service_channel')
 REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUESTER_KEY, _CHANNEL.REQUESTER_SCOPE
-RESERVED = (JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER)
+PROJECT_MANAGER = 'pm'
+RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -478,6 +479,15 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                        'public_key': public['requester'], 'independence_group': REQUESTER,
                                        'scope': [REQUESTER_SCOPE]},
                   enrollee=ACT.ssh_signer(os.path.join(keys, REQUESTER_KEY)))
+            K.publish(S, conn, projection)
+            os.chmod(projection, 0o600)
+        with step('project_manager_enrollment'):
+            # The owner enrolls the default PM with the factory's command signing
+            # edge. The PM authors proposals; authority still owns the receipts.
+            admin('enroll_principal', {'principal': PROJECT_MANAGER, 'principal_type': 'service',
+                                       'roles': [], 'public_key': public['journal'],
+                                       'independence_group': PROJECT_MANAGER, 'scope': '*'},
+                  enrollee=ACT.ssh_signer(os.path.join(keys, JOURNAL_KEY)))
             K.publish(S, conn, projection)
             os.chmod(projection, 0o600)
         with step('host_trust'):

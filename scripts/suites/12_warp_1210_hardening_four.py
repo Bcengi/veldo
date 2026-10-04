@@ -5931,16 +5931,16 @@ _M10_R12_ROOTS = ("proof/VELDO-R12/manifest.json", "proof/VELDO-R12/verdict-1.js
 
 
 def _m10_r12_fifo_at(root, where):
-    """ONE root of a hand-off's closure made a FIFO, and the PATH it was made at. The cache case is WARMED
-    first by running one surface, because a cache that does not exist is not opened - which is also why the
-    absent cache is deliberately not refused."""
+    """ONE root of a hand-off's closure made a FIFO, and the PATH it was made at.
+
+    A module load reads an existing cache even with PYTHONDONTWRITEBYTECODE=1. Create its parent
+    explicitly: relocated engines omit __pycache__, and running a surface need not write bytecode.
+    No compiled cache is needed first; the FIFO itself is the cache entry the loader would open."""
     if where.startswith("THE BYTECODE CACHE"):
-        subprocess.run([sys.executable, str(root / ".veldo/metrics.py")], capture_output=True,
-                       text=True, cwd=str(root), timeout=_M10_R11_TIMEOUT)
         _p = Path(importlib.util.cache_from_source(str(root / ".veldo/validate.py")))
     else:
         _p = root / where
-        _p.parent.mkdir(parents=True, exist_ok=True)
+    _p.parent.mkdir(parents=True, exist_ok=True)
     if _p.exists():
         _p.unlink()
     os.mkfifo(str(_p))

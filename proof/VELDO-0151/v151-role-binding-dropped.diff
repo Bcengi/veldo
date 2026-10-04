@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -602 +602 @@
+-            'role': role, 'capability_configuration': copy.deepcopy(team['roles'][role].get('capability_configuration')),
++            'role': 'implementation', 'capability_configuration': copy.deepcopy(team['roles'][role].get('capability_configuration')),

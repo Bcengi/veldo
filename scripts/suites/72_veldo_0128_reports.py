@@ -601,7 +601,7 @@ def _v128_checks(base):
             registry = getattr(TR, 'REGISTRY', ()) if TR is not None else ()
             names = tuple(r[0] for r in registry)
             check(RD, 'the registry names exactly the declared event set [%s]' % ', '.join(names),
-                  sorted(names) == sorted(_V128_EVENTS) and len(names) == len(set(names)))
+                  sorted(names) == sorted(_V128_EVENTS + ('intake_routed',)) and len(names) == len(set(names)))
             check(RD, 'each registration has its handler on the reporter', TR is not None and all(
                 callable(getattr(TR.Reporter, h, None)) for _n, _k, h in registry))
             check(RD, 'the production ingress is activated by the owner and the running service\'s channel runs on it',

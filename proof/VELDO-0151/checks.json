@@ -1,0 +1,237 @@
+{
+ "clean_environment": {
+  "PATH": "/usr/bin:/bin",
+  "HOME": "/dev/shm/veldo-0151-home",
+  "TMPDIR": "/dev/shm",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "TZ": "UTC",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONNOUSERSITE": "1",
+  "PYTHONHASHSEED": "0",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_TERMINAL_PROMPT": "0"
+ },
+ "runs": [
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "environment": "normal",
+   "exit_code": 2,
+   "summary": [
+    "91_veldo_0151_specialists                       23 passed    1.73s",
+    "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 1.73s"
+   ],
+   "seconds": 1.817
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "73_veldo_0089_team"
+   ],
+   "environment": "normal",
+   "exit_code": 2,
+   "summary": [
+    "73_veldo_0089_team                              26 passed    2.16s",
+    "selftest (PARTIAL, 1 of 142 suites): 52 passed, 0 failed in 2.16s"
+   ],
+   "seconds": 2.268
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "75_veldo_0150_own_message_acceptance"
+   ],
+   "environment": "normal",
+   "exit_code": 2,
+   "summary": [
+    "75_veldo_0150_own_message_acceptance            13 passed    1.99s",
+    "selftest (PARTIAL, 1 of 142 suites): 39 passed, 0 failed in 1.99s"
+   ],
+   "seconds": 2.069
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "76_veldo_0079_grooming"
+   ],
+   "environment": "normal",
+   "exit_code": 2,
+   "summary": [
+    "76_veldo_0079_grooming                          22 passed   13.07s",
+    "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 13.07s"
+   ],
+   "seconds": 13.139
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "71_veldo_0130_api"
+   ],
+   "environment": "normal",
+   "exit_code": 2,
+   "summary": [
+    "71_veldo_0130_api                               42 passed   19.15s",
+    "selftest (PARTIAL, 1 of 142 suites): 68 passed, 0 failed in 19.15s"
+   ],
+   "seconds": 19.262
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "environment": "clean",
+   "exit_code": 2,
+   "summary": [
+    "91_veldo_0151_specialists                       23 passed    1.90s",
+    "selftest (PARTIAL, 1 of 142 suites): 49 passed, 0 failed in 1.90s"
+   ],
+   "seconds": 1.969
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "73_veldo_0089_team"
+   ],
+   "environment": "clean",
+   "exit_code": 2,
+   "summary": [
+    "73_veldo_0089_team                              26 passed    2.93s",
+    "selftest (PARTIAL, 1 of 142 suites): 52 passed, 0 failed in 2.93s"
+   ],
+   "seconds": 3.021
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "75_veldo_0150_own_message_acceptance"
+   ],
+   "environment": "clean",
+   "exit_code": 2,
+   "summary": [
+    "75_veldo_0150_own_message_acceptance            13 passed    1.96s",
+    "selftest (PARTIAL, 1 of 142 suites): 39 passed, 0 failed in 1.96s"
+   ],
+   "seconds": 2.068
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "76_veldo_0079_grooming"
+   ],
+   "environment": "clean",
+   "exit_code": 2,
+   "summary": [
+    "76_veldo_0079_grooming                          22 passed   12.09s",
+    "selftest (PARTIAL, 1 of 142 suites): 48 passed, 0 failed in 12.09s"
+   ],
+   "seconds": 12.19
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "71_veldo_0130_api"
+   ],
+   "environment": "clean",
+   "exit_code": 2,
+   "summary": [
+    "71_veldo_0130_api                               42 passed   27.73s",
+    "selftest (PARTIAL, 1 of 142 suites): 68 passed, 0 failed in 27.73s"
+   ],
+   "seconds": 27.831
+  }
+ ],
+ "spec_id": "VELDO-0151",
+ "status": "partial checks only; no gate or landing claim",
+ "scoped_exit_note": "Scoped selftest intentionally exits 2 even with zero failed assertions.",
+ "mutation_execution": "Not run: token rules reserve mutation checking for the reviewer.",
+ "full_selftest_and_gate": "Not run: forbidden by token rules.",
+ "checks": [
+  {
+   "command": [
+    "python3",
+    ".veldo/validate.py",
+    "all"
+   ],
+   "exit_code": 0,
+   "summary": "Validator completed; existing stand-down and historical proof notices retained in the scratch log."
+  },
+  {
+   "command": [
+    "python3",
+    "scripts/check_git_boundary.py"
+   ],
+   "exit_code": 0,
+   "summary": [
+    "Git subprocess boundary: pass"
+   ]
+  },
+  {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+   ],
+   "exit_code": 0,
+   "summary": [
+    "0 bad anchors"
+   ]
+  },
+  {
+   "command": [
+    "python3",
+    "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+    "VELDO-0151"
+   ],
+   "exit_code": 0,
+   "summary": [
+    "changed 30, outside the footprint: none"
+   ]
+  },
+  {
+   "command": [
+    "git",
+    "diff",
+    "--check"
+   ],
+   "exit_code": 0,
+   "summary": []
+  }
+ ],
+ "missing_requested_checker": "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpadanchor_check.py",
+ "sha256": {
+  ".veldo/control_team.py": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+  "engine/.veldo/control_team.py": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+  "scripts/suites/91_veldo_0151_specialists.py": "134c26a9253482be61cfdcc5c1c2cce4ddeedda6efdfade3444fd1e3a292dcd9"
+ },
+ "implementation_commit": "e8ed5b4cba81657a2dfe8e7392d32d342f1c3142",
+ "engine_copy_identical": true,
+ "red_record": {
+  "path": "proof/VELDO-0151/red-at-f1e1abb9.json",
+  "behavior_rows": 23,
+  "all_red_by_assertion": true
+ }
+}

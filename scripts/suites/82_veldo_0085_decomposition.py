@@ -432,7 +432,7 @@ def _v85_suite():
 
             # The accepted objective the backlog items are taken from, and its RAW features.
             body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': 'api-78-2', 'edge': 'api-edge',
-                    'principal': 'olga', 'text': 'For proj-a: travelers can buy a pass in two taps.', 'project': None,
+                    'principal': 'olga', 'text': 'For proj-a: travelers can buy a pass in two taps.', 'project': 'proj-a',
                     'clarifies': None}
             m1 = intake.receive('api_request', {'request': body, 'signature': sign_as('api-edge', S.canonical_bytes(body))})
 

@@ -1,0 +1,10 @@
+{
+  "production": "62adf17b",
+  "command": "python3 scripts/selftest.py --suite 86_veldo_0148_re_land",
+  "scenario": "Injected 5.25-second delay in receiver retain, before release. A deterministic scheduling-delay reproduction, not a reproduced gate0148o failure.",
+  "result": [
+    "  VELDO-0148 receiver/pre-release-budget detail: healthy preparation took 5.250s before release: {'refusal': 'spawn_failed:containment:heartbeat_timeout', 'settled': True, 'group': {'unit': 'veldo-dispatch-c957919fa661b80f28947fa0f43952e2.scope', 'slice': 'v148c8b8f87b.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v148c8b8f87b.slice/veldo-dispatch-c957919fa661b80f28947fa0f43952e2.scope'}}",
+    "  SELFTEST FAIL: VELDO-0148 receiver/pre-release-budget",
+    "selftest (PARTIAL, 1 of 142 suites): 50 passed, 1 failed in 46.77s"
+  ]
+}

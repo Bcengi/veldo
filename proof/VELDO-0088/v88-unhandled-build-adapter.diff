@@ -1,0 +1,11 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1608,7 +1608,7 @@
+         if build is None:
+             try:
+                 role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
+-            except pm.Refused as error:
++            except KeyError as error:
+                 report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'build',
+                                           'refusals': [error.code]})
+                 return None

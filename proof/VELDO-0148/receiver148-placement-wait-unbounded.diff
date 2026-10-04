@@ -1,0 +1,5 @@
+--- a/.veldo/control_heartbeat.py
++++ b/.veldo/control_heartbeat.py
+@@ -113 +113 @@
+-            if not poller.poll(int(SETUP_SECONDS * 1000)):
++            if not poller.poll():

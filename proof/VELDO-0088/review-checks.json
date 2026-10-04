@@ -1,0 +1,247 @@
+{
+ "scope": "Scoped direct service consumers only; not gate verification.",
+ "checks": [
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 56.31s"
+   ],
+   "failures": [],
+   "seconds": 56.31,
+   "note": "Normal scoped run completed before the sequential compatibility collector."
+  },
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 47 passed, 0 failed in 77.21s"
+   ],
+   "failures": [],
+   "seconds": 77.29
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 68 passed, 0 failed in 19.12s"
+   ],
+   "failures": [],
+   "seconds": 19.2
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 68 passed, 0 failed in 27.61s"
+   ],
+   "failures": [],
+   "seconds": 27.69
+  },
+  {
+   "suite": "85_veldo_0158_credential_delivery",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 49 passed, 0 failed in 4.30s"
+   ],
+   "failures": [],
+   "seconds": 4.37
+  },
+  {
+   "suite": "85_veldo_0158_credential_delivery",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 49 passed, 0 failed in 8.81s"
+   ],
+   "failures": [],
+   "seconds": 8.89
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 30.15s"
+   ],
+   "failures": [],
+   "seconds": 30.23
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 30.20s"
+   ],
+   "failures": [],
+   "seconds": 30.28
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 55 passed, 0 failed in 26.49s"
+   ],
+   "failures": [],
+   "seconds": 26.56
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 55 passed, 0 failed in 49.68s"
+   ],
+   "failures": [],
+   "seconds": 49.75
+  },
+  {
+   "suite": "83_veldo_0154_factory_loop",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 31.73s"
+   ],
+   "failures": [],
+   "seconds": 31.81
+  },
+  {
+   "suite": "83_veldo_0154_factory_loop",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 39 passed, 0 failed in 41.57s"
+   ],
+   "failures": [],
+   "seconds": 41.64
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 59.03s"
+   ],
+   "failures": [],
+   "seconds": 59.11
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 62.54s"
+   ],
+   "failures": [],
+   "seconds": 62.63
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 37 passed, 0 failed in 17.58s"
+   ],
+   "failures": [],
+   "seconds": 17.65
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 37 passed, 0 failed in 18.32s"
+   ],
+   "failures": [],
+   "seconds": 18.39
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 56 passed, 0 failed in 14.90s"
+   ],
+   "failures": [],
+   "seconds": 14.98
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 56 passed, 0 failed in 16.05s"
+   ],
+   "failures": [],
+   "seconds": 16.13
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 35 passed, 0 failed in 12.05s"
+   ],
+   "failures": [],
+   "seconds": 12.13
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 35 passed, 0 failed in 13.39s"
+   ],
+   "failures": [],
+   "seconds": 13.47
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 27.01s"
+   ],
+   "failures": [],
+   "seconds": 27.08
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 38.68s"
+   ],
+   "failures": [],
+   "seconds": 38.75
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 44 passed, 0 failed in 11.34s"
+   ],
+   "failures": [],
+   "seconds": 11.44
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 44 passed, 0 failed in 11.42s"
+   ],
+   "failures": [],
+   "seconds": 11.52
+  }
+ ],
+ "clean_environment": "Fresh environment with only PATH, HOME, TMPDIR, LANG, LC_ALL, TZ, PYTHONDONTWRITEBYTECODE, PYTHONNOUSERSITE, PYTHONHASHSEED, GIT_CONFIG_NOSYSTEM, GIT_CONFIG_GLOBAL and GIT_TERMINAL_PROMPT, using the requested values; HOME is a generated directory under /dev/shm."
+}

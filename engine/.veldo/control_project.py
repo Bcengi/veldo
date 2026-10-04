@@ -149,6 +149,12 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 
             'unsettled': 'missing_evidence', 'stale_answer': 'stale_subject', 'not_approved': 'missing_authority'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
+# The optional prefixes of a project's ticket keys (VELDO-0152): `BCG` for `BCG-123`.
+TICKET_PREFIXES = 'ticket_key_prefixes'
+_TICKET_PREFIX = re.compile(r'^[A-Z][A-Z0-9_]{1,9}$')
+# The one project every factory has, for requests that are not yet any project's (VELDO-0143).
+FACTORY_PROJECT = 'factory'
+
 
 def taxonomy(code):
     return TAXONOMY.get(str(code).split(':', 1)[0], 'unknown_outcome')
@@ -205,6 +211,21 @@ def charter_problems(charter):
     if not isinstance(charter, dict) or not _is_str(charter.get('purpose')):
         return ['invalid_input:charter']
     return []
+
+
+def ticket_prefix_problems(prefixes):
+    """Why a ticket key prefix list is malformed: a list of distinct prefixes, each an uppercase letter
+    followed by one to nine uppercase letters, digits or underscores."""
+    if (not isinstance(prefixes, list) or not all(isinstance(p, str) and _TICKET_PREFIX.match(p) for p in prefixes)
+            or len(set(prefixes)) != len(prefixes)):
+        return ['invalid_input:' + TICKET_PREFIXES]
+    return []
+
+
+def ticket_key_prefixes(data):
+    """The ticket key prefixes a project record's data lists, or [] when it lists none."""
+    prefixes = data.get(TICKET_PREFIXES) if isinstance(data, dict) else None
+    return list(prefixes) if prefixes is not None and not ticket_prefix_problems(prefixes) else []
 
 
 def budget_problems(budget):
@@ -359,6 +380,11 @@ class Projects:
             observation['adoption'] = self._adoption(fields['execution_repository'])
             self._activation_evidence(fields, state, name, now)
             params['fields'] = fields
+            if TICKET_PREFIXES in command:
+                problems = ticket_prefix_problems(command[TICKET_PREFIXES])
+                if problems:
+                    raise Refused(problems[0], 'ticket key prefixes are distinct uppercase tracker key prefixes')
+                params[TICKET_PREFIXES] = list(command[TICKET_PREFIXES])
         else:
             if current is None or current.get('kind') != KIND or not isinstance(current.get('data'), dict):
                 raise Refused('no_such_project', pid)
@@ -586,6 +612,8 @@ class Projects:
                         repository_uuid=self.ids['repository_uuid'], charter_digest=_digest(fields['charter']),
                         charter_revision=1, provenance=provenance,
                         history=[dict(entry, source='DRAFT', target='ACTIVE')], stopping=[], **fields)
+            if TICKET_PREFIXES in params:
+                data[TICKET_PREFIXES] = list(params[TICKET_PREFIXES])
             return {pid: {'kind': KIND, 'data': data}}
         if current is None or current.get('kind') != KIND:
             raise Refused('no_such_project', pid)

@@ -1,0 +1,127 @@
+{
+ "schema": "veldo.scoped-review-followup/v1",
+ "spec_id": "VELDO-0151",
+ "implementation_commit": "54e88be6523e1fc908eee1adcf5c5c7aa8348f1b",
+ "suite": "scripts/suites/91_veldo_0151_specialists.py",
+ "suite_sha256": "c4eb596a1933ebb7b96a3e6411d969764d7aaed566d7ffe1370e5ca9e1ac6db3",
+ "scope": "Only suite 91, sequential runs. No aggregate selftest, gate or mutation runner executed. Not a gate stamp, proof manifest or landing decision.",
+ "method": "Rows and mutation registrations committed before each hand-applied diff. Production restored in finally after each mutant; engine copy unchanged.",
+ "run_order": [
+  "honest-before",
+  "v151-specialist-roster-unchecked",
+  "v151-reviewer-capability-binding-dropped",
+  "honest-after"
+ ],
+ "honest_runs": [
+  {
+   "phase": "honest-before",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "exit_code": 2,
+   "behavior_rows_passed": 25,
+   "failed_assertions": 0,
+   "log_sha256": "ebad3b3074eda50aded7f78dcdd1b1d7479f6f0a240da1227ea1f78e2cd8b17d",
+   "log_excerpts": [
+    "selector    --suite 91_veldo_0151_specialists",
+    "running     1 of 142 suites: 91_veldo_0151_specialists",
+    "91_veldo_0151_specialists                       25 passed    2.11s",
+    "selftest (PARTIAL, 1 of 142 suites): 51 passed, 0 failed in 2.11s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+   ]
+  },
+  {
+   "phase": "honest-after",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "exit_code": 2,
+   "behavior_rows_passed": 25,
+   "failed_assertions": 0,
+   "log_sha256": "7a8304262f5e8ea43b519989b2b7856fcce14b3efad8f1a6fc4e57d41a9707e6",
+   "log_excerpts": [
+    "selector    --suite 91_veldo_0151_specialists",
+    "running     1 of 142 suites: 91_veldo_0151_specialists",
+    "91_veldo_0151_specialists                       25 passed    2.04s",
+    "selftest (PARTIAL, 1 of 142 suites): 51 passed, 0 failed in 2.04s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+   ]
+  }
+ ],
+ "mutants": [
+  {
+   "name": "v151-specialist-roster-unchecked",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "194568f4ec7c80a038ac6269fe002fbcf30f178dba10ebcefa3b96820ed91c68",
+   "exit_code": 1,
+   "seconds": 2.32,
+   "named_rows": [
+    "roles/specialist-outside-project"
+   ],
+   "behavior_rows_passed": 24,
+   "failed_assertions": 1,
+   "failure_kind": "behavior assertion; no crash, timeout or raised region",
+   "diff": "proof/VELDO-0151/v151-specialist-roster-unchecked.diff",
+   "log_sha256": "70b007026c7bb3c61e251cc1fbe8f740304394230bbe49967ca83f8cd4cbeb62",
+   "log_excerpts": [
+    "selector    --suite 91_veldo_0151_specialists",
+    "running     1 of 142 suites: 91_veldo_0151_specialists",
+    "VELDO-0151 detail: roles/specialist-outside-project: refuses by reason; one request to current owner; request names problem; no team revision accepted",
+    "SELFTEST FAIL: VELDO-0151 roles/specialist-outside-project",
+    "91_veldo_0151_specialists                       24 passed    2.21s",
+    "selftest (PARTIAL, 1 of 142 suites): 50 passed, 1 failed in 2.21s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+   ]
+  },
+  {
+   "name": "v151-reviewer-capability-binding-dropped",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "b6b1ef5a7ab0b025e6ab563d9ac06d4f7e13c489ef03914e56acaf5201ea6151",
+   "exit_code": 1,
+   "seconds": 2.171,
+   "named_rows": [
+    "assignment/reviewer-capability-binding"
+   ],
+   "behavior_rows_passed": 24,
+   "failed_assertions": 1,
+   "failure_kind": "behavior assertion; no crash, timeout or raised region",
+   "diff": "proof/VELDO-0151/v151-reviewer-capability-binding-dropped.diff",
+   "log_sha256": "5547600573d5e656b78a9cd06dec56f54926cf53be27848e38543f19d0e2d3b0",
+   "log_excerpts": [
+    "selector    --suite 91_veldo_0151_specialists",
+    "running     1 of 142 suites: 91_veldo_0151_specialists",
+    "VELDO-0151 detail: assignment/reviewer-capability-binding: reviewer configuration revision bound; stored reader sees exact reviewer binding",
+    "SELFTEST FAIL: VELDO-0151 assignment/reviewer-capability-binding",
+    "91_veldo_0151_specialists                       24 passed    2.08s",
+    "selftest (PARTIAL, 1 of 142 suites): 50 passed, 1 failed in 2.08s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+   ]
+  }
+ ],
+ "restoration": {
+  "installed_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+  "engine_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+  "byte_identical": true
+ },
+ "exit_code_note": "Scoped selftest returns 2 with zero failed assertions, and 1 with a failed assertion."
+}

@@ -146,7 +146,7 @@ def _v136_checks(base):
                                     nonce='fixture-n-%d' % serial[0]), 'authority', journal_sign, 1)
 
     person = dict(principal_type='person', roles=[], scope=['project-a'])
-    members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a']),
+    members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a', 'factory']),
                'owner3': dict(person), 'stranger': dict(person),
                'pm': dict(principal_type='service', roles=[], scope=['project-a']),
                'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
@@ -193,6 +193,8 @@ def _v136_checks(base):
     intake = None if IN is None else IN.Intake(
         S, CM, AUTHC, acquirer, conn, domain='hint-intake', projects=('project-a', 'project-b'), api_edge='api-edge',
         journal_signer='authority', sign=journal_sign, asker=V.TelegramPresentationEdge(P, url, 'sandbox-bot'))
+    neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+    neighbor152['factory'](intake, ids, 'owner', sign_as)
     taken = {}
     counter = [0]
 
@@ -463,7 +465,7 @@ def _v136_checks(base):
             out = sent_since(mark)
             took = intake_of(u)
             check(new, 'new work is refused as no answer and taken by intake as a new proposal, text as written',
-                  got.get(u['update_id']) == ('refused', 'missing_reply_reference') and took.get('outcome') == 'proposed'
+                  got.get(u['update_id']) == ('refused', 'missing_reply_reference') and took.get('outcome') == 'inbox'
                   and (intake.proposal(took.get('proposal_id')) or {}).get('text') == u['message']['text'])
             check(new, 'it gets exactly one bot message: a reply saying it was taken as new work, not as an answer, '
                        'and to press Reply on the request message, naming the waiting request; never "answers nothing"',
@@ -516,7 +518,7 @@ def _v136_checks(base):
                   and inbox.brief(b1).get('category') == 'pending')
             check(shaped, 'it gets exactly one bot message, saying it was taken as new work, not as an answer, and to '
                           'press Reply on the request message to answer it, naming the request; never "answers nothing"',
-                  took.get('outcome') == 'proposed' and len(out) == 1 and is_hint(out[0], u, [b1])
+                  took.get('outcome') == 'inbox' and len(out) == 1 and is_hint(out[0], u, [b1])
                   and 'as new work, not as an answer' in out[0]['text'] and 'answers nothing' not in out[0]['text'])
             answer_all([rb1], shaped)
 
@@ -531,27 +533,24 @@ def _v136_checks(base):
                 got = acquire()
                 out = sent_since(mark)
                 took = intake_of(u)
-                question = intake.question(took.get('question_id')) or {}
-                check(two, 'new work with two candidate projects is kept as an inbox proposal with its question',
-                      got.get(u['update_id']) == ('refused', 'missing_reply_reference') and took.get('outcome') == 'inbox'
-                      and question.get('candidates') == ['project-a', 'project-b'])
-                check(two, 'the owner gets exactly one bot message: the project question and the note naming the waiting '
-                           'request, as one reply to his message',
-                      len(out) == 1 and out[0]['text'].startswith(question.get('prompt') or '\0')
-                      and is_hint(out[0], u, [t1]) and 'as new work, not as an answer' in out[0]['text']
-                      and 'answers nothing' not in out[0]['text'])
-                kept = hint_of(u) or {'data': {}}
-                check(two, 'that one message is the question\'s recorded delivery and the kept hint\'s platform answer',
-                      len(out) == 1 and (question.get('delivery') or {}).get('message_id') == out[0]['message_id']
-                      and (kept['data'].get('platform') or {}).get('message_id') == out[0]['message_id']
-                      and kept['data'].get('taken') == 'inbox')
+                check(two, 'intake sends only the taken note', took.get('outcome') == 'inbox'
+                      and not took.get('question_id') and len(out) == 1 and is_hint(out[0], u, [t1])
+                      and 'as new work, not as an answer' in out[0]['text'])
                 mark = len(api['sent'])
-                reply = say(owner_user, 'project-b', reply_to=out[0]['message_id'] if out else None)
+                neighbor152['unclear'](intake, took)
+                question = intake.question(intake.proposal(took['proposal_id'])['question_id']) or {}
+                asked = sent_since(mark)
+                check(two, 'unclear route sends its own reply with every choice', len(asked) == 1
+                      and question.get('candidates') == ['project-a', 'project-b', 'a new project']
+                      and asked[0]['text'] == question['prompt']
+                      and (question.get('delivery') or {}).get('message_id') == asked[0]['message_id'])
+                mark = len(api['sent'])
+                reply = say(owner_user, 'project-b', reply_to=asked[0]['message_id'] if asked else None)
                 acquire()
                 resolved = intake_of(reply)
-                check(two, 'control: his Reply to that message answers the question and sends nothing back',
-                      resolved.get('outcome') == 'resolved' and (intake.proposal(resolved.get('proposal_id')) or {})
-                      .get('project') == 'project-b' and sent_since(mark) == [])
+                check(two, 'his Reply resolves and sends nothing back', resolved.get('outcome') == 'resolved'
+                      and (intake.proposal(resolved.get('proposal_id')) or {}).get('project') == 'project-b'
+                      and sent_since(mark) == [])
                 answer_all([rt1], two)
             finally:
                 widen(['project-a'])
@@ -564,6 +563,7 @@ def _v136_checks(base):
                 mark = len(api['sent'])
                 first = say(owner_user, 'Tidy the release notes.')
                 acquire()
+                neighbor152['unclear'](intake, intake_of(first))
                 asked = sent_since(mark)
                 check(replies, 'precondition: with nothing waiting, intake asks its project question alone',
                       intake_of(first).get('outcome') == 'inbox' and len(asked) == 1
@@ -589,7 +589,7 @@ def _v136_checks(base):
                 acquire()
                 out = sent_since(mark)
                 check(replies, 'control: his next new work gets its one note, naming both requests still waiting',
-                      intake_of(plain).get('outcome') == 'proposed' and len(out) == 1 and is_hint(out[0], plain, [d1, d2]))
+                      intake_of(plain).get('outcome') == 'inbox' and len(out) == 1 and is_hint(out[0], plain, [d1, d2]))
                 answer_all([rd1, rd2], replies)
             finally:
                 widen(['project-a'])

@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -599 +599 @@
+-            'team': {'revision': record['revision'], 'digest': record['digest'], 'version': record['version']},
++            'team': {'revision': 0, 'digest': record['digest'], 'version': record['version']},

@@ -1,80 +1,22 @@
-"""One intake for owner messages from Telegram and the authenticated API (VELDO-0126, PLAN-0019 W89).
+"""Common authenticated Telegram and API intake (VELDO-0126, amended by VELDO-0152).
 
-WHAT THIS MODULE IS. The common intake operation that turns an owner's message into a proposal. There
-are exactly two source kinds, `telegram_message` and `api_request`, and each has one adapter. Both
-adapters build the same normalized intake command (source kind and identity, the exact text, the
-authenticated principal, the requested project and the proposal it clarifies, plus the source's own
-provenance) and hand it to the one common service, `_submit`, whose store command `intake_record` is
-the only writer of intake sources, proposals and questions (control_store.declare_owners). Nothing
-else in this module writes to the store except `intake_question_asked`, which records where a
-question was delivered.
+Only the command's project field and a unique ticket key prefix decide an ordinary
+project. Names in prose are hints. Every undecided message is a factory inbox
+proposal awaiting a dispatched PM route; intake runs no model or wording rule.
+Only an unclear route asks a project question. Replies naming an offered project
+resolve it; other replies are retained as input for the next PM run.
 
-ONE PUBLIC ATTESTED SUBMISSION (VELDO-0133). A person's signed answer elsewhere (a disposition
-question's `other`) carries an instruction the person signed and names the source it arrived on.
-`submit_attested` takes it only after this intake authenticates that source itself, exactly as its
-adapters do: a `telegram_message` source is the id of kept VELDO-0066 evidence, attributed again by
-the Acquirer, whose sender must resolve to the answering person in that person's own private chat;
-an `api_request` source is the request packet the API edge signed, verified by the API adapter,
-whose principal must be the answering person. Only then does the common service take the signed
-instruction as the text, the caller's project, and the source's own provenance with the caller's
-(the question and the answer command identities) beside it. The caller never supplies a source
-identity, a chat or a sender, and nothing else reaches `_submit` from outside this module.
-
-WHO IS SPEAKING. A Telegram message counts only as the VELDO-0066 Acquirer attributes it: kept
-canonical evidence, a person account in person, in that person's own private chat, mapped by the
-stable sender id to one enrolled, active person member. The attribution is re-derived from the kept
-evidence each time, never read from a label, a display name or anything written in the text. Only an
-ordinary message is intake: one that replies to nothing, or replies to a message that is not a
-presentation (the owner's own earlier message, or a question this module asked). An answer to a
-presentation belongs to settlement, never to intake. An API request counts only when it is signed by
-the configured API edge principal (the authenticated API of VELDO-0130, a trusted channel edge) with
-its active key in the store's keyring, and the principal it asserts is an active person member. Both
-sources then pass the same person check, the Acquirer's, inside the store transaction. Authority
-holds at both ends: a Telegram message whose sender was not a member at the message's platform date
-stays refused after the sender is enrolled, read from the effective time of the key the enrollment
-wrote (VELDO-0025 keeps none on the membership entity).
-
-THE TEXT IS KEPT AS WRITTEN. No ticket identifier, command syntax or structure is required, and the
-text is never trimmed or rewritten. A ticket link in the text is data an agent may fetch later with
-its configured tools; intake fetches nothing and watches nothing.
-
-PROJECT CONTEXT. The candidate projects are the configured projects the principal's membership scope
-covers. The project is the one the API request names (it must be a candidate), else the one candidate
-the text names as a word, else the principal's only candidate. When none of these decides, intake does
-not choose: it keeps an inbox proposal and a question naming the candidates. A Telegram question is
-sent back as a reply to the owner's message through the VELDO-0065 edge; an API question is the
-response. A follow-up that clarifies a proposal (a Telegram reply to the original message or to the
-question, or an API request naming the proposal) is kept with its own source. It resolves an inbox
-proposal into a proposed objective when it names one of the question's candidates, and is otherwise
-kept on the proposal it clarifies. A follow-up to an inbox proposal already resolved lands on the
-objective it was resolved to, never on the retired inbox record.
-
-ONE REPLY ABOUT WAITING REQUESTS (VELDO-0136). A Telegram message the Acquirer refused as replying
-to no presentation (NOT_A_REPLY) gets its one decision here, after intake has seen it, and at most one
-bot reply, through the presenter's `hint_owner`: a message intake takes as a clarification or as the
-answer to its own question gets none; one taken as a new proposal while requests of the owner wait
-gets one note that it was taken as new work, not as an answer, naming the waiting requests, merged
-into the project question when intake asks one; the plain hint goes only to a message intake does not
-take. Each waiting request version is named once, and a later pass never decides a message again.
-
-INTAKE PROPOSES AND NOTHING ELSE. It writes only intake sources, proposals (state PROPOSED,
-AWAITING_PROJECT or RESOLVED) and questions: never an execution unit, a backlog item, an admission, a
-priority, a claim, a reservation or an effect. Admission and priority are later owner decisions.
-
-ONE SOURCE REQUEST, ONE PROPOSAL. A source's identity (bot, chat and message id; or the API request
-id) names one intake source record. The same request again with the same content returns the proposal
-it produced and writes nothing; changed content under the same identity, a Telegram edit included, is
-refused `identity_conflict` and the record is unchanged.
-
-WHAT IT IS NOT. Not the API server (VELDO-0130), not Jira intake, polling or webhooks (dropped by the
-owner), not elaboration, admission or priority, and not redelivery or outage recovery (Release 2).
-Observations carry identities, versions and outcomes, never the token or key material. Standard
-library only.
+Sources preserve exact text, provenance and the membership and project versions
+read in the transaction. The owning commands write proposals and questions only,
+never admission, priority or executable units. Repeated source identities preserve
+the original result. The owner receives the existing taken-as-work hint for an
+inbox proposal, and questions are delivered on the original channel.
 """
 import hashlib
 import importlib.util
 from pathlib import Path
 import json
+import re
 import sqlite3
 import time
 
@@ -87,6 +29,8 @@ def _renderer_module(name):
 
 
 TEXT = _renderer_module('control_channel_presentation_text')
+PJ = _renderer_module('control_project')
+RT = _renderer_module('control_intake_routes')
 
 COMMAND_SCHEMA = 'veldo.intake_command/v1'
 API_SCHEMA = 'veldo.intake_api_request/v1'
@@ -100,7 +44,8 @@ OWNER = 'VELDO-0126 intake'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 COMMAND_FIELDS = ('schema', 'source_kind', 'source_id', 'principal', 'text', 'project', 'clarifies', 'provenance')
 API_FIELDS = ('schema', 'domain', 'request_id', 'edge', 'principal', 'text', 'project', 'clarifies')
-PROPOSAL_STATES = ('PROPOSED', 'AWAITING_PROJECT', 'RESOLVED')
+PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED')
+TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-Za-z0-9_-])')
 # The attribution's own reasons for a message it attributed to a person but that is no presentation
 # answer: it replies to nothing, or to a message that is not a presentation.
 ORDINARY = ('missing_reply_reference', 'unknown_presentation')
@@ -108,7 +53,7 @@ EVIDENCE_KIND = 'channel_evidence'  # VELDO-0066's kept Telegram evidence
 TEXT_LIMIT = 16384
 ID_LIMIT = 128
 PUNCTUATION = ',.;:!?()[]{}"\'<>'
-TAXONOMY = {'unauthenticated': 'unauthenticated', 'unauthorized': 'unauthorized', 'identity_conflict': 'stale_version',
+TAXONOMY = {'unsupported_configuration': 'unsupported_configuration', 'unauthenticated': 'unauthenticated', 'unauthorized': 'unauthorized', 'identity_conflict': 'stale_version',
             'stale_version': 'stale_version', 'unsupported_source': 'unsupported_configuration',
             'not_intake': 'unsupported_configuration', 'invalid_input': 'unsupported_configuration',
             'missing_evidence': 'missing_evidence', 'unavailable_service': 'unavailable_service',
@@ -180,6 +125,21 @@ def named_projects(text, candidates):
     return [p for p in candidates if p.casefold() in words]
 
 
+def keyed_projects(text, candidates, prefixes):
+    """(the candidates a ticket key in the text names, the prefixes several candidates list). A key
+    names a candidate when exactly that one candidate lists its prefix, compared without case."""
+    listed = {p: {x.casefold() for x in prefixes.get(p) or []} for p in candidates}
+    named, shared = [], []
+    for match in TICKET_KEY.finditer(text):
+        prefix = match.group(1).casefold()
+        listers = [p for p in candidates if prefix in listed[p]]
+        if len(listers) == 1 and listers[0] not in named:
+            named.append(listers[0])
+        elif len(listers) > 1 and prefix not in shared:
+            shared.append(prefix)
+    return named, shared
+
+
 def _identifier(value):
     return type(value) is str and 0 < len(value) <= ID_LIMIT and value.isascii() and value.isprintable()
 
@@ -204,7 +164,7 @@ def command_problem(command):
     return None
 
 
-class Intake:
+class Intake(RT.Routes):
     """The intake of one domain over a real control store connection.
 
     `store`, `membership` and `contract` are the control_store, control_membership and
@@ -228,10 +188,16 @@ class Intake:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._adapters = {'telegram_message': self._telegram, 'api_request': self._api}
-        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD,),
-                                                 QUESTION_KIND: (RECORD, ASKED)}, module=__file__)
+        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD, RT.ROUTE),
+                                                 QUESTION_KIND: (RECORD, ASKED, RT.ROUTE)}, module=__file__)
         conn.command_registry[RECORD] = {'transaction_transition': self._record_transition, 'writes': WRITES}
         conn.command_registry[ASKED] = {'transaction_transition': self._asked_transition, 'writes': WRITES}
+
+        conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
+        self.route_refused = Refused
+
+    def _route_transition(self, conn, params, before):
+        return self._route_plan(params)[0]
 
     # reading
 
@@ -280,7 +246,14 @@ class Intake:
                 refused[e['refusal']] = refused.get(e['refusal'], 0) + 1
         proposals = self._all(PROPOSAL_KIND)
         return dict(self.counts, refused_by_reason=refused,
-                    pending={'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
+                    routes={r: sum(e['operation'] == 'route' and e.get('route', {}).get('route') == r and not e['refusal']
+                                   for e in self.observations) for r in RT.ROUTES},
+                    decisions={r: sum(e['operation'] == 'submit' and not e.get('repeated') and
+                                      (e.get('decision') or {}).get('decided_by') == r for e in self.observations)
+                               for r in ('request', 'ticket_key', None)},
+                    pending={'awaiting_route': sum(p.get('state') == 'AWAITING_ROUTE' for p in proposals),
+                             'new_project': sum(p.get('state') == 'NEW_PROJECT' for p in proposals),
+                             'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
                              'awaiting_project': sum(1 for p in proposals if p.get('state') == 'AWAITING_PROJECT'),
                              'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open')})
 
@@ -302,10 +275,11 @@ class Intake:
         if source_kind == 'telegram_message' and type(payload) is str:
             result['evidence_id'] = payload
             # The one decision about what the owner is told, now that intake has seen the message: a
-            # proposal gets the new-work note, a message intake did not take the plain hint; an inbox
-            # proposal's note rides on its question (_ask); a clarification or a resolution gets none.
-            if not result.get('repeated') and result.get('outcome') in ('proposed', 'refused'):
-                self._hint(payload, 'proposed' if result['outcome'] == 'proposed' else None)
+            # proposal (including a factory inbox proposal) gets the new-work note here; a message
+            # intake did not take gets the plain hint. The PM's later unclear-route question is a
+            # separate reply (VELDO-0152); a clarification or a resolution gets no hint.
+            if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):
+                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
         return result
 
     def take_telegram(self):
@@ -491,10 +465,8 @@ class Intake:
         except sqlite3.Error:
             return self._event('submit', 'refused', 'unavailable_service', accepted_versions=expected, **about)
         done = self._event('submit', result['outcome'], None, accepted_versions=expected, project=result.get('project'),
-                           command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
+                           decision=result.get('decision'), command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
                                                              if k in result}))
-        if result['outcome'] == 'inbox' and command['source_kind'] == 'telegram_message':
-            self._ask(result['question_id'], command)
         return done
 
     def _record_transition(self, conn, params, before):
@@ -530,19 +502,29 @@ class Intake:
                 raise Refused('unauthorized:' + why, principal)
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
-        candidates = [p for p in self.projects if self.CM.scope_covers(scope, p)]
-        if not candidates:
+        candidates = [p for p in self.projects if p != PJ.FACTORY_PROJECT and self.CM.scope_covers(scope, p)]
+        records = {p: read(PJ.project_id(p)) for p in self.projects
+                   if p in candidates or p == PJ.FACTORY_PROJECT}
+        factory = records.get(PJ.FACTORY_PROJECT)
+        owner = factory and factory['kind'] == PJ.KIND and factory['data'].get('owner') == principal
+        if not candidates and not owner:
             raise Refused('unauthorized:no_project', principal)
         explicit = command['project']
+        if explicit == PJ.FACTORY_PROJECT:
+            raise Refused('invalid_input:factory_project')
         if explicit is not None and explicit not in candidates:
             raise Refused('unauthorized:project', explicit)
-        named = named_projects(text, candidates)
-        context = {'domain': self.domain, 'candidates': candidates, 'membership_version': member['version']}
+        prefixes = {p: PJ.ticket_key_prefixes(records[p]['data']) if records.get(p) else [] for p in candidates}
+        keyed, shared = keyed_projects(text, candidates, prefixes)
+        hints = named_projects(text, candidates)
+        context = {'domain': self.domain, 'candidates': candidates, 'membership_version': member['version'],
+                   'project_versions': {PJ.project_id(p): r['version'] if r else 0 for p, r in records.items()},
+                   'projects': [{'id': p, 'name': p, 'ticket_key_prefixes': prefixes[p]} for p in candidates]}
         pid = proposal_id(key)
         source = {'schema': SOURCE_SCHEMA, 'source_id': key, 'source_kind': command['source_kind'],
                   'source_ref': command['source_id'], 'principal': principal, 'text': text,
                   'content_digest': content_digest(command), 'command': command, 'context': context}
-        changes, reads = {}, [principal]
+        changes, reads = {}, [principal] + [PJ.project_id(p) for p in records]
         clarifies = command['clarifies']
         if clarifies is not None:
             live, target = self._live_proposal(clarifies, principal, read, reads)
@@ -550,39 +532,39 @@ class Intake:
             data['clarifications'] = list(data.get('clarifications') or []) + [{'source': key, 'text': text}]
             question = read(data['question_id']) if data.get('question_id') else None
             options = [p for p in (question['data']['candidates'] if question else []) if p in candidates]
-            said = named_projects(text, options)
+            said = list(dict.fromkeys(named_projects(text, options) + keyed_projects(text, options, prefixes)[0]))
             chosen = explicit if explicit in options else (said[0] if len(said) == 1 else None)
             if data['state'] == 'AWAITING_PROJECT' and question is not None and chosen is not None:
                 resolved = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective', 'state': 'PROPOSED',
                             'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
                             'sources': list(data['sources']) + [key], 'clarifications': data['clarifications'],
                             'question_id': None, 'resolves': live, 'resolved_to': None}
-                data.update(state='RESOLVED', resolved_to=pid)
+                resolved.update(context=data.get('context', {}), decision=data.get('decision'), route=dict(data.get('route') or {}, route='existing_project', project=chosen,
+                                           reason='The principal answered the offered project question.'), hints=data.get('hints', []))
+                data.update(state='ROUTED', resolved_to=pid, route=resolved['route'])
                 changes[pid] = {'kind': PROPOSAL_KIND, 'data': resolved}
                 changes[question['data']['question_id']] = {'kind': QUESTION_KIND, 'data': dict(
                     question['data'], state='answered', answered_by=key, project=chosen)}
                 result = {'outcome': 'resolved', 'proposal_id': pid, 'project': chosen}
             else:
+                if data['state'] == 'AWAITING_PROJECT':
+                    data['state'] = 'AWAITING_ROUTE'
                 result = {'outcome': 'clarification', 'proposal_id': live, 'project': data.get('project')}
             changes[live] = {'kind': PROPOSAL_KIND, 'data': data}
         else:
-            project = explicit or (named[0] if len(named) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)
+            project = explicit or (keyed[0] if len(keyed) == 1 else None)
+            rule = 'request' if explicit else ('ticket_key' if project else None)
+            if project is None and (factory is None or factory['kind'] != PJ.KIND):
+                raise Refused('unsupported_configuration:factory_project')
+            decision = dict(context, decided_by=rule, unresolved=None if project else 'undecided', hints=hints,
+                            shared_ticket_keys=shared)
             proposal = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective' if project else 'inbox',
-                        'state': 'PROPOSED' if project else 'AWAITING_PROJECT', 'domain': self.domain, 'project': project,
-                        'principal': principal, 'text': text, 'sources': [key], 'clarifications': [],
-                        'question_id': None, 'resolves': None, 'resolved_to': None}
-            result = {'outcome': 'proposed' if project else 'inbox', 'proposal_id': pid, 'project': project}
-            if project is None:
-                qid = question_id(key)
-                prompt = 'Which project is this for? Reply to this message with one of: %s.' % ', '.join(candidates)
-                proposal['question_id'] = qid
-                ask = {'schema': QUESTION_SCHEMA, 'question_id': qid, 'proposal_id': pid, 'principal': principal,
-                       'asks': 'project', 'candidates': candidates, 'prompt': prompt, 'state': 'open',
-                       'asked_on': command['source_kind'], 'answered_by': None, 'project': None,
-                       'delivery': ({'channel': 'api', 'request_id': command['source_id']}
-                                    if command['source_kind'] == 'api_request' else None)}
-                changes[qid] = {'kind': QUESTION_KIND, 'data': ask}
-                result.update(question_id=qid, question={'question_id': qid, 'prompt': prompt, 'candidates': candidates})
+                        'state': 'PROPOSED' if project else 'AWAITING_ROUTE', 'domain': self.domain,
+                        'project': project or PJ.FACTORY_PROJECT, 'principal': principal, 'text': text,
+                        'sources': [key], 'clarifications': [], 'question_id': None, 'resolves': None,
+                        'resolved_to': None, 'hints': hints, 'context': context, 'decision': decision, 'route': None}
+            result = {'outcome': 'proposed' if project else 'inbox', 'proposal_id': pid,
+                      'project': proposal['project'], 'decision': decision}
             changes[pid] = {'kind': PROPOSAL_KIND, 'data': proposal}
         source.update(proposal_id=result['proposal_id'], question_id=result.get('question_id'),
                       result={k: v for k, v in result.items() if k != 'project'})
@@ -605,7 +587,7 @@ class Intake:
             seen.append(pid)
             reads.append(pid)
             onward = target['data'].get('resolved_to')
-            if target['data'].get('state') != 'RESOLVED':
+            if target['data'].get('state') not in ('RESOLVED', 'ROUTED'):
                 return pid, target
             if not _identifier(onward) or onward in seen:
                 raise Refused('missing_evidence:clarifies', 'a resolved proposal names no live proposal: ' + str(pid))
@@ -657,24 +639,16 @@ class Intake:
 
     def _ask(self, qid, command):
         """Send an inbox proposal's question to the owner's chat as a reply to the message, and record
-        where the platform put it. When requests of the owner wait, the note that his message was taken
-        as new work is merged into the question and the one message goes through the presenter's hint
-        (VELDO-0136). A failed send leaves the question open and undelivered, by name."""
+        where the platform put it. VELDO-0152 decides the new-work hint at receipt; this later
+        unclear-route question is its own reply. A failed send leaves it open and undelivered, by name."""
         where, question = command['provenance'], self.question(qid)
         if self.asker is None:
-            self._hint(where.get('evidence_id'), 'proposed')
             return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
         prompt = render_prompt(question['prompt'])
-        hinted = self._hint(where.get('evidence_id'), 'inbox', lead=question['prompt'])
-        if hinted.get('attempted'):
-            sent = hinted.get('delivery')
-            if not isinstance(sent, dict):
-                return self._event('ask', 'refused', hinted.get('reason') or 'unknown_outcome', question_id=qid)
-        else:
-            try:
-                sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
-            except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
-                return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
+        try:
+            sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
+        except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
+            return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
         delivery = {'channel': 'telegram_chat', 'bot_id': where['bot_id'], 'chat_id': sent['chat_id'],
                     'message_id': sent['message_id'], 'date': sent['date']}
         row = self._entity(qid)

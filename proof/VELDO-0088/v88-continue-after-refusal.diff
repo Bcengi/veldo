@@ -1,0 +1,11 @@
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
+@@ -410,7 +410,7 @@
+             record['proposals'] = applied
+             self.save(record)
+             if not result.get('ok'):
+-                raise Refused('proposal_refused:' + proposal['name'], str(result.get('reason')))
++                continue
+             if proposal['type'] == 'grooming':
+                 service.requester = (record['manager'], self.command_sign)
+                 outcome = service.groom(command['item'])

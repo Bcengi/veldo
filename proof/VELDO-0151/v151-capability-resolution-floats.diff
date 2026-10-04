@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -457 +457 @@
+-                         reference['role'], reference['revision'])
++                         reference['role'], None)

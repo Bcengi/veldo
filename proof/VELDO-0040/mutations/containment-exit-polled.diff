@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -726 +726 @@
--                timeout = None if due == math.inf else max(0, math.ceil((due - time.time()) * 1000))
+@@ -1835 +1835 @@
+-                timeout = max(0, math.ceil(min(waits) * 1000)) if waits else None
 +                timeout = 50  # defect: the reap wakes every 50 ms to look

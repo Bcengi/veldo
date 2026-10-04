@@ -1,0 +1,39 @@
+{
+ "spec_id": "VELDO-0088",
+ "base_commit": "dcd26ae8",
+ "row": "followup/setup-pm-authority",
+ "mutation": "v88-setup-pm-service-role",
+ "scope": "Only the PM and factory setup suites, run sequentially. No gate or mutation driver executed.",
+ "note": "Successful partial suites return 2 by design; these results are not a gate stamp.",
+ "checks": [
+  {
+   "state": "old reservation_service role",
+   "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+   "returncode": 1,
+   "summary": "selftest (PARTIAL, 1 of 143 suites): 50 passed, 1 failed in 84.22s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0088 followup/setup-pm-authority"
+   ]
+  },
+  {
+   "state": "roles empty",
+   "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 143 suites): 51 passed, 0 failed in 86.39s",
+   "failures": []
+  },
+  {
+   "state": "roles empty",
+   "command": "python3 scripts/selftest.py --suite 73_veldo_0139_factory_setup",
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 31.48s",
+   "failures": []
+  }
+ ],
+ "sha256": {
+  ".veldo/control_factory_setup.py": "2b66fa64e2c922760a19ee3f551edfd5cfbc954b7f81f5921026c2e471b52a33",
+  "engine/.veldo/control_factory_setup.py": "2b66fa64e2c922760a19ee3f551edfd5cfbc954b7f81f5921026c2e471b52a33",
+  "scripts/suites/92_veldo_0088_pm_cycles.py": "ca1b6ce77f8dadba0d3181eee2c446d43398b6c2e1f89d0b1fd76e923953e5f5",
+  "proof/VELDO-0088/setup_fixture.py": "503b35762d68bbc8fcea98a6b3f4f02f963a9763a976026324bc7bdc7ae7a855"
+ }
+}

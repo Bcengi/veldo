@@ -14,6 +14,8 @@ depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
+  - ".veldo/control_factory_setup.py"
+  - "engine/.veldo/control_factory_setup.py"
   - "engine/.veldo/request.py"
   - ".veldo/request.py"
   - "packs/*/.veldo/request.py"
@@ -32,6 +34,21 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - ".veldo/control_launch.py"
+  - "engine/.veldo/control_launch.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "engine/.veldo/control_eligibility.py"
+  - ".veldo/control_eligibility.py"
+  - ".veldo/authority_contract.py"
+  - "engine/.veldo/authority_contract.py"
+  - ".veldo/control_team.py"
+  - "engine/.veldo/control_team.py"
+  - "scripts/check_teeth_mutations.py"
+  - "scripts/suites/33_veldo_0020_authority.py"
+  - "scripts/suites/68_veldo_0134_acceptance.py"
   - "scripts/suites/*_veldo_0088_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -214,3 +231,90 @@ VELDO-0129 and the loop references follow. Criterion meaning and status unchange
 2026-09-25, PLAN-0019 revision 4, third review: the footprint named `control_project_cycle*.py`, which
 does not exist; the cycle runner is `.veldo/control_workflow_cycle.py`, so the footprint names
 `control_workflow_cycle*.py`. Criteria and status unchanged.
+
+2026-10-02, implementation on build-veldo-0088: the footprint adds the factory
+service, dispatch and eligibility modules and their engine copies. AC1 requires
+the factory pass to offer a coordination station before an engineering unit
+exists; AC3 consumes that same pass. The mutation registry is added for finding
+88. Initial cycle and proposal code is being built and is not qualified by this
+entry. The specification remains ready.
+
+2026-10-02, integration prerequisite: AC1 uses a genuinely enrolled service with
+the Runner reservation guard. That guard already requires `reservation_service`,
+but membership rejected that role. The footprint adds the authority contract and
+its engine copy to make the existing reservation grant enrollable; no reservation
+check is weakened.
+
+2026-10-02, single-unit integration: the footprint adds the team service and its
+engine copy, a necessary change to the VELDO-0151 base. Assignment now reads the
+risk from a production-published unit's accepted specification when the unit has
+no inline risk. The earlier 0151 fixture documented its manual risk decoration;
+the PM path must use the real publication instead. Review-policy checks remain
+unchanged.
+
+2026-10-02, contract evidence: the authority suite footprint is extended for the
+reservation service role now admitted by the real membership writer. Its matrix
+still enumerates all seven R37 roles and additionally this existing reservation
+service grant. Ten scoped behavior rows pass. This is partial implementation
+evidence: the builder catalog fetch, factory-started single-unit journey and
+graph-process capability attacks still need direct integration observations.
+No landing or completed-criterion claim is made.
+
+2026-10-02, continuation: the factory consumes accepted team assignments for build
+and independent review. The footprint adds the launch module and engine copy
+because Runner preparation must bind that authority instead of requiring a
+legacy claim. Dispatch preparation and acceptance recheck the assignment.
+Graph node capability attacks, combined input coalescing and complete receipts
+receive direct process observations in the scoped suite.
+
+2026-10-02, one-unit cost observation: successful assigned engineering advances
+through the factory without another idle PM run. Completion during an active PM
+cycle still joins an owner answer in one follow-up. The suite counts all
+dispatch attempts through review launch, so an extra elaboration or coordination
+run cannot hide behind the latest-attempt reader.
+
+2026-10-03, independent review follow-up: proposals now name the accepted team's
+PM worker, whose membership enrolls the trusted service signing edge key; cycle
+receipts remain owned by the distinct service principal. The suite constructs
+Service and Line and reaches from_line through Line.run. A refused engineering
+adapter is reported per unit, and an exhausted pending follow-up is observed
+without aborting the factory pass. Elaboration requires this cycle's successful
+publication to name the claimed unit. Five review rows and five finding-88
+mutations cover these corrections. The existing footprint covers every file;
+no specification status, assignment authorization or protected path changes.
+
+2026-10-03, review evidence: all twenty-one behavior rows pass in the normal and
+clean gate environments. The unchanged 1773b279 archive is red by assertion on
+all five new review rows; the original 24c0c90b archive is red by assertion on all
+twenty-one rows. The review cases use a fresh five-cycle project fixture, keeping
+the original sixteen rows and twelve-cycle fixture intact. Mutation execution,
+the full gate and the independent landing decision remain reviewer-owned.
+
+2026-10-03, production enrollment follow-up: AC1 and AC4 require the default PM
+created by factory setup to sign proposals with the service journal key. Add the
+setup module and its engine copy to the footprint because owner-run setup is the
+membership enrollment writer; team revisions deliberately cannot grant membership.
+A fresh production setup must accept a PM-signed assignment without fixture PM
+enrollment. AC3 also requires unexpected start faults to propagate on both the
+initial and pending-input paths; only named Refused outcomes are observed locally.
+Three finding-88 mutations and three behavior rows cover these corrections.
+
+2026-10-03, production enrollment evidence: all twenty-four 0088 behavior rows
+pass normally and in the clean gate environment. All three new rows are red by
+assertion against unchanged 37dcd381. The six affected behavior suites pass in
+both environments. The 0168 send-inventory consumer retains its pre-existing
+intake/delivery failure, reproduced on 37dcd381. Validation and the Git boundary
+pass, with zero bad mutation anchors. The single-spec footprint comparison still
+includes inherited 0151 files; this follow-up and the combined footprint are
+clean. Full gate and mutation execution remain reviewer-owned; status is unchanged.
+
+2026-10-03, gate regression repair: ordinary eligibility reads use a parser-free
+assignment helper, preserving architecture snapshot isolation and the existing
+claim heartbeat window without repeatedly importing the PM command services.
+Proposal owners are called through explicit publish/apply attributes so the
+handout writer census can resolve every call. The acceptance signer matrix adds
+a refused reservation_service case: the integration prerequisite recorded above
+made that existing Runner role enrollable, but never granted it architecture
+acceptance authority. The footprint adds that consumer suite; its exact role-set
+and refusal assertions remain intact. Full-gate timing and mutation verification
+remain reviewer-owned.

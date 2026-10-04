@@ -338,7 +338,7 @@ def _v134_suite():
             TYPE_ACCEPTS = {'person': True, 'service': False, 'policy': False, 'agent_run': False}
             ROLE_ACCEPTS = {'membership_steward': False, 'project_owner': True, 'admission_authority': False,
                             'priority_authority': False, 'technical_authority': False, 'security_authority': False,
-                            'operations_authority': False}
+                            'operations_authority': False, 'reservation_service': False}
             ok = set(TYPE_ACCEPTS) == set(AC.PRINCIPAL_TYPES) and set(ROLE_ACCEPTS) == set(AC.ROLES)
             cases = [('type-' + t, dict(principal_type=t, roles=['project_owner'], scope=[REPO]), TYPE_ACCEPTS.get(t),
                       'not_authorized:principal_type') for t in AC.PRINCIPAL_TYPES]

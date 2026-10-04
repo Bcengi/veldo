@@ -199,6 +199,20 @@ sys.exit(payload.get('code', 0))
         enrollment_signers.write_text('')
         host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='host-39',
                                               enrollment_signers=str(enrollment_signers))))
+        # A transport may coalesce the trusted wrapper's identity and the engine's first output
+        # line. Forward both in one pipe write so the receiver deterministically sees that case.
+        # This runs only after the outer contained wrapper is released; neither line is invented
+        # by the transport, and stdin still reaches the real wrapped engine unchanged.
+        transport = base / 'transport.py'
+        transport.write_text('''import os, shutil, subprocess, sys
+child = subprocess.Popen(sys.argv[1:], stdin=sys.stdin, stdout=subprocess.PIPE, stderr=sys.stderr)
+opening = child.stdout.readline() + child.stdout.readline()
+assert len(opening) <= os.fpathconf(sys.stdout.fileno(), 'PC_PIPE_BUF')
+assert os.write(sys.stdout.fileno(), opening) == len(opening)
+shutil.copyfileobj(child.stdout, sys.stdout.buffer)
+sys.stdout.buffer.flush()
+sys.exit(child.wait())
+''')
         config = base / 'receiver.json'
         # This host's worker profile (VELDO-0040): every local worker runs in its own systemd scope in a
         # slice of this run's own, with caps far above what these fixture engines use.
@@ -216,6 +230,7 @@ sys.exit(payload.get('code', 0))
                          # Through the trusted wrapper, as a launch on another host runs it (the
                          # transport prefix, ssh to the Mac, is configuration; here it is local).
                          'wrapped-engine': {'identity': 'reported', 'argv': [
+                             sys.executable, '-B', str(transport),
                              sys.executable, '-B', str(mods / 'control_launch.py'), 'exec',
                              sys.executable, '-B', str(worker), str(db), str(markers), 'forge']},
                          'wrapped-missing': {'identity': 'reported', 'argv': [
@@ -517,7 +532,8 @@ sys.exit(payload.get('code', 0))
                               and not worker_markers(lost.dispatch_id)
                               and reservations.balances('unit', u6)['capacity'] == 1)
                 # Through the trusted wrapper: the identity is the wrapper's first line, which is the
-                # engine's own process after exec; the line the worker forges after it is output.
+                # engine's own process after exec; the line the worker forges after it is output,
+                # even when the transport delivers both lines together after containment setup.
                 uw = admitted('VELDO-9312')
                 wrapped = runner.submit(uw, 'build', **job(release='uw', adapter='wrapped-engine'))
                 wown = marker_for(wrapped.dispatch_id)

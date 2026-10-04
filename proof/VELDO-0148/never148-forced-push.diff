@@ -1,0 +1,8 @@
+--- a/.veldo/control_effect_executor.py
++++ b/.veldo/control_effect_executor.py
+@@ -222 +222 @@
+-            raise E.Refused('stale-subject')
++            pass  # defect: a trunk that moved is not refused at the listing
+@@ -233 +233 @@
+-                         '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),
++                         '--force',  # defect: the push is forced

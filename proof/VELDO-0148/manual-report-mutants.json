@@ -1,0 +1,64 @@
+{
+ "checker_executed": false,
+ "commit": "a45269eb0e940a14ca555a479b27f8806fab91f3",
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0148 receiver/report-timeout detail: bounded receiver refusal before engine exec: {'row_timeout': True}"
+   ],
+   "exit": 1,
+   "failed_rows": [
+    "VELDO-0148 receiver/report-timeout"
+   ],
+   "mutant_sha256": "88dd7e1eb0af8c6b5336cca21045e7911767fda4afc830308ae86c512eadae49",
+   "name": "receiver148-report-wait-unbounded",
+   "named_rows": [
+    "receiver/report-timeout"
+   ],
+   "only_named_rows_red": true,
+   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 1 failed in 50.18s"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0148 receiver/late-wrapper detail: bounded receiver refusal before engine exec: {'refusal': None}"
+   ],
+   "exit": 1,
+   "failed_rows": [
+    "VELDO-0148 receiver/late-wrapper"
+   ],
+   "mutant_sha256": "36f399307c4871629581575ca221d2f4d9d0edb066b1dadc657183cf543bf8ba",
+   "name": "receiver148-late-wrapper-execs",
+   "named_rows": [
+    "receiver/late-wrapper"
+   ],
+   "only_named_rows_red": true,
+   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 1 failed in 37.14s"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0148 receiver/wrapper-exited detail: bounded receiver refusal before engine exec: {'refusal': 'spawn_failed:containment:heartbeat_report_timeout', 'settled': True, 'group': {'unit': 'veldo-dispatch-7fea9d7cc7934d2a43b2764b2a21e911.scope', 'slice': 'v1489883875b.slice', 'cgroup': '/user.slice/user-1000.slice/user@1000.service/v1489883875b.slice/veldo-dispatch-7fea9d7cc7934d2a43b2764b2a21e911.scope'}}"
+   ],
+   "exit": 1,
+   "failed_rows": [
+    "VELDO-0148 receiver/wrapper-exited"
+   ],
+   "mutant_sha256": "bcc6a818e967d6a39addf8c6ecf8ec9b7e71cef82e01b94a4d720638a9682a0a",
+   "name": "receiver148-wrapper-eof-is-timeout",
+   "named_rows": [
+    "receiver/wrapper-exited"
+   ],
+   "only_named_rows_red": true,
+   "source_sha256": "96e8474254c7de3bd7274c226db08d0039b1df1ee7527ea2e6cdd06ba61d8cda",
+   "summary": "selftest (PARTIAL, 1 of 142 suites): 49 passed, 1 failed in 37.07s"
+  }
+ ],
+ "schema": "veldo.manual-mutation/v1",
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "suite_sha256": "10517aca0f667f010efbf5aafeafad597f51768f5911c3408c59ed8b834ff2be"
+}

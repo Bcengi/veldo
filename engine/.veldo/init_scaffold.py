@@ -112,6 +112,9 @@ _FILES = [
     # revision, and the step kinds spliced into the LangGraph runner. No validator import.
     ".veldo/control_workflow.py",
     ".veldo/control_workflow_cycle.py",
+    ".veldo/control_workflow_cycle_pm.py",
+    ".veldo/control_workflow_cycle_assignment.py",
+    ".veldo/control_graph_pm.py",
     ".veldo/control_workflow_langgraph.py",
     # VELDO-0045: activation of that runtime against its license and provenance records (laid down
     # from _RUNTIME_ASSETS below), the qualification workload and the no-runtime enforcement check.
@@ -160,6 +163,10 @@ _FILES = [
     # through (it loads control_event_projection.py, completion_contract.py, control_eligibility.py and
     # control_effect_executor.py); a runtime asset, no validator import, not substrate.
     ".veldo/control_landing.py",
+    # VELDO-0148: the land station, each land its own land dispatch and a land the trunk moved under
+    # re-landed (it loads lander.py, control_landing.py and control_membership.py; the authority service
+    # loads it); a runtime asset, no validator import, not substrate.
+    ".veldo/control_landing_station.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
@@ -223,6 +230,7 @@ _FILES = [
     ".veldo/control_channel_attribution.py",
     # VELDO-0126: the one Telegram and API message intake for proposed work; no validator loads it.
     ".veldo/control_intake.py",
+    ".veldo/control_intake_routes.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.
