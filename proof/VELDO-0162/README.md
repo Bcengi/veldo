@@ -109,5 +109,8 @@ Both canonical files and their repository copies match. No worker budget changes
 
 The requested sequential regression checks pass: suites 93, 82, 94 and 50 have
 47, 30, 52 and 30 passing checks, with no failures. Validation and the Git boundary
-check exit zero. Finding 152 is running separately with one worker; its final
-result will be recorded here. No full selftest or gate runs in this worktree.
+check exit zero. Finding 152 passes with one worker: all fourteen mutations
+are rejected against a green 47-check baseline, in 531.21 seconds. The exact
+case results are in intake-mutations-152.jsonl. This is only finding 152;
+the earlier VELDO-0162 mutation inventory still awaits reviewer execution.
+No full selftest or gate runs in this worktree.

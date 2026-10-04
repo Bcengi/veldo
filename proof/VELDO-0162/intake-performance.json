@@ -117,8 +117,13 @@
     "exit_code": 0
   },
   "finding_152": {
-    "status": "running",
-    "command": "python3 scripts/check_teeth_mutations.py --finding 152 --jobs 1"
+    "status": "passed",
+    "command": "python3 scripts/check_teeth_mutations.py --finding 152 --jobs 1",
+    "wall_seconds": 531.21,
+    "exit_code": 0,
+    "mutations_rejected": 14,
+    "baseline_assertions": 47,
+    "results": "intake-mutations-152.jsonl"
   },
   "full_gate_run": false,
   "worker_budget_changed": false
