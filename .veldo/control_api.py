@@ -144,7 +144,7 @@ Route = collections.namedtuple('Route', 'name method path family session require
 ROUTES = (
     Route('configurations.save', 'POST', '/api/v1/domains/{domain}/configurations/save', 'configuration', True,
           ('definition', 'base'), (), 'save_capability_configuration'),
-    Route('configurations.read', 'GET', '/api/v1/domains/{domain}/configuration', 'configuration', True,
+    Route('configurations.read', 'GET', '/api/v1/domains/{domain}/configurations/revision', 'configuration', True,
           ('role', 'revision'), (), None),
     Route('teams.save', 'POST', '/api/v1/domains/{domain}/teams/save', 'configuration', True,
           ('project', 'team', 'team_version'), (), 'propose_team'),
@@ -821,7 +821,8 @@ class ControlApi:
         row = self._inspect([identity]).get(identity)
         if row is None or row['kind'] != configuration.KINDS[0]:
             raise Refused('missing_evidence:agent_revision')
-        return 200, {'configuration': row['data']}
+        served, redacted = MO.redact(row['data'])
+        return 200, {'configuration': served, 'redacted': redacted}
 
     def _team_read(self, route, body, session, extra, headers):
         teams = organ('control_team_routes')
@@ -835,7 +836,8 @@ class ControlApi:
         else:
             identity = 'team:' + project
         row = self._inspect([identity]).get(identity)
-        return 200, {'team': dict(row['data'], version=row['version']) if row else None}
+        served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)
+        return 200, {'team': served, 'redacted': redacted}
 
     def _mcp_read(self, route, body, session, extra, headers):
         catalog = organ('control_mcp_catalog')

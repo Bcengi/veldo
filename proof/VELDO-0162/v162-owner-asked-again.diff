@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -430 +430 @@
+-                    params['action'] = 'owner_save'
++                    params['action'] = 'propose'

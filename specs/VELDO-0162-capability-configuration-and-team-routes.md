@@ -30,6 +30,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0162_*.py"
+  - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -247,3 +248,16 @@ publishing its journal hint. Existing footprint patterns cover these files. The 
 production file changed is control_api_models.py, to register the three new typed actions;
 its intake read and redaction behavior is unchanged. Proof is still being built; no gate or
 landing result is claimed, and status stays ready.
+
+2026-10-03, fixture inventory: add scripts/suites/71_veldo_0130_api.py to the footprint.
+Its complete route and action censuses need bodies for the three new operations and the
+real command services registered on its fixture connection. Existing authentication,
+forgery and route-to-command assertions are retained. This is the only existing suite
+changed for 0162; no 0152 route or intake fixture is changed.
+
+2026-10-03, proof checkpoint: suite 94 contains twenty behavior rows, all green on the
+implementation and all red by assertion on the unchanged 08d7edd3 archive. Finding 162
+registers eighteen exact mutations, including each declared falsifier; execution belongs
+to the reviewer. The new revision read uses configurations/revision so it cannot shadow
+the existing configuration collection route. Both new read routes use the existing API
+redactor. Scoped regression and clean-environment verification are in progress.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service_api.py
++++ b/.veldo/control_service_api.py
+@@ -341 +341 @@
+-        self.authority.team_routes.apply_pending()
++        pass

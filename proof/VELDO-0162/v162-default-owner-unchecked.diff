@@ -1,0 +1,8 @@
+--- a/.veldo/control_team_routes.py
++++ b/.veldo/control_team_routes.py
+@@ -155 +155 @@
+-        if not project or project['data'].get('owner') != params['principal']:
++        if not project:
+@@ -158 +158 @@
+-        if problems:
++        if False:

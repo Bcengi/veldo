@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -416 +416 @@
+-        if command.get('team_version') != (record or {}).get('version', 0):
++        if False:

@@ -1,0 +1,8 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -555 +555 @@
+-        if target != amendment_target(record):
++        if False:
+@@ -557 +557 @@
+-        if req.get('brief') != amendment_brief(record):
++        if False:

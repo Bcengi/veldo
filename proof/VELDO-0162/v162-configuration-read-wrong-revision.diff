@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -820 +820 @@
+-                                          configuration.KINDS[0], body['role'], revision)
++                                          configuration.KINDS[0], body['role'], 1)

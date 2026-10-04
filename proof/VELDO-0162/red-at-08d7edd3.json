@@ -1,0 +1,170 @@
+{
+ "by_assertion": true,
+ "commit": "08d7edd38d06c17c2aff3ed30ab14f8ce900d8eb",
+ "details": [
+  "VELDO-0162 detail: routes/redaction generated credential in role text never returns through the read route",
+  "VELDO-0162 detail: routes/contract routes, assertions, UI contract and commands agree; each save requires session and rejects body actor",
+  "VELDO-0162 detail: install/assets all installed engine assets and new route module match",
+  "VELDO-0162 detail: configuration/revisions passkey sessions and exact immutable revision reads",
+  "VELDO-0162 detail: configuration/unauthorized-save command checks verified member with no saved revision",
+  "VELDO-0162 detail: configuration/refusals stale and invalid configuration names with no writes",
+  "VELDO-0162 detail: team/roundtrip required then specialist exact through team read",
+  "VELDO-0162 detail: team/stale-team stale team is refused without changing it",
+  "VELDO-0162 detail: team/staffing named staffing refusals each carry owner request and write no team",
+  "VELDO-0162 detail: team/owner-save owner save current immediately and no decision request",
+  "VELDO-0162 detail: team/decider journal and acceptance bind actual principal and signed assertion",
+  "VELDO-0162 detail: team/unverified-assertion owner path exists",
+  "VELDO-0162 detail: team/owner-answer member proposal waits for one exact request and repeat finds it",
+  "VELDO-0162 detail: team/telegram request exists",
+  "VELDO-0162 detail: team/decline request exists",
+  "VELDO-0162 detail: team/other-request request exists",
+  "VELDO-0162 detail: default/history immutable saved revision and independently readable new head",
+  "VELDO-0162 detail: default/refusals stale base, non-factory owner and invalid schema store nothing",
+  "VELDO-0162 detail: default/named-revision default command exists",
+  "VELDO-0162 detail: default/staffing default command exists"
+ ],
+ "failed_rows": [
+  "VELDO-0162 routes/redaction",
+  "VELDO-0162 routes/contract",
+  "VELDO-0162 install/assets",
+  "VELDO-0162 configuration/revisions",
+  "VELDO-0162 configuration/unauthorized-save",
+  "VELDO-0162 configuration/refusals",
+  "VELDO-0162 team/roundtrip",
+  "VELDO-0162 team/stale-team",
+  "VELDO-0162 team/staffing",
+  "VELDO-0162 team/owner-save",
+  "VELDO-0162 team/decider",
+  "VELDO-0162 team/unverified-assertion",
+  "VELDO-0162 team/owner-answer",
+  "VELDO-0162 team/telegram",
+  "VELDO-0162 team/decline",
+  "VELDO-0162 team/other-request",
+  "VELDO-0162 default/history",
+  "VELDO-0162 default/refusals",
+  "VELDO-0162 default/named-revision",
+  "VELDO-0162 default/staffing"
+ ],
+ "modules": {
+  ".veldo/control_agent_config.py": {
+   "at_commit": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
+   "now": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2"
+  },
+  ".veldo/control_api.py": {
+   "at_commit": "d85b6fb7d853247a5a1e2b036691ed71d9fa72af3b41fc32143d678afe268200",
+   "now": "61f0285ea67243ab57f963d9278419c5b196f55f5c7c56b5c3d54fe83e23efc3"
+  },
+  ".veldo/control_api_assertion.py": {
+   "at_commit": "126d34c8e9850a5e709942bd61829aefd597e4b0733a40f65a281999101b13d9",
+   "now": "506c4233b21cfcace1856f96b68f233d5c7292ec5fab3fefca06638a3bb5b297"
+  },
+  ".veldo/control_api_authority.py": {
+   "at_commit": "5cddd580210f7faadbb8466ff6cf6e5130181b95abeb5c9a6887ec42bb4e1432",
+   "now": "eb7194997bdc7bed3c2cc72fc7db8c23b1128daf1ecd815666f56c7af44b3b11"
+  },
+  ".veldo/control_api_models.py": {
+   "at_commit": "1e9b63b41d0489df083e1acc0b1ecb94b0ce258ab3bf057a3752d79f5c1541ed",
+   "now": "c97db1cc4f034a4a61ada7844607d48e75a24b8dade9a54bb11c8dc40a8cb59b"
+  },
+  ".veldo/control_service_api.py": {
+   "at_commit": "d8c840be13c0b8bbe304620ddc6f8bd073743e5a156f89a158a598945e106d1d",
+   "now": "ea5517b4e83ee130eb6055571f52fa43bee3c70f4ed50bee4a16dc4704444209"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": "e0ff848157d9c7d5bffd98cf676749f53c43d8844ff649fc9338cd9255afec49",
+   "now": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5"
+  },
+  ".veldo/control_team_routes.py": {
+   "at_commit": null,
+   "now": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0162 routes/redaction",
+   false
+  ],
+  [
+   "VELDO-0162 routes/contract",
+   false
+  ],
+  [
+   "VELDO-0162 install/assets",
+   false
+  ],
+  [
+   "VELDO-0162 configuration/revisions",
+   false
+  ],
+  [
+   "VELDO-0162 configuration/unauthorized-save",
+   false
+  ],
+  [
+   "VELDO-0162 configuration/refusals",
+   false
+  ],
+  [
+   "VELDO-0162 team/roundtrip",
+   false
+  ],
+  [
+   "VELDO-0162 team/stale-team",
+   false
+  ],
+  [
+   "VELDO-0162 team/staffing",
+   false
+  ],
+  [
+   "VELDO-0162 team/owner-save",
+   false
+  ],
+  [
+   "VELDO-0162 team/decider",
+   false
+  ],
+  [
+   "VELDO-0162 team/unverified-assertion",
+   false
+  ],
+  [
+   "VELDO-0162 team/owner-answer",
+   false
+  ],
+  [
+   "VELDO-0162 team/telegram",
+   false
+  ],
+  [
+   "VELDO-0162 team/decline",
+   false
+  ],
+  [
+   "VELDO-0162 team/other-request",
+   false
+  ],
+  [
+   "VELDO-0162 default/history",
+   false
+  ],
+  [
+   "VELDO-0162 default/refusals",
+   false
+  ],
+  [
+   "VELDO-0162 default/named-revision",
+   false
+  ],
+  [
+   "VELDO-0162 default/staffing",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.333,
+ "spec_id": "VELDO-0162",
+ "suite": "scripts/suites/94_veldo_0162_configuration_routes.py",
+ "tree": "git archive 08d7edd38d06c17c2aff3ed30ab14f8ce900d8eb, unchanged; the current suite file run against it"
+}

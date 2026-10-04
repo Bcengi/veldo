@@ -1,0 +1,5 @@
+--- a/.veldo/control_api.py
++++ b/.veldo/control_api.py
+@@ -473 +473 @@
+-                value['owner_request'] = exc.owner_request
++                value['owner_request'] = None

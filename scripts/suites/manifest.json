@@ -1256,6 +1256,15 @@
     "93_veldo_0152_intake_routes"
    ],
    "requires_note": "Standalone fragment using shared preamble and its own signed fixture."
+  },
+  {
+   "name": "94_veldo_0162_configuration_routes",
+   "file": "94_veldo_0162_configuration_routes.py",
+   "requires": [
+    "94_veldo_0162_configuration_routes"
+   ],
+   "regions": "Capability configuration saves, team owner decisions and immutable default revisions.",
+   "requires_note": "Standalone fragment; signed store and passkey fixtures in proof/VELDO-0162. No fake engine or model."
   }
  ]
 }
