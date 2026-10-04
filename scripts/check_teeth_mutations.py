@@ -10244,6 +10244,8 @@ def cases():
     add(88, 'v88-setup-pm-unenrolled', '92_veldo_0088_pm_cycles.py', 'control_factory_setup.py', "        with step('project_manager_enrollment'):\n", '        if False:  # defect: setup omits PM membership\n', ['followup/setup-pm'], ())
     add(88, 'v88-swallow-initial-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '\n                except Refused as error:\n', '\n                except Exception as error:\n', ['followup/initial-fault'], ())
     add(88, 'v88-swallow-pending-fault', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', '                        except Refused as error:\n', '                        except Exception as error:\n', ['followup/pending-fault'], ())
+    # VELDO-0088: the factory line's PM services over the real Telegram ingress.
+    add(88, 'v88-grooming-off-ingress-connection', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "Grooming(store, membership, ingress.conn, ids,\n            service.principal, service.sign, backlog=backlog_module, service=groomed,", "Grooming(store, membership, service.conn, ids,\n            service.principal, service.sign, backlog=backlog_module, service=backlog,", ['followup/real-ingress'], ())
 
     # VELDO-0152: criterion falsifiers and the route boundaries.
     add(152, 'v152-name-decides', '93_veldo_0152_intake_routes.py', 'control_intake.py', '            project = explicit or (keyed[0] if len(keyed) == 1 else None)\n', '            project = explicit or (hints[0] if len(hints) == 1 else None) or (keyed[0] if len(keyed) == 1 else None)\n', ['intake/name-is-a-hint'], ())

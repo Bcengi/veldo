@@ -583,8 +583,12 @@ def from_line(line):
                     "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
                 journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
                 authority_generation=service.generation)
-        services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,
-            service.principal, service.sign, backlog=backlog_module, service=backlog, assignment=assignment,
+        # Grooming has one authority, the connection its services use: the ingress's own, which the
+        # locked service opened for its channel (VELDO-0138), so its backlog is built on that one too.
+        groomed = backlog_module.Backlog(store, membership, ingress.conn, ids, service.principal, service.sign,
+                                         workspace=line.workspace, authority_generation=service.generation)
+        services['grooming'] = organ('control_grooming').Grooming(store, membership, ingress.conn, ids,
+            service.principal, service.sign, backlog=backlog_module, service=groomed, assignment=assignment,
             inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,
             requester=(service.principal, signature), workspace=line.workspace,
             authority_generation=service.generation)

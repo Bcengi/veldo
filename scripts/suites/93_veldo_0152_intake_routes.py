@@ -215,7 +215,7 @@ def _v152_suite():
             service = SV.Service(dict(domain_uuid=domain, store_uuid=ids['store_uuid'], principal='team-service',
                 authority_generation=1, repositories={repository: [str(source)]}, journal_key=str(f['keyfile']['authority']),
                 host_identity='fixture-host', enrollment_signers=str(signers), observations=str(base / 'events.jsonl')), conn)
-            service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'], presenter=f['presenter'],
+            service.channel = SimpleNamespace(ingress=SimpleNamespace(conn=conn, inbox=f['inbox'], presenter=f['presenter'],
                 settlement=f['settlement'], acquirer=acquirer))
             result_file, packet_file = base / 'result.json', base / 'packet.json'
             # Both launches and the teardown observer drive these same generated executables.

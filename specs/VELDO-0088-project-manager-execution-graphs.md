@@ -318,3 +318,18 @@ made that existing Runner role enrollable, but never granted it architecture
 acceptance authority. The footprint adds that consumer suite; its exact role-set
 and refusal assertions remain intact. Full-gate timing and mutation verification
 remain reviewer-owned.
+
+2026-10-04, real-ingress defect (found by the VELDO-0204 builder, confirmed by its reviewer): over the
+real Telegram ingress Line.run never built the PM services. from_line constructed grooming on the
+service's connection with a backlog there, but handed it the ingress's inbox, presenter and settlement,
+which open_ingress builds on the ingress's own connection, so Grooming refused it ("grooming has one
+authority: the connection its services use"), every pass recorded unknown_outcome:Refused and the line
+offered no unit. The check stands: VELDO-0138 runs open_ingress unchanged and VELDO-0130 puts the
+API's judge on the ingress's connection under the lock the service holds, so that connection is one the
+lock holder writes through (VELDO-0171's single-writer rule), and from_line was the wrong side. It now
+builds grooming and its backlog on the ingress's connection. Suites 92 and 93 gave the loop an
+in-store stand-in without a connection; their stand-ins now name the store connection they share, and
+row followup/real-ingress drives the factory line's PM cycle through the production channel
+(control_service_channel.open_channel) over the real ingress: red by assertion at 4869db20 with the
+pass fault unknown_outcome:Refused, green after. Finding-88 mutation v88-grooming-off-ingress-connection
+restores the earlier construction and must red that row. Criteria, footprint and status unchanged.

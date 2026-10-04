@@ -4,7 +4,7 @@ It makes no model call and supplies only predetermined proposal documents.
 """
 
 
-def _v88_suite(review_only=False, setup_only=False, fault_only=False):
+def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_only=False):
     import copy
     import importlib.util
     import json
@@ -37,6 +37,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
         names = ('followup/setup-pm', 'followup/setup-pm-authority')
     if fault_only:
         names = ('followup/initial-fault', 'followup/pending-fault')
+    if ingress_only:
+        names = ('followup/real-ingress',)
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -145,8 +147,16 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 principal='team-service', authority_generation=1, repositories={repository: [str(source)]},
                 journal_key=str(f['keyfile']['authority']), host_identity='fixture-host',
                 enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
-            service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
-                presenter=f['presenter'], settlement=f['settlement']))
+            if ingress_only:
+                # The production channel over the REAL ingress, which opens its own store connection.
+                ingress_config = load('v88_ingress_fixture', Path(__suite_file__).resolve().parents[2]
+                                      / 'proof/VELDO-0088/ingress_fixture.py').config(f, base, source)
+                service.channel, channel_refusal = SV.CH.open_channel(str(ingress_config))
+                check('followup/real-ingress', 'the production channel opens the real ingress',
+                      channel_refusal is None and service.channel is not None and service.channel.ingress.conn is not conn)
+            else:
+                service.channel = SimpleNamespace(ingress=SimpleNamespace(conn=conn, inbox=f['inbox'],
+                    presenter=f['presenter'], settlement=f['settlement']))
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
             # Only the account selection is fixed; Line.run constructs the production PM services.
@@ -162,6 +172,15 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             runner, gate, dispatches, reservations = line.runner, line.gate, line.dispatches, line.reservations
             factory.wake('accepted_project')
             initial = factory.run()
+            if ingress_only:
+                print('  VELDO-0088 detail: real ingress pass faults:', initial['faults'])
+                check('followup/real-ingress', 'Line.run builds the PM services over the real ingress',
+                      not initial['faults'] and hasattr(line, 'pm_cycles'))
+                if not hasattr(line, 'pm_cycles'):
+                    service.channel.close()
+                    for name in names:
+                        expect('VELDO-0088 ' + name, False)
+                    return
             cycles = line.pm_cycles
             first = cycles.records('proj-a')[-1]
             dispatch = dispatches.record(first.get('dispatch')) if first.get('dispatch') else None
@@ -217,7 +236,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 scope=['proj-a'], deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 1},
                 brief='Choose a scope.', choices=['yes', 'no'], subject={'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'question')}))
-            if not review_only and not setup_only:
+            if not review_only and not setup_only and not ingress_only:
                 refused = dict(question, operation='open', assignment={})
                 failed = run(dict(empty, proposals=[dict(name='first', type='question', command=refused),
                                                     dict(name='second', type='question', command=question)]))
@@ -348,6 +367,24 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 and staged.get('elaboration') == {'state': 'done', 'dispatch': staged['dispatch']}
                 and len([r for r in line._rows('dispatch') if r['contract']['station'] == 'coordination']) == before_dispatches + 1
                 and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY')
+            if ingress_only:
+                ing = service.channel.ingress
+                grooming = cycles.services.get('grooming')
+                groomed = next((r for r in staged['proposals'] if r['name'] == 'groom'), {})
+                check('followup/real-ingress', 'grooming runs on the ingress connection with every service it uses',
+                      grooming is not None and grooming.conn is ing.conn and grooming.backlog.conn is ing.conn
+                      and grooming.inbox is ing.inbox and grooming.settlement is ing.settlement)
+                check('followup/real-ingress', 'the factory-started cycle applies its grooming proposal and stages the unit',
+                      staged['state'] == 'proposed' and groomed.get('result', {}).get('ok') is True
+                      and (f['entity'](uid) or {}).get('data', {}).get('state') == 'READY'
+                      and not started['faults'] and not staged_pass['faults'])
+                (base / 'engineering-hold').unlink()
+                for launch in tuple(runner.launches.values()):
+                    runner.wait(launch, timeout=15)
+                service.channel.close()
+                for name in names:
+                    expect('VELDO-0088 ' + name, bool(rows[name]) and all(ok for _, ok in rows[name]))
+                return
             if setup_only:
                 check('followup/setup-pm', 'fresh owner setup enrolls the PM and Line.run assignment verifies',
                       f['setup_report']['outcome'] == 'set_up' and staged['state'] == 'proposed'
@@ -384,3 +421,4 @@ _v88_suite(review_only=True)
 
 _v88_suite(setup_only=True)
 _v88_suite(fault_only=True)
+_v88_suite(ingress_only=True)

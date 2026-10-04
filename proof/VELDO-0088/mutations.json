@@ -213,6 +213,17 @@
    "status": "not run; reviewer only",
    "source_sha256": "2b66fa64e2c922760a19ee3f551edfd5cfbc954b7f81f5921026c2e471b52a33",
    "mutant_sha256": "a40877e2bf8d1f30444bc001c62aca98d78308c6ab3b6e2a49daf4cad8485f49"
+  },
+  {
+   "name": "v88-grooming-off-ingress-connection",
+   "named_rows": [
+    "followup/real-ingress"
+   ],
+   "diff": "proof/VELDO-0088/v88-grooming-off-ingress-connection.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "status": "not run; reviewer only",
+   "source_sha256": "6331d8ce27a37303911d23e0cd5a5880a9efb21394055daf5be5821188881e35",
+   "mutant_sha256": "d9865860e7eebb6e9f2ce608f997f322b1ca07dd415079e1847524e12ffbb1c9"
   }
  ]
 }
