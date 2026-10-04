@@ -31,6 +31,13 @@ def taxonomy(code):
             'incomplete_roster': 'invalid_input'}.get(head, head)
 
 
+def packet_problem(packet):
+    if (not isinstance(packet, dict)
+            or any(field in packet and not isinstance(packet[field], dict) for field in ('command', 'envelope'))):
+        return 'invalid_input:owner_command:packet'
+    return None
+
+
 class OwnerRevisions:
     def __init__(self, store, membership, conn, *, ids, authority_lock, configurations, team_routes,
                  clock=time.time, observe=None):
@@ -41,11 +48,16 @@ class OwnerRevisions:
         self.observations = []
 
     def apply(self, packet):
-        command = packet.get('command') or {}
-        envelope = packet.get('envelope') or {}
+        problem = packet_problem(packet)
+        command = packet.get('command', {}) if isinstance(packet, dict) else {}
+        envelope = packet.get('envelope', {}) if isinstance(packet, dict) else {}
+        command = command if isinstance(command, dict) else {}
+        envelope = envelope if isinstance(envelope, dict) else {}
         about = dict(schema=SCHEMA, operation=command.get('operation'), command_id=command.get('command_id'),
                      principal=envelope.get('principal'), nonce=envelope.get('nonce'))
         try:
+            if problem:
+                raise Refused(problem)
             result = self._apply(packet, command, envelope, about)
             answer = dict(ok=True, reason=None, result=result)
         except self.CM.MembershipRefused as error:
@@ -70,6 +82,8 @@ class OwnerRevisions:
         problem = AUTH.authority_problem(self.lock, self.conn)
         if problem:
             raise Refused(problem)
+        if self.configurations.conn is not self.conn or self.team_routes.conn is not self.conn:
+            raise Refused('missing_authority:not_the_authority')
         operation = command.get('operation')
         if operation not in OPERATIONS:
             raise Refused('invalid_input:owner_command:operation')

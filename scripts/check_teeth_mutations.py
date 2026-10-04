@@ -10369,8 +10369,14 @@ def cases():
         "        if (member.get('principal_type') != 'person' or member.get('enrolled_by') != principal\n                or not self.CM.BOOTSTRAP_ROLES <= set(member.get('roles') or [])):\n",
         '        if False:\n', ['authentication/not-owner'], ())
     add(190, 'v190-lock-ignored', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
-        '        if problem:\n',
-        '        if False:\n', ['lock/second-connection'], ())
+        '        problem = AUTH.authority_problem(self.lock, self.conn)\n        if problem:\n',
+        '        problem = AUTH.authority_problem(self.lock, self.conn)\n        if False:\n', ['lock/second-connection'], ())
+    add(190, 'v190-writer-connection-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+        '        if self.configurations.conn is not self.conn or self.team_routes.conn is not self.conn:\n',
+        '        if False:\n', ['lock/writer-connection'], ())
+    add(190, 'v190-packet-shape-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+        "    if (not isinstance(packet, dict)\n            or any(field in packet and not isinstance(packet[field], dict) for field in ('command', 'envelope'))):\n",
+        '    if False:\n', ['input/malformed', 'service/malformed'], ())
     add(190, 'v190-command-id-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
         " or envelope.get('command_id') != cid:",
         ':', ['authentication/command-id'], ())

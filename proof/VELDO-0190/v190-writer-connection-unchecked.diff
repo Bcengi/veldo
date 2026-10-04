@@ -1,0 +1,5 @@
+--- a/.veldo/control_owner_revisions.py
++++ b/.veldo/control_owner_revisions.py
+@@ -85 +85 @@
+-        if self.configurations.conn is not self.conn or self.team_routes.conn is not self.conn:
++        if False:

@@ -1,5 +1,5 @@
 --- a/.veldo/control_owner_revisions.py
 +++ b/.veldo/control_owner_revisions.py
-@@ -106 +106 @@
+@@ -120 +120 @@
 -            saved = self.configurations.save(p['definition'], principal=principal, base=p['base'], command_id=cid,
 +            saved = self.configurations.save(p['definition'], principal=principal, base=(CG.MC.entity(self.conn, CG.identity(self.configurations.domain, self.configurations.repository, CG.KINDS[0], p['definition']['role'])) or {'data': {'revision': 0}})['data']['revision'], command_id=cid,

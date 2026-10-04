@@ -1,5 +1,5 @@
 --- a/.veldo/control_owner_revisions.py
 +++ b/.veldo/control_owner_revisions.py
-@@ -57 +57 @@
+@@ -69 +69 @@
 -            answer = dict(ok=False, reason=error.code, result=None)
 +            answer = dict(ok=False, reason='unknown_outcome:Refused', result=None)

@@ -51,7 +51,8 @@ observability:
     (invalid_input:owner_command:operation), a command id already committed with other signed content
     (stale_subject:owner_command:command_content_conflict), and a caller that does not hold the store's lock
     (missing_authority:not_the_authority, control_api_authority's name). A writer's own refusal is passed
-    through unchanged.
+    through unchanged. A packet, command or envelope that is not a mapping is refused before authority
+    or authentication work (invalid_input:owner_command:packet).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -142,7 +143,9 @@ acceptance_criteria:
       on the lock holder's own connection (VELDO-0185's setup) when no service runs and by the running service
       when it does. Set and completeness: control_owner_revisions takes the caller's lock descriptor and
       refuses first, writing nothing, unless control_api_authority's authority_problem finds it holds
-      authority.lock beside the store its connection opened (missing_authority:not_the_authority). Offline, a
+      authority.lock beside the store its connection opened, and both Configurations and TeamRoutes use that
+      exact connection (missing_authority:not_the_authority). Malformed packet, command and envelope mappings
+      are checked before this lock check, offline and in the service (invalid_input:owner_command:packet). Offline, a
       caller holding the lock (VELDO-0185's setup, after control_factory_setup take_lock; the suite here)
       calls the module on its own connection with writers built on it. Online, the caller sends the same
       packet, command, envelope and signature, to the running service over its socket, as setup sends the api
@@ -264,3 +267,10 @@ origin/main footprint check includes 59 inherited outside paths; this task's
 delta from 4159d35b has none. Thirteen mutations are registered and unexecuted.
 No complete selftest, mutation runner, gate, push or external service was used.
 Review and the merged-tree gate remain pending; status stays ready.
+
+2026-10-04, review fixes: enforce writer connection identity under the checked lock;
+refuse non-mapping packets, commands and envelopes before authority and authentication;
+load the owner revision organ once with the service's other organs. Add rows
+lock/writer-connection, input/malformed and service/malformed and two finding-190
+mutations. The existing service/saves row retains socket save and replay coverage.
+No footprint extension is needed.

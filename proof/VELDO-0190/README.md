@@ -65,7 +65,7 @@ The red driver at drive.py runs the current suite against the unchanged
 source hashes. It rejects raised journeys, duplicate row reports or green
 behavior rows. This is a red record, not a gate result.
 
-mutations.json records 13 finding-190 mutations, exact diffs and source hashes.
+mutations.json records 15 finding-190 mutations, exact diffs and source hashes.
 They include each declared falsifier: replace the signed base with the head,
 accept any active signing key, omit replay content comparison, and leave saves
 to the service fallback. Additional mutations cover owner identity, signatures,
@@ -104,3 +104,28 @@ anchors are valid with zero bad anchors, and all five engine modules match
 the repository copies byte for byte. The starting-commit footprint has no
 outside paths. The supplied origin/main checker reports 59 inherited outside
 paths, all present before this task.
+
+## Review corrections at 3d209f42
+
+Both supplied writers must use the exact connection whose authority lock was
+checked; a mismatch returns missing_authority:not_the_authority. The new
+lock/writer-connection row constructs each writer on another writable connection
+in turn and requires refusal, an unchanged journal and a named observation.
+
+Malformed packets, commands and envelopes return invalid_input:owner_command:packet
+before authority or authentication checks. input/malformed covers top-level values
+and both fields; service/malformed sends malformed fields over the installed
+service socket and checks the refusal and observation. The transport already
+rejects non-object top-level packets before dispatch. Both rows exercise null,
+empty and nonempty arrays, strings, numbers and booleans.
+
+The service imports control_owner_revisions once alongside its other organs.
+The existing service/saves row still proves socket saves and exact replay.
+The new finding-190 mutations are v190-writer-connection-unchecked and
+v190-packet-shape-unchecked; the latter targets both malformed-input rows.
+All 15 registered mutations have refreshed source hashes and exact diffs;
+execution remains reviewer work. No footprint extension was needed.
+
+The first corrected own-suite run passes 35 checks (34 behavior rows and the
+0172 format check). The required regression and refreshed baseline red record
+will follow in the next evidence commit. The 0127 proof remains untouched.

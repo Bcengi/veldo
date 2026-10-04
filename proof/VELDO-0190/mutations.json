@@ -10,8 +10,8 @@
     "writer/configuration-stale"
    ],
    "diff": "proof/VELDO-0190/v190-base-from-head.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "563a77984bd04f828114cee0331ceaee2caa453d15902163b82a75add445b541",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "44c554a81599c2d6169105a011ac6119d837f750d30d8e6fe39ddb00f2d36455",
    "executed": false
   },
   {
@@ -32,8 +32,8 @@
     "replay/content-conflict"
    ],
    "diff": "proof/VELDO-0190/v190-replay-content-unchecked.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "cd9babaa299c601eac6d8dd050fe3a6e82ab8b3639b1635ab4b52aac59c00dd5",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "2117da3368d772a0b1232d4a526f998355d3236f54f0baf78b3f9a0713c151c1",
    "executed": false
   },
   {
@@ -43,8 +43,8 @@
     "service/saves"
    ],
    "diff": "proof/VELDO-0190/v190-service-fallback.diff",
-   "source_sha256": "22c1dc653725e27fef8f954188155d7cb0bef9702068ebef221b30e4a2881ba7",
-   "mutant_sha256": "601c344ff36de5c54cba866d95217d865139f02d0c8a148f37c4d5ae6e27841e",
+   "source_sha256": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd",
+   "mutant_sha256": "44b53cc313d9471a77c98a8ff5dbb689bc2b3027690b7db35b144668f52199db",
    "executed": false
   },
   {
@@ -54,8 +54,8 @@
     "authentication/not-owner"
    ],
    "diff": "proof/VELDO-0190/v190-factory-owner-unchecked.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "f3347712c038a8adf20ba2a95b5711f9aafaa44ee53b5424d20df44067fe3106",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "b588db1bdb2baf6f50d273204ec8177075bace4948328282f603862af1711f0b",
    "executed": false
   },
   {
@@ -65,8 +65,31 @@
     "lock/second-connection"
    ],
    "diff": "proof/VELDO-0190/v190-lock-ignored.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "0a007bb528cdf35dbe9d332b6899e713d036c3fedd7d0616e6d13f5a0ee058a5",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "d8e55e626f52fc996a48e0cf5eebf973501094728f205d18462c283cdd713807",
+   "executed": false
+  },
+  {
+   "name": "v190-writer-connection-unchecked",
+   "module": ".veldo/control_owner_revisions.py",
+   "named_rows": [
+    "lock/writer-connection"
+   ],
+   "diff": "proof/VELDO-0190/v190-writer-connection-unchecked.diff",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "11c83e49db7f3adf814826a8f9af08b249b4f416649e231387f871dd8b13b24c",
+   "executed": false
+  },
+  {
+   "name": "v190-packet-shape-unchecked",
+   "module": ".veldo/control_owner_revisions.py",
+   "named_rows": [
+    "input/malformed",
+    "service/malformed"
+   ],
+   "diff": "proof/VELDO-0190/v190-packet-shape-unchecked.diff",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "f8d552885c28378e2dd7382c2b66aed79288efccffe66eeca44798932dc142d9",
    "executed": false
   },
   {
@@ -76,8 +99,8 @@
     "authentication/command-id"
    ],
    "diff": "proof/VELDO-0190/v190-command-id-unchecked.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "f43851fb32d46ac3f61061fb9726efc503010001023502808971e9b3e09272ac",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "45b0eb079a73597731233b54e71a33d0eedf217ccce7548975321af997295b36",
    "executed": false
   },
   {
@@ -99,8 +122,8 @@
     "replay/nonce-binding"
    ],
    "diff": "proof/VELDO-0190/v190-nonce-not-bound.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "5ac3501f9a559e0c863e9efe6ed89e61efc0f3ca579a37efdbc66b0c36d9a00a",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "8c50d4fd81a4e5f59b5704145e25cc8bd19d4b29dfe14ca3834c4b11447070ca",
    "executed": false
   },
   {
@@ -132,8 +155,8 @@
     "service/forged"
    ],
    "diff": "proof/VELDO-0190/v190-service-signer-lost.diff",
-   "source_sha256": "22c1dc653725e27fef8f954188155d7cb0bef9702068ebef221b30e4a2881ba7",
-   "mutant_sha256": "0a7cc7af09d228cf36dfbbf9b7eef8b46f2c40db155ba76ef21ac36d35eee2fd",
+   "source_sha256": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd",
+   "mutant_sha256": "c10c45644bb6aa1ea28ec454729200ad7970beabdfc4b978857be31dc78c73f0",
    "executed": false
   },
   {
@@ -143,8 +166,8 @@
     "service/writer-refusal"
    ],
    "diff": "proof/VELDO-0190/v190-writer-refusal-renamed.diff",
-   "source_sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
-   "mutant_sha256": "2d0f8e606ff64fb93af212aba73465a72fb40ea34eaf92f68f9c69c363c48919",
+   "source_sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "mutant_sha256": "277b79ce7789eb272357c0c1e6cd9b2cbb0f24f648f3914081f49e5504abb21e",
    "executed": false
   }
  ]

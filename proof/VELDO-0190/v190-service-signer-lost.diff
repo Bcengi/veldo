@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1234 +1234 @@
+@@ -1238 +1238 @@
 -                observation['principal'] = (packet.get('envelope') or {}).get('principal')
 +                observation['principal'] = command.get('principal')

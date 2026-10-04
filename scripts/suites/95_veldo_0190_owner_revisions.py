@@ -24,6 +24,7 @@ def _v190_suite():
         'authentication/membership', 'authentication/delegation', 'authentication/domain', 'authentication/store',
         'authentication/repository', 'authentication/expiry', 'authentication/command-id', 'authentication/operations',
         'replay/identical', 'replay/content-conflict', 'replay/consumed-nonce', 'replay/nonce-binding', 'lock/second-connection',
+        'lock/writer-connection', 'input/malformed', 'service/malformed',
         'format/fake-lines', 'service/saves', 'service/forged', 'service/writer-refusal', 'service/unconfigured', 'install/asset')
     rows = {name: [] for name in names}
 
@@ -66,6 +67,13 @@ else:
     emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})
 ''')
     fake_capture = (['teardown not reached'], [])
+
+    def malformed(packet, whole=True):
+        for value in (None, [], ['invalid'], 'invalid', 7, False):
+            if whole:
+                yield value
+            for field in ('command', 'envelope'):
+                yield dict(packet, **{field: value})
 
     def exercise(h):
         path = h['mods'] / 'control_owner_revisions.py'
@@ -198,6 +206,31 @@ else:
             check('offline/saves', 'metrics cover both operations and named refusals',
                   w.writer.metrics()['operations']['save_capability_configuration']['accepted'] >= 4
                   and w.writer.metrics()['refused_by_reason'].get(auth + 'signature_invalid') == 2)
+            other = journey.Writers(h, root, OR)
+            try:
+                for configurations, routes, operation, parameters in (
+                    (other.configurations, w.routes, 'save_capability_configuration', params),
+                    (w.configurations, other.routes, 'save_default_team', dict(team=team, base=1))):
+                    writer = OR.OwnerRevisions(w.S, w.CM, w.conn, ids=w.ids, authority_lock=w.lock,
+                        configurations=configurations, team_routes=routes)
+                    refused('lock/writer-connection', w.packet(operation, parameters),
+                            'missing_authority:not_the_authority', writer)
+            finally:
+                other.close()
+            for packet in malformed(w.packet('save_capability_configuration', params)):
+                before = w.head()
+                try:
+                    result = w.writer.apply(packet)
+                except Exception as error:
+                    check('input/malformed', 'named refusal instead of ' + type(error).__name__, False)
+                    continue
+                event = w.writer.observations[-1]
+                reason = 'invalid_input:owner_command:packet'
+                check('input/malformed', 'named invalid input before authentication',
+                      result.get('ok') is False and result.get('reason') == reason)
+                check('input/malformed', 'unchanged journal and refused observation', w.head() == before
+                      and event.get('outcome') == 'refused' and event.get('refusal') == reason
+                      and event.get('taxonomy') == 'invalid_input')
             w.admin('revoke_membership', dict(principal=owner, revoked_at=time.time() - 1))
             refused('authentication/revoked', w.packet('save_capability_configuration', params), auth + 'envelope_refused')
         finally:
@@ -273,6 +306,17 @@ else:
                     result = h['service_send'](root, packet)
                     check(row, 'socket refusal: ' + str(result), result.get('result', {}).get('reason') == reason)
                     check(row, 'refusal leaves journal unchanged', read.execute('SELECT max(seq) FROM journal').fetchone()[0] == before)
+                for packet in malformed(forged, whole=False):
+                    result = h['service_send'](root, packet)
+                    reason = 'invalid_input:owner_command:packet'
+                    check('service/malformed', 'socket named invalid input: ' + str(result),
+                          result.get('result', {}).get('ok') is False
+                          and result.get('result', {}).get('reason') == reason)
+                    event = json.loads(Path(config['observations']).read_text().splitlines()[-1])
+                    check('service/malformed', 'unchanged journal and refused observation',
+                          read.execute('SELECT max(seq) FROM journal').fetchone()[0] == before
+                          and event.get('outcome') == 'refused' and event.get('refusal') == reason
+                          and event.get('taxonomy') == 'invalid_input')
                 observations = [json.loads(line) for line in Path(config['observations']).read_text().splitlines()]
                 for packet in packets:
                     event = next((e for e in observations if e.get('command_id') == packet['command']['command_id']), {})

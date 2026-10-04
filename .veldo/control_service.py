@@ -179,6 +179,7 @@ C = L.C
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
+OR = _organ('control_owner_revisions')
 # VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
 EDGE = _organ('control_channel_enrollment')
 API_SERVICE = 'api-service.json'
@@ -1208,6 +1209,7 @@ class Service:
     # -- the packets -------------------------------------------------------------------------
 
     def apply(self, packet, coordinates):
+        problem = OR.packet_problem(packet)
         repository = coordinates.get('repository_uuid')
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
@@ -1220,6 +1222,8 @@ class Service:
             observation.update(operation=SA.AS.CALL, call=packet.get('call'))
         before = self.watermark()
         try:
+            if problem:
+                raise Refused(problem)
             if repository not in self.repositories:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
@@ -1275,8 +1279,7 @@ class Service:
         if self.api is None:
             raise Refused('unavailable_service:api:not_configured')
         judge = self.api.authority
-        revisions = SA.AUTH.organ('control_owner_revisions')
-        writer = revisions.OwnerRevisions(S, judge.CM, judge.conn, ids=judge.ids,
+        writer = OR.OwnerRevisions(S, judge.CM, judge.conn, ids=judge.ids,
             authority_lock=judge.authority_lock, configurations=judge.configurations,
             team_routes=judge.team_routes)
         result = writer.apply(packet)

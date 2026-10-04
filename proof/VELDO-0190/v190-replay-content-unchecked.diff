@@ -1,4 +1,4 @@
 --- a/.veldo/control_owner_revisions.py
 +++ b/.veldo/control_owner_revisions.py
-@@ -90 +89,0 @@
+@@ -104 +103,0 @@
 -                    or self.S.canonical_bytes({k: committed[k] for k in (field, 'base')}) != self.S.canonical_bytes(p)

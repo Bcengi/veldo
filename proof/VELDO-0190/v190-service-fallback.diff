@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1233 +1233 @@
+@@ -1237 +1237 @@
 -            elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:
 +            elif False:
