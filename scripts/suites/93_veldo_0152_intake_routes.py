@@ -23,7 +23,7 @@ def _v152_suite():
              'route/new-project', 'route/existing-project', 'route/asked-only-when-unclear',
              'route/answers', 'route/read-and-report', 'route/runner-input',
              'route/scope-refusal', 'route/malformed', 'route/stale', 'route/factory-refusal',
-             'format/fake-lines')
+             'format/fake-lines', 'route/legacy-owner')
     rows = {n: [] for n in names}
     def check(name, label, condition):
         rows[name].append((label, bool(condition)))
@@ -77,8 +77,16 @@ def _v152_suite():
             acquirer = EV.Acquirer(S, f['CM'], f['P'], f['V'], f['presenter'],
                 EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
                 'api-edge', lambda b: f['sign_as']('api-edge', b))
+            # An installed pre-route intake already owns these kinds. Upgrade may
+            # rebind its module digest, but cannot change its writer declaration.
+            S.declare_owners(conn, IN.OWNER,
+                kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD,),
+                       IN.QUESTION_KIND: (IN.RECORD, IN.ASKED)}, module=IN.__file__)
+            legacy_owners = [row for row in S.entity_owners(conn) if row[2] == IN.OWNER]
             intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory'],
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
+            check('route/legacy-owner', 'existing writer declarations survive route attachment',
+                  [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
             def activate(name, prefixes):
                 return f['projects'].apply(f['signed']('olga', dict(ids, operation='activate', project=name,
                     principal='olga', command_id=f['next_id']('project'), nonce=f['next_id']('nonce'), owner='olga',
@@ -381,8 +389,14 @@ else:
             acquirer = EV.Acquirer(S, f['CM'], f['P'], f['V'], f['presenter'],
                 EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
                 'api-edge', lambda b: f['sign_as']('api-edge', b))
+            S.declare_owners(conn, IN.OWNER,
+                kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD,),
+                       IN.QUESTION_KIND: (IN.RECORD, IN.ASKED)}, module=IN.__file__)
+            legacy_owners = [row for row in S.entity_owners(conn) if row[2] == IN.OWNER]
             intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory', 'bcengi'],
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
+            check('route/legacy-owner', 'existing writer declarations survive route attachment',
+                  [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
             for channel in channels:
                 result = send(channel, 'fix the login bug')
                 check('intake/factory-refusals', 'no factory record ' + channel,

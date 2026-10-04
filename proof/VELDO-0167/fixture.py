@@ -3,7 +3,7 @@ import ast
 from pathlib import Path
 
 
-def run(root, production, exercise):
+def run(root, production, exercise, teardown):
     source = (Path(root) / 'scripts/suites/85_veldo_0171_setup_api.py').read_text()
     prefix = source[:source.index('    try:\n        takes =')]
     tree = ast.parse(prefix)
@@ -15,11 +15,8 @@ def run(root, production, exercise):
     prefix = ''.join(lines)
     cleanup = source[source.index('    finally:\n        close_runtime()'):source.index('    if profiler is not None:')]
     body = "    try:\n        __exercise__(dict(locals(), ROOT=ROOT))\n" + cleanup
-    # Installation fakes use the shared constructors and emit no vendor protocol.
+    # Observe the installation executables before the shared fixture removes them.
     body = body.replace('        close_runtime()',
-                        "        compare = load('v167_conform', Path(__fixture__).resolve().parents[2] / 'proof/VELDO-0172/compare_formats.py')\n"
-                        "        issues, trace = compare.conform_fake(dict(base=base, fake=engines186['fake']), '0167_setup_records')\n"
-                        '        close_runtime()')
-    body += "    if issues:\n        raise AssertionError(str(issues))\n"
-    ns = dict(ROOT=Path(root), __production__=production, __exercise__=exercise, __fixture__=__file__)
+                        '        __teardown__(dict(locals()))\n        close_runtime()')
+    ns = dict(ROOT=Path(root), __production__=production, __exercise__=exercise, __teardown__=teardown)
     exec(compile(prefix + body + '\n_v171_suite()\n', __file__, 'exec'), ns)

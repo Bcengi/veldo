@@ -188,12 +188,14 @@ class Intake(RT.Routes):
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._adapters = {'telegram_message': self._telegram, 'api_request': self._api}
-        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD, RT.ROUTE),
-                                                 QUESTION_KIND: (RECORD, ASKED, RT.ROUTE)}, module=__file__)
+        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD,),
+                                                 QUESTION_KIND: (RECORD, ASKED)}, module=__file__)
         conn.command_registry[RECORD] = {'transaction_transition': self._record_transition, 'writes': WRITES}
         conn.command_registry[ASKED] = {'transaction_transition': self._asked_transition, 'writes': WRITES}
 
-        conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
+        # Routes use the established writer so an installed pre-route store keeps
+        # its immutable ownership declaration across upgrade and switch back.
+        self.record_operation = RECORD
         self.route_refused = Refused
 
     def _route_transition(self, conn, params, before):
@@ -472,6 +474,8 @@ class Intake(RT.Routes):
     def _record_transition(self, conn, params, before):
         """intake_record: re-plan inside the transaction on its own connection; the plan's writes are
         the transaction's, and a plan that now differs from the one the command declared refuses."""
+        if params.get('operation') == RT.ROUTE:
+            return self._route_transition(conn, params, before)
         command = params.get('command')
         if command_problem(command) or params.get('content_digest') != content_digest(command):
             raise Refused('invalid_input:command', 'the recorded command is not the normalized command')

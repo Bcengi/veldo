@@ -209,5 +209,5 @@ def restart(h, check, here):
     check(row, 'record configuration is ready at the single restart', at_restart == [str(args[0] / 'records')])
     check(row, 'answer requires no redundant restart: ' + str(answer.get('next')), code == 0 and not answer.get('next'))
     status = h['service_send'](args[0], {'operation': 'inspect', 'entity_ids': []})
-    check(row, 'restarted service has the API open', (status.get('result') or {}).get('api', {}).get('available') is True)
+    check(row, 'restarted service has the API open: ' + str((status.get('result') or {}).get('api')),  (status.get('result') or {}).get('api', {}).get('available') is True)
     manager.stop(laid['unit'])

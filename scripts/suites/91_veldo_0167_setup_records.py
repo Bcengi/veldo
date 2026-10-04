@@ -280,11 +280,26 @@ def _v167_suite():
     spec = importlib.util.spec_from_file_location('v167_fixture', here / 'proof/VELDO-0167/fixture.py')
     fixture = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(fixture)
+    conform_spec = importlib.util.spec_from_file_location('v167_formats', here / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    fake_capture = (['fixture teardown did not run'], [])
+
+    def teardown(h):
+        nonlocal fake_capture
+        # VELDO-0186 constructs these inert installation bytes with fake_formats.embed.
+        # They deliberately emit no vendor protocol, so no captured events are credited.
+        fake_capture = conform_formats.conform_fake(
+            dict(base=h['base'], fake=h['engines186']['fake']), '0167_setup_records')
+
     try:
-        fixture.run(ROOT, PRODUCTION, exercise)
+        fixture.run(ROOT, PRODUCTION, exercise, teardown)
     except Exception as exc:
         for row in rows:
             check(row, 'ran to its end (raised ' + type(exc).__name__ + ': ' + str(exc)[:350] + ')', False)
+    for line in conform_formats.describe('0167_setup_records', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0167_setup_records', not fake_capture[0])
     for row, observations in rows.items():
         for label, passed in observations:
             if not passed:
