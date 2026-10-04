@@ -218,7 +218,9 @@ class Grooming:
             raise Refused('not_authorized', 'command signature did not verify')
         iid = command['item']
         item = _row(self.conn, iid)
-        if item is None or item['kind'] != ITEM_KIND or not iid.startswith(self.CB.ID_PREFIX):
+        if (item is None or item['kind'] != ITEM_KIND or not iid.startswith(self.CB.ID_PREFIX)
+                or item['data'].get('repository_uuid') != self.ids['repository_uuid']):
+            # Another repository's item is not this service's to groom, on a shared connection too.
             raise Refused('no_such_item', str(iid)[:128])
         if command['item_version'] != item['version']:
             raise Refused('stale_subject:item', 'the command names another version of the item')

@@ -436,7 +436,8 @@ class Backlog:
         else:
             iid = command.get('item')
             current = read(self.conn, iid) if _is_str(iid) and iid.startswith(ID_PREFIX) else None
-            if current is None:
+            if current is None or current.get('repository_uuid') != self.ids['repository_uuid']:
+                # Another repository's item is not this service's to judge, on a shared connection too.
                 raise Refused('no_such_item', str(iid)[:128])
             if command.get('item_version') != current['version']:
                 raise Refused('stale_version', 'command names another item version')

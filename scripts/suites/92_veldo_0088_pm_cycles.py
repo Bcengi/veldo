@@ -500,6 +500,20 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
                 prepared_b = backlog_b.apply(command_b('pm', 'prepare', item=iid_b, item_version=1,
                                                        units=[published_b.get('unit')]))
                 requested_b = backlog_b.apply(command_b('pm', 'request_grooming', item=iid_b, item_version=2))
+                # Signed with the first repository's ids, an admit and a grooming proposal naming the second
+                # repository's item are routed to the first repository's services, which judge only their own.
+                grooming_a, before_b = cycles.services['grooming'], CB.read(conn, iid_b)
+                crossed = [grooming_a.backlog.apply(f['signed']('pm', dict(ids, operation='admit', principal='pm',
+                               command_id=f['next_id']('cross'), nonce=f['next_id']('cross-nonce'), item=iid_b,
+                               item_version=3, request=GR.GR.request_id(iid_b)))),
+                           grooming_a.apply(f['signed']('pm', dict(ids, operation='propose', principal='pm',
+                               command_id=f['next_id']('cross'), nonce=f['next_id']('cross-nonce'), item=iid_b,
+                               item_version=3, proposal={'ceiling': {'invocations': 1}, 'expiry': '2026-10-30T17:00:00Z'})))]
+                print('  VELDO-0088 detail: cross-repository commands:', [(r.get('ok'), r.get('reason')) for r in crossed])
+                check('followup/two-repositories', 'the first repository\'s ids admit and groom nothing of the second\'s item',
+                      all(r.get('ok') is False and r.get('reason') == 'no_such_item' for r in crossed)
+                      and before_b is not None and CB.read(conn, iid_b) == before_b
+                      and GR.read(ing.conn, GR.GR.request_id(iid_b)) is None)
                 proposed_b = grooming_b.apply(command_b('pm', 'propose', item=iid_b, item_version=3,
                     proposal={'ceiling': {'invocations': 1}, 'expiry': '2026-10-30T17:00:00Z'}))
                 groomed_b = grooming_b.groom(iid_b)

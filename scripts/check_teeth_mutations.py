@@ -10249,6 +10249,7 @@ def cases():
     # VELDO-0088: two repositories' lines on the one service connection and the one ingress connection.
     add(88, 'v88-backlog-last-registration-wins', '92_veldo_0088_pm_cycles.py', 'control_backlog.py', "            judge = served.get((params.get('command') or {}).get('repository_uuid'))\n", "            judge = list(served.values())[-1]  # defect: the last backlog registered judges every command\n", ['followup/two-repositories'], ())
     add(88, 'v88-second-line-registers', '92_veldo_0088_pm_cycles.py', 'control_workflow_cycle_pm.py', "    if any(operation in service.conn.command_registry\n", "    if False and any(operation in service.conn.command_registry\n", ['followup/two-repositories'], ())
+    add(88, 'v88-backlog-judges-other-repository-item', '92_veldo_0088_pm_cycles.py', 'control_backlog.py', "            if current is None or current.get('repository_uuid') != self.ids['repository_uuid']:\n", "            if current is None:  # defect: another repository's item is judged by this service\n", ['followup/two-repositories'], ())
 
     # VELDO-0152: criterion falsifiers and the route boundaries.
     add(152, 'v152-name-decides', '93_veldo_0152_intake_routes.py', 'control_intake.py', '            project = explicit or (keyed[0] if len(keyed) == 1 else None)\n', '            project = explicit or (hints[0] if len(hints) == 1 else None) or (keyed[0] if len(keyed) == 1 else None)\n', ['intake/name-is-a-hint'], ())

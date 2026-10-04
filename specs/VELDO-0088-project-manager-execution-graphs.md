@@ -357,10 +357,19 @@ one service connection needs per-repository allocation, snapshot, teams and inbo
 specification yet states; that stays open. Row followup/two-repositories configures two repositories
 with the real ingress, has the second line's PM services refused with nothing registered, builds the
 second repository's backlog and grooming on the ONE ingress connection after the first line's, and
-grooms a unit of each, each request and item judged as its own repository: red by assertion at a985dea0,
-green after. Finding-88 mutations v88-backlog-last-registration-wins (the last backlog registered
+grooms a unit of each, each command judged by the service of the repository whose ids it is signed
+with: red by assertion at a985dea0, green after. Finding-88 mutations v88-backlog-last-registration-wins (the last backlog registered
 judges every command) and v88-second-line-registers (from_line without the refusal), run once each here
 at nice 19, each red only that row against a green 53-assertion baseline;
 v88-grooming-off-ingress-connection, rerun on the changed module, still reds followup/real-ingress.
+The judging service also checks the item: a backlog operation other than take, and a grooming
+proposal, naming an item whose repository_uuid is not the service's own is refused no_such_item
+(found by the review of 63f6a737, where a command signed with the first repository's ids naming the
+second's item was judged against the first's checkout and written to the second's item). take is
+judged by its feature and is not checked this way. The same row signs with the first repository's ids
+an admit and a proposal on the second's item and asserts both refused no_such_item and that item
+unchanged: red by assertion at 63f6a737 (the admit judged, the proposal accepted), green after.
+Finding-88 mutation v88-backlog-judges-other-repository-item (the backlog check removed), run once
+here at nice 19, reds only that row against a green 53-assertion baseline.
 The footprint adds control_backlog.py and control_grooming.py and their engine copies. Criteria and
 status unchanged.
