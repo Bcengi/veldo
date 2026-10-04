@@ -82,3 +82,17 @@ Each removes only that field from the comparison and targets its own row.
 Their registered patches are syntax checked, not executed. The new rows have
 not been run on the historical red baseline; the old red record is preserved.
 `validation.json` records the follow-up results separately from the earlier runs.
+
+## Merge with main on 2026-10-04
+
+Main at 298d0fd2 is merged as e38c20ec. The source seam audit and unchanged
+capture dependencies are in `merge-audit.json`. Both conflict sides and their
+assertions remain. New coordination and intake receiver fixtures now name
+generated host trust. The specification footprint includes both suites.
+
+`merge-checks.md` lists all 38 selected suites and their row counts;
+`merge-checks.json` records the actual partial summaries. All ran sequentially.
+Thirty-seven suites are green. The remaining 0127 configuration suite passes
+25 rows and retains its two expected stale live capture failures. No capture
+was regenerated, no real credential was read, and the full gate and mutation
+execution remain with the reviewer. The validator and Git boundary check pass.
