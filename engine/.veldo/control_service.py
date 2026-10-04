@@ -1230,6 +1230,9 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
+            elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:
+                observation['principal'] = (packet.get('envelope') or {}).get('principal')
+                result = self.owner_revision(packet)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
             elif command.get('operation') == EDGE.ENROLL and 'envelope' in packet:
@@ -1266,6 +1269,17 @@ class Service:
         self.hint_after(before)
         self._count(observation)
         return result
+
+    def owner_revision(self, packet):
+        """The owner's SSH-signed saves use the API authority's existing writers and lock."""
+        if self.api is None:
+            raise Refused('unavailable_service:api:not_configured')
+        judge = self.api.authority
+        revisions = SA.AUTH.organ('control_owner_revisions')
+        writer = revisions.OwnerRevisions(S, judge.CM, judge.conn, ids=judge.ids,
+            authority_lock=judge.authority_lock, configurations=judge.configurations,
+            team_routes=judge.team_routes)
+        return writer.apply(packet)
 
     def api_call(self, packet):
         """One API call (VELDO-0130), run by this instance's API judge; refused by name without one."""

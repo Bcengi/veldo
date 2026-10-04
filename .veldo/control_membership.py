@@ -361,6 +361,27 @@ def _verify(envelope, signature, public_key, verifier):
     return ok is True, detail
 
 
+def authenticate(store, conn, envelope, command, signature, authority_ids, now, verifier=None,
+                 *, state=None, seen=None):
+    """Verify an ordinary command and return the authority snapshot checked.
+
+    admit supplies its already-read snapshot and nonces so bootstrap selection, policy,
+    possession and expected versions retain the same state and check order.
+    """
+    state = authority_state(store, conn) if state is None else state
+    authority = dict(authority_ids, membership_version=state["membership_version"],
+                     delegation_version=state["delegation_version"])
+    seen = set(store.materialized_state(conn)["nonces"]) if seen is None else seen
+    problems = AC.envelope_problems(envelope, command, authority, now, seen, state["keyring"], state["membership"], state["delegations"])
+    if problems:
+        raise MembershipRefused("envelope_refused", "; ".join(problems))
+    key = AC.active_key(state["keyring"], envelope["principal"], now)
+    ok, detail = _verify(envelope, signature, key["public_key"], verifier)
+    if not ok:
+        raise MembershipRefused("signature_invalid", "signature does not verify for %s with the active key: %s" % (envelope["principal"], detail))
+    return state
+
+
 def admit(store, conn, envelope, command, signature, authority_ids, now, verifier=None, enrollee_signature=None, committed_at=None, journal_signer=None):
     """Admit and commit one administrative command, or refuse by name with nothing written.
     Order: the operation must be administrative; the store's committed state is read; the
@@ -413,13 +434,8 @@ def admit(store, conn, envelope, command, signature, authority_ids, now, verifie
         if not ok:
             raise MembershipRefused("signature_invalid", "bootstrap signature does not verify with the key being enrolled: %s" % detail)
     else:
-        problems = AC.envelope_problems(envelope, command, authority, now, seen, state["keyring"], state["membership"], state["delegations"])
-        if problems:
-            raise MembershipRefused("envelope_refused", "; ".join(problems))
-        key = AC.active_key(state["keyring"], envelope["principal"], now)
-        ok, detail = _verify(envelope, signature, key["public_key"], verifier)
-        if not ok:
-            raise MembershipRefused("signature_invalid", "signature does not verify for %s with the active key: %s" % (envelope["principal"], detail))
+        state = authenticate(store, conn, envelope, command, signature, authority_ids, now, verifier,
+                             state=state, seen=seen)
         if command["operation"] == "enroll_principal":
             if not _is_str(enrollee_signature):
                 raise MembershipRefused("key_possession_unproven", "an enrollment carries the enrollee's co-signature over the envelope with the key being enrolled")

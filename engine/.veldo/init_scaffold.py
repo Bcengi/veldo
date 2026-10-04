@@ -238,6 +238,7 @@ _FILES = [
     # VELDO-0025 (PLAN-0019 W10): the membership organ, the authority's administrative command path;
     # loaded by the suite and by the authority process above it.
     ".veldo/control_membership.py",
+    ".veldo/control_owner_revisions.py",
     # VELDO-0026 (PLAN-0019 W11): the revocation organ, the acceptance guard every boundary invokes;
     # loaded by the suite and by the authority process above it.
     ".veldo/control_revocation.py",
