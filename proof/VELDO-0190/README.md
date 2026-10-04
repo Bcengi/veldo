@@ -63,8 +63,10 @@ explicitly identified rather than counted as successful negative controls.
 The red driver at drive.py uses the named selftest dispatcher against a
 4159d35b archive with unchanged production. It overlays only the current suite,
 its two fixture helpers and their suite registration. red-at-4159d35b.json retains every named failed assertion and
-source hashes. It rejects raised journeys, duplicate row reports or green
-behavior rows. This is a red record, not a gate result.
+source hashes. It rejects raised journeys, duplicate failures or green owner
+behavior rows, and requires the non-owner compatibility row to pass. Its scope
+red mode instead requires only that compatibility row to fail against the
+global-check regression. These are red records, not gate results.
 
 mutations.json records 15 finding-190 mutations, exact diffs and source hashes.
 They include each declared falsifier: replace the signed base with the head,
@@ -162,5 +164,17 @@ compatibility row green. The driver requires that split explicitly. The
 v190-packet-shape-unchecked mutation now bypasses packet_problem inside
 OwnerRevisions.apply, targeting both malformed-owner rows. The signer mutation
 anchor follows the guarded principal read. All 15 mutation anchors, hashes and
-diffs are refreshed without execution. Requested scoped regression checks are
-pending; the reviewer retains mutation execution and the merged-tree gate.
+diffs are refreshed without execution. All 17 requested suites pass individually
+in both the ordinary and exact gate environments: 34 runs, 391 suite checks per environment, zero failures. This
+includes all seven suites numbered 82, the six admit caller suites and every
+suite whose filename mentions service, channel, inbox, enrollment, mcp or claim.
+Suite 95 passes 36 checks in each environment. Validation and the Git boundary
+check pass in both environments, and all five engine copies remain identical.
+checks.json records the runs under scope_correction with log and source hashes.
+
+The unchanged d04ed684 archive makes exactly service/non-owner-malformed red by
+assertion; its other 34 behavior rows pass. red-at-d04ed684.json retains that
+result. The driver overlays only the suite, helpers and registration, just as
+for the original base. No production is edited in either archive, and no
+mutation is executed. The reviewer retains mutation execution and the
+merged-tree gate.

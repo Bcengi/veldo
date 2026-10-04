@@ -283,3 +283,17 @@ and exact empty gate environments. The six admit caller suites and
 checks pass in both. The current 34 behavior rows all fail by assertion against
 unchanged 4159d35b production, using the named selftest dispatcher. Fifteen
 finding-190 mutations are registered; execution remains reviewer work.
+
+2026-10-04, owner route scope correction: remove service-wide packet shape validation
+and guard only the owner branch's envelope principal read. OwnerRevisions retains
+packet_problem; service/malformed covers owner commands with non-dict envelopes,
+and input/malformed retains direct packet, command and envelope coverage. The new
+service/non-owner-malformed row preserves the base invalid_input:packet refusal.
+It passes against 4159d35b and fails by assertion against unchanged d04ed684;
+the base's 34 owner rows remain red. The packet-shape mutation now bypasses the
+check inside OwnerRevisions, and the signer mutation follows the guarded read.
+All 17 selected suites pass individually in both environments, 391 suite checks
+per environment and zero failures; suite 95 has 36 checks. Validation and Git
+boundary pass in both environments. All five engine copies match. Fifteen
+mutations are registered and unexecuted. Proof records are refreshed; reviewer
+mutation execution and the merged-tree gate remain pending.

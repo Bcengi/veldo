@@ -29,7 +29,7 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 
 
-def red(commit):
+def red(commit, scope=False):
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                                capture_output=True, text=True, check=True).stdout.strip()
     suite_path = Path('scripts/suites') / (SUITE + '.py')
@@ -69,15 +69,16 @@ def red(commit):
     details = [line.strip() for line in output.splitlines() if line.startswith(PREFIX) and 'detail:' in line]
     by_assertion = 'ran to its end' not in output and 'Traceback (most recent call last)' not in output
     compatibility = 'service/non-owner-malformed'
-    compatible = output.splitlines().count(PREFIX + compatibility + ' compatibility: passed') == 1
-    if (proc.returncode != 1 or not by_assertion or not compatible
-            or failed != [PREFIX + name for name in names if name != compatibility]):
-        raise SystemExit('Red proof requires owner rows red by assertion and base compatibility green: ' + output[-2000:])
+    expected = [PREFIX + name for name in names if (name == compatibility) == scope]
+    outcome = 'failed' if scope else 'passed'
+    reported = output.splitlines().count(PREFIX + compatibility + ' compatibility: ' + outcome) == 1
+    if proc.returncode != 1 or not by_assertion or not reported or failed != expected:
+        raise SystemExit('Red proof requires exactly the expected assertion failures: ' + output[-2000:])
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0190', suite=str(suite_path), commit=resolved,
                   tree='git archive %s; production unchanged; current suite, helpers and suite registration overlaid' % resolved,
                   command=command, modules=modules, suite_sha256=sha(ROOT / suite_path),
                   harness_sha256={str(p): sha(ROOT / p) for p in overlays[1:]},
-                  by_assertion=by_assertion, rows=[[PREFIX + name, name == compatibility] for name in names],
+                  by_assertion=by_assertion, rows=[[PREFIX + name, PREFIX + name not in failed] for name in names],
                   failed_rows=failed, compatibility_rows=[PREFIX + compatibility],
                   details=details, seconds=round(time.monotonic() - started, 3), exit_code=proc.returncode,
                   log_sha256=hashlib.sha256(output.encode()).hexdigest())
@@ -87,6 +88,6 @@ def red(commit):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3 or sys.argv[1] != '--red':
-        raise SystemExit('Use the red mode. Mutation execution belongs to the reviewer.')
-    red(sys.argv[2])
+    if len(sys.argv) != 3 or sys.argv[1] not in ('--red', '--scope-red'):
+        raise SystemExit('Use --red for the original base or --scope-red for the global-check regression.')
+    red(sys.argv[2], scope=sys.argv[1] == '--scope-red')

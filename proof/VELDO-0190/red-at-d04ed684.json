@@ -1,0 +1,206 @@
+{
+ "by_assertion": true,
+ "command": [
+  "python3",
+  "scripts/selftest.py",
+  "--suite",
+  "95_veldo_0190_owner_revisions"
+ ],
+ "commit": "d04ed6845dacf546a5e775c8b533936f031b4721",
+ "compatibility_rows": [
+  "VELDO-0190 service/non-owner-malformed"
+ ],
+ "details": [
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation",
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation",
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation",
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation",
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation",
+  "VELDO-0190 service/non-owner-malformed detail: 4159d35b fallback refusal: {'ok': False, 'reason': 'invalid_input:owner_command:packet'}",
+  "VELDO-0190 service/non-owner-malformed detail: unchanged journal and original refusal observation"
+ ],
+ "exit_code": 1,
+ "failed_rows": [
+  "VELDO-0190 service/non-owner-malformed"
+ ],
+ "harness_sha256": {
+  "proof/VELDO-0190/fixture.py": "4a265bfa2f6fe49ec854258e9332d006e49f38a8f43ca37603d81f70d44a07df",
+  "proof/VELDO-0190/journey.py": "707b943fdc0107186c4cb4f7f7b4de09b93519805211a1def9b4aa786fbd5a73"
+ },
+ "log_sha256": "51e61c1236fa372d6c5b870c971903393ef12651fdcc22d8c4170a6fbacc7005",
+ "modules": {
+  ".veldo/control_agent_config.py": {
+   "at_commit": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
+   "now": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee"
+  },
+  ".veldo/control_membership.py": {
+   "at_commit": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89",
+   "now": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89"
+  },
+  ".veldo/control_owner_revisions.py": {
+   "at_commit": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+   "now": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd",
+   "now": "0b7c24f1b4484195de70702b1a52d5297b76318a1d043f7e70c435a3d4b6ac37"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02",
+   "now": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02"
+  }
+ },
+ "rows": [
+  [
+   "VELDO-0190 offline/saves",
+   true
+  ],
+  [
+   "VELDO-0190 writer/configuration-stale",
+   true
+  ],
+  [
+   "VELDO-0190 writer/team-stale",
+   true
+  ],
+  [
+   "VELDO-0190 writer/roster",
+   true
+  ],
+  [
+   "VELDO-0190 writer/credential",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/unsigned",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/other-key",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/revoked",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/not-owner",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/definition",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/base",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/team",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/membership",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/delegation",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/domain",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/store",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/repository",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/expiry",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/command-id",
+   true
+  ],
+  [
+   "VELDO-0190 authentication/operations",
+   true
+  ],
+  [
+   "VELDO-0190 replay/identical",
+   true
+  ],
+  [
+   "VELDO-0190 replay/content-conflict",
+   true
+  ],
+  [
+   "VELDO-0190 replay/consumed-nonce",
+   true
+  ],
+  [
+   "VELDO-0190 replay/nonce-binding",
+   true
+  ],
+  [
+   "VELDO-0190 lock/second-connection",
+   true
+  ],
+  [
+   "VELDO-0190 lock/writer-connection",
+   true
+  ],
+  [
+   "VELDO-0190 input/malformed",
+   true
+  ],
+  [
+   "VELDO-0190 service/malformed",
+   true
+  ],
+  [
+   "VELDO-0190 service/non-owner-malformed",
+   false
+  ],
+  [
+   "VELDO-0190 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0190 service/saves",
+   true
+  ],
+  [
+   "VELDO-0190 service/forged",
+   true
+  ],
+  [
+   "VELDO-0190 service/writer-refusal",
+   true
+  ],
+  [
+   "VELDO-0190 service/unconfigured",
+   true
+  ],
+  [
+   "VELDO-0190 install/asset",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 7.857,
+ "spec_id": "VELDO-0190",
+ "suite": "scripts/suites/95_veldo_0190_owner_revisions.py",
+ "suite_sha256": "ac8d43800fe933c71eb7866770bc445e5ebda7442f3842a0a6e11db754fef60b",
+ "tree": "git archive d04ed6845dacf546a5e775c8b533936f031b4721; production unchanged; current suite, helpers and suite registration overlaid"
+}

@@ -428,7 +428,7 @@
    "engine_identical": true
   },
   "control_service.py": {
-   "sha256": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd",
+   "sha256": "0b7c24f1b4484195de70702b1a52d5297b76318a1d043f7e70c435a3d4b6ac37",
    "engine_identical": true
   },
   "init_scaffold.py": {
@@ -451,8 +451,11 @@
  },
  "red": {
   "file": "red-at-4159d35b.json",
-  "rows": 34,
-  "all_red_by_assertion": true
+  "failed_owner_rows": 34,
+  "passing_compatibility_rows": 1,
+  "all_expected_failures_by_assertion": true,
+  "scope_regression_file": "red-at-d04ed684.json",
+  "scope_regression_failed_rows": 1
  },
  "mutations": {
   "registered": 15,
@@ -681,5 +684,459 @@
   },
   "initial_failure": "The first run included non-object top-level socket packets, which the existing transport refuses as malformed_request before service dispatch. The socket row now covers malformed command and envelope fields; the offline row retains top-level coverage.",
   "initial_log_sha256": "66d6e091bcf682c12ec8979f459461616f1ca02a395dece0d56711c1060ad040"
+ },
+ "scope_correction": {
+  "base": "d04ed684",
+  "implementation_commit": "4ea2f3c7",
+  "ordinary": [
+   {
+    "exit_code": 2,
+    "log_sha256": "77f0c6388f18bbb91114625f016634a0351daa525499401cf54827ac9834a69c",
+    "seconds": 1.31,
+    "suite": "38_veldo_0025_membership",
+    "passed": 43,
+    "failed": 0,
+    "suite_passed": 17,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "a3bd74d2ff06358c6b7beb73672bcc90b7c83c623c3e864bb5fb39915252eed7",
+    "seconds": 4.02,
+    "suite": "39_veldo_0026_revocation",
+    "passed": 42,
+    "failed": 0,
+    "suite_passed": 16,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "ff32ab6b730b1f279e1744b6462c9bbb433313aae5d73d88e1138a89eea5dd30",
+    "seconds": 0.19,
+    "suite": "46_veldo_0029_enrollment",
+    "passed": 33,
+    "failed": 0,
+    "suite_passed": 7,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "f32439ec9345c4e657c7ba650daf0dc108cb3c730b056181c7eab1f838f469d0",
+    "seconds": 5.03,
+    "suite": "56_veldo_0027_signing",
+    "passed": 121,
+    "failed": 0,
+    "suite_passed": 95,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "130493c32976ffbb503826086e5a89a8242d8528f5d266b46868b627bc25bccd",
+    "seconds": 2.98,
+    "suite": "58_veldo_0031_claims",
+    "passed": 29,
+    "failed": 0,
+    "suite_passed": 3,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "302ea9a3d278c1ff46b272d49f8941e73d2351e3954dd169c54161c5838df4ef",
+    "seconds": 2.61,
+    "suite": "60_veldo_0064_inbox",
+    "passed": 44,
+    "failed": 0,
+    "suite_passed": 18,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "297905195af6844c3dbc1f90e5e83b07a2d32b4fecca53be9ea781de47fd3ac8",
+    "seconds": 31.51,
+    "suite": "71_veldo_0138_channel_service",
+    "passed": 39,
+    "failed": 0,
+    "suite_passed": 13,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "1f280f81d688ba4c86af52dc60ea0496390a63d871a308ec1d7b1faf09b33404",
+    "seconds": 31.91,
+    "suite": "73_veldo_0139_factory_setup",
+    "passed": 43,
+    "failed": 0,
+    "suite_passed": 17,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "2b8afe833350bea8334f8b0ac96172bf0b5525ddb230df8e0c55ea5dc88be16d",
+    "seconds": 2.61,
+    "suite": "82_veldo_0085_decomposition",
+    "passed": 41,
+    "failed": 0,
+    "suite_passed": 15,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "bfb9316192331f9ffbb993c2d6c6b11ce564d309508b9a1d24415da87eb72629",
+    "seconds": 21.01,
+    "suite": "82_veldo_0129_worker_wiring",
+    "passed": 55,
+    "failed": 0,
+    "suite_passed": 29,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "786684fb5086bba43f5332018e96233c36b6f4bef8e1fe105652f8cdc7e4c7da",
+    "seconds": 19.16,
+    "suite": "82_veldo_0141_execution_record",
+    "passed": 66,
+    "failed": 0,
+    "suite_passed": 40,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "22ca36e5b72faad971577a1482f90e49becd71ba15933a07ad5919b5571ae319",
+    "seconds": 28.87,
+    "suite": "82_veldo_0144_mcp_catalog",
+    "passed": 55,
+    "failed": 0,
+    "suite_passed": 29,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "e5180f1e37cadd57450e98282fd0aac85750165f05aa87921620714a262ee0e1",
+    "seconds": 12.38,
+    "suite": "82_veldo_0165_launch_hygiene",
+    "passed": 49,
+    "failed": 0,
+    "suite_passed": 23,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "2e84159c8967ce584d6a37ff8f567c7c2555b58f303992614786b627481c1f60",
+    "seconds": 1.16,
+    "suite": "82_veldo_0172_live_formats",
+    "passed": 30,
+    "failed": 0,
+    "suite_passed": 4,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "29f5dec9b80195fed448d13fd52e1ba4d06ca7b72d795861674d1be243720463",
+    "seconds": 2.33,
+    "suite": "82_veldo_0173_tool_registry",
+    "passed": 37,
+    "failed": 0,
+    "suite_passed": 11,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "70af44928c696f57b209860a3b70e5e2144088b027c472623573303ab25296e7",
+    "seconds": 13.05,
+    "suite": "85_veldo_0171_setup_api",
+    "passed": 44,
+    "failed": 0,
+    "suite_passed": 18,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "ad89f48305f9898fe1095bbb03d685c4f5036a02bce5e6290c5ba74666754014",
+    "seconds": 7.47,
+    "suite": "95_veldo_0190_owner_revisions",
+    "passed": 62,
+    "failed": 0,
+    "suite_passed": 36,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   }
+  ],
+  "clean": [
+   {
+    "exit_code": 2,
+    "log_sha256": "f578b0f96a060a4cc26a1f4bc2b8240caa207bf1c8dbcc5b09a77793c52ed488",
+    "seconds": 0.75,
+    "suite": "38_veldo_0025_membership",
+    "passed": 43,
+    "failed": 0,
+    "suite_passed": 17,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "eee5f4f9736fbb5e6b3cef61ee1d971fc312bb92de035408f836aee61d08fbb8",
+    "seconds": 1.38,
+    "suite": "39_veldo_0026_revocation",
+    "passed": 42,
+    "failed": 0,
+    "suite_passed": 16,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "379922a4d55ecf2c93cd51d030fad3d1d893008fad7ca191d27f1985b0afc6e7",
+    "seconds": 0.17,
+    "suite": "46_veldo_0029_enrollment",
+    "passed": 33,
+    "failed": 0,
+    "suite_passed": 7,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "b0a8ee7695cdb3413402f84687b42352b29c56d1c4c47847d06b84fccff3ba59",
+    "seconds": 5.61,
+    "suite": "56_veldo_0027_signing",
+    "passed": 121,
+    "failed": 0,
+    "suite_passed": 95,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "d71a580f63e0eb9fc79063664817c29798bc7cf7f7ac10b45523c9e22c365859",
+    "seconds": 2.88,
+    "suite": "58_veldo_0031_claims",
+    "passed": 29,
+    "failed": 0,
+    "suite_passed": 3,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "63f7757ace2c1de4c9655b0af5ea4d68877260162c0f1ba223842c36e9cd25dc",
+    "seconds": 2.14,
+    "suite": "60_veldo_0064_inbox",
+    "passed": 44,
+    "failed": 0,
+    "suite_passed": 18,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "532ff4446c57b1ec8d2e35e5d05522d12790c550edd0ea017a60de2947cb1fba",
+    "seconds": 31.8,
+    "suite": "71_veldo_0138_channel_service",
+    "passed": 39,
+    "failed": 0,
+    "suite_passed": 13,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "f33eeb1a09b31236583bc0183a3e53e47a4bb4c1c47a6a1dd7ed24a691da8b14",
+    "seconds": 49.45,
+    "suite": "73_veldo_0139_factory_setup",
+    "passed": 43,
+    "failed": 0,
+    "suite_passed": 17,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "9b110d284f44dfe75f4d7ca2a048d8de4258ca341562dffd511f644df68549f2",
+    "seconds": 3.79,
+    "suite": "82_veldo_0085_decomposition",
+    "passed": 41,
+    "failed": 0,
+    "suite_passed": 15,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "5c7fb283b87838d81984767aa3e1881512afe8f08652db202f869008b598b58a",
+    "seconds": 47.7,
+    "suite": "82_veldo_0129_worker_wiring",
+    "passed": 55,
+    "failed": 0,
+    "suite_passed": 29,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "a31dfb787e1769a3769d1491dda5a217f5e38c29ebdbc96e5345ebd19e28c3b2",
+    "seconds": 20.66,
+    "suite": "82_veldo_0141_execution_record",
+    "passed": 66,
+    "failed": 0,
+    "suite_passed": 40,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "99431ed81bb5beac890d2973978076358e8e9b0c999693b955f82deb1f5abb3a",
+    "seconds": 59.88,
+    "suite": "82_veldo_0144_mcp_catalog",
+    "passed": 55,
+    "failed": 0,
+    "suite_passed": 29,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "073681790f09b3bc5deb3e8f9e3888fc6e30b91d43ccf25c98e930b0d9798e22",
+    "seconds": 14.92,
+    "suite": "82_veldo_0165_launch_hygiene",
+    "passed": 49,
+    "failed": 0,
+    "suite_passed": 23,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "596d18ae5f804a2c9f4e1bc3272788a424b51f75e7781902569df0a536e1b104",
+    "seconds": 1.13,
+    "suite": "82_veldo_0172_live_formats",
+    "passed": 30,
+    "failed": 0,
+    "suite_passed": 4,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "75b2ff938a49b1db13d10b259cf9bb95adf66615be0d64c869e470596a9a9125",
+    "seconds": 3.74,
+    "suite": "82_veldo_0173_tool_registry",
+    "passed": 37,
+    "failed": 0,
+    "suite_passed": 11,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "f2d79cd49cf9346c834e821d72f2ff85c4147e4de93b8914a690a3b83fe0ea24",
+    "seconds": 13.04,
+    "suite": "85_veldo_0171_setup_api",
+    "passed": 44,
+    "failed": 0,
+    "suite_passed": 18,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   },
+   {
+    "exit_code": 2,
+    "log_sha256": "0bc8fdede660429f32bc73cea8358ed6d8beaae347c3a7d6607783c75238d048",
+    "seconds": 6.96,
+    "suite": "95_veldo_0190_owner_revisions",
+    "passed": 62,
+    "failed": 0,
+    "suite_passed": 36,
+    "includes_shared_preamble": true,
+    "failure_details": []
+   }
+  ],
+  "clean_environment": {
+   "PATH": "/usr/bin:/bin",
+   "HOME": "/dev/shm/b190",
+   "TMPDIR": "/dev/shm",
+   "LANG": "C.UTF-8",
+   "LC_ALL": "C.UTF-8",
+   "TZ": "UTC",
+   "PYTHONDONTWRITEBYTECODE": "1",
+   "PYTHONNOUSERSITE": "1",
+   "PYTHONHASHSEED": "0",
+   "GIT_CONFIG_NOSYSTEM": "1",
+   "GIT_CONFIG_GLOBAL": "/dev/null",
+   "GIT_TERMINAL_PROMPT": "0"
+  },
+  "static": {
+   "ordinary": {
+    "validate": {
+     "exit_code": 0,
+     "log_sha256": "6a71a1841aeec2a61c8a2d19a49334f5ce00e65c7cd8063673fb6eb5a546ea9e",
+     "seconds": 3.96
+    },
+    "boundary": {
+     "exit_code": 0,
+     "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83",
+     "seconds": 2.15
+    }
+   },
+   "clean": {
+    "validate": {
+     "exit_code": 0,
+     "log_sha256": "6a71a1841aeec2a61c8a2d19a49334f5ce00e65c7cd8063673fb6eb5a546ea9e",
+     "seconds": 4.14
+    },
+    "boundary": {
+     "exit_code": 0,
+     "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83",
+     "seconds": 2.16
+    }
+   }
+  },
+  "production": {
+   "control_owner_revisions.py": {
+    "sha256": "982ba7c975457a73702da9bc0c4aa451dd7f3780b328c75c19fa5a1b9751fccd",
+    "engine_identical": true
+   },
+   "control_membership.py": {
+    "sha256": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89",
+    "engine_identical": true
+   },
+   "control_agent_config.py": {
+    "sha256": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
+    "engine_identical": true
+   },
+   "control_service.py": {
+    "sha256": "0b7c24f1b4484195de70702b1a52d5297b76318a1d043f7e70c435a3d4b6ac37",
+    "engine_identical": true
+   },
+   "init_scaffold.py": {
+    "sha256": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02",
+    "engine_identical": true
+   }
+  },
+  "suite_sha256": "ac8d43800fe933c71eb7866770bc445e5ebda7442f3842a0a6e11db754fef60b",
+  "red_records": [
+   "red-at-4159d35b.json",
+   "red-at-d04ed684.json"
+  ],
+  "mutation_anchors": {
+   "registered": 15,
+   "valid": 15,
+   "executed": 0
+  }
  }
 }
