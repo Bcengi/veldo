@@ -556,6 +556,12 @@ def from_line(line):
     Team membership and its accepted PM worker still authorize every command.
     """
     service = line.service
+    # The allocation and snapshot authorities are one per connection (control_alias.attach,
+    # control_readset.attach): a second repository's line is refused here, before it registers anything
+    # on the service's or the ingress's connection that would judge the first line's commands as its own.
+    if any(operation in service.conn.command_registry
+           for operation in organ('control_alias').OPERATIONS + ('accept_snapshot',)):
+        raise Refused('invalid_registration:pm_services', 'this connection already holds a line\'s PM authorities')
     modules = line.run.__func__.__globals__
     store, membership, assignment = modules['S'], modules['CM'], modules['I']
     ids = dict(domain_uuid=service.domain, repository_uuid=line.repository, store_uuid=service.store)

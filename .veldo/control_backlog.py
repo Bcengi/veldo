@@ -346,6 +346,27 @@ class Refused(Exception):
         self.code, self.detail = code, detail
 
 
+def _serve(store, conn, service):
+    """Register `service` as its repository's backlog on `conn`. The connection keeps ONE backlog
+    transition whichever repositories' backlogs are built on it (each factory line builds its own on the
+    service's and the ingress's connections): the signed command's own repository picks the backlog that
+    judges it, with that repository's coordinates and workspace, so a later line's backlog never judges an
+    earlier line's commands as its own, and a repository with no backlog on the connection is refused."""
+    served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transaction_transition(conn, params, before):
+            judge = served.get((params.get('command') or {}).get('repository_uuid'))
+            if judge is None:
+                raise store.StoreRefused('invalid_input:repository', 'no backlog of this repository is on this connection')
+            return judge._in_transaction(conn, params, before)
+
+        conn.command_registry[OPERATION] = {'transaction_transition': transaction_transition, 'writes': WRITES,
+                                            'repositories': served}
+    served[service.ids['repository_uuid']] = service
+
+
 class Backlog:
     """One repository's backlog service on the configured real store connection.
 
@@ -363,7 +384,7 @@ class Backlog:
         self.authority_generation, self.clock = authority_generation, clock
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
+        _serve(store, conn, self)
 
     # Commands.
 

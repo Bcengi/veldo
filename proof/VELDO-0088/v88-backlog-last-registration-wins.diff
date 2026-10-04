@@ -1,0 +1,11 @@
+--- .veldo/control_backlog.py
++++ .veldo/control_backlog.py
+@@ -357,7 +357,7 @@
+         served = {}
+ 
+         def transaction_transition(conn, params, before):
+-            judge = served.get((params.get('command') or {}).get('repository_uuid'))
++            judge = list(served.values())[-1]  # defect: the last backlog registered judges every command
+             if judge is None:
+                 raise store.StoreRefused('invalid_input:repository', 'no backlog of this repository is on this connection')
+             return judge._in_transaction(conn, params, before)

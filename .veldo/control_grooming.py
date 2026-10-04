@@ -117,6 +117,26 @@ class Refused(Exception):
         self.code, self.detail = code, detail
 
 
+def _serve(store, conn, service):
+    """Register `service` as its repository's grooming on `conn`. The connection keeps ONE grooming
+    transition whichever repositories' groomings are built on it (each factory line builds its own on the
+    one ingress connection): the request record's own repository picks the grooming that writes it, so a
+    later line's grooming never writes an earlier line's requests, and a repository with no grooming on
+    the connection is refused. What grooming asks of the backlog is judged the same way (control_backlog)."""
+    served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transition(params, before):
+            writer = served.get((params.get('record') or {}).get('repository_uuid'))
+            if writer is None:
+                raise store.StoreRefused('invalid_input:repository', 'no grooming of this repository is on this connection')
+            return writer._transition(params, before)
+
+        conn.command_registry[OPERATION] = {'transition': transition, 'writes': WRITES, 'repositories': served}
+    served[service.ids['repository_uuid']] = service
+
+
 class Grooming:
     """The grooming service on one control store connection.
 
@@ -143,7 +163,7 @@ class Grooming:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._serial = 0
-        conn.command_registry[OPERATION] = {'transition': self._transition, 'writes': WRITES}
+        _serve(store, conn, self)
         store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={ID_PREFIX: (OPERATION,)},
                              module=__file__)
 

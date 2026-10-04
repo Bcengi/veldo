@@ -222,8 +222,30 @@
    "diff": "proof/VELDO-0088/v88-grooming-off-ingress-connection.diff",
    "module": ".veldo/control_workflow_cycle_pm.py",
    "status": "not run; reviewer only",
-   "source_sha256": "6331d8ce27a37303911d23e0cd5a5880a9efb21394055daf5be5821188881e35",
-   "mutant_sha256": "d9865860e7eebb6e9f2ce608f997f322b1ca07dd415079e1847524e12ffbb1c9"
+   "source_sha256": "df60251d4d7042895d362c1b1a2172c6a799c548fdcf3268d8c513244f077724",
+   "mutant_sha256": "b933ff3ee290bb7359d305a66ea783980083471569c4c37bfc7e361d09f29f59"
+  },
+  {
+   "name": "v88-backlog-last-registration-wins",
+   "named_rows": [
+    "followup/two-repositories"
+   ],
+   "diff": "proof/VELDO-0088/v88-backlog-last-registration-wins.diff",
+   "module": ".veldo/control_backlog.py",
+   "status": "not run; reviewer only",
+   "source_sha256": "54801e35317e73945ebfb4a2393b8fbaca5fccfc5643ce9aedd9497bbd465ff0",
+   "mutant_sha256": "ecf9cd8fc3cbdb3adb6eb35bbce3cf0f22377e0bed41335ff2eff5dc1785ad37"
+  },
+  {
+   "name": "v88-second-line-registers",
+   "named_rows": [
+    "followup/two-repositories"
+   ],
+   "diff": "proof/VELDO-0088/v88-second-line-registers.diff",
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "status": "not run; reviewer only",
+   "source_sha256": "df60251d4d7042895d362c1b1a2172c6a799c548fdcf3268d8c513244f077724",
+   "mutant_sha256": "2b7d0b67a2d80b7857b8e81fb1aaf40dcdb8d3ffbf1127e95c492798da41ca78"
   }
  ]
 }

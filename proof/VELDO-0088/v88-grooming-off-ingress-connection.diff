@@ -1,6 +1,6 @@
 --- .veldo/control_workflow_cycle_pm.py
 +++ .veldo/control_workflow_cycle_pm.py
-@@ -587,8 +587,8 @@
+@@ -593,8 +593,8 @@
          # locked service opened for its channel (VELDO-0138), so its backlog is built on that one too.
          groomed = backlog_module.Backlog(store, membership, ingress.conn, ids, service.principal, service.sign,
                                           workspace=line.workspace, authority_generation=service.generation)

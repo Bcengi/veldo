@@ -46,6 +46,10 @@ footprint:
   - "engine/.veldo/authority_contract.py"
   - ".veldo/control_team.py"
   - "engine/.veldo/control_team.py"
+  - ".veldo/control_backlog.py"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_grooming.py"
+  - "engine/.veldo/control_grooming.py"
   - "scripts/check_teeth_mutations.py"
   - "scripts/suites/33_veldo_0020_authority.py"
   - "scripts/suites/68_veldo_0134_acceptance.py"
@@ -334,3 +338,29 @@ row followup/real-ingress drives the factory line's PM cycle through the product
 pass fault unknown_outcome:Refused, green after. Finding-88 mutation v88-grooming-off-ingress-connection
 restores the earlier construction; run once here at nice 19, it reds only that row against a green
 52-assertion baseline. Criteria, footprint and status unchanged.
+
+2026-10-04, two-repository follow-up (found by the independent review of the real-ingress fix): every
+backlog and grooming built on a connection registered itself as THE transition of its command, so with
+two repositories configured the last one built judged every line's commands with its own repository and
+checkout. The reachable path was wider than grooming: the second line's from_line registered its backlog,
+teams and inbox on the service's connection, then was refused at the connection's one allocation
+authority (control_alias.attach; the snapshot authority, control_readset.attach, is one per connection
+too), so it never reached its grooming but left the first line's next publication refused
+(stale_subject:specification_revision). Now a connection keeps ONE backlog transition and ONE grooming
+transition for every repository built on it, and the signed command's own repository (the request
+record's, for grooming) picks the service that judges it; a repository with none on the connection is
+refused (invalid_input:repository). The transition cannot take the repository from the command alone,
+because the backlog's judgment reads that repository's checkout, which no command carries. from_line
+refuses a second repository's line by name (invalid_registration:pm_services) before registering
+anything, so it leaves no writer on either connection. Building PM services for a second repository on
+one service connection needs per-repository allocation, snapshot, teams and inbox authorities, which no
+specification yet states; that stays open. Row followup/two-repositories configures two repositories
+with the real ingress, has the second line's PM services refused with nothing registered, builds the
+second repository's backlog and grooming on the ONE ingress connection after the first line's, and
+grooms a unit of each, each request and item judged as its own repository: red by assertion at a985dea0,
+green after. Finding-88 mutations v88-backlog-last-registration-wins (the last backlog registered
+judges every command) and v88-second-line-registers (from_line without the refusal), run once each here
+at nice 19, each red only that row against a green 53-assertion baseline;
+v88-grooming-off-ingress-connection, rerun on the changed module, still reds followup/real-ingress.
+The footprint adds control_backlog.py and control_grooming.py and their engine copies. Criteria and
+status unchanged.
