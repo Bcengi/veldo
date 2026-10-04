@@ -22,7 +22,8 @@ def _v152_suite():
              'intake/factory-inbox', 'intake/factory-refusals', 'project/prefixes',
              'route/new-project', 'route/existing-project', 'route/asked-only-when-unclear',
              'route/answers', 'route/read-and-report', 'route/runner-input',
-             'route/scope-refusal', 'route/malformed', 'route/stale', 'route/factory-refusal')
+             'route/scope-refusal', 'route/malformed', 'route/stale', 'route/factory-refusal',
+             'format/fake-lines')
     rows = {n: [] for n in names}
     def check(name, label, condition):
         rows[name].append((label, bool(condition)))
@@ -31,6 +32,9 @@ def _v152_suite():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+    fake_formats = load('v172_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    conform_formats = load('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
     # Exercise the runner's isolated copies without executing any mutation suite.
     import tempfile
     driver = load('v152_mutation_catalog', MUTATIONS)
@@ -57,6 +61,12 @@ def _v152_suite():
             expect('VELDO-0152 ' + name, False)
         return
     helper = load('v152_fixture', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/fixture.py')
+    # Keep the generated executables until their teardown read-back, after both stores close.
+    fake_directory = tempfile.TemporaryDirectory(prefix='v152-formats-')
+    fake_base = Path(fake_directory.name)
+    printed = fake_base / 'printed.jsonl'
+    def fake_engine(name):
+        return (fake_base / name).read_text()
     try:
         with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f:
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
@@ -179,22 +189,55 @@ def _v152_suite():
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'], presenter=f['presenter'],
                 settlement=f['settlement'], acquirer=acquirer))
             result_file, packet_file = base / 'result.json', base / 'packet.json'
-            fake = base / 'claude'
-            fake.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
-                'Path(sys.argv[2]).write_text(json.dumps(p))\n'
-                'print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":Path(sys.argv[1]).read_text()}))\n')
-            codex_fake = base / 'codex'
-            # Same command/reasoning/final-message event shapes as VELDO-0061's fake.
-            codex_fake.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
-                'Path(sys.argv[2]).write_text(json.dumps(p))\n'
-                'events=[{"type":"thread.started","thread_id":"route-thread"},{"type":"turn.started"},'
-                '{"type":"item.completed","item":{"id":"item_0","type":"reasoning"}},'
-                '{"type":"item.completed","item":{"id":"item_1","type":"command_execution",'
-                '"aggregated_output":"README\\n","exit_code":0,"status":"completed"}},'
-                '{"type":"item.completed","item":{"id":"item_2","type":"agent_message",'
-                '"text":Path(sys.argv[1]).read_text()}},'
-                '{"type":"turn.completed","usage":{"input_tokens":1200,"output_tokens":300}}]\n'
-                'for e in events: print(json.dumps(e))\n')
+            # Both launches and the teardown observer drive these same generated executables.
+            # complete_event supplies the live fields; the reasoning and shell-command items remain
+            # alongside the final route document, with their text and command as the CLI emits them.
+            fake_source = fake_formats.embed('''import json,sys
+from pathlib import Path
+engine = Path(sys.argv[0]).name
+def emit(event):
+    line = complete_event(event)
+    with Path(PRINTED).open('a') as stream:
+        stream.write(json.dumps({'engine': engine, 'line': line}) + chr(10))
+    print(json.dumps(line), flush=True)
+if sys.argv[1:3] == ['login', 'status']:
+    sys.stderr.write('Logged in using ChatGPT' + chr(10))
+    sys.exit(0)
+if engine == 'claude' and '--input-format' in sys.argv:
+    opening = json.loads(sys.stdin.readline())
+    if opening['type'] != 'control_request':
+        raise ValueError('expected initialize')
+    emit({'type': 'control_response', 'response': {'subtype': 'success',
+          'request_id': opening['request_id'], 'response': {'account': {
+          'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+    packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
+    result = 'Fixture PM read-back.'
+elif sys.argv[1:2] == ['exec']:
+    packet = json.load(sys.stdin)
+    result = 'Fixture PM read-back.'
+else:
+    packet = json.load(sys.stdin)
+    Path(sys.argv[2]).write_text(json.dumps(packet))
+    result = Path(sys.argv[1]).read_text()
+if engine == 'claude':
+    emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': result}],
+          'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+    emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': result,
+          'usage': {'input_tokens': 2, 'output_tokens': 4}})
+else:
+    events = [{'type': 'thread.started', 'thread_id': 'route-thread'}, {'type': 'turn.started'},
+              {'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'reasoning',
+               'text': 'Read the repository before routing.'}},
+              {'type': 'item.completed', 'item': {'id': 'item_1', 'type': 'command_execution',
+               'command': 'ls', 'aggregated_output': 'README' + chr(10), 'exit_code': 0, 'status': 'completed'}},
+              {'type': 'item.completed', 'item': {'id': 'item_2', 'type': 'agent_message', 'text': result}},
+              {'type': 'turn.completed', 'usage': {'input_tokens': 1200, 'output_tokens': 300}}]
+    for event in events:
+        emit(event)
+''').replace('Path(PRINTED)', 'Path(%r)' % str(printed))
+            fake, codex_fake = fake_base / 'claude', fake_base / 'codex'
+            fake.write_text(fake_source)
+            codex_fake.write_text(fake_source)
             config = base / 'receiver.json'
             config.write_text(json.dumps(dict(store=str(f['db']), journal_key=str(f['keyfile']['authority']), principal='pm',
                 workspace=str(source), domain=domain, repository=repository, records=str(base / 'records'),
@@ -352,10 +395,32 @@ def _v152_suite():
         traceback.print_exc()
         for name in names:
             rows[name].append(('journey completed', False))
+    finally:
+        base = fake_base
+        L = load('v152_format_launch', ROOT / '.veldo/control_launch.py')
+        fake_capture = conform_formats.conform_fake(locals(), '0152_intake_routes')
+        problems, observed = [], set()
+        if printed.is_file():
+            for raw in printed.read_text().splitlines():
+                record = json.loads(raw)
+                engine, event = record['engine'], record['line']
+                name = conform_formats.event_name(event)
+                table = formats['claude_code' if engine == 'claude' else 'codex']
+                schema = table['events'].get(name)
+                problems += conform_formats.conform(event, schema, name) if schema else [name + ':table:no-event']
+                observed.add((engine, name))
+        check('format/fake-lines', 'every emitted line conforms to the binary table: ' + repr(problems[:4]),
+              not problems and {('claude', 'assistant'), ('claude', 'result/success'),
+              ('codex', 'thread.started'), ('codex', 'turn.started'), ('codex', 'item.completed'),
+              ('codex', 'turn.completed')} <= observed)
+        fake_directory.cleanup()
     for name in names:
         failed = [label for label, passed in rows[name] if not passed]
         if failed:
             print('  VELDO-0152 detail:', name, '; '.join(failed))
         expect('VELDO-0152 ' + name, bool(rows[name]) and not failed)
+    for line in conform_formats.describe('0152_intake_routes', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0152_intake_routes', bool(fake_capture[1]) and not fake_capture[0])
 
 _v152_suite()
