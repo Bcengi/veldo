@@ -24,6 +24,9 @@ footprint:
   - ".veldo/control_launch*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
+  - "engine/.veldo/control_intake*.py"
+  - ".veldo/control_intake*.py"
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "engine/.veldo/control_execution_record*.py"
   - ".veldo/control_execution_record*.py"
   - "scripts/suites/*_veldo_0167_*.py"
@@ -197,3 +200,14 @@ and clean gate environments, including 91, 86 engine upgrade and 85. Contract, f
 anchor and Git boundary checks pass. The alternate requested scratchpadanchor_check.py
 path is absent; scratchpad/anchor_check.py reports zero bad anchors. The owner reserves
 the gate, whole selftest and global mutation CLI for the reviewer. No gate stamp is claimed.
+
+
+2026-10-04, main integration: main was merged with both sets of suite and mutation
+registrations retained and the dependency file regenerated. The historical running-host
+row exposed VELDO-0152 expanding intake's immutable writer declaration. Route proposals
+now use the established intake record writer and retain their transaction validation;
+hosts already carrying the 0152 declaration keep that exact declaration too. The footprint
+includes this installed-host compatibility fix and its legacy ownership regression in
+suite 93. Suite 91 reports its VELDO-0172 format comparison at fixture teardown. Scoped
+check results and the affected, unchanged VELDO-0127 capture list are recorded separately
+in proof/VELDO-0167/merge-report.md. No live capture or gate stamp is claimed.

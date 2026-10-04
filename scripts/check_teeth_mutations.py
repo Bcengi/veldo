@@ -10209,13 +10209,6 @@ def cases():
         ['proof/intake-companions'])
     result[-1]['dir'] = 'scripts'
 
-    # Apply dependency metadata after every case is registered, including VELDO-0152.
-    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
-    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
-    for case in result:
-        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
-                and not case.get('fixture') and not case.get('siblings')):
-            case['companions'] = list(RENDERER_COMPANIONS)
     # VELDO-0167: installed records, current subscribers, additive setup.
     add(167, 'records-api-key-omitted', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
         "records=os.path.join(plan['root'], 'records')", '**{}', ['installed-record'])
@@ -10249,6 +10242,14 @@ def cases():
         "self.counts['dropped' if record_hint is None else 'record_dropped'] += len(dropped)", "self.counts['dropped'] += len(dropped)", ['record-hint-counts'])
     add(167, 'records-review-redundant-restart', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
         " and upgraded.get('restart') != 'restarted':", ':', ['upgrade-restart-answer'])
+
+    # Apply dependency metadata after every case is registered, including VELDO-0152.
+    # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
+    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
+    for case in result:
+        if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
+                and not case.get('fixture') and not case.get('siblings')):
+            case['companions'] = list(RENDERER_COMPANIONS)
     for case in result:
         if case['module'] == 'control_intake.py':
             case['companions'] = list(dict.fromkeys([*case.get('companions', ()),

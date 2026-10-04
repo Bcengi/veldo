@@ -1,0 +1,278 @@
+{
+  "schema": "veldo.scoped-checks/v1",
+  "spec_id": "VELDO-0167",
+  "merge_commit": "2370298a4c89d273ebda476a9c56820601c6425e",
+  "main_commit": "298d0fd2f3f771fc4e956b88c30d6cef86b7195e",
+  "implementation_commit": "66110babbab129f8e4da256c8082c7ad80589fb4",
+  "gate_run": false,
+  "whole_selftest_run": false,
+  "global_mutation_cli_run": false,
+  "note": "Only individually selected partial suites. Exit 2 means zero failures in a partial run, never full verification.",
+  "suites": [
+    {
+      "suite": "50_git_environment",
+      "passed": 30,
+      "failed": 0,
+      "suite_assertions": 4,
+      "exit_code": 2,
+      "seconds": 2.27,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 30 passed, 0 failed in 2.21s"
+    },
+    {
+      "suite": "62_veldo_0039_dispatch",
+      "passed": 47,
+      "failed": 0,
+      "suite_assertions": 21,
+      "exit_code": 2,
+      "seconds": 8.78,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 47 passed, 0 failed in 8.71s"
+    },
+    {
+      "suite": "63_veldo_0040_containment",
+      "passed": 80,
+      "failed": 0,
+      "suite_assertions": 54,
+      "exit_code": 2,
+      "seconds": 7.11,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 80 passed, 0 failed in 7.05s"
+    },
+    {
+      "suite": "67_veldo_0041_heartbeat",
+      "passed": 49,
+      "failed": 0,
+      "suite_assertions": 23,
+      "exit_code": 2,
+      "seconds": 11.35,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 49 passed, 0 failed in 11.28s"
+    },
+    {
+      "suite": "68_veldo_0126_intake",
+      "passed": 44,
+      "failed": 0,
+      "suite_assertions": 18,
+      "exit_code": 2,
+      "seconds": 1.73,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 44 passed, 0 failed in 1.67s"
+    },
+    {
+      "suite": "71_veldo_0130_api",
+      "passed": 68,
+      "failed": 0,
+      "suite_assertions": 42,
+      "exit_code": 2,
+      "seconds": 20.49,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 68 passed, 0 failed in 20.40s"
+    },
+    {
+      "suite": "71_veldo_0138_channel_service",
+      "passed": 39,
+      "failed": 0,
+      "suite_assertions": 13,
+      "exit_code": 2,
+      "seconds": 31.59,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 39 passed, 0 failed in 31.51s"
+    },
+    {
+      "suite": "72_veldo_0128_reports",
+      "passed": 44,
+      "failed": 0,
+      "suite_assertions": 18,
+      "exit_code": 2,
+      "seconds": 3.3,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 44 passed, 0 failed in 3.22s"
+    },
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "passed": 43,
+      "failed": 0,
+      "suite_assertions": 17,
+      "exit_code": 2,
+      "seconds": 31.0,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 43 passed, 0 failed in 30.91s"
+    },
+    {
+      "suite": "74_veldo_0140_standing_delegation",
+      "passed": 35,
+      "failed": 0,
+      "suite_assertions": 9,
+      "exit_code": 2,
+      "seconds": 13.15,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 35 passed, 0 failed in 13.07s"
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "passed": 55,
+      "failed": 0,
+      "suite_assertions": 29,
+      "exit_code": 2,
+      "seconds": 21.03,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 55 passed, 0 failed in 20.57s"
+    },
+    {
+      "suite": "82_veldo_0141_execution_record",
+      "passed": 66,
+      "failed": 0,
+      "suite_assertions": 40,
+      "exit_code": 2,
+      "seconds": 19.1,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 66 passed, 0 failed in 19.02s"
+    },
+    {
+      "suite": "82_veldo_0144_mcp_catalog",
+      "passed": 55,
+      "failed": 0,
+      "suite_assertions": 29,
+      "exit_code": 2,
+      "seconds": 28.47,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 55 passed, 0 failed in 28.40s"
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "passed": 49,
+      "failed": 0,
+      "suite_assertions": 23,
+      "exit_code": 2,
+      "seconds": 12.35,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 49 passed, 0 failed in 12.29s"
+    },
+    {
+      "suite": "82_veldo_0172_live_formats",
+      "passed": 30,
+      "failed": 0,
+      "suite_assertions": 4,
+      "exit_code": 2,
+      "seconds": 1.12,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 30 passed, 0 failed in 1.06s"
+    },
+    {
+      "suite": "82_veldo_0173_tool_registry",
+      "passed": 37,
+      "failed": 0,
+      "suite_assertions": 11,
+      "exit_code": 2,
+      "seconds": 2.32,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 37 passed, 0 failed in 2.25s"
+    },
+    {
+      "suite": "83_veldo_0154_factory_loop",
+      "passed": 39,
+      "failed": 0,
+      "suite_assertions": 13,
+      "exit_code": 2,
+      "seconds": 54.33,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 39 passed, 0 failed in 54.26s"
+    },
+    {
+      "suite": "85_veldo_0171_setup_api",
+      "passed": 44,
+      "failed": 0,
+      "suite_assertions": 18,
+      "exit_code": 2,
+      "seconds": 12.45,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 44 passed, 0 failed in 12.34s"
+    },
+    {
+      "suite": "86_veldo_0148_re_land",
+      "passed": 51,
+      "failed": 0,
+      "suite_assertions": 25,
+      "exit_code": 2,
+      "seconds": 43.62,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 51 passed, 0 failed in 43.52s"
+    },
+    {
+      "suite": "86_veldo_0168_text",
+      "passed": 52,
+      "failed": 0,
+      "suite_assertions": 26,
+      "exit_code": 2,
+      "seconds": 3.1,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 52 passed, 0 failed in 3.04s"
+    },
+    {
+      "suite": "86_veldo_0186_setup_assets",
+      "passed": 37,
+      "failed": 0,
+      "suite_assertions": 11,
+      "exit_code": 2,
+      "seconds": 21.88,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 37 passed, 0 failed in 21.81s"
+    },
+    {
+      "suite": "86_veldo_0189_engine_upgrade",
+      "passed": 58,
+      "failed": 0,
+      "suite_assertions": 32,
+      "exit_code": 2,
+      "seconds": 64.5,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 58 passed, 0 failed in 64.41s"
+    },
+    {
+      "suite": "91_veldo_0151_specialists",
+      "passed": 51,
+      "failed": 0,
+      "suite_assertions": 25,
+      "exit_code": 2,
+      "seconds": 1.78,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 51 passed, 0 failed in 1.71s"
+    },
+    {
+      "suite": "91_veldo_0167_setup_records",
+      "passed": 35,
+      "failed": 0,
+      "suite_assertions": 9,
+      "exit_code": 2,
+      "seconds": 15.17,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 35 passed, 0 failed in 15.05s"
+    },
+    {
+      "suite": "92_veldo_0088_pm_cycles",
+      "passed": 51,
+      "failed": 0,
+      "suite_assertions": 25,
+      "exit_code": 2,
+      "seconds": 48.18,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 51 passed, 0 failed in 48.09s"
+    },
+    {
+      "suite": "93_veldo_0152_intake_routes",
+      "passed": 48,
+      "failed": 0,
+      "suite_assertions": 22,
+      "exit_code": 2,
+      "seconds": 90.47,
+      "summary": "selftest (PARTIAL, 1 of 146 suites): 48 passed, 0 failed in 90.37s"
+    }
+  ],
+  "static_checks": [
+    {
+      "check": "validate",
+      "exit_code": 0
+    },
+    {
+      "check": "boundary",
+      "exit_code": 0
+    }
+  ],
+  "source_sha256": {
+    ".veldo/control_factory_setup.py": "044ae95818da72ec86aefb37b737474b52698b9ce827d8b23cdecf05531b4397",
+    ".veldo/control_factory_setup_records.py": "7eeb67beb2ab93737026880c078a9019e6012564fa33d90e90d105519a9f41ba",
+    ".veldo/control_execution_record.py": "74c6fad9e9d58212a55111bbe6a417d0de4852f70996c372663e8cde77f2503b",
+    ".veldo/control_launch.py": "17b65bfa73822599b9f1740a9b4e6773f03d7eaf101146dfc88b6f95f67e657a",
+    ".veldo/control_service.py": "6db9396942f217bbbc7650188accfbcaa89db6a137ffb346d40495bf6cba146d",
+    ".veldo/control_service_api.py": "a018a7128c826ad13ef3e38cab65e5310418c14db56129b1c3095e985fd63da7",
+    ".veldo/control_intake.py": "68bb8e8c368eee13d51f923149441b1d1d8d758efb2045c921d43fc3942ebae2",
+    ".veldo/control_intake_routes.py": "862d10688e10e7078c0c0b3ab7938a9ccea0fb3f3c79f3d77ed1730672932b44",
+    ".veldo/init_scaffold.py": "42ec6c44398ea4886f7776c6a2be006bf141d54f54bd6e0c17f15a3b100bfda1"
+  },
+  "stale_0127_captures": [
+    "proof/VELDO-0127/claude-live.json",
+    "proof/VELDO-0127/codex-live.json",
+    "proof/VELDO-0127/codex-loopback.json",
+    "proof/VELDO-0127/codex-direct-loopback.json",
+    "proof/VELDO-0127/resources-gpt-5.5-none.json",
+    "proof/VELDO-0127/resources-gpt-5.5-selected.json",
+    "proof/VELDO-0127/resources-gpt-6-astra-none.json",
+    "proof/VELDO-0127/resources-gpt-6-astra-selected.json"
+  ]
+}
