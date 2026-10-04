@@ -239,6 +239,7 @@ _FILES = [
     # loaded by the suite and by the authority process above it.
     ".veldo/control_membership.py",
     ".veldo/control_owner_revisions.py",
+    ".veldo/control_reservation_policies.py",
     # VELDO-0026 (PLAN-0019 W11): the revocation organ, the acceptance guard every boundary invokes;
     # loaded by the suite and by the authority process above it.
     ".veldo/control_revocation.py",

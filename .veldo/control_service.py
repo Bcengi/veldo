@@ -180,6 +180,8 @@ CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
 OR = _organ('control_owner_revisions')
+# VELDO-0204: the reservation policies of every account, project and unit, provisioned by the factory loop.
+RP = _organ('control_reservation_policies')
 # VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
 EDGE = _organ('control_channel_enrollment')
 API_SERVICE = 'api-service.json'
@@ -1678,6 +1680,9 @@ class Line:
             for launch in list(self.runner.launches.values()):
                 if launch.contract['station'] == 'coordination' and launch.pump(read=False):
                     self.loop.saw_end(self, launch)
+        # VELDO-0204: a unit the PM cycle assigned in this pass has its policy before this pass offers it.
+        self.loop.provision(report, 'line:' + self.repository)
+        self.activate()
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
@@ -2018,8 +2023,10 @@ class FactoryLoop:
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
     waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
 
-    def __init__(self, service, work):
+    def __init__(self, service, work, lock=None):
         self.service = service
+        # VELDO-0204: the store's lock serve holds, which the reservation provisioning requires (VELDO-0171).
+        self.lock, self.provisioning = lock, RP.Provisioning()
         receivers = (service.config.get('receiver') or {}).get('configs') or {}
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
@@ -2037,10 +2044,31 @@ class FactoryLoop:
                 swept[repository] = line.runner.sweep_runs()
             except Exception as error:  # noqa: BLE001 - a sweep that fails keeps the directories, by name
                 swept[repository] = {'refusal': 'unknown_outcome:' + type(error).__name__}
+        # VELDO-0204: the accounts and projects added while the service was stopped have their policies now; a
+        # provisioning that fails is named in this record and the loop still opens.
+        started = {'provisioning': []}
+        self.provision(started, 'start')
         with contextlib.suppress(OSError):
             self.service._log({'kind': 'loop', 'operation': 'runs_swept', 'at': time.time(),
-                               'domain_uuid': self.service.domain, 'swept': swept})
+                               'domain_uuid': self.service.domain, 'swept': swept,
+                               'provisioning': started['provisioning'], 'faults': started.get('faults', [])})
         return swept
+
+    def provision(self, report, caller):
+        """VELDO-0204: provision every reservation policy (control_reservation_policies) on the service's connection
+        with the lock serve holds, through the first line's Reservations made current by its activate. Its answer
+        goes into `report`; one that raised is a fault by name in it, never the loop's end."""
+        first = next((line for _repository, line in sorted(self.lines.items())), None)
+        if first is None:
+            return None
+        try:
+            first.activate()
+            answer = self.provisioning.run(self.service.conn, self.lock, first.reservations, caller=caller)
+        except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
+            answer = {'caller': caller, 'outcome': 'refused', 'refusal': 'unknown_outcome:' + type(error).__name__}
+            report.setdefault('faults', []).append({'provisioning': caller, 'reason': answer['refusal']})
+        report.setdefault('provisioning', []).append(answer)
+        return answer
 
     def wake(self, source, detail=None):
         self.wakes.append({'source': source, 'detail': detail, 'at': time.time()})
@@ -2084,7 +2112,8 @@ class FactoryLoop:
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
                   'sources': sorted({wake['source'] for wake in wakes}), 'wakes': wakes, 'ended': [], 'released': [],
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
-                  'stopped': [], 'faults': [], 'lands': []}
+                  'stopped': [], 'faults': [], 'lands': [], 'provisioning': []}
+        self.provision(report, 'pass')
         for repository, line in sorted(self.lines.items()):
             try:
                 line.run(report, [launch for owner, launch in ended if owner is line])
@@ -2110,13 +2139,13 @@ class FactoryLoop:
                           if line.station is not None}}
 
 
-def open_loop(config, service):
+def open_loop(config, service, lock=None):
     """(FactoryLoop, None) for an installation's work configuration, (None, refusal) when it cannot be
     constructed, and (None, None) when the installation names none: then nothing in the service dispatches."""
     if not config.get('work'):
         return None, None
     try:
-        loop = FactoryLoop(service, load_work(config['work']))
+        loop = FactoryLoop(service, load_work(config['work']), lock)
         loop.start()
         return loop, None
     except Refused as error:
@@ -2200,7 +2229,7 @@ def serve(config_path):
             signal.signal(signal.SIGTERM, lambda signum, frame: stopping.append(signum))
             signal.signal(signal.SIGINT, lambda signum, frame: stopping.append(signum))
             # VELDO-0154: the factory loop and its Runners, over this instance's connection.
-            service.loop, service.loop_refusal = open_loop(config, service)
+            service.loop, service.loop_refusal = open_loop(config, service, lock)
             if service.loop_refusal:
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})
