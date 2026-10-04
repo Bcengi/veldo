@@ -6442,7 +6442,7 @@ def cases():
          "        if req.get('brief') != amendment_brief(record):\n",
          "        if False:  # defect: the owner may have been shown anything\n", ['altered-amendment'])
     team('amendment-signature-unverified', 'control_team.py',
-         "        if not verified:\n            raise Refused('not_authorized', 'command signature did not verify')\n", '',
+         "            if not verified:\n                raise Refused('not_authorized', 'command signature did not verify')\n", '',
          ['altered-amendment'])
     team('any-settler-amends', 'control_team.py',
          "        if req.get('owner') != owner or settlement['data'].get('principals') != [owner]:\n",
@@ -9214,6 +9214,46 @@ def cases():
     handout('andon-subject-race-renamed', 'control_andon.py',
             "            return 'stale_version' if moved else 'stale_subject'\n",
             "            return 'stale_version'\n", ['andon/subject-race'])
+    # VELDO-0170: missing receiver trust and its single setup repair path.
+    add(170, 'receiver170-no-trust-as-unsigned', '87_veldo_0170_receiver_trust.py', 'control_launch.py',
+        "            raise EL.Stopped('host_trust_required:receiver_configuration')\n",
+        '            return None\n', ['launch/governed', 'launch/ungoverned'], ())
+    add(170, 'receiver170-repair-omits-trust', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            held['host_trust'] = step['trust']\n",
+        "            held.pop('host_trust', None)\n", ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-status-hides-missing', '87_veldo_0170_receiver_trust.py', 'control_service.py',
+        "            if not receiver.get('host_trust'):\n",
+        '            if False:\n', ['status/configurations'], ())
+    add(170, 'receiver170-trust-from-default-only', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or path\n",
+        '            path = EL.host_trust_path()\n', ['rerun/no-installed-trust'], ())
+    add(170, 'receiver170-host-identity-unchecked', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "    if trust.host_identity != installed.get('host_identity'):\n",
+        '    if False:\n', ['rerun/host-identity'], ())
+    add(170, 'receiver170-differing-config-accepted', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '        if actual != expected:\n',
+        '        if False:\n', ['rerun/differs'], ())
+    for field in ('principal', 'workspace', 'store', 'journal_key'):
+        row = 'rerun/differs' if field == 'principal' else 'rerun/differs/' + field
+        add(170, 'receiver170-' + field.replace('_', '-') + '-uncompared',
+            '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+            '        if actual != expected:\n',
+            '        actual.pop(' + repr(field) + ', None)\n'
+            '        expected.pop(' + repr(field) + ', None)\n'
+            '        if actual != expected:\n', [row], ())
+    add(170, 'receiver170-current-rewritten', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '        else:\n            current.append(path)\n',
+        '        else:\n            API.replace_file(path, API.text(held), 0o600)\n            current.append(path)\n', ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-no-default-trust', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or path\n",
+        "            path = json.loads(Path(ingress).read_text()).get('host_trust') or str(Path(ingress).with_name('absent-trust.json'))\n", ['rerun/default-trust'], ())
+    add(170, 'receiver170-repair-step-skipped', '87_veldo_0170_receiver_trust.py', 'control_factory_setup.py',
+        '        outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))\n',
+        '        pass\n', ['rerun/launch-after-repair'], ())
+    add(170, 'receiver170-repair-world-readable', '87_veldo_0170_receiver_trust.py', 'control_factory_setup_trust.py',
+        '            API.replace_file(path, API.text(held), 0o600)\n',
+        '            API.replace_file(path, API.text(held), 0o644)\n', ['rerun/launch-after-repair'], ())
+
     # VELDO-0171: setup lays the API down behind Tailscale Serve and a re-run changes nothing. Each criterion's
     # declared falsifier first, then the threat model's other shapes.
     def setup_api(name, module, old, new, row, also=()):
@@ -10265,6 +10305,38 @@ def cases():
         "self.counts['dropped' if record_hint is None else 'record_dropped'] += len(dropped)", "self.counts['dropped'] += len(dropped)", ['record-hint-counts'])
     add(167, 'records-review-redundant-restart', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
         " and upgraded.get('restart') != 'restarted':", ':', ['upgrade-restart-answer'])
+
+
+
+
+
+    # VELDO-0162: authenticated configuration and team commands.
+    add(162, 'v162-configuration-principal-unchecked', '94_veldo_0162_configuration_routes.py', 'control_agent_config.py', "        MC.owner(conn, params['principal'], params['repository'], time.time())", '        pass', ['configuration/unauthorized-save'], ())
+    add(162, 'v162-stale-team-accepted', '94_veldo_0162_configuration_routes.py', 'control_team.py', "        if command.get('team_version') != (record or {}).get('version', 0):", '        if False:', ['team/stale-team'], ())
+    add(162, 'v162-member-current-without-answer', '94_veldo_0162_configuration_routes.py', 'control_team.py', "                if principal == project['data'].get('owner'):", '                if True:', ['team/owner-answer'], ())
+    add(162, 'v162-owner-asked-again', '94_veldo_0162_configuration_routes.py', 'control_team.py', "                    params['action'] = 'owner_save'", "                    params['action'] = 'propose'", ['team/owner-save'], ())
+    add(162, 'v162-owner-decider-replaced', '94_veldo_0162_configuration_routes.py', 'control_team.py', "                    params['acceptance'] = dict(request_id=None, ruling='approve', principals=[principal],", "                    params['acceptance'] = dict(request_id=None, ruling='approve', principals=[self.requester],", ['team/decider'], ())
+    add(162, 'v162-edge-signature-unchecked', '94_veldo_0162_configuration_routes.py', 'control_team.py', "            if not verified:\n                raise Refused('unauthenticated:signature')", "            if False:\n                raise Refused('unauthenticated:signature')", ['team/unverified-assertion'], ())
+    add(162, 'v162-default-overwritten', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', '        identity = default_id(base + 1)\n        if CT._row(conn, identity) is not None:', '        identity = default_id(1)\n        if False:', ['default/history'], ())
+    add(162, 'v162-default-latest-not-named', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "        default = self.read_default(target.get('revision'))", "        default = self.read_default(CT._row(self.conn, HEAD)['data']['revision'])", ['default/named-revision'], ())
+    add(162, 'v162-amendment-brief-replaced', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "budget={'owner_minutes': 10}, brief=brief, choices=CHOICES, subject=result['subject']", "budget={'owner_minutes': 10}, brief='Accept a different team.', choices=CHOICES, subject=result['subject']", ['team/owner-answer'], ())
+    add(162, 'v162-repeat-after-version-check', '94_veldo_0162_configuration_routes.py', 'control_team.py', "        if (api_assertion is not None and op == 'propose' and record and record.get('proposal')", "        if (False and api_assertion is not None and op == 'propose' and record and record.get('proposal')", ['team/owner-answer'], ())
+    add(162, 'v162-telegram-answer-unapplied', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', '        self.authority.team_routes.apply_pending()', '        pass', ['team/telegram'], ())
+    add(162, 'v162-api-answer-unapplied', '94_veldo_0162_configuration_routes.py', 'control_api_authority.py', "                result['team_application'] = self.team_routes.apply_settled(derived['request_id'])", "                result['team_application'] = None", ['team/owner-answer'], ())
+    add(162, 'v162-decline-applied', '94_veldo_0162_configuration_routes.py', 'control_team.py', '        if ruling not in RULINGS:', '        if False:', ['team/decline'], ())
+    add(162, 'v162-other-proposal-applied', '94_veldo_0162_configuration_routes.py', 'control_team.py', '        if target != amendment_target(record):', '        if False:', ['team/other-request'], (("        if req.get('brief') != amendment_brief(record):", '        if False:'),))
+    add(162, 'v162-default-owner-unchecked', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "        if not project or project['data'].get('owner') != params['principal']:", '        if not project:', ['default/refusals'], (("        if problems:\n            raise CT.Refused('unauthorized:default_team_owner')", "        if False:\n            raise CT.Refused('unauthorized:default_team_owner')"),))
+    add(162, 'v162-configuration-read-wrong-revision', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                                          configuration.KINDS[0], body['role'], revision)", "                                          configuration.KINDS[0], body['role'], 1)", ['configuration/revisions'], ())
+    add(162, 'v162-staffing-request-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                value['owner_request'] = exc.owner_request", "                value['owner_request'] = None", ['team/staffing'], ())
+    add(162, 'v162-team-read-unredacted', '94_veldo_0162_configuration_routes.py', 'control_api.py', "        served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)", "        served, redacted = (dict(row['data'], version=row['version']) if row else None), []", ['routes/redaction'], ())
+    add(162, 'v162-default-brief-unchecked', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "        if default_brief(name, default) not in req['data'].get('brief', ''):", '        if False:', ['default/named-revision'], ())
+
+    add(162, 'v162-setup-requester-narrow', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', "        requester = 'pm'", "        requester = channel.requester[0]\n        self.config['journal']['key'] = str(Path(self.config['journal']['key']).with_name('qualification-requester'))", ['team/setup-requester'], ())
+    add(162, 'v162-request-alias-reused', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', " + '-v' + str(record['version'])", '', ['team/reproposal'], ())
+    add(162, 'v162-settlement-not-consumed', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', '        self.S.execute(self.conn, dict(command_id=command_id, principal=self.teams.requester,\n            operation=CONSUME, parameters=params, expected_versions={identity: 0}, artifact_digests=[],\n            nonce=command_id), self.teams.journal_signer, self.teams.sign, self.teams.authority_generation)', '        pass', ['team/consumed'], ())
+    add(162, 'v162-application-exception-unrecorded', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "            result = dict(ok=False, reason='unavailable_service:team_application')", '            raise', ['team/application-exception'], ())
+    add(162, 'v162-publication-exception-suppresses-hints', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', '        except Exception:  # A consumer failure cannot suppress journal hints.', '        except Exception:\n            raise', ['team/application-exception'], ())
+    add(162, 'v162-api-team-application-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                'team_application')", "                'hidden_team_application')", ['team/owner-answer'], ())
 
     # Apply dependency metadata after every case is registered, including VELDO-0152.
     # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained

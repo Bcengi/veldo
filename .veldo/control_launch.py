@@ -1036,11 +1036,11 @@ class Receiver:
         """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the
         production construction of the front door's Gate derives them (control_eligibility.enrolled_gate):
         this host's installed trust, named by the configuration's `host_trust`, read for the configured
-        workspace. A configuration naming no host trust trusts no settlement, so every governing decision
-        blocks; a named trust that is absent or unreadable is a named stop (control_eligibility.Stopped)."""
+        workspace. Missing configuration is a named stop for every unit, before acceptance or spawn;
+        a named trust that is absent or unreadable keeps its existing named stop."""
         path = self.config.get('host_trust')
-        if path is None:
-            return None
+        if not path:
+            raise EL.Stopped('host_trust_required:receiver_configuration')
         trust = EL.load_host_trust(path)
         if trust is None:
             raise EL.Stopped('host_trust_required')
@@ -1106,7 +1106,10 @@ class Receiver:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
             self.emit({'event': 'refused', 'refusal': refusal,
-                       'metrics': {'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
+                       'dispatch_id': dispatch_id, 'repository': self.config['repository'],
+                       'configuration': getattr(self, 'configuration_path', None),
+                       'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
+                                   'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
         try:
@@ -2332,6 +2335,7 @@ def main():
         config = json.loads(Path(sys.argv[1]).read_text())
         request, pending = _request(0, 10)
         receiver = Receiver(config, emit, control=(0, pending))
+        receiver.configuration_path = str(Path(sys.argv[1]).resolve())
         receiver.launch(request['contract'])
     except (OSError, ValueError, TypeError, KeyError, D.Refused, S.StoreRefused, C.Refused) as error:
         # Nothing conclusive is claimed: the runner reads the record and settles it.

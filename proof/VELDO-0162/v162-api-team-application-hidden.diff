@@ -1,0 +1,5 @@
+--- .veldo/control_api.py
++++ mutant/control_api.py
+@@ -787 +787 @@
+-                'team_application')
++                'hidden_team_application')

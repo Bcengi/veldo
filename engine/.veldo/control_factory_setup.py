@@ -782,6 +782,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         installed = {}
     if installed.get('store_uuid') != ids['store_uuid']:
         holds('install_root')
+    receiver_trust = organ('control_factory_setup_trust')
+    trust_step = receiver_trust.inspect(installed, organ('control_eligibility'), Refused)
     unit_dir = os.path.realpath(str(plan['unit_dir'] or CS.default_unit_dir()))
     if not os.path.isfile(os.path.join(unit_dir, authority_unit)):
         holds('unit_dir')
@@ -821,6 +823,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
+    receiver_trust.validate(trust_step, installed, engine['receivers'], _differs)
     records = organ('control_factory_setup_records')
     record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs, engine['writes'])
     states = {'service_config': record_plan['api_states']['service_config'],
@@ -876,6 +879,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         mark('workspace_enrollment', False)
         files('ingress_configuration', [p for p in base if os.path.basename(p) in ('signer.json', 'ingress.json')])
         mark('service_install', False)
+        outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))
         if edge == 'absent':
             API.generate_keys(api['key'], api['connection_key'])
         mark('api_edge_key', edge == 'absent')

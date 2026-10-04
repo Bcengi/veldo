@@ -1,0 +1,5 @@
+--- .veldo/control_team.py
++++ mutant/control_team.py
+@@ -411 +411 @@
+-        if (api_assertion is not None and op == 'propose' and record and record.get('proposal')
++        if (False and api_assertion is not None and op == 'propose' and record and record.get('proposal')

@@ -1,10 +1,13 @@
 """VELDO-0152: actual intake, signed activation, factory pass, Runner and CLI-shaped PM output."""
 
 def _v152_suite():
+    import compileall
+    import contextlib
     import copy
     import importlib.util
     import json
     from pathlib import Path
+    import sqlite3
     import sys
     import tarfile
     import time
@@ -38,7 +41,11 @@ def _v152_suite():
     formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
     # Exercise the runner's isolated copies without executing any mutation suite.
     import tempfile
-    driver = load('v152_mutation_catalog', MUTATIONS)
+    bytecode_disabled = sys.dont_write_bytecode
+    try:
+        driver = load('v152_mutation_catalog', MUTATIONS)
+    finally:
+        sys.dont_write_bytecode = bytecode_disabled
     # A mutated catalog lives in a temporary directory; its fixtures still belong to this repo.
     driver.ROOT = ROOT
     intake_cases = [case for case in driver.cases() if case['module'] == 'control_intake.py']
@@ -69,8 +76,13 @@ def _v152_suite():
     def fake_engine(name):
         return (fake_base / name).read_text()
     try:
-        with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f:
+        with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f, contextlib.closing(sqlite3.connect(':memory:')) as baseline:
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
+            # Mutation workers disable implicit bytecode writes. Compile this
+            # isolated, immutable module tree once so every real receiver can reuse
+            # it, including the exact production overlays under mutation testing.
+            if not compileall.compile_dir(mods, quiet=1, workers=1):
+                raise RuntimeError('fixture modules did not compile')
             domain, repository, ids = (f[k] for k in ('DOMAIN', 'REPO', 'ids'))
             IN = load('v152_intake', mods / 'control_intake.py')
             PM = load('v152_pm', mods / 'control_workflow_cycle_pm.py')
@@ -255,9 +267,16 @@ else:
             fake, codex_fake = fake_base / 'claude', fake_base / 'codex'
             fake.write_text(fake_source)
             codex_fake.write_text(fake_source)
+            receiver_host_trust = base / 'receiver-host-trust.json'
+            receiver_enrollment_signers = base / 'receiver-enrollment-signers'
+            receiver_enrollment_signers.write_text('')
+            receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1',
+                host_identity='fixture-host', enrollment_signers=str(receiver_enrollment_signers))))
+            receiver_host_trust.chmod(0o600)
             config = base / 'receiver.json'
             config.write_text(json.dumps(dict(store=str(f['db']), journal_key=str(f['keyfile']['authority']), principal='pm',
-                workspace=str(source), domain=domain, repository=repository, records=str(base / 'records'),
+                workspace=str(source), host_trust=str(receiver_host_trust), domain=domain,
+                repository=repository, records=str(base / 'records'),
                 adapters={'claude': {'identity': 'reported', 'argv': [sys.executable, '-B', str(mods / 'control_launch.py'),
                     'exec', sys.executable, '-B', str(fake), str(result_file), str(packet_file)]}})))
             receiver = json.loads(config.read_text())
@@ -265,13 +284,29 @@ else:
                 str(mods / 'control_launch.py'), 'exec', sys.executable, '-B', str(codex_fake),
                 str(result_file), str(packet_file)]}
             config.write_text(json.dumps(receiver))
+            # No row changes the installed runtime. Validate it once, then pass
+            # the same real runtime through ProjectCycles' explicit runtime seam.
+            runtime = PM.CY.installed_runtime()
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
             line.runner.account = 'fixture-account'
             line.engines, line.hosts = {'claude': 'claude_code', 'codex': 'codex'}, {'claude': 'fixture-host', 'codex': 'fixture-host'}
             factory.lines[repository] = line
+            line.pm_cycles = PM.from_line(line)
+            line.pm_cycles.runtime = runtime
             for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                 line.reservations.configure('policy/' + subject, scope, subject, dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())
+            conn.backup(baseline)
+            def reset_row():
+                # Independent refusals start from the same signed fixture, not
+                # every earlier row's dispatches and ever-growing read snapshots.
+                # Forget input watermarks so the next real factory pass reads
+                # the restored store. Keep the registered command authorities.
+                if line.runner.launches:
+                    raise RuntimeError('cannot restore a fixture with live launches')
+                baseline.backup(conn)
+                line.pm_cycles.pending.clear()
+                line.pm_cycles.seen.clear()
             def run(pid, value, before_finish=None):
                 result_file.write_text(json.dumps(value))
                 factory.wake('accepted_message'); factory.run()
@@ -345,6 +380,7 @@ else:
                          {'route': ['new_project', 'unclear']})
             bads += [('malformed', 'invalid_input:route', who, bad) for who in ('olga', 'zed') for bad in malformed]
             for name, reason, who, bad in bads:
+                reset_row()
                 pid = send('api_request', 'unresolved work', who=who)['proposal_id']
                 before = copy.deepcopy(intake.proposal(pid))
                 value = dict(doc(pid), **bad)
@@ -357,6 +393,7 @@ else:
                 check('route/' + name, repr(bad), intake.proposal(pid) == before and record.get('state') == 'refused'
                       and results and results[0]['result'].get('reason') == reason and len(results) == 1)
                 intake.route(doc(pid), dispatch='fixture-cleanup', proposal_id=pid)
+            reset_row()
             pid = send('api_request', 'first unresolved work')['proposal_id']
             unchanged = []
             def intervene():

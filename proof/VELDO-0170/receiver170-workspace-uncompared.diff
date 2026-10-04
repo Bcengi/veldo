@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_trust.py
++++ b/.veldo/control_factory_setup_trust.py
+@@ -47,0 +48,2 @@
++        actual.pop('workspace', None)
++        expected.pop('workspace', None)

@@ -186,6 +186,7 @@ API_SERVICE = 'api-service.json'
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
 I = _organ('control_assignment')
 ENT = _organ('entity_contract')
+TA = _organ('control_workflow_cycle_assignment')
 LIM = _organ('control_account_limit')
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station')
@@ -699,7 +700,29 @@ def status(unit, runner=None):
         ['show', '-p', 'LoadState', '-p', 'ActiveState', '-p', 'SubState', '-p', 'MainPID', '-p', 'NRestarts',
          '-p', 'Result', '-p', 'FragmentPath', _unit(unit)])
     shown = dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
-    return dict(shown, unit=unit, show_rc=rc)
+    report = dict(shown, unit=unit, show_rc=rc)
+    fragment = shown.get('FragmentPath')
+    if fragment:
+        with contextlib.suppress(OSError, ValueError, Refused):
+            for line in Path(fragment).read_text().splitlines():
+                if line.startswith('ExecStart='):
+                    argv = shlex.split(line.partition('=')[2])
+                    if 'serve' in argv:
+                        report['receivers'] = receiver_status(load_config(argv[argv.index('serve') + 1]))
+    return report
+
+
+def receiver_status(config):
+    """Read each installed receiver on every inspection, so a setup repair needs no restart."""
+    missing = []
+    for repository, path in sorted((config.get('receiver') or {}).get('configs', {}).items()):
+        with contextlib.suppress(OSError, ValueError):
+            receiver = json.loads(Path(path).read_text())
+            if not receiver.get('host_trust'):
+                missing.append({'repository': repository, 'configuration': path,
+                                'refusal': 'host_trust_required:receiver_configuration',
+                                'repair': 'run veldo factory setup again with the arguments the host was laid down with'})
+    return {'refusals': missing, 'metrics': {'host_trust_required': len(missing)}}
 
 
 def start(unit, runner=None):
@@ -1439,7 +1462,8 @@ class Service:
                 'journal_head': head[1] if head else S.GENESIS_DIGEST, 'entities': entities,
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
-                'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status()}
+                'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status(),
+                'receivers': receiver_status(self.config)}
 
     def commit_ownership(self):
         """VELDO-0189: the upgrade committed (setup removed the previous engine after this service answered),
@@ -1583,8 +1607,7 @@ class Line:
     def assigned(self):
         """Every unit assigned to this line: those its builder identity holds a claim on (VELDO-0031)."""
         builder = self.roles['builder']['identity']
-        teams = _organ('control_workflow_cycle_pm').CT
-        units = {a['unit'] for a in teams.assignments(self.service.conn)
+        units = {a['unit'] for a in TA.assignments(self.service.conn)
                  if (self.gate.unit_record(a['unit']) or {}).get('repository_uuid') == self.repository}
         return sorted(units | {claim.get('unit_id') for claim in self._rows('claim')
                        if isinstance(claim, dict) and claim.get('repository_uuid') == self.repository

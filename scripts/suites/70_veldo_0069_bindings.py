@@ -951,9 +951,9 @@ def _v69_suite():
                 trusted = launch_with(receiver_config('trusted', host_trust=str(host_trust)))
                 check(LR, 'the front door clears %s on its bound settlement' % sid + ' [observed %s]' % front.get('refusals'),
                       front.get('eligible') is True and bindings(rid))
-                check(LR, 'a receiver configured with no host trust refuses it by name (unsigned_decision) and spawns '
+                check(LR, 'a receiver configured with no host trust refuses it by name (host_trust_required:receiver_configuration) and spawns '
                           'nothing [observed %s]' % json.dumps(untrusted),
-                      untrusted.get('result') == 'refused' and untrusted.get('refusal') == 'unsigned_decision:' + rid
+                      untrusted.get('result') == 'refused' and untrusted.get('refusal') == 'host_trust_required:receiver_configuration'
                       and untrusted.get('states') == ['prepared', 'refused'] and untrusted.get('ran') is False)
                 check(LR, 'a receiver naming a host trust that is absent refuses by name (host_trust_required) and spawns '
                           'nothing [observed %s]' % json.dumps(missing_trust),

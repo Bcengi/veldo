@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_trust.py
++++ b/.veldo/control_factory_setup_trust.py
+@@ -58 +58 @@
+-            held['host_trust'] = step['trust']
++            held.pop('host_trust', None)

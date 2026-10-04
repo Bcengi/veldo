@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1042 +1042 @@
+-            raise EL.Stopped('host_trust_required:receiver_configuration')
++            return None

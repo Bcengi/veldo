@@ -83,6 +83,10 @@ def prepare(root, installed, receivers, api, service_text, differs, engine_write
         for key in ('runs', 'adapters'):
             if key in held:
                 expected[key] = held[key]
+        # The trust preflight and repair own this key, including a missing or null value.
+        expected.pop('host_trust', None)
+        if 'host_trust' in held:
+            expected['host_trust'] = held['host_trust']
         expected.update(owned)
         state, text, added = patch(path, expected, owned, differs)
         files.append((path, expected, owned, state, text, added))

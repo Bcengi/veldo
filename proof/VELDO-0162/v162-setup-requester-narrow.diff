@@ -1,0 +1,6 @@
+--- .veldo/control_service_api.py
++++ mutant/control_service_api.py
+@@ -187 +187,2 @@
+-        requester = 'pm'
++        requester = channel.requester[0]
++        self.config['journal']['key'] = str(Path(self.config['journal']['key']).with_name('qualification-requester'))

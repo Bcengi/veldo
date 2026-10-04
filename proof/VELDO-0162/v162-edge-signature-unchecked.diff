@@ -1,0 +1,5 @@
+--- .veldo/control_team.py
++++ mutant/control_team.py
+@@ -466 +466 @@
+-            if not verified:
++            if False:

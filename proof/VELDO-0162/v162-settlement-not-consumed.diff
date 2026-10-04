@@ -1,0 +1,7 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -133,3 +133 @@
+-        self.S.execute(self.conn, dict(command_id=command_id, principal=self.teams.requester,
+-            operation=CONSUME, parameters=params, expected_versions={identity: 0}, artifact_digests=[],
+-            nonce=command_id), self.teams.journal_signer, self.teams.sign, self.teams.authority_generation)
++        pass

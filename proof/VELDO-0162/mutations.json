@@ -1,0 +1,282 @@
+{
+ "schema": "veldo.mutation-registration/v1",
+ "spec_id": "VELDO-0162",
+ "status": "registered; reviewer execution required",
+ "mutations": [
+  {
+   "name": "v162-configuration-principal-unchecked",
+   "module": ".veldo/control_agent_config.py",
+   "named_rows": [
+    "configuration/unauthorized-save"
+   ],
+   "diff": "proof/VELDO-0162/v162-configuration-principal-unchecked.diff",
+   "source_sha256": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
+   "mutant_sha256": "a05275f9bb3e98d6020ac4d1f7ea3aaf81be8cea8023b749e7e93181d4a057b5",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-stale-team-accepted",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/stale-team"
+   ],
+   "diff": "proof/VELDO-0162/v162-stale-team-accepted.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "358e3978fb514146397dc6255087ac5e993b4b5f6eb8d051120727e6f253b298",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-member-current-without-answer",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/owner-answer"
+   ],
+   "diff": "proof/VELDO-0162/v162-member-current-without-answer.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "0b092516fb2e28d2eba012d3e2efaabe001240c125806610707b5f618bc49bb9",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-owner-asked-again",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/owner-save"
+   ],
+   "diff": "proof/VELDO-0162/v162-owner-asked-again.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "d1d0ed21de5753355231806a89e1f37a564f402110d9816f1c081f1118290f46",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-owner-decider-replaced",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/decider"
+   ],
+   "diff": "proof/VELDO-0162/v162-owner-decider-replaced.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "147d503697af2a29928810aff75ea12002f84111c3b2c77c1154b77f66168a32",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-edge-signature-unchecked",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/unverified-assertion"
+   ],
+   "diff": "proof/VELDO-0162/v162-edge-signature-unchecked.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "c8a6deb00a553fd419bedf3df1f91f93c9a0986c5108d042a6c4f7f41bd37e35",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-default-overwritten",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "default/history"
+   ],
+   "diff": "proof/VELDO-0162/v162-default-overwritten.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "615b426905cf2ecc5a986e55d13aa2b0bedf886a348fa9bb5f811c4a187f0a2d",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-default-latest-not-named",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "default/named-revision"
+   ],
+   "diff": "proof/VELDO-0162/v162-default-latest-not-named.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "d92e84a80340fc70744838b775e8d664fa64f198218a5388df4b5fb2c858b1a5",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-amendment-brief-replaced",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "team/owner-answer"
+   ],
+   "diff": "proof/VELDO-0162/v162-amendment-brief-replaced.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "394810a5c992dac3f51b8dabc69c223818bea013f63bdc5c50c6bf47dd9b5e75",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-repeat-after-version-check",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/owner-answer"
+   ],
+   "diff": "proof/VELDO-0162/v162-repeat-after-version-check.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "76d6408e339eb4904bb8963e1fcc72341d825e6d8815014fd5131e31ea6de205",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-telegram-answer-unapplied",
+   "module": ".veldo/control_service_api.py",
+   "named_rows": [
+    "team/telegram"
+   ],
+   "diff": "proof/VELDO-0162/v162-telegram-answer-unapplied.diff",
+   "source_sha256": "703bd44c607fb31d469262ec5107ae19add6ec49d34232cf228698a268189d5b",
+   "mutant_sha256": "28245858212881ecabbf4cea8a1fe84d2b8d57b4894d90351874f7786416568b",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-api-answer-unapplied",
+   "module": ".veldo/control_api_authority.py",
+   "named_rows": [
+    "team/owner-answer"
+   ],
+   "diff": "proof/VELDO-0162/v162-api-answer-unapplied.diff",
+   "source_sha256": "eb7194997bdc7bed3c2cc72fc7db8c23b1128daf1ecd815666f56c7af44b3b11",
+   "mutant_sha256": "4335a742a587dedee84a5da561a86498407f114dbcc139bed2df2ff75a0ef470",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-decline-applied",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/decline"
+   ],
+   "diff": "proof/VELDO-0162/v162-decline-applied.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "87249ce16b97943e9f0c44f475e58a7749035f80aeea8862fd7e4ec58e9b48f4",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-other-proposal-applied",
+   "module": ".veldo/control_team.py",
+   "named_rows": [
+    "team/other-request"
+   ],
+   "diff": "proof/VELDO-0162/v162-other-proposal-applied.diff",
+   "source_sha256": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "mutant_sha256": "f9ea57415ee54d35b4babeeb3fab29b94252c9aca528b33d0782d386d367aef2",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-default-owner-unchecked",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "default/refusals"
+   ],
+   "diff": "proof/VELDO-0162/v162-default-owner-unchecked.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "f005befcb1f02c9d06bc566c58fe8636b46dc88a5541feeae71b9c934ac0607f",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-configuration-read-wrong-revision",
+   "module": ".veldo/control_api.py",
+   "named_rows": [
+    "configuration/revisions"
+   ],
+   "diff": "proof/VELDO-0162/v162-configuration-read-wrong-revision.diff",
+   "source_sha256": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "mutant_sha256": "efce746fda154e0dc44b6cd37098180a4389cb8668a7021e3d789b01a96f4e48",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-staffing-request-hidden",
+   "module": ".veldo/control_api.py",
+   "named_rows": [
+    "team/staffing"
+   ],
+   "diff": "proof/VELDO-0162/v162-staffing-request-hidden.diff",
+   "source_sha256": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "mutant_sha256": "89f620a9a8170fda61215875394fe67a6efdc534c81f8a6ffecd13c0d50d578d",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-team-read-unredacted",
+   "module": ".veldo/control_api.py",
+   "named_rows": [
+    "routes/redaction"
+   ],
+   "diff": "proof/VELDO-0162/v162-team-read-unredacted.diff",
+   "source_sha256": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "mutant_sha256": "c9a913ec6a5a285afb9f1954c5e2e47f2ea0e5432ee81761e6844764cc5c6324",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-default-brief-unchecked",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "default/named-revision"
+   ],
+   "diff": "proof/VELDO-0162/v162-default-brief-unchecked.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "61342b6e26329c46f5f609c15e90a562f945cf5ebe480548f2537e947c79399a",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-setup-requester-narrow",
+   "module": ".veldo/control_service_api.py",
+   "named_rows": [
+    "team/setup-requester"
+   ],
+   "diff": "proof/VELDO-0162/v162-setup-requester-narrow.diff",
+   "source_sha256": "703bd44c607fb31d469262ec5107ae19add6ec49d34232cf228698a268189d5b",
+   "mutant_sha256": "19a5fa929d8a493990c0eb9ba9153ada33b425aa5815cf9129720c6c4fd41cb1",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-request-alias-reused",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "team/reproposal"
+   ],
+   "diff": "proof/VELDO-0162/v162-request-alias-reused.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "7fbbfa875125dfaac4e4b2757e173b5eb13b2724607d071c1a39316a7facf149",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-settlement-not-consumed",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "team/consumed"
+   ],
+   "diff": "proof/VELDO-0162/v162-settlement-not-consumed.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "a4fd85ef8703fb4c08f13d27bd62eaac258522efad915f14908f39c0b4541d71",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-application-exception-unrecorded",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "team/application-exception"
+   ],
+   "diff": "proof/VELDO-0162/v162-application-exception-unrecorded.diff",
+   "source_sha256": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "mutant_sha256": "e7d4434fccaa3980d4b7efe5d54ae698f68d4fae7e55611fe1f9c05baf17a6b0",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-publication-exception-suppresses-hints",
+   "module": ".veldo/control_service_api.py",
+   "named_rows": [
+    "team/application-exception"
+   ],
+   "diff": "proof/VELDO-0162/v162-publication-exception-suppresses-hints.diff",
+   "source_sha256": "703bd44c607fb31d469262ec5107ae19add6ec49d34232cf228698a268189d5b",
+   "mutant_sha256": "223d0a7b3b15eabd8c33a9ca489ac1db20a431e9f4beae1e0554f6fbd2b94a35",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-api-team-application-hidden",
+   "module": ".veldo/control_api.py",
+   "named_rows": [
+    "team/owner-answer"
+   ],
+   "diff": "proof/VELDO-0162/v162-api-team-application-hidden.diff",
+   "source_sha256": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "mutant_sha256": "a54cce77377348d955590e56360fbfe84d846699406cf5747ec0c80dbf0986b3",
+   "execution": "not run by builder"
+  }
+ ]
+}

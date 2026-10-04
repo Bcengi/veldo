@@ -194,6 +194,11 @@ sys.stdout.buffer.write(out)
 sys.stdout.flush()
 sys.exit(payload.get('code', 0))
 ''')
+        host_trust = private / 'host_trust.json'
+        enrollment_signers = private / 'enrollment_signers'
+        enrollment_signers.write_text('')
+        host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='host-39',
+                                              enrollment_signers=str(enrollment_signers))))
         # A transport may coalesce the trusted wrapper's identity and the engine's first output
         # line. Forward both in one pipe write so the receiver deterministically sees that case.
         # This runs only after the outer contained wrapper is released; neither line is invented
@@ -214,7 +219,7 @@ sys.exit(child.wait())
         worker_slice = 'v39s%s.slice' % os.urandom(4).hex()
         config.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
-            'workspace': str(base),
+            'workspace': str(base), 'host_trust': str(host_trust),
             'profile': {'kind': 'linux-systemd', 'slice': worker_slice, 'lock': str(base / 'containment.lock'),
                         'concurrency': 64, 'runtime_seconds': 600, 'memory_bytes': 1 << 30, 'cpu_percent': 400,
                         'file_bytes': 1 << 30},

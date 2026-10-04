@@ -345,14 +345,14 @@ class Teams:
 
     # Commands.
 
-    def apply(self, packet):
+    def apply(self, packet, api_assertion=None):
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
         observation = dict(self.ids, schema=SCHEMA, operation=command.get('operation'), project=None, unit=None,
                            command_id=command.get('command_id'), request=None,
                            accepted_versions={})
         try:
-            result = self._apply(packet, command, observation)
+            result = self._apply(packet, command, observation, api_assertion)
         except Refused as exc:
             result = {'ok': False, 'reason': exc.code, 'problems': exc.problems, 'owner_request': exc.owner_request}
         except self.store.StoreRefused as exc:
@@ -367,7 +367,7 @@ class Teams:
         self.observations.append(observation)
         return result
 
-    def _apply(self, packet, command, observation):
+    def _apply(self, packet, command, observation, api_assertion=None):
         if (not isinstance(packet, dict) or not isinstance(packet.get('command'), dict)
                 or not isinstance(packet.get('signature'), str) or not packet['signature'].isascii()):
             raise Refused('invalid_input', 'command must be a mapping and signature ASCII text')
@@ -384,12 +384,15 @@ class Teams:
         state = self.membership.authority_state(self.store, self.conn)
         now = self.clock()
         key = self.AC.active_key(state['keyring'], principal, now)
-        if not key:
-            raise Refused('not_authorized', 'no active verification key')
-        verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],
-                                                self.AC.allowed_signers_line(principal, key['public_key']), principal)
-        if not verified:
-            raise Refused('not_authorized', 'command signature did not verify')
+        if api_assertion is not None:
+            key = self._api_edge(packet, command, api_assertion, state, now)
+        else:
+            if not key:
+                raise Refused('not_authorized', 'no active verification key')
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],
+                                                    self.AC.allowed_signers_line(principal, key['public_key']), principal)
+            if not verified:
+                raise Refused('not_authorized', 'command signature did not verify')
         entry = self.AC.membership_entry(state['membership'], principal)
         active, why = self.AC.active_member(entry, now)
         if not active:
@@ -405,6 +408,11 @@ class Teams:
             raise Refused('project_not_active:%s' % project['data'].get('state'))
         current = entities.get(tid)
         record = dict(current['data'], version=current['version']) if current and current.get('kind') == KIND else None
+        if (api_assertion is not None and op == 'propose' and record and record.get('proposal')
+                and record['proposal'].get('proposed_by') == principal
+                and record['proposal'].get('api_team_version') == command.get('team_version')
+                and record['proposal']['team'] == command.get('team')):
+            return dict(ok=True, reason='propose', team_id=tid, team=record, repeated=True)
         if command.get('team_version') != (record or {}).get('version', 0):
             raise Refused('stale_subject:version', 'the command names another team version')
         pinned = [tid, PJ.project_id(name), principal, key['key_id'], self.membership.VERSIONS_ENTITY]
@@ -412,6 +420,16 @@ class Teams:
                       at=now)
         if op == 'propose':
             self._propose(command, state, project['data'], record, params, pinned, now)
+            if api_assertion is not None:
+                params['proposal']['api_team_version'] = command['team_version']
+                params['assertion_digest'] = _digest(api_assertion['assertion'])
+                if principal == project['data'].get('owner'):
+                    problems = self._owner_problems(state, principal, name, now)
+                    if problems:
+                        raise Refused(problems[0])
+                    params['action'] = 'owner_save'
+                    params['acceptance'] = dict(request_id=None, ruling='approve', principals=[principal],
+                        assertion_digest=params['assertion_digest'], api_request_id=command['command_id'])
         elif op == 'amend':
             self._amend(command, state, project['data'], record, params, pinned, now)
         else:
@@ -427,6 +445,30 @@ class Teams:
         if op == 'assign':
             result['assignment'] = (_row(self.conn, params['assignment_id']) or {}).get('data')
         return result
+
+    def _api_edge(self, packet, command, proof, state, now):
+        # Verify the actual edge key here too; a caller's assertion of verification is no evidence.
+        assertions = _organ('control_api_assertion')
+        credentials = _organ('control_api_credentials')
+        edges = _organ('control_channel_enrollment')
+        a = proof.get('assertion', {})
+        if assertions.shape_problems(a) or a['operation'] != 'propose_team' or assertions.domain_request(a) != command:
+            raise Refused('unauthenticated:assertion')
+        key = edges.edge_record(state, self.AC.edge_channel('api')['edge_key_id'])
+        member = self.AC.membership_entry(state['membership'], a['edge'])
+        if (not key or key['principal'] != a['edge'] or key['channel'] != 'api'
+                or a['edge_key_id'] != key['key_id'] or not edges.active(key, now)
+                or not self.AC.active_member(member, now)[0] or member.get('principal_type') != 'service'):
+            raise Refused('unauthenticated:edge')
+        for value, signature in ((a, proof.get('signature')), (command, packet['signature'])):
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(value), signature or '',
+                self.AC.allowed_signers_line(a['edge'], key['public_key']), a['edge'])
+            if not verified:
+                raise Refused('unauthenticated:signature')
+        if assertions.time_problem(a, now) or credentials.current(state, a['credential_id'], now,
+                                                                  principal=a['principal'])[1]:
+            raise Refused('unauthenticated:credential')
+        return key
 
     def _staffed(self, team, state, project, now):
         """The team's staffing problems over the current membership, and the rows they read."""
@@ -676,7 +718,7 @@ class Teams:
             data['history'] = list(data['history']) + [dict(entry, revision=params['proposal']['revision'],
                                                             digest=params['proposal']['digest'])]
             return {tid: {'kind': KIND, 'data': data}}
-        proposal = data.get('proposal') or {}
+        proposal = params['proposal'] if op == 'owner_save' else data.get('proposal') or {}
         accepted = {'revision': proposal['revision'], 'base_revision': proposal['base_revision'],
                     'digest': proposal['digest'], 'team': proposal['team'], 'proposed_by': proposal['proposed_by'],
                     'accepted_at': now, **params['acceptance']}

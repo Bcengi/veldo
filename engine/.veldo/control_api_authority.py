@@ -103,7 +103,8 @@ LOCK_NAME = 'authority.lock'  # control_service.LOCK_NAME: the stable lock file 
 CLASSES = {'missing_authority': 'unauthorized', 'stale_subject': 'stale_version', 'invalid_input': 'invalid_input',
            'unsupported_configuration': 'invalid_input', 'missing_evidence': 'missing_evidence',
            'unavailable_service': 'unavailable_service', 'unauthenticated': 'unauthenticated',
-           'unauthorized': 'unauthorized', 'stale_version': 'stale_version', 'unknown_outcome': 'unknown_outcome'}
+           'incomplete_roster': 'invalid_input', 'not_authorized': 'unauthorized', 'not_owner': 'unauthorized',
+           'not_accepted': 'unauthorized', 'unauthorized': 'unauthorized', 'stale_version': 'stale_version', 'unknown_outcome': 'unknown_outcome'}
 
 
 class Refused(Exception):
@@ -160,10 +161,11 @@ class ApiAuthority:
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
                  workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
-                 catalog=None, mcp_credentials=None, records=None):
+                 catalog=None, mcp_credentials=None, records=None, configurations=None, team_routes=None):
         self.S, self.CM, self.conn = store, membership, conn
         # VELDO-0141: the launch receivers' records directory (control_execution_record.directory).
         self.records = records
+        self.configurations, self.team_routes = configurations, team_routes
         self.authority_lock = authority_lock
         self.ids = {f: ids.get(f) for f in AS.IDS}
         self.domain, self.edge = domain, edge
@@ -374,7 +376,12 @@ class ApiAuthority:
         if a['operation'] == 'send_message':
             return self.intake.receive('api_request', {'request': derived, 'signature': packet.get('domain_signature')})
         if a['operation'] == 'answer_decision':
-            return self.settlement.api_answer({'answer': derived, 'signature': packet.get('domain_signature')})
+            result = self.settlement.api_answer({'answer': derived, 'signature': packet.get('domain_signature')})
+            if self.team_routes is not None and result.get('outcome') == 'settled':
+                result['team_application'] = self.team_routes.apply_settled(derived['request_id'])
+            return result
+        if a['operation'] in ('save_capability_configuration', 'propose_team', 'save_default_team'):
+            return self._configuration(a, packet)
         provenance = {'channel': AS.CHANNEL, 'edge': self.edge, 'request_id': a['request_id'],
                       'credential_id': a['credential_id'], 'assertion_digest': AS.digest(a)}
         if a['operation'] in (MC.SAVE,) + CV.OPERATIONS:
@@ -385,6 +392,23 @@ class ApiAuthority:
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
         return {'outcome': 'revoked'}
+
+    def _configuration(self, a, packet):
+        p = a['parameters']
+        try:
+            if a['operation'] == 'save_capability_configuration':
+                if self.configurations is None:
+                    raise Refused('unavailable_service:configurations')
+                saved = self.configurations.save(p['definition'], principal=a['principal'], base=p['base'],
+                                                  command_id=a['request_id'])
+                return dict(outcome='saved', revision=saved['revision'], role=saved['role'], digest=saved['digest'])
+            if self.team_routes is None:
+                raise Refused('unavailable_service:teams')
+            return self.team_routes.save(a, packet)
+        except Exception as error:
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            return dict(outcome='refused', reason=error.code, owner_request=getattr(error, 'owner_request', None))
 
     def _mcp(self, a, packet):
         p = dict(a['parameters'])
@@ -432,7 +456,9 @@ class ApiAuthority:
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""
         return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
-                'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE}
+                'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
+                'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
+                'save_default_team': 'save_default_team_revision'}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

@@ -1,0 +1,5 @@
+--- .veldo/control_team.py
++++ mutant/control_team.py
+@@ -426 +426 @@
+-                if principal == project['data'].get('owner'):
++                if True:

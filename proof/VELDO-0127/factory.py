@@ -225,7 +225,14 @@ for raw in sys.stdin:
                'runtime_seconds':100, 'memory_bytes':1 << 30, 'cpu_percent':200, 'file_bytes':64 << 20,
                'tasks_max':128, 'stop_grace_seconds':0.4, 'kill_grace_seconds':0.4,
                'systemd_run':'/usr/bin/systemd-run'}
-    config.write_text(json.dumps({
+    # Ordinary launches name host trust; this fixture trusts no settlement signers.
+    receiver_host_trust = private / 'receiver-host-trust.json'
+    receiver_enrollment_signers = private / 'receiver-enrollment-signers'
+    receiver_enrollment_signers.write_text('')
+    receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity=HOST,
+                                                 enrollment_signers=str(receiver_enrollment_signers))))
+    receiver_host_trust.chmod(0o600)
+    config.write_text(json.dumps({'host_trust': str(receiver_host_trust),
         'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
         'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
         'host': HOST, 'state_root': str(state), 'profile':profile, 'adapters': {

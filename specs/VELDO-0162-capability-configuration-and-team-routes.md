@@ -20,6 +20,8 @@ footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
   - "packs/*/.veldo/control_service*.py"
+  - "engine/.veldo/control_graph.py"
+  - ".veldo/control_graph.py"
   - "engine/.veldo/control_agent_config*.py"
   - ".veldo/control_agent_config*.py"
   - "packs/*/.veldo/control_agent_config*.py"
@@ -30,6 +32,8 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0162_*.py"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -222,6 +226,17 @@ proof, not tests run by this writing revision.
 
 ## History
 
+2026-10-04, intake proof performance: add suite 93 to the footprint because the
+gate cannot land 0162 while suite 93 exceeds the mutation worker budget. Remove
+repeated fixture work while preserving every assertion, row, dispatched fake and
+format check. Keep the worker budget unchanged.
+
+The profile also identifies production waste: the factory repeatedly imports the
+whole PM module for assignment reads, and Git discovery with discarded streams
+uses timed subprocess polling. Load the existing small assignment reader once
+and wait on discovery output pipes, preserving fresh reads, exit-code decisions
+and timeouts. Add the canonical graph adapter and its synced copy to the footprint.
+
 2026-09-25: written on the fourth review of PLAN-0019 revision 4. The owner could not give a role the
 Atlassian server in the design's second stage: VELDO-0151 refuses a team whose roles have no accepted
 VELDO-0127 configuration, and no surface of the first or second stage could create a configuration
@@ -238,3 +253,72 @@ proposal becomes the new project's first team revision. A draft.
 2026-09-25, lead: AC3 counts the owner's own authenticated save as his decision, as VELDO-0150 does for
 his own message, so he is never asked to approve a change he made himself; a revision anyone else
 proposes still needs his settled answer.
+
+2026-10-03, implementation checkpoint: configuration saves reuse the VELDO-0127 writer;
+API team commands carry edge signatures checked by Teams itself, and owner saves commit
+with the verified principal as decider. The new control_team_routes module owns amendment
+requests and immutable default revisions, and the service applies settled team answers before
+publishing its journal hint. Existing footprint patterns cover these files. The only 0152
+production file changed is control_api_models.py, to register the three new typed actions;
+its intake read and redaction behavior is unchanged. Proof is still being built; no gate or
+landing result is claimed, and status stays ready.
+
+2026-10-03, fixture inventory: add scripts/suites/71_veldo_0130_api.py to the footprint.
+Its complete route and action censuses need bodies for the three new operations and the
+real command services registered on its fixture connection. Existing authentication,
+forgery and route-to-command assertions are retained. This is the only existing suite
+changed for 0162; no 0152 route or intake fixture is changed.
+
+2026-10-03, proof checkpoint: suite 94 contains twenty behavior rows, all green on the
+implementation and all red by assertion on the unchanged 08d7edd3 archive. Finding 162
+registers eighteen exact mutations, including each declared falsifier; execution belongs
+to the reviewer. The new revision read uses configurations/revision so it cannot shadow
+the existing configuration collection route. Both new read routes use the existing API
+redactor. Scoped regression and clean-environment verification are in progress.
+
+2026-10-03, completed builder checks: twenty rows pass normally and in the clean gate
+environment, and all twenty fail by assertion on the unchanged 08d7edd3 archive.
+The default proposal format now requires its exact default_brief section in the
+answered brief, alongside any project proposal fields; a different displayed
+proposal is refused with no team. Nineteen finding-162 mutations are registered
+with exact diffs; none was executed by the builder. Eleven selected suites pass
+in both environments, including the final 0172 format census. The normal MCP
+constructor regression was fixed and its failed run and passing rerun retained.
+Validation, Git boundary, byte-identical engine copies and zero bad anchors pass.
+The supplied origin/main footprint checker includes 37 inherited paths outside
+0162; the delta from the supplied 08d7edd3 starting commit has none outside.
+No full selftest, gate, mutation runner, model or external service ran. Review,
+mutation rejection, the merged-tree gate and its stamp remain reviewer work.
+Status, criteria and risk are unchanged.
+
+2026-10-03, independent review fixes: team amendment and staffing requests use the
+setup-enrolled pm principal, whose scope covers every project and whose command key
+is the key setup enrolls with possession proof. The qualification requester remains
+confined to channel-qualification. Remove the journal-principal fallback. No setup
+production change or footprint extension is needed. The 0162 fixture now executes
+real factory setup and keeps its enrolled requester and PM, using generated keys,
+local installation assets and no service start. Its fake CLI assets use the 0172
+constructors and report format conformance at teardown.
+
+Bind amendment aliases to the team version as well as the proposal digest, so a new
+proposal of an unchanged roster after rejection or expiry opens a new request.
+Record consumed team settlements through an owned store command, including refusals
+and application exceptions, so publication and restart do not retry them. Contain
+application failures while preserving journal hints and return team_application in
+the API answer. Extend the existing proof without removing any row or mutation.
+The team read scope check remains VELDO-0164 work; status and criteria are unchanged.
+
+2026-10-03, review-fix proof: all twenty original rows remain, with five new rows
+and the 0172 fake/capture assertion, 26 checks passing in suite 94. The new rows
+cover real setup enrollment, a fresh request after decline, durable consumption
+across journal advances and consumer reconstruction, exception recording and
+actual local hint delivery, and fake CLI format conformance. API answer assertions
+also require team_application and its credential redaction. Suite 71 passes its
+42 checks; the final standalone suite 82 format census passes and lists 0162 among
+its sixteen producers. The final suite is red by assertion against unchanged
+59410582 production, with eleven failing rows and no raised journey; downstream
+request failures are identified as dependent on the initial setup refusal.
+All nineteen prior mutations are retained and six more registered, with refreshed
+exact diffs; none is executed by this builder. The registry-only anchor check has
+zero bad anchors, Git boundary passes, and no protected path is touched. No full
+selftest, mutation runner, gate, model, external host or service activation ran.

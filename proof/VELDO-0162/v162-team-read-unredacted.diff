@@ -1,0 +1,5 @@
+--- .veldo/control_api.py
++++ mutant/control_api.py
+@@ -842 +842 @@
+-        served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)
++        served, redacted = (dict(row['data'], version=row['version']) if row else None), []

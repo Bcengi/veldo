@@ -108,9 +108,32 @@ def _v167_suite():
         code, again = setup(*args)
         check('older-host', 'second rerun is byte-identical', code == 0 and again.get('outcome') == 'already_set_up'
               and again_before == h['snapshot'](root, install, units, trust.parent, workspace / '.git/veldo'))
+        # Trust and record repair must compose even on a current installed engine.
+        target = Path(receivers[0])
+        for missing in (True, False):
+            value = json.loads(target.read_text())
+            for key in ('host_trust', 'records', 'record_hint_service'):
+                if missing:
+                    value.pop(key)
+                else:
+                    value[key] = None
+            target.write_text(json.dumps(value, indent=1) + '\n')
+            code, repaired = setup(*args)
+            held = json.loads(target.read_text())
+            check('older-host', 'trust and records repair together: ' + str(repaired.get('reason')),
+                  code == 0 and held == dict(value, host_trust=str(trust), records=records,
+                                            record_hint_service=installed['socket']))
+            before = h['snapshot'](root, install, units, trust.parent)
+            code, stable = setup(*args)
+            check('older-host', 'combined repair is stable', code == 0
+                  and stable.get('outcome') == 'already_set_up'
+                  and before == h['snapshot'](root, install, units, trust.parent))
+
         # Refuse changed non-owned values before any file is written.
         for path, key, remove in [(Path(receivers[0]), 'principal', False), (configs[-1], 'origin', False),
-                                  (Path(receivers[0]), 'principal', True)]:
+                                  (Path(receivers[0]), 'principal', True),
+                                  (Path(receivers[0]), 'records', False),
+                                  (Path(receivers[0]), 'record_hint_service', False)]:
             saved = path.read_bytes()
             value = json.loads(saved)
             if remove:

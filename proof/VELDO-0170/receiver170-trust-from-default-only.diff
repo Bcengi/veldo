@@ -1,0 +1,5 @@
+--- a/.veldo/control_factory_setup_trust.py
++++ b/.veldo/control_factory_setup_trust.py
+@@ -12 +12 @@
+-            path = json.loads(Path(ingress).read_text()).get('host_trust') or path
++            path = EL.host_trust_path()

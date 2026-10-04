@@ -1,0 +1,5 @@
+--- .veldo/control_agent_config.py
++++ mutant/control_agent_config.py
+@@ -127 +127 @@
+-        MC.owner(conn, params['principal'], params['repository'], time.time())
++        pass

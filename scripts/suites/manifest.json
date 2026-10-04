@@ -1240,6 +1240,15 @@
    "requires_note": "Only ROOT and expect; isolated installed-host fixture reused from suite 171, with production record and dispatch writers. Inert CLI installation fixtures use VELDO-0172 fake_formats and report their own conform_fake teardown row."
   },
   {
+   "name": "87_veldo_0170_receiver_trust",
+   "file": "87_veldo_0170_receiver_trust.py",
+   "requires": [
+    "87_veldo_0170_receiver_trust"
+   ],
+   "regions": "VELDO-0170 receiver configuration and setup re-run",
+   "requires_note": "Uses only ROOT and expect, generated keys, real setup and settlement writers, and loopback stand-ins."
+  },
+  {
    "name": "91_veldo_0151_specialists",
    "file": "91_veldo_0151_specialists.py",
    "requires": [
@@ -1265,6 +1274,15 @@
     "93_veldo_0152_intake_routes"
    ],
    "requires_note": "Standalone fragment using shared preamble and its own signed fixture."
+  },
+  {
+   "name": "94_veldo_0162_configuration_routes",
+   "file": "94_veldo_0162_configuration_routes.py",
+   "requires": [
+    "94_veldo_0162_configuration_routes"
+   ],
+   "regions": "Capability configuration saves, team owner decisions and immutable default revisions.",
+   "requires_note": "Standalone fragment; signed store and passkey fixtures in proof/VELDO-0162. No fake engine or model."
   }
  ]
 }
