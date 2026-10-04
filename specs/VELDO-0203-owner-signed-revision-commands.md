@@ -1,6 +1,6 @@
 ---
 schema: veldo.spec/v1
-id: VELDO-0190
+id: VELDO-0203
 title: The factory owner saves a capability configuration revision and the default team revision by an SSH-signed command, before any passkey or API session exists, through the existing revision writers, on setup's own store connection or through the running service, and anything not signed by the factory owner's key is refused by name
 status: ready
 risk: critical
@@ -24,13 +24,13 @@ footprint:
   - ".veldo/control_service.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
-  - "scripts/suites/*_veldo_0190_*.py"
+  - "scripts/suites/*_veldo_0203_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
-  - "specs/VELDO-0190-owner-signed-revision-commands.md"
+  - "specs/VELDO-0203-owner-signed-revision-commands.md"
   - "specs/index.md"
-  - "proof/VELDO-0190/*"
+  - "proof/VELDO-0203/*"
 behavior_bearing: true
 observability:
   logs: >
@@ -252,7 +252,7 @@ requires them; no record configuration or hint behavior is changed.
 2026-10-04, proof checkpoint: suite 95 reports 31 behavior rows and the separate
 0172 fake/capture check, all passing. The current suite run against the unchanged
 4159d35b archive makes all 31 rows fail by assertion with no raised journey.
-Finding 190 registers 13 mutations and exact diffs, including all four declared
+Finding 203 registers 13 mutations and exact diffs, including all four declared
 falsifiers; execution is reserved to the reviewer. Six admit caller suites passed
 before and after extraction. The configuration suite's committed live captures
 are stale after the writer change; no model runs or evidence rewrites are allowed.
@@ -273,7 +273,7 @@ Review and the merged-tree gate remain pending; status stays ready.
 2026-10-04, review fixes: enforce writer connection identity under the checked lock;
 refuse non-mapping packets, commands and envelopes before authority and authentication;
 load the owner revision organ once with the service's other organs. Add rows
-lock/writer-connection, input/malformed and service/malformed and two finding-190
+lock/writer-connection, input/malformed and service/malformed and two finding-203
 mutations. The existing service/saves row retains socket save and replay coverage.
 No footprint extension is needed.
 
@@ -282,7 +282,7 @@ and exact empty gate environments. The six admit caller suites and
 82_veldo_0172_live_formats pass individually in both. Validation and Git boundary
 checks pass in both. The current 34 behavior rows all fail by assertion against
 unchanged 4159d35b production, using the named selftest dispatcher. Fifteen
-finding-190 mutations are registered; execution remains reviewer work.
+finding-203 mutations are registered; execution remains reviewer work.
 
 2026-10-04, owner route scope correction: remove service-wide packet shape validation
 and guard only the owner branch's envelope principal read. OwnerRevisions retains

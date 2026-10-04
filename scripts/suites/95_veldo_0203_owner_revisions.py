@@ -1,7 +1,7 @@
-"""VELDO-0190: owner SSH saves before API enrollment and through the installed service."""
+"""VELDO-0203: owner SSH saves before API enrollment and through the installed service."""
 
 
-def _v190_suite():
+def _v203_suite():
     import copy
     import hashlib
     import importlib.util
@@ -38,10 +38,10 @@ def _v190_suite():
         return module
 
     here = Path(__suite_file__).resolve().parents[2]
-    helper = load('v190_fixture', here / 'proof/VELDO-0190/fixture.py')
-    journey = load('v190_journey', here / 'proof/VELDO-0190/journey.py')
-    conform_formats = load('v190_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
-    fake_formats = load('v190_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    helper = load('v203_fixture', here / 'proof/VELDO-0203/fixture.py')
+    journey = load('v203_journey', here / 'proof/VELDO-0203/journey.py')
+    conform_formats = load('v203_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    fake_formats = load('v203_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     fake = fake_formats.embed('''import json,sys
 from pathlib import Path
 def emit(event):
@@ -76,7 +76,7 @@ else:
                 yield dict(packet, **{field: value})
 
     def non_owner(h):
-        # This compatibility row also runs against pre-0190 production.
+        # This compatibility row also runs against pre-0203 production.
         row = 'service/non-owner-malformed'
         root, manager, code, report = journey.host(h, 'non-owner')
         check(row, 'full setup', code == 0)
@@ -112,8 +112,8 @@ else:
                 check(row, 'owner revision entry point exists', present)
         if not present:
             return
-        OR = load('v190_owner', path)
-        scaffold = load('v190_scaffold', h['mods'] / 'init_scaffold.py')
+        OR = load('v203_owner', path)
+        scaffold = load('v203_scaffold', h['mods'] / 'init_scaffold.py')
         check('install/asset', 'runtime asset in scaffold inventory', '.veldo/control_owner_revisions.py' in scaffold._FILES)
         root, manager, code, report = journey.host(h, 'offline', partial=True)
         check('offline/saves', 'setup steps completed before API', code == 0)
@@ -367,11 +367,11 @@ else:
     def teardown(h):
         nonlocal fake_capture
         base, fake = h['base'], h['engines186']['fake']
-        L = load('v190_format_launch', h['mods'] / 'control_launch.py')
+        L = load('v203_format_launch', h['mods'] / 'control_launch.py')
         try:
             pass
         finally:
-            fake_capture = conform_formats.conform_fake(locals(), '0190_owner_revisions')
+            fake_capture = conform_formats.conform_fake(locals(), '0203_owner_revisions')
             check('format/fake-lines', 'generated CLI lines conform to the capture', not fake_capture[0] and bool(fake_capture[1]))
 
     try:
@@ -379,17 +379,17 @@ else:
     except Exception as error:
         for row in rows:
             check(row, 'ran to its end (raised ' + type(error).__name__ + ': ' + str(error)[:250] + ')', False)
-    for line in conform_formats.describe('0190_owner_revisions', *fake_capture):
+    for line in conform_formats.describe('0203_owner_revisions', *fake_capture):
         print(line)
-    expect('VELDO-0172 fake/capture:0190_owner_revisions', not fake_capture[0])
+    expect('VELDO-0172 fake/capture:0203_owner_revisions', not fake_capture[0])
     for row, observations in rows.items():
         for label, passed in observations:
             if not passed:
-                print('VELDO-0190 ' + row + ' detail: ' + label)
+                print('VELDO-0203 ' + row + ' detail: ' + label)
         passed = len(observations) > 1 and all(passed for _, passed in observations)
-        expect('VELDO-0190 ' + row, passed)
+        expect('VELDO-0203 ' + row, passed)
         if row == 'service/non-owner-malformed':
-            print('VELDO-0190 ' + row + ' compatibility: ' + ('passed' if passed else 'failed'))
+            print('VELDO-0203 ' + row + ' compatibility: ' + ('passed' if passed else 'failed'))
 
 
-_v190_suite()
+_v203_suite()

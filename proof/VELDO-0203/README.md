@@ -1,6 +1,6 @@
-# VELDO-0190 builder evidence
+# VELDO-0203 builder evidence
 
-Built on build-veldo-0190 from 4159d35b. Review, mutation execution and the
+Built on build-veldo-0203 from 4159d35b. Review, mutation execution and the
 merged-tree gate remain reviewer work. No push, real model, login, real secret,
 external host or user service manager was used.
 
@@ -68,7 +68,7 @@ behavior rows, and requires the non-owner compatibility row to pass. Its scope
 red mode instead requires only that compatibility row to fail against the
 global-check regression. These are red records, not gate results.
 
-mutations.json records 15 finding-190 mutations, exact diffs and source hashes.
+mutations.json records 15 finding-203 mutations, exact diffs and source hashes.
 They include each declared falsifier: replace the signed base with the head,
 accept any active signing key, omit replay content comparison, and leave saves
 to the service fallback. Additional mutations cover owner identity, signatures,
@@ -90,7 +90,7 @@ instructions prohibit; the records are neither edited nor represented as fresh.
 The supplied footprint checker compares origin/main with HEAD and includes
 inherited 0167 and specification changes, so it reports outside paths.
 footprint.json instead records this task's delta from the supplied 4159d35b
-starting commit. No unrelated path is added to 0190's footprint to hide that
+starting commit. No unrelated path is added to 0203's footprint to hide that
 inherited difference.
 
 ## Original implementation scoped checks
@@ -100,7 +100,7 @@ Its unchanged-baseline red record has 31 distinct rows, all false by assertion.
 Six admit dependency suites passed before extraction and after it. Sixteen
 selected suites ran individually in both environments; fifteen passed, with
 only the two live-capture rows of 0127 failing as described above. The final
-standalone 0172 census passes and lists 0190_owner_revisions.
+standalone 0172 census passes and lists 0203_owner_revisions.
 
 Validation passes, the Git subprocess boundary passes, all mutation names and
 anchors are valid with zero bad anchors, and all five engine modules match
@@ -124,13 +124,13 @@ empty and nonempty arrays, strings, numbers and booleans.
 
 The service imports control_owner_revisions once alongside its other organs.
 The existing service/saves row still proves socket saves and exact replay.
-The new finding-190 mutations are v190-writer-connection-unchecked and
-v190-packet-shape-unchecked; the latter targets both malformed-input rows.
+The new finding-203 mutations are v203-writer-connection-unchecked and
+v203-packet-shape-unchecked; the latter targets both malformed-input rows.
 All 15 registered mutations have refreshed source hashes and exact diffs;
 execution remains reviewer work. No footprint extension was needed.
 
 All eight requested suites pass individually in both the ordinary and supplied
-empty gate environments: 95_veldo_0190_owner_revisions,
+empty gate environments: 95_veldo_0203_owner_revisions,
 38_veldo_0025_membership, 39_veldo_0026_revocation, 56_veldo_0027_signing,
 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup,
 85_veldo_0171_setup_api and 82_veldo_0172_live_formats. Suite 95 passes 35
@@ -141,7 +141,7 @@ the transport's existing malformed_request refusal correctly intercepted them.
 The final socket row targets the malformed fields that reach Service.apply.
 
 Validation and the Git boundary check pass in both environments. All five
-engine copies match. Literal AST inspection confirms all 15 finding-190
+engine copies match. Literal AST inspection confirms all 15 finding-203
 mutation anchors and recorded mutant hashes without executing any mutation.
 checks.json retains the earlier implementation runs and records the new runs
 under review_fixes, with exact environment and log hashes. No full selftest,
@@ -161,7 +161,7 @@ unchanged journal and matching observation.
 
 The refreshed 4159d35b record has 34 owner rows red by assertion and the new
 compatibility row green. The driver requires that split explicitly. The
-v190-packet-shape-unchecked mutation now bypasses packet_problem inside
+v203-packet-shape-unchecked mutation now bypasses packet_problem inside
 OwnerRevisions.apply, targeting both malformed-owner rows. The signer mutation
 anchor follows the guarded principal read. All 15 mutation anchors, hashes and
 diffs are refreshed without execution. All 17 requested suites pass individually

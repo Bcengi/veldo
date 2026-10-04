@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W145
 plan_revision: 4
-depends_on: [VELDO-0139, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186, VELDO-0190]
+depends_on: [VELDO-0139, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186, VELDO-0203]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -72,7 +72,7 @@ acceptance_criteria:
       default team, setup activates the `factory` project with the owner as its owner by the owner's signed
       control_project `activate` when no such project exists (refused
       invalid_input:state_root:service_running:factory_project while the service runs, since no service route
-      takes it), then saves the team by the owner's signed commands through VELDO-0190, each envelope's nonce
+      takes it), then saves the team by the owner's signed commands through VELDO-0203, each envelope's nonce
       its command id: one capability configuration revision per role (VELDO-0162 AC1) and one
       `save_default_team` revision (VELDO-0162 AC4) with control_team's four REQUIRED_ROLES,
       `project_manager`, `elaboration`, `implementation` on Claude Code and `independent_review` on Codex, as
@@ -200,7 +200,7 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
 
-2026-10-04: depends on VELDO-0190, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
+2026-10-04: depends on VELDO-0203, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
 
 2026-10-04, preflight on build-veldo-0185b at f63d86e5: the VELDO-0162
 capability and default-team revision writers now exist, but their authenticated

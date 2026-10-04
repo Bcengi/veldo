@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run only the current 0190 suite against archived pre-change production.
+"""Run only the current 0203 suite against archived pre-change production.
 Overlay the suite and its harness, never production. Mutation execution belongs
 to the reviewer. Every suite invocation uses the named selftest dispatcher.
 """
@@ -16,11 +16,11 @@ import time
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-SUITE = '95_veldo_0190_owner_revisions'
-PREFIX = 'VELDO-0190 '
+SUITE = '95_veldo_0203_owner_revisions'
+PREFIX = 'VELDO-0203 '
 MODULES = ('control_agent_config.py', 'control_owner_revisions.py', 'control_membership.py', 'control_service.py', 'init_scaffold.py')
 
-spec = importlib.util.spec_from_file_location('v190_drive_git_process', ROOT / '.veldo/git_process.py')
+spec = importlib.util.spec_from_file_location('v203_drive_git_process', ROOT / '.veldo/git_process.py')
 _git_process = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(_git_process)
 
@@ -37,13 +37,13 @@ def red(commit, scope=False):
     names = next(ast.literal_eval(n.value) for n in ast.walk(ast.parse(source))
                  if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'names' for t in n.targets))
     started = time.monotonic()
-    with tempfile.TemporaryDirectory(prefix='v190-red-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v203-red-') as directory:
         tree = Path(directory) / 'tree'
         tree.mkdir()
         archive = _git_process.run(['git', '-C', str(ROOT), 'archive', resolved], capture_output=True, check=True).stdout
         subprocess.run(['tar', '-x', '-C', str(tree)], input=archive, check=True)
         modules = {'.veldo/' + m: dict(at_commit=sha(tree / '.veldo' / m), now=sha(ROOT / '.veldo' / m)) for m in MODULES}
-        overlays = [suite_path, Path('proof/VELDO-0190/fixture.py'), Path('proof/VELDO-0190/journey.py')]
+        overlays = [suite_path, Path('proof/VELDO-0203/fixture.py'), Path('proof/VELDO-0203/journey.py')]
         for path in overlays:
             (tree / path).parent.mkdir(parents=True, exist_ok=True)
             (tree / path).write_bytes((ROOT / path).read_bytes())
@@ -74,7 +74,7 @@ def red(commit, scope=False):
     reported = output.splitlines().count(PREFIX + compatibility + ' compatibility: ' + outcome) == 1
     if proc.returncode != 1 or not by_assertion or not reported or failed != expected:
         raise SystemExit('Red proof requires exactly the expected assertion failures: ' + output[-2000:])
-    report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0190', suite=str(suite_path), commit=resolved,
+    report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0203', suite=str(suite_path), commit=resolved,
                   tree='git archive %s; production unchanged; current suite, helpers and suite registration overlaid' % resolved,
                   command=command, modules=modules, suite_sha256=sha(ROOT / suite_path),
                   harness_sha256={str(p): sha(ROOT / p) for p in overlays[1:]},

@@ -10352,50 +10352,50 @@ def cases():
             # control_project also loads eligibility and its transitive organs beside itself.
             case['siblings'] = True
 
-    # VELDO-0190: owner signatures, exact revision identity and the service lock.
-    add(190, 'v190-base-from-head', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    # VELDO-0203: owner signatures, exact revision identity and the service lock.
+    add(203, 'v203-base-from-head', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         "base=p['base'], command_id=cid,",
         "base=(CG.MC.entity(self.conn, CG.identity(self.configurations.domain, self.configurations.repository, CG.KINDS[0], p['definition']['role'])) or {'data': {'revision': 0}})['data']['revision'], command_id=cid,", ['writer/configuration-stale'], ())
-    add(190, 'v190-any-active-key', '95_veldo_0190_owner_revisions.py', 'control_membership.py',
+    add(203, 'v203-any-active-key', '95_veldo_0203_owner_revisions.py', 'control_membership.py',
         '    ok, detail = _verify(envelope, signature, key["public_key"], verifier)\n',
         '    ok, detail = any(_verify(envelope, signature, k["public_key"], verifier)[0] for k in state["keyring"] if AC.active_key(state["keyring"], k["principal"], now) == k), "any active key"\n', ['authentication/other-key'], ())
-    add(190, 'v190-replay-content-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-replay-content-unchecked', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         "                    or self.S.canonical_bytes({k: committed[k] for k in (field, 'base')}) != self.S.canonical_bytes(p)\n",
         '', ['replay/content-conflict'], ())
-    add(190, 'v190-service-fallback', '95_veldo_0190_owner_revisions.py', 'control_service.py',
+    add(203, 'v203-service-fallback', '95_veldo_0203_owner_revisions.py', 'control_service.py',
         "            elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:\n",
         '            elif False:\n', ['service/saves'], ())
-    add(190, 'v190-factory-owner-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-factory-owner-unchecked', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         "        if (member.get('principal_type') != 'person' or member.get('enrolled_by') != principal\n                or not self.CM.BOOTSTRAP_ROLES <= set(member.get('roles') or [])):\n",
         '        if False:\n', ['authentication/not-owner'], ())
-    add(190, 'v190-lock-ignored', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-lock-ignored', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         '        problem = AUTH.authority_problem(self.lock, self.conn)\n        if problem:\n',
         '        problem = AUTH.authority_problem(self.lock, self.conn)\n        if False:\n', ['lock/second-connection'], ())
-    add(190, 'v190-writer-connection-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-writer-connection-unchecked', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         '        if self.configurations.conn is not self.conn or self.team_routes.conn is not self.conn:\n',
         '        if False:\n', ['lock/writer-connection'], ())
-    add(190, 'v190-packet-shape-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-packet-shape-unchecked', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         '        problem = packet_problem(packet)\n',
         '        problem = None  # defect: owner packet shape unchecked\n', ['input/malformed', 'service/malformed'], ())
-    add(190, 'v190-command-id-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-command-id-unchecked', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         " or envelope.get('command_id') != cid:",
         ':', ['authentication/command-id'], ())
-    add(190, 'v190-signature-unchecked', '95_veldo_0190_owner_revisions.py', 'control_membership.py',
+    add(203, 'v203-signature-unchecked', '95_veldo_0203_owner_revisions.py', 'control_membership.py',
         '    if not ok:\n        raise MembershipRefused("signature_invalid", "signature does not verify for',
         '    if False:\n        raise MembershipRefused("signature_invalid", "signature does not verify for', ['authentication/unsigned', 'authentication/other-key'], ())
-    add(190, 'v190-nonce-not-bound', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-nonce-not-bound', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         "        if envelope.get('nonce') != cid:\n",
         '        if False:\n', ['replay/nonce-binding'], ())
-    add(190, 'v190-scaffold-absent', '95_veldo_0190_owner_revisions.py', 'init_scaffold.py',
+    add(203, 'v203-scaffold-absent', '95_veldo_0203_owner_revisions.py', 'init_scaffold.py',
         '    ".veldo/control_owner_revisions.py",\n',
         '', ['install/asset'], ())
-    add(190, 'v190-configuration-provenance-lost', '95_veldo_0190_owner_revisions.py', 'control_agent_config.py',
+    add(203, 'v203-configuration-provenance-lost', '95_veldo_0203_owner_revisions.py', 'control_agent_config.py',
         "        data['assertion_digest'] = params['assertion_digest']\n",
         '        pass\n', ['offline/saves'], ())
-    add(190, 'v190-service-signer-lost', '95_veldo_0190_owner_revisions.py', 'control_service.py',
+    add(203, 'v203-service-signer-lost', '95_veldo_0203_owner_revisions.py', 'control_service.py',
         "                observation['principal'] = envelope.get('principal') if isinstance(envelope, dict) else None\n",
         "                observation['principal'] = command.get('principal')\n", ['service/forged'], ())
-    add(190, 'v190-writer-refusal-renamed', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
+    add(203, 'v203-writer-refusal-renamed', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         '            answer = dict(ok=False, reason=error.code, result=None)\n',
         "            answer = dict(ok=False, reason='unknown_outcome:Refused', result=None)\n", ['service/writer-refusal'], ())
 
