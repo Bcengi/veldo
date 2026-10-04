@@ -31,6 +31,7 @@ footprint:
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0162_*.py"
   - "scripts/suites/71_veldo_0130_api.py"
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -222,6 +223,11 @@ cannot certify real engine or host behavior. Required evidence labels describe f
 proof, not tests run by this writing revision.
 
 ## History
+
+2026-10-04, intake proof performance: add suite 93 to the footprint because the
+gate cannot land 0162 while suite 93 exceeds the mutation worker budget. Remove
+repeated fixture work while preserving every assertion, row, dispatched fake and
+format check. Keep the worker budget unchanged.
 
 2026-09-25: written on the fourth review of PLAN-0019 revision 4. The owner could not give a role the
 Atlassian server in the design's second stage: VELDO-0151 refuses a team whose roles have no accepted

@@ -1,6 +1,7 @@
 """VELDO-0152: actual intake, signed activation, factory pass, Runner and CLI-shaped PM output."""
 
 def _v152_suite():
+    import compileall
     import copy
     import importlib.util
     import json
@@ -70,6 +71,11 @@ def _v152_suite():
     try:
         with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f:
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
+            # The mutation catalog disables implicit bytecode writes. Compile this
+            # isolated, immutable module tree once so every real receiver can reuse
+            # it, including the exact production overlays under mutation testing.
+            if not compileall.compile_dir(mods, quiet=1, workers=1):
+                raise RuntimeError('fixture modules did not compile')
             domain, repository, ids = (f[k] for k in ('DOMAIN', 'REPO', 'ids'))
             IN = load('v152_intake', mods / 'control_intake.py')
             PM = load('v152_pm', mods / 'control_workflow_cycle_pm.py')
