@@ -148,6 +148,8 @@ def transition(conn, params, before):
     if MC.entity(conn, rid) is not None:
         raise Refused('stale_version:immutable_agent_configuration')
     data = dict(definition, revision=base + 1, previous=previous)
+    if 'assertion_digest' in params:
+        data['assertion_digest'] = params['assertion_digest']
     data['digest'] = digest(data)
     return {rid: {'kind': kind, 'data': data},
             hid: {'kind': kind + '_head', 'data': {key: name, 'revision': base + 1}}}
@@ -162,7 +164,7 @@ class Configurations:
                              kinds={k: (SAVE,) for kind in KINDS for k in (kind, kind + '_head')}, module=__file__)
         conn.command_registry[SAVE] = {'transaction_transition': transition, 'writes': MC.WRITES}
 
-    def save(self, definition, *, principal, base, command_id, kind=KINDS[0]):
+    def save(self, definition, *, principal, base, command_id, kind=KINDS[0], assertion_digest=None):
         about = dict(operation=SAVE, actor=principal, domain=self.domain, repository=self.repository)
         try:
             if kind not in KINDS or type(base) is not int or base < 0:
@@ -175,11 +177,15 @@ class Configurations:
                            parameters=dict(definition=definition, base=base, kind=kind, domain=self.domain,
                                            repository=self.repository, principal=principal),
                            expected_versions={hid: base, rid: 0}, artifact_digests=[], nonce=command_id)
+            if assertion_digest is not None:
+                command['parameters']['assertion_digest'] = assertion_digest
             self.S.execute(self.conn, command, self.signer, self.sign, self.generation)
             result = read(self.conn, self.domain, self.repository, name, base + 1, kind)
         except (Refused, self.S.StoreRefused) as error:
-            self.observe(dict(about, outcome='refused', refusal=error.code))
-            raise Refused(error.code) from None
+            code = ('stale_version:agent_configuration' if assertion_digest is not None
+                    and error.code == 'stale_version' else error.code)
+            self.observe(dict(about, outcome='refused', refusal=code))
+            raise Refused(code) from None
         self.observe(dict(about, outcome='saved', role=name, revision=result['revision'], digest=result['digest']))
         return result
 

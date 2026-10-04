@@ -1283,6 +1283,15 @@
    ],
    "regions": "Capability configuration saves, team owner decisions and immutable default revisions.",
    "requires_note": "Standalone fragment; signed store and passkey fixtures in proof/VELDO-0162. No fake engine or model."
+  },
+  {
+   "name": "95_veldo_0190_owner_revisions",
+   "file": "95_veldo_0190_owner_revisions.py",
+   "requires": [
+    "95_veldo_0190_owner_revisions"
+   ],
+   "regions": "Owner SSH revision commands, exact replay and installed service routing.",
+   "requires_note": "Only ROOT and expect. Real setup, generated SSH keys, existing revision writers and installed loopback service. Installation fake CLIs use 0172 constructors and report format conformance."
   }
  ]
 }

@@ -103,7 +103,8 @@ class OwnerRevisions:
         assertion_digest = 'sha256:' + hashlib.sha256(AC.canonical_envelope_bytes(envelope)).hexdigest()
         about['assertion_digest'] = assertion_digest
         if operation == 'save_capability_configuration':
-            saved = self.configurations.save(p['definition'], principal=principal, base=p['base'], command_id=cid)
+            saved = self.configurations.save(p['definition'], principal=principal, base=p['base'], command_id=cid,
+                                             assertion_digest=assertion_digest)
         else:
             saved = self.team_routes.save_default(p['team'], principal, p['base'], cid, assertion_digest)
         return dict(self._read(operation, p, saved['revision']), replayed=False)
@@ -123,6 +124,8 @@ class OwnerRevisions:
         if operation == 'save_capability_configuration':
             p.update(definition={k: saved[k] for k in CG.FIELDS}, kind=kind,
                      domain=self.configurations.domain, repository=self.configurations.repository)
+            if 'assertion_digest' in saved:
+                p['assertion_digest'] = saved['assertion_digest']
         else:
             p.update(team=saved['team'], assertion_digest=saved['assertion_digest'])
         command = dict(command_id=rec['command_id'], principal=rec['principal'], operation=OPERATIONS[operation],

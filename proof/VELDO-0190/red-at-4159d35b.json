@@ -1,0 +1,208 @@
+{
+ "by_assertion": true,
+ "commit": "4159d35b625ac00c3e24e6cbe012b72f099fbba9",
+ "details": [
+  "VELDO-0190 offline/saves detail: owner revision entry point exists",
+  "VELDO-0190 writer/configuration-stale detail: owner revision entry point exists",
+  "VELDO-0190 writer/team-stale detail: owner revision entry point exists",
+  "VELDO-0190 writer/roster detail: owner revision entry point exists",
+  "VELDO-0190 writer/credential detail: owner revision entry point exists",
+  "VELDO-0190 authentication/unsigned detail: owner revision entry point exists",
+  "VELDO-0190 authentication/other-key detail: owner revision entry point exists",
+  "VELDO-0190 authentication/revoked detail: owner revision entry point exists",
+  "VELDO-0190 authentication/not-owner detail: owner revision entry point exists",
+  "VELDO-0190 authentication/definition detail: owner revision entry point exists",
+  "VELDO-0190 authentication/base detail: owner revision entry point exists",
+  "VELDO-0190 authentication/team detail: owner revision entry point exists",
+  "VELDO-0190 authentication/membership detail: owner revision entry point exists",
+  "VELDO-0190 authentication/delegation detail: owner revision entry point exists",
+  "VELDO-0190 authentication/domain detail: owner revision entry point exists",
+  "VELDO-0190 authentication/store detail: owner revision entry point exists",
+  "VELDO-0190 authentication/repository detail: owner revision entry point exists",
+  "VELDO-0190 authentication/expiry detail: owner revision entry point exists",
+  "VELDO-0190 authentication/command-id detail: owner revision entry point exists",
+  "VELDO-0190 authentication/operations detail: owner revision entry point exists",
+  "VELDO-0190 replay/identical detail: owner revision entry point exists",
+  "VELDO-0190 replay/content-conflict detail: owner revision entry point exists",
+  "VELDO-0190 replay/consumed-nonce detail: owner revision entry point exists",
+  "VELDO-0190 lock/second-connection detail: owner revision entry point exists",
+  "VELDO-0190 service/saves detail: owner revision entry point exists",
+  "VELDO-0190 service/forged detail: owner revision entry point exists",
+  "VELDO-0190 service/writer-refusal detail: owner revision entry point exists",
+  "VELDO-0190 service/unconfigured detail: owner revision entry point exists",
+  "VELDO-0190 install/asset detail: owner revision entry point exists"
+ ],
+ "failed_rows": [
+  "VELDO-0190 offline/saves",
+  "VELDO-0190 writer/configuration-stale",
+  "VELDO-0190 writer/team-stale",
+  "VELDO-0190 writer/roster",
+  "VELDO-0190 writer/credential",
+  "VELDO-0190 authentication/unsigned",
+  "VELDO-0190 authentication/other-key",
+  "VELDO-0190 authentication/revoked",
+  "VELDO-0190 authentication/not-owner",
+  "VELDO-0190 authentication/definition",
+  "VELDO-0190 authentication/base",
+  "VELDO-0190 authentication/team",
+  "VELDO-0190 authentication/membership",
+  "VELDO-0190 authentication/delegation",
+  "VELDO-0190 authentication/domain",
+  "VELDO-0190 authentication/store",
+  "VELDO-0190 authentication/repository",
+  "VELDO-0190 authentication/expiry",
+  "VELDO-0190 authentication/command-id",
+  "VELDO-0190 authentication/operations",
+  "VELDO-0190 replay/identical",
+  "VELDO-0190 replay/content-conflict",
+  "VELDO-0190 replay/consumed-nonce",
+  "VELDO-0190 lock/second-connection",
+  "VELDO-0190 service/saves",
+  "VELDO-0190 service/forged",
+  "VELDO-0190 service/writer-refusal",
+  "VELDO-0190 service/unconfigured",
+  "VELDO-0190 install/asset"
+ ],
+ "modules": {
+  ".veldo/control_membership.py": {
+   "at_commit": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc",
+   "now": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89"
+  },
+  ".veldo/control_owner_revisions.py": {
+   "at_commit": null,
+   "now": "ebfdd48ab2a32a8c09965a70a60bf0127d671f9e78ed1f3e062f5863509ee7e4"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
+   "now": "ce28e49ea383c8a3bcea9c25b0cc7ed29506538317b22a949053343efbc61473"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "641f644acdfef6548466f1cb6e06daa9aa0e0299978fda723bfa6e4f9596af58",
+   "now": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0190 offline/saves",
+   false
+  ],
+  [
+   "VELDO-0190 writer/configuration-stale",
+   false
+  ],
+  [
+   "VELDO-0190 writer/team-stale",
+   false
+  ],
+  [
+   "VELDO-0190 writer/roster",
+   false
+  ],
+  [
+   "VELDO-0190 writer/credential",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/unsigned",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/other-key",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/revoked",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/not-owner",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/definition",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/base",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/team",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/membership",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/delegation",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/domain",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/store",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/repository",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/expiry",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/command-id",
+   false
+  ],
+  [
+   "VELDO-0190 authentication/operations",
+   false
+  ],
+  [
+   "VELDO-0190 replay/identical",
+   false
+  ],
+  [
+   "VELDO-0190 replay/content-conflict",
+   false
+  ],
+  [
+   "VELDO-0190 replay/consumed-nonce",
+   false
+  ],
+  [
+   "VELDO-0190 lock/second-connection",
+   false
+  ],
+  [
+   "VELDO-0190 service/saves",
+   false
+  ],
+  [
+   "VELDO-0190 service/forged",
+   false
+  ],
+  [
+   "VELDO-0190 service/writer-refusal",
+   false
+  ],
+  [
+   "VELDO-0190 service/unconfigured",
+   false
+  ],
+  [
+   "VELDO-0190 install/asset",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 0.974,
+ "spec_id": "VELDO-0190",
+ "suite": "scripts/suites/95_veldo_0190_owner_revisions.py",
+ "tree": "git archive 4159d35b625ac00c3e24e6cbe012b72f099fbba9, unchanged; the current suite file run against it"
+}

@@ -14,6 +14,8 @@ depends_on: [VELDO-0025, VELDO-0139, VELDO-0162, VELDO-0171]
 placement: [contracts, engine, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_agent_config.py"
+  - ".veldo/control_agent_config.py"
   - "engine/.veldo/control_owner_revisions.py"
   - ".veldo/control_owner_revisions.py"
   - "engine/.veldo/control_membership.py"
@@ -232,3 +234,12 @@ written and marked ready at the owner's request; VELDO-0185 now depends on it.
 authenticate extraction keeps admit's order and snapshot, the online caller is generic, offline writer
 construction and init_scaffold are named, the rows name their refusals, and the factory project record is
 VELDO-0185's step.
+
+2026-10-04, builder: AC1 requires two configuration-writer capabilities absent from
+its current interface. Add control_agent_config.py and its engine copy to the
+footprint. Its optional assertion_digest records the signed envelope digest;
+when supplied, its store CAS refusal is named stale_version:agent_configuration.
+Existing callers omit the new argument and retain their prior data and refusal
+names. All authorization, schema, base, version and read-back checks remain.
+The service route and scaffold asset overlap 0167's footprint only because AC4
+requires them; no record configuration or hint behavior is changed.
