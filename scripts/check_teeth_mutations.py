@@ -10442,6 +10442,9 @@ def cases():
     add(204, 'v204-loop-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "        loop = FactoryLoop(service, load_work(config['work']), lock)\n",
         "        loop = FactoryLoop(service, load_work(config['work']))\n", ['service/start'], ())
+    add(204, 'v204-serve-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
+        '            service.loop, service.loop_refusal = open_loop(config, service, lock)\n',
+        '            service.loop, service.loop_refusal = open_loop(config, service)\n', ['service/serve'], ())
     add(204, 'v204-writer-refusal-renamed', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
         '            refusal = _code(error)\n',
         "            refusal = 'unknown_outcome:' + type(error).__name__\n", ['refuse/principal'], ())

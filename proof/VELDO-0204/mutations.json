@@ -163,6 +163,17 @@
    "executed": false
   },
   {
+   "name": "v204-serve-lock-dropped",
+   "module": ".veldo/control_service.py",
+   "named_rows": [
+    "service/serve"
+   ],
+   "diff": "proof/VELDO-0204/v204-serve-lock-dropped.diff",
+   "source_sha256": "1ffbdcdf43107a54194f242561f8dea332a7ef7053c1a31b8af52f91b533babf",
+   "mutant_sha256": "8bed7db23e5d408c63f69e74dfd5351375a787a47eb8c7ed9b2a70eb089fcee3",
+   "executed": false
+  },
+  {
    "name": "v204-writer-refusal-renamed",
    "module": ".veldo/control_reservation_policies.py",
    "named_rows": [

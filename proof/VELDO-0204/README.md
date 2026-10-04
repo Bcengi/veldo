@@ -63,8 +63,12 @@ Runner and account pool run in this process on the locked connection; a signed p
   journal seq before the worker's reserved seq), service/team (a default revision through VELDO-0203's
   route updates exactly the default-team units at the next pass), service/pm-assigned (the PM cycle's
   coordination assigns a unit to `payments`; that same pass's line provisioning commits the payments caps
-  before the offer). Falsifier `v204-start-only` reds service/added: the unit is refused
-  missing_ceiling:unit and never offered.
+  before the offer), service/serve (`proof/VELDO-0204/host.py` releases the lock as setup does and starts
+  `control_service.py serve` as its own process on this host's store and configuration, with its own socket,
+  observation file and NOTIFY_SOCKET; after READY=1 it is stopped with SIGTERM, and its one `runs_swept`
+  start record carries one provisioning by the start, done with no fault, which needs the lock serve took
+  on its own connection to reach the loop). Falsifier `v204-start-only` reds service/added: the unit is
+  refused missing_ceiling:unit and never offered.
 * AC4 refuse/missing-source (named refusal with its class, counted in metrics, no policy, dispatch refused
   missing_ceiling:unit while another unit dispatches), refuse/principal (a principal without
   reservation_service: every sourced subject refused missing_authority by the writer, nothing written),
@@ -77,20 +81,25 @@ Runner and account pool run in this process on the locked connection; a signed p
 
 * VELDO-0160's pool passes accounts over only for an account's own refusals (`ACCOUNT_REFUSALS`); a unit or
   project ceiling refuses the dispatch itself. A unit with no policy is therefore refused
-  `missing_ceiling:unit`, never `no_account`; the rows assert that, and the AC3/AC4 wording that names
-  no_account with missing_ceiling:unit among the passed-over reasons holds for the account scope only.
+  `missing_ceiling:unit`, never `no_account`; the rows assert that, and after review finding 1 the AC3
+  falsifier and AC4's refuse/missing-source sentence say so too (AC1's no_account with
+  missing_ceiling:account is unchanged).
 * `control_workflow_cycle_pm.from_line` cannot build its services over the real Telegram ingress:
   control_grooming refuses an inbox on a second connection. The suite gives the loop the in-store channel
   stand-in suites 92 and 93 use; VELDO-0203's route runs on the real API judge opened as serve opens it.
-* serve's one-line handing of its lock to `open_loop` is not driven by a row (serve is not run in process);
-  `v204-loop-lock-dropped` covers open_loop's handing it on.
+* Review finding 2: serve's handing of its lock to `open_loop` is now driven by service/serve, and
+  `v204-serve-lock-dropped` (serve calling `open_loop(config, service)`) reds it alone;
+  `v204-loop-lock-dropped` covers open_loop's handing it on to FactoryLoop.
 
 ## Red, mutations, suites
 
-* `python3 proof/VELDO-0204/drive.py --red 8d547f83` wrote `red-at-8d547f83.json`: all 18 rows red by
-  assertion (source/absent red only on the absent module).
-* 17 mutations registered as finding 204 (`mutations.json`, one diff each, `register.py` regenerates them
-  from the registry). Each was run once by the builder against the suite before registration and redded
-  its named rows; reviewer execution with `check_teeth_mutations.py --finding 204` is still required.
+* `python3 proof/VELDO-0204/drive.py --red 8d547f83` wrote `red-at-8d547f83.json`: all 19 rows red by
+  assertion (source/absent red only on the absent module; at 8d547f83 serve comes up and its start record
+  carries no provisioning).
+* 18 mutations registered as finding 204 (`mutations.json`, one diff each, `register.py` regenerates them
+  from the registry). After the review fix the builder ran `check_teeth_mutations.py --finding 204` once:
+  baseline green at 45 assertions and all 18 mutations rejected, `v204-serve-lock-dropped` redding
+  service/serve only; reviewer execution is still required.
 * Suites run green, each alone: 96 (also under the gate environment), 83, 92, 93, 86_0148, 85_0158, 95,
   58_0036, 78_0160, 73_0139, 86_0186, 26_0009, 85_0171, 86_0189, 91_0167, 71_0138, and 82_0172 (its census is green; suite 96 builds no fake engine, so it is not a census suite).
+* After the review fix: 96 and 86_0189 green, each alone, normally and under the gate environment.

@@ -9,11 +9,11 @@
  "commit": "8d547f8309eb0577b3684e50714a0d94e7c647a0",
  "details": [
   "VELDO-0204 derive/values detail: control_reservation_policies is installed beside the production modules",
-  "VELDO-0204 derive/values detail: every stored policy has exactly the derived caps, per scope [{('project', 'factory'): (None, {'capacity': 2, 'invocations': 10, 'wall_seconds': 300}), ('project', 'proj-a'): (None, {'capacity': 5, 'invocations': 12, 'wall_seconds': 500}), ('project', 'proj-b'): (None, {'capacity': 6, 'invocations': 30, 'wall_seconds': 900}), ('account', 'acc-x1'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('account', 'acc-c2'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('account', 'acc-c1'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('unit', 'v204-unit-a1'): (None, {'capacity': 2, 'invocations': 4, 'wall_seconds': 200}), ('unit', 'v204-unit-a2'): (None, {'capacity': 3, 'invocations': 6, 'wall_seconds': 400}), ('unit', 'v204-unit-b1'): (None, {'capacity': 3, 'invocations': 5, 'wall_seconds': 270})}]",
+  "VELDO-0204 derive/values detail: every stored policy has exactly the derived caps, per scope [{('project', 'factory'): (None, {'capacity': 2, 'invocations': 10, 'wall_seconds': 300}), ('project', 'proj-a'): (None, {'capacity': 5, 'invocations': 12, 'wall_seconds': 500}), ('project', 'proj-b'): (None, {'capacity': 6, 'invocations': 30, 'wall_seconds': 900}), ('account', 'acc-c1'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('account', 'acc-x1'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('account', 'acc-c2'): (None, {'capacity': 13, 'invocations': 52, 'wall_seconds': 1700}), ('unit', 'v204-unit-a1'): (None, {'capacity': 2, 'invocations': 4, 'wall_seconds': 200}), ('unit', 'v204-unit-a2'): (None, {'capacity': 3, 'invocations': 6, 'wall_seconds': 400}), ('unit', 'v204-unit-b1'): (None, {'capacity': 3, 'invocations': 5, 'wall_seconds': 270})}]",
   "VELDO-0204 derive/values detail: each subject is answered with its scope, source, caps and outcome, a configured one with the command id its policy version names, committed in the journal",
   "VELDO-0204 derive/values detail: a unit's source names its team, revision and roles",
   "VELDO-0204 fresh/dispatch detail: control_reservation_policies is installed beside the production modules",
-  "VELDO-0204 fresh/dispatch detail: the unit dispatched through the Line's Runner and account pool on a registered account [[] [{'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account'})]]",
+  "VELDO-0204 fresh/dispatch detail: the unit dispatched through the Line's Runner and account pool on a registered account [[] [{'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account'})]]",
   "VELDO-0204 fresh/dispatch detail: with no configure call of the suite's own: every policy was written by provisioning [[]]",
   "VELDO-0204 rerun/unchanged detail: control_reservation_policies is installed beside the production modules",
   "VELDO-0204 rerun/unchanged detail: a second run leaves every subject unchanged and the journal head where it was",
@@ -42,7 +42,7 @@
   "VELDO-0204 service/start detail: the module is an installed runtime asset: in the scaffold inventory, and the setup installation carries it byte for byte",
   "VELDO-0204 service/added detail: control_reservation_policies is installed beside the production modules",
   "VELDO-0204 service/added detail: that pass committed the unit's policy from its source [[]]",
-  "VELDO-0204 service/added detail: and dispatched the unit, after its policy committed [[{'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-a3', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-b1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-b2', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account', 'acc-c3': 'missing_ceiling:account', 'acc-c4': 'missing_ceiling:account'})] [{'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-a2', 'station': 'build', 'identity': 'w-build2', 'follows': None, 'rerun_of': None, 'refusals': ['stale_subject:team_assignment']}] []]",
+  "VELDO-0204 service/added detail: and dispatched the unit, after its policy committed [[{'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-a3', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-b1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-b2', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account', 'acc-c3': 'missing_ceiling:account', 'acc-c4': 'missing_ceiling:account'})] [{'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-a2', 'station': 'build', 'identity': 'w-build2', 'follows': None, 'rerun_of': None, 'refusals': ['stale_subject:team_assignment']}] []]",
   "VELDO-0204 service/team detail: control_reservation_policies is installed beside the production modules",
   "VELDO-0204 service/team detail: the next pass updated exactly the units derived from the default team [[]]",
   "VELDO-0204 service/pm-assigned detail: control_reservation_policies is installed beside the production modules",
@@ -55,11 +55,13 @@
   "VELDO-0204 refuse/missing-source detail: the unit of a project with no team on a store with no default team is refused by name, with its class [{}]",
   "VELDO-0204 refuse/missing-source detail: it has no unit policy, while the other units have theirs",
   "VELDO-0204 refuse/missing-source detail: the refusal is counted by name in the provisioning metrics [{}]",
-  "VELDO-0204 refuse/missing-source detail: its dispatch is refused missing_ceiling:unit by the reservation service, while the other unit dispatched [[] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account'})] [{'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': '355960ec-96d0-4303-9ae2-690ca60173d3', 'unit': 'v204-unit-b1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}]]",
+  "VELDO-0204 refuse/missing-source detail: its dispatch is refused missing_ceiling:unit by the reservation service, while the other unit dispatched [[] [('no_account', {'acc-c1': 'missing_ceiling:account', 'acc-c2': 'missing_ceiling:account'})] [{'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-a1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}, {'repository': 'da1393a5-b555-4d01-8433-6af23ce57fc9', 'unit': 'v204-unit-b1', 'station': 'build', 'identity': 'w-any', 'follows': None, 'rerun_of': None, 'refusal': 'no_account', 'until': None}]]",
   "VELDO-0204 refuse/principal detail: control_reservation_policies is installed beside the production modules",
   "VELDO-0204 refuse/principal detail: every subject with a source was refused missing_authority by the writer [[]]",
   "VELDO-0204 census/writer detail: control_reservation_policies is installed beside the production modules",
-  "VELDO-0204 census/writer detail: the production callers of Reservations.configure are control_reservation_policies and control_workflow_cycle_pm [['control_workflow_cycle_pm.py']]"
+  "VELDO-0204 census/writer detail: the production callers of Reservations.configure are control_reservation_policies and control_workflow_cycle_pm [['control_workflow_cycle_pm.py']]",
+  "VELDO-0204 service/serve detail: control_reservation_policies is installed beside the production modules",
+  "VELDO-0204 service/serve detail: its start record carries one provisioning, by the start, done with no fault [[]]"
  ],
  "exit_code": 1,
  "failed_rows": [
@@ -80,12 +82,13 @@
   "VELDO-0204 service/rerun",
   "VELDO-0204 refuse/missing-source",
   "VELDO-0204 refuse/principal",
-  "VELDO-0204 census/writer"
+  "VELDO-0204 census/writer",
+  "VELDO-0204 service/serve"
  ],
  "harness_sha256": {
-  "proof/VELDO-0204/host.py": "eb8a6a5a583eafd0a18979168bc7cfc1ef5435640938319eb26422c3df44d869"
+  "proof/VELDO-0204/host.py": "4b2498c87a00acca962a1358cb444fb98c54ab72c0848f0c1f811c5ac5b53465"
  },
- "log_sha256": "5f076fba871155a8e4785cd8d99188158bd9430729c80a928171595819bf9831",
+ "log_sha256": "8a60827fa85df3a4cba0982ff19687800d081c9a3318d1eeafddad81879dd876",
  "modules": {
   ".veldo/control_account_pool.py": {
    "at_commit": "bdd0f2b1f5db82a7e3ca38aa04a6d32d8e33cce0b38bf83ced121641aff92fba",
@@ -180,12 +183,16 @@
   [
    "VELDO-0204 census/writer",
    false
+  ],
+  [
+   "VELDO-0204 service/serve",
+   false
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 9.757,
+ "seconds": 11.46,
  "spec_id": "VELDO-0204",
  "suite": "scripts/suites/96_veldo_0204_reservation_policies.py",
- "suite_sha256": "31686263af82e0ac7cf99e993cca4b90c928b6b67984edc67143bc95cdfffbe2",
+ "suite_sha256": "5650613d7c45bd2284666fd1a2920a8c52a7b3c54f0b6e6b5bc01d605931df18",
  "tree": "git archive 8d547f8309eb0577b3684e50714a0d94e7c647a0; production unchanged; current suite, host fixture and suite registration overlaid"
 }
