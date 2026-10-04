@@ -40,7 +40,9 @@ Suite 94_veldo_0162_configuration_routes has twenty rows, one report per row:
   or an answer to a different proposal.
 * AC4: default/history compares immutable revisions and the head; default/refusals
   rejects stale, unauthorized and invalid saves. default/named-revision applies
-  revision one after revision two is saved, with no second question. default/staffing
+  revision one after revision two is saved, with no second question, and refuses an
+  answer whose brief showed something else. The complete project proposal contains the
+  default_brief section verbatim, alongside its other project fields. default/staffing
   gives an underbudget destination no team and returns its staffing request.
 * Shared: routes/contract compares the operation, route, UI action and authority
   command registrations and checks session and actor-body refusals. routes/redaction
@@ -59,7 +61,7 @@ or Codex executable is built, so this suite has no fake-engine format capture ob
 
 The red driver at drive.py extracts the starting commit unchanged and runs the current
 suite against that archive. red-at-08d7edd3.json records all twenty rows red by assertion,
-with no raised region. mutations.json registers eighteen finding-162 mutations and
+with no raised region. mutations.json registers nineteen finding-162 mutations and
 links their exact diffs and expected failing rows. None was executed by this builder;
 no mutation rejection is claimed. The existing finding-89 signature mutation retains
 its behavior and follows the signature check's new indentation.
@@ -78,3 +80,12 @@ The broad install-and-run suite invokes a nested gate, so it is not run under th
 session's prohibition. The scoped asset row and setup-assets suite exercise installation
 without invoking that gate. Full selftest, teeth execution and merged-tree verification
 remain the reviewer's work.
+
+Final scoped results: all eleven selected suites pass in both normal and clean gate
+environments: 94 configuration routes, 71 authenticated API, 73 team, 91 specialists,
+93 intake routes, 82 MCP catalog, 82 execution record, 86 setup assets, 60 inbox,
+69 settlement and 82 live formats. The earlier normal MCP failure is retained in
+checks.json with its successful rerun after the optional requester fix. The final
+normal and clean 0162 reruns include the exact default-brief refusal. Twenty rows
+remain red by assertion at 08d7edd3. The live-format census passes; this suite does
+not build a fake engine and therefore is not a fake-capture producer.

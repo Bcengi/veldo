@@ -76,8 +76,8 @@
     "default/history"
    ],
    "diff": "proof/VELDO-0162/v162-default-overwritten.diff",
-   "source_sha256": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972",
-   "mutant_sha256": "1e5968113ed52cec3f438a171a087809679b155d3c9bfa5ab8d769dd94e1cbe1",
+   "source_sha256": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+   "mutant_sha256": "8984e90d3a6afa69e561dc4bba3e9b3a8dc9155be6d3f1ea73689280cec645e1",
    "execution": "not run by builder"
   },
   {
@@ -87,8 +87,8 @@
     "default/named-revision"
    ],
    "diff": "proof/VELDO-0162/v162-default-latest-not-named.diff",
-   "source_sha256": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972",
-   "mutant_sha256": "a94f76f2aba85d0fe0ff60179f90170e40baedc680247b42cb45fcf5bb702775",
+   "source_sha256": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+   "mutant_sha256": "0a4aa4a4c33c1d2f096b9c0eee8f3ccd823ab1c9fe5bca4151fc0257fcf49818",
    "execution": "not run by builder"
   },
   {
@@ -98,8 +98,8 @@
     "team/owner-answer"
    ],
    "diff": "proof/VELDO-0162/v162-amendment-brief-replaced.diff",
-   "source_sha256": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972",
-   "mutant_sha256": "e9c0627934fdb9a88bba433bc345e48407ab529d5f4c1722677f74f20495e8e0",
+   "source_sha256": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+   "mutant_sha256": "95e83fb4408da6590be7d3fcf5feb54df7617520ec5c8c25c31f1afbd6d7de19",
    "execution": "not run by builder"
   },
   {
@@ -164,8 +164,8 @@
     "default/refusals"
    ],
    "diff": "proof/VELDO-0162/v162-default-owner-unchecked.diff",
-   "source_sha256": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972",
-   "mutant_sha256": "5e80d713b07f91b429f0e7fce04d426dbca73461a831e44c7997ac0a66d3f45b",
+   "source_sha256": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+   "mutant_sha256": "66933725f413316589c017559f77956f2588df13039417ee34b4e92985ca15e1",
    "execution": "not run by builder"
   },
   {
@@ -199,6 +199,17 @@
    "diff": "proof/VELDO-0162/v162-team-read-unredacted.diff",
    "source_sha256": "61f0285ea67243ab57f963d9278419c5b196f55f5c7c56b5c3d54fe83e23efc3",
    "mutant_sha256": "7328428382d72971731aa6c1587ecc829e21853e726cd899009acae8546229bc",
+   "execution": "not run by builder"
+  },
+  {
+   "name": "v162-default-brief-unchecked",
+   "module": ".veldo/control_team_routes.py",
+   "named_rows": [
+    "default/named-revision"
+   ],
+   "diff": "proof/VELDO-0162/v162-default-brief-unchecked.diff",
+   "source_sha256": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68",
+   "mutant_sha256": "c79c1e1c1d0156f43a9480ce37d038093d60d91195978e2a4878161dbd17dd3a",
    "execution": "not run by builder"
   }
  ]

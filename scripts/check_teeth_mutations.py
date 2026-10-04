@@ -10212,6 +10212,7 @@ def cases():
 
 
 
+
     # VELDO-0162: authenticated configuration and team commands.
     add(162, 'v162-configuration-principal-unchecked', '94_veldo_0162_configuration_routes.py', 'control_agent_config.py', "        MC.owner(conn, params['principal'], params['repository'], time.time())", '        pass', ['configuration/unauthorized-save'], ())
     add(162, 'v162-stale-team-accepted', '94_veldo_0162_configuration_routes.py', 'control_team.py', "        if command.get('team_version') != (record or {}).get('version', 0):", '        if False:', ['team/stale-team'], ())
@@ -10231,6 +10232,7 @@ def cases():
     add(162, 'v162-configuration-read-wrong-revision', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                                          configuration.KINDS[0], body['role'], revision)", "                                          configuration.KINDS[0], body['role'], 1)", ['configuration/revisions'], ())
     add(162, 'v162-staffing-request-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                value['owner_request'] = exc.owner_request", "                value['owner_request'] = None", ['team/staffing'], ())
     add(162, 'v162-team-read-unredacted', '94_veldo_0162_configuration_routes.py', 'control_api.py', "        served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)", "        served, redacted = (dict(row['data'], version=row['version']) if row else None), []", ['routes/redaction'], ())
+    add(162, 'v162-default-brief-unchecked', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "        if default_brief(name, default) not in req['data'].get('brief', ''):", '        if False:', ['default/named-revision'], ())
 
     # Apply dependency metadata after every case is registered, including VELDO-0152.
     # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained

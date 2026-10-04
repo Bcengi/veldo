@@ -68,7 +68,7 @@
   },
   ".veldo/control_service_api.py": {
    "at_commit": "d8c840be13c0b8bbe304620ddc6f8bd073743e5a156f89a158a598945e106d1d",
-   "now": "ea5517b4e83ee130eb6055571f52fa43bee3c70f4ed50bee4a16dc4704444209"
+   "now": "87aba2b25cc0068168492b4e089ea886130f105881bab07e750540ed0ab84b1e"
   },
   ".veldo/control_team.py": {
    "at_commit": "e0ff848157d9c7d5bffd98cf676749f53c43d8844ff649fc9338cd9255afec49",
@@ -76,7 +76,7 @@
   },
   ".veldo/control_team_routes.py": {
    "at_commit": null,
-   "now": "2c94015e6b7d4bc3edd560d8e4a4c5e539d0e1f8653d4a286c03a84c268a7972"
+   "now": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68"
   }
  },
  "preamble_rows": 26,
@@ -163,7 +163,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.333,
+ "seconds": 1.33,
  "spec_id": "VELDO-0162",
  "suite": "scripts/suites/94_veldo_0162_configuration_routes.py",
  "tree": "git archive 08d7edd38d06c17c2aff3ed30ab14f8ce900d8eb, unchanged; the current suite file run against it"

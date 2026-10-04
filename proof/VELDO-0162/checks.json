@@ -64,6 +64,410 @@
    "seconds": 2.25,
    "log": "/tmp/veldo0162-normal-73_veldo_0089_team.log",
    "passed": true
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 51 passed, 0 failed in 1.73s",
+   "failures": [],
+   "seconds": 1.8,
+   "log": "/tmp/veldo0162-normal-91_veldo_0151_specialists.log",
+   "passed": true
+  },
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "93_veldo_0152_intake_routes"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 47 passed, 0 failed in 92.13s",
+   "failures": [],
+   "seconds": 92.23,
+   "log": "/tmp/veldo0162-normal-93_veldo_0152_intake_routes.log",
+   "passed": true
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0144_mcp_catalog"
+   ],
+   "returncode": 1,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 26 passed, 29 failed in 0.64s",
+   "failures": [
+    "  SELFTEST FAIL: VELDO-0144 catalog/stdio",
+    "  SELFTEST FAIL: VELDO-0144 catalog/http",
+    "  SELFTEST FAIL: VELDO-0144 catalog/host-command",
+    "  SELFTEST FAIL: VELDO-0144 catalog/immutable-history",
+    "  SELFTEST FAIL: VELDO-0144 catalog/stale-unauthorized",
+    "  SELFTEST FAIL: VELDO-0144 catalog/invalid",
+    "  SELFTEST FAIL: VELDO-0144 catalog/atlassian",
+    "  SELFTEST FAIL: VELDO-0144 credential/write",
+    "  SELFTEST FAIL: VELDO-0144 credential/replace-delete",
+    "  SELFTEST FAIL: VELDO-0144 credential/read-back",
+    "  SELFTEST FAIL: VELDO-0144 credential/no-value-on-command-line",
+    "  SELFTEST FAIL: VELDO-0144 credential/no-value-in-records",
+    "  SELFTEST FAIL: VELDO-0144 credential/keystore-refusals",
+    "  SELFTEST FAIL: VELDO-0144 credential/authority-binding",
+    "  SELFTEST FAIL: VELDO-0144 catalog/observability",
+    "  SELFTEST FAIL: VELDO-0144 install/assets",
+    "  SELFTEST FAIL: VELDO-0144 catalog/known-shape-refused",
+    "  SELFTEST FAIL: VELDO-0144 catalog/ordinary-config-saves",
+    "  SELFTEST FAIL: VELDO-0144 catalog/credential-position-refused",
+    "  SELFTEST FAIL: VELDO-0144 catalog/deleted-reference",
+    "  SELFTEST FAIL: VELDO-0144 catalog/credential-domain",
+    "  SELFTEST FAIL: VELDO-0144 credential/libsecret-protocol",
+    "  SELFTEST FAIL: VELDO-0144 credential/replay-value",
+    "  SELFTEST FAIL: VELDO-0144 credential/encoding",
+    "  SELFTEST FAIL: VELDO-0144 credential/deleted-state",
+    "  SELFTEST FAIL: VELDO-0144 catalog/refusal-no-value",
+    "  SELFTEST FAIL: VELDO-0144 catalog/query-extra-name-saves",
+    "  SELFTEST FAIL: VELDO-0144 catalog/authorization-prose-saves",
+    "  SELFTEST FAIL: VELDO-0144 catalog/leading-hyphen-refused"
+   ],
+   "seconds": 0.71,
+   "log": "/tmp/veldo0162-normal-82_veldo_0144_mcp_catalog.log",
+   "passed": false
+  },
+  {
+   "suite": "82_veldo_0141_execution_record",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0141_execution_record"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 66 passed, 0 failed in 19.08s",
+   "failures": [],
+   "seconds": 19.16,
+   "log": "/tmp/veldo0162-normal-82_veldo_0141_execution_record.log",
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "86_veldo_0186_setup_assets"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 37 passed, 0 failed in 22.16s",
+   "failures": [],
+   "seconds": 22.23,
+   "log": "/tmp/veldo0162-normal-86_veldo_0186_setup_assets.log",
+   "passed": true
+  },
+  {
+   "suite": "60_veldo_0064_inbox",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "60_veldo_0064_inbox"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 44 passed, 0 failed in 2.56s",
+   "failures": [],
+   "seconds": 2.62,
+   "log": "/tmp/veldo0162-normal-60_veldo_0064_inbox.log",
+   "passed": true
+  },
+  {
+   "suite": "69_veldo_0068_settlement",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "69_veldo_0068_settlement"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 34 passed, 0 failed in 5.76s",
+   "failures": [],
+   "seconds": 5.82,
+   "log": "/tmp/veldo0162-normal-69_veldo_0068_settlement.log",
+   "passed": true
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "94_veldo_0162_configuration_routes"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 46 passed, 0 failed in 8.58s",
+   "failures": [],
+   "seconds": 8.65,
+   "log": "/tmp/veldo0162-clean-94_veldo_0162_configuration_routes.log",
+   "passed": true
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "71_veldo_0130_api"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 68 passed, 0 failed in 33.93s",
+   "failures": [],
+   "seconds": 34.02,
+   "log": "/tmp/veldo0162-clean-71_veldo_0130_api.log",
+   "passed": true
+  },
+  {
+   "suite": "73_veldo_0089_team",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "73_veldo_0089_team"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 52 passed, 0 failed in 2.91s",
+   "failures": [],
+   "seconds": 2.97,
+   "log": "/tmp/veldo0162-clean-73_veldo_0089_team.log",
+   "passed": true
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "91_veldo_0151_specialists"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 51 passed, 0 failed in 1.91s",
+   "failures": [],
+   "seconds": 1.98,
+   "log": "/tmp/veldo0162-clean-91_veldo_0151_specialists.log",
+   "passed": true
+  },
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "93_veldo_0152_intake_routes"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 47 passed, 0 failed in 90.54s",
+   "failures": [],
+   "seconds": 90.64,
+   "log": "/tmp/veldo0162-clean-93_veldo_0152_intake_routes.log",
+   "passed": true
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0144_mcp_catalog"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 55 passed, 0 failed in 60.05s",
+   "failures": [],
+   "seconds": 60.12,
+   "log": "/tmp/veldo0162-clean-82_veldo_0144_mcp_catalog.log",
+   "passed": true
+  },
+  {
+   "suite": "82_veldo_0141_execution_record",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0141_execution_record"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 66 passed, 0 failed in 20.51s",
+   "failures": [],
+   "seconds": 20.59,
+   "log": "/tmp/veldo0162-clean-82_veldo_0141_execution_record.log",
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "86_veldo_0186_setup_assets"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 37 passed, 0 failed in 23.06s",
+   "failures": [],
+   "seconds": 23.13,
+   "log": "/tmp/veldo0162-clean-86_veldo_0186_setup_assets.log",
+   "passed": true
+  },
+  {
+   "suite": "60_veldo_0064_inbox",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "60_veldo_0064_inbox"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 44 passed, 0 failed in 2.06s",
+   "failures": [],
+   "seconds": 2.12,
+   "log": "/tmp/veldo0162-clean-60_veldo_0064_inbox.log",
+   "passed": true
+  },
+  {
+   "suite": "69_veldo_0068_settlement",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "69_veldo_0068_settlement"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 34 passed, 0 failed in 6.83s",
+   "failures": [],
+   "seconds": 6.88,
+   "log": "/tmp/veldo0162-clean-69_veldo_0068_settlement.log",
+   "passed": true
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "94_veldo_0162_configuration_routes"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 46 passed, 0 failed in 3.62s",
+   "failures": [],
+   "seconds": 3.71,
+   "log": "/tmp/veldo0162-final-normal-94_veldo_0162_configuration_routes.log",
+   "passed": true,
+   "reason": "final changed-module validation or repaired constructor regression"
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "94_veldo_0162_configuration_routes"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 46 passed, 0 failed in 8.49s",
+   "failures": [],
+   "seconds": 8.56,
+   "log": "/tmp/veldo0162-final-clean-94_veldo_0162_configuration_routes.log",
+   "passed": true,
+   "reason": "final changed-module validation or repaired constructor regression"
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "71_veldo_0130_api"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 68 passed, 0 failed in 20.97s",
+   "failures": [],
+   "seconds": 21.06,
+   "log": "/tmp/veldo0162-final-normal-71_veldo_0130_api.log",
+   "passed": true,
+   "reason": "final changed-module validation or repaired constructor regression"
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0144_mcp_catalog"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 55 passed, 0 failed in 28.29s",
+   "failures": [],
+   "seconds": 28.36,
+   "log": "/tmp/veldo0162-final-normal-82_veldo_0144_mcp_catalog.log",
+   "passed": true,
+   "reason": "final changed-module validation or repaired constructor regression"
+  },
+  {
+   "suite": "82_veldo_0172_live_formats",
+   "environment": "normal",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0172_live_formats"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 30 passed, 0 failed in 1.05s",
+   "failures": [],
+   "seconds": 1.11,
+   "log": "/tmp/veldo0162-final-normal-82_veldo_0172_live_formats.log",
+   "passed": true
+  },
+  {
+   "suite": "82_veldo_0172_live_formats",
+   "environment": "clean",
+   "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "82_veldo_0172_live_formats"
+   ],
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 146 suites): 30 passed, 0 failed in 1.07s",
+   "failures": [],
+   "seconds": 1.12,
+   "log": "/tmp/veldo0162-final-clean-82_veldo_0172_live_formats.log",
+   "passed": true
   }
- ]
+ ],
+ "latest_all_passed": true,
+ "latest_run_count": 22
 }

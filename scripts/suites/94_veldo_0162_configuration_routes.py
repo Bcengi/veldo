@@ -226,6 +226,13 @@ def _v162_suite():
                 and refuses[2][2].get('refusal')=='invalid_input:team' and count('default_team_revision')==before)
             if routes is not None and old:
                 TR=load('v162_route_helpers', f['mods']/'control_team_routes.py')
+                unrelated, unrelated_receipt = f['present'](f['next_id']('wrong-default-brief'),
+                    TR.default_target('newproject', old), 'Approve something that shows no default revision.')
+                f['answer'](unrelated_receipt, 'accept')
+                refused = routes.apply_settled(unrelated)
+                check('default/named-revision', 'an answer whose brief showed something else gives no team',
+                    refused.get('reason')=='stale_subject:default_team_brief'
+                    and get('team?project=newproject').get('team') is None)
                 for project,row in [('newproject','default/named-revision'),('understaffed','default/staffing')]:
                     request,receipt=f['present'](f['next_id']('default-proposal'),TR.default_target(project,old),
                                                 TR.default_brief(project,old))

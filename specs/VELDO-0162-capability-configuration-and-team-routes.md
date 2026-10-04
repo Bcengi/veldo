@@ -261,3 +261,18 @@ registers eighteen exact mutations, including each declared falsifier; execution
 to the reviewer. The new revision read uses configurations/revision so it cannot shadow
 the existing configuration collection route. Both new read routes use the existing API
 redactor. Scoped regression and clean-environment verification are in progress.
+
+2026-10-03, completed builder checks: twenty rows pass normally and in the clean gate
+environment, and all twenty fail by assertion on the unchanged 08d7edd3 archive.
+The default proposal format now requires its exact default_brief section in the
+answered brief, alongside any project proposal fields; a different displayed
+proposal is refused with no team. Nineteen finding-162 mutations are registered
+with exact diffs; none was executed by the builder. Eleven selected suites pass
+in both environments, including the final 0172 format census. The normal MCP
+constructor regression was fixed and its failed run and passing rerun retained.
+Validation, Git boundary, byte-identical engine copies and zero bad anchors pass.
+The supplied origin/main footprint checker includes 37 inherited paths outside
+0162; the delta from the supplied 08d7edd3 starting commit has none outside.
+No full selftest, gate, mutation runner, model or external service ran. Review,
+mutation rejection, the merged-tree gate and its stamp remain reviewer work.
+Status, criteria and risk are unchanged.

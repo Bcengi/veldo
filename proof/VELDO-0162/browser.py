@@ -58,5 +58,3 @@ class Browser:
         if after is not None:
             after(value)
         return value
-
-

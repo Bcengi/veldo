@@ -186,8 +186,8 @@ class TeamRoutes:
         """Apply the named default to an active, unstaffed project, from its owner's settled answer.
 
         VELDO-0143 supplies a settled proposal targeting default_target(project, revision). The
-        target is itself presentation-bound by the settlement terms; extra project proposal content
-        may be included in its brief. No second question is opened unless staffing fails.
+        target is presentation-bound by settlement terms. The brief contains default_brief
+        verbatim, alongside any additional project proposal content. No second question is opened unless staffing fails.
         """
         try:
             return self._inherit(request)
@@ -216,6 +216,8 @@ class TeamRoutes:
         name, owner = project['data']['name'], project['data']['owner']
         if target != default_target(name, default):
             raise CT.Refused('stale_subject:default_team')
+        if default_brief(name, default) not in req['data'].get('brief', ''):
+            raise CT.Refused('stale_subject:default_team_brief')
         state = t.membership.authority_state(self.S, self.conn)
         if (t._owner_problems(state, owner, name, t.clock()) or req['data']['owner'] != owner
                 or settlement['data']['principals'] != [owner]):
