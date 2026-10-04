@@ -1,4 +1,4 @@
-"""Inert engine bytes for installation tests, never launched or logged in."""
+"""Generated CLI bytes for setup; executed only by the format readback proof."""
 import importlib.util
 import json
 from pathlib import Path

@@ -1,5 +1,5 @@
---- a/.veldo/control_team.py
-+++ b/.veldo/control_team.py
+--- .veldo/control_team.py
++++ mutant/control_team.py
 @@ -431 +431 @@
 -                    params['acceptance'] = dict(request_id=None, ruling='approve', principals=[principal],
 +                    params['acceptance'] = dict(request_id=None, ruling='approve', principals=[self.requester],

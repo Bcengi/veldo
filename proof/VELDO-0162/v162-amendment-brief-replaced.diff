@@ -1,5 +1,5 @@
---- a/.veldo/control_team_routes.py
-+++ b/.veldo/control_team_routes.py
-@@ -88 +88 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -93 +93 @@
 -                budget={'owner_minutes': 10}, brief=brief, choices=CHOICES, subject=result['subject'])))
 +                budget={'owner_minutes': 10}, brief='Accept a different team.', choices=CHOICES, subject=result['subject'])))

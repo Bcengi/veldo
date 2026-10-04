@@ -779,6 +779,8 @@ class ControlApi:
             self.sessions.end_by_credential(parameters['credential_id'])
             self._reap('revoked')
         result = answer.get('result') or {}
+        if 'team_application' in result:
+            result['team_application'], _ = MO.redact(result['team_application'])
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',

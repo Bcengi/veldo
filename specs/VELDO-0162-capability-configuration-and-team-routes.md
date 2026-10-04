@@ -293,3 +293,18 @@ and application exceptions, so publication and restart do not retry them. Contai
 application failures while preserving journal hints and return team_application in
 the API answer. Extend the existing proof without removing any row or mutation.
 The team read scope check remains VELDO-0164 work; status and criteria are unchanged.
+
+2026-10-03, review-fix proof: all twenty original rows remain, with five new rows
+and the 0172 fake/capture assertion, 26 checks passing in suite 94. The new rows
+cover real setup enrollment, a fresh request after decline, durable consumption
+across journal advances and consumer reconstruction, exception recording and
+actual local hint delivery, and fake CLI format conformance. API answer assertions
+also require team_application and its credential redaction. Suite 71 passes its
+42 checks; the final standalone suite 82 format census passes and lists 0162 among
+its sixteen producers. The final suite is red by assertion against unchanged
+59410582 production, with eleven failing rows and no raised journey; downstream
+request failures are identified as dependent on the initial setup refusal.
+All nineteen prior mutations are retained and six more registered, with refreshed
+exact diffs; none is executed by this builder. The registry-only anchor check has
+zero bad anchors, Git boundary passes, and no protected path is touched. No full
+selftest, mutation runner, gate, model, external host or service activation ran.

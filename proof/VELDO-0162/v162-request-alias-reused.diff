@@ -1,0 +1,5 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -80 +80 @@
+-        alias = 'team-amend-' + record['proposal']['digest'].split(':')[1][:24] + '-v' + str(record['version'])
++        alias = 'team-amend-' + record['proposal']['digest'].split(':')[1][:24]

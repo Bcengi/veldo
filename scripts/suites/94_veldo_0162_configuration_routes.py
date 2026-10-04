@@ -38,7 +38,30 @@ def _v162_suite():
     fake_directory = tempfile.TemporaryDirectory(prefix='v162-formats-')
     base = Path(fake_directory.name)
     L = load('v162_format_launch', ROOT / '.veldo/control_launch.py')
-    fake = fake_formats.embed("import json,sys\nfrom pathlib import Path\ndef emit(event):\n    print(json.dumps(complete_event(event)), flush=True)\nif sys.argv[1:3] == ['login', 'status']:\n    sys.stderr.write('Logged in using ChatGPT' + chr(10))\n    sys.exit(0)\nif Path(sys.argv[0]).name == 'claude':\n    opening = json.loads(sys.stdin.readline())\n    if opening['type'] != 'control_request':\n        raise ValueError('expected initialize')\n    emit({'type': 'control_response', 'response': {'subtype': 'success',\n          'request_id': opening['request_id'], 'response': {'account': {\n          'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})\n    sys.stdin.readline()\n    emit({'type': 'assistant', 'message': {'usage': {'input_tokens': 2, 'output_tokens': 3}}})\n    emit({'type': 'result', 'subtype': 'success', 'is_error': False,\n          'usage': {'input_tokens': 2, 'output_tokens': 4}})\nelse:\n    sys.stdin.read()\n    emit({'type': 'thread.started', 'thread_id': 'fixture-thread'})\n    emit({'type': 'turn.started'})\n    emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})\n")
+    fake = fake_formats.embed('''import json,sys
+from pathlib import Path
+def emit(event):
+    print(json.dumps(complete_event(event)), flush=True)
+if sys.argv[1:3] == ['login', 'status']:
+    sys.stderr.write('Logged in using ChatGPT' + chr(10))
+    sys.exit(0)
+if Path(sys.argv[0]).name == 'claude':
+    opening = json.loads(sys.stdin.readline())
+    if opening['type'] != 'control_request':
+        raise ValueError('expected initialize')
+    emit({'type': 'control_response', 'response': {'subtype': 'success',
+          'request_id': opening['request_id'], 'response': {'account': {
+          'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+    sys.stdin.readline()
+    emit({'type': 'assistant', 'message': {'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+    emit({'type': 'result', 'subtype': 'success', 'is_error': False,
+          'usage': {'input_tokens': 2, 'output_tokens': 4}})
+else:
+    sys.stdin.read()
+    emit({'type': 'thread.started', 'thread_id': 'fixture-thread'})
+    emit({'type': 'turn.started'})
+    emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})
+''')
     try:
         with helper.fixture(ROOT, PRODUCTION, fake) as f:
             conn, S, service, api, call = (f[k] for k in ('conn','S','service','api','call'))
@@ -283,7 +306,9 @@ def _v162_suite():
                 service.publish()
                 before_observations = len(routes.observations)
                 before_metrics = copy.deepcopy(routes.teams.metrics())
-                for _ in range(3):
+                for advance in range(3):
+                    changed = post('configurations/save', dict(definition=definition, base=2+advance))
+                    check('team/consumed', 'a real configuration save advances the journal', changed[0]==200)
                     service.publish()
                 # A reconstructed consumer must also see the durable consumption record.
                 restarted = type(routes)(routes.teams, routes.settlement, routes.presenter)
@@ -326,6 +351,32 @@ def _v162_suite():
                 finally:
                     routes.inherit = original_inherit
                     listener.close()
+                # A failure before the per-request consumer is also recorded without hiding hints.
+                original_pending = routes.apply_pending
+                def fail_pending():
+                    raise RuntimeError('fixture scan fault')
+                routes.apply_pending = fail_pending
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                hint_path = f['base'] / 'scan-hints.sock'
+                listener.bind(str(hint_path)); listener.listen(); listener.settimeout(2)
+                service.subscribe(str(hint_path))
+                try:
+                    try:
+                        published = service.publish()
+                    except Exception:
+                        published = {'sent': 0}
+                    hint = None
+                    if published['sent']:
+                        peer, _ = listener.accept()
+                        with peer:
+                            hint = json.loads(peer.recv(65536))
+                    logged = [json.loads(line) for line in service.mcp_log.read_text().splitlines()] if service.mcp_log.exists() else []
+                    check('team/application-exception', 'consumer scan exception is logged and subscriber still receives the hint',
+                        hint is not None and service.counts.get('team_application_errors')==1
+                        and any(event.get('reason')=='unavailable_service:team_application' for event in logged))
+                finally:
+                    routes.apply_pending = original_pending
+                    listener.close()
             # Ordinary reads use the existing API redactor even for free text in team roles.
             import secrets
             secret = 'gh' + 'p_' + secrets.token_hex(20)
@@ -335,6 +386,12 @@ def _v162_suite():
             response = get('team?project=bcengi')
             check('routes/redaction','generated credential in role text never returns through the read route',
                 written[0]==200 and secret not in json.dumps(response) and bool(response.get('redacted')))
+            proposed = save_team(sensitive, team_read().get('version', 0), 'zed')
+            rid = proposed[2].get('owner_request')
+            answered = answer(rid) if rid else (0, {}, {})
+            check('routes/redaction', 'the returned team application also uses the API redactor',
+                answered[0]==200 and (answered[2].get('team_application') or {}).get('ok') is True
+                and secret not in json.dumps(answered[2]))
     except Exception as error:
         print('  VELDO-0162 detail: suite did not run to its end:',repr(error))
         import traceback

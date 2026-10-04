@@ -1,5 +1,5 @@
---- a/.veldo/control_team.py
-+++ b/.veldo/control_team.py
+--- .veldo/control_team.py
++++ mutant/control_team.py
 @@ -555 +555 @@
 -        if target != amendment_target(record):
 +        if False:

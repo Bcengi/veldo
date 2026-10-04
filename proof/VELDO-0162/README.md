@@ -1,91 +1,87 @@
 # VELDO-0162 builder evidence
 
-Starting tree: 08d7edd38d06c17c2aff3ed30ab14f8ce900d8eb. Implementation stays on
-build-veldo-0162. No push, gate, live model, real credential or external service is used.
-The specification remains ready; independent review and the merged-tree gate are pending.
+Current review fixes start at 59410582 on build-veldo-0162. No push, gate, live
+model, real credential or external service is used. Status remains ready;
+independent review, mutation execution and merged-tree verification are pending.
+Earlier implementation evidence from 08d7edd3 is retained as historical evidence.
 
-The capability route executes Configurations.save. The team route sends the derived,
-edge-signed command to Teams.apply, which verifies the edge itself. A current project
-owner saves an accepted revision and his decision in one team transaction. A member
-creates a pending proposal and one exact amendment request. API settlement calls amend;
-the authority service's existing publication hook applies Telegram settlements before
-notifying the API. A factory owner's default save writes an immutable revision and a
-head. Applying a settled default target reads its named revision and checks staffing
-against the active destination project, then commits through the team writer.
+The configuration route executes Configurations.save. Team saves execute the
+edge-verified Teams command: an owner's save becomes current immediately, while
+another member's proposal waits for the owner's settled answer. Default teams
+are immutable revisions; inheritance reads the revision the answer named.
 
-The read routes are configuration revisions at configurations/revision and project
-teams at team, with project=default selecting a default revision or its head. They
-reuse authority inspection and the existing API redactor. Save routes are
-configurations/save, teams/save and teams/default/save under the domain API prefix.
-No browser writes the store. The configuration collection route retains its old path.
+Team request commands now use pm, which real factory setup already enrolls with
+all-project scope and possession of its command signing key. Qualification's
+requester remains scoped to channel-qualification. There is no journal-principal
+fallback and no setup production change or footprint extension. The fixture runs
+real factory setup, keeps those enrolled memberships and keys, and supplies its
+actual qualification requester to ServiceApi. It no longer injects team-service.
+Amendment aliases include the team version, distinguishing successive proposals
+of the same roster while preserving repeat submission of a pending proposal.
 
-Suite 94_veldo_0162_configuration_routes has twenty rows, one report per row:
+Both API answers and service publication consume settled team requests through a
+registered store command. The durable team_application receipt retains the result,
+including refusal or a named application exception, so later journal advances and
+consumer reconstruction do not retry it. Application and scan exceptions cannot
+suppress API hints. The API answer returns team_application through the existing
+redactor. Team read scope checking remains VELDO-0164 work.
 
-* AC1: configuration/revisions compares every field of two API-written revisions with
-  the store and read route, including native tools, Atlassian and another catalog
-  revision, skills, instructions, engine settings and both load modes.
-  configuration/unauthorized-save and configuration/refusals require no revision from
-  an unauthorized member, stale base or invalid configuration.
-* AC2: team/roundtrip saves the required roster then adds builder_jira with its exact
-  configuration reference. team/stale-team requires the old version refused without
-  a change. team/staffing checks missing and unresolved references and incomplete
-  staffing, including each actual owner request returned to the caller.
-* AC3: team/owner-save and team/decider check immediate acceptance, no new decision
-  request, the retained assertion digest and the journal's actual principal.
-  team/unverified-assertion drives both the authority and Teams with signatures from
-  another generated key. team/owner-answer compares the exact brief and target,
-  repeats the submission at its original base, and settles through the API.
-  team/telegram applies a signed Telegram answer through service publication.
-  team/decline and team/other-request preserve the current revision on rejection
-  or an answer to a different proposal.
-* AC4: default/history compares immutable revisions and the head; default/refusals
-  rejects stale, unauthorized and invalid saves. default/named-revision applies
-  revision one after revision two is saved, with no second question, and refuses an
-  answer whose brief showed something else. The complete project proposal contains the
-  default_brief section verbatim, alongside its other project fields. default/staffing
-  gives an underbudget destination no team and returns its staffing request.
-* Shared: routes/contract compares the operation, route, UI action and authority
-  command registrations and checks session and actor-body refusals. routes/redaction
-  plants a generated credential in role text and requires it absent from the response.
-  install/assets compares and lays every exercised canonical engine module with the
-  scaffolder, including the new team route module.
+Suite 94_veldo_0162_configuration_routes retains all twenty original rows and
+adds five rows, plus the separate 0172 fake/capture assertion: 26 checks total.
 
-The fixtures use real signed membership, edge enrollment, capability, catalog, skill,
-project activation, request and settlement commands, generated OpenSSH and ES256 keys,
-real passkey enrollment and sign-in, the protected signer subprocess, SQLite, and the
-production ServiceApi construction and call table. The API handler is driven directly
-through a service-call proxy; this suite does not claim a new socket transport proof.
-The existing 0130 suite covers that transport. Telegram uses a loopback Bot API stand-in.
-Chat enrollment rows use the existing projection fixture's store writer. No fake Claude
-or Codex executable is built, so this suite has no fake-engine format capture obligation.
+* AC1: configuration/revisions compares all fields of two stored and API-read
+  revisions, including Atlassian catalog references, native tools, skills,
+  instructions, settings and load modes. Unauthorized, stale and invalid saves
+  store nothing and return named refusals.
+* AC2: team/roundtrip saves the required roster and a specialist with a configuration
+  reference. team/stale-team preserves the current team on stale input.
+  team/staffing checks missing and unresolved references and incomplete staffing,
+  including the actual owner requests returned with each refusal.
+* AC3: owner-save, decider and unverified-assertion prove immediate owner acceptance,
+  its verified decider and both signature checks. owner-answer proves the exact
+  brief and target, pending repeat reuse, settled API amendment and the returned
+  team_application. telegram exercises the service publication hook. decline and
+  other-request preserve the accepted revision on rejection or a different target.
+  setup-requester proves real setup's narrow qualification and all-project PM
+  enrollments, and opening a member's request. reproposal declines then proposes
+  the same roster again: a new request opens and its pending repeat reuses it.
+  consumed checks stable team observations and refusal metrics across three actual
+  configuration journal advances and a reconstructed consumer. application-exception
+  proves a per-request fault is recorded once and consumed; a separate scan fault
+  is logged. Both send the journal hint to a real local Unix socket subscriber.
+* AC4: default/history checks immutable revisions and the head. default/refusals
+  checks stale, unauthorized and invalid saves. default/named-revision applies the
+  answered older revision after a newer save, and refuses a different displayed
+  brief. default/staffing gives an underbudget project no team and returns a request.
+* Shared: routes/contract compares operation, route, action and command registrations
+  and checks session and actor-body refusals. routes/redaction checks generated
+  credential text in both team reads and returned team applications. install/assets
+  compares and lays the canonical modules. format/fake-lines checks generated CLI
+  assets through the 0172 constructors and format observer at teardown.
 
-The red driver at drive.py extracts the starting commit unchanged and runs the current
-suite against that archive. red-at-08d7edd3.json records all twenty rows red by assertion,
-with no raised region. mutations.json registers nineteen finding-162 mutations and
-links their exact diffs and expected failing rows. None was executed by this builder;
-no mutation rejection is claimed. The existing finding-89 signature mutation retains
-its behavior and follows the signature check's new indentation.
+The fixture uses generated OpenSSH and ES256 keys, real setup and signed membership,
+capability, catalog, skill, project, request, settlement and passkey commands, SQLite,
+and production ServiceApi construction. Its API handler uses a service-call proxy;
+the existing 0130 suite supplies transport regression coverage. Telegram uses a
+loopback Bot API stand-in. Setup does not start the installed service. Fake Claude
+and Codex assets are built through proof/VELDO-0172/fake_formats.py, installed by
+setup and read back through conform_fake at teardown. No real engine runs.
 
-checks.json records sequential normal and clean-environment suite runs. Partial selftest
-success returns 2 by design. It is not unit evidence from a gate and cannot establish
-landing readiness. static-checks.json records validation, Git boundary and anchor checks.
-footprint.json separates the 0162 delta from inherited changes: the supplied checker
-compares origin/main and reports inherited 0088, 0151 and 0152 paths; the delta from the
-supplied starting commit has no path outside 0162's footprint. The footprint adds only
-71_veldo_0130_api.py for its complete route census and command fixture registration.
-The shared control_api_models.py action table is the only changed 0152 production file;
-its intake reader and redaction behavior are retained.
+red-at-59410582.json records the final suite against unchanged archived production,
+with only current test and fixture files overlaid. Eleven rows fail by assertion,
+including setup-requester; no journey raises. Some downstream request rows fail
+because the initial request could not open. This is not an isolated mutation run.
+The earlier red-at-08d7edd3.json remains the original twenty-row red record.
 
-The broad install-and-run suite invokes a nested gate, so it is not run under this
-session's prohibition. The scoped asset row and setup-assets suite exercise installation
-without invoking that gate. Full selftest, teeth execution and merged-tree verification
-remain the reviewer's work.
+mutations.json retains all nineteen existing mutations and adds six: narrow setup
+requester, reused request alias, missing consumption receipt, unrecorded application
+exception, publication exception suppressing hints and hidden API team application.
+Every exact diff and source digest is refreshed. The anchor-only check reads registry
+definitions, loads no tests and executes no mutations: zero bad anchors. No mutation
+rejection is claimed; all twenty-five await reviewer execution.
 
-Final scoped results: all eleven selected suites pass in both normal and clean gate
-environments: 94 configuration routes, 71 authenticated API, 73 team, 91 specialists,
-93 intake routes, 82 MCP catalog, 82 execution record, 86 setup assets, 60 inbox,
-69 settlement and 82 live formats. The earlier normal MCP failure is retained in
-checks.json with its successful rerun after the optional requester fix. The final
-normal and clean 0162 reruns include the exact default-brief refusal. Twenty rows
-remain red by assertion at 08d7edd3. The live-format census passes; this suite does
-not build a fake engine and therefore is not a fake-capture producer.
+checks.json and static-checks.json retain the previous build's records and add this
+review-fix run separately. Only selected suites are run sequentially. Partial selftest
+success returns 2 by design and is not gate evidence. The full selftest, mutation
+runner, gate and landing stamp are reserved for the reviewer. No gate byproducts
+belong to this change.

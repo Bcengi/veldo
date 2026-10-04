@@ -1,6 +1,6 @@
---- a/.veldo/control_team_routes.py
-+++ b/.veldo/control_team_routes.py
-@@ -176,2 +176,2 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -218,2 +218,2 @@
 -        identity = default_id(base + 1)
 -        if CT._row(conn, identity) is not None:
 +        identity = default_id(1)

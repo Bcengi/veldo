@@ -79,5 +79,41 @@
  },
  "engine_mismatches": [],
  "footprint_base": "08d7edd3",
- "own_outside": []
+ "own_outside": [],
+ "review_fixes": {
+  "base": "59410582",
+  "checks": [
+   {
+    "command": [
+     "python3",
+     "scripts/check_git_boundary.py"
+    ],
+    "returncode": 0,
+    "summary": "Git subprocess boundary: pass"
+   },
+   {
+    "command": [
+     "python3",
+     "proof/VELDO-0162/anchors.py"
+    ],
+    "returncode": 0,
+    "summary": "{\"registered\": 2416, \"bad\": [], \"duplicates\": []}\n0 bad anchors"
+   },
+   {
+    "command": [
+     "git",
+     "diff",
+     "--check"
+    ],
+    "returncode": 0,
+    "summary": "No whitespace errors"
+   }
+  ],
+  "production_sha256": {
+   "engine/.veldo/control_api.py": "a55a41b6ac2a6f5bc3d7849011bb7d4e42caa2e7498a72fa302e2a6671ab7765",
+   "engine/.veldo/control_service_api.py": "703bd44c607fb31d469262ec5107ae19add6ec49d34232cf228698a268189d5b",
+   "engine/.veldo/control_team_routes.py": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190"
+  },
+  "protected_matches": []
+ }
 }

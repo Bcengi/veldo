@@ -1,0 +1,5 @@
+--- .veldo/control_team_routes.py
++++ mutant/control_team_routes.py
+@@ -130 +130 @@
+-            result = dict(ok=False, reason='unavailable_service:team_application')
++            raise

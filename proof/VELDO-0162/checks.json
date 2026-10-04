@@ -469,5 +469,56 @@
   }
  ],
  "latest_all_passed": true,
- "latest_run_count": 22
+ "latest_run_count": 22,
+ "review_fixes": {
+  "base": "59410582",
+  "sequential": true,
+  "runs": [
+   {
+    "command": [
+     "python3",
+     "scripts/selftest.py",
+     "--suite",
+     "94_veldo_0162_configuration_routes"
+    ],
+    "returncode": 2,
+    "summary": "selftest (PARTIAL, 1 of 146 suites): 52 passed, 0 failed in 9.90s",
+    "observations": [
+     "VELDO-0172 fake/capture:0162_configuration_routes: 6 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:result/success', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']",
+     "  94_veldo_0162_configuration_routes              26 passed    9.90s"
+    ],
+    "log": "/tmp/0162-review-green-final.log"
+   },
+   {
+    "command": [
+     "python3",
+     "scripts/selftest.py",
+     "--suite",
+     "71_veldo_0130_api"
+    ],
+    "returncode": 2,
+    "summary": "selftest (PARTIAL, 1 of 146 suites): 68 passed, 0 failed in 21.18s",
+    "observations": [
+     "  71_veldo_0130_api                               42 passed   21.18s"
+    ],
+    "log": "/tmp/0162-review-api.log"
+   },
+   {
+    "command": [
+     "python3",
+     "scripts/selftest.py",
+     "--suite",
+     "82_veldo_0172_live_formats"
+    ],
+    "returncode": 2,
+    "summary": "selftest (PARTIAL, 1 of 146 suites): 30 passed, 0 failed in 1.40s",
+    "observations": [
+     "VELDO-0172 census: 16 fake-building suites, each with its own fake/capture row: 75_veldo_0062_accounts.py, 78_veldo_0060_claude_adapter.py, 78_veldo_0160_account_pool.py, 79_veldo_0061_codex_adapter.py, 80_veldo_0155_claude_baseline.py, 81_veldo_0156_codex_baseline.py, 82_veldo_0129_worker_wiring.py, 82_veldo_0141_execution_record.py, 82_veldo_0165_launch_hygiene.py, 82_veldo_0173_tool_registry.py, 83_veldo_0154_factory_loop.py, 85_veldo_0158_credential_delivery.py, 86_veldo_0127_agent_configuration.py, 86_veldo_0148_re_land.py, 93_veldo_0152_intake_routes.py, 94_veldo_0162_configuration_routes.py",
+     "  82_veldo_0172_live_formats                       4 passed    1.40s"
+    ],
+    "log": "/tmp/0162-review-formats.log"
+   }
+  ],
+  "note": "Only selected suites; the format census ran last. No gate or mutation execution."
+ }
 }

@@ -10234,6 +10234,13 @@ def cases():
     add(162, 'v162-team-read-unredacted', '94_veldo_0162_configuration_routes.py', 'control_api.py', "        served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)", "        served, redacted = (dict(row['data'], version=row['version']) if row else None), []", ['routes/redaction'], ())
     add(162, 'v162-default-brief-unchecked', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "        if default_brief(name, default) not in req['data'].get('brief', ''):", '        if False:', ['default/named-revision'], ())
 
+    add(162, 'v162-setup-requester-narrow', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', "        requester = 'pm'", "        requester = channel.requester[0]\n        self.config['journal']['key'] = str(Path(self.config['journal']['key']).with_name('qualification-requester'))", ['team/setup-requester'], ())
+    add(162, 'v162-request-alias-reused', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', " + '-v' + str(record['version'])", '', ['team/reproposal'], ())
+    add(162, 'v162-settlement-not-consumed', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', '        self.S.execute(self.conn, dict(command_id=command_id, principal=self.teams.requester,\n            operation=CONSUME, parameters=params, expected_versions={identity: 0}, artifact_digests=[],\n            nonce=command_id), self.teams.journal_signer, self.teams.sign, self.teams.authority_generation)', '        pass', ['team/consumed'], ())
+    add(162, 'v162-application-exception-unrecorded', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "            result = dict(ok=False, reason='unavailable_service:team_application')", '            raise', ['team/application-exception'], ())
+    add(162, 'v162-publication-exception-suppresses-hints', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', '        except Exception:  # A consumer failure cannot suppress journal hints.', '        except Exception:\n            raise', ['team/application-exception'], ())
+    add(162, 'v162-api-team-application-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                'team_application')", "                'hidden_team_application')", ['team/owner-answer'], ())
+
     # Apply dependency metadata after every case is registered, including VELDO-0152.
     # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
     # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
