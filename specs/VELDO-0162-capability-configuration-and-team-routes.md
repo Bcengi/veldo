@@ -276,3 +276,20 @@ The supplied origin/main footprint checker includes 37 inherited paths outside
 No full selftest, gate, mutation runner, model or external service ran. Review,
 mutation rejection, the merged-tree gate and its stamp remain reviewer work.
 Status, criteria and risk are unchanged.
+
+2026-10-03, independent review fixes: team amendment and staffing requests use the
+setup-enrolled pm principal, whose scope covers every project and whose command key
+is the key setup enrolls with possession proof. The qualification requester remains
+confined to channel-qualification. Remove the journal-principal fallback. No setup
+production change or footprint extension is needed. The 0162 fixture now executes
+real factory setup and keeps its enrolled requester and PM, using generated keys,
+local installation assets and no service start. Its fake CLI assets use the 0172
+constructors and report format conformance at teardown.
+
+Bind amendment aliases to the team version as well as the proposal digest, so a new
+proposal of an unchanged roster after rejection or expiry opens a new request.
+Record consumed team settlements through an owned store command, including refusals
+and application exceptions, so publication and restart do not retry them. Contain
+application failures while preserving journal hints and return team_application in
+the API answer. Extend the existing proof without removing any row or mutation.
+The team read scope check remains VELDO-0164 work; status and criteria are unchanged.

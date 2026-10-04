@@ -1,5 +1,5 @@
 """VELDO-0162: passkey API saves, exact owner decisions and named default revisions.
-Real command writers, generated keys, no model or fake engine.
+Real setup and command writers, generated keys and local fake CLI format readback.
 """
 
 def _v162_suite():
@@ -21,7 +21,8 @@ def _v162_suite():
     names = ('routes/redaction', 'routes/contract', 'install/assets', 'configuration/revisions', 'configuration/unauthorized-save',
         'configuration/refusals', 'team/roundtrip', 'team/stale-team', 'team/staffing', 'team/owner-save',
         'team/decider', 'team/unverified-assertion', 'team/owner-answer', 'team/telegram', 'team/decline',
-        'team/other-request', 'default/history', 'default/refusals', 'default/named-revision', 'default/staffing')
+        'team/other-request', 'default/history', 'default/refusals', 'default/named-revision', 'default/staffing', 'team/setup-requester', 'team/reproposal',
+        'team/consumed', 'team/application-exception', 'format/fake-lines')
     rows = {name:[] for name in names}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -31,8 +32,15 @@ def _v162_suite():
         return module
     here = Path(__suite_file__).resolve().parents[2]
     helper = load('v162_fixture', here / 'proof/VELDO-0162/fixture.py')
+    import tempfile
+    fake_formats = load('v162_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    conform_formats = load('v162_conform_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    fake_directory = tempfile.TemporaryDirectory(prefix='v162-formats-')
+    base = Path(fake_directory.name)
+    L = load('v162_format_launch', ROOT / '.veldo/control_launch.py')
+    fake = fake_formats.embed("import json,sys\nfrom pathlib import Path\ndef emit(event):\n    print(json.dumps(complete_event(event)), flush=True)\nif sys.argv[1:3] == ['login', 'status']:\n    sys.stderr.write('Logged in using ChatGPT' + chr(10))\n    sys.exit(0)\nif Path(sys.argv[0]).name == 'claude':\n    opening = json.loads(sys.stdin.readline())\n    if opening['type'] != 'control_request':\n        raise ValueError('expected initialize')\n    emit({'type': 'control_response', 'response': {'subtype': 'success',\n          'request_id': opening['request_id'], 'response': {'account': {\n          'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})\n    sys.stdin.readline()\n    emit({'type': 'assistant', 'message': {'usage': {'input_tokens': 2, 'output_tokens': 3}}})\n    emit({'type': 'result', 'subtype': 'success', 'is_error': False,\n          'usage': {'input_tokens': 2, 'output_tokens': 4}})\nelse:\n    sys.stdin.read()\n    emit({'type': 'thread.started', 'thread_id': 'fixture-thread'})\n    emit({'type': 'turn.started'})\n    emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})\n")
     try:
-        with helper.fixture(ROOT, PRODUCTION) as f:
+        with helper.fixture(ROOT, PRODUCTION, fake) as f:
             conn, S, service, api, call = (f[k] for k in ('conn','S','service','api','call'))
             authority = service.authority
             routes = getattr(authority, 'team_routes', None)
@@ -173,6 +181,13 @@ def _v162_suite():
             pending=team_read(); rid=proposed[2].get('owner_request')
             repeated=save_team(plain,current.get('version',0),'zed')
             req=f['inbox'].read(rid) if rid else None
+            state = f['CM'].authority_state(S, conn)
+            qualification = f['AC'].membership_entry(state['membership'], 'qualification-requester')
+            pm = f['AC'].membership_entry(state['membership'], 'pm')
+            check('team/setup-requester', 'real setup enrolls narrow qualification and all-project PM; member request opens',
+                f['setup_report'] is not None and f['channel'].requester[0]=='qualification-requester'
+                and qualification['scope']==['channel-qualification'] and pm['scope']=='*'
+                and proposed[0]==200 and req is not None and routes.teams.requester=='pm')
             target=CT.amendment_target(pending) if pending.get('proposal') else None
             terms=f['entity'](req['data']['subject']['ref']) if req else None
             check('team/owner-answer','member proposal waits for one exact request and repeat finds it',
@@ -184,7 +199,8 @@ def _v162_suite():
                 answered=answer(rid); applied=team_read()
                 check('team/owner-answer','API answer applies existing amend settlement',answered[0]==200
                     and applied.get('revision')==3 and applied.get('team')==plain and applied.get('proposal') is None
-                    and applied['revisions'][-1].get('settlement_id') is not None)
+                    and applied['revisions'][-1].get('settlement_id') is not None
+                    and (answered[2].get('team_application') or {}).get('ok') is True)
             proposal=save_team(specialized,team_read().get('version',0),'zed')
             rid=proposal[2].get('owner_request')
             if rid:
@@ -207,6 +223,17 @@ def _v162_suite():
                     and team_read().get('revision')==prior.get('revision'))
             else:
                 check('team/decline','request exists',False); check('team/other-request','request exists',False)
+            if rid:
+                again = save_team(plain, team_read().get('version', 0), 'zed')
+                fresh = again[2].get('owner_request')
+                opened = f['inbox'].read(fresh) if fresh else None
+                check('team/reproposal', 'same roster after decline opens a new exact request; pending repeat reuses it',
+                    again[0]==200 and fresh is not None and fresh!=rid and opened is not None
+                    and opened['data'].get('settlement') is None
+                    and opened['data']['brief']==CT.amendment_brief(team_read())
+                    and save_team(plain, prior['version'], 'zed')[2].get('owner_request')==fresh)
+            else:
+                check('team/reproposal', 'initial request exists', False)
             default1=post('teams/default/save',dict(team=specialized,base=0))
             old=get('team?project=default&revision=1').get('team')
             default2=post('teams/default/save',dict(team=plain,base=1))
@@ -252,6 +279,53 @@ def _v162_suite():
             else:
                 check('default/named-revision','default command exists',False)
                 check('default/staffing','default command exists',False)
+            if routes is not None:
+                service.publish()
+                before_observations = len(routes.observations)
+                before_metrics = copy.deepcopy(routes.teams.metrics())
+                for _ in range(3):
+                    service.publish()
+                # A reconstructed consumer must also see the durable consumption record.
+                restarted = type(routes)(routes.teams, routes.settlement, routes.presenter)
+                replayed = restarted.apply_pending()
+                check('team/consumed', 'refused and applied settlements are consumed across publication and reconstruction',
+                    len(routes.observations)==before_observations and routes.teams.metrics()==before_metrics
+                    and not replayed and not restarted.observations)
+                fault_request, receipt = f['present'](f['next_id']('fault-default'),
+                    TR.default_target('newproject', old), TR.default_brief('newproject', old))
+                f['answer'](receipt, 'accept')
+                original_inherit = routes.inherit
+                attempts = []
+                def fail_inherit(request):
+                    attempts.append(request)
+                    raise RuntimeError('fixture application fault')
+                routes.inherit = fail_inherit
+                # A real local hint socket proves an application fault cannot hide a journal hint.
+                import socket
+                hint_path = f['base'] / 'hints.sock'
+                listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                listener.bind(str(hint_path)); listener.listen(); listener.settimeout(2)
+                service.subscribe(str(hint_path))
+                try:
+                    try:
+                        published = service.publish()
+                    except Exception:
+                        published = {'sent': 0}
+                    hint = None
+                    if published['sent']:
+                        peer, _ = listener.accept()
+                        with peer:
+                            hint = json.loads(peer.recv(65536))
+                    routes.inherit = original_inherit
+                    observations = [o for o in routes.observations if o.get('request')==fault_request]
+                    service.publish()
+                    check('team/application-exception', 'fault recorded once, consumed and actual subscriber gets the hint',
+                        attempts==[fault_request] and hint is not None and hint.get('watermark')==published.get('watermark')
+                        and len(observations)==1 and observations[0].get('reason')=='unavailable_service:team_application'
+                        and not restarted.apply_pending())
+                finally:
+                    routes.inherit = original_inherit
+                    listener.close()
             # Ordinary reads use the existing API redactor even for free text in team roles.
             import secrets
             secret = 'gh' + 'p_' + secrets.token_hex(20)
@@ -266,9 +340,18 @@ def _v162_suite():
         import traceback
         traceback.print_exc()
         for name in names: check(name,'journey completed',False)
+    finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0162_configuration_routes')
+        check('format/fake-lines', 'setup fake CLI output matches captured binary formats',
+              bool(fake_capture[1]) and not fake_capture[0])
+        fake_directory.cleanup()
     for name in names:
         failed=[label for label,passed in rows[name] if not passed]
         if failed: print('  VELDO-0162 detail:',name,'; '.join(failed))
         expect('VELDO-0162 '+name,bool(rows[name]) and not failed)
+
+    for line in conform_formats.describe('0162_configuration_routes', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0162_configuration_routes', bool(fake_capture[1]) and not fake_capture[0])
 
 _v162_suite()

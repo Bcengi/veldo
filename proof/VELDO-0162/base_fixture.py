@@ -12,13 +12,12 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-import sys
 import tempfile
 import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True):
+def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True, fake=None):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -101,7 +100,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             keys = base / 'keys'
             keys.mkdir(mode=0o700)
             people = ('steward', 'olga', 'zed')
-            services = ('pm', 'team-service')
+            services = ('pm',)
             agents = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-rev3', 'w-late', 'outsider')
             keyfile = {who: keys / who for who in ('authority', 'api-edge', 'api-auth', 'telegram-edge', 'telegram-auth') + people + services + agents}
             public = {}
@@ -113,18 +112,18 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             setup_report = None
             if production_setup:
                 helper = load('v88_setup_fixture', Path(__file__).with_name('setup_fixture.py'))
-                setup_report = helper.setup(ROOT, base, mods, keyfile['steward'])
+                setup_report = helper.setup(ROOT, base, mods, keyfile['steward'], fake)
                 ids = setup_report['authority_ids']
                 DOMAIN, REPO = ids['domain_uuid'], ids['repository_uuid']
                 keyfile['authority'] = Path(setup_report['state_root']) / 'keys' / 'journal'
-                edge = load('v88_setup_edge', mods / 'control_channel_enrollment.py')
-                keyfile['api-edge'] = Path(setup_report['state_root']) / 'keys' / edge.edge_key_id('api')
-                public['api-edge'] = ' '.join(keyfile['api-edge'].with_suffix('.pub').read_text().split()[:2])
-                public['authority'] = ' '.join(keyfile['authority'].with_suffix('.pub').read_text().split()[:2])
-            # Signing uses the service edge; the production-setup branch never
-            # enrolls the PM here. Setup owns that membership and possession proof.
-            for who in ('pm', 'team-service'):
-                keyfile[who], public[who] = keyfile['authority'], public['authority']
+                for who, relative in {'api-edge': 'keys/edge-api', 'api-auth': 'edge/api-auth',
+                                      'telegram-edge': 'keys/edge-telegram', 'telegram-auth': 'edge/edge-auth',
+                                      'qualification-requester': 'keys/qualification-requester',
+                                      'authority': 'keys/journal'}.items():
+                    keyfile[who] = Path(setup_report['state_root']) / relative
+                    public[who] = ' '.join(keyfile[who].with_suffix('.pub').read_text().split()[:2])
+                (base / 'authority').mkdir()
+            keyfile['pm'], public['pm'] = keyfile['authority'], public['authority']
 
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
@@ -201,8 +200,8 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                 env = envelope(command, 'steward')
                 return enrollment.admit(env, command, sign_as('steward', AC.canonical_envelope_bytes(env)),
                     sign_as(who, AC.canonical_envelope_bytes(env), 'veldo-edge-possession'))
-            enroll_edge('api', 'api-edge', 'api-auth', 'edge-api')
-            enroll_edge('telegram_chat', 'telegram-edge', 'telegram-auth', 'edge-telegram')
+            if not production_setup: enroll_edge('api', 'api-edge', 'api-auth', 'edge-api')
+            if not production_setup: enroll_edge('telegram_chat', 'telegram-edge', 'telegram-auth', 'edge-telegram')
 
             production_pm = CM.AC.membership_entry(CM.authority_state(S, conn)['membership'], 'pm')
             if production_setup and not production_pm:
@@ -250,7 +249,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                 coordination_budget={'capacity': 5, 'invocations': cycle_budget, 'wall_seconds': 500}, ticket_key_prefixes=['FAC'])))
 
             service = (CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
-                                requester='team-service', request_sign=lambda m: sign_as('team-service', m))
+                                requester='pm', request_sign=lambda m: sign_as('pm', m))
                        if CT is not None else None)
 
             def send(who, op, **fields):

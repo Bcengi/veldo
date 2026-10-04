@@ -18,10 +18,10 @@ def load(name, path):
 
 
 @contextlib.contextmanager
-def fixture(root, production):
+def fixture(root, production, fake):
     base_helper = load('v162_base', Path(__file__).with_name('base_fixture.py'))
     browser_module = load('v162_browser', Path(__file__).with_name('browser.py'))
-    with base_helper.fixture(root, production) as f:
+    with base_helper.fixture(root, production, production_setup=True, fake=fake) as f:
         S, conn, ids, base, mods = (f[k] for k in ('S', 'conn', 'ids', 'base', 'mods'))
         API = load('v162_api', mods / 'control_api.py')
         AS = load('v162_assertion', mods / 'control_api_assertion.py')
@@ -48,11 +48,11 @@ def fixture(root, production):
             origin=origin, workflows_repository=ids['repository_uuid'], publication_root=str(f['signer_repo']))
         config_path = base / 'service-api.json'
         config_path.write_text(json.dumps(config)); config_path.chmod(0o600)
-        lock = os.open(str(base / 'authority' / 'authority.lock'), os.O_RDWR | os.O_CREAT, 0o600)
+        lock = os.open(str(f['db'].parent / 'authority.lock'), os.O_RDWR | os.O_CREAT, 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         ingress = SimpleNamespace(activations=SimpleNamespace(S=S), conn=conn, acquirer=acquirer,
             settlement=f['settlement'], inbox=f['inbox'], presenter=f['presenter'])
-        channel = SimpleNamespace(ingress=ingress, requester=('team-service', lambda b: f['sign_as']('team-service', b)))
+        channel = SimpleNamespace(ingress=ingress, requester=('qualification-requester', lambda b: f['sign_as']('qualification-requester', b)))
         service = SA.ServiceApi(config_path, channel, lock, base / 'authority')
         # This is the real service-side call table. The edge holds only this proxy, not the store.
         calls = []
@@ -99,6 +99,8 @@ def fixture(root, production):
             saved = service.credentials.admit(env, command, f['sign_as']('steward', f['AC'].canonical_envelope_bytes(env)))
             challenge = call('POST', '/api/v1/auth/challenge', {}, session=False)[2]
             signed_in = call('POST', '/api/v1/auth/sign-in', browser.get(challenge['challenge'], origin, host), session=False)
+            if 'Set-Cookie' not in signed_in[1]:
+                raise RuntimeError('fixture passkey: ' + str(signed_in[2].get('refusal')))
             sessions[who] = (signed_in[1]['Set-Cookie'].split(';')[0].partition('=')[2], signed_in[2]['csrf_token'])
             return saved, signed_in
         def activate(name, budget=12):

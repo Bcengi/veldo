@@ -1,0 +1,46 @@
+{
+ "schema": "veldo.proof-red/v1",
+ "spec_id": "VELDO-0162",
+ "commit": "59410582",
+ "production": "Unchanged production files in this worktree; current suite and real setup fixture.",
+ "command": [
+  "python3",
+  "scripts/selftest.py",
+  "--suite",
+  "94_veldo_0162_configuration_routes"
+ ],
+ "by_assertion": true,
+ "failed_rows": [
+  "VELDO-0162 team/staffing",
+  "VELDO-0162 team/owner-answer",
+  "VELDO-0162 team/telegram",
+  "VELDO-0162 team/decline",
+  "VELDO-0162 team/other-request",
+  "VELDO-0162 default/staffing",
+  "VELDO-0162 team/setup-requester",
+  "VELDO-0162 team/reproposal",
+  "VELDO-0162 team/consumed",
+  "VELDO-0162 team/application-exception"
+ ],
+ "details": [
+  "VELDO-0162 detail: team/staffing named staffing refusals each carry owner request and write no team",
+  "VELDO-0162 detail: team/owner-answer member proposal waits for one exact request and repeat finds it",
+  "VELDO-0162 detail: team/telegram request exists",
+  "VELDO-0162 detail: team/decline request exists",
+  "VELDO-0162 detail: team/other-request request exists",
+  "VELDO-0162 detail: default/staffing project staffing checked at application and owner request returned",
+  "VELDO-0162 detail: team/setup-requester real setup enrolls narrow qualification and all-project PM; member request opens",
+  "VELDO-0162 detail: team/reproposal initial request exists",
+  "VELDO-0162 detail: team/consumed refused and applied settlements are consumed across publication and reconstruction",
+  "VELDO-0162 detail: team/application-exception fault recorded once, consumed and actual subscriber gets the hint"
+ ],
+ "summary": [
+  "selftest (PARTIAL, 1 of 146 suites): 42 passed, 10 failed in 8.37s"
+ ],
+ "modules": {
+  ".veldo/control_api.py": "61f0285ea67243ab57f963d9278419c5b196f55f5c7c56b5c3d54fe83e23efc3",
+  ".veldo/control_service_api.py": "87aba2b25cc0068168492b4e089ea886130f105881bab07e750540ed0ab84b1e",
+  ".veldo/control_team_routes.py": "b73475fd86d1fcc20bc58e70c100f5903883652615d9cd469e0391f0ec28fa68"
+ },
+ "mutations": "Not executed; reviewer-owned."
+}
