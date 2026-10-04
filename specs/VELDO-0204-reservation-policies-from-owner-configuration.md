@@ -139,12 +139,14 @@ acceptance_criteria:
       from it updated at the next pass; service/pm-assigned has the PM cycle assign a new unit
       in a pass and requires its policy committed and the unit offered in that same pass, never left
       waiting; service/rerun requires a pass with nothing added to
-      send no reservation command. Falsifier: Run provisioning only at the service's start, and the
-      service/added row must fail on the unit left waiting on no_account with missing_ceiling:unit among the
-      passed-over reasons.
+      send no reservation command; service/serve starts control_service serve as its own process on the
+      host's store and configuration and requires its start record's provisioning done with no fault.
+      Falsifier: Run provisioning only at the service's start, and the
+      service/added row must fail on the unit's dispatch refused missing_ceiling:unit and the unit never
+      offered.
     falsified_by: >
-      Run provisioning only at the service's start, and the service/added row must fail on the unit left
-      waiting on no_account with missing_ceiling:unit among the passed-over reasons.
+      Run provisioning only at the service's start, and the service/added row must fail on the unit's
+      dispatch refused missing_ceiling:unit and the unit never offered.
   - id: AC4
     text: >
       Claim: Provisioning is no second writer and no relaxation: every policy goes through
@@ -156,8 +158,9 @@ acceptance_criteria:
       name for its subject, never as unknown_outcome. Each refusal appears in the provisioning answer and
       in the log with its subject, scope and class. Rows: refuse/missing-source admits a unit whose
       project's team was never saved on a store with no default team and requires the named refusal, no
-      unit policy, and that unit's dispatch then left waiting on no_account with missing_ceiling:unit among
-      the passed-over reasons while the other units dispatch; refuse/principal runs provisioning as a
+      unit policy, and that unit's dispatch then refused missing_ceiling:unit by the reservation service
+      (a unit's own refusal, never an account's, so never no_account) and the unit never offered while
+      the other units dispatch; refuse/principal runs provisioning as a
       principal without reservation_service and requires
       every subject refused missing_authority by the writer with nothing written; census/writer requires
       the canonical production callers of Reservations.configure to be control_reservation_policies and
@@ -278,3 +281,10 @@ Second, the loop's PM services cannot be built over the real Telegram ingress (c
 second connection), so the suite gives the loop the in-store channel stand-in suites 92 and 93 use, while
 VELDO-0203's route runs on the real API judge; serve's handing of its lock to open_loop is not driven by a
 row, since serve itself is not run in process.
+
+2026-10-04, review (FIX FIRST, findings 1 and 2): the AC3 falsifier and AC4's refuse/missing-source sentence
+now say the unit's dispatch is refused missing_ceiling:unit, as control_reservations raises it and the
+account pool re-raises it (it is no account refusal, so never no_account); AC1's no_account with
+missing_ceiling:account stands. A service/serve row starts serve as its own process and requires its start
+record's provisioning done, and the finding-204 mutation v204-serve-lock-dropped drops the lock serve hands
+to open_loop and reds it.
