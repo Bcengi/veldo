@@ -24,7 +24,7 @@ def _v190_suite():
         'authentication/membership', 'authentication/delegation', 'authentication/domain', 'authentication/store',
         'authentication/repository', 'authentication/expiry', 'authentication/command-id', 'authentication/operations',
         'replay/identical', 'replay/content-conflict', 'replay/consumed-nonce', 'replay/nonce-binding', 'lock/second-connection',
-        'lock/writer-connection', 'input/malformed', 'service/malformed',
+        'lock/writer-connection', 'input/malformed', 'service/malformed', 'service/non-owner-malformed',
         'format/fake-lines', 'service/saves', 'service/forged', 'service/writer-refusal', 'service/unconfigured', 'install/asset')
     rows = {name: [] for name in names}
 
@@ -68,18 +68,48 @@ else:
 ''')
     fake_capture = (['teardown not reached'], [])
 
-    def malformed(packet, whole=True):
+    def malformed(packet, whole=True, fields=('command', 'envelope')):
         for value in (None, [], ['invalid'], 'invalid', 7, False):
             if whole:
                 yield value
-            for field in ('command', 'envelope'):
+            for field in fields:
                 yield dict(packet, **{field: value})
 
+    def non_owner(h):
+        # This compatibility row also runs against pre-0190 production.
+        row = 'service/non-owner-malformed'
+        root, manager, code, report = journey.host(h, 'non-owner')
+        check(row, 'full setup', code == 0)
+        if code:
+            return
+        config = json.loads((Path(report['home']) / 'config/service.json').read_text())
+        started = manager.start(report['unit'])
+        check(row, 'installed authority started', started[0] == 0)
+        if started[0]:
+            return
+        try:
+            with sqlite3.connect('file:' + str(config['store_path']) + '?mode=ro', uri=True) as read:
+                before = read.execute('SELECT max(seq) FROM journal').fetchone()[0]
+                for packet in malformed({}, whole=False, fields=('command',)):
+                    result = h['service_send'](root, packet).get('result', {})
+                    reason = 'invalid_input:packet'
+                    check(row, '4159d35b fallback refusal: ' + str(result),
+                          result.get('ok') is False and result.get('reason') == reason)
+                    event = json.loads(Path(config['observations']).read_text().splitlines()[-1])
+                    check(row, 'unchanged journal and original refusal observation',
+                          read.execute('SELECT max(seq) FROM journal').fetchone()[0] == before
+                          and event.get('outcome') == 'refused' and event.get('refusal') == reason
+                          and event.get('taxonomy') == 'invalid_input')
+        finally:
+            manager.stop(report['unit'])
+
     def exercise(h):
+        non_owner(h)
         path = h['mods'] / 'control_owner_revisions.py'
         present = path.is_file()
         for row in rows:
-            check(row, 'owner revision entry point exists', present)
+            if row != 'service/non-owner-malformed':
+                check(row, 'owner revision entry point exists', present)
         if not present:
             return
         OR = load('v190_owner', path)
@@ -306,7 +336,7 @@ else:
                     result = h['service_send'](root, packet)
                     check(row, 'socket refusal: ' + str(result), result.get('result', {}).get('reason') == reason)
                     check(row, 'refusal leaves journal unchanged', read.execute('SELECT max(seq) FROM journal').fetchone()[0] == before)
-                for packet in malformed(forged, whole=False):
+                for packet in malformed(forged, whole=False, fields=('envelope',)):
                     result = h['service_send'](root, packet)
                     reason = 'invalid_input:owner_command:packet'
                     check('service/malformed', 'socket named invalid input: ' + str(result),
@@ -356,7 +386,10 @@ else:
         for label, passed in observations:
             if not passed:
                 print('VELDO-0190 ' + row + ' detail: ' + label)
-        expect('VELDO-0190 ' + row, len(observations) > 1 and all(passed for _, passed in observations))
+        passed = len(observations) > 1 and all(passed for _, passed in observations)
+        expect('VELDO-0190 ' + row, passed)
+        if row == 'service/non-owner-malformed':
+            print('VELDO-0190 ' + row + ' compatibility: ' + ('passed' if passed else 'failed'))
 
 
 _v190_suite()

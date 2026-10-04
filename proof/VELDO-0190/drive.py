@@ -68,13 +68,17 @@ def red(commit):
               if line.strip().startswith('SELFTEST FAIL: ' + PREFIX)]
     details = [line.strip() for line in output.splitlines() if line.startswith(PREFIX) and 'detail:' in line]
     by_assertion = 'ran to its end' not in output and 'Traceback (most recent call last)' not in output
-    if proc.returncode != 1 or not by_assertion or failed != [PREFIX + name for name in names]:
-        raise SystemExit('Red proof requires every behavior row to fail once by assertion: ' + output[-2000:])
+    compatibility = 'service/non-owner-malformed'
+    compatible = output.splitlines().count(PREFIX + compatibility + ' compatibility: passed') == 1
+    if (proc.returncode != 1 or not by_assertion or not compatible
+            or failed != [PREFIX + name for name in names if name != compatibility]):
+        raise SystemExit('Red proof requires owner rows red by assertion and base compatibility green: ' + output[-2000:])
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0190', suite=str(suite_path), commit=resolved,
                   tree='git archive %s; production unchanged; current suite, helpers and suite registration overlaid' % resolved,
                   command=command, modules=modules, suite_sha256=sha(ROOT / suite_path),
                   harness_sha256={str(p): sha(ROOT / p) for p in overlays[1:]},
-                  by_assertion=by_assertion, rows=[[name, False] for name in failed], failed_rows=failed,
+                  by_assertion=by_assertion, rows=[[PREFIX + name, name == compatibility] for name in names],
+                  failed_rows=failed, compatibility_rows=[PREFIX + compatibility],
                   details=details, seconds=round(time.monotonic() - started, 3), exit_code=proc.returncode,
                   log_sha256=hashlib.sha256(output.encode()).hexdigest())
     name = 'red-at-%s.json' % commit

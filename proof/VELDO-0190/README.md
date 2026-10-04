@@ -145,3 +145,22 @@ checks.json retains the earlier implementation runs and records the new runs
 under review_fixes, with exact environment and log hashes. No full selftest,
 mutation runner or gate was run. The 0127 proof remains untouched; the reviewer
 still owns mutation execution and the merged-tree gate.
+
+## Owner route scope correction at d04ed684
+
+Service.apply no longer calls packet_problem before selecting a route. On the
+owner route it reads the envelope principal only from a dict, then delegates
+packet validation to OwnerRevisions.apply. Other routes retain their original
+refusal paths. input/malformed retains direct packet, command and envelope
+coverage; service/malformed sends owner-operation commands with non-dict
+envelopes. service/non-owner-malformed sends non-dict commands through an
+installed service and requires the original invalid_input:packet refusal,
+unchanged journal and matching observation.
+
+The refreshed 4159d35b record has 34 owner rows red by assertion and the new
+compatibility row green. The driver requires that split explicitly. The
+v190-packet-shape-unchecked mutation now bypasses packet_problem inside
+OwnerRevisions.apply, targeting both malformed-owner rows. The signer mutation
+anchor follows the guarded principal read. All 15 mutation anchors, hashes and
+diffs are refreshed without execution. Requested scoped regression checks are
+pending; the reviewer retains mutation execution and the merged-tree gate.

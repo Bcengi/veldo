@@ -1,5 +1,5 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -1238 +1238 @@
--                observation['principal'] = (packet.get('envelope') or {}).get('principal')
+@@ -1236 +1236 @@
+-                observation['principal'] = envelope.get('principal') if isinstance(envelope, dict) else None
 +                observation['principal'] = command.get('principal')

@@ -51,8 +51,10 @@ observability:
     (invalid_input:owner_command:operation), a command id already committed with other signed content
     (stale_subject:owner_command:command_content_conflict), and a caller that does not hold the store's lock
     (missing_authority:not_the_authority, control_api_authority's name). A writer's own refusal is passed
-    through unchanged. A packet, command or envelope that is not a mapping is refused before authority
-    or authentication work (invalid_input:owner_command:packet).
+    through unchanged. OwnerRevisions refuses a packet, command or envelope that is not a mapping before
+    authority or authentication work (invalid_input:owner_command:packet). The service applies this check
+    only on the owner route. A non-mapping command cannot identify an owner operation and retains its
+    existing route refusal (invalid_input:packet for the generic mutation fallback).
 acceptance_criteria:
   - id: AC1
     text: >

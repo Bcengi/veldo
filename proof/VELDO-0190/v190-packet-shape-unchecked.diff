@@ -1,6 +1,5 @@
 --- a/.veldo/control_owner_revisions.py
 +++ b/.veldo/control_owner_revisions.py
-@@ -35,2 +35 @@
--    if (not isinstance(packet, dict)
--            or any(field in packet and not isinstance(packet[field], dict) for field in ('command', 'envelope'))):
-+    if False:
+@@ -51 +51 @@
+-        problem = packet_problem(packet)
++        problem = None  # defect: owner packet shape unchecked

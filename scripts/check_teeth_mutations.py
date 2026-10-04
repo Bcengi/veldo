@@ -10375,8 +10375,8 @@ def cases():
         '        if self.configurations.conn is not self.conn or self.team_routes.conn is not self.conn:\n',
         '        if False:\n', ['lock/writer-connection'], ())
     add(190, 'v190-packet-shape-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
-        "    if (not isinstance(packet, dict)\n            or any(field in packet and not isinstance(packet[field], dict) for field in ('command', 'envelope'))):\n",
-        '    if False:\n', ['input/malformed', 'service/malformed'], ())
+        '        problem = packet_problem(packet)\n',
+        '        problem = None  # defect: owner packet shape unchecked\n', ['input/malformed', 'service/malformed'], ())
     add(190, 'v190-command-id-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
         " or envelope.get('command_id') != cid:",
         ':', ['authentication/command-id'], ())
@@ -10393,7 +10393,7 @@ def cases():
         "        data['assertion_digest'] = params['assertion_digest']\n",
         '        pass\n', ['offline/saves'], ())
     add(190, 'v190-service-signer-lost', '95_veldo_0190_owner_revisions.py', 'control_service.py',
-        "                observation['principal'] = (packet.get('envelope') or {}).get('principal')\n",
+        "                observation['principal'] = envelope.get('principal') if isinstance(envelope, dict) else None\n",
         "                observation['principal'] = command.get('principal')\n", ['service/forged'], ())
     add(190, 'v190-writer-refusal-renamed', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
         '            answer = dict(ok=False, reason=error.code, result=None)\n',

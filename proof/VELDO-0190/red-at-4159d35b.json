@@ -7,6 +7,9 @@
   "95_veldo_0190_owner_revisions"
  ],
  "commit": "4159d35b625ac00c3e24e6cbe012b72f099fbba9",
+ "compatibility_rows": [
+  "VELDO-0190 service/non-owner-malformed"
+ ],
  "details": [
   "VELDO-0190 offline/saves detail: owner revision entry point exists",
   "VELDO-0190 writer/configuration-stale detail: owner revision entry point exists",
@@ -84,7 +87,7 @@
   "proof/VELDO-0190/fixture.py": "4a265bfa2f6fe49ec854258e9332d006e49f38a8f43ca37603d81f70d44a07df",
   "proof/VELDO-0190/journey.py": "707b943fdc0107186c4cb4f7f7b4de09b93519805211a1def9b4aa786fbd5a73"
  },
- "log_sha256": "4604a81c10df199d3f7cedec27e6046fd24eeb9cbf7d404dd5136ee62636f3da",
+ "log_sha256": "777b5ae4d6e9a7263c6bb79a774709b0f15bc0d424735bb364f645a501388f8e",
  "modules": {
   ".veldo/control_agent_config.py": {
    "at_commit": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
@@ -100,7 +103,7 @@
   },
   ".veldo/control_service.py": {
    "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
-   "now": "aff0060176d35feac11a2b3769758f5dac94ff9ae5cfcb515b57b86d9a9491cd"
+   "now": "0b7c24f1b4484195de70702b1a52d5297b76318a1d043f7e70c435a3d4b6ac37"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "641f644acdfef6548466f1cb6e06daa9aa0e0299978fda723bfa6e4f9596af58",
@@ -221,6 +224,10 @@
    false
   ],
   [
+   "VELDO-0190 service/non-owner-malformed",
+   true
+  ],
+  [
    "VELDO-0190 format/fake-lines",
    false
   ],
@@ -246,9 +253,9 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 1.289,
+ "seconds": 4.895,
  "spec_id": "VELDO-0190",
  "suite": "scripts/suites/95_veldo_0190_owner_revisions.py",
- "suite_sha256": "6830d84b704a048854d86020b4597ddf85616b8db16da9d2cdd893f3254a1f85",
+ "suite_sha256": "ac8d43800fe933c71eb7866770bc445e5ebda7442f3842a0a6e11db754fef60b",
  "tree": "git archive 4159d35b625ac00c3e24e6cbe012b72f099fbba9; production unchanged; current suite, helpers and suite registration overlaid"
 }

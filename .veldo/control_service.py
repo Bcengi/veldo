@@ -1209,7 +1209,6 @@ class Service:
     # -- the packets -------------------------------------------------------------------------
 
     def apply(self, packet, coordinates):
-        problem = OR.packet_problem(packet)
         repository = coordinates.get('repository_uuid')
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
@@ -1222,8 +1221,6 @@ class Service:
             observation.update(operation=SA.AS.CALL, call=packet.get('call'))
         before = self.watermark()
         try:
-            if problem:
-                raise Refused(problem)
             if repository not in self.repositories:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
@@ -1235,7 +1232,8 @@ class Service:
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
             elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:
-                observation['principal'] = (packet.get('envelope') or {}).get('principal')
+                envelope = packet.get('envelope')
+                observation['principal'] = envelope.get('principal') if isinstance(envelope, dict) else None
                 result = self.owner_revision(packet, observation)
             elif command.get('operation') in SA.CR.OPERATIONS and 'envelope' in packet:
                 result = self.api_credential(packet, observation)
