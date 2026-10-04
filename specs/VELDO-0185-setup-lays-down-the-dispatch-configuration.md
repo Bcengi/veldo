@@ -126,7 +126,17 @@ acceptance_criteria:
     text: >
       Claim: After setup and the owner's one-time login of each account, the installed factory dispatches
       build and review work to both engines on every registered account, and an account not yet logged in
-      takes no work while the others carry on. Set and completeness: Setup's account step runs each
+      takes no work while the others carry on. Set and completeness: After AC2's reservation_service
+      enrollment of `authority`, and never before it, setup runs VELDO-0204's control_reservation_policies
+      on its own connection under its lock, so every account, project and engineering unit has its
+      reservation policy before the service starts; the running service provisions those added later.
+      Before that call, setup registers into the store, on the same connection under the same lock, each
+      account the host's account registry lists (accounts.py `list_accounts`) that the store holds no
+      record of, through control_accounts `Accounts.register` unchanged by the owner's signed command as
+      setup sends its other owner commands, with the `account`, `provider`, `label` and `profiles` fields
+      accounts.py `registration` prints for this host, concurrency 1 and command id
+      `register/<account>`, as suite 83 registers them; an account the store already holds is not
+      registered again. Setup's account step runs each
       registered account's engine's own login status in that account's profile environment (control_accounts
       `login_environment`): Claude Code's `auth status`, whose JSON output must report `loggedIn` true with the claude.ai subscription as its `authMethod`, the
       command and both fields read from 2.1.281 and recorded in its qualification record, and Codex's
@@ -139,11 +149,16 @@ acceptance_criteria:
       reviewed through the installed service and receiver alone, and over successive units every account
       runs at least one build or review, the Codex account among them. The suite uses fake engines that print
       the installed CLIs' output shape and login status (VELDO-0172), with one Claude Code account logged
-      out. Falsifier: Write the receiver's adapters without `codex`, and the every-account row must fail on
-      the Codex account with no run.
+      out; its fresh/registered row sets up a host whose accounts exist only in the host's account registry
+      and requires after setup one store account record per listed account, with the fields registration
+      prints, and that account's VELDO-0204 policy. Falsifier: Write the receiver's adapters without
+      `codex`, and the every-account row must fail on the Codex account with no run; leave the
+      registration step out of setup, and the fresh/registered row must fail on the missing store account
+      record.
     falsified_by: >
       Write the receiver's adapters without `codex`, and the every-account row must fail on the Codex
-      account with no run.
+      account with no run; leave the registration step out of setup, and the fresh/registered row must
+      fail on the missing store account record.
 required_evidence: [unit, integration]
 rollback: >
   Reinstall the service without the work configuration, so the loop stops offering work, and revoke the two
@@ -201,7 +216,8 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 ## History
 
 2026-10-04: depends on VELDO-0203, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
-2026-10-04: depends on VELDO-0204, the provisioning of every account, project and engineering unit reservation policy, which AC4's dispatch consumes.
+2026-10-04: depends on VELDO-0204, the provisioning of every account, project and engineering unit reservation policy, which AC4's dispatch consumes; setup calls it after AC2's reservation_service enrollment of `authority`, whose absence the reservation writer refuses as missing_authority.
+2026-10-04, VELDO-0204 review: no production code writes the store's account records, so AC4's setup now registers each account of the host's account registry through control_accounts Accounts.register with the fields accounts.py registration prints, before VELDO-0204's provisioning runs; the fresh/registered row and its falsifier are added.
 
 2026-10-04, preflight on build-veldo-0185b at f63d86e5: the VELDO-0162
 capability and default-team revision writers now exist, but their authenticated

@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W151
 plan_revision: 4
-depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171]
+depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0139, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0171]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -54,8 +54,10 @@ acceptance_criteria:
       engineering unit a VELDO-0036 reservation policy derived from configuration the owner already
       controls, and a unit then dispatches with no other policy written. Set and completeness: A new
       module, control_reservation_policies, reads the store on the caller's connection and derives one
-      policy per subject. Project: for every project record (control_project, VELDO-0076, any state), its
-      signed coordination budget, each VELDO-0036 kind it states (capacity, invocations, wall_seconds, and
+      policy per subject: an account's subject is its account id, a project's its name (the value a unit
+      record's project names), a unit's its unit id; each stored policy is read by its policy entity id,
+      never by loading every reservation record. Project: for every project record (control_project,
+      VELDO-0076, any state), its signed coordination budget, each VELDO-0036 kind it states (capacity, invocations, wall_seconds, and
       tokens or messages when stated), owner_minutes left out as no reservation kind. Account: for every
       account record (control_accounts, VELDO-0062, any status), capacity, invocations and wall_seconds
       each the sum of that kind over every project record's coordination budget. Engineering unit: for
@@ -63,8 +65,9 @@ acceptance_criteria:
       team is its project's team record at its current revision (control_team read, VELDO-0089), or the
       default team at its head revision when the project has none (VELDO-0162 read_default); its build
       role is the role its team assignment names (VELDO-0089 assign), implementation when it has none, and
-      its review role independent_review; its caps are, for each kind both roles' budgets state, the sum
-      of the two. Each derived policy is written by Reservations.configure, unchanged, built as
+      its review role independent_review; its caps are, for each VELDO-0036 kind (capacity, invocations,
+      wall_seconds, tokens, messages) both roles' budgets state, the sum of the two, owner_minutes left out
+      as for a project. Each derived policy is written by Reservations.configure, unchanged, built as
       control_service builds a line's Reservations (this store's domain, a served repository, the service
       principal and its journal signer, service_authority), with command id
       reservation-policy/<scope>/<subject>/<the policy's current version, 0 when absent>. The suite lays a
@@ -87,8 +90,8 @@ acceptance_criteria:
       registered or a unit that does not exist. Set and completeness: A stored policy matches when its
       caps equal the derived caps exactly, the same kinds with the same values; its windows (VELDO-0036's
       window action) are not compared, and configure keeps them. A matching subject sends no command. A
-      subject with a stored policy and no source record (no account, project or execution_unit record of
-      that id) is left as it is: nothing deletes a policy. Subjects are reconciled independently, so one
+      subject with a stored policy and no source record (no account, project or execution_unit record for
+      that subject) is left as it is: nothing deletes a policy. Subjects are reconciled independently, so one
       subject's refusal leaves every other subject's outcome as it would be. Rows: rerun/unchanged runs
       provisioning a second time and requires every subject unchanged and the journal head unchanged;
       source/project activates a third project and requires every account policy updated to the new sums
@@ -110,27 +113,38 @@ acceptance_criteria:
     text: >
       Claim: Provisioning obeys VELDO-0171's lock rule: it runs only on the connection of the store's lock
       holder, offline on setup's own connection when no service runs and inside the running service when
-      it does, which provisions accounts, projects and units added while it runs before it offers them
-      work. Set and completeness: control_reservation_policies takes the caller's lock descriptor and
+      it does, which provisions at its start the accounts and projects added while it was stopped, and the
+      units admitted and team revisions saved while it runs before it offers those units work. Set and
+      completeness: control_reservation_policies takes the caller's lock descriptor and
       refuses first, writing nothing, unless control_api_authority's authority_problem finds it holds
       authority.lock beside the store its connection opened, and the Reservations it writes through uses
       that exact connection (missing_authority:not_the_authority). Offline, a caller holding the lock
       (VELDO-0185's setup after control_factory_setup take_lock; the suite here) calls the module on its
-      own connection. Online, control_service's FactoryLoop runs provisioning with the service's lock on
-      the service's connection at its start and at the beginning of every loop pass, before any line runs,
-      through its first line's Reservations made current by that line's activate; the pass report carries
-      the provisioning outcome, and a provisioning fault is a pass fault by name, never the loop's end. No
+      own connection. Online, serve hands the lock descriptor it holds to the loop it opens, and
+      control_service's FactoryLoop runs provisioning with that lock on
+      the service's connection at its start, at the beginning of every loop pass before any line runs, and
+      again inside each line's run after its PM cycles pass and before it offers any unit, so a unit the PM
+      cycle assigns in a pass has its policy before that pass offers it; each run goes through the first
+      line's Reservations made current by that line's activate; the pass report carries
+      the provisioning outcome, and a provisioning fault is a pass fault by name, never the loop's end; at
+      start it is logged by name in the start record and the loop still opens. No
       service command route is added: what a running service provisions it provisions itself. The module
       is an installed runtime asset (init_scaffold). Rows: lock/second-connection calls provisioning on a
       second connection while the service fixture holds the lock and requires not_the_authority with the
-      journal head unchanged; service/added registers an account and admits a unit through the running
-      service after its start and requires both policies committed by the service at the next pass and the
-      unit dispatched at that pass on the new account; service/rerun requires a pass with nothing added to
+      journal head unchanged; service/start registers an account and activates a project while the
+      service is stopped, starts it and requires both policies, and the account sums, committed at start;
+      service/added admits a unit through a service route after its start and requires its policy
+      committed at the pass that admission wakes and the unit dispatched at that pass; service/team saves
+      a default team revision through VELDO-0203's service route and requires exactly the units derived
+      from it updated at the next pass; service/pm-assigned has the PM cycle assign a new unit
+      in a pass and requires its policy committed and the unit offered in that same pass, never left
+      waiting; service/rerun requires a pass with nothing added to
       send no reservation command. Falsifier: Run provisioning only at the service's start, and the
-      service/added row must fail on the unit refused missing_ceiling:unit.
+      service/added row must fail on the unit left waiting on no_account with missing_ceiling:unit among the
+      passed-over reasons.
     falsified_by: >
-      Run provisioning only at the service's start, and the service/added row must fail on the unit
-      refused missing_ceiling:unit.
+      Run provisioning only at the service's start, and the service/added row must fail on the unit left
+      waiting on no_account with missing_ceiling:unit among the passed-over reasons.
   - id: AC4
     text: >
       Claim: Provisioning is no second writer and no relaxation: every policy goes through
@@ -142,8 +156,9 @@ acceptance_criteria:
       name for its subject, never as unknown_outcome. Each refusal appears in the provisioning answer and
       in the log with its subject, scope and class. Rows: refuse/missing-source admits a unit whose
       project's team was never saved on a store with no default team and requires the named refusal, no
-      unit policy, and that unit's dispatch then refused missing_ceiling:unit while the other units
-      dispatch; refuse/principal runs provisioning as a principal without reservation_service and requires
+      unit policy, and that unit's dispatch then left waiting on no_account with missing_ceiling:unit among
+      the passed-over reasons while the other units dispatch; refuse/principal runs provisioning as a
+      principal without reservation_service and requires
       every subject refused missing_authority by the writer with nothing written; census/writer requires
       the canonical production callers of Reservations.configure to be control_reservation_policies and
       control_workflow_cycle_pm and no production code to write a subscription_reservation policy entity
@@ -164,8 +179,9 @@ rollback: >
 
 The owner sets up a factory on a fresh host, logs in each account, and work dispatches: every account,
 project and unit has the reservation ceiling VELDO-0036 requires, taken from the budgets the owner already
-signed, and an account registered, a project activated or a unit admitted later is covered at the
-next pass with nothing done by hand.
+signed; an account registered or a project activated while the service is stopped is covered when it
+starts, and a unit admitted or a team revised while it runs is covered at the next pass, with nothing
+done by hand.
 
 ## Context
 
@@ -176,7 +192,9 @@ policy, each with capacity, invocations and wall_seconds, and refuses missing_ce
 one; the only production writer is Reservations.configure, and its only production caller is the PM
 cycle's own unit policy. Account registration, project activation and the team writers store their
 budgets but write no policy, and suite 83's fixture constructor writes the policies the factory loop
-needs. This specification adds the missing provisioning and nothing else; VELDO-0185 AC4's dispatch
+needs. Account records themselves have no production writer in this checkout (control_accounts
+register has only suite callers); this specification provisions every account record that exists and
+registers none. This specification adds the missing provisioning and nothing else; VELDO-0185 AC4's dispatch
 consumes it, its setup calling the module on its own connection after AC2's reservation_service
 enrollment of the `authority` principal.
 
@@ -190,9 +208,9 @@ its refusal names; a service command route for reservation configuration.
 ## What the reviewer judges
 
 - Normal use: setup provisions every account, project and unit on its own connection, the owner starts
-  the service, and the first unit dispatches; later the owner registers an account, activates a project,
-  amends a team or admits a unit, and the next loop pass writes exactly the policies that changed, while a pass
-  with nothing changed writes nothing.
+  the service, and the first unit dispatches; later the owner amends a team or admits a unit and the next
+  loop pass writes exactly the policies that changed, and an account or project added while the service
+  is stopped is provisioned at its start, while a pass with nothing changed writes nothing.
 - Threat model: a ceiling taken from a number no owner set, or larger than the budget it derives from; a
   second policy writer or a policy entity written around the writer; a missing source answered with a
   default ceiling, or a missing_ceiling check bypassed; a policy for an account that is not registered or
@@ -207,13 +225,21 @@ its refusal names; a service command route for reservation configuration.
 
 Where each value comes from. A project's ceiling is its coordination budget, which control_project
 already names as the reservation service's units and which the owner signs at activation; no command
-changes it afterwards. A unit's ceiling is the sum of the budgets of the two roles that dispatch it, from
-the team the Line itself reads for those dispatches (control_workflow_cycle_pm engineering_role), just as
-the PM cycle takes its unit policy from its role's budget; a unit that reworks or takes several reviews
+changes it afterwards. A unit's ceiling is the sum of the budgets of the two roles that dispatch it, just
+as the PM cycle takes its unit policy from its role's budget. For a unit with a team assignment that is
+the team the Line reads (control_workflow_cycle_pm engineering_role: its project's team, its assigned
+role and independent_review). For a unit with none it is the team VELDO-0188 staffs the Line from, the
+project's team or else the default team; until VELDO-0188 lands, the served repository's Line takes such
+a unit's roles from the work configuration VELDO-0185 AC1 writes from the default team, which is the same
+team for a project without its own; a unit that reworks or takes several reviews
 draws on that one sum and is refused usage_cap:unit when it is spent, and the owner raises the role
 budgets in the role form, which the next pass carries into the policy. Engine qualification data
 (VELDO-0127, VELDO-0160) is not used: it records engine facts shipped with a release, such as the
-windows an engine reports, not owner configuration.
+windows an engine reports, not owner configuration. A project budget that states tokens or messages
+makes VELDO-0036 refuse unknown_allowance to a second invocation in that project while one is unsettled,
+so its invocations run one at a time. A changed source rewrites only the caps: the windows stay, the
+worker and invocation records already reserved keep their charges, and a unit already past a lowered
+cap is refused usage_cap:unit at its next reservation.
 
 The gap. No owner-controlled value states a lifetime allowance for an account, and VELDO-0036 requires
 one. An owner limits an account by its registered concurrency, enforced by the account pool (VELDO-0160),
@@ -235,3 +261,8 @@ the earlier command.
 
 2026-10-04: new specification for the third VELDO-0185 blocker, recorded on build-veldo-0185c at
 a3c3940d, written and marked ready at the owner's request; VELDO-0185 now depends on it.
+
+2026-10-04, spec review (FIX FIRST, findings 1 to 11): provisioning also runs inside each line's run after
+its PM cycles pass; accounts and projects are covered at service start, units and team revisions at the
+next pass; unit caps leave out owner_minutes; subjects and policy reads are named; the lock reaches the
+loop and a start fault leaves it open; depends_on adds VELDO-0139.
