@@ -1,0 +1,70 @@
+{
+  "schema": "veldo.merge_seam_audit/v1",
+  "spec_id": "VELDO-0170",
+  "merge_commit": "e38c20ec79ba2f978edfd17f3eb5ccf0fea11361",
+  "parents": [
+    "9714ee41",
+    "298d0fd2"
+  ],
+  "scope": "Partial suite checks and source audit only; no gate or landing certification.",
+  "conflicts": {
+    "scripts/suites/62_veldo_0039_dispatch.py": "Keep generated host trust and the coalesced transport fixture. AST comparison confirms every assert and expect expression from both parents remains.",
+    "scripts/suites/manifest.json": "Union of suite entries, retaining every name from both parents.",
+    "scripts/suites/requires.json": "Regenerated with scripts/run_scope.py; 146 runnable suites."
+  },
+  "main_changed_seam_files": [
+    ".veldo/control_eligibility.py",
+    ".veldo/control_factory_setup.py",
+    ".veldo/control_landing_station.py",
+    ".veldo/control_launch.py",
+    ".veldo/control_project.py",
+    ".veldo/control_service.py",
+    ".veldo/init_scaffold.py",
+    ".veldo/lander.py",
+    "engine/.veldo/control_eligibility.py",
+    "engine/.veldo/control_factory_setup.py",
+    "engine/.veldo/control_landing_station.py",
+    "engine/.veldo/control_launch.py",
+    "engine/.veldo/control_project.py",
+    "engine/.veldo/control_service.py",
+    "engine/.veldo/init_scaffold.py",
+    "engine/.veldo/lander.py",
+    "proof/VELDO-0088/setup_fixture.py",
+    "scripts/check_teeth_mutations.py",
+    "scripts/suites/62_veldo_0039_dispatch.py",
+    "scripts/suites/63_veldo_0040_containment.py",
+    "scripts/suites/69_veldo_0133_dispositions.py",
+    "scripts/suites/71_veldo_0130_api.py",
+    "scripts/suites/73_veldo_0078_backlog.py",
+    "scripts/suites/82_veldo_0085_decomposition.py",
+    "scripts/suites/84_veldo_0169_project_handouts.py",
+    "scripts/suites/86_veldo_0148_re_land.py",
+    "scripts/suites/92_veldo_0088_pm_cycles.py",
+    "scripts/suites/93_veldo_0152_intake_routes.py",
+    "scripts/suites/support/v73_authority.py"
+  ],
+  "source_audit": [
+    "Searched host_trust, settlement_trust, receiver configuration writers, Receiver construction, launch invocation, factory setup repair, service status and scaffold registration across engine, repository copies, suites and proof helpers; intersected with files changed on main since f1e1abb9.",
+    "control_service.layout is the production receiver configuration writer and supplies the absolute host trust path. Factory setup and the upgrade render this same layout; the 0170 repair still owns adding missing trust after read-only validation.",
+    "The 0088 PM enrollment adds an authority-store principal without changing receiver layout. New PM and intake journeys use the service Line and its installed receiver; their direct suite fixtures required generated host trust.",
+    "The 0148 land station consumes service eligibility and installed receivers; its new launch transport, containment and heartbeat behavior is disjoint from the pre-acceptance trust check.",
+    "0151 role assignments and 0152 intake route through the same Runner and service Line. Their production code adds no receiver configuration lacking trust.",
+    "0173 tool registry uses an existing launch fixture already given explicit host trust by 0170.",
+    "0170 installation-only fakes come from proof/VELDO-0186/fixtures.py, which embeds proof/VELDO-0172/fake_formats.py. The suite now calls conform_formats.conform_fake with locals at teardown. The inert fakes emit no protocol events. Existing behavioral assertions remain.",
+    "All six affected engine modules remain byte-identical to their repository copies."
+  ],
+  "seam_fixes": [
+    "scripts/suites/92_veldo_0088_pm_cycles.py",
+    "scripts/suites/93_veldo_0152_intake_routes.py"
+  ],
+  "owner_recapture_required": [
+    "proof/VELDO-0127/claude-live.json",
+    "proof/VELDO-0127/codex-live.json",
+    "proof/VELDO-0127/codex-direct-loopback.json",
+    "proof/VELDO-0127/codex-loopback.json",
+    "proof/VELDO-0127/resources-gpt-5.5-none.json",
+    "proof/VELDO-0127/resources-gpt-5.5-selected.json",
+    "proof/VELDO-0127/resources-gpt-6-astra-none.json",
+    "proof/VELDO-0127/resources-gpt-6-astra-selected.json"
+  ]
+}

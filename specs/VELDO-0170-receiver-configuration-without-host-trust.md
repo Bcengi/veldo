@@ -43,6 +43,8 @@ footprint:
   - "scripts/suites/85_veldo_0158_credential_delivery.py"
   - "scripts/suites/70_veldo_0069_bindings.py"
   - "scripts/suites/*_veldo_0171_*.py"
+  - "scripts/suites/92_veldo_0088_pm_cycles.py"
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -188,3 +190,11 @@ The comparison proof now perturbs principal, workspace, store and journal_key
 separately, each with a named no-write refusal assertion and its own registered
 finding-170 mutation. Suite 87 passes all eleven specification rows alone;
 mutation execution remains reserved to the reviewer.
+
+2026-10-04: merged main at 298d0fd2. Both suite 62 fixture additions and all
+suite registrations are retained, with requires regenerated. The footprint adds the
+0088 coordination and 0152 intake suites because their new receiver constructors
+also need explicit generated host trust. Their behavioral assertions are unchanged.
+The 0170 installation fake still uses the shared 0172 constructor and now passes
+its local fixture context directly to conformance at teardown. Live 0127 captures
+are left for the owner to refresh with real logins.
