@@ -390,12 +390,12 @@ else:
                 EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
                 'api-edge', lambda b: f['sign_as']('api-edge', b))
             S.declare_owners(conn, IN.OWNER,
-                kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD,),
-                       IN.QUESTION_KIND: (IN.RECORD, IN.ASKED)}, module=IN.__file__)
+                kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD, IN.RT.ROUTE),
+                       IN.QUESTION_KIND: (IN.RECORD, IN.ASKED, IN.RT.ROUTE)}, module=IN.__file__)
             legacy_owners = [row for row in S.entity_owners(conn) if row[2] == IN.OWNER]
             intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory', 'bcengi'],
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
-            check('route/legacy-owner', 'existing writer declarations survive route attachment',
+            check('route/legacy-owner', '0152 writer declarations survive route attachment',
                   [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
             for channel in channels:
                 result = send(channel, 'fix the login bug')

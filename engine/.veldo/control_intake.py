@@ -188,8 +188,17 @@ class Intake(RT.Routes):
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self._adapters = {'telegram_message': self._telegram, 'api_request': self._api}
-        store.declare_owners(conn, OWNER, kinds={SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD,),
-                                                 QUESTION_KIND: (RECORD, ASKED)}, module=__file__)
+        kinds = {SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD,), QUESTION_KIND: (RECORD, ASKED)}
+        held = {row[1]: set(row[3]) for row in store.entity_owners(conn)
+                if row[0] == 'kind' and row[2] == OWNER}
+        # Also retain the exact declaration of hosts that already installed 0152.
+        routed = {SOURCE_KIND: (RECORD,), PROPOSAL_KIND: (RECORD, RT.ROUTE),
+                  QUESTION_KIND: (RECORD, ASKED, RT.ROUTE)}
+        if all(held.get(kind) == set(commands) for kind, commands in routed.items()):
+            kinds = routed
+        store.declare_owners(conn, OWNER, kinds=kinds, module=__file__)
+        if kinds is routed:
+            conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
         conn.command_registry[RECORD] = {'transaction_transition': self._record_transition, 'writes': WRITES}
         conn.command_registry[ASKED] = {'transaction_transition': self._asked_transition, 'writes': WRITES}
 
