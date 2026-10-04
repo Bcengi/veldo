@@ -110,6 +110,17 @@ station again on another account from the same commit, or one ordinary decision 
 in the VELDO-0064 inbox, which this service also serves (an assignment command packet), and nothing until his
 answer admits. With no work configuration nothing in the service dispatches.
 
+THE LAND STATION (VELDO-0148). A repository whose work configuration names `land` gets a
+control_landing_station.LandStation on the service's connection, and a unit that has landed through it takes its
+next station from its latest land dispatch: a land whose publication was refused because another push moved the
+trunk (stale-subject at the listing, trunk-moved after it) is followed by exactly one new land dispatch that
+re-merges on a watermark fetched now, re-gates and makes a new compare-and-swap, with nothing ever forced; a
+re-merge that conflicts sends the unit back to its builder as a new build dispatch told to merge the new trunk,
+reviewed again once it completes; a re-land whose publication lacks only a grant for the re-merged tree asks the
+project's owner once, and his grant records the approval bound to exactly that tree and offers the land again.
+A land that landed, failed or ended unknown is followed by nothing. Each land dispatch runs to its end inside the
+pass, and one whose end owes a next station wakes the next pass as a run's end.
+
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
 workers never write directly: outside the home and temporary directories. It is judged as named: a
@@ -176,6 +187,8 @@ API_SERVICE = 'api-service.json'
 I = _organ('control_assignment')
 ENT = _organ('entity_contract')
 LIM = _organ('control_account_limit')
+# VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
+LS = _organ('control_landing_station')
 WORK = 'work.json'
 
 # The store's own generic commands, taken before any service registers one of its own on this module
@@ -199,6 +212,9 @@ NEXT_STATION = {'build': 'review'}
 ASK_KIND = 'account_limit_rerun'
 ASK_CHOICES = ('rerun', 'stop')
 ASK_SECONDS = 7 * 86400
+# VELDO-0148: the question a land awaiting a fresh grant for its re-merged tree raises.
+GRANT_KIND = 'land_approval'
+GRANT_CHOICES = ('grant', 'stop')
 ACCEPT_SECONDS = 0.25
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
@@ -287,7 +303,11 @@ class _Loads:
     by a string constant in the expression, or by a variable EVERY binding of which, anywhere in the
     module, is a plain assignment naming a file; a variable bound to a file in one place and to anything
     else in another names nothing for certain. A load site whose file this reading cannot name for
-    certain, or a loader helper used other than by a call, is kept as unresolved."""
+    certain, or a loader helper used other than by a call, is kept as unresolved. A module may declare, in a
+    module-level EXTERNAL_LOADERS tuple of names, its own loader helpers that load a file from outside every
+    installed directory by design (VELDO-0148: control_verification's _policy_main, which a separate process of
+    its own runs over the trusted installation's policy_check.py); their calls name no module of the fixed
+    executable and are not unresolved."""
 
     def __init__(self, path):
         self.name = path.name
@@ -314,6 +334,12 @@ class _Loads:
             elif isinstance(node, ast.ExceptHandler) and node.name:
                 bindings.setdefault(node.name, []).append(set())
         self.bound = {name: set().union(*found) for name, found in bindings.items() if all(found)}
+        self.external = set()
+        for node in self.tree.body:
+            if (isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+                    and node.targets[0].id == 'EXTERNAL_LOADERS' and isinstance(node.value, (ast.Tuple, ast.List))):
+                self.external |= {e.value for e in node.value.elts
+                                  if isinstance(e, ast.Constant) and isinstance(e.value, str)}
         self.mixed = {name for name, found in bindings.items() if any(found) and not all(found)}
         self.helpers, self.loads, self.unresolved, self.calls = {}, set(), [], []
         for call in (node for node in ast.walk(self.tree) if isinstance(node, ast.Call)):
@@ -426,6 +452,9 @@ class _Loads:
             target, args = call.func, list(call.args)
             if _callee(call) == 'partial' and args:
                 target, args = args[0], args[1:]
+            if isinstance(target, ast.Name) and target.id in self.external and target.id in self.helpers:
+                accounted.add(id(target))
+                continue
             options = candidates(target)
             if not options:
                 continue
@@ -761,7 +790,8 @@ def _role_problem(role, adapters):
 def installable_work(path, repositories, adapters):
     """The bytes of a VELDO-0154 work configuration this installation may run, or Refused by name. It is
     {schema: WORK_SCHEMA, repositories: {repository: {builder: role, reviewers: [role, ...]}}} for repositories
-    this instance serves, every role dispatchable (_role_problem)."""
+    this instance serves, every role dispatchable (_role_problem); a repository whose units the loop lands also
+    names its land station's configuration, `land` (VELDO-0148, control_landing_station.config_problem)."""
     try:
         data = Path(path).read_bytes()
         work = json.loads(data)
@@ -773,9 +803,13 @@ def installable_work(path, repositories, adapters):
     for repository, line in sorted(work['repositories'].items()):
         if repository not in repositories:
             raise Refused('invalid_input:work:repository', repository)
-        if (not isinstance(line, dict) or set(line) != {'builder', 'reviewers'} or not isinstance(line['reviewers'], list)
-                or not line['reviewers']):
+        if (not isinstance(line, dict) or set(line) - {'land'} != {'builder', 'reviewers'}
+                or not isinstance(line['reviewers'], list) or not line['reviewers']):
             raise Refused('invalid_input:work:roles', '%s names one builder and its reviewers' % repository)
+        # VELDO-0148: the land station's configuration, when the repository lands through the loop.
+        problem = LS.config_problem(line['land']) if 'land' in line else None
+        if problem:
+            raise Refused('invalid_input:work:land:' + problem, repository)
         for role in [line['builder']] + line['reviewers']:
             problem = _role_problem(role, adapters)
             if problem:
@@ -1436,7 +1470,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') in ('channel', 'api', 'loop', 'ownership'):
+        if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
@@ -1527,6 +1561,13 @@ class Line:
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
                                runs=L.runs_root(receiver), profile=receiver.get('profile'))
+        # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
+        # of a unit its own land dispatch on the service's connection, written as the service's principal.
+        self.station = LS.LandStation(
+            S, service.conn, domain=service.domain, repository=repository, land=roles['land'],
+            principal=service.principal, signer=service.principal, sign=service.sign, generation=service.generation,
+            settlement_trust=self.gate.settlement_trust,
+            observe=lambda event: service._log(dict(event, kind='land', at=time.time()))) if roles.get('land') else None
 
     def invoke(self, contract):
         """The Runner's receiver: the installed launch receiver of this repository, a separate process."""
@@ -1542,7 +1583,10 @@ class Line:
     def assigned(self):
         """Every unit assigned to this line: those its builder identity holds a claim on (VELDO-0031)."""
         builder = self.roles['builder']['identity']
-        return sorted({claim.get('unit_id') for claim in self._rows('claim')
+        teams = _organ('control_workflow_cycle_pm').CT
+        units = {a['unit'] for a in teams.assignments(self.service.conn)
+                 if (self.gate.unit_record(a['unit']) or {}).get('repository_uuid') == self.repository}
+        return sorted(units | {claim.get('unit_id') for claim in self._rows('claim')
                        if isinstance(claim, dict) and claim.get('repository_uuid') == self.repository
                        and claim.get('holder') == builder and claim.get('state') != 'released'
                        and isinstance(claim.get('unit_id'), str) and claim['unit_id']})
@@ -1582,6 +1626,15 @@ class Line:
         if not lost and self.runner.orphans:
             released += self.runner.release_orphans()
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
+        # Coordination uses this same event-driven pass and this line's Runner.
+        if any(data.get('execution_repository') == self.repository and data.get('state') == 'ACTIVE'
+               for data in self._rows('project')) and self._rows('team'):
+            if not hasattr(self, 'pm_cycles'):
+                self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+            report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once(automatic_units=self.assigned()))
+            for launch in list(self.runner.launches.values()):
+                if launch.contract['station'] == 'coordination' and launch.pump(read=False):
+                    self.loop.saw_end(self, launch)
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
@@ -1589,16 +1642,112 @@ class Line:
     def next(self, unit, latest, report):
         """Offer `unit` its next station: build when it has none; review once its build ran to a completion
         (control_dispatch.completed); nothing while a run holds it or after a run that ended otherwise, except
-        a run its account's limit stopped, which is re-run or put to the owner (limited)."""
+        a run its account's limit stopped, which is re-run or put to the owner (limited). A unit that has landed
+        through the land station takes its next station from its latest land dispatch first (after_land)."""
+        if self.station is not None:
+            last = self.station.latest(unit)
+            if last is not None:
+                return self.after_land(unit, last, latest, report)
         build = latest.get((unit, 'build'))
+        pm = _organ('control_workflow_cycle_pm')
+        assignment = pm.assigned(self.service.conn, unit)
         if build is None:
-            return self.offer(report, unit, 'build', self.roles['builder'], revision='HEAD')
+            try:
+                role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
+            except pm.Refused as error:
+                report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'build',
+                                          'refusals': [error.code]})
+                return None
+            return self.offer(report, unit, 'build', role, revision='HEAD')
         if build['state'] in L.D.HOLDING:
             return None
         if not L.D.completed(build):
             return self.limited(build, report)
         review = latest.get((unit, NEXT_STATION['build']))
         if review is not None:
+            return None if review['state'] in L.D.HOLDING else self.limited(review, report)
+        holder = (build['contract']['input']['context'] or {}).get('holder')
+        try:
+            reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
+                        next((role for role in self.roles['reviewers'] if role['identity'] != holder), None))
+        except pm.Refused as error:
+            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
+                                      'refusals': [error.code]})
+            return None
+        if reviewer is None:
+            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
+                                      'refusals': ['missing_authority:independent_reviewer']})
+            return None
+        return self.offer(report, unit, 'review', reviewer, revision=build['contract']['source']['commit'],
+                          holder=holder, context={'reviewer': reviewer['identity']}, follows=build['dispatch_id'])
+
+    # VELDO-0148: what follows a land dispatch.
+
+    def after_land(self, unit, last, latest, report):
+        """The next station of a unit after its latest land dispatch `last`: nothing while it runs; a re-land
+        (a new land dispatch) when the trunk moved under it; the owner asked once for a fresh grant bound to the
+        re-merged tree when that is all the publication lacks, and the land offered again once he grants it; a
+        new build told to merge the new trunk when the re-merge conflicted, and its review once it completed;
+        a mixed approval refusal stays failed without asking the owner;
+        nothing after a land that landed or ended unknown (a named stop, no new attempt)."""
+        if last['state'] == LS.TRUNK_MOVED:
+            return self.reland(unit, last, report)
+        if last['state'] == LS.AWAITING:
+            return self.grant(unit, last, report)
+        if last['state'] == LS.CONFLICT:
+            return self.rebuild(unit, last, latest, report)
+        return None
+
+    def claim_of(self, unit):
+        """(holder, generation) of the unit's current claim (VELDO-0031), read now."""
+        row = self.service.conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                                        (CLM.claim_id(self.repository, unit),)).fetchone()
+        claim = json.loads(row[1]) if row and row[0] == 'claim' else {}
+        return claim.get('holder'), claim.get('generation')
+
+    def reland(self, unit, last, report):
+        """A new land dispatch of `unit`, following `last`: the same evidence commit re-merged on a watermark
+        fetched now, gated again and published by a new compare-and-swap. Its end wakes the next pass when a
+        station follows it."""
+        holder, generation = self.claim_of(unit)
+        entry = {'repository': self.repository, 'unit': unit, 'station': LS.STATION, 'identity': self.service.principal,
+                 'follows': last['dispatch_id'], 'rerun_of': None}
+        try:
+            record = self.station.land(unit, evidence=last['evidence'], holder=holder, generation=generation,
+                                       follows=last['dispatch_id'])
+        except LS.Refused as error:
+            report['refused'].append(dict(entry, refusals=[error.code]))
+            return None
+        report['offered'].append(dict(entry, dispatch_id=record['dispatch_id'], attempt=record['attempt'],
+                                      result=record['state']))
+        report['lands'].append({'repository': self.repository, 'unit': unit, 'dispatch_id': record['dispatch_id'],
+                                'follows': record['follows'], 'state': record['state'], 'refusal': record.get('refusal'),
+                                'watermark': record.get('watermark'), 'candidate': record.get('candidate'),
+                                'effect': record.get('effect'), 'observed': record.get('observed')})
+        if record['state'] in (LS.TRUNK_MOVED, LS.AWAITING, LS.CONFLICT):
+            self.loop.wake('run_end', record['dispatch_id'])
+        return record
+
+    def rebuild(self, unit, last, latest, report):
+        """A re-merge that conflicted: the unit back to its builder as a new build dispatch told to merge the
+        new trunk, from its evidence commit; once that build completed, its review (by a reviewer independent
+        of the holder), as for any build."""
+        def follows(record):
+            return ((((record or {}).get('contract') or {}).get('input') or {}).get('payload') or {}).get('follows')
+        build = latest.get((unit, 'build'))
+        if build is None or follows(build) != last['dispatch_id']:
+            role = self.roles['builder']
+            payload = dict(role['payload'], operation='build', unit=unit, follows=last['dispatch_id'],
+                           merge={'trunk': self.station.land_config['trunk'], 'onto': last.get('watermark'),
+                                  'conflicts': list(last.get('conflicts') or []), 'land_dispatch': last['dispatch_id']})
+            return self.offer(report, unit, 'build', role, revision=last['evidence'], payload=payload,
+                              follows=last['dispatch_id'])
+        if build['state'] in L.D.HOLDING:
+            return None
+        if not L.D.completed(build):
+            return self.limited(build, report)
+        review = latest.get((unit, NEXT_STATION['build']))
+        if review is not None and follows(review) == build['dispatch_id']:
             return None if review['state'] in L.D.HOLDING else self.limited(review, report)
         holder = (build['contract']['input']['context'] or {}).get('holder')
         reviewer = next((role for role in self.roles['reviewers'] if role['identity'] != holder), None)
@@ -1608,6 +1757,69 @@ class Line:
             return None
         return self.offer(report, unit, 'review', reviewer, revision=build['contract']['source']['commit'],
                           holder=holder, context={'reviewer': reviewer['identity']}, follows=build['dispatch_id'])
+
+    def grant(self, unit, last, report):
+        """The owner's fresh grant for the re-merged tree (VELDO-0064 inbox): asked once for this land dispatch,
+        naming the tree; nothing is published until his answer admits; his `grant` records the approval bound to
+        exactly that subject and offers the land again (a new land dispatch following this one), his `stop`
+        leaves the unit stopped."""
+        alias = 'land-grant-' + hashlib.sha256(last['dispatch_id'].encode()).hexdigest()[:24]
+        aid = I.assignment_id(self.repository, alias)
+        inbox = self.service.inbox(self.repository)
+        subject = last.get('subject') or {}
+        entry = {'repository': self.repository, 'dispatch_id': last['dispatch_id'], 'unit': unit, 'station': LS.STATION,
+                 'assignment_id': aid, 'tree': subject.get('tree')}
+        item = inbox.read(aid)
+        if item is None:
+            brief = ('Land %s of unit %s re-merged it onto the new %s at %s. The approval it holds is bound to another '
+                     'tree, so it needs a fresh grant for the re-merged tree %s (source %s, proof %s): %s. Grant it, '
+                     'or stop the unit?' % (last['dispatch_id'], unit, self.station.land_config['trunk'],
+                                           last.get('watermark'), subject.get('tree'), subject.get('source'),
+                                           subject.get('proof'), ', '.join(subject.get('approvals') or [])))
+            owner, opened = self.open_question(inbox, alias, unit, brief, GRANT_CHOICES,
+                                               {'kind': GRANT_KIND, 'ref': last['dispatch_id'],
+                                                'digest': S.digest_of(subject)}, 'loop-grant/' + last['dispatch_id'])
+            report['asked'].append(dict(entry, owner=owner, outcome=opened.get('ok') is True,
+                                        refusal=None if opened.get('ok') else opened.get('reason')))
+            return None
+        admission = inbox.admit(aid)
+        if not admission['admitted']:
+            report['awaiting'].append(dict(entry, reason=admission['reason']))
+            return None
+        answer = ((item.get('data') or {}).get('answer')) or {}
+        if answer.get('ruling') != GRANT_CHOICES[0]:
+            report['stopped'].append(dict(entry, ruling=answer.get('ruling')))
+            return None
+        owner = (item.get('data') or {}).get('owner')
+        try:
+            self.station.grant(unit, last, owner=owner, basis={'assignment': aid, 'answer': S.digest_of(answer)})
+        except (LS.Refused, S.StoreRefused) as error:
+            report['refused'].append(dict(entry, refusals=[getattr(error, 'code', type(error).__name__)]))
+            return None
+        return self.reland(unit, last, report)
+
+    def open_question(self, inbox, alias, unit, brief, choices, subject, key):
+        """(owner, the inbox's answer): one ordinary decision request to the unit's project owner, signed as the
+        service's principal, whose membership and verification key the owner registers."""
+        record = self.gate.unit_record(unit) or {}
+        row = self.service.conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                                        ('project:' + str(record.get('project')),)).fetchone()
+        owner = (json.loads(row[1]) if row and row[0] == 'project' else {}).get('owner')
+        if not isinstance(owner, str) or not owner:
+            return None, {'ok': False, 'reason': 'no_project_owner'}
+        now = time.time()
+        content = {'kind': 'decision', 'owner': owner, 'scope': [self.repository],
+                   'deadline': time.strftime(I.DEADLINE_FORMAT, time.gmtime(now + ASK_SECONDS)),
+                   'budget': {'invocations': 1}, 'brief': brief, 'choices': list(choices), 'subject': subject}
+        command = {'operation': 'open', 'alias': alias, 'principal': self.service.principal, 'command_id': key,
+                   'nonce': key, 'domain_uuid': self.service.domain, 'repository_uuid': self.repository,
+                   'store_uuid': self.service.store, 'assignment': content}
+        try:
+            signature = SIG.sign_bytes(self.service.config['journal_key'], S.canonical_bytes(command),
+                                       AC.SIGNATURE_NAMESPACE)
+        except SIG.K.Refused:
+            return owner, {'ok': False, 'reason': 'unavailable_service:signing'}
+        return owner, inbox.apply({'command': command, 'signature': signature})
 
     def offer(self, report, unit, station, role, *, revision, holder=None, context=None, payload=None,
               adapter=None, configuration=None, follows=None, rerun_of=None):
@@ -1734,15 +1946,9 @@ class Line:
         return None
 
     def question(self, inbox, alias, record, decision, invocation):
-        """(owner, the inbox's answer): open the ordinary decision request to the unit's project owner, signed
-        as the service's principal, whose membership and verification key the owner registers."""
+        """(owner, the inbox's answer): open the ordinary decision request to the unit's project owner (open_question),
+        naming the calls the run's record shows."""
         contract = record['contract']
-        unit = self.gate.unit_record(contract['unit']) or {}
-        row = self.service.conn.execute('SELECT kind, data FROM entities WHERE id=?',
-                                        ('project:' + str(unit.get('project')),)).fetchone()
-        owner = (json.loads(row[1]) if row and row[0] == 'project' else {}).get('owner')
-        if not isinstance(owner, str) or not owner:
-            return None, {'ok': False, 'reason': 'no_project_owner'}
         limit = invocation.get('limit') or {}
         reset = limit.get('reset_at')
         shown = time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(reset)) if isinstance(reset, (int, float)) else 'not reported'
@@ -1754,21 +1960,9 @@ class Line:
                  'the unit?' % (record['dispatch_id'], contract['unit'], contract['station'],
                                 contract['reservation']['account'], limit.get('window'), shown, calls,
                                 contract['source']['commit']))
-        now = time.time()
-        content = {'kind': 'decision', 'owner': owner, 'scope': [self.repository],
-                   'deadline': time.strftime(I.DEADLINE_FORMAT, time.gmtime(now + ASK_SECONDS)),
-                   'budget': {'invocations': 1}, 'brief': brief, 'choices': list(ASK_CHOICES),
-                   'subject': {'kind': ASK_KIND, 'ref': record['dispatch_id'], 'digest': S.digest_of(decision)}}
-        command = {'operation': 'open', 'alias': alias, 'principal': self.service.principal,
-                   'command_id': 'loop-ask/' + record['dispatch_id'], 'nonce': 'loop-ask/' + record['dispatch_id'],
-                   'domain_uuid': self.service.domain, 'repository_uuid': self.repository,
-                   'store_uuid': self.service.store, 'assignment': content}
-        try:
-            signature = SIG.sign_bytes(self.service.config['journal_key'], S.canonical_bytes(command),
-                                       AC.SIGNATURE_NAMESPACE)
-        except SIG.K.Refused:
-            return owner, {'ok': False, 'reason': 'unavailable_service:signing'}
-        return owner, inbox.apply({'command': command, 'signature': signature})
+        return self.open_question(inbox, alias, contract['unit'], brief, ASK_CHOICES,
+                                  {'kind': ASK_KIND, 'ref': record['dispatch_id'], 'digest': S.digest_of(decision)},
+                                  'loop-ask/' + record['dispatch_id'])
 
 
 class FactoryLoop:
@@ -1779,7 +1973,7 @@ class FactoryLoop:
     set to the earliest reset a waiting unit needs). Nothing else starts one: the service loop's accept timeout
     and channel pass start none, and the loop never polls. The wakes a service loop iteration collects make one
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
-    waiting, decided and asked, and the timer it set."""
+    waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
 
     def __init__(self, service, work):
         self.service = service
@@ -1788,7 +1982,7 @@ class FactoryLoop:
                       for repository, roles in sorted(work['repositories'].items())}
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
-        self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0}
+        self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
 
     def start(self):
         """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
@@ -1847,7 +2041,7 @@ class FactoryLoop:
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
                   'sources': sorted({wake['source'] for wake in wakes}), 'wakes': wakes, 'ended': [], 'released': [],
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
-                  'stopped': [], 'faults': []}
+                  'stopped': [], 'faults': [], 'lands': []}
         for repository, line in sorted(self.lines.items()):
             try:
                 line.run(report, [launch for owner, launch in ended if owner is line])
@@ -1867,7 +2061,10 @@ class FactoryLoop:
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
-                'last_sources': (self.last or {}).get('sources')}
+                'last_sources': (self.last or {}).get('sources'),
+                # VELDO-0148: each land station's land dispatches: outcomes, those running, re-lands per unit.
+                'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())
+                          if line.station is not None}}
 
 
 def open_loop(config, service):

@@ -1,0 +1,11 @@
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
+@@ -39,7 +39,7 @@
+             'backlog': ('backlog', 'apply'), 'grooming': ('grooming', 'apply'),
+             'assignment': ('teams', 'apply')}
+ OPERATIONS = {'question': ('open',), 'decomposition': ('publish_decomposition',),
+-              'backlog': ('take', 'prepare', 'request_grooming'),
++              'backlog': ('take', 'prepare', 'request_grooming', 'prioritize'),
+               'grooming': ('propose',), 'assignment': ('assign',)}
+ FINAL = ('proposed', 'no_action', 'refused', 'waiting_owner')
+ Refused = CY.Refused

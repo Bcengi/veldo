@@ -150,3 +150,69 @@ for that reason (review, 2026-09-24).
 2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `control_runner*.py`, which does not
 exist; the Runner is class `Runner` in `control_launch`, already in the footprint. Criteria and status
 unchanged.
+
+2026-10-02, runtime-cap investigation (fix-flake-0040): the row now names every
+false conjunct and records the compared values for failed_details. The earlier
+late-origin explanation was incorrect: recording running after activation
+reduces the original measured gap. The original f1e1abb9 suite and production
+code passed ten loaded rounds of two simultaneous suite copies plus a pinned
+busy loop on each available CPU. No false conjunct or production cause was
+reproduced; the closest gap was 1.6435189247131348 seconds against 2.7 seconds.
+The monotonic scope-activation origin remains a correct, stricter measurement,
+not an established flake fix. The existing result read retains activation,
+stop and inactive timestamps before clearing the scope. Installed controls,
+assertion bounds and timeouts are unchanged. Proof records observations and
+limitations separately from the reviewer's gate. The current row passed normally,
+in the inherited gate shell environment and in ten matching loaded rounds. The
+runtime-cap-disabled mutation failed by assertion with complete diagnostics;
+the historical gate red remains unreproduced and its cause unknown.
+
+2026-10-02, measured manager-result loss (fix-flake-0040): the reviewer first
+observed lost final scope evidence at cd3df736. A bounded terminal-state read
+and cause-precedence guards were added. The early-conclude diagnosis was
+superseded by the measured sequence at 074dbdcd: RuntimeMaxSec sends SIGTERM,
+the adapter exits 143, Stop.adapter_exited terminates and kills the remaining
+group, and the manager can collect the scope before conclude. A not-found
+unit's inactive/success/zero-clock defaults are not evidence. Waiting longer
+cannot recover the result or make it a reliable cap witness.
+
+2026-10-02, recorded stop evidence (fix-flake-0040): Group.attach now retains
+ActiveEnterTimestampMonotonic and installed RuntimeMaxUSec and TimeoutStopUSec
+while the loaded scope exists, before releasing the engine. The receiver
+retains adapter exit and escalation times on CLOCK_MONOTONIC. A signal exit
+(including the wrapper's 143 status), terminate or kill at or beyond activation
+plus RuntimeMaxSec establishes runtime_cap and deadline_stop when no explicit
+cause applies. Requested, usage_cap, deadline, paid_api, configuration_stop and
+heartbeat_missing keep precedence. Group samples memory.events oom_kill before
+receiver cleanup; retained OOM kills or a loaded manager oom-kill establish
+memory_cap. Only LoadState=loaded permits a manager result; not-found is
+unknown. The effective result and raw manager_result are recorded separately.
+
+The runtime row uses the saved activation, receiver stop and empty clocks,
+retaining every conjunct and its 1.2 + 0.5 + 1.0 bound. Six new deterministic
+rows cover start evidence, signal exit plus cleanup after the cap with a
+collected unit, not-found unknown, ordinary exit before the cap, every explicit
+cause, and retained OOM evidence. Each has a named mutation. Two complete
+production modules from 9a48b4ea are rebuilt in a temporary copy against the
+new rows. Proof records selected-suite results and assertion failures; the
+reviewer owns full verification and the VELDO-0127 digest-bound live recapture.
+
+
+2026-10-02, empty collected groups (fix-flake-0040): seven deterministic rows
+close the review gaps. Two pidfd rows use 143 and negative SIGTERM at saved
+activation plus RuntimeMaxSec plus 0.1 seconds with the group already empty,
+so only the adapter exit clock can establish runtime_cap. The same signals
+before the cap and status 1 after it guard against false cap classification.
+When manager_result is unknown or absent and an ordinary adapter exit was
+observed at or beyond the saved runtime boundary, cause remains unknown,
+including status 0; missing evidence must not turn a handled cap into exit.
+Loaded success and ordinary success before the cap retain their behavior.
+The receiver samples memory.events once more after the receive loop, before
+conclude. A deterministic memory/cgroup read sequence covers an OOM of the last
+member between the final two reads. Four registered mutations isolate the
+adapter clock append, signal guard, unknown-result rule and final memory sample.
+Proof rebuilds both complete production modules from 9572210b: the two post-cap
+signal rows test new behavior; the three negative D1 rows guard existing
+behavior. Selected suite results and mutation evidence live in
+proof/VELDO-0040/empty-scope-runs.json. Full gate and live capture remain with
+the reviewer.

@@ -36,6 +36,11 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0152_*.py"
+  - "scripts/suites/84_veldo_0169_project_handouts.py"
+  - "scripts/suites/86_veldo_0168_text.py"
+  - "scripts/suites/82_veldo_0085_decomposition.py"
+  - "scripts/suites/91_veldo_0151_specialists.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/68_veldo_0126_intake.py"
   - "scripts/suites/68_veldo_0136_hints.py"
   - "scripts/suites/69_veldo_0133_dispositions.py"
@@ -377,3 +382,40 @@ among what "decides nothing", since AC2 refuses that request; AC3 names the prop
 route (`AWAITING_ROUTE`, then `NEW_PROJECT`, `ROUTED` or `AWAITING_PROJECT`, the state intake's existing
 answer path resolves from); the `unsupported_configuration:factory_project` refusal gets its taxonomy
 class and AC2's rows.
+
+2026-10-03, build on 16a91069: intake now reserves ordinary project selection for the request field
+and unique ticket prefixes. Factory inbox routes are owned by the new control_intake_routes module,
+within the existing footprint. The 0088 base's production cycle lives in control_workflow_cycle_pm,
+so that file consumes inbox snapshots and hands PM output to intake; no graph runner or 0151 file is
+changed. API models already serve the complete intake proposal. Route reporting extends the existing
+report registry. This is an implementation checkpoint, not completed proof or a landing claim.
+
+2026-10-03, reporting integration: the footprint adds 72_veldo_0128_reports.py because AC3 adds
+a reporting event and that suite enumerates the complete registry. The API read model retains a
+route dispatch identity only when it names a stored dispatch, avoiding entropy-only redaction of
+this public correlation field. No credential redaction rule changes.
+
+2026-10-03, consumer inventory: two additional fixture requests relied on prose project names.
+The footprint adds the 0085 decomposition and 0151 specialist suites so each request can carry its
+explicit project field. This single request field is the only change to a 0151 file; its roles and
+capability behavior are unchanged. The 0088 suite remains unchanged.
+
+2026-10-03, paused-disposition consumer: the footprint adds the 0169 suite to activate the factory
+project through its existing signed helper before the undecided disposition-intake control.
+The claim and station-contract behavior remains unchanged.
+
+2026-10-03, builder evidence: all sixteen behavior rows pass normally and in the clean gate
+interface environment and are red by assertion at 16a91069. Eighteen scoped suites ran in each
+environment; sixteen pass, while 0169 census/writers and 0168 intake/delivery reproduce unchanged
+at the starting commit. Eleven finding-152 mutations are registered, with execution reserved for
+the reviewer. Validation, Git boundary, engine synchronization and zero bad anchors pass. The
+0152 diff is within its footprint; the origin/main comparison includes the inherited 0088 and
+0151 work. The full gate was not run, no landing claim is made, and status remains ready.
+
+2026-10-03, further review: the footprint adds 86_veldo_0168_text.py. Its intake/delivery fixture
+now activates the factory project and applies an unclear route, as AC2 and the landed-suite notes
+require. The question-delivery and escaping assertion is unchanged. The suite 93 companion check
+binds its loaded mutation catalog to the real repository root so a temporary catalog copy reads
+the repository's qualification fixture and missing companions fail the named row rather than crash.
+The 0168 intake message is dated after this run's membership enrollment; the shared stand-in's fixed
+date otherwise refuses it as not_member_when_sent before it can exercise question delivery.

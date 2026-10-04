@@ -427,8 +427,9 @@ def _v169_suite():
             with region('dispose/PAUSED'):
                 # Non-handout dispositions still apply while the project is paused.
                 IT = load('v169_intake', mods / 'control_intake.py')
+                activate('factory')
                 inbox.intake = IT.Intake(S, inbox.membership, inbox.AC, ing.acquirer, ing.conn,
-                                        domain=A.ids['domain_uuid'], projects=['project-a'], api_edge='api-edge',
+                                        domain=A.ids['domain_uuid'], projects=['project-a', 'factory'], api_edge='api-edge',
                                         journal_signer='authority', sign=A.journal_sign)
                 for ruling in ('close', 'other'):
                     row = 'dispose/PAUSED'

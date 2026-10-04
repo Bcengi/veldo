@@ -37,7 +37,8 @@ def _v89_suite():
     PREFIX = 'VELDO-0089 '
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     # The role fields the specification names (AC1), compared with the service's own schema.
-    SPEC_FIELDS = ('workers', 'responsibilities', 'expertise', 'proposal_permissions', 'engines', 'budget', 'independence')
+    SPEC_FIELDS = ('workers', 'responsibilities', 'expertise', 'proposal_permissions', 'engines', 'budget', 'independence',
+                   'capability_configuration', 'kind')
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -297,8 +298,15 @@ def _v89_suite():
                 return [(eid, json.loads(d)) for eid, d in conn.execute("SELECT id, data FROM entities WHERE kind='assignment'")
                         if (json.loads(d).get('subject') or {}).get('kind') == kind]
 
+            CG = load('team_fixture_config', mods / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(workers, resp, perms=('feature',), engines=('claude_code',), budget=None, distinct=()):
-                return dict(workers=list(workers), responsibilities=[resp, 'report'], expertise=['python', 'payments'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(workers), responsibilities=[resp, 'report'], expertise=['python', 'payments'],
                             proposal_permissions=list(perms), engines=list(engines),
                             budget=dict(budget or {'capacity': 1, 'invocations': 2, 'wall_seconds': 100}),
                             independence={'distinct_from': list(distinct)})
@@ -404,16 +412,16 @@ c.close()
                         'team/project-requirements', 'team/complete-proposal'):
                 tooled = team(implementation=dict(role(['w-build'], 'implement'), tools=['Bash'], mcp_servers=['jira']))
                 with_tools = propose(tooled)
-                unknown_role = propose({'roles': dict(team()['roles'], release_manager=role(['w-elab'], 'release'))})
+                unknown_role = propose({'roles': dict(team()['roles'], **{'invalid role': role(['w-elab'], 'release')})})
                 check('team/schema-closed', [
                     ('the specification\'s role fields are exactly the schema\'s', CT is not None and tuple(CT.ROLE_FIELDS) == SPEC_FIELDS),
                     ('no tool or capability field in the schema', CT is not None and not any(
-                        w in f for f in CT.ROLE_FIELDS for w in ('tool', 'mcp', 'capabilit', 'server'))),
+                        w in f for f in CT.ROLE_FIELDS for w in ('tool', 'mcp', 'server'))),
                     ('a role with tools and MCP servers is refused by name', with_tools.get('ok') is False
                      and 'invalid_input:field:implementation/tools' in (with_tools.get('problems') or [])
                      and 'invalid_input:field:implementation/mcp_servers' in (with_tools.get('problems') or [])),
                     ('an undeclared role is refused by name', unknown_role.get('ok') is False
-                     and 'invalid_input:role:release_manager' in (unknown_role.get('problems') or [])),
+                     and 'invalid_input:role:invalid role' in (unknown_role.get('problems') or [])),
                     ('and nothing is recorded', not team_record())])
 
                 no_review = propose(team(independent_review=None))

@@ -1,0 +1,179 @@
+{
+ "scope": "Only the changed modules and their direct suite consumers; sequential runs.",
+ "checks": [
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 50 passed, 0 failed in 69.06s"
+   ],
+   "failures": [],
+   "seconds": 69.06,
+   "passed": true,
+   "note": "Reuses the completed normal run before the sequential compatibility collector."
+  },
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 50 passed, 0 failed in 96.47s"
+   ],
+   "failures": [],
+   "seconds": 96.56,
+   "passed": true
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 27.11s"
+   ],
+   "failures": [],
+   "seconds": 27.18,
+   "passed": true
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 43 passed, 0 failed in 38.14s"
+   ],
+   "failures": [],
+   "seconds": 38.22,
+   "passed": true
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 35 passed, 0 failed in 11.97s"
+   ],
+   "failures": [],
+   "seconds": 12.04,
+   "passed": true
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 35 passed, 0 failed in 13.42s"
+   ],
+   "failures": [],
+   "seconds": 13.5,
+   "passed": true
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 44 passed, 0 failed in 10.84s"
+   ],
+   "failures": [],
+   "seconds": 10.94,
+   "passed": true
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 44 passed, 0 failed in 10.84s"
+   ],
+   "failures": [],
+   "seconds": 10.94,
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 37 passed, 0 failed in 17.57s"
+   ],
+   "failures": [],
+   "seconds": 17.64,
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 37 passed, 0 failed in 19.22s"
+   ],
+   "failures": [],
+   "seconds": 19.29,
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "normal",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 59.49s"
+   ],
+   "failures": [],
+   "seconds": 59.58,
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "environment": "clean",
+   "returncode": 2,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 58 passed, 0 failed in 63.02s"
+   ],
+   "failures": [],
+   "seconds": 63.11,
+   "passed": true
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "environment": "normal",
+   "returncode": 1,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 1 failed in 2.98s"
+   ],
+   "failures": [
+    "  SELFTEST FAIL: VELDO-0168 intake/delivery"
+   ],
+   "seconds": 3.04,
+   "passed": false
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "environment": "clean",
+   "returncode": 1,
+   "summary": [
+    "selftest (PARTIAL, 1 of 143 suites): 51 passed, 1 failed in 3.69s"
+   ],
+   "failures": [
+    "  SELFTEST FAIL: VELDO-0168 intake/delivery"
+   ],
+   "seconds": 3.75,
+   "passed": false
+  }
+ ],
+ "baseline_text_check": {
+  "commit": "37dcd381",
+  "tree": "unchanged git archive",
+  "suite": "86_veldo_0168_text",
+  "environment": "baseline",
+  "returncode": 1,
+  "summary": [
+   "selftest (PARTIAL, 1 of 143 suites): 51 passed, 1 failed in 3.55s"
+  ],
+  "failures": [
+   "  SELFTEST FAIL: VELDO-0168 intake/delivery"
+  ],
+  "seconds": 3.64,
+  "passed": false
+ }
+}

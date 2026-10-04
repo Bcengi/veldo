@@ -1,0 +1,4 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -614,0 +615 @@
++        return None

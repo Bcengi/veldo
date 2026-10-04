@@ -184,6 +184,14 @@ def _item(store, conn, row):
         if checked['id'] != identity:
             return None, {'id': identity, 'kind': kind, 'refusal': 'missing_evidence:revision_identity'}
     served, paths = redact(data, '$.' + identity)
+    # A route's dispatch is a public authority identity, even when its random suffix
+    # resembles entropy in a credential. Retain only a dispatch that the store owns.
+    route = data.get('route') if kind == 'intake_proposal' else None
+    if isinstance(route, dict) and isinstance(route.get('dispatch'), str):
+        dispatch = conn.execute("SELECT kind FROM entities WHERE id=?", ('dispatch:' + route['dispatch'],)).fetchone()
+        if dispatch and dispatch[0] == 'dispatch' and isinstance(served.get('route'), dict):
+            served['route']['dispatch'] = route['dispatch']
+            paths = [p for p in paths if p != '$.' + identity + '.route.dispatch']
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 

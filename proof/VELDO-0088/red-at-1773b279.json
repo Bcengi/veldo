@@ -1,0 +1,95 @@
+{
+ "by_assertion": true,
+ "commit": "1773b27983d506d30bafd80aaada275284ff64d7",
+ "details": [
+  "VELDO-0088 detail: first dispatch state: exited",
+  "VELDO-0088 detail: result: no_action None",
+  "VELDO-0088 detail: factory staging: [] []",
+  "VELDO-0088 detail: staging: refused not_authorized:proposer [('publish', None)]",
+  "VELDO-0088 detail: review publication: VELDO-8802 refused not_authorized:proposer None None",
+  "VELDO-0088 detail: review publication: VELDO-8803 refused not_authorized:proposer None None",
+  "VELDO-0088 detail: adapter pass: build [] []",
+  "VELDO-0088 detail: adapter pass: review [] []",
+  "VELDO-0088 detail: last cycle: waiting_run None None",
+  "VELDO-0088 detail: pending budget: 5 [] [{'repository': 'repository-89', 'reason': 'unknown_outcome:Refused'}]",
+  "VELDO-0088 detail: review/pm-principal: production Line.run signs staffing as its distinct enrolled PM",
+  "VELDO-0088 detail: review/current-publication: an earlier READY assigned unit cannot stand in for this publication; the matching new publication can finish elaboration",
+  "VELDO-0088 detail: review/build-refusal: each assigned unit is considered despite an unavailable adapter; both units launch when their adapter is available",
+  "VELDO-0088 detail: review/review-refusal: each assigned unit is considered despite an unavailable adapter; both units launch when their adapter is available",
+  "VELDO-0088 detail: review/pending-budget: exhausted follow-up is observed without aborting the factory pass"
+ ],
+ "failed_rows": [
+  "VELDO-0088 review/pm-principal",
+  "VELDO-0088 review/current-publication",
+  "VELDO-0088 review/build-refusal",
+  "VELDO-0088 review/review-refusal",
+  "VELDO-0088 review/pending-budget"
+ ],
+ "modules": {
+  ".veldo/authority_contract.py": {
+   "at_commit": "84f01e9592e86568b98dc74a94c1e877cdf80a825d25d05b13f2b19e1a8387e9",
+   "now": "84f01e9592e86568b98dc74a94c1e877cdf80a825d25d05b13f2b19e1a8387e9"
+  },
+  ".veldo/control_dispatch.py": {
+   "at_commit": "d583e73be946019b1621c6ba8df6724acfa86b1cbfd24069c4930490f04e761c",
+   "now": "d583e73be946019b1621c6ba8df6724acfa86b1cbfd24069c4930490f04e761c"
+  },
+  ".veldo/control_eligibility.py": {
+   "at_commit": "2423ccd7276adc9c2a1bc7147067ae895b27821121f0088dbae2380174b4414d",
+   "now": "2423ccd7276adc9c2a1bc7147067ae895b27821121f0088dbae2380174b4414d"
+  },
+  ".veldo/control_graph_pm.py": {
+   "at_commit": "c6bd305af9a242aca4161e3bc149fee4e4004d6d92a19c8f46aded6b1e745ae3",
+   "now": "c6bd305af9a242aca4161e3bc149fee4e4004d6d92a19c8f46aded6b1e745ae3"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "508f0e017b02c31c9b6aa9d458cdd9f08d2e341aa437258c39c3f7b1bc2d89fd",
+   "now": "508f0e017b02c31c9b6aa9d458cdd9f08d2e341aa437258c39c3f7b1bc2d89fd"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "960d9681847ac5b03e6bfe3e75edab0ea45fae7f6542803f0254bc6b5bba86a3",
+   "now": "4b73a8d78751142c0b9660300007a3b12e7a87d8f92c51a7b0ebaa2e51167354"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": "9393acb2673a92532ccc86c913d18d0ad70dd1f3fab68004a96c659518d8c320",
+   "now": "9393acb2673a92532ccc86c913d18d0ad70dd1f3fab68004a96c659518d8c320"
+  },
+  ".veldo/control_workflow_cycle_pm.py": {
+   "at_commit": "de7f17f8ed69eaec2cfade5928d94dafec2d95b799789a0e0963c94378d5b23f",
+   "now": "9a32635c935a6ac7975bcd46a0b9a8805e5a39c1eb772953cc3107ccbd34ee46"
+  },
+  ".veldo/init_scaffold.py": {
+   "at_commit": "082c60e53ada0296d0d5d9355302fe4ffd837065ef2f3f3d0c43c54d11aead68",
+   "now": "082c60e53ada0296d0d5d9355302fe4ffd837065ef2f3f3d0c43c54d11aead68"
+  }
+ },
+ "other_rows": [],
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0088 review/pm-principal",
+   false
+  ],
+  [
+   "VELDO-0088 review/current-publication",
+   false
+  ],
+  [
+   "VELDO-0088 review/build-refusal",
+   false
+  ],
+  [
+   "VELDO-0088 review/review-refusal",
+   false
+  ],
+  [
+   "VELDO-0088 review/pending-budget",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 17.16,
+ "spec_id": "VELDO-0088",
+ "suite": "scripts/suites/92_veldo_0088_pm_cycles.py",
+ "tree": "git archive 1773b27983d506d30bafd80aaada275284ff64d7, unchanged; the current suite file run against it"
+}

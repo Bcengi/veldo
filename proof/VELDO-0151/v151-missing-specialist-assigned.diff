@@ -1,0 +1,9 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -553,4 +553,2 @@
+-        if not _is_str(role) or role not in team['roles']:
+-            problems = ['missing_role:%s' % role]
+-            raise Refused('not_staffed:role:%s' % role, problems=problems,
+-                          owner_request=self._owner_request(project, team, problems, now))
++        if role not in team['roles']:
++            role = 'implementation'

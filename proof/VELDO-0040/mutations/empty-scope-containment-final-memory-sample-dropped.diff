@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1929,3 +1928,0 @@
+-        if group is not None:
+-            # The last populated read can observe an OOM after its memory.events sample.
+-            group.sample_memory()

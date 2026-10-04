@@ -572,7 +572,7 @@ class Runner:
         if not D._text(project):
             raise D.Refused('missing_authority:project', 'the unit has no accepted project')
         claim = None
-        if station in D.CLAIMED_STATIONS:
+        if station in D.CLAIMED_STATIONS and not decision['inputs'].get('team_assignment'):
             entity = D.CLM.claim_id(self.dispatches.repository, unit)
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
@@ -1593,16 +1593,19 @@ class Receiver:
         interval, window = self._heartbeat()
         # The heartbeat channel (VELDO-0041): the wrapper's heartbeat writes it, this receiver reads it.
         channel, beat = os.pipe()
-        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(group.held()),
+        setup, ready = os.pipe()
+        held = dict(group.held(), heartbeat_setup=ready)
+        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(held),
                    '--heartbeat', str(beat), repr(float(interval))] + argv
         try:
             with group.admission():
                 try:
                     worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
-                                              close_fds=True, pass_fds=(beat,))
+                                              close_fds=True, pass_fds=(beat, ready))
                 finally:
                     os.close(beat)
+                    os.close(ready)
                 worker.group = group
                 try:
                     reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
@@ -1610,6 +1613,7 @@ class Receiver:
                     if not problems and reported.get('pid') != worker.pid:
                         problems = ['spawn_failed:containment:identity']
                     if not problems:
+                        group.retain()
                         HB.make_group(group.cgroup)
                         if self.config.get('clones'):
                             clone = _organ('control_clone')
@@ -1623,14 +1627,35 @@ class Receiver:
                         raise FileNotFoundError(errno.ENOENT, 'no engine: ' + str(argv[0]))
                     raise C.Refused(problems[0], settled=settled, group=group.report())
             try:
-                worker.stdin.write(b'go\n')
+                # Fix the placement deadline at the sender's release, after the
+                # receiver's separately bounded containment preparation. A wrapper
+                # descheduled after release cannot give itself a fresh budget.
+                release_deadline = time.monotonic() + HB.SETUP_SECONDS
+                worker.stdin.write(('go %r\n' % release_deadline).encode())
                 worker.stdin.flush()
             except OSError:
                 settled = group.discard(worker)
                 raise C.Refused('spawn_failed:containment:release', settled=settled, group=group.report())
+            # The wrapper reports only after placement has completed. Until then it
+            # cannot be reported running, even when it has left the scope or died.
+            # Its startup budget is the absolute deadline sent with this release.
+            # The same bound plus reap time and one second of report margin is
+            # strictly later, even if the wrapper stalls after release.
+            poller = select.poll()
+            poller.register(setup, select.POLLIN)
+            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
+            status = os.read(setup, 1) if acknowledged else b''
+            if status != b'1':
+                reason = ({b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout',
+                           b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')
+                          if acknowledged else 'heartbeat_report_timeout')
+                settled = group.discard(worker)
+                raise C.Refused('spawn_failed:containment:' + reason, settled=settled, group=group.report())
         except BaseException:
             os.close(channel)
             raise
+        finally:
+            os.close(setup)
         worker.heartbeat = HB.Watch(channel, interval, window, time.monotonic())
         return worker
 
@@ -1764,8 +1789,15 @@ class Receiver:
         feeder.start()
         group, watch = getattr(worker, 'group', None), getattr(worker, 'heartbeat', None)
         stop = C.Stop(group, worker.pid, *self._graces()) if group is not None else None
+        start = getattr(group, 'start_evidence', {})
+        active = start.get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+        runtime = start.get('RuntimeMaxUSec')
+        # The shared manager cannot dispatch RuntimeMaxSec while it reloads. Keep
+        # the same activation-based deadline in this receiver's OS-event wait;
+        # startup/heartbeat setup must never restart the owner's runtime clock.
+        runtime_deadline = active + runtime / 10 ** 6 if active > 0 and runtime is not None else math.inf
         hasher, size, stopped, cause, code, empty = hashlib.sha256(carry), len(carry), False, None, None, None
-        settle, emptied = None, (None, None)
+        settle, emptied, adapter_exit_monotonic = None, (None, None), None
         output, pidfd = worker.stdout.fileno(), os.pidfd_open(worker.pid)
         # VELDO-0141: the worker's error stream, read here like its output, and the run's execution record.
         errors = worker.stderr.fileno() if getattr(worker, 'stderr', None) is not None else None
@@ -1786,7 +1818,7 @@ class Receiver:
             nonlocal cause, stopped, code
             if cause is not None or code is not None:
                 return
-            cause, stopped = reason, reason == 'deadline'
+            cause, stopped = reason, reason in ('deadline', 'runtime_cap')
             if stop is not None:
                 stop.begin(reason, time.monotonic(), True)
             else:
@@ -1827,6 +1859,8 @@ class Receiver:
                     break
                 live = cause is None and code is None
                 waits = [contract['deadline'] - time.time()] if live else []
+                if live and runtime_deadline != math.inf:
+                    waits.append(runtime_deadline - time.monotonic())
                 if live and getattr(login, 'init_deadline', None) is not None and not login.released:
                     waits.append(login.init_deadline - time.monotonic())
                 waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
@@ -1853,6 +1887,7 @@ class Receiver:
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
+                        adapter_exit_monotonic = time.monotonic()
                         if stop is not None and group.populated():
                             if group.members() or watch is None:
                                 stop.adapter_exited(time.monotonic())
@@ -1881,6 +1916,8 @@ class Receiver:
                     # uncertain, and it is stopped (the supervision records when and why).
                     watch.lapse(now)
                     begin('heartbeat_missing')
+                elif cause is None and code is None and now >= runtime_deadline:
+                    begin('runtime_cap')
                 elif stop is not None:
                     if settle is not None and now >= settle:
                         settle = None
@@ -1926,16 +1963,50 @@ class Receiver:
             # The record's last lines, and what the exit commits of it.
             self.committed = recorder.close()
         code = worker.poll() if code is None else code
+        if group is not None:
+            # The last populated read can observe an OOM after its memory.events sample.
+            group.sample_memory()
         result = group.conclude() if group is not None and empty else None
-        if cause is None and result in ('timeout', 'oom-kill'):
-            # systemd stopped the group at a cap: the runtime cap is a deadline, the memory cap is not.
-            cause = {'timeout': 'runtime_cap', 'oom-kill': 'memory_cap'}[result]
-            stopped = cause == 'runtime_cap'
-        self.supervision = {'cause': cause or (stop.cause if stop is not None else None),
+        manager_result = result
+        # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
+        signaled = code is not None and (code < 0 or 128 < code <= 192)
+        stop_times = [step['monotonic'] for step in (stop.steps if stop is not None else [])
+                      if step['step'] in ('terminate', 'kill')]
+        if signaled and adapter_exit_monotonic is not None:
+            stop_times.append(adapter_exit_monotonic)
+        runtime_reached = (active > 0 and runtime is not None
+                           and any(at >= active + runtime / 10 ** 6 for at in stop_times))
+        # Explicit receiver or owner decisions win; an adapter exit is only an inference.
+        cause = cause or (stop.cause if stop is not None else None)
+        if cause in (None, 'exit'):
+            if manager_result == 'oom-kill' or getattr(group, 'oom_kill', 0) > 0:
+                cause, result = 'memory_cap', 'oom-kill'
+            elif manager_result == 'timeout' or runtime_reached:
+                cause, result, stopped = 'runtime_cap', 'timeout', True
+            elif (manager_result in (None, 'unknown') and active > 0 and runtime is not None
+                  and adapter_exit_monotonic is not None
+                  and adapter_exit_monotonic >= active + runtime / 10 ** 6):
+                # An ordinary status can be a handled cap signal; missing evidence is not success.
+                cause = 'unknown'
+            elif code == 0:
+                # A clean adapter exit adds no stop cause. Keep any actual cleanup stop.
+                cause = stop.cause if stop is not None else None
+            elif result == 'unknown':
+                cause = 'unknown'
+        if cause == 'runtime_cap':
+            # Direct enforcement can empty the scope before the manager resumes
+            # and records its own timeout. Preserve both observations separately.
+            result = 'timeout'
+        self.supervision = {'cause': cause,
                             'steps': stop.steps if stop is not None else [], 'empty': empty,
                             'graces': ({'stop_grace_seconds': stop.grace['cooperative'],
                                         'kill_grace_seconds': stop.grace['terminate']} if stop is not None else None),
                             'empty_at': emptied[0], 'empty_monotonic': emptied[1], 'result': result,
+                            'scope_timestamps': getattr(group, 'timestamps', {}),
+                            'scope_start': start, 'manager_result': manager_result,
+                            'adapter_exit_monotonic': adapter_exit_monotonic,
+                            'stop_monotonic': min(stop_times) if stop_times else None,
+                            'oom_kill': getattr(group, 'oom_kill', 0), 'deadline': contract['deadline'],
                             'group': group.report() if group is not None else None,
                             'heartbeat': watch.summary() if watch is not None else None}
         if group is not None and empty:
@@ -2175,14 +2246,26 @@ def wrap(argv):
         os._exit(127)
     if held is not None:
         C.hold(held)
+    # Legacy untimed releases and uncontained transports keep the pre-report
+    # deadline. A contained receiver supplies its own absolute release deadline.
+    heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS if beat is not None else None
     sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
     sys.stdout.flush()
-    if held is not None and not C.released(0):
+    release = C.released(0) if held is not None else True
+    if not release:
         os._exit(125)
+    if beat is not None and type(release) is float:
+        heartbeat_deadline = release
     if beat is not None:
         # Released: the heartbeat starts now, in a process of its own, and this process closes the
         # channel before it becomes the engine, so liveness never waits on anything the engine does.
-        HB.start(*beat)
+        setup = held.get('heartbeat_setup') if held is not None else None
+        try:
+            HB.start(*beat)
+        except OSError as error:
+            if setup is not None:
+                os.write(setup, b'T' if isinstance(error, TimeoutError) else b'0')
+            os._exit(125)
     # The engine starts with the default dispositions of the signals Python ignores, as subprocess does.
     for number in (signal.SIGPIPE, signal.SIGXFSZ):
         signal.signal(number, signal.SIG_DFL)
@@ -2204,6 +2287,16 @@ def wrap(argv):
             os._exit(WRAPPER_REFUSED)
     # THE ENVIRONMENT STRIP (VELDO-0155, VELDO-0156), applied to what this wrapper execs and to nothing else.
     environment = engine_environment(environment)
+    if beat is not None:
+        # Check after all preparation, immediately before success and exec. A
+        # placement that completed after our budget never authorizes an engine.
+        if time.monotonic() >= heartbeat_deadline:
+            if setup is not None:
+                os.write(setup, b'T')
+            os._exit(125)
+        if setup is not None:
+            os.write(setup, b'1')
+            os.close(setup)
     try:
         os.execve(path, argv, environment)
     except OSError:

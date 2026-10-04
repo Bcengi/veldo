@@ -1,0 +1,11 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -600,8 +600,6 @@
+             'policy': {'id': review_policy_id(self.ids['repository_uuid']), 'version': policy_row['version'],
+                        'risk': data['risk'], 'required_reviews': need},
+             'role': role, 'capability_configuration': copy.deepcopy(team['roles'][role].get('capability_configuration')),
+-            'reviewer_capability_configuration': copy.deepcopy(
+-                team['roles']['independent_review'].get('capability_configuration')),
+             'builder': builder, 'reviewers': [p['reviewer'] for p in reviewers], 'assigned_by': principal,
+             'at': now}
+         pinned += [aid, unit_id, review_policy_id(self.ids['repository_uuid']), builder] + sorted(seen)

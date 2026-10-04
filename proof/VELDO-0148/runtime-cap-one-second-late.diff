@@ -1,0 +1,20 @@
+--- a/.veldo/control_containment.py
++++ b/.veldo/control_containment.py
+@@ -366,7 +366,7 @@
+         """The declared caps as the scope's systemd properties, installed when the scope is created."""
+         s = self.settings
+         props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),
+-                 ('RuntimeMaxSec', _usec(s['runtime_seconds'])), ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),
++                 ('RuntimeMaxSec', _usec((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)))), ('TimeoutStopSec', _usec(s['kill_grace_seconds'])),
+                  ('OOMPolicy', 'stop'), ('KillMode', 'control-group')]
+         if 'tasks_max' in s:
+             props.append(('TasksMax', str(s['tasks_max'])))
+@@ -472,7 +472,7 @@
+             'memory_bytes': {'memory.max': str(s['memory_bytes'] // page * page), 'memory.swap.max': '0',
+                              'OOMPolicy': 'stop'},
+             'cpu_percent': {'cpu.max': '%d 100000' % (s['cpu_percent'] * 1000)},
+-            'runtime_seconds': {'RuntimeMaxUSec': round(s['runtime_seconds'] * 10 ** 6)},
++            'runtime_seconds': {'RuntimeMaxUSec': round((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)) * 10 ** 6)},
+             'kill_grace_seconds': {'TimeoutStopUSec': round(s['kill_grace_seconds'] * 10 ** 6),
+                                    'KillMode': 'control-group'},
+             'file_bytes': {'Max file size': (str(s['file_bytes']), str(s['file_bytes']))},

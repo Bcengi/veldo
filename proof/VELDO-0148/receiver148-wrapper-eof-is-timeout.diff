@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1645 +1645 @@
+-                           b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')
++                           b'': 'heartbeat_report_timeout'}.get(status, 'heartbeat_setup')

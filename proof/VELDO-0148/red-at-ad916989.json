@@ -1,0 +1,153 @@
+{
+ "by_assertion": true,
+ "commit": "ad91698948dd1d894c0f6af4702b8a4b93c9694e",
+ "details": [
+  "VELDO-0148 install/land-station detail: each engine copy is byte-identical to its .veldo copy [{'control_landing.py': True, 'lander.py': True, 'control_effect_executor.py': True, 'control_service.py': True, 'control_verification.py': True, 'init_scaffold.py': True}]",
+  "VELDO-0148 install/land-station detail: the installation lays down the work configuration with its land station and the fixed executable carries the station's organs [invalid_input:work:roles repo14833d04479 names one builder and its reviewers, ['control_landing_station.py', 'control_landing.py', 'lander.py', 'claim.py', 'control_verification.py', 'control_proof.py', 'control_effect_executor.py', 'control_effects.py']]",
+  "VELDO-0148 install/land-station detail: the scaffold lays the land station down in an adopter's tree [False]",
+  "VELDO-0148 install/land-station detail: a land station configuration missing a field, naming an empty one or an identity that is not a name and an email is refused by name at installation [{'fields': 'invalid_input:work:roles', 'text': 'invalid_input:work:roles', 'identity': 'invalid_input:work:roles'}]",
+  "VELDO-0148 install/land-station detail: the service ran its passes, each from a wake source [[]]",
+  "VELDO-0148 reland/stale-subject detail: the colleague landed before the listing, and the executor refused the publication as stale-subject: the original land dispatch ended trunk_moved naming the watermark, the tip found and the classification [None, None, None]",
+  "VELDO-0148 reland/stale-subject detail: no new attempt under the original dispatch: its one execution, its effect record unchanged, and its land record still the refusal [0, (None, None)]",
+  "VELDO-0148 reland/stale-subject detail: the loop offered exactly one new land dispatch of R, following the refused one, and nothing after it [[], []]",
+  "VELDO-0148 reland/stale-subject detail: the re-land took a new watermark from the new main, re-merged the same build onto it and ran the gate again on the new candidate [None, None, None]",
+  "VELDO-0148 reland/stale-subject detail: the new compare-and-swap landed: its receipt names the re-land dispatch, its watermark as the old tip and its candidate, which the trunk holds [None, []]",
+  "VELDO-0148 reland/stale-subject detail: the metrics count the re-land dispatches per unit, the land outcomes and the publications refused because the trunk moved [None, None, None]",
+  "VELDO-0148 reland/review-kept detail: the landing's receipt carries the review of the unchanged evidence commit [None, None]",
+  "VELDO-0148 reland/conflict-rebuild detail: C's first land was refused stale-subject, and its re-land conflicted in the re-merge, named, publishing nothing [[]]",
+  "VELDO-0148 reland/conflict-rebuild detail: the loop offered one new build dispatch to C's builder, told to merge the new main the conflicting re-merge was made on [[], None]",
+  "VELDO-0148 reland/conflict-rebuild detail: once that build ended, its review was offered, following it, to an independent reviewer [[]]",
+  "VELDO-0148 reland/conflict-rebuild detail: no land of C followed the conflict: its one re-land was the loop's only land offer of C [[]]",
+  "VELDO-0148 reland/never-forced detail: every one of the 0 updates of the remote trunk was a fast-forward",
+  "VELDO-0148 reland/never-forced detail: every one of the 0 publications was a compare-and-swap of its own land's watermark",
+  "VELDO-0148 reland/end-wakes-pass detail: a real conflict and approval land ended in the first pass",
+  "VELDO-0148 reland/end-wakes-pass detail: land end alone starts the immediate next pass with each dispatch wake",
+  "VELDO-0148 lease/trunk-moved detail: the colleague landed between the listing and the push, and the executor recorded the lost lease as a refused publication, trunk-moved, not unknown [None, None]",
+  "VELDO-0148 lease/trunk-moved detail: the tip it judged was fetched into the publication clone, and the land dispatch ended trunk_moved naming the watermark, that tip and the classification [None, []]",
+  "VELDO-0148 lease/trunk-moved detail: the loop re-landed M as a new land dispatch following it, and that one landed [[]]",
+  "VELDO-0148 lease/contains-unknown detail: the colleague's commit contains K's candidate, and the publication stayed unknown with its stop owed, judged at its one push URL [None, None, []]",
+  "VELDO-0148 lease/contains-unknown detail: its land dispatch stopped unknown, by name, and the loop offered nothing after it: no new attempt and no re-land [None, None]",
+  "VELDO-0148 grant/fresh-request detail: G's first land published its candidate under the grant bound to exactly its tree, and was refused stale-subject [None, (None, '4f64b13aa2c5f54abf4a12fded2f9ac2a650ce21')]",
+  "VELDO-0148 grant/fresh-request detail: the re-land's publication refused the old grant by name for the re-merged tree, with the trunk unchanged and nothing published [None, None]",
+  "VELDO-0148 grant/fresh-request detail: exactly one request to the owner for that re-land, naming the re-merged tree, and none again on a later pass before his answer [[]]",
+  "VELDO-0148 grant/fresh-request detail: his grant was recorded bound to exactly the re-merged tree, and the next land dispatch, following the one that asked, landed that tree by a new compare-and-swap [None, [], (None, None)]",
+  "VELDO-0148 grant/never-granted detail: the real policy accepted before the new requirement, then final publication refused the never-granted security approval by name",
+  "VELDO-0148 grant/never-granted detail: no owner question, approval write, retry or publication for a never-granted name",
+  "VELDO-0148 grant/mixed-approvals detail: mixed failures keep both named reasons and no replacement subject",
+  "VELDO-0148 grant/mixed-approvals detail: no question, approval write, loop action or publication for a mixed refusal",
+  "VELDO-0148 grant/mixed-proof detail: mixed failures keep both named reasons and no replacement subject",
+  "VELDO-0148 grant/mixed-proof detail: no question, approval write, loop action or publication for a mixed refusal",
+  "VELDO-0148 grant/once-per-dispatch detail: replaying an applied grant writes nothing and emits no accepted event",
+  "VELDO-0148 grant/once-per-dispatch detail: three later loop passes grow neither accepted events, refused entries nor approvals",
+  "VELDO-0148 grant/once-per-dispatch detail: the production writer persisted a failed dispatch with G's real grant subject",
+  "VELDO-0148 grant/once-per-dispatch detail: a failed dispatch with an eligible subject cannot be granted or write an approval",
+  "VELDO-0148 grant/revoked-before-answer detail: the owner answered a real question after security was revoked",
+  "VELDO-0148 grant/revoked-before-answer detail: security is refused by name and no replacement, including owner, is written"
+ ],
+ "failed_rows": [
+  "VELDO-0148 install/land-station",
+  "VELDO-0148 reland/stale-subject",
+  "VELDO-0148 reland/review-kept",
+  "VELDO-0148 reland/conflict-rebuild",
+  "VELDO-0148 reland/never-forced",
+  "VELDO-0148 reland/end-wakes-pass",
+  "VELDO-0148 lease/trunk-moved",
+  "VELDO-0148 lease/contains-unknown",
+  "VELDO-0148 grant/fresh-request",
+  "VELDO-0148 grant/never-granted",
+  "VELDO-0148 grant/mixed-approvals",
+  "VELDO-0148 grant/mixed-proof",
+  "VELDO-0148 grant/once-per-dispatch",
+  "VELDO-0148 grant/revoked-before-answer"
+ ],
+ "modules": {
+  ".veldo/control_effect_executor.py": {
+   "at_commit": "4b22f8bbb3055407ba4a6053fff20c4403c4a7b4eff704b8c4ca4daaeae18ad2",
+   "now": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+  },
+  ".veldo/control_landing.py": {
+   "at_commit": "5941c7663e313f501a8ff03791b98bc5f6c35bef41ef7ae256c93917e23be1f2",
+   "now": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475"
+  },
+  ".veldo/control_landing_station.py": {
+   "at_commit": null,
+   "now": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "d6e33fa41fb7fbb0599a5bd9bf573854e77fc487658a79e635a55c3eb78e607c",
+   "now": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75"
+  },
+  ".veldo/lander.py": {
+   "at_commit": "ee1623a28b20c5e3bd101ecb0123e69ed929cedd8a070faceae972405a4808ae",
+   "now": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6"
+  }
+ },
+ "preamble_rows": 27,
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   false
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   false
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   false
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   false
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   false
+  ],
+  [
+   "VELDO-0148 reland/end-wakes-pass",
+   false
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   false
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   false
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   false
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   false
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   false
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   false
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   false
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   false
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 5.376,
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "tree": "git archive ad91698948dd1d894c0f6af4702b8a4b93c9694e, unchanged; the current suite file run against it"
+}

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1672 +1672 @@
+-            return self.rebuild(unit, last, latest, report)
++            return self.reland(unit, last, report)  # defect: a conflicting re-merge is re-landed

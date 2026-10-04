@@ -219,7 +219,7 @@ def _v150_suite():
                                                   'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                                   'independence_group': 'steward', 'scope': '*'})
             # olga owns proj-a and is a member of proj-c; zed owns proj-c and is a member of proj-a.
-            enroll('olga', 'person', ['project_owner'], ['proj-a', 'proj-c'])
+            enroll('olga', 'person', ['project_owner'], ['proj-a', 'proj-c', 'factory'])
             enroll('zed', 'person', ['project_owner'], ['proj-a', 'proj-c'])
             enroll('asha', 'person', [], ['proj-a'])
             # mallory has an active key and acts only in proj-c.
@@ -274,6 +274,8 @@ def _v150_suite():
                                    journal_sign, 'telegram-edge', lambda m: sign_as('edge', m, 'veldo-command'))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a', 'proj-c'], api_edge='api-edge',
                                journal_signer='authority', sign=journal_sign)
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
             service = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)
 
@@ -286,7 +288,8 @@ def _v150_suite():
                     nonce=next_id('pn'), owner=owner, charter={'purpose': 'Sell passes to travelers.'},
                     execution_repository=REPO,
                     authority_policy={'objective_acceptance': ['project_owner'], 'admission': ['project_owner']},
-                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
+                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500},
+                    ticket_key_prefixes=['BCG'] if project == 'proj-a' else ['PC'])))
 
             activated = [activate('proj-a', 'olga'), activate('proj-c', 'zed')]
 
@@ -324,7 +327,7 @@ def _v150_suite():
             # The two sources, as the owner and his members use them.
             def by_api(principal, text, request_id=None):
                 body = {'schema': 'veldo.intake_api_request/v1', 'domain': DOMAIN, 'request_id': request_id or next_id('req'),
-                        'edge': 'api-edge', 'principal': principal, 'text': text, 'project': None, 'clarifies': None}
+                        'edge': 'api-edge', 'principal': principal, 'text': text, 'project': next((p for p in ('proj-a', 'proj-b', 'proj-c') if text.startswith('For ' + p + ':')), None), 'clarifies': None}
                 result = intake.receive('api_request', {'request': body,
                                                         'signature': sign_as('api-edge', S.canonical_bytes(body))})
                 return result, body
@@ -399,8 +402,15 @@ def _v150_suite():
             teams = TM.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I, requester='pm',
                              request_sign=lambda m: sign_as('pm', m))
 
+            CG = load('team_fixture_config', mods / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(names, responsibility, perms=('feature',), distinct=()):
-                return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
                             proposal_permissions=list(perms), engines=['claude_code'],
                             budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
                             independence={'distinct_from': list(distinct)})
@@ -433,7 +443,7 @@ def _v150_suite():
             with region('own-message/telegram', 'own-message/api', 'own-message/non-owner-presented',
                         'own-message/admits-nothing', 'evidence/bound-intake-command', 'evidence/same-bound-fields'):
                 team_settled, team_amended = establish_team()
-                tg, tg_held, tg_update = by_telegram('olga', 'For proj-a: please do BCG-123, travelers buy a pass in two taps.')
+                tg, tg_held, tg_update = by_telegram('olga', 'For proj-a: BCG-123 please do BCG-123, travelers buy a pass in two taps.')
                 tg_key = telegram_key(tg_held)
                 want_tg = bound('A traveler buys a pass in two taps.')
                 tg_proposed, o_tg = propose(tg, want_tg)
@@ -467,7 +477,7 @@ def _v150_suite():
                      and (tg_observed[-1].get('acceptance') or {}).get('path') == 'own_message'
                      and (tg_observed[-1].get('acceptance') or {}).get('intake_command') == tg_command)])
 
-                ap, ap_body = by_api('olga', 'For proj-a: travelers see their pass active in ten seconds.')
+                ap, ap_body = by_api('olga', 'For proj-a: BCG-123 travelers see their pass active in ten seconds.')
                 ap_key = IN.source_key('api_request', ap_body['request_id'])
                 want_ap = bound('A traveler sees the pass active in ten seconds.')
                 ap_proposed, o_ap = propose(ap, want_ap)
@@ -487,13 +497,13 @@ def _v150_suite():
                      (service.metrics().get('acceptances') or {}).get('by_own_message') == 2)])
 
                 # Objectives from a member who is not the project's owner, by Telegram and by API.
-                zt, zt_held, _zt_update = by_telegram('zed', 'For proj-a: a loyalty badge on the pass.')
+                zt, zt_held, _zt_update = by_telegram('zed', 'For proj-a: BCG-123 a loyalty badge on the pass.')
                 zt_proposed, o_zt = propose(zt, bound('A traveler sees a loyalty badge.'))
                 zt_before = entity(o_zt)
                 zt_length = journal_length()
                 zt_by_message = accept_message(o_zt, first_writer(telegram_key(zt_held)))
                 zt_unchanged = entity(o_zt) == zt_before and journal_length() == zt_length
-                aa, aa_body = by_api('asha', 'For proj-a: receipts by email.')
+                aa, aa_body = by_api('asha', 'For proj-a: BCG-123 receipts by email.')
                 aa_proposed, o_aa = propose(aa, bound('A traveler gets a receipt by email.'))
                 aa_before = entity(o_aa)
                 aa_by_message = accept_message(o_aa, first_writer(IN.source_key('api_request', aa_body['request_id'])))
@@ -558,7 +568,7 @@ def _v150_suite():
                 tg_accept = tg_record.get('acceptance') or {}
                 ap_accept = ap_record.get('acceptance') or {}
                 tg_source = intake.source('telegram_message', '%d:%d:%d' % (BOT, chats['olga'], tg_held['message_id'])) or {}
-                other, other_held, _other_update = by_telegram('olga', 'For proj-a: a second objective, gift passes.')
+                other, other_held, _other_update = by_telegram('olga', 'For proj-a: BCG-123 a second objective, gift passes.')
                 other_key = telegram_key(other_held)
                 o_named, other_oid = propose(other, bound('A traveler gifts a pass.'))
                 named_before, named_length = entity(other_oid), journal_length()
@@ -607,7 +617,7 @@ def _v150_suite():
 
             with region('evidence/project-not-his', 'evidence/repeat', 'evidence/stale-revision'):
                 # His message in proj-c, whose owner is zed: the objective's acceptor is zed.
-                pc, pc_held, _pc_update = by_telegram('olga', 'For proj-c: a partner portal.')
+                pc, pc_held, _pc_update = by_telegram('olga', 'For proj-c: PC-123 a partner portal.')
                 pc_proposed, o_pc = propose(pc, bound('A partner sells a pass.', acceptor='zed', assessor='zed'))
                 pc_before, pc_length = entity(o_pc), journal_length()
                 pc_message = accept_message(o_pc, first_writer(telegram_key(pc_held)))
@@ -643,7 +653,7 @@ def _v150_suite():
                      entity(o_tg) == tg_entity and journal_length() == length
                      and [h.get('target') for h in objective(o_tg).get('history', [])].count('ACCEPTED') == 1)])
 
-                sr, _sr_body = by_api('olga', 'For proj-a: travelers renew in one tap.', request_id='req-stale')
+                sr, _sr_body = by_api('olga', 'For proj-a: BCG-123 travelers renew in one tap.', request_id='req-stale')
                 sr_proposed, o_sr = propose(sr, bound('A traveler renews in one tap.'))
                 r1_digest = objective(o_sr).get('bound_digest')
                 sr_command = first_writer(IN.source_key('api_request', 'req-stale'))
@@ -668,7 +678,7 @@ def _v150_suite():
             with region('authorship/member-authored-presented', 'authorship/owner-authored',
                         'evidence/repeat-after-checks', 'evidence/paused-project'):
                 # olga's message; asha, a plain member of proj-a, writes the objective's bound fields.
-                h, h_held, _h_update = by_telegram('olga', 'For proj-a: travelers get a refund in one tap.')
+                h, h_held, _h_update = by_telegram('olga', 'For proj-a: BCG-123 travelers get a refund in one tap.')
                 h_command = first_writer(telegram_key(h_held))
                 h_proposed = send('asha', 'propose', proposal=h.get('proposal_id'),
                                   **bound('Asha chose this outcome.', assessor='asha', scope=('payments',)))
@@ -684,7 +694,7 @@ def _v150_suite():
                 h_by_pm = accept_message(o_h, h_command)
                 h_unchanged = entity(o_h) == h_before and journal_length() == h_length and len(api['sent']) == h_sent
                 # zed owns proj-c and is a member of proj-a: he is not proj-a's owner or its project manager.
-                zo, zo_held, _zo_update = by_telegram('olga', 'For proj-a: travelers pick a seat.')
+                zo, zo_held, _zo_update = by_telegram('olga', 'For proj-a: BCG-123 travelers pick a seat.')
                 zo_proposed = send('zed', 'propose', proposal=zo.get('proposal_id'), **bound('A traveler picks a seat.'))
                 o_zo = zo_proposed.get('objective_id') or 'objective:absent'
                 zo_by_message = accept_message(o_zo, first_writer(telegram_key(zo_held)))
@@ -714,7 +724,7 @@ def _v150_suite():
                      and (objective(o_h).get('acceptance') or {}).get('settlement_id') == ST.settlement_id(rid_h, 1)
                      and (objective(o_h).get('acceptance') or {}).get('path') != 'own_message')])
 
-                ow, ow_held, _ow_update = by_telegram('olga', 'For proj-a: travelers share a pass with family.')
+                ow, ow_held, _ow_update = by_telegram('olga', 'For proj-a: BCG-123 travelers share a pass with family.')
                 ow_proposed = send('olga', 'propose', proposal=ow.get('proposal_id'),
                                    **bound('A traveler shares a pass with family.'))
                 o_ow = ow_proposed.get('objective_id') or 'objective:absent'
@@ -746,7 +756,7 @@ def _v150_suite():
                     ('a member in scope still gets the same acceptance', pm_again.get('ok') and pm_again.get('repeated')
                      and (pm_again.get('objective') or {}).get('acceptance') == mal_record.get('acceptance'))])
 
-                pp, pp_held, _pp_update = by_telegram('olga', 'For proj-a: travelers pause auto-refill.')
+                pp, pp_held, _pp_update = by_telegram('olga', 'For proj-a: BCG-123 travelers pause auto-refill.')
                 pp_proposed, o_pp = propose(pp, bound('A traveler pauses auto-refill.'))
                 pp_command = first_writer(telegram_key(pp_held))
                 paused = projects.apply(signed('olga', dict(

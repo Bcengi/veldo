@@ -1,0 +1,65 @@
+{
+  "review_base": "cf1ebfc9",
+  "implementation_commit": "470a78215626ebfc3e0f851372831e676729e9bc",
+  "decision": "VELDO-0152 lines 304-306 explicitly separate receipt note and later unclear-route question; retain that amendment to VELDO-0136, and migrate the historical double-escape mutant to the actual question rendering.",
+  "checks": [
+    {
+      "suite": "86_veldo_0168_text",
+      "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite 86_veldo_0168_text",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 52 passed, 0 failed in 3.14s",
+      "log_sha256": "43ff03c7af6199bc53ffc51ce55844081e57a1f22e12a4c407b7033aaf0b1c19"
+    },
+    {
+      "suite": "93_veldo_0152_intake_routes",
+      "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 45 passed, 0 failed in 91.57s",
+      "log_sha256": "7e3ebff27c3b3842027506ca0ad896ab6fa69867136d61ef5a1de088d188580a"
+    },
+    {
+      "suite": "68_veldo_0136_hints",
+      "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite 68_veldo_0136_hints",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 33 passed, 0 failed in 3.85s",
+      "log_sha256": "8f82829a1fa4f091fc60a5cfebacce9868299ea1daec96fc313a2c79f192035b"
+    },
+    {
+      "suite": "50_git_environment",
+      "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite 50_git_environment",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 144 suites): 30 passed, 0 failed in 2.23s",
+      "log_sha256": "93d88c02fd4ce59944a4d21e9e9715129941b47395e74b158f7308a9b079a80d"
+    }
+  ],
+  "mutation": {
+    "id": "text168-hint-lead-double-escaped",
+    "module": "control_intake.py",
+    "old": "        prompt = render_prompt(question['prompt'])\n",
+    "new": "        prompt = render_prompt(render_prompt(question['prompt']))  # defect: already rendered\n",
+    "rows": [
+      "intake/delivery"
+    ],
+    "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 scripts/selftest.py --suite 86_veldo_0168_text",
+    "exit_code": 1,
+    "result": "rejected by intake/delivery assertion",
+    "excerpt": [
+      "VELDO-0168 detail: intake/delivery: real question writer and send escape once, retaining original prompt",
+      "  SELFTEST FAIL: VELDO-0168 intake/delivery",
+      "selftest (PARTIAL, 1 of 144 suites): 51 passed, 1 failed in 3.10s"
+    ],
+    "log_sha256": "49dc0b7aacc1960ed45dccc34fd4b114db44e95212665593ce178238c9125449",
+    "scratch_deleted": true,
+    "method": "Archived cf1ebfc9 under /dev/shm, overlaid the working changes, extracted only this text168 call by AST, replaced its exact anchor once in each mirrored module, ran suite 86, deleted the copy. No mutation runner executed."
+  },
+  "validation": {
+    "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 python3 .veldo/validate.py all",
+    "exit_code": 0
+  },
+  "engine_sync": {
+    "command": "env -i PATH=/usr/bin:/bin HOME=/dev/shm/c152home TMPDIR=/dev/shm LANG=C.UTF-8 LC_ALL=C.UTF-8 TZ=UTC PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONHASHSEED=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 bash scripts/check_template_sync.sh",
+    "exit_code": 0,
+    "summary": "template sync: pass (250 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+  },
+  "gate_run": false
+}

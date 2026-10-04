@@ -1,0 +1,203 @@
+{
+ "schema": "veldo.proof-mutations/v1",
+ "spec_id": "VELDO-0151",
+ "suite": "scripts/suites/91_veldo_0151_specialists.py",
+ "status": "17 registered; two review follow-ups hand-applied and rejected by suite 91; mutation runner reserved for reviewer",
+ "mutants": [
+  {
+   "name": "v151-missing-reference-accepted",
+   "named_rows": [
+    "roles/missing-reference/implementation",
+    "roles/missing-reference/designer"
+   ],
+   "diff": "proof/VELDO-0151/v151-missing-reference-accepted.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "3c5905508f61790609c20f42f9d28d6356191b5cb7b6c16f24a1d0a1908f1ee2",
+   "status": "not run"
+  },
+  {
+   "name": "v151-unresolved-reference-accepted",
+   "named_rows": [
+    "roles/unresolved-reference/implementation",
+    "roles/unresolved-reference/designer"
+   ],
+   "diff": "proof/VELDO-0151/v151-unresolved-reference-accepted.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "f211107b351e9a6e2a957123d56492b93634d5123c2c6dbb89efd0f1e9ca2db9",
+   "status": "not run"
+  },
+  {
+   "name": "v151-kind-unchecked",
+   "named_rows": [
+    "roles/kind/implementation/unknown",
+    "roles/kind/designer/required",
+    "roles/kind/implementation/specialist",
+    "roles/kind/designer/None"
+   ],
+   "diff": "proof/VELDO-0151/v151-kind-unchecked.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "038b2fd7109a2f3122b39a27e84db3973c5d9e35233d25f0a8396cfc5bd00cc0",
+   "status": "not run"
+  },
+  {
+   "name": "v151-missing-specialist-assigned",
+   "named_rows": [
+    "assignment/staffing-request"
+   ],
+   "diff": "proof/VELDO-0151/v151-missing-specialist-assigned.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "08b562239f4cfa6ed2e52e6ca66e58434cf5d96f438eeebf7bae6a029ac35f0e",
+   "status": "not run"
+  },
+  {
+   "name": "v151-capability-binding-dropped",
+   "named_rows": [
+    "assignment/bindings"
+   ],
+   "diff": "proof/VELDO-0151/v151-capability-binding-dropped.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "16808ca1c17a92575bccdaf306c0c3f85d7a129447724cbaf9c1dc416cdf2d81",
+   "status": "not run"
+  },
+  {
+   "name": "v151-role-binding-dropped",
+   "named_rows": [
+    "assignment/bindings"
+   ],
+   "diff": "proof/VELDO-0151/v151-role-binding-dropped.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "877d09572ef98b31569621e1ee9ce92ccd5f176c80648df6e6b79433511849db",
+   "status": "not run"
+  },
+  {
+   "name": "v151-specialist-worker-unchecked",
+   "named_rows": [
+    "assignment/unlisted-worker"
+   ],
+   "diff": "proof/VELDO-0151/v151-specialist-worker-unchecked.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "e7269fb8593b992424f48884652bbee996b19d413f87173a65c1e8f080860889",
+   "status": "not run"
+  },
+  {
+   "name": "v151-team-binding-stale",
+   "named_rows": [
+    "assignment/bindings"
+   ],
+   "diff": "proof/VELDO-0151/v151-team-binding-stale.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "ae3b2c9b4fb5aacbba29ff0ceebaa37c75e21e5e002b76984b358cc8df700c8c",
+   "status": "not run"
+  },
+  {
+   "name": "v151-review-count-unchecked",
+   "named_rows": [
+    "assignment/policy"
+   ],
+   "diff": "proof/VELDO-0151/v151-review-count-unchecked.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "dabdfe2360adf65ac27c1c8d3a78f1759432a98ecf917976e8917b5fcf3107ff",
+   "status": "not run"
+  },
+  {
+   "name": "v151-owner-request-omitted",
+   "named_rows": [
+    "assignment/staffing-request",
+    "roles/missing-reference/designer"
+   ],
+   "diff": "proof/VELDO-0151/v151-owner-request-omitted.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "9298aef8bb994d867a257b759bb5ce29843dc2191c2d1d10d6725255ee3ecf07",
+   "status": "not run"
+  },
+  {
+   "name": "v151-specialist-brief-omitted",
+   "named_rows": [
+    "roles/brief-and-authority"
+   ],
+   "diff": "proof/VELDO-0151/v151-specialist-brief-omitted.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "73e6be58f9dc1f5408038fda066e9b7c3919cd5ebea77fa91168faa08983ae55",
+   "status": "not run"
+  },
+  {
+   "name": "v151-capability-resolution-floats",
+   "named_rows": [
+    "roles/unresolved-reference/designer"
+   ],
+   "diff": "proof/VELDO-0151/v151-capability-resolution-floats.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "6b1379ca362c9dc267a8feadb346807220c7a37abf5992dc71639cedf1813843",
+   "status": "not run"
+  },
+  {
+   "name": "v151-roster-admission-permission",
+   "named_rows": [
+    "roles/brief-and-authority"
+   ],
+   "diff": "proof/VELDO-0151/v151-roster-admission-permission.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "a1baa711e718346ccf0a14689b1375f6aa1b7f29b48cacbcc7095ff8167e3ac3",
+   "status": "not run"
+  },
+  {
+   "name": "v151-revision-metrics-omitted",
+   "named_rows": [
+    "roles/observability"
+   ],
+   "diff": "proof/VELDO-0151/v151-revision-metrics-omitted.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "14c140d91d963863dccc8c3fabb7f13f4f8f24c4312d543e8c3311e670766dc3",
+   "status": "not run"
+  },
+  {
+   "name": "v151-capability-reference-not-pinned",
+   "named_rows": [
+    "roles/observability"
+   ],
+   "diff": "proof/VELDO-0151/v151-capability-reference-not-pinned.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "2c94122c6ab4dcbe38f306aaacc83b09cb4fa71b3ec08b3d194b8272479d0ec8",
+   "status": "not run"
+  },
+  {
+   "name": "v151-specialist-roster-unchecked",
+   "named_rows": [
+    "roles/specialist-outside-project"
+   ],
+   "diff": "proof/VELDO-0151/v151-specialist-roster-unchecked.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "194568f4ec7c80a038ac6269fe002fbcf30f178dba10ebcefa3b96820ed91c68",
+   "status": "hand-applied; named row fails by assertion in suite 91 alone",
+   "evidence": "proof/VELDO-0151/review-followup.json"
+  },
+  {
+   "name": "v151-reviewer-capability-binding-dropped",
+   "named_rows": [
+    "assignment/reviewer-capability-binding"
+   ],
+   "diff": "proof/VELDO-0151/v151-reviewer-capability-binding-dropped.diff",
+   "module": ".veldo/control_team.py",
+   "source_sha256": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41",
+   "mutant_sha256": "b6b1ef5a7ab0b025e6ab563d9ac06d4f7e13c489ef03914e56acaf5201ea6151",
+   "status": "hand-applied; named row fails by assertion in suite 91 alone",
+   "evidence": "proof/VELDO-0151/review-followup.json"
+  }
+ ]
+}

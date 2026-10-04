@@ -1,0 +1,186 @@
+{
+ "bad": "a90e5a85",
+ "decisions": [
+  "# bad: [a90e5a858e49716cdfccaf061f98d1c446b594cc] VELDO-0127 live captures recaptured on the real logins after the VELDO-0040 receiver change (Claude 2.1.281 haiku-4-5, Codex gpt-6-astra; problems none)",
+  "# good: [f1e1abb9ed0006b7d97948aed943c044b0b616cc] Gate stamp for 7bff0c68: green against a clean tree, bound to the commit it verified",
+  "git bisect start '--no-checkout' 'a90e5a85' 'f1e1abb9'",
+  "# good: [7ee372edee547197159a2df804af5cf042571612] Record VELDO-0148 guard falsification and current proof audits",
+  "git bisect good 7ee372edee547197159a2df804af5cf042571612",
+  "# bad: [0f289ab824e7aa88ef6271cb0d8a664ca676876f] Classify containment caps from recorded scope and receiver evidence",
+  "git bisect bad 0f289ab824e7aa88ef6271cb0d8a664ca676876f",
+  "# good: [d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515] Preserve final manager results and explicit stop precedence",
+  "git bisect good d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515",
+  "# good: [9a48b4eaa29403af56b4df2d8c3bc689a09b6de1] Record pre-fix conclude falsification and corrected suite evidence",
+  "git bisect good 9a48b4eaa29403af56b4df2d8c3bc689a09b6de1",
+  "# good: [9572210be66dc3c6d849731693c2a93928a89aeb] Revert \"Group.conclude always clears a failed scope, within the settle budget but never under a second\"",
+  "git bisect good 9572210be66dc3c6d849731693c2a93928a89aeb",
+  "# first bad commit: [0f289ab824e7aa88ef6271cb0d8a664ca676876f] Classify containment caps from recorded scope and receiver evidence"
+ ],
+ "environment": {
+  "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_TERMINAL_PROMPT": "0",
+  "HOME": "/dev/shm/veldo148-home",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "PATH": "/usr/bin:/bin",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONHASHSEED": "0",
+  "PYTHONNOUSERSITE": "1",
+  "TMPDIR": "/dev/shm",
+  "TZ": "UTC",
+  "XDG_RUNTIME_DIR": "/run/user/1000"
+ },
+ "first_bad": "0f289ab824e7aa88ef6271cb0d8a664ca676876f",
+ "good": "f1e1abb9",
+ "method": "git bisect start with no checkout; each selected commit extracted read-only by git archive; three suite selectors run serially",
+ "observations": [
+  {
+   "commit": "f1e1abb9ed0006b7d97948aed943c044b0b616cc",
+   "suites": [
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 49 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 44 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 48 passed, 0 failed"
+    }
+   ]
+  },
+  {
+   "commit": "7ee372edee547197159a2df804af5cf042571612",
+   "suites": [
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 137 suites): 49 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 137 suites): 44 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 137 suites): 48 passed, 0 failed"
+    }
+   ]
+  },
+  {
+   "commit": "0f289ab824e7aa88ef6271cb0d8a664ca676876f",
+   "suites": [
+    {
+     "exit": 1,
+     "failed": [
+      "VELDO-0041 heartbeat/blocked-call-liveness",
+      "VELDO-0041 heartbeat/engine-group-signal"
+     ],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 47 passed, 2 failed"
+    },
+    {
+     "exit": 1,
+     "failed": [
+      "VELDO-0155 strip/user-manager"
+     ],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 43 passed, 1 failed"
+    },
+    {
+     "exit": 1,
+     "failed": [
+      "VELDO-0156 strip/user-manager"
+     ],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 47 passed, 1 failed"
+    }
+   ]
+  },
+  {
+   "commit": "d1ac78fe97ba71e8a54fcb2ed103d743ea4b7515",
+   "suites": [
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 49 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 44 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 48 passed, 0 failed"
+    }
+   ]
+  },
+  {
+   "commit": "9a48b4eaa29403af56b4df2d8c3bc689a09b6de1",
+   "suites": [
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 49 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 44 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 48 passed, 0 failed"
+    }
+   ]
+  },
+  {
+   "commit": "9572210be66dc3c6d849731693c2a93928a89aeb",
+   "suites": [
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "67_veldo_0041_heartbeat",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 49 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "80_veldo_0155_claude_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 44 passed, 0 failed"
+    },
+    {
+     "exit": 2,
+     "failed": [],
+     "suite": "81_veldo_0156_codex_baseline",
+     "summary": "selftest (PARTIAL, 1 of 141 suites): 48 passed, 0 failed"
+    }
+   ]
+  }
+ ],
+ "schema": "veldo.regression-bisect/v1"
+}

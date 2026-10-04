@@ -18,7 +18,11 @@ def _v168_suite():
     import shutil
     import socket
     import tempfile
+    import threading
+    import time
+    from types import SimpleNamespace
     import unicodedata
+    from unittest.mock import patch
 
     production = {
         'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
@@ -305,19 +309,48 @@ def _v168_suite():
                           for obj in (ing.presenter, projection, reporter))
                   and ((long or {}).get('render_stats') or {}).get('hard_cuts') == len(hard))
 
+            # Frozen clock probes distinguish a run-relative fixture from another future constant.
+            clock_ok = []
+            for now in (1791000000.75, 4102444800.75):
+                st = {'tick': 0, 'lock': threading.Lock()}
+                fixture_bot = {'next': 0, 'messages': {}}
+                with patch.object(H, 'time', SimpleNamespace(time=lambda: now)):
+                    first = H._message(st, fixture_bot, {}, {'id': 1}, 'first')
+                    second = H._message(st, fixture_bot, {}, {'id': 1}, 'second')
+                clock_ok.append(type(first['date']) is int and now < first['date'] < second['date'] < now + 3)
+            check('intake/delivery', 'fixture messages follow the run clock and fractional enrollment time', all(clock_ok))
+
             intake = IN.Intake(ing.inbox.store, ing.inbox.membership if hasattr(ing.inbox, 'membership') else A.CM,
                                A.AC, ing.acquirer, ing.conn, domain=A.ids['domain_uuid'],
                                projects=['project-a', 'literal<U+200B>'], api_edge='api-edge',
                                journal_signer=ing.inbox.journal_signer, sign=ing.inbox.sign, asker=ing.presenter.edge)
-            H.deliver(api, token, owner, 'Please build a new calendar view')
+            # VELDO-0152 asks only after the factory PM returns an unclear route.
+            neighbor152 = load('v168_intake_setup', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py')
+            neighbor152.factory(intake, A.ids, 'owner', A.sign_as)
+            incoming = H.deliver(api, token, owner, 'Please build a new calendar view')
+            # Keep this intake delivery after the run's signed membership enrollment.
+            incoming['message']['date'] = int(time.time()) + 1
             ing.acquirer.acquire()
             taken = intake.take_telegram()
+            routes = [neighbor152.unclear(intake, result) for result in taken if result.get('outcome') == 'inbox']
+            check('intake/delivery', 'factory inbox proposals accept the unclear route',
+                  bool(routes) and all(result.get('ok') for result in routes))
             questions = [json.loads(r[0]) for r in ing.conn.execute("SELECT data FROM entities WHERE kind='intake_question'")]
             delivered = []
+            delivered_messages = []
             for q in questions:
                 d = q.get('delivery') or {}
                 msg = api['bots'][token]['messages'].get((d.get('chat_id'), d.get('message_id')), {})
-                delivered.append('literal<U+003C>U+200B>' in msg.get('text', '') and 'literal<U+200B>' in q['prompt'])
+                delivered_messages.append(msg)
+                delivered.append(msg.get('text') == expected(q['prompt'])
+                                 and 'literal<U+003C>U+200B>' in msg['text']
+                                 and 'literal<U+200B>' in q['prompt'])
+            if not (taken and delivered and all(delivered)) or os.environ.get('VELDO_0168_INTAKE_TRACE'):
+                print('VELDO-0168 intake observations: ' + json.dumps(dict(
+                    taken=taken, questions=questions, delivered_messages=delivered_messages,
+                    message_date=incoming['message']['date'],
+                    owner_key_effective_at=[k.get('effective_at') for k in A.CM.authority_state(A.S, A.conn)['keyring']
+                                            if k.get('principal') == 'owner']), sort_keys=True))
             check('intake/delivery', 'real question writer and send escape once, retaining original prompt',
                   bool(taken) and bool(delivered) and all(delivered))
 

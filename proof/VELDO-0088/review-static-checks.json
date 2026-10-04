@@ -1,0 +1,50 @@
+{
+ "validate": {
+  "command": [
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "returncode": 0
+ },
+ "git_boundary": {
+  "command": [
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "returncode": 0
+ },
+ "anchors": {
+  "command": [
+   "python3",
+   "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/anchor_check.py"
+  ],
+  "returncode": 0
+ },
+ "footprint": {
+  "command": [
+   "python3",
+   "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+   "VELDO-0088"
+  ],
+  "returncode": 1,
+  "limitation": "The command compares against origin/main and reports inherited VELDO-0151 files. No review change is outside the VELDO-0088 footprint; the combined 0088 and 0151 check passes."
+ },
+ "combined_footprint": {
+  "command": [
+   "python3",
+   "/tmp/claude-1000/-home-dmitry-projects-myday/ac9f6bf1-b735-42c0-9a84-a206291f9ce4/scratchpad/footprint_check.py",
+   "VELDO-0088",
+   "VELDO-0151"
+  ],
+  "returncode": 0
+ },
+ "review_footprint": {
+  "base": "1773b279",
+  "outside": []
+ },
+ "engine_copies": {
+  "control_service.py": true,
+  "control_workflow_cycle_pm.py": true
+ }
+}

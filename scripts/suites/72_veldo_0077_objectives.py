@@ -229,7 +229,7 @@ def _v77_suite():
             admin('steward', 'enroll_principal', {'principal': 'steward', 'principal_type': 'person',
                                                   'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                                   'independence_group': 'steward', 'scope': '*'})
-            enroll('olga', 'person', ['project_owner', 'admission_authority'], ['proj-a', 'proj-b'])
+            enroll('olga', 'person', ['project_owner', 'admission_authority'], ['proj-a', 'proj-b', 'factory'])
             enroll('zed', 'person', ['project_owner'], ['proj-a'])
             enroll('asha', 'person', [], ['proj-a'])
             enroll('pete', 'person', [], ['proj-a'])
@@ -277,6 +277,8 @@ def _v77_suite():
                                    journal_sign, 'telegram-edge', lambda m: sign_as('edge', m, 'veldo-command'))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a', 'proj-b'], api_edge='api-edge',
                                journal_signer='authority', sign=journal_sign)
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
 
             def signed(who, body):
@@ -342,7 +344,7 @@ def _v77_suite():
             def ask(text, request_id=None, principal='olga'):
                 """One owner message through the authenticated API edge into the common intake."""
                 body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': request_id or next_id('api-req'),
-                        'edge': 'api-edge', 'principal': principal, 'text': text, 'project': None, 'clarifies': None}
+                        'edge': 'api-edge', 'principal': principal, 'text': text, 'project': next((p for p in ('proj-a', 'proj-b', 'proj-c') if text.startswith('For ' + p + ':')), None), 'clarifies': None}
                 return intake.receive('api_request', {'request': body, 'signature': sign_as('api-edge', S.canonical_bytes(body))})
 
             EVIDENCE = [{'id': 'outcome', 'kind': 'gate_observation'}, {'id': 'regression', 'kind': 'gate_observation'}]

@@ -276,7 +276,7 @@ def _v79_suite():
                                                   'public_key': public['steward'], 'independence_group': 'steward',
                                                   'scope': '*'})
             # olga owns proj-a with both decision roles; zed owns proj-b and holds admission, never priority.
-            enroll('olga', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-a'])
+            enroll('olga', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-a', 'factory'])
             enroll('zed', 'person', ['project_owner', 'admission_authority'], ['proj-b'])
             enroll('asha', 'person', [], ['proj-a', 'proj-b'])
             enroll('pm', 'service', [], ['proj-a', 'proj-b'])
@@ -326,6 +326,8 @@ def _v79_suite():
                                    journal_sign, 'telegram-edge', lambda m: sign_as('edge', m, 'veldo-command'))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=['proj-a', 'proj-b'],
                                api_edge='api-edge', journal_signer='authority', sign=journal_sign)
+            neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+            neighbor152['factory'](intake, ids, 'olga', sign_as)
             projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False)
 
             def signed(who, body):
@@ -455,8 +457,15 @@ def _v79_suite():
                         % (record.get('uuid'), record.get('decomposition_revision') or 0, record.get('project'),
                            record.get('title'), record.get('work_class'), '; '.join(record.get('scope') or []), units))
 
+            CG = load('team_fixture_config', mods / 'control_agent_config.py')
+            configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
+                repository=ids['repository_uuid'], signer='authority', sign=journal_sign)
+            configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
+                mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
+                command_id=next_id('capability'))
+
             def role(names, responsibility, perms=('feature',), distinct=()):
-                return dict(workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
+                return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(names), responsibilities=[responsibility, 'report'], expertise=['payments'],
                             proposal_permissions=list(perms), engines=['claude_code'],
                             budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 100},
                             independence={'distinct_from': list(distinct)})
@@ -490,7 +499,7 @@ def _v79_suite():
 
             def by_api(principal, text):
                 body = {'schema': IN.API_SCHEMA, 'domain': DOMAIN, 'request_id': next_id('req'), 'edge': 'api-edge',
-                        'principal': principal, 'text': text, 'project': None, 'clarifies': None}
+                        'principal': principal, 'text': text, 'project': next((p for p in ('proj-a', 'proj-b', 'proj-c') if text.startswith('For ' + p + ':')), None), 'clarifies': None}
                 result = intake.receive('api_request', {'request': body,
                                                         'signature': sign_as('api-edge', S.canonical_bytes(body))})
                 return result, body

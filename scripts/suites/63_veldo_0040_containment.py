@@ -16,6 +16,7 @@ burns CPU, writes a file, handles a stop, and writes what it saw; it qualifies n
 def _v40_suite():
     import contextlib
     import importlib.util
+    import io
     import json
     import os
     from pathlib import Path
@@ -26,6 +27,7 @@ def _v40_suite():
     import tempfile
     import time
     import types
+    from unittest.mock import patch
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -164,13 +166,14 @@ def mark(markers, tag, name, data):
     temporary = Path(markers) / ('%s.%s.%d.tmp' % (tag, name, os.getpid()))
     temporary.write_text(json.dumps(data))
     os.replace(temporary, path)
-def log(markers, tag, name, what):
+def log(markers, tag, name, what, clock=time.time):
     with open(Path(markers) / ('%s.%s.%s' % (tag, name, what)), 'a') as handle:
-        handle.write('%r\\n' % time.time())
+        handle.write('%r\\n' % clock())
 def beat(markers, tag, name, seconds):
     end = time.time() + seconds
     while time.time() < end:
         log(markers, tag, name, 'beat')
+        log(markers, tag, name, 'beat_monotonic', time.monotonic)
         time.sleep(0.1)
 '''
         child = base / 'child40.py'
@@ -187,6 +190,7 @@ elif kind == 'pgroup':
     os.setpgid(0, 0)
 def on_term(signum, frame):
     log(markers, tag, name, 'term')
+    log(markers, tag, name, 'term_monotonic', time.monotonic)
     if kind != 'stubborn':
         os._exit(143)
 def on_usr1(signum, frame):
@@ -417,9 +421,10 @@ sys.exit(payload.get('code', 0))
 
         emitted, raised, regions, observed = set(), [], [], {}
 
-        def check(label, condition):
+        def check(label, condition, detail=None):
             emitted.add(label)
-            expect('VELDO-0040 ' + label, bool(condition))
+            suffix = ': ' + json.dumps(detail, sort_keys=True) if not condition and detail else ''
+            expect('VELDO-0040 ' + label + suffix, bool(condition))
 
         @contextlib.contextmanager
         def region(*labels):
@@ -430,7 +435,344 @@ sys.exit(payload.get('code', 0))
                 raised.append((labels[0], repr(error)))
                 for label in labels:
                     if label not in emitted:
-                        check(label, False)
+                        check(label, False, {'raised': repr(error)} if label == 'containment/runtime-cap' else None)
+
+        # Deterministic manager sequences: no sleep, real signals, or process scheduling.
+        stamp_names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
+                       'InactiveEnterTimestampMonotonic')
+
+        def manager_record(state='failed', result='timeout'):
+            return dict(LoadState='loaded', ActiveState=state, Result=result, **dict(zip(stamp_names, ('100', '200', '300'))))
+
+        @contextlib.contextmanager
+        def manager_sequence(sequence, show_seconds=0, reset_timeout=False):
+            clock, calls, resets = [0.0], [], []
+            group = C.Group.__new__(C.Group)
+            group.unit, group.systemctl, group.environment = 'fake.scope', 'fake-systemctl', {}
+            group.events, group.timestamps, group.cgroup = 12, {}, None
+            group.start_evidence, group.oom_kill = {}, 0
+
+            def run(command, **kwargs):
+                if 'reset-failed' in command:
+                    resets.append(dict(group.timestamps))
+                    if reset_timeout:
+                        clock[0] += kwargs['timeout']
+                        raise subprocess.TimeoutExpired('reset-failed', kwargs['timeout'])
+                    return types.SimpleNamespace(returncode=0)
+                assert 'show' in command
+                calls.append(kwargs['timeout'])
+                clock[0] += min(show_seconds, kwargs['timeout'])
+                item = sequence[min(len(calls) - 1, len(sequence) - 1)]
+                if isinstance(item, Exception):
+                    if isinstance(item, subprocess.TimeoutExpired):
+                        clock[0] += kwargs['timeout']
+                    raise item
+                return types.SimpleNamespace(returncode=0, stdout='\n'.join(k + '=' + v for k, v in item.items()))
+
+            def sleep(seconds):
+                clock[0] += seconds
+
+            fake_time = types.SimpleNamespace(monotonic=lambda: clock[0], time=lambda: 1000 + clock[0], sleep=sleep)
+            fake_subprocess = types.SimpleNamespace(**vars(subprocess))
+            fake_subprocess.run = run
+            with patch.object(C, 'subprocess', fake_subprocess), patch.object(C, 'time', fake_time):
+                yield group, clock, calls, resets
+
+        def reap_sequence(sequence, explicit=None, start=None, code=143, exit_at=0, kill_rest=False, oom=0,
+                          empty_on_exit=False, missing_result=False, late_oom=False):
+            with manager_sequence(sequence) as (group, clock, calls, resets):
+                group.start_evidence, group.oom_kill = start or {}, oom
+                population = iter((False, False) if empty_on_exit else
+                                  (True, True, False) if kill_rest else (True, False))
+                group.populated = lambda: next(population)
+                group.members = lambda: [44]
+                group.terminate = lambda: None
+                group.kill = lambda: None
+                group.report = lambda: {'unit': group.unit}
+                group.close = lambda: None
+                reads, memory = [], [0]
+                original_conclude = group.conclude
+
+                def conclude():
+                    reads.append('conclude')
+                    return None if missing_result else original_conclude()
+
+                group.conclude = conclude
+                if late_oom:
+                    group.cgroup = '/fake.scope'
+                    group.populated = lambda: C.Group.populated(group)
+
+                def read_memory(path):
+                    assert path.name == 'memory.events'
+                    reads.append('memory:' + str(memory[0]))
+                    return 'oom_kill ' + str(memory[0])
+
+                def read_population(*args):
+                    populated = next(population)
+                    reads.append('population:' + str(int(populated)))
+                    if not populated:
+                        memory[0] = 1  # Last member dies after the preceding memory sample.
+                    return b'populated 1' if populated else b'populated 0'
+
+                stops = []
+                original_stop = C.Stop
+
+                def stop_factory(*args):
+                    stop = original_stop(*args)
+                    stops.append(stop)
+                    return stop
+
+                class Output(io.BytesIO):
+                    def fileno(self):
+                        return 11
+
+                worker = types.SimpleNamespace(pid=44, stdin=io.BytesIO(), stdout=Output(),
+                                               group=group, wait=lambda: code)
+                # Drive Receiver._reap's begin(), which sets both local cause and Stop.cause.
+                meter = None
+                if explicit in ('usage_cap', 'configuration_stop', 'paid_api'):
+                    login = types.SimpleNamespace(opening=lambda packet: (packet, True), release=lambda: None)
+                    meter = types.SimpleNamespace(login_guard=login, terminal=types.SimpleNamespace(),
+                                                  login_stop='configuration_stop:test' if explicit == 'configuration_stop'
+                                                  else 'paid_api:test',
+                                                  guarded=lambda chunk: explicit != 'usage_cap',
+                                                  feed=lambda chunk: explicit == 'usage_cap')
+                if explicit == 'heartbeat_missing':
+                    worker.heartbeat = types.SimpleNamespace(fd=14, due=lambda: 0, expired=lambda now: True,
+                                                             lapse=lambda now: None, summary=lambda: {})
+                receiver = types.SimpleNamespace(metering=meter, recorder=None, control=None,
+                                                 _graces=lambda: (1, 1), _stop_asked=lambda: explicit == 'requested')
+                # Let the real deadline/heartbeat check run while the adapter is still alive.
+                events = iter(([], [(13, 1)])) if explicit in ('deadline', 'heartbeat_missing', 'runtime_cap') else iter(([(13, 1)],))
+                waits = []
+                if explicit == 'runtime_cap':
+                    clock[0] = 10.4  # Setup consumed 0.4s of the scope's 1.2s, before this reaper began.
+                def poll(timeout):
+                    waits.append(timeout)
+                    clock[0] = max(clock[0], exit_at)
+                    event = next(events, [])
+                    if explicit == 'runtime_cap' and len(waits) == 1:
+                        clock[0] += timeout / 1000
+                    if not event and stops[0].stage == 'terminate':
+                        clock[0] = stops[0].due
+                    return event
+                poller = types.SimpleNamespace(register=lambda *args: None, unregister=lambda *args: None,
+                                              poll=poll)
+                fake_os = types.SimpleNamespace(**vars(os))
+                fake_os.pidfd_open = lambda pid: 13
+                fake_os.close = lambda fd: None
+                fake_os.set_blocking = lambda *args: None
+                fake_os.read = lambda *args: b''
+                fake_os.pread = read_population
+                fake_os.kill = lambda *args: None
+                contract = dict(dispatch_id='fake', unit='unit', station='build', source={},
+                                input={'payload': {}}, capability={'configuration': {}},
+                                deadline=999 if explicit == 'deadline' else 2000)
+                with patch.object(L, 'C', C), patch.object(C, 'Stop', stop_factory), \
+                        patch.object(C, 'os', fake_os), patch.object(L, 'os', fake_os), \
+                        patch.object(L, 'select', types.SimpleNamespace(poll=lambda: poller, POLLIN=1,
+                                                                      POLLPRI=2, POLLERR=8)), \
+                        patch.object(L, 'time', C.time), patch.object(C, '_read', read_memory):
+                    termination = L.Receiver._reap(receiver, worker, contract)
+                return dict(termination=termination, supervision=receiver.supervision,
+                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads, waits=waits)
+
+        gone = dict(LoadState='not-found', ActiveState='inactive', Result='success',
+                    **dict.fromkeys(stamp_names, '0'))
+        start = dict(ActiveEnterTimestampMonotonic=10_000_000, RuntimeMaxUSec=1_200_000,
+                     TimeoutStopUSec=500_000)
+        reasons = ('requested', 'usage_cap', 'deadline', 'heartbeat_missing', 'configuration_stop', 'paid_api')
+
+        with region('containment/start-evidence'):
+            with manager_sequence([dict(manager_record('active', 'success'), ControlGroup='/fake.scope',
+                                        Slice='fake.slice', RuntimeMaxUSec='1.2s', TimeoutStopUSec='500ms',
+                                        ActiveEnterTimestampMonotonic='10000000')]) as (group, clock, calls, resets):
+                fake_cgroup = base / 'fake-cgroup'
+                (fake_cgroup / 'fake.scope').mkdir(parents=True)
+                (fake_cgroup / 'fake.scope/cgroup.events').write_text('populated 1')
+                group.slice, group.installed = 'fake.slice', {}
+                group._expected = lambda: {}
+                with patch.object(C, 'CGROUP', fake_cgroup), patch.object(C, 'cgroup_of', lambda pid: '/fake.scope'), \
+                        patch.object(C, 'file_limit', lambda pid: None):
+                    problems = group.attach(44)
+                group.close()
+                observed['start_evidence'] = dict(start=group.start_evidence, problems=problems)
+                check('containment/start-evidence', not problems and group.start_evidence == start,
+                      observed['start_evidence'])
+
+        with region('containment/recorded-runtime-after-collection'):
+            rows = [reap_sequence([gone], start=start, exit_at=11.3, kill_rest=True, code=code)
+                    for code in (143, -signal.SIGTERM)]
+            observed['recorded_runtime_after_collection'] = rows
+            check('containment/recorded-runtime-after-collection', all(
+                row['supervision']['cause'] == 'runtime_cap' and row['termination']['deadline_stop']
+                and row['supervision']['result'] == 'timeout' and row['supervision']['manager_result'] == 'unknown'
+                and row['supervision']['scope_start'] == start and row['supervision']['empty']
+                and [step['step'] for step in row['supervision']['steps']] == ['terminate', 'kill']
+                for row in rows), rows)
+
+        with region('containment/receiver-runtime-cap'):
+            # The manager has not enforced its timer (e.g. daemon-reload). A live
+            # adapter supplies no exit notification until the receiver sends TERM.
+            row = reap_sequence([manager_record('inactive', 'success')], start=start,
+                                explicit='runtime_cap', kill_rest=True)
+            observed['receiver_runtime_cap'] = row
+            check('containment/receiver-runtime-cap',
+                  row['inferred'] == 'runtime_cap' and row['termination']['deadline_stop']
+                  and row['supervision']['result'] == 'timeout'
+                  and row['supervision']['manager_result'] == 'success'
+                  and row['waits'][0] == 800
+                  and [step['step'] for step in row['supervision']['steps']] == ['terminate', 'kill']
+                  and abs(row['supervision']['steps'][0]['monotonic'] - 11.2) < 0.001
+                  and row['supervision']['empty'], row)
+
+        # KillMode=control-group can empty the group before the receiver sees the pidfd.
+        # No receiver step may supply the signal timestamp for these rows.
+        for label, code, exit_at, expected in (
+                ('empty-shell-signal-after-cap', 143, 11.3, 'runtime_cap'),
+                ('empty-native-signal-after-cap', -signal.SIGTERM, 11.3, 'runtime_cap'),
+                ('empty-shell-signal-before-cap', 143, 10.5, 'unknown'),
+                ('empty-native-signal-before-cap', -signal.SIGTERM, 10.5, 'unknown'),
+                ('empty-failure-after-cap', 1, 11.3, 'unknown')):
+            with region('containment/' + label):
+                row = reap_sequence([gone], start=start, code=code, exit_at=exit_at, empty_on_exit=True)
+                observed[label.replace('-', '_')] = row
+                check('containment/' + label, (row['supervision']['cause'] == 'runtime_cap') == (expected == 'runtime_cap')
+                      and row['termination']['deadline_stop'] == (expected == 'runtime_cap')
+                      and (row['supervision']['result'] == 'timeout') == (expected == 'runtime_cap')
+                      and row['supervision']['empty'] and row['supervision']['steps'] == []
+                      and row['inferred'] is None, row)
+
+        with region('containment/empty-ordinary-after-cap-unknown'):
+            rows = [reap_sequence([record], start=start, code=code, exit_at=exit_at,
+                                  empty_on_exit=True, missing_result=missing)
+                    for record, missing in ((gone, False), (OSError('unreadable unit'), False), (gone, True))
+                    for code in (0, 1) for exit_at in (11.2, 11.3)]
+            controls = [reap_sequence([record], start=start, code=0, exit_at=exit_at, empty_on_exit=True)
+                        for record, exit_at in ((gone, 10.5), (manager_record('inactive', 'success'), 11.3))]
+            observed['empty_ordinary_after_cap_unknown'] = dict(rows=rows, controls=controls)
+            check('containment/empty-ordinary-after-cap-unknown', all(
+                row['supervision']['cause'] == 'unknown' and not row['termination']['deadline_stop']
+                and row['supervision']['manager_result'] in (None, 'unknown')
+                and row['supervision']['empty'] and row['supervision']['steps'] == []
+                for row in rows) and all(row['supervision']['cause'] is None
+                                        and row['inferred'] is None and row['supervision']['steps'] == []
+                                        and not row['termination']['deadline_stop'] for row in controls),
+                observed['empty_ordinary_after_cap_unknown'])
+
+        with region('containment/oom-after-final-populated-sample'):
+            row = reap_sequence([gone], start=start, code=0, exit_at=10.5, late_oom=True)
+            observed['oom_after_final_populated_sample'] = row
+            check('containment/oom-after-final-populated-sample', row['supervision']['cause'] == 'memory_cap'
+                  and row['supervision']['result'] == 'oom-kill' and row['supervision']['oom_kill'] == 1
+                  and row['supervision']['manager_result'] == 'unknown'
+                  and not row['termination']['deadline_stop'] and row['supervision']['empty']
+                  and row['reads'] == ['memory:0', 'population:1', 'memory:0', 'population:0',
+                                       'memory:1', 'conclude'], row)
+
+        with region('containment/not-found-unknown'):
+            with manager_sequence([gone]) as (group, clock, calls, resets):
+                result = group.conclude()
+                observed['not_found_unknown'] = dict(result=result, timestamps=group.timestamps)
+                check('containment/not-found-unknown', result == 'unknown' and group.timestamps == {},
+                      observed['not_found_unknown'])
+
+        with region('containment/normal-exit-before-cap'):
+            rows = [reap_sequence([record], start=start, code=0, exit_at=10.5)
+                    for record in (gone, manager_record('inactive', 'success'))]
+            observed['normal_exit_before_cap'] = rows
+            check('containment/normal-exit-before-cap', all(
+                row['supervision']['cause'] == 'exit' and not row['termination']['deadline_stop']
+                for row in rows), rows)
+
+        with region('containment/recorded-cap-explicit-precedence'):
+            rows = {reason: reap_sequence([gone], explicit=reason, start=start, exit_at=11.3,
+                                          kill_rest=True)
+                    for reason in reasons}
+            memory_rows = {reason: reap_sequence([gone], explicit=reason, start=start, exit_at=11.3,
+                                                 kill_rest=True, oom=1) for reason in reasons}
+            observed['recorded_cap_explicit_precedence'] = dict(runtime=rows, memory=memory_rows)
+            check('containment/recorded-cap-explicit-precedence', all(
+                row['supervision']['cause'] == reason and row['inferred'] == reason
+                and row['supervision']['steps'][0]['step'] == 'cooperative'
+                and row['termination']['deadline_stop'] == (reason == 'deadline')
+                for cases in (rows, memory_rows) for reason, row in cases.items()),
+                observed['recorded_cap_explicit_precedence'])
+
+        with region('containment/retained-oom-before-cleanup'):
+            memory_group = C.Group.__new__(C.Group)
+            memory_group.cgroup, memory_group.oom_kill = '/fake.scope', 0
+            memory_group.members = lambda: []
+            with patch.object(C, '_read', lambda path: 'oom 1\noom_kill 1\n'):
+                memory_group.terminate()
+            with patch.object(C, '_read', lambda path: None):
+                memory_group.sample_memory()
+            row = reap_sequence([gone], start=start, exit_at=11.3, oom=memory_group.oom_kill)
+            observed['retained_oom_before_cleanup'] = row
+            check('containment/retained-oom-before-cleanup', row['supervision']['cause'] == 'memory_cap'
+                  and row['supervision']['result'] == 'oom-kill' and not row['termination']['deadline_stop']
+                  and row['supervision']['manager_result'] == 'unknown', row)
+
+        with region('containment/manager-cap-after-adapter-exit'):
+            caps = {result: reap_sequence([manager_record(result=result)]) for result in ('timeout', 'oom-kill')}
+            # Real request, meter, deadline and heartbeat paths all call the receiver's begin().
+            reasons = ('requested', 'usage_cap', 'deadline', 'heartbeat_missing', 'configuration_stop', 'paid_api')
+            explicit = {reason: reap_sequence([manager_record()], explicit=reason) for reason in reasons}
+            observed['manager_cap_after_adapter_exit'] = dict(caps=caps, explicit=explicit)
+            check('containment/manager-cap-after-adapter-exit',
+                  all(row['inferred'] == 'exit' and row['supervision']['empty']
+                      and row['supervision']['cause'] == cause
+                      and row['termination']['deadline_stop'] == (result == 'timeout')
+                      and row['supervision']['result'] == result
+                      for result, cause in (('timeout', 'runtime_cap'), ('oom-kill', 'memory_cap'))
+                      for row in (caps[result],))
+                  and all(row['supervision']['cause'] == row['inferred'] == reason
+                          and row['supervision']['steps'][0]['step'] == 'cooperative'
+                          and row['termination']['deadline_stop'] == (reason == 'deadline')
+                          for reason, row in explicit.items()))
+
+        with region('containment/conclude-settles'):
+            settling = []
+            bad = manager_record()
+            bad[stamp_names[0]] = 'unreadable'
+            for first in (manager_record('deactivating', 'success'), OSError('busy manager'), bad):
+                for state in ('failed', 'inactive'):
+                    with manager_sequence([first, manager_record(state)]) as (group, clock, calls, resets):
+                        error = None
+                        try:
+                            result = group.conclude()
+                        except Exception as exc:  # report a broken conclude as assertion evidence
+                            result, error = None, repr(exc)
+                        settling.append(dict(result=result, timestamps=group.timestamps, calls=len(calls),
+                                             elapsed=clock[0], resets=resets, state=state, error=error))
+            reset_budget = []
+            for show_seconds in (C.SETTLE_SECONDS - 0.01, C.SETTLE_SECONDS):
+                with manager_sequence([manager_record()], show_seconds, reset_timeout=True) as (group, clock, calls, resets):
+                    result = group.conclude()
+                    reset_budget.append(dict(result=result, elapsed=clock[0], resets=resets,
+                                             timestamps=group.timestamps, show_seconds=show_seconds))
+            observed['conclude_settles'] = settling
+            observed['conclude_reset_budget'] = reset_budget
+            check('containment/conclude-settles', all(
+                row['result'] == 'timeout' and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
+                and row['calls'] == 2 and 0 < row['elapsed'] <= C.SETTLE_SECONDS
+                and row['resets'] == ([row['timestamps']] if row['state'] == 'failed' else [])
+                and row['error'] is None for row in settling) and all(
+                row['result'] == 'timeout' and row['elapsed'] <= C.SETTLE_SECONDS
+                and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
+                and len(row['resets']) == (row['show_seconds'] < C.SETTLE_SECONDS)
+                for row in reset_budget), dict(settling=settling, reset_budget=reset_budget))
+
+        with region('containment/conclude-unknown'):
+            unreadable = [reap_sequence([item]) for item in (
+                OSError('unreadable unit'), subprocess.TimeoutExpired('show', C.TOOL_SECONDS),
+                {}, manager_record('deactivating', 'success'), bad)]
+            observed['conclude_unknown'] = unreadable
+            check('containment/conclude-unknown', all(
+                row['supervision']['result'] == 'unknown' and row['supervision']['cause'] == 'unknown'
+                and row['supervision']['scope_timestamps'] == {} and row['inferred'] == 'exit'
+                and not row['termination']['deadline_stop'] and row['elapsed'] <= C.SETTLE_SECONDS
+                for row in unreadable))
 
         started, made = {}, []
         try:
@@ -671,21 +1013,58 @@ sys.exit(payload.get('code', 0))
                 began, capped = started['runtime']
                 ended = runner('runtime').wait(capped) or {}
                 stubborn = marker(capped, 'stubborn')
-                beats = times(capped, 'stubborn', 'beat')
-                running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
+                beats = times(capped, 'stubborn', 'beat_monotonic')
                 supervision = getattr(capped, 'supervision', None) or {}
-                observed['runtime_cap'] = {'state': ended.get('state'), 'termination': ended.get('termination'),
-                                           'supervision': supervision, 'running_at': running_at,
-                                           'last_beat_after_running': round(beats[-1] - running_at, 2) if beats and running_at else None,
-                                           'terms': times(capped, 'stubborn', 'term'),
-                                           'unit_after': show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')}
-                check('containment/runtime-cap',
-                      ended.get('state') == 'exited' and (ended.get('termination') or {}).get('deadline_stop') is True
-                      and supervision.get('cause') == 'runtime_cap' and supervision.get('result') == 'timeout'
-                      and bool(stubborn) and not living(stubborn) and bool(beats) and running_at is not None
-                      and beats[-1] - running_at <= 1.2 + 0.5 + 1.0 and len(times(capped, 'stubborn', 'term')) >= 1
-                      and supervision.get('empty') is True
-                      and show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState') == 'not-found')
+                stamps = supervision.get('scope_timestamps') or {}
+                active = (supervision.get('scope_start') or {}).get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
+                stopping = supervision.get('stop_monotonic') or stamps.get('ActiveExitTimestampMonotonic', 0) / 10 ** 6
+                inactive = supervision.get('empty_monotonic') or 0
+                # RuntimeMaxSec starts at scope activation, before the receiver records running.
+                # The origin is saved at attach; receiver stop and empty observations survive unit collection.
+                wall_beats = times(capped, 'stubborn', 'beat')
+                running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
+                terms = times(capped, 'stubborn', 'term')
+                term_monotonic = times(capped, 'stubborn', 'term_monotonic')
+                unit_error = None
+                try:
+                    unit_after = show(C.unit_name(capped.dispatch_id), 'LoadState').get('LoadState')
+                except (OSError, subprocess.SubprocessError) as error:
+                    unit_after, unit_error = None, repr(error)
+                stubborn_living = living(stubborn)
+                gap = beats[-1] - active if beats and active else None
+                checks = {
+                    'state_exited': ended.get('state') == 'exited',
+                    'deadline_stop': (ended.get('termination') or {}).get('deadline_stop') is True,
+                    'cause_runtime_cap': supervision.get('cause') == 'runtime_cap',
+                    'result_timeout': supervision.get('result') == 'timeout',
+                    'stubborn_present': bool(stubborn),
+                    'stubborn_not_living': not stubborn_living,
+                    'beats_present': bool(beats),
+                    'timestamps_ordered': 0 < active <= stopping <= inactive,
+                    'first_beat_after_active': bool(beats) and active <= beats[0],
+                    'last_beat_before_inactive': bool(beats) and beats[-1] <= inactive,
+                    'runtime_bound': gap is not None and gap <= 1.2 + 0.5 + 1.0,
+                    # Stop itself must begin at the cap, with at most 0.5s of
+                    # scheduler delay. The existing beat bound includes kill grace
+                    # and by itself can hide an entire second of late enforcement.
+                    'cap_stop_bound': bool(term_monotonic) and active <= term_monotonic[0] <= active + 1.2 + 0.5,
+                    'term_present': len(terms) >= 1,
+                    'supervision_empty': supervision.get('empty') is True,
+                    'unit_not_found': unit_after == 'not-found',
+                }
+                observed['runtime_cap'] = {
+                    'state': ended.get('state'), 'termination': ended.get('termination'),
+                    'supervision': supervision, 'beats_monotonic': beats, 'beats': wall_beats,
+                    'active': active, 'stopping': stopping, 'inactive': inactive,
+                    'running_at': running_at, 'began': began,
+                    'last_beat_after_active': gap,
+                    'last_beat_after_running': wall_beats[-1] - running_at if wall_beats and running_at else None,
+                    'bound': 1.2 + 0.5 + 1.0, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
+                    'terms': terms, 'term_count': len(terms), 'unit_after': unit_after, 'unit_error': unit_error,
+                    'term_monotonic': term_monotonic,
+                    'checks': checks, 'false_conjuncts': [name for name, ok in checks.items() if not ok],
+                }
+                check('containment/runtime-cap', all(checks.values()), observed['runtime_cap'])
 
             # AC3: a cooperative stop, and the escalation past a signal-ignoring descendant
             with region('containment/cooperative-stop', 'containment/stop-escalation'):

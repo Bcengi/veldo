@@ -1,0 +1,160 @@
+{
+ "by_assertion": true,
+ "commit": "f1e1abb9ed0006b7d97948aed943c044b0b616cc",
+ "details": [
+  "VELDO-0151 detail: roles/required-only: accepted four required roles; exact schema fields",
+  "VELDO-0151 detail: roles/specialists: all specialist names accepted; history keeps required-only revision; specialist count",
+  "VELDO-0151 detail: roles/missing-reference/implementation: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/unresolved-reference/implementation: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/implementation/unknown: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/implementation/specialist: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/implementation/None: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/missing-reference/designer: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/unresolved-reference/designer: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/designer/unknown: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/designer/required: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/kind/designer/None: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/unversioned-reference: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/required-still-required/project_manager: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/required-still-required/elaboration: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/required-still-required/implementation: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/required-still-required/independent_review: refuses by reason; one request to current owner; request names problem",
+  "VELDO-0151 detail: roles/brief-and-authority: owner sees specialist kind and revision; roster cannot grant admission; no second tool filter",
+  "VELDO-0151 detail: assignment/policy: real backlog unit and specialist assignment; missing policy refuses; review count enforced; independence enforced; exact subject enforced",
+  "VELDO-0151 detail: assignment/bindings: team amendment accepted; existing reference does not float to head; role and worker bound; configuration revision bound; current team bound; policy and exact subject bound; stale team refuses; stored reader sees exact binding",
+  "VELDO-0151 detail: assignment/unlisted-worker: specialist role accepted; worker must belong to selected role",
+  "VELDO-0151 detail: assignment/staffing-request: missing specialist refuses; one current-owner request; names missing role",
+  "VELDO-0151 detail: roles/observability: accepted revisions counted; refused revisions counted; staffing request reasons counted once; capability revision pinned on assignment"
+ ],
+ "failed_rows": [
+  "VELDO-0151 roles/required-only",
+  "VELDO-0151 roles/specialists",
+  "VELDO-0151 roles/missing-reference/implementation",
+  "VELDO-0151 roles/unresolved-reference/implementation",
+  "VELDO-0151 roles/kind/implementation/unknown",
+  "VELDO-0151 roles/kind/implementation/specialist",
+  "VELDO-0151 roles/kind/implementation/None",
+  "VELDO-0151 roles/missing-reference/designer",
+  "VELDO-0151 roles/unresolved-reference/designer",
+  "VELDO-0151 roles/kind/designer/unknown",
+  "VELDO-0151 roles/kind/designer/required",
+  "VELDO-0151 roles/kind/designer/None",
+  "VELDO-0151 roles/unversioned-reference",
+  "VELDO-0151 roles/required-still-required/project_manager",
+  "VELDO-0151 roles/required-still-required/elaboration",
+  "VELDO-0151 roles/required-still-required/implementation",
+  "VELDO-0151 roles/required-still-required/independent_review",
+  "VELDO-0151 roles/brief-and-authority",
+  "VELDO-0151 assignment/policy",
+  "VELDO-0151 assignment/bindings",
+  "VELDO-0151 assignment/unlisted-worker",
+  "VELDO-0151 assignment/staffing-request",
+  "VELDO-0151 roles/observability"
+ ],
+ "modules": {
+  ".veldo/control_team.py": {
+   "at_commit": "151530928f5125d616d45def5cc8e01913e35f29c2efd771eb50b39b874b8dbc",
+   "now": "6d9d79f0cbd4aac0b16f08921f81dfe210b2e574d4d640851dd3672aba1b8a41"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0151 roles/required-only",
+   false
+  ],
+  [
+   "VELDO-0151 roles/specialists",
+   false
+  ],
+  [
+   "VELDO-0151 roles/missing-reference/implementation",
+   false
+  ],
+  [
+   "VELDO-0151 roles/unresolved-reference/implementation",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/implementation/unknown",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/implementation/specialist",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/implementation/None",
+   false
+  ],
+  [
+   "VELDO-0151 roles/missing-reference/designer",
+   false
+  ],
+  [
+   "VELDO-0151 roles/unresolved-reference/designer",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/designer/unknown",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/designer/required",
+   false
+  ],
+  [
+   "VELDO-0151 roles/kind/designer/None",
+   false
+  ],
+  [
+   "VELDO-0151 roles/unversioned-reference",
+   false
+  ],
+  [
+   "VELDO-0151 roles/required-still-required/project_manager",
+   false
+  ],
+  [
+   "VELDO-0151 roles/required-still-required/elaboration",
+   false
+  ],
+  [
+   "VELDO-0151 roles/required-still-required/implementation",
+   false
+  ],
+  [
+   "VELDO-0151 roles/required-still-required/independent_review",
+   false
+  ],
+  [
+   "VELDO-0151 roles/brief-and-authority",
+   false
+  ],
+  [
+   "VELDO-0151 assignment/policy",
+   false
+  ],
+  [
+   "VELDO-0151 assignment/bindings",
+   false
+  ],
+  [
+   "VELDO-0151 assignment/unlisted-worker",
+   false
+  ],
+  [
+   "VELDO-0151 assignment/staffing-request",
+   false
+  ],
+  [
+   "VELDO-0151 roles/observability",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 1.7,
+ "spec_id": "VELDO-0151",
+ "suite": "scripts/suites/91_veldo_0151_specialists.py",
+ "tree": "git archive f1e1abb9ed0006b7d97948aed943c044b0b616cc, unchanged; the current suite file run against it"
+}

@@ -68,12 +68,12 @@ def _v20_att(principal, digest="sha256:subj"):
 # AC1: conjunctive authorization at every boundary.
 # ---------------------------------------------------------------------------------------------
 expect("VELDO-0020 AC1 authority-substitution/matrix: the boundary table is exactly the nine R39 boundaries, every admitted "
-       "type is one of the four principal types, the seven R37 roles are registered, and the machine set is bound to "
+       "type is one of the four principal types, the seven R37 roles and reservation service are registered, and the machine set is bound to "
        "authorization.MACHINE_ACTORS",
        set(AC20.BOUNDARIES) == {"command_acceptance", "proposal_commit", "assignment_acceptance", "claim", "dispatch_acceptance",
                                 "privileged_tool_use", "result_acceptance", "decision_settlement", "landing_publication"}
        and all(set(v) <= set(AC20.PRINCIPAL_TYPES) for v in AC20.BOUNDARIES.values())
-       and len(AC20.ROLES) == 7 and AC20.MACHINE_ACTORS == AUTH20.MACHINE_ACTORS)
+       and set(AC20.ROLES) == {"membership_steward", "project_owner", "admission_authority", "priority_authority", "technical_authority", "security_authority", "operations_authority", "reservation_service"} and AC20.MACHINE_ACTORS == AUTH20.MACHINE_ACTORS)
 _v20_req = {"roles": ["admission_authority"], "named_principals": ["dmitry"], "quorum": 1, "min_independence": 1, "subject_digest": "sha256:subj",
             "expires_at": _V20_NOW + 3600}
 expect("VELDO-0020 AC1 authority-substitution/conjunction: Dmitry's own attestation at decision_settlement satisfies role, named "

@@ -4,8 +4,12 @@ Install config, credentials and this executable outside worker clones. The super
 this process and its pipes; workers cannot select config, executable, receiver or credential
 path. No listener, recovery loop, worker launch, capability filtering or paid model API.
 Provider receivers are trusted subscription-CLI adapters with a JSON observation protocol.
-Publication uses the configured trusted clone and the exact accepted commit/ref/old tip.
+Publication uses the configured trusted clone and the exact accepted commit/ref/old tip. A lease
+another push took between the listing and the push (VELDO-0148) is a refused publication,
+trunk-moved, when every destination's trunk then holds a commit that does not contain the
+candidate; a tip that contains it stays unknown.
 """
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -30,6 +34,10 @@ _git_process = E.organ('git_process')
 GIT_STEP_SECONDS = 20
 ACCEPT_SECONDS = 30
 STORE_MARGIN_SECONDS = 5
+# VELDO-0148: the refusal of a publication whose lease another push took between the listing and the
+# push, and where each destination's moved tip is fetched to judge it.
+TRUNK_MOVED = 'trunk-moved'
+OBSERVED_REF = 'refs/veldo/observed/'
 
 
 def _announce_nothing(seconds):
@@ -142,6 +150,22 @@ def receive(config, contract, accepted):
                 else:
                     refs[name] = value
             return refs
+        def trunk_moved(url, after):
+            # Whether this destination's trunk moved past the lease to a commit that does not contain
+            # the candidate: that commit, as its listing after the push names it, is fetched into this
+            # publication clone under a ref of this dispatch and destination, and Git is asked whether
+            # it contains the candidate. Anything that cannot be established is not a move.
+            tip = (after or {}).get(ref)
+            if not isinstance(tip, str) or tip in (payload['old_tip'], payload['commit']):
+                return False
+            observed = OBSERVED_REF + hashlib.sha256(
+                (binding['dispatch_id'] + '\n' + url).encode('utf-8', 'surrogateescape')).hexdigest()[:24]
+            fetched = transport('fetch', '-q', '--no-tags', '--no-write-fetch-head', '--', url,
+                                '+%s:%s' % (ref, observed))
+            found = git('rev-parse', '--verify', '--quiet', observed + '^{commit}')
+            if fetched.returncode or found.returncode or found.stdout.strip() != tip:
+                return False
+            return git('merge-base', '--is-ancestor', payload['commit'], tip).returncode == 1
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
@@ -179,9 +203,10 @@ def receive(config, contract, accepted):
         # remotes/ file of that name, a further url.*.insteadOf). A destination that does not
         # resolve to itself would be listed somewhere the push never went, so it is refused by
         # name before anything is pushed; `--get-url` reads configuration only, no network.
-        # From here each destination takes at most four steps: its self-resolution, its listing
-        # before, its share of the push and its listing after.
-        _announce(4 * step * len(pushed) + STORE_MARGIN_SECONDS)
+        # From here each destination takes at most six steps: its self-resolution, its listing
+        # before, its share of the push, its listing after, and, when its trunk moved to another
+        # commit, that commit's fetch and the ancestry question (VELDO-0148).
+        _announce(6 * step * len(pushed) + STORE_MARGIN_SECONDS)
         for url in pushed:
             itself = transport('ls-remote', '--get-url', '--', url)
             if itself.returncode or itself.stdout != url + '\n':
@@ -214,9 +239,10 @@ def receive(config, contract, accepted):
         # otherwise `not-at-tip` (rejected, reported under another ref, or anything else
         # changed). The effect is completed only when the push exited cleanly and every resolved
         # destination is at the tip.
-        outcomes = []
+        outcomes, afters = [], []
         for url, state in zip(pushed, before):
             after = remote_refs(url)
+            afters.append(after)
             if after is None:
                 outcomes.append('unreachable')
                 continue
@@ -228,6 +254,15 @@ def receive(config, contract, accepted):
                        'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
                                         for url, outcome in zip(pushed, outcomes)]}
         complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)
+        # VELDO-0148: a lease lost to another push between the listing and the push. The push failed,
+        # and when EVERY destination's trunk now holds a commit that is neither the old tip nor the
+        # candidate and does not contain the candidate, nothing of this publication is on any trunk:
+        # a refused publication (trunk moved), judged per push URL (trunk_moved). A tip that contains
+        # the candidate, one that cannot be fetched or judged, and a destination that cannot be listed
+        # keep the publication unknown.
+        if not complete and push.returncode and pushed and all(
+                trunk_moved(url, after) for url, after in zip(pushed, afters)):
+            raise E.Refused(TRUNK_MOVED)
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout
@@ -274,8 +309,10 @@ def execute(config, request, principal, challenge, signature):
                 # conclusive and its text is not repeated: recorded as unknown, a stop owed.
                 observation = dict(accepted, status='unknown', evidence=None)
         except E.Refused as error:
-            # The executor refuses only before anything reaches a destination or an adapter, so
-            # its refusal is conclusive: recorded as refused and reported by name, never as unknown.
+            # The executor refuses only before anything reaches a destination or an adapter, or
+            # (VELDO-0148, trunk-moved) after a push every destination rejected because its trunk
+            # moved to a commit that does not contain the candidate, so its refusal is conclusive:
+            # recorded as refused and reported by name, never as unknown.
             observation = dict(accepted, status='refused', refusal=error.code, evidence=None)
         except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             observation = dict(accepted, status='unknown', evidence=None)

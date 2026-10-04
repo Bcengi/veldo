@@ -1,0 +1,135 @@
+{
+ "by_assertion": true,
+ "commit": "5935c652b0bd7fa92fcaa9c790d67776f2c32acf",
+ "details": [
+  "VELDO-0148 receiver/placement-error detail: bounded receiver refusal before engine exec: {'refusal': None}",
+  "VELDO-0148 receiver/placement-timeout detail: bounded receiver refusal before engine exec: {'refusal': None}"
+ ],
+ "failed_rows": [
+  "VELDO-0148 receiver/placement-error",
+  "VELDO-0148 receiver/placement-timeout"
+ ],
+ "modules": {
+  ".veldo/control_containment.py": {
+   "at_commit": "0ce0999cec6df282d81cd71f4de2a9e8d14df9b6cba20dbc577576571be08534",
+   "now": "0ce0999cec6df282d81cd71f4de2a9e8d14df9b6cba20dbc577576571be08534"
+  },
+  ".veldo/control_effect_executor.py": {
+   "at_commit": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4",
+   "now": "b44400c26c32dc443eaf4bd2e6c6080ddb24cfc6fa0f87a9ba0fd13565a8c1e4"
+  },
+  ".veldo/control_heartbeat.py": {
+   "at_commit": "c82877e3213062da21ab697b85908fbbc2fae6778cb85e8e932ddaea134deb89",
+   "now": "15938e9b89ae2e54f2828b4e6be57f956a778b9f435d4391224da74efdc365ef"
+  },
+  ".veldo/control_landing.py": {
+   "at_commit": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475",
+   "now": "07116b07f5c41b2873f34129fa0a3f4b00557d028195f6850db693785eee1475"
+  },
+  ".veldo/control_landing_station.py": {
+   "at_commit": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081",
+   "now": "ea515075469ff0ac924ed14cfab8737e26f60042b8ca0a2b0d6c00459bdb5081"
+  },
+  ".veldo/control_launch.py": {
+   "at_commit": "f5848e16b8e0ac7b5df087adc2d0b1b18da73ec71cf523981d121341e0833d83",
+   "now": "15a03db0b14ba42fa196bca0ec0882d170de149bd4773908af7021d41250dcce"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75",
+   "now": "e7f3b51fdd1f9ab1e8386ed0858f31fadeb07d198b6980b65f086f65b6970e75"
+  },
+  ".veldo/lander.py": {
+   "at_commit": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6",
+   "now": "24d9005222d0b80ffbeaf87a530d11b4e9144ef127dacd63bd0468ae19706cd6"
+  }
+ },
+ "preamble_rows": 27,
+ "receiver_regressions": [],
+ "rows": [
+  [
+   "VELDO-0148 install/land-station",
+   true
+  ],
+  [
+   "VELDO-0148 reland/stale-subject",
+   true
+  ],
+  [
+   "VELDO-0148 reland/review-kept",
+   true
+  ],
+  [
+   "VELDO-0148 reland/conflict-rebuild",
+   true
+  ],
+  [
+   "VELDO-0148 reland/never-forced",
+   true
+  ],
+  [
+   "VELDO-0148 reland/end-wakes-pass",
+   true
+  ],
+  [
+   "VELDO-0148 lease/trunk-moved",
+   true
+  ],
+  [
+   "VELDO-0148 lease/contains-unknown",
+   true
+  ],
+  [
+   "VELDO-0148 grant/fresh-request",
+   true
+  ],
+  [
+   "VELDO-0148 grant/never-granted",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-approvals",
+   true
+  ],
+  [
+   "VELDO-0148 grant/mixed-proof",
+   true
+  ],
+  [
+   "VELDO-0148 grant/once-per-dispatch",
+   true
+  ],
+  [
+   "VELDO-0148 grant/revoked-before-answer",
+   true
+  ],
+  [
+   "VELDO-0148 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/normal-exit",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/settled-scope",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/fast-exit",
+   true
+  ],
+  [
+   "VELDO-0148 receiver/placement-error",
+   false
+  ],
+  [
+   "VELDO-0148 receiver/placement-timeout",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 21.652,
+ "spec_id": "VELDO-0148",
+ "suite": "scripts/suites/86_veldo_0148_re_land.py",
+ "tree": "git archive 5935c652b0bd7fa92fcaa9c790d67776f2c32acf, unchanged; the current suite file run against it"
+}

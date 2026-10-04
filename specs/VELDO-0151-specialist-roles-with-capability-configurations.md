@@ -21,6 +21,10 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0151_*.py"
+  - "scripts/suites/73_veldo_0089_team.py"
+  - "scripts/suites/75_veldo_0150_own_message_acceptance.py"
+  - "scripts/suites/76_veldo_0079_grooming.py"
+  - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -121,3 +125,16 @@ section 4(e), whose VELDO-0089 AC1 amendment is carried here whole because VELDO
 that amendment with its own falsifier; AC2 is the design's rule that a missing specialist becomes a
 staffing request. A draft: only the owner
 marks a specification ready.
+
+2026-10-02: VELDO-0151 implementation adds required/specialist kinds, accepted capability
+revision references and role-named assignments to the existing team service. The footprint adds
+four existing team-consumer suites (0089, 0150, 0079 and 0130) to migrate their fixtures through
+the accepted capability writer and update the superseded closed-role schema assertion. The
+criteria of VELDO-0089 and the specification status are unchanged.
+
+2026-10-02, proof and compatibility checks: suite 91 adds 23 behavior rows over the
+signed team, capability, owner-settlement and backlog interfaces. The unchanged
+f1e1abb9 archive is red by assertion on every row. Finding 151 registers 15 exact
+mutations; execution is reserved for the reviewer under this run's token rules.
+The proof directory records scoped normal and clean-environment checks, not a full
+gate result or a landing decision. No specification status is changed.

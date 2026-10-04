@@ -1,0 +1,11 @@
+--- .veldo/control_workflow_cycle_pm.py
++++ .veldo/control_workflow_cycle_pm.py
+@@ -402,7 +402,7 @@
+                 command['reviewers'] = [dict(reviewer=who, subject=subject) for who in command['reviewers']]
+             if command.get('project', record['project']) != record['project']:
+                 raise Refused('invalid_input:proposal_project')
+-            command.update(principal=record['manager'], command_id='pm-proposal/' + record['cycle'] + '/' + proposal['name'],
++            command.update(principal=self.principal, command_id='pm-proposal/' + record['cycle'] + '/' + proposal['name'],
+                            nonce='pm-proposal/' + record['cycle'] + '/' + proposal['name'])
+             result = getattr(service, method)({'command': command,
+                 'signature': self.command_sign(self.store.canonical_bytes(command))})
