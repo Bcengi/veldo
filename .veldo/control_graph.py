@@ -413,9 +413,11 @@ def git_finds_repository(directory):
     discovery from an existing `directory` reaches a repository or a Git directory. Exit 0 is yes;
     nothing is parsed from Git's messages (a failing Git is left to the shape checks)."""
     _git_process = _git_boundary()
+    # Pipes let communicate wait for readiness instead of timed waitpid polling.
+    # The small discovery answer is still discarded; only the exit code decides.
     result = _git_process.run(['git', '-C', str(directory), '-c', 'safe.directory=*', 'rev-parse',
                                   '--absolute-git-dir'], env=dict(GIT_ENVIRONMENT), stdin=subprocess.DEVNULL,
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
     return result.returncode == 0
 
 

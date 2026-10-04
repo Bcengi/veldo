@@ -20,6 +20,8 @@ footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
   - "packs/*/.veldo/control_service*.py"
+  - "engine/.veldo/control_graph.py"
+  - ".veldo/control_graph.py"
   - "engine/.veldo/control_agent_config*.py"
   - ".veldo/control_agent_config*.py"
   - "packs/*/.veldo/control_agent_config*.py"
@@ -228,6 +230,12 @@ proof, not tests run by this writing revision.
 gate cannot land 0162 while suite 93 exceeds the mutation worker budget. Remove
 repeated fixture work while preserving every assertion, row, dispatched fake and
 format check. Keep the worker budget unchanged.
+
+The profile also identifies production waste: the factory repeatedly imports the
+whole PM module for assignment reads, and Git discovery with discarded streams
+uses timed subprocess polling. Load the existing small assignment reader once
+and wait on discovery output pipes, preserving fresh reads, exit-code decisions
+and timeouts. Add the canonical graph adapter and its synced copy to the footprint.
 
 2026-09-25: written on the fourth review of PLAN-0019 revision 4. The owner could not give a role the
 Atlassian server in the design's second stage: VELDO-0151 refuses a team whose roles have no accepted
