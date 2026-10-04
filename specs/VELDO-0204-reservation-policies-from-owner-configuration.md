@@ -266,3 +266,15 @@ a3c3940d, written and marked ready at the owner's request; VELDO-0185 now depend
 its PM cycles pass; accounts and projects are covered at service start, units and team revisions at the
 next pass; unit caps leave out owner_minutes; subjects and policy reads are named; the lock reaches the
 loop and a start fault leaves it open; depends_on adds VELDO-0139.
+
+2026-10-04, built on build-veldo-0204 from 8d547f83: control_reservation_policies (engine and repository
+copies, an init_scaffold runtime asset) and control_service's FactoryLoop provisioning at start, at each
+pass and in each line after its PM cycles; suite 96_veldo_0204_reservation_policies, red at 8d547f83 on all
+18 rows by assertion, and 17 finding-204 mutations (proof/VELDO-0204). Two observations for review. First,
+VELDO-0160's pool passes accounts over only for an account's own refusals, so a unit with no policy is
+refused missing_ceiling:unit outright, never no_account: the refuse/missing-source and service/added rows
+assert that refusal, and the AC3 and AC4 sentences that name no_account describe the account scope only.
+Second, the loop's PM services cannot be built over the real Telegram ingress (control_grooming refuses a
+second connection), so the suite gives the loop the in-store channel stand-in suites 92 and 93 use, while
+VELDO-0203's route runs on the real API judge; serve's handing of its lock to open_loop is not driven by a
+row, since serve itself is not run in process.
