@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187, VELDO-0188, VELDO-0189]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187, VELDO-0188, VELDO-0189, VELDO-0190]
     order: 16059
     release: 1
     stage: 6
@@ -1371,7 +1371,7 @@ work:
     spec: VELDO-0185
     title: Factory setup saves the default team, gives the installed service its engine adapters and work configuration, enrolls the authority and launch receiver as reservation services and writes the receivers' state root, so after the owner logs in each account work runs on both engines on every account, and a second run changes nothing
     feature_refs: [F8]
-    depends_on: [VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186]
+    depends_on: [VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186, VELDO-0190]
     order: 15186
     release: 1
     stage: 5
@@ -1405,6 +1405,14 @@ work:
     feature_refs: [F8]
     depends_on: [VELDO-0047]
     order: 15169
+    release: 1
+    stage: 5
+  - item: W150
+    spec: VELDO-0190
+    title: The factory owner saves a capability configuration revision and the default team revision by an SSH-signed command, before any passkey or API session exists, through the existing revision writers, on setup's own store connection or through the running service, and anything not signed by the factory owner's key is refused by name
+    feature_refs: [F8]
+    depends_on: [VELDO-0025, VELDO-0162, VELDO-0171]
+    order: 15173
     release: 1
     stage: 5
 
@@ -1781,6 +1789,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W147 | VELDO-0187 | 1 | 5; conversation turns captured into claude-mem |
 | W148 | VELDO-0188 | 1 | 5; a Line for every project at run time |
 | W149 | VELDO-0189 | 1 | 5; setup upgrades an earlier installation, built before VELDO-0171 |
+| W150 | VELDO-0190 | 1 | 5; owner-signed revision commands, before VELDO-0185 |
 
 ## Related baseline and follow-up disposition
 
@@ -2070,4 +2079,10 @@ when memory moves (29306), kept light (29310): VELDO-0182's new AC4 copies each 
 before its first switch and checks the count and a sample of 20 after each switch, and VELDO-0183 AC4 and
 the owner's assistant's myday switch run the same check. VELDO-0171, VELDO-0182 and VELDO-0183 are back to
 draft for the owner's re-mark. W44 (VELDO-0059) depends on VELDO-0189 too. The graph stays acyclic and
+stage-ordered.
+
+2026-10-04: within revision 4, one new item and no function cut. W150's VELDO-0190 lets the factory owner
+save a capability configuration revision and the default team revision by an SSH-signed command through
+VELDO-0162's writers, before any passkey exists, which VELDO-0185 AC1 needs on a fresh host (its blocker
+of 2026-10-04). W145 (VELDO-0185) and W44 (VELDO-0059) depend on it. The graph stays acyclic and
 stage-ordered.

@@ -10,7 +10,7 @@ lane: planned
 plan: PLAN-0019
 work: W145
 plan_revision: 4
-depends_on: [VELDO-0139, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186]
+depends_on: [VELDO-0139, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0160, VELDO-0162, VELDO-0167, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0186, VELDO-0190]
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
@@ -195,6 +195,8 @@ VELDO-0174 AC4's conversation receiver configuration, which the installer writes
 so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
+
+2026-10-04: depends on VELDO-0190, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
 
 2026-10-04, preflight on build-veldo-0185b at f63d86e5: the VELDO-0162
 capability and default-team revision writers now exist, but their authenticated
