@@ -52,6 +52,9 @@ FIELDS = ('schema', 'domain') + IDS + ('channel', 'edge', 'edge_key_id', 'reques
                                        'issued_at', 'expires_at')
 # Every operation: its exact parameters and the authority boundary its member is judged at.
 OPERATIONS = {
+    'save_capability_configuration': {'parameters': ('definition', 'base'), 'boundary': 'command_acceptance'},
+    'propose_team': {'parameters': ('project', 'team', 'team_version'), 'boundary': 'proposal_commit'},
+    'save_default_team': {'parameters': ('team', 'base'), 'boundary': 'command_acceptance'},
     'save_mcp_server': {'parameters': ('definition', 'base'), 'boundary': 'command_acceptance'},
     'set_mcp_credential': {'parameters': ('id', 'label', 'base', 'value_digest'), 'boundary': 'command_acceptance'},
     'delete_mcp_credential': {'parameters': ('id', 'base'), 'boundary': 'command_acceptance'},
@@ -123,6 +126,10 @@ def domain_request(a):
     """The one signed domain request an assertion's operation carries, or None for revoke_credential and
     save_workflow, which execute from the verified assertion itself."""
     p = a['parameters']
+    if a['operation'] == 'propose_team':
+        return dict({f: a[f] for f in IDS}, operation='propose', project=p['project'], team=p['team'],
+                    team_version=p['team_version'], principal=a['principal'], command_id=a['request_id'],
+                    nonce=a['request_id'])
     if a['operation'] == 'send_message':
         return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],
                 'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}

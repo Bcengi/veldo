@@ -142,6 +142,16 @@ Route = collections.namedtuple('Route', 'name method path family session require
 # THE PUBLISHED ROUTE TABLE. `session` False is a sign-in or registration ceremony (it authenticates);
 # every other route needs a current session, and every POST is a write with the anti-forgery checks.
 ROUTES = (
+    Route('configurations.save', 'POST', '/api/v1/domains/{domain}/configurations/save', 'configuration', True,
+          ('definition', 'base'), (), 'save_capability_configuration'),
+    Route('configurations.read', 'GET', '/api/v1/domains/{domain}/configuration', 'configuration', True,
+          ('role', 'revision'), (), None),
+    Route('teams.save', 'POST', '/api/v1/domains/{domain}/teams/save', 'configuration', True,
+          ('project', 'team', 'team_version'), (), 'propose_team'),
+    Route('teams.default_save', 'POST', '/api/v1/domains/{domain}/teams/default/save', 'configuration', True,
+          ('team', 'base'), (), 'save_default_team'),
+    Route('teams.read', 'GET', '/api/v1/domains/{domain}/team', 'configuration', True,
+          ('project',), ('revision',), None),
     Route('auth.challenge', 'POST', '/api/v1/auth/challenge', 'auth', False, (), (), None),
     Route('auth.sign_in', 'POST', '/api/v1/auth/sign-in', 'auth', False,
           ('credential_id', 'client_data_json', 'authenticator_data', 'signature', 'user_handle'), (), None),
@@ -191,6 +201,7 @@ class Refused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail))
         self.code, self.detail = code, detail
+        self.owner_request = None
 
 
 def error_class(code):
@@ -434,6 +445,8 @@ class ControlApi:
                          'reads.workflow': self._workflow_read, 'workflows.save': self._write,
                          'events.read': self._events_read, 'events.stream': self._stream,
                          'runs.record': self._record_read, 'runs.record_stream': self._record_stream}
+        self.handlers.update({'configurations.save': self._write, 'configurations.read': self._configuration_read,
+                              'teams.save': self._write, 'teams.default_save': self._write, 'teams.read': self._team_read})
         self.handlers.update({'mcp.save': self._write, 'mcp.read': self._mcp_read,
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
@@ -456,6 +469,8 @@ class ControlApi:
             status, value = self._handle(method, path, headers, raw, extra, about)
         except Refused as exc:
             status, value = STATUS[error_class(exc.code)], {'refusal': exc.code, 'error': error_class(exc.code)}
+            if exc.owner_request is not None:
+                value['owner_request'] = exc.owner_request
         event = dict(about, outcome='accepted' if status < 400 else 'refused',
                      refusal=value.get('refusal') if status >= 400 else None, status=status)
         self.observations.append(event)
@@ -727,7 +742,12 @@ class ControlApi:
                     if route.operation == 'answer_decision' else {})
         if route.operation == 'save_workflow':
             expected = {'workflow:' + str(parameters['workflow']): parameters['base']}
-        target = {'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
+        if route.operation == 'propose_team':
+            expected = {'team:' + str(parameters['project']): parameters['team_version']}
+        elif route.operation in ('save_capability_configuration', 'save_default_team'):
+            expected = {'base': parameters['base']}
+        target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
+                  'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
                   'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
                   'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
                   'delete_mcp_credential': 'mcp_credential'}[route.operation]
@@ -761,7 +781,7 @@ class ControlApi:
         result = answer.get('result') or {}
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
-                'layout_digest', 'server', 'id', 'reference', 'seq')
+                'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -772,7 +792,9 @@ class ControlApi:
             code = str(answer.get('reason'))
             klass = answer.get('taxonomy') or 'unknown_outcome'
             klass = klass if klass in STATUS else 'unknown_outcome'
-            raise Refused(code if error_class(code) == klass else klass + ':' + code, 'refused by the authority')
+            error = Refused(code if error_class(code) == klass else klass + ':' + code, 'refused by the authority')
+            error.owner_request = (answer.get('result') or {}).get('owner_request')
+            raise error
 
     def _ask(self, call, *args):
         """One authority read; an unreachable authority is unavailable_service, never an empty answer."""
@@ -790,6 +812,30 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _configuration_read(self, route, body, session, extra, headers):
+        configuration = organ('control_agent_config')
+        revision = _count(body['revision'], 'revision')
+        identity = configuration.identity(self.ids['domain_uuid'], self.ids['repository_uuid'],
+                                          configuration.KINDS[0], body['role'], revision)
+        row = self._inspect([identity]).get(identity)
+        if row is None or row['kind'] != configuration.KINDS[0]:
+            raise Refused('missing_evidence:agent_revision')
+        return 200, {'configuration': row['data']}
+
+    def _team_read(self, route, body, session, extra, headers):
+        teams = organ('control_team_routes')
+        project = body['project']
+        if project == 'default':
+            revision = _count(body['revision'], 'revision') if 'revision' in body else None
+            if revision is None:
+                head = self._inspect([teams.HEAD]).get(teams.HEAD)
+                revision = head['data']['revision'] if head else 0
+            identity = teams.default_id(revision)
+        else:
+            identity = 'team:' + project
+        row = self._inspect([identity]).get(identity)
+        return 200, {'team': dict(row['data'], version=row['version']) if row else None}
 
     def _mcp_read(self, route, body, session, extra, headers):
         catalog = organ('control_mcp_catalog')

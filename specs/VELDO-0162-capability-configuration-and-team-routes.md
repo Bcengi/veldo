@@ -238,3 +238,12 @@ proposal becomes the new project's first team revision. A draft.
 2026-09-25, lead: AC3 counts the owner's own authenticated save as his decision, as VELDO-0150 does for
 his own message, so he is never asked to approve a change he made himself; a revision anyone else
 proposes still needs his settled answer.
+
+2026-10-03, implementation checkpoint: configuration saves reuse the VELDO-0127 writer;
+API team commands carry edge signatures checked by Teams itself, and owner saves commit
+with the verified principal as decider. The new control_team_routes module owns amendment
+requests and immutable default revisions, and the service applies settled team answers before
+publishing its journal hint. Existing footprint patterns cover these files. The only 0152
+production file changed is control_api_models.py, to register the three new typed actions;
+its intake read and redaction behavior is unchanged. Proof is still being built; no gate or
+landing result is claimed, and status stays ready.
