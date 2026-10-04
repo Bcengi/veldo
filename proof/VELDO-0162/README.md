@@ -85,3 +85,29 @@ review-fix run separately. Only selected suites are run sequentially. Partial se
 success returns 2 by design and is not gate evidence. The full selftest, mutation
 runner, gate and landing stamp are reserved for the reviewer. No gate byproducts
 belong to this change.
+
+2026-10-04, suite 93 performance follow-up (base df603ca5): intake-performance.json
+records three unprofiled before runs (92.02, 90.93, 90.16 seconds) and three after
+runs (38.98, 38.98, 39.62 seconds). intake-profile-before.txt retains the cProfile
+summary. These are selected-check measurements, not a gate pass or landing stamp.
+
+The suite compiles its immutable isolated module tree once, retains the caller's
+bytecode setting when reading the mutation catalog, validates the unchanged real
+runtime once, and restores a signed SQLite baseline between independent refusal
+rows. Restoring requires no live launches and clears cycle input caches; real
+commands, graph subprocesses, Runner dispatches and emitted fake lines remain.
+All 36 assertion call sites have identical syntax trees to the baseline. All 47
+checks remain: 26 shared, 20 intake groups including format/fake-lines, and one
+fake/capture check comparing nine lines.
+
+Two production costs are removed too. The factory uses the existing assignment
+reader loaded once instead of importing the full PM workflow on every scan; it
+still reads current records each time. Graph runtime Git discovery captures its
+small output so subprocess communication waits on pipe readiness instead of timed
+waitpid polling. Exit-code decisions, all isolation checks and the timeout remain.
+Both canonical files and their repository copies match. No worker budget changes.
+
+The requested sequential regression checks pass: suites 93, 82, 94 and 50 have
+47, 30, 52 and 30 passing checks, with no failures. Validation and the Git boundary
+check exit zero. Finding 152 is running separately with one worker; its final
+result will be recorded here. No full selftest or gate runs in this worktree.

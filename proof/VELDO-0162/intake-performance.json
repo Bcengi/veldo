@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-04",
+  "base_commit": "df603ca5",
+  "implementation_commit": "a0bb7b1f8f9de74b8e9ab0b1177e1185f319ee05",
+  "scope": "Selected checks and performance measurements only, not full gate or landing evidence.",
+  "timing_command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+  "measurement": "/usr/bin/time wall seconds, sequential runs, without cProfile",
+  "before": [
+    {
+      "wall_seconds": 92.02,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 91.91
+    },
+    {
+      "wall_seconds": 90.93,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 90.83
+    },
+    {
+      "wall_seconds": 90.16,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 90.06
+    }
+  ],
+  "after": [
+    {
+      "wall_seconds": 38.98,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 38.89
+    },
+    {
+      "wall_seconds": 38.98,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 38.89
+    },
+    {
+      "wall_seconds": 39.62,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 39.52
+    }
+  ],
+  "profile": {
+    "command": "python3 -m cProfile -o /tmp/veldo0162-before.prof scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+    "wall_seconds": 95.64,
+    "summary": "intake-profile-before.txt",
+    "observations": [
+      "38 runner journeys took 82.83 seconds cumulatively.",
+      "11103 compile calls took 16.83 seconds of internal time; receivers also recompiled their isolated modules.",
+      "77 installed runtime validations took 12.83 seconds cumulatively.",
+      "330802 JSON loads took 11.22 seconds cumulatively as independent rows accumulated dispatch and snapshot history.",
+      "152 factory assignment scans repeatedly imported the full PM module; the production reader now loads once.",
+      "Git discovery used discarded streams and timed waitpid polling; output pipes now allow readiness waiting with the same timeout."
+    ],
+    "note": "Cumulative timings overlap and are not additive. The raw profile was written to a temporary file; the readable summary is retained."
+  },
+  "preservation": {
+    "base": "df603ca5",
+    "assertion_call_sites": 36,
+    "unchanged": true,
+    "assertion_ast_sha256": "21478ab40481d2254f6b0926b9199a4bfae32418405dcc5ee3c860437ad6fb61"
+  },
+  "rows": {
+    "shared": 26,
+    "intake_groups": 20,
+    "fake_capture": 1,
+    "total": 47,
+    "fake_capture_lines_compared": 9
+  },
+  "regressions": {
+    "93_veldo_0152_intake_routes": {
+      "wall_seconds": 38.91,
+      "exit_code": 2,
+      "passed": 47,
+      "failed": 0,
+      "suite_seconds": 38.83
+    },
+    "82_veldo_0172_live_formats": {
+      "wall_seconds": 1.15,
+      "exit_code": 2,
+      "passed": 30,
+      "failed": 0,
+      "suite_seconds": 1.08
+    },
+    "94_veldo_0162_configuration_routes": {
+      "wall_seconds": 9.75,
+      "exit_code": 2,
+      "passed": 52,
+      "failed": 0,
+      "suite_seconds": 9.68
+    },
+    "50_git_environment": {
+      "wall_seconds": 2.18,
+      "exit_code": 2,
+      "passed": 30,
+      "failed": 0,
+      "suite_seconds": 2.12
+    }
+  },
+  "validation": {
+    "wall_seconds": 3.9,
+    "exit_code": 0
+  },
+  "git_boundary": {
+    "wall_seconds": 2.09,
+    "exit_code": 0
+  },
+  "finding_152": {
+    "status": "running",
+    "command": "python3 scripts/check_teeth_mutations.py --finding 152 --jobs 1"
+  },
+  "full_gate_run": false,
+  "worker_budget_changed": false
+}
