@@ -1,0 +1,5 @@
+--- a/.veldo/control_owner_revisions.py
++++ b/.veldo/control_owner_revisions.py
+@@ -94 +94 @@
+-        if envelope.get('nonce') != cid:
++        if False:

@@ -1,0 +1,4 @@
+--- a/.veldo/init_scaffold.py
++++ b/.veldo/init_scaffold.py
+@@ -241 +240,0 @@
+-    ".veldo/control_owner_revisions.py",

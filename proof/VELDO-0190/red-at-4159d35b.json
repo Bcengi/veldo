@@ -25,7 +25,10 @@
   "VELDO-0190 replay/identical detail: owner revision entry point exists",
   "VELDO-0190 replay/content-conflict detail: owner revision entry point exists",
   "VELDO-0190 replay/consumed-nonce detail: owner revision entry point exists",
+  "VELDO-0190 replay/nonce-binding detail: owner revision entry point exists",
   "VELDO-0190 lock/second-connection detail: owner revision entry point exists",
+  "VELDO-0190 format/fake-lines detail: owner revision entry point exists",
+  "VELDO-0190 format/fake-lines detail: generated CLI lines conform to the capture",
   "VELDO-0190 service/saves detail: owner revision entry point exists",
   "VELDO-0190 service/forged detail: owner revision entry point exists",
   "VELDO-0190 service/writer-refusal detail: owner revision entry point exists",
@@ -56,7 +59,9 @@
   "VELDO-0190 replay/identical",
   "VELDO-0190 replay/content-conflict",
   "VELDO-0190 replay/consumed-nonce",
+  "VELDO-0190 replay/nonce-binding",
   "VELDO-0190 lock/second-connection",
+  "VELDO-0190 format/fake-lines",
   "VELDO-0190 service/saves",
   "VELDO-0190 service/forged",
   "VELDO-0190 service/writer-refusal",
@@ -64,17 +69,21 @@
   "VELDO-0190 install/asset"
  ],
  "modules": {
+  ".veldo/control_agent_config.py": {
+   "at_commit": "3c8c520b4958b1231f99c31f9b654f48797e0fa0f9c14be8d340123c88538ab2",
+   "now": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee"
+  },
   ".veldo/control_membership.py": {
    "at_commit": "befa9226d6a63f9aa57ac5462112c71dd314418f18d032d7a8841542ef1e54fc",
    "now": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89"
   },
   ".veldo/control_owner_revisions.py": {
    "at_commit": null,
-   "now": "ebfdd48ab2a32a8c09965a70a60bf0127d671f9e78ed1f3e062f5863509ee7e4"
+   "now": "012bdd14924c298c9e52e41cd9a145e7bf11d7ad2cad2271ff463f8a5a2a9025"
   },
   ".veldo/control_service.py": {
    "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
-   "now": "ce28e49ea383c8a3bcea9c25b0cc7ed29506538317b22a949053343efbc61473"
+   "now": "22c1dc653725e27fef8f954188155d7cb0bef9702068ebef221b30e4a2881ba7"
   },
   ".veldo/init_scaffold.py": {
    "at_commit": "641f644acdfef6548466f1cb6e06daa9aa0e0299978fda723bfa6e4f9596af58",
@@ -176,7 +185,15 @@
    false
   ],
   [
+   "VELDO-0190 replay/nonce-binding",
+   false
+  ],
+  [
    "VELDO-0190 lock/second-connection",
+   false
+  ],
+  [
+   "VELDO-0190 format/fake-lines",
    false
   ],
   [
@@ -201,7 +218,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.974,
+ "seconds": 0.977,
  "spec_id": "VELDO-0190",
  "suite": "scripts/suites/95_veldo_0190_owner_revisions.py",
  "tree": "git archive 4159d35b625ac00c3e24e6cbe012b72f099fbba9, unchanged; the current suite file run against it"

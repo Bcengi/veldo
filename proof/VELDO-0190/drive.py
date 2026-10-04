@@ -92,6 +92,10 @@ def red(commit):
     report = dict(schema='veldo.proof-red/v1', spec_id='VELDO-0190', suite='scripts/suites/' + SUITE, commit=resolved,
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
                   by_assertion=not _raised(observed), **observed)
+    if not report['by_assertion'] or not observed['rows'] or any(passed for _, passed in observed['rows']):
+        raise SystemExit('Red proof requires every behavior row to fail by assertion.')
+    if len({name for name, _ in observed['rows']}) != len(observed['rows']):
+        raise SystemExit('A row was reported more than once.')
     name = 'red-at-%s.json' % commit
     (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
     print(json.dumps({'commit': resolved, 'failed_rows': observed['failed_rows'], 'by_assertion': report['by_assertion'],

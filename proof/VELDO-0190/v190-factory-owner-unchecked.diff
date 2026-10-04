@@ -1,0 +1,6 @@
+--- a/.veldo/control_owner_revisions.py
++++ b/.veldo/control_owner_revisions.py
+@@ -100,2 +100 @@
+-        if (member.get('principal_type') != 'person' or member.get('enrolled_by') != principal
+-                or not self.CM.BOOTSTRAP_ROLES <= set(member.get('roles') or [])):
++        if False:

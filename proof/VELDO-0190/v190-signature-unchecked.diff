@@ -1,0 +1,5 @@
+--- a/.veldo/control_membership.py
++++ b/.veldo/control_membership.py
+@@ -380 +380 @@
+-    if not ok:
++    if False:

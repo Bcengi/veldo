@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config.py
++++ b/.veldo/control_agent_config.py
+@@ -152 +152 @@
+-        data['assertion_digest'] = params['assertion_digest']
++        pass

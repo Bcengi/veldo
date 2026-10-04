@@ -1,0 +1,26 @@
+{
+ "base": "4159d35b",
+ "changed": [
+  ".veldo/control_agent_config.py",
+  ".veldo/control_membership.py",
+  ".veldo/control_owner_revisions.py",
+  ".veldo/control_service.py",
+  ".veldo/init_scaffold.py",
+  "engine/.veldo/control_agent_config.py",
+  "engine/.veldo/control_membership.py",
+  "engine/.veldo/control_owner_revisions.py",
+  "engine/.veldo/control_service.py",
+  "engine/.veldo/init_scaffold.py",
+  "proof/VELDO-0190/drive.py",
+  "proof/VELDO-0190/fixture.py",
+  "proof/VELDO-0190/journey.py",
+  "proof/VELDO-0190/red-at-4159d35b.json",
+  "scripts/check_teeth_mutations.py",
+  "scripts/suites/95_veldo_0190_owner_revisions.py",
+  "scripts/suites/manifest.json",
+  "scripts/suites/requires.json",
+  "specs/VELDO-0190-owner-signed-revision-commands.md"
+ ],
+ "outside": [],
+ "origin_main_check": "Includes inherited 0167 and spec changes; see README."
+}

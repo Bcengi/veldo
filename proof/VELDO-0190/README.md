@@ -1,0 +1,90 @@
+# VELDO-0190 builder evidence
+
+Built on build-veldo-0190 from 4159d35b. Review, mutation execution and the
+merged-tree gate remain reviewer work. No push, real model, login, real secret,
+external host or user service manager was used.
+
+The new OwnerRevisions entry point authenticates with control_membership's
+shared authenticate function and delegates both saves to their existing writers.
+Admit preserves its operation, command identity, journal signer and retry checks
+before authentication, and keeps possession, policy and expected versions on
+the same authority snapshot. Its existing callers were tested before and after.
+
+AC1 needs one footprint extension: control_agent_config.py and its engine copy.
+The writer had no assertion digest argument, and its store CAS refused a stale
+base as plain stale_version. The optional assertion_digest retains signed
+provenance in the immutable revision and names that CAS refusal
+stale_version:agent_configuration when supplied. Existing API callers omit it;
+their arguments, revision data and refusal names are unchanged. Authorization,
+schema, base, version and read-back checks remain in the writer.
+
+The only overlap with 0167 production files is the service route and the runtime
+scaffold inventory that AC4 requires. No 0167 record or hint behavior is changed.
+
+## Row coverage
+
+* AC1: offline/saves executes real setup through ingress configuration, before
+  the API edge is enrolled. It activates factory through the owner's signed
+  project command, constructs the existing writers with setup's pm requester
+  and real Inbox, saves all four role configurations and the default team,
+  reads every revision back, and checks the journal principal, nonce, signed
+  envelope digest, observations and metrics. Writer rows refuse stale bases,
+  a missing required role and a generated credential literal with no write.
+* AC2: authentication rows refuse absent signatures, another enrolled member's
+  key, a revoked owner's key, a co-owner who is not the bootstrap owner,
+  changed definitions, bases and teams, stale membership and delegation
+  versions, foreign authority coordinates, expiry and a mismatched command id.
+  Every refusal checks the unchanged journal and observation signer and class.
+  Administrative and unknown operations are rejected, and admit continues to
+  refuse both revision operations as policy_refused.
+* AC3: replay rows return both committed revisions without writing, reject
+  the same identity over different configuration or team content, and refuse
+  consumed or unbound nonces. The store retains a command digest and transition,
+  not original command bodies. Replay reconstructs the writer command from
+  the immutable revision and before-versions, verifies its digest, then compares
+  the presented parameters with the committed parameters.
+* AC4: a writable second connection cannot save while the installed service
+  holds the lock. The actual installed service receives signed packets through
+  control_client.send, commits and replays all five saves, records the forged
+  signer, and returns a writer's own stale-team refusal. The sending process
+  opens only a read-only SQLite handle during socket sends. The service's
+  observations name the revision and digest. Missing API configuration is
+  refused by name, and the runtime module is installed and scaffolded.
+* format/fake-lines and the separate 0172 fake/capture report drive generated
+  Claude and Codex installation fixtures through the shared format constructor
+  and compare their emitted lines at teardown. No real CLI is executed.
+
+Each row is reported once. An unexercised row fails, and raised journeys are
+explicitly identified rather than counted as successful negative controls.
+
+## Retained records
+
+The red driver at drive.py runs the current suite against the unchanged
+4159d35b archive. red-at-4159d35b.json retains every named failed assertion and
+source hashes. It rejects raised journeys, duplicate row reports or green
+behavior rows. This is a red record, not a gate result.
+
+mutations.json records 13 finding-190 mutations, exact diffs and source hashes.
+They include each declared falsifier: replace the signed base with the head,
+accept any active signing key, omit replay content comparison, and leave saves
+to the service fallback. Additional mutations cover owner identity, signatures,
+command identity, nonce binding, the lock, installation, provenance, the online
+signer and writer refusal names. None was executed by this builder; rejected
+mutation results belong to the reviewer.
+
+checks.json records scoped suite summaries and their log hashes. Partial suite
+runs return exit code 2 on success. They do not supply gate evidence or a
+landing decision. No gate byproduct is committed.
+
+## Limitations
+
+Suite 86_veldo_0127_agent_configuration reports missing or stale committed live
+Claude and Codex captures after the configuration writer changes. Its other
+checks pass. Refreshing those captures would run real models, which the builder
+instructions prohibit; the records are neither edited nor represented as fresh.
+
+The supplied footprint checker compares origin/main with HEAD and includes
+inherited 0167 and specification changes, so it reports outside paths.
+footprint.json instead records this task's delta from the supplied 4159d35b
+starting commit. No unrelated path is added to 0190's footprint to hide that
+inherited difference.

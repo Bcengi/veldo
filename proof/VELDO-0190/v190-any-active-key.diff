@@ -1,0 +1,5 @@
+--- a/.veldo/control_membership.py
++++ b/.veldo/control_membership.py
+@@ -379 +379 @@
+-    ok, detail = _verify(envelope, signature, key["public_key"], verifier)
++    ok, detail = any(_verify(envelope, signature, k["public_key"], verifier)[0] for k in state["keyring"] if AC.active_key(state["keyring"], k["principal"], now) == k), "any active key"

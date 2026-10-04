@@ -243,3 +243,12 @@ Existing callers omit the new argument and retain their prior data and refusal
 names. All authorization, schema, base, version and read-back checks remain.
 The service route and scaffold asset overlap 0167's footprint only because AC4
 requires them; no record configuration or hint behavior is changed.
+
+2026-10-04, proof checkpoint: suite 95 reports 31 behavior rows and the separate
+0172 fake/capture check, all passing. The current suite run against the unchanged
+4159d35b archive makes all 31 rows fail by assertion with no raised journey.
+Finding 190 registers 13 mutations and exact diffs, including all four declared
+falsifiers; execution is reserved to the reviewer. Six admit caller suites passed
+before and after extraction. The configuration suite's committed live captures
+are stale after the writer change; no model runs or evidence rewrites are allowed.
+Scoped clean-environment regression and final static checks are in progress.

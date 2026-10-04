@@ -1,0 +1,5 @@
+--- a/.veldo/control_owner_revisions.py
++++ b/.veldo/control_owner_revisions.py
+@@ -77 +77 @@
+-        if not isinstance(cid, str) or not cid.strip() or envelope.get('command_id') != cid:
++        if not isinstance(cid, str) or not cid.strip():

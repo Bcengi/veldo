@@ -24,7 +24,7 @@ def _v190_suite():
         'authentication/membership', 'authentication/delegation', 'authentication/domain', 'authentication/store',
         'authentication/repository', 'authentication/expiry', 'authentication/command-id', 'authentication/operations',
         'replay/identical', 'replay/content-conflict', 'replay/consumed-nonce', 'replay/nonce-binding', 'lock/second-connection',
-        'service/saves', 'service/forged', 'service/writer-refusal', 'service/unconfigured', 'install/asset')
+        'format/fake-lines', 'service/saves', 'service/forged', 'service/writer-refusal', 'service/unconfigured', 'install/asset')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -40,6 +40,31 @@ def _v190_suite():
     helper = load('v190_fixture', here / 'proof/VELDO-0190/fixture.py')
     journey = load('v190_journey', here / 'proof/VELDO-0190/journey.py')
     conform_formats = load('v190_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    fake_formats = load('v190_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake = fake_formats.embed('''import json,sys
+from pathlib import Path
+def emit(event):
+    print(json.dumps(complete_event(event)), flush=True)
+if sys.argv[1:3] == ['login', 'status']:
+    sys.stderr.write('Logged in using ChatGPT' + chr(10))
+    sys.exit(0)
+if Path(sys.argv[0]).name == 'claude':
+    opening = json.loads(sys.stdin.readline())
+    if opening['type'] != 'control_request':
+        raise ValueError('expected initialize')
+    emit({'type': 'control_response', 'response': {'subtype': 'success',
+          'request_id': opening['request_id'], 'response': {'account': {
+          'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+    sys.stdin.readline()
+    emit({'type': 'assistant', 'message': {'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+    emit({'type': 'result', 'subtype': 'success', 'is_error': False,
+          'usage': {'input_tokens': 2, 'output_tokens': 4}})
+else:
+    sys.stdin.read()
+    emit({'type': 'thread.started', 'thread_id': 'fixture-thread'})
+    emit({'type': 'turn.started'})
+    emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})
+''')
     fake_capture = (['teardown not reached'], [])
 
     def exercise(h):
@@ -265,10 +290,15 @@ def _v190_suite():
     def teardown(h):
         nonlocal fake_capture
         base, fake = h['base'], h['engines186']['fake']
-        fake_capture = conform_formats.conform_fake(locals(), '0190_owner_revisions')
+        L = load('v190_format_launch', h['mods'] / 'control_launch.py')
+        try:
+            pass
+        finally:
+            fake_capture = conform_formats.conform_fake(locals(), '0190_owner_revisions')
+            check('format/fake-lines', 'generated CLI lines conform to the capture', not fake_capture[0] and bool(fake_capture[1]))
 
     try:
-        helper.run(ROOT, PRODUCTION, exercise, teardown)
+        helper.run(ROOT, PRODUCTION, exercise, teardown, fake)
     except Exception as error:
         for row in rows:
             check(row, 'ran to its end (raised ' + type(error).__name__ + ': ' + str(error)[:250] + ')', False)
@@ -279,7 +309,7 @@ def _v190_suite():
         for label, passed in observations:
             if not passed:
                 print('VELDO-0190 ' + row + ' detail: ' + label)
-        expect('VELDO-0190 ' + row, bool(observations) and all(passed for _, passed in observations))
+        expect('VELDO-0190 ' + row, len(observations) > 1 and all(passed for _, passed in observations))
 
 
 _v190_suite()
