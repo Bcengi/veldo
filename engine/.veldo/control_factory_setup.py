@@ -996,7 +996,11 @@ def inspect_engine(plan, installed, home, unit_dir, api_unit):
     arguments (control_service.layout) compared with the installation's record (control_factory_setup_upgrade)."""
     CS, UP = organ('control_service'), organ('control_factory_setup_upgrade')
     try:
-        laid = CS.layout([plan['workspace']], host_trust=plan['host_trust'], key_directory=plan['keys'],
+        # The installed authority may serve more repositories than the setup workspace.
+        # Render every receiver so engine and record upgrades cover that whole installation.
+        workspaces = list(dict.fromkeys([plan['workspace']] + [workspace
+            for members in installed['repositories'].values() for workspace in members]))
+        laid = CS.layout(workspaces, host_trust=plan['host_trust'], key_directory=plan['keys'],
                          install_root=plan['install_root'], unit_dir=unit_dir, profile=plan['profile'],
                          writable=plan['writable'], principal=installed.get('principal') or JOURNAL_PRINCIPAL,
                          python=installed.get('python'),

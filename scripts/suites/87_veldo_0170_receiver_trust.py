@@ -31,7 +31,7 @@ def _v170_suite():
     names = ('launch/governed', 'launch/ungoverned', 'status/configurations',
              'rerun/launch-after-repair', 'rerun/no-installed-trust', 'rerun/host-identity',
              'rerun/differs', 'rerun/differs/workspace', 'rerun/differs/store',
-             'rerun/differs/journal_key', 'rerun/default-trust')
+             'rerun/differs/journal_key', 'rerun/default-trust', 'rerun/records')
     rows = {name: [] for name in names}
 
     def check(row, label, ok):
@@ -153,11 +153,16 @@ def _v170_suite():
                    state_root=str(root), key_directory=str(root / 'keys'), profile=profile, writable=[], runner=manager,
                    channel_ingress=fresh['ingress'], api_service=str(root / 'host/api-service.json'),
                    adapters={'owner-worker': {'argv': ['/bin/true']}})
-        # Reinstalling the service replaces receivers; complete the setup-owned record step
-        # before the trust-only repair snapshots, just as fresh factory setup does.
-        F.organ('control_factory_setup_records').fresh(config_path, root, F._differs)
         installed = json.loads(config_path.read_text())
         paths = [Path(installed['receiver']['configs'][r]) for r in (ids['repository_uuid'], 'repository-other')]
+        # Reinstalling the service replaces every receiver. A setup rerun must add
+        # record configuration to both repositories before the trust-only snapshots.
+        result = setup()
+        check('rerun/records', 'all installed repositories share the record directory and service',
+              result.get('outcome') == 'set_up' and all(
+                  json.loads(path.read_text()).get('records') == str(root / 'records')
+                  and json.loads(path.read_text()).get('record_hint_service') == installed['socket']
+                  for path in paths))
         old, current = paths
         legacy = json.loads(old.read_text())
         legacy.pop('host_trust')
