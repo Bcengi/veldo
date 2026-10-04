@@ -1,7 +1,9 @@
 # VELDO-0167 main integration
 
 Merge commit: 2370298a4c89d273ebda476a9c56820601c6425e.
-Main merged: 298d0fd2. Production fixes: e2892514 and 66110bab.
+Main merged: 298d0fd2. Original seam fixes: e2892514 and 66110bab, superseded
+by b32b7d0d after independent review. See review-repair-report.md for the current
+design and its scoped checks; the original integration checks below are historical.
 
 Conflict resolutions:
 
@@ -28,11 +30,12 @@ Seam audit and fix:
   Canonical engine and repository copies of the eleven seam modules match.
 - The historical running-host row caught main's 0152 intake declaration adding a
   writer to an immutable existing declaration, preventing the restarted API from
-  opening. Routes now use intake_record with their route discriminator and the
-  existing transaction validation. Pre-route declarations remain unchanged.
-  Hosts already carrying main's expanded declaration retain it and its command
-  registration too. Neither the store's ownership rules nor route authorization
-  were weakened. Suite 93 now tests attachment to both persisted declarations.
+  opening. Independent review rejected the initial intake-record workaround.
+  The store now permits a strict command superset for the same owner, module and
+  digest, subject to the existing binding check. Upgrade rebinding records the
+  previous commands and switch back restores them. Routes execute intake_route;
+  the discriminator and compatibility branch are removed. Suite 93 starts with
+  the actual pre-route engine's declaration and reattaches it after switch back.
 - The 0167 installation fixture already constructs inert CLI bytes with the 0172
   shared fake_formats helper. Its teardown now reports conform_fake through the
   suite's explicit fake/capture row before removing those bytes. These inert
