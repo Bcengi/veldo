@@ -42,7 +42,8 @@ scaffold inventory that AC4 requires. No 0167 record or hint behavior is changed
   consumed or unbound nonces. The store retains a command digest and transition,
   not original command bodies. Replay reconstructs the writer command from
   the immutable revision and before-versions, verifies its digest, then compares
-  the presented parameters with the committed parameters.
+  the presented parameters with the committed parameters as canonical bytes.
+  This distinguishes JSON false from zero even though Python equality does not.
 * AC4: a writable second connection cannot save while the installed service
   holds the lock. The actual installed service receives signed packets through
   control_client.send, commits and replays all five saves, records the forged
@@ -88,3 +89,18 @@ inherited 0167 and specification changes, so it reports outside paths.
 footprint.json instead records this task's delta from the supplied 4159d35b
 starting commit. No unrelated path is added to 0190's footprint to hide that
 inherited difference.
+
+## Completed scoped checks
+
+The final suite passes 32 checks normally and under the empty gate environment.
+Its unchanged-baseline red record has 31 distinct rows, all false by assertion.
+Six admit dependency suites passed before extraction and after it. Sixteen
+selected suites ran individually in both environments; fifteen passed, with
+only the two live-capture rows of 0127 failing as described above. The final
+standalone 0172 census passes and lists 0190_owner_revisions.
+
+Validation passes, the Git subprocess boundary passes, all mutation names and
+anchors are valid with zero bad anchors, and all five engine modules match
+the repository copies byte for byte. The starting-commit footprint has no
+outside paths. The supplied origin/main checker reports 59 inherited outside
+paths, all present before this task.

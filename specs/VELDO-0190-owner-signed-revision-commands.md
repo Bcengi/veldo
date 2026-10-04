@@ -252,3 +252,15 @@ falsifiers; execution is reserved to the reviewer. Six admit caller suites passe
 before and after extraction. The configuration suite's committed live captures
 are stale after the writer change; no model runs or evidence rewrites are allowed.
 Scoped clean-environment regression and final static checks are in progress.
+
+2026-10-04, completed scoped checks: 32 own-suite checks pass normally and in
+the empty gate environment, and all 31 behavior rows are red by assertion on
+4159d35b. Replay compares canonical parameters, including JSON false versus
+zero. Sixteen selected suites ran alone in both environments: fifteen pass;
+0127's only failures are its two stale live captures, which were not refreshed
+by running forbidden real models. The final 0172 census includes this suite.
+Validation, Git boundary, engine identity and zero bad anchors pass. The supplied
+origin/main footprint check includes 59 inherited outside paths; this task's
+delta from 4159d35b has none. Thirteen mutations are registered and unexecuted.
+No complete selftest, mutation runner, gate, push or external service was used.
+Review and the merged-tree gate remain pending; status stays ready.

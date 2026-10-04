@@ -10355,12 +10355,12 @@ def cases():
     # VELDO-0190: owner signatures, exact revision identity and the service lock.
     add(190, 'v190-base-from-head', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
         "base=p['base'], command_id=cid,",
-        "base=CG.MC.entity(self.conn, CG.identity(self.configurations.domain, self.configurations.repository, CG.KINDS[0], p['definition']['role']))['data']['revision'], command_id=cid,", ['writer/configuration-stale'], ())
+        "base=(CG.MC.entity(self.conn, CG.identity(self.configurations.domain, self.configurations.repository, CG.KINDS[0], p['definition']['role'])) or {'data': {'revision': 0}})['data']['revision'], command_id=cid,", ['writer/configuration-stale'], ())
     add(190, 'v190-any-active-key', '95_veldo_0190_owner_revisions.py', 'control_membership.py',
         '    ok, detail = _verify(envelope, signature, key["public_key"], verifier)\n',
         '    ok, detail = any(_verify(envelope, signature, k["public_key"], verifier)[0] for k in state["keyring"] if AC.active_key(state["keyring"], k["principal"], now) == k), "any active key"\n', ['authentication/other-key'], ())
     add(190, 'v190-replay-content-unchecked', '95_veldo_0190_owner_revisions.py', 'control_owner_revisions.py',
-        "                    or any(committed.get(k) != p[k] for k in (field, 'base'))\n",
+        "                    or self.S.canonical_bytes({k: committed[k] for k in (field, 'base')}) != self.S.canonical_bytes(p)\n",
         '', ['replay/content-conflict'], ())
     add(190, 'v190-service-fallback', '95_veldo_0190_owner_revisions.py', 'control_service.py',
         "            elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:\n",

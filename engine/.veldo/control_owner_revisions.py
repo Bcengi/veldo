@@ -87,7 +87,7 @@ class OwnerRevisions:
             committed = self._committed(rec, operation) if rec is not None else None
             if (committed is None or rec.get('principal') != envelope.get('principal')
                     or rec.get('nonce') != envelope.get('nonce') or envelope.get('nonce') != cid
-                    or any(committed.get(k) != p[k] for k in (field, 'base'))
+                    or self.S.canonical_bytes({k: committed[k] for k in (field, 'base')}) != self.S.canonical_bytes(p)
                     or envelope.get('command_digest') != AC.canonical_command_digest(command)):
                 raise Refused('stale_subject:owner_command:command_content_conflict')
             return dict(self._read(operation, p, p['base'] + 1), replayed=True)

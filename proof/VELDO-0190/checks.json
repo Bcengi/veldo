@@ -1,0 +1,463 @@
+{
+ "schema": "veldo.scoped-builder-checks/v1",
+ "spec_id": "VELDO-0190",
+ "base": "4159d35b",
+ "scope": "Selected suites, sequentially. No gate, complete selftest or mutation execution.",
+ "before": [
+  {
+   "suite": "38_veldo_0025_membership",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 1.36,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "9d954781959d84dbcfdbd004f7567551d5f201646dd7dcc614d89de669788a41",
+   "failure_details": []
+  },
+  {
+   "suite": "39_veldo_0026_revocation",
+   "passed": 42,
+   "failed": 0,
+   "seconds": 4.08,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "c01fc5aa0e445761c8cf3baa26fe238f759a12a229ad7d8a1e78229a7f42e5b3",
+   "failure_details": []
+  },
+  {
+   "suite": "56_veldo_0027_signing",
+   "passed": 121,
+   "failed": 0,
+   "seconds": 5.64,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "e70f7f2f1fa51eaf1f0f7ef3de455ff48a3ac92d0aa5acd99159831127e77c50",
+   "failure_details": []
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "passed": 39,
+   "failed": 0,
+   "seconds": 31.92,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "3fa8a45436868f2fac41ed01e68e36127b85ea89ef0890c8c046dbfbb9984eeb",
+   "failure_details": []
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 35.43,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "658ddf40f65f1923387bbe02f180ef67b2c9073f6c8b0f1b2f85bc092e22a158",
+   "failure_details": []
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "passed": 44,
+   "failed": 0,
+   "seconds": 13.95,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "3f04f45cddc43df70471d17bf8633f313bc4edef7a93028eb66ade40b4e70a6f",
+   "failure_details": []
+  }
+ ],
+ "ordinary": [
+  {
+   "suite": "95_veldo_0190_owner_revisions",
+   "passed": 58,
+   "failed": 0,
+   "seconds": 7.44,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "4f2d9ef709ec61a2205a2892f0ab36030cc953d07cda53828705d451a954c9f4",
+   "failure_details": []
+  },
+  {
+   "suite": "38_veldo_0025_membership",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 1.49,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "832880be00406c1195eba59c8ab0eb79b10d3506714d9dbc0ba1d6621c404faf",
+   "failure_details": []
+  },
+  {
+   "suite": "39_veldo_0026_revocation",
+   "passed": 42,
+   "failed": 0,
+   "seconds": 4.47,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "5f421c14b8d54e111308d500381361a401fba613a3fbfe15a70812f2c9aba43c",
+   "failure_details": []
+  },
+  {
+   "suite": "56_veldo_0027_signing",
+   "passed": 121,
+   "failed": 0,
+   "seconds": 5.96,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "5e48f8332b5d11a6b27b957c8e1667d0c3755ee754ee028a14ae222a33329963",
+   "failure_details": []
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "passed": 39,
+   "failed": 0,
+   "seconds": 32.18,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "d5649ead859a65215333a9a172ee9eec83ebe8edd756c9cd16c85a99ed49e7b6",
+   "failure_details": []
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 36.42,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "87e25e855dae3a87341bdc9aa4117ac9f1cdb3437fdb760a551bb1ea6a126cda",
+   "failure_details": []
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "passed": 44,
+   "failed": 0,
+   "seconds": 15.42,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "2a5e29d7d22dd4dded67ea84afa4c61e8217a411aac36f8e5dbb7615671e729a",
+   "failure_details": []
+  },
+  {
+   "suite": "86_veldo_0127_agent_configuration",
+   "passed": 51,
+   "failed": 2,
+   "seconds": 40.38,
+   "exit_code": 1,
+   "includes_shared_preamble": true,
+   "log_sha256": "4e3b59a3b8aa8f9f27fc06f5f8490d5ebeb16635c6bc1641c32f55170ea00981",
+   "failure_details": [
+    "VELDO-0127 live/claude detail: missing or stale live capture",
+    "SELFTEST FAIL: VELDO-0127 live/claude",
+    "VELDO-0127 live/codex detail: missing or stale live capture",
+    "SELFTEST FAIL: VELDO-0127 live/codex"
+   ]
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "passed": 52,
+   "failed": 0,
+   "seconds": 10.53,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "31aa60ee114eeac386694abdd2790307d3a1b1bd1d2338f7bdc2ccb98bc45b36",
+   "failure_details": []
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "passed": 56,
+   "failed": 0,
+   "seconds": 20.36,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "accf2e6d4c344a28cefdb9a85a876d5e64f50e88ee55016801657f3beb837162",
+   "failure_details": []
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "passed": 68,
+   "failed": 0,
+   "seconds": 24.99,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "9d248fea37dc7b5bb5f4845ce565e0e23a901617650374371489ef6cd4707b23",
+   "failure_details": []
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "passed": 35,
+   "failed": 0,
+   "seconds": 14.81,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "77a71212766e7e9a2bf0e61b079bb729ed5d0f2145009a97f7498541147faaf3",
+   "failure_details": []
+  },
+  {
+   "suite": "91_veldo_0167_setup_records",
+   "passed": 35,
+   "failed": 0,
+   "seconds": 21.53,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "9b99011509eeb42f09a11bc3c6f4a4af43cb1f006a218b628c337035388f7e02",
+   "failure_details": []
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "passed": 59,
+   "failed": 0,
+   "seconds": 79.88,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "d6d9cec0ce5485101f2fd47115d1fed323dd746c6ba5989a38ea9cce0e5ba205",
+   "failure_details": []
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "passed": 55,
+   "failed": 0,
+   "seconds": 36.05,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "08be82e8ab1bd6846ebc303d74aa50acfc4fec1b4a7e0a4585c5cd7d3c46dde5",
+   "failure_details": []
+  },
+  {
+   "suite": "82_veldo_0172_live_formats",
+   "passed": 30,
+   "failed": 0,
+   "seconds": 1.65,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "2b88333d6da0a3c43ea0f07fbd1851dd8c2ef798576c7897a797de05e2eb9995",
+   "failure_details": []
+  }
+ ],
+ "clean": [
+  {
+   "suite": "95_veldo_0190_owner_revisions",
+   "passed": 58,
+   "failed": 0,
+   "seconds": 6.97,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "b50a1b6f67e36d86d9ce955e00496bc5b3e5a5ea6f9c6c252e1216f3d2d65a1d",
+   "failure_details": []
+  },
+  {
+   "suite": "38_veldo_0025_membership",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 0.84,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "fb35e62b6c44f1ca31382e1bd80c64bc66c37f41f934968caede9caf8698db3e",
+   "failure_details": []
+  },
+  {
+   "suite": "39_veldo_0026_revocation",
+   "passed": 42,
+   "failed": 0,
+   "seconds": 1.64,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "965a5eafbf8d2b38b42596df2b13f9200504431c80a53fe21fda6a72e6324f35",
+   "failure_details": []
+  },
+  {
+   "suite": "56_veldo_0027_signing",
+   "passed": 121,
+   "failed": 0,
+   "seconds": 6.28,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "652832927aa88e1eb179509316071d33fd9516ce5e8de205fa4b67469bb08a77",
+   "failure_details": []
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "passed": 39,
+   "failed": 0,
+   "seconds": 32.17,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "8d3dcdeb8d69c1a3af5d65a9f5e0adda5fc87b6605c3dd3c46701f2fb40e924b",
+   "failure_details": []
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "passed": 43,
+   "failed": 0,
+   "seconds": 47.62,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "9fb7b1d9e57be92740eb4e77dc67405b515a41eb8a2067304c0a8f4361c4a180",
+   "failure_details": []
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "passed": 44,
+   "failed": 0,
+   "seconds": 13.4,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "6d92385decac753df4fed78548e5b2bb34a8dacd04e9bdd4c89c0ac155d5b857",
+   "failure_details": []
+  },
+  {
+   "suite": "86_veldo_0127_agent_configuration",
+   "passed": 51,
+   "failed": 2,
+   "seconds": 48.96,
+   "exit_code": 1,
+   "includes_shared_preamble": true,
+   "log_sha256": "952838306cda41f761636870df518b3752bc5799d3c7f3fe2ee18bf36848c517",
+   "failure_details": [
+    "VELDO-0127 live/claude detail: missing or stale live capture",
+    "SELFTEST FAIL: VELDO-0127 live/claude",
+    "VELDO-0127 live/codex detail: missing or stale live capture",
+    "SELFTEST FAIL: VELDO-0127 live/codex"
+   ]
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "passed": 52,
+   "failed": 0,
+   "seconds": 19.2,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "be033d679f9dfd2db507a3d73d17be89eac02e076e8e2fa8296cabd11137e1bc",
+   "failure_details": []
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "passed": 56,
+   "failed": 0,
+   "seconds": 21.22,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "9d8dd2c628d744a3e73bf4f3f94a3eb02c88f2dc0fb537707b799aa73906c971",
+   "failure_details": []
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "passed": 68,
+   "failed": 0,
+   "seconds": 36.59,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "0ab29b32a0c6d407ae73d4eaeb3403b020fe29e610b29840ef9a1bdc38489b2c",
+   "failure_details": []
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "passed": 35,
+   "failed": 0,
+   "seconds": 15.66,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "cf46151236b381d08ee03d710bc6480138ac7da31fddd49e58d254edc9b44eb0",
+   "failure_details": []
+  },
+  {
+   "suite": "91_veldo_0167_setup_records",
+   "passed": 35,
+   "failed": 0,
+   "seconds": 20.05,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "39b6b9035890eb25e460f28db400e845f7c695900632b0d1f15c137da785dc9b",
+   "failure_details": []
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "passed": 59,
+   "failed": 0,
+   "seconds": 85.92,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "ed5014d3d43d6876436b03821d8d883a09ff97fc9e0173c60d1dd0eedfeaa3ef",
+   "failure_details": []
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "passed": 55,
+   "failed": 0,
+   "seconds": 74.86,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "c1488656427f2d9c7005f41e6c8c367d2481bf19040da01fb2f35903b2f7a897",
+   "failure_details": []
+  },
+  {
+   "suite": "82_veldo_0172_live_formats",
+   "passed": 30,
+   "failed": 0,
+   "seconds": 1.45,
+   "exit_code": 2,
+   "includes_shared_preamble": true,
+   "log_sha256": "ec71458d69931ce811c58b67b8427242605b042ecc5e473eb31c3072c667f087",
+   "failure_details": []
+  }
+ ],
+ "clean_environment": {
+  "PATH": "directory of python3:/usr/bin:/bin",
+  "HOME": "/dev/shm/veldo-0190-clean-home",
+  "TMPDIR": "/dev/shm",
+  "LANG": "C.UTF-8",
+  "LC_ALL": "C.UTF-8",
+  "TZ": "UTC",
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "PYTHONNOUSERSITE": "1",
+  "PYTHONHASHSEED": "0",
+  "GIT_CONFIG_NOSYSTEM": "1",
+  "GIT_CONFIG_GLOBAL": "/dev/null",
+  "GIT_TERMINAL_PROMPT": "0",
+  "environment": "env -i"
+ },
+ "production": {
+  "control_owner_revisions.py": {
+   "sha256": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28",
+   "engine_identical": true
+  },
+  "control_membership.py": {
+   "sha256": "cc373d4d52d7c6bb7022af45cf7f69be1fd79539dcd1a5922cf36bf842bdba89",
+   "engine_identical": true
+  },
+  "control_agent_config.py": {
+   "sha256": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
+   "engine_identical": true
+  },
+  "control_service.py": {
+   "sha256": "22c1dc653725e27fef8f954188155d7cb0bef9702068ebef221b30e4a2881ba7",
+   "engine_identical": true
+  },
+  "init_scaffold.py": {
+   "sha256": "f3d503cd36f106a9b50b3c1101f2bc63e1a93e3a812d2313baaf4cbb0574cd02",
+   "engine_identical": true
+  }
+ },
+ "static": {
+  "anchors": {
+   "summary": "0 bad anchors",
+   "log_sha256": "1cfdd0ce240f94af8148f571045e9ff1b759267510e9debbc92fe6a0c66317c3"
+  },
+  "git_boundary": {
+   "summary": "Git subprocess boundary: pass",
+   "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83"
+  },
+  "validate": {
+   "exit_code": 0,
+   "log_sha256": "6a71a1841aeec2a61c8a2d19a49334f5ce00e65c7cd8063673fb6eb5a546ea9e"
+  }
+ },
+ "red": {
+  "file": "red-at-4159d35b.json",
+  "rows": 31,
+  "all_red_by_assertion": true
+ },
+ "mutations": {
+  "registered": 13,
+  "executed": 0,
+  "status": "Reviewer execution required"
+ }
+}

@@ -79,7 +79,7 @@
   },
   ".veldo/control_owner_revisions.py": {
    "at_commit": null,
-   "now": "012bdd14924c298c9e52e41cd9a145e7bf11d7ad2cad2271ff463f8a5a2a9025"
+   "now": "25419502203809a3ec749bda2285df094df02b1b872dddba91e882df970fdf28"
   },
   ".veldo/control_service.py": {
    "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
@@ -218,7 +218,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 0.977,
+ "seconds": 0.975,
  "spec_id": "VELDO-0190",
  "suite": "scripts/suites/95_veldo_0190_owner_revisions.py",
  "tree": "git archive 4159d35b625ac00c3e24e6cbe012b72f099fbba9, unchanged; the current suite file run against it"

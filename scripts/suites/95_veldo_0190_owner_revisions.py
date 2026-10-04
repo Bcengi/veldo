@@ -185,6 +185,9 @@ else:
             altered = copy.deepcopy(params); altered['definition']['settings']['model'] = 'changed'
             refused('replay/content-conflict', w.packet('save_capability_configuration', dict(altered, base=0),
                 command_id=packets[2]['command']['command_id']), 'stale_subject:owner_command:command_content_conflict')
+            refused('replay/content-conflict', w.packet('save_capability_configuration',
+                dict(definition=w.definition(), base=False), command_id=packets[2]['command']['command_id']),
+                'stale_subject:owner_command:command_content_conflict')
             changed_team = copy.deepcopy(team); changed_team['roles']['implementation']['expertise'] = ['changed']
             refused('replay/content-conflict', w.packet('save_default_team', dict(team=changed_team, base=0),
                 command_id=team_packet['command']['command_id']), 'stale_subject:owner_command:command_content_conflict')
