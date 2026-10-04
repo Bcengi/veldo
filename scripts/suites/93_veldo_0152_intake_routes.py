@@ -6,6 +6,7 @@ def _v152_suite():
     import json
     from pathlib import Path
     import sys
+    import tarfile
     import time
     from types import SimpleNamespace
     PRODUCTION = {
@@ -77,16 +78,24 @@ def _v152_suite():
             acquirer = EV.Acquirer(S, f['CM'], f['P'], f['V'], f['presenter'],
                 EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
                 'api-edge', lambda b: f['sign_as']('api-edge', b))
-            # An installed pre-route intake already owns these kinds. Upgrade may
-            # rebind its module digest, but cannot change its writer declaration.
+            # Start from the actual pre-route engine's file and 0126 declarations.
+            intake_path = mods / 'control_intake.py'
+            current_intake = intake_path.read_bytes()
+            with tarfile.open(ROOT / 'proof/VELDO-0189/older/971186ac.tar.gz') as archive:
+                previous_intake = archive.extractfile('.veldo/control_intake.py').read()
+            intake_path.write_bytes(previous_intake)
             S.declare_owners(conn, IN.OWNER,
                 kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD,),
                        IN.QUESTION_KIND: (IN.RECORD, IN.ASKED)}, module=IN.__file__)
             legacy_owners = [row for row in S.entity_owners(conn) if row[2] == IN.OWNER]
+            intake_path.write_bytes(current_intake)
+            S.rebind_owners(conn, {str(intake_path): S.module_digest(str(intake_path))}, keep_previous=True)
             intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory'],
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
-            check('route/legacy-owner', 'existing writer declarations survive route attachment',
-                  [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
+            check('route/legacy-owner', 'upgrade adds the route writer to proposals and questions',
+                  {row[1]: row[3] for row in S.entity_owners(conn) if row[2] == IN.OWNER} == {
+                      IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD, IN.RT.ROUTE),
+                      IN.QUESTION_KIND: (IN.ASKED, IN.RECORD, IN.RT.ROUTE)})
             def activate(name, prefixes):
                 return f['projects'].apply(f['signed']('olga', dict(ids, operation='activate', project=name,
                     principal='olga', command_id=f['next_id']('project'), nonce=f['next_id']('nonce'), owner='olga',
@@ -381,6 +390,32 @@ else:
                   and (routed.get('route') or {}).get('reason') == 'Fixture PM reason.'
                   and (routed.get('route') or {}).get('dispatch') == record['dispatch']
                   and dispatched['contract']['capability']['adapter'] == 'codex')
+            pid = send('api_request', 'start a rollback fixture project')['proposal_id']
+            committed_commands = []
+            execute = S.execute
+            def observed_execute(connection, command, *args, **kwargs):
+                result = execute(connection, command, *args, **kwargs)
+                committed_commands.append((copy.deepcopy(command), result))
+                return result
+            S.execute = observed_execute
+            try:
+                routed = intake.route(doc(pid), dispatch='fixture-legacy-upgrade', proposal_id=pid)
+            finally:
+                S.execute = execute
+            check('route/legacy-owner', 'route commits under its dedicated operation in the journal',
+                  routed.get('ok') and len(committed_commands) == 1
+                  and committed_commands[0][0]['operation'] == 'intake_route'
+                  and 'operation' not in committed_commands[0][0]['parameters']
+                  and conn.execute('SELECT command_digest FROM journal WHERE command_id=?',
+                      (committed_commands[0][0]['command_id'],)).fetchone()[0]
+                      == S.command_digest(committed_commands[0][0]))
+            intake_path.write_bytes(previous_intake)
+            S.restore_owners(conn)
+            previous = load('v152_previous_intake', intake_path)
+            previous.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory'],
+                api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
+            check('route/legacy-owner', 'switch back attaches the actual pre-route engine with its old commands',
+                  [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
         # This store truly has no factory project record, rather than merely excluding it from configuration.
         with helper.fixture(ROOT, PRODUCTION, factory_project=False) as f:
             S, conn, mods = f['S'], f['conn'], f['mods']
@@ -389,14 +424,8 @@ else:
             acquirer = EV.Acquirer(S, f['CM'], f['P'], f['V'], f['presenter'],
                 EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'), conn, 'authority', f['journal_sign'],
                 'api-edge', lambda b: f['sign_as']('api-edge', b))
-            S.declare_owners(conn, IN.OWNER,
-                kinds={IN.SOURCE_KIND: (IN.RECORD,), IN.PROPOSAL_KIND: (IN.RECORD, IN.RT.ROUTE),
-                       IN.QUESTION_KIND: (IN.RECORD, IN.ASKED, IN.RT.ROUTE)}, module=IN.__file__)
-            legacy_owners = [row for row in S.entity_owners(conn) if row[2] == IN.OWNER]
             intake = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['factory', 'bcengi'],
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
-            check('route/legacy-owner', '0152 writer declarations survive route attachment',
-                  [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
             for channel in channels:
                 result = send(channel, 'fix the login bug')
                 check('intake/factory-refusals', 'no factory record ' + channel,

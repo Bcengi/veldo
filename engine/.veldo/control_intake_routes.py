@@ -14,13 +14,13 @@ ROUTES = ('new_project', 'existing_project', 'unclear')
 class Routes:
     def route(self, document, *, dispatch, proposal_id, version=None):
         """Apply one dispatched route to exactly the cycle's accepted inbox proposal."""
-        params = dict(operation=ROUTE, document=document, dispatch=dispatch, proposal_id=proposal_id, version=version)
+        params = dict(document=document, dispatch=dispatch, proposal_id=proposal_id, version=version)
         about = dict(proposal_id=proposal_id, dispatch=dispatch)
         try:
             changes, reads = self._route_plan(params)
             expected = {eid: (self._entity(eid) or {}).get('version', 0) for eid in set(changes) | set(reads)}
             cid = 'intake-route:' + hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()
-            self.store.execute(self.conn, dict(command_id=cid, principal=self.journal_signer, operation=self.record_operation,
+            self.store.execute(self.conn, dict(command_id=cid, principal=self.journal_signer, operation=ROUTE,
                 parameters=params, expected_versions=expected, artifact_digests=[], nonce=cid),
                 self.journal_signer, self.sign, self.generation)
         except (self.route_refused, self.store.StoreRefused) as error:

@@ -123,7 +123,10 @@ or patches the owning module's globals in its own process. The declarations and 
 bindings are not in the journal, so a store rebuilt from its journal carries neither (Release 2
 recovery). A declaration names one module file and its bytes, so an owning service attaches only
 from that copy as it was when it first declared: an upgraded module, or the same module from
-another checkout's copy, is refused `ownership_conflict`, and Release 1 has no re-declaration path.
+another checkout's copy, is refused `ownership_conflict` unless VELDO-0189's installed-engine
+rebinding first carries the digest. The same owner, module and digest may extend a declaration's
+commands by a strict superset that passes the existing command binding check. Repeating the same
+declaration is a no-op; every other difference is still `ownership_conflict`.
 
 The first-number floor does not depend on Git keeping a commit. When `accept_revision` first
 accepts a commit it records, in the same transaction and keyed by the domain, repository and commit
@@ -148,6 +151,15 @@ one written around the commands, by raw SQL, is the stated same-account limit ab
 has no operator path to retire an accepted revision.
 
 ## History
+
+2026-10-04: the 0167 merge review found that an installed 0126 intake could not add 0152's route
+writer. `declare_owners` now accepts only a strict command superset for the same owner, module and
+digest, after the existing bound-command check, inside its declaration transaction. The 0037
+suite adds kind and prefix rows for a different owner, removal or replacement, a command bound
+elsewhere, an accepted and idempotent superset, and rollback of an extension when another row
+conflicts. Five finding 37 mutations target those acceptance and refusal assertions. The existing
+footprint already names both store copies, this suite and the mutation registry. VELDO-0189 owns
+recording and restoring the previous command set on switch back; no other ownership exception is added.
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
 Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and

@@ -330,6 +330,14 @@ the factory loop (VELDO-0154) and the PM run (VELDO-0088) it needs.
 
 ## History
 
+2026-10-04: the 0167 merge review removes the intake-record route discriminator and the
+compatibility branch. Routes again register and execute their own `intake_route` operation.
+The legacy-owner row now starts with the archived pre-route engine's 0126 declaration, checks
+the added route command and its committed journal digest, then restores and attaches the
+previous engine. The artificial already-routed declaration block is removed; the missing-factory
+checks and every other 0152 row and mutation remain. VELDO-0037 and VELDO-0189 own the store's
+strict superset extension and command restoration; this spec's existing footprint is unchanged.
+
 2026-09-25: written for PLAN-0019 revision 4 from the approved operating-model design (Telegram 29162),
 sections 2(e) and 5(e), whose VELDO-0126 AC1 amendments are carried here whole because VELDO-0126 has
 landed: the ticket key rule, the new-project route with the design's falsifier, and the "a new project"

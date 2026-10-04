@@ -923,6 +923,22 @@ def cases():
     def aliases(name, module, old, new, row):
         add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row])
 
+    aliases('owners37-different-owner-adds', 'control_store.py',
+            'if (prior[2] == row[2] and prior[4:] == row[4:]\n',
+            'if (prior[4:] == row[4:]\n', 'owners/different-owner')
+    aliases('owners37-removing-command-allowed', 'control_store.py',
+            'and set(prior[3]) < set(row[3])):',
+            'and set(prior[3]) != set(row[3])):', 'owners/remove-command')
+    aliases('owners37-bound-command-added', 'control_store.py',
+            'if bound.get(command, row[4:]) != row[4:]:',
+            'if False:  # defect: a command already bound elsewhere is accepted', 'owners/bound-elsewhere')
+    aliases('owners37-superset-refused', 'control_store.py',
+            'and set(prior[3]) < set(row[3])):',
+            'and False):', 'owners/superset')
+    aliases('owners37-added-command-lost', 'control_store.py',
+            '(json.dumps(list(row[3])), row[0], row[1]))',
+            '(json.dumps(list(prior[3])), row[0], row[1]))', 'owners/superset')
+
     aliases('alias-checkout-maximum', 'control_alias.py',
             "        number = kind['next']\n",
             "        number = 1 + maximum([p.relative_to(request['workspace']).as_posix()"
@@ -9276,6 +9292,13 @@ def cases():
     def upgrade(name, module, old, new, row, also=()):
         add(189, name, '86_veldo_0189_engine_upgrade.py', module, old, new, [row], also)
         result[-1]['timeout'] = 900
+
+    upgrade('upgrade189-previous-commands-not-recorded', 'control_store.py',
+            '(selector, value, module, previous, digest, commands))',
+            '(selector, value, module, previous, digest, None))', 'ownership/restore-commands')
+    upgrade('upgrade189-previous-commands-not-restored', 'control_store.py',
+            '(previous, commands, selector, value, module, digest))',
+            '(previous, None, selector, value, module, digest))', 'ownership/restore-commands')
 
     # AC1 (declared falsifier): only the files whose names the installed record already lists are written.
     upgrade('upgrade189-only-recorded-names', 'control_factory_setup_upgrade.py',

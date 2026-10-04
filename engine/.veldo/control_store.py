@@ -53,16 +53,17 @@ upgrade (VELDO-0189): the installed authority service, before anything attaches,
 its installed engine with the digest its installation record holds, and every declaration naming one
 of those files by path is rebound to that digest when the file's bytes have it now; the selector,
 value, owner and commands never change. While the previous engine is still installed beside the
-new one, the same transaction records each rebound declaration's previous digest; a switch back runs
+new one, the same transaction records each rebound declaration's previous digest and commands; a switch back runs
 restore_owners from the new engine before the previous one starts, which binds each one again to
-its previous digest when the file at its path has those bytes (ownership_restore_differs by name
+its previous digest and commands when the file at its path has those bytes (ownership_restore_differs by name
 otherwise, the new bindings kept), and the record is dropped when the upgrade commits. An engine
 that predates the path cannot attach its owners to a store a later engine rebound unless that
 restore ran first (its own declaration names the older bytes, refused ownership_conflict).
 Declarations and repository bindings are not part of the journal, so a store rebuilt from its
 journal carries neither (Release 2 recovery).
-A declaration is immutable: the same declaration again is a no-op, a different one for a declared
-kind or prefix refuses ownership_conflict, and so does a first declaration for a kind or prefix
+A declaration repeated is a no-op. The same owner, module and digest may add commands with a strict
+superset that passes the command binding check; every other difference for a declared kind or prefix
+refuses ownership_conflict, and so does a first declaration for a kind or prefix
 that entities already occupy, because they were written while nobody owned them.
 
 THE ARCHITECTURE RECORD HAS ONE WRITER (VELDO-0134, R50). An entity whose id begins with
@@ -803,7 +804,8 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
     """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
     prefix in `prefixes`, are written only by the commands mapped to it, and that those commands are
     the code in the file `module` (the caller's own __file__), whose bytes the store digests now.
-    Idempotent for the same declaration; ownership_conflict for a different one, for a command
+    Idempotent for the same declaration; the same owner, module and digest may add commands.
+    ownership_conflict for every other difference, for a command
     another declaration binds to other code, or for a first declaration of a kind or prefix that
     entities already occupy. Its own transaction, like the publication cursor's writes."""
     rows = _ownership_rows(owner, kinds, prefixes, module)
@@ -824,6 +826,11 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
                                        % (command, bound[command][0], bound[command][1], owner, row[4], row[5]))
             prior = declared.get(row[:2])
             if prior is not None:
+                if (prior[2] == row[2] and prior[4:] == row[4:]
+                        and set(prior[3]) < set(row[3])):
+                    conn.execute("UPDATE entity_owners SET commands=? WHERE selector=? AND value=?",
+                                 (json.dumps(list(row[3])), row[0], row[1]))
+                    continue
                 if prior != row:
                     raise StoreRefused("ownership_conflict", "%s %r is owned by %s (written only by %s); %s declares %s"
                                        % (row[0], row[1], prior[2], ", ".join(prior[3]), owner, ", ".join(row[3])))
@@ -848,7 +855,7 @@ def rebind_owners(conn, installed, keep_previous=False, observe=None):
     file whose bytes are not the recorded ones (edited, or mid-upgrade) keeps its declaration, so its
     service is refused ownership_conflict at attach as before. With `keep_previous` (the previous
     engine is still installed beside the new one), the same transaction replaces the store's record of
-    previous bindings with each rebound declaration's module and the digest it held, which
+    previous bindings with each rebound declaration's module, digest and command set it held, which
     restore_owners puts back on a switch back. `observe(rebound)` is called inside the transaction,
     before its commit, so a rebinding that lands always has its observation. Returns the rebound
     declarations as (selector, value, module, previous digest, digest); a store with nothing to rebind
@@ -885,11 +892,20 @@ def rebind_owners(conn, installed, keep_previous=False, observe=None):
 
 def _record_previous(conn, rebound):
     """The record of previous bindings, replaced by the ones this rebinding replaced."""
-    conn.execute(_PREVIOUS_DDL)
+    _previous_schema(conn)
     conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
     for selector, value, module, previous, digest in rebound:
-        conn.execute("INSERT INTO %s (selector, value, module, previous_digest, digest) VALUES (?,?,?,?,?)"
-                     % PREVIOUS_TABLE, (selector, value, module, previous, digest))
+        commands = conn.execute("SELECT commands FROM entity_owners WHERE selector=? AND value=?",
+                                (selector, value)).fetchone()[0]
+        conn.execute("INSERT INTO %s (selector, value, module, previous_digest, digest, previous_commands) VALUES (?,?,?,?,?,?)"
+                     % PREVIOUS_TABLE, (selector, value, module, previous, digest, commands))
+
+
+def _previous_schema(conn):
+    """Extend an existing upgrade record inside the caller's transaction. Older records kept only digests."""
+    conn.execute(_PREVIOUS_DDL)
+    if 'previous_commands' not in {r[1] for r in conn.execute("PRAGMA table_info(%s)" % PREVIOUS_TABLE)}:
+        conn.execute("ALTER TABLE %s ADD COLUMN previous_commands TEXT" % PREVIOUS_TABLE)
 
 
 def previous_owners(conn):
@@ -902,7 +918,7 @@ def previous_owners(conn):
 
 def restore_owners(conn, observe=None):
     """Put back, on a switch back to the previous engine (VELDO-0189), every recorded previous binding:
-    each declaration the last rebinding moved is bound again to the digest it held, only when the file
+    each declaration the last rebinding moved is bound again to the digest and commands it held, only when the file
     at its path has those bytes now, and the record is cleared, all in one transaction. A file whose
     bytes are not the previous ones is refused ownership_restore_differs by name, and the new bindings
     and the record stay. `observe(restored)` is called before the commit. Returns the restored bindings;
@@ -922,9 +938,13 @@ def restore_owners(conn, observe=None):
                                % (module, previous, selector, value))
         if blocked:
             raise StoreRefused("ownership_restore_differs", "; ".join(blocked))
+        _previous_schema(conn)
         for selector, value, module, previous, digest in restored:
-            conn.execute("UPDATE entity_owners SET module_digest=? WHERE selector=? AND value=? AND module=? AND module_digest=?",
-                         (previous, selector, value, module, digest))
+            commands = conn.execute("SELECT previous_commands FROM %s WHERE selector=? AND value=?" % PREVIOUS_TABLE,
+                                    (selector, value)).fetchone()[0]
+            conn.execute("UPDATE entity_owners SET module_digest=?, commands=COALESCE(?, commands) "
+                         "WHERE selector=? AND value=? AND module=? AND module_digest=?",
+                         (previous, commands, selector, value, module, digest))
         conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
         if observe is not None:
             observe(restored)

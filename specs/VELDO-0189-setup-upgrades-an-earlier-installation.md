@@ -228,6 +228,16 @@ switch at once.
 
 ## History
 
+2026-10-04: the 0167 merge review requires switch back after the same owner adds a command under
+VELDO-0037's strict superset rule. `rebind_owners(keep_previous=True)` now records each rebound
+declaration's command set beside its previous digest in the same transaction. `restore_owners`
+restores both before the previous engine attaches. Existing previous-binding tables gain the
+command column transactionally; older records without a command set retain their digest-only
+restore behavior. The public binding observation tuples remain unchanged. A new 0189 store row
+covers both kinds and prefixes, an existing table, repeat rebinding, rollback on an observation
+failure, exact command restoration and previous-engine attachment. Two finding 189 mutations omit
+recording or restoring commands. All changes fit the existing store, suite and mutation footprint.
+
 2026-09-28: new draft for the owner's requirement that setup upgrade an older installation in place
 (Telegram 29307) and that anyone on an old installation upgrade the same way (29309). Only the owner marks
 a specification ready.

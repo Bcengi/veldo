@@ -67,6 +67,8 @@ def _v189_suite():
     CD, WR = 'engines/codex-refusal', 'engines/repair-report'
     RT, RC = 'upgrade/corrupt-runtime-record', 'upgrade/receiver-without-store'
     ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
+    COMMANDS = 'ownership/restore-commands'
+    ROWS += (COMMANDS,)
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -1655,6 +1657,45 @@ def _v189_suite():
                           and committed == [previous, new])
                 finally:
                     conn.close()
+
+        with section(COMMANDS):
+            module = base / 'commands-owner.py'
+            module.write_text('# previous owner\n')
+            conn = S.open_store(str(base / 'commands-owner.sqlite3'))
+            try:
+                old = dict(kinds={'owned': ('write',)}, prefixes={'owned:': ('write',)})
+                new = dict(kinds={'owned': ('write', 'route')}, prefixes={'owned:': ('write', 'route')})
+                S.declare_owners(conn, 'owner', module=str(module), **old)
+                original = S.entity_owners(conn)
+                # Existing hosts already have this table, including after a committed upgrade.
+                conn.execute('CREATE TABLE entity_owner_previous (selector TEXT NOT NULL, value TEXT NOT NULL, '
+                             'module TEXT NOT NULL, previous_digest TEXT NOT NULL, digest TEXT NOT NULL, '
+                             'PRIMARY KEY (selector, value))')
+                module.write_text('# upgraded owner\n')
+                installed = {str(module): S.module_digest(str(module))}
+                rebound = S.rebind_owners(conn, installed, keep_previous=True)
+                S.declare_owners(conn, 'owner', module=str(module), **new)
+                upgraded = S.entity_owners(conn)
+                check(COMMANDS, 'upgrade extended both declarations',
+                      len(rebound) == 2 and all(r[3] == ('route', 'write') for r in upgraded))
+                check(COMMANDS, 'repeated rebind preserves the original record',
+                      S.rebind_owners(conn, installed, keep_previous=True) == [] and S.previous_owners(conn) == rebound)
+                module.write_text('# previous owner\n')
+                def refuse_observation(bindings):
+                    raise RuntimeError('fixture refuses restore observation')
+                try:
+                    S.restore_owners(conn, observe=refuse_observation)
+                except RuntimeError:
+                    pass
+                check(COMMANDS, 'failed restore observation rolls back commands, digest and record',
+                      S.entity_owners(conn) == upgraded and S.previous_owners(conn) == rebound)
+                restored = S.restore_owners(conn)
+                check(COMMANDS, 'switch back restores exactly the previous declarations',
+                      restored == rebound and S.entity_owners(conn) == original and S.previous_owners(conn) == [])
+                S.declare_owners(conn, 'owner', module=str(module), **old)
+                check(COMMANDS, 'the previous engine attaches with its original command set', S.entity_owners(conn) == original)
+            finally:
+                conn.close()
 
         # AC2: a restart that fails puts the previous engine back and the service answering on it.
         with section(FR):

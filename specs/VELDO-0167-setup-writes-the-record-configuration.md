@@ -211,3 +211,12 @@ includes this installed-host compatibility fix and its legacy ownership regressi
 suite 93. Suite 91 reports its VELDO-0172 format comparison at fixture teardown. Scoped
 check results and the affected, unchanged VELDO-0127 capture list are recorded separately
 in proof/VELDO-0167/merge-report.md. No live capture or gate stamp is claimed.
+
+2026-10-04, independent merge review repair: the intake workaround above is superseded.
+VELDO-0037 now permits the same owner, module and digest to add commands by strict superset;
+VELDO-0189 saves and restores the previous command set on switch back. Intake again registers
+and executes `intake_route` directly, with no record-operation discriminator or compatibility
+branch. Suite 93 starts from the archived pre-route engine and its 0126 declaration, checks
+the route command's journal digest and reattaches the previous engine after restoration.
+All other 0152 and 0167 rows and mutations are retained. The existing intake and suite footprint
+is sufficient; the store change and its proof rows belong to 0037 and 0189.

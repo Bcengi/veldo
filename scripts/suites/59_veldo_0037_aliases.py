@@ -125,6 +125,40 @@ def _s37_run():
         def code(error):
             return getattr(error, 'code', None)
 
+        # An upgrade may extend its own writer set, for both kinds and id prefixes.
+        owner_module = root / 'owner.py'
+        owner_module.write_text('# declaration fixture\n')
+        foreign_module = root / 'foreign.py'
+        foreign_module.write_text('# another declaration fixture\n')
+        for selector in ('kinds', 'prefixes'):
+            conn = st.open_store(str(root / ('owners-' + selector + '.sqlite3')))
+            def declare(commands, owner='original', value='owned', module=owner_module):
+                return st.declare_owners(conn, owner, module=str(module), **{selector: {value: commands}})
+            declare(('write', 'edit'))
+            declare(('foreign',), value='elsewhere', module=foreign_module)
+            original = st.entity_owners(conn)
+            for row, commands, owner in (
+                    ('different-owner', ('write', 'edit', 'route'), 'other'),
+                    ('remove-command', ('write',), 'original'),
+                    ('replace-command', ('write', 'route'), 'original'),
+                    ('bound-elsewhere', ('write', 'edit', 'foreign'), 'original')):
+                _, error = attempt(lambda: declare(commands, owner=owner))
+                expect('owners/' + row + '/' + selector,
+                       code(error) == 'ownership_conflict' and st.entity_owners(conn) == original)
+            # A later conflicting row must roll back an earlier extension in the same call.
+            _, error = attempt(lambda: st.declare_owners(conn, 'original', module=str(owner_module),
+                **{selector: {'owned': ('write', 'edit', 'route'), 'elsewhere': ('foreign',)}}))
+            expect('owners/extension-atomic/' + selector,
+                   code(error) == 'ownership_conflict' and st.entity_owners(conn) == original)
+            extended, error = attempt(lambda: declare(('write', 'edit', 'route')))
+            observed = [r for r in st.entity_owners(conn) if r[1] == 'owned']
+            expected = [tuple(list(r[:3]) + [('edit', 'route', 'write')] + list(r[4:]))
+                        for r in original if r[1] == 'owned']
+            repeated, repeat_error = attempt(lambda: declare(('route', 'write', 'edit', 'route')))
+            expect('owners/superset/' + selector,
+                   error is None and repeat_error is None and extended == repeated == observed == expected)
+            conn.close()
+
         origin = root / 'origin'
         origin.mkdir()
         g(origin, 'init', '-q')
