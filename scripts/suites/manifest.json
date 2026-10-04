@@ -1292,6 +1292,15 @@
    ],
    "regions": "Owner SSH revision commands, exact replay and installed service routing.",
    "requires_note": "Only ROOT and expect. Real setup, generated SSH keys, existing revision writers and installed loopback service. Installation fake CLIs use 0172 constructors and report format conformance."
+  },
+  {
+   "name": "96_veldo_0204_reservation_policies",
+   "file": "96_veldo_0204_reservation_policies.py",
+   "requires": [
+    "96_veldo_0204_reservation_policies"
+   ],
+   "regions": "Reservation policies provisioned from owner configuration, offline under the setup lock and in each factory loop pass.",
+   "requires_note": "Only ROOT and expect. Real setup through VELDO-0088's production-setup fixture, generated SSH keys, production writers, and control_service's loop in process on the locked store. Protocol workers only: no fake engine or model."
   }
  ]
 }
