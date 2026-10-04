@@ -120,8 +120,8 @@
     "team/telegram"
    ],
    "diff": "proof/VELDO-0162/v162-telegram-answer-unapplied.diff",
-   "source_sha256": "ea5517b4e83ee130eb6055571f52fa43bee3c70f4ed50bee4a16dc4704444209",
-   "mutant_sha256": "1655506e9c13ea87a4e18023d0de82d9e3a47388232100d815352c5266301b56",
+   "source_sha256": "87aba2b25cc0068168492b4e089ea886130f105881bab07e750540ed0ab84b1e",
+   "mutant_sha256": "34d3ee7a62cf4736f1ce534161eeee70c9d3bd094f454dd25de119613e55892a",
    "execution": "not run by builder"
   },
   {

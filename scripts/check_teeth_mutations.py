@@ -10211,6 +10211,7 @@ def cases():
 
 
 
+
     # VELDO-0162: authenticated configuration and team commands.
     add(162, 'v162-configuration-principal-unchecked', '94_veldo_0162_configuration_routes.py', 'control_agent_config.py', "        MC.owner(conn, params['principal'], params['repository'], time.time())", '        pass', ['configuration/unauthorized-save'], ())
     add(162, 'v162-stale-team-accepted', '94_veldo_0162_configuration_routes.py', 'control_team.py', "        if command.get('team_version') != (record or {}).get('version', 0):", '        if False:', ['team/stale-team'], ())

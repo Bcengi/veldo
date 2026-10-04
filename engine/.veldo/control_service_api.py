@@ -182,7 +182,7 @@ class ServiceApi:
         mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, **common)
         configurations = AUTH.organ('control_agent_config').Configurations(self.S, self.conn, **common)
         routes = AUTH.organ('control_team_routes')
-        requester, request_sign = channel.requester or (
+        requester, request_sign = getattr(channel, 'requester', None) or (
             principal, IN.organ('control_channel_activation').ssh_signer(self.config['journal']['key']))
         teams = routes.CT.Teams(self.S, CM, self.conn, ids, principal, sign, inbox=ingress.inbox,
             assignment=ingress.settlement.I, requester=requester, request_sign=request_sign,
