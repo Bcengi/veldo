@@ -920,24 +920,24 @@ def cases():
           '        else:\n            proc.wait()\n        if True:\n', 'boundary/process-group')
     # VELDO-0037: each declared falsifier and a distinct second mutation turn the same named
     # row red; the gate additionally drives an unchanged copy. Two further rows get one each.
-    def aliases(name, module, old, new, row):
-        add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row])
+    def aliases(name, module, old, new, row, *rows):
+        add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row, *rows])
 
     aliases('owners37-different-owner-adds', 'control_store.py',
             'if (prior[2] == row[2] and prior[4:] == row[4:]\n',
-            'if (prior[4:] == row[4:]\n', 'owners/different-owner')
+            'if (prior[4:] == row[4:]\n', 'owners/different-owner/kinds', 'owners/different-owner/prefixes')
     aliases('owners37-removing-command-allowed', 'control_store.py',
             'and set(prior[3]) < set(row[3])):',
-            'and set(prior[3]) != set(row[3])):', 'owners/remove-command')
+            'and set(prior[3]) != set(row[3])):', 'owners/remove-command/kinds', 'owners/remove-command/prefixes')
     aliases('owners37-bound-command-added', 'control_store.py',
             'if bound.get(command, row[4:]) != row[4:]:',
-            'if False:  # defect: a command already bound elsewhere is accepted', 'owners/bound-elsewhere')
+            'if False:  # defect: a command already bound elsewhere is accepted', 'owners/bound-elsewhere/kinds', 'owners/bound-elsewhere/prefixes')
     aliases('owners37-superset-refused', 'control_store.py',
             'and set(prior[3]) < set(row[3])):',
-            'and False):', 'owners/superset')
+            'and False):', 'owners/superset/kinds', 'owners/superset/prefixes')
     aliases('owners37-added-command-lost', 'control_store.py',
             '(json.dumps(list(row[3])), row[0], row[1]))',
-            '(json.dumps(list(prior[3])), row[0], row[1]))', 'owners/superset')
+            '(json.dumps(list(prior[3])), row[0], row[1]))', 'owners/superset/kinds', 'owners/superset/prefixes')
 
     aliases('alias-checkout-maximum', 'control_alias.py',
             "        number = kind['next']\n",

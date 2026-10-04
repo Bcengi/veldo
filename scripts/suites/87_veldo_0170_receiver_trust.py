@@ -163,10 +163,15 @@ def _v170_suite():
                   json.loads(path.read_text()).get('records') == str(root / 'records')
                   and json.loads(path.read_text()).get('record_hint_service') == installed['socket']
                   for path in paths))
+        # Preserve the real installer's configurations as the comparison oracle.
+        receivers = {str(path): json.loads(path.read_text()) for path in paths}
+        receiver_trust = F.organ('control_factory_setup_trust')
         old, current = paths
         legacy = json.loads(old.read_text())
         legacy.pop('host_trust')
         write(old, legacy)
+        receiver_trust.validate(receiver_trust.inspect(installed, EL, F.Refused),
+                                installed, receivers, F._differs)
         current_bytes = current.read_bytes()
         old_bytes = old.read_bytes()
         # The canonical status surfaces read actual installed files, including after repair.
@@ -219,6 +224,16 @@ def _v170_suite():
             check(row, 'changed ' + field + ' is refused before any writes: '
                   + str(refused.get('reason')) + differences(before, after),
                   refused.get('reason') == 'invalid_input:state_root:differs:' + str(old) and after == before)
+            # Records preflight independently rejects these same differences. Exercise
+            # the trust comparison itself too, so that later refusal cannot mask its loss.
+            reason = None
+            try:
+                receiver_trust.validate(receiver_trust.inspect(installed, EL, F.Refused),
+                                        installed, receivers, F._differs)
+            except F.Refused as error:
+                reason = error.code
+            check(row, 'trust preflight independently refuses changed ' + field + ': ' + str(reason),
+                  reason == 'invalid_input:state_root:differs:' + str(old) and snapshot(base) == before)
             old.write_bytes(old_bytes)
         # Missing ingress key uses the installed default, with its identity still checked.
         ingress = json.loads(ingress_bytes)
