@@ -1,0 +1,1115 @@
+{
+  "diagnostic_digests": {
+    ".veldo/control_containment.py": "4291fff3396c4f1572980fed133d732f078395b1ba739c24d300528229049f83",
+    ".veldo/control_launch.py": "ac392e3f6657b8e148297834eb10884cd3ae4df90f12044e3c9ecb286af1ff9b",
+    "scripts/suites/63_veldo_0040_containment.py": "341a33c0a6602b6115a79c491aed9f45192bc74b04379397dbccfcf2a1649111"
+  },
+  "head": "7aca8f151b5a2791fc0085f9daab69e1839087e7",
+  "input_digest": "57c7849944ab25d0100d698b8238352f82b2c095224633fc57e6076349e10eb2",
+  "reload": false,
+  "reloads": [],
+  "runs": [
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215774.6964586,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215774.7042508,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-000",
+      "log_sha256": "94045826045fb8f50d0b7fb09dada9233e7b5f36d2dc6f96b963537f134b4a3a",
+      "observed_sha256": "f9db06913d7943870834646bd817c4af21c2a384722278f80321783da6bf5446",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.6946494509466,
+      "timing": {
+        "_show_seconds": 0.003040567971765995,
+        "close_seconds": 3.3706892281770706e-05,
+        "conclude_seconds": 0.0030977693386375904,
+        "pidfd_after_exit": 0.002768278121948242,
+        "record_after_pidfd": 0.005023956298828125
+      },
+      "unit": "veldo-dispatch-597e62e61c5dffa535c41846fc216683.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215785.3782876,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215785.3858664,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-001",
+      "log_sha256": "db79232330b47f5e6a5a65f9678b9dde3917b5c1f8da6df863346b9fdaa2ac74",
+      "observed_sha256": "292f529caa9face9062e35b29c5cdefe46fd96bccd2afc77805ccdae06a8ed5a",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.74410788808018,
+      "timing": {
+        "_show_seconds": 0.002919323742389679,
+        "close_seconds": 3.1325966119766235e-05,
+        "conclude_seconds": 0.0029832026921212673,
+        "pidfd_after_exit": 0.0027513504028320312,
+        "record_after_pidfd": 0.0048274993896484375
+      },
+      "unit": "veldo-dispatch-a2b319362cc93434ec44627617e56202.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215796.1175108,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215796.1257308,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-002",
+      "log_sha256": "9c8b244d713ecf9ff5f7f59c090300ffd6702fa0d19a56383ca84b3171a0b643",
+      "observed_sha256": "fd8a11d39d6dad96723bf53a718b47d853444dbf15decc093fc4122ef74f15e2",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.69440574478358,
+      "timing": {
+        "_show_seconds": 0.0032171555794775486,
+        "close_seconds": 2.9827002435922623e-05,
+        "conclude_seconds": 0.00327761797234416,
+        "pidfd_after_exit": 0.002933025360107422,
+        "record_after_pidfd": 0.0052869319915771484
+      },
+      "unit": "veldo-dispatch-3c0b5d9eab45ed62419c6375d7f1192a.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215806.8448179,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215806.8531287,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-003",
+      "log_sha256": "acf90afd7aef242a310934f003213cbcd7b3bee40e2577634ac56e76e4f3c065",
+      "observed_sha256": "1c963b7765301c09652255c1ca02ba48308eef7d4c527224e8b564bc4b57e57a",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694290825165808,
+      "timing": {
+        "_show_seconds": 0.0030598239973187447,
+        "close_seconds": 2.929801121354103e-05,
+        "conclude_seconds": 0.0031202021054923534,
+        "pidfd_after_exit": 0.0029273033142089844,
+        "record_after_pidfd": 0.005383491516113281
+      },
+      "unit": "veldo-dispatch-668800623db2de6ec65abf8161f0eb17.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215817.6905477,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215817.6998353,
+        "window_seconds": 1.9
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-004",
+      "log_sha256": "476f4398ba31814d3c033e2257659c4d1ddbb55b08f155f28155333189b5e782",
+      "observed_sha256": "19afb5bb3323e6dcd3a3e918c46376bd83f4ead91c6e78682175404c42e3dd8e",
+      "passed": true,
+      "raised": [],
+      "seconds": 11.091156377922744,
+      "timing": {
+        "_show_seconds": 0.0035959798842668533,
+        "close_seconds": 3.477977588772774e-05,
+        "conclude_seconds": 0.0036622676998376846,
+        "pidfd_after_exit": 0.0037026405334472656,
+        "record_after_pidfd": 0.0055849552154541016
+      },
+      "unit": "veldo-dispatch-45617a9b445e94fcf819c326f150bf2e.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215828.8077781,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215828.815451,
+        "window_seconds": 1.97
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-005",
+      "log_sha256": "46c41fb12a6656d96fd4ca9b9c50e076d8313de7142309639cddd0c628923911",
+      "observed_sha256": "845b22424c8ee56b68e300235ba9f8441b82d5af1444cfa6e8ac00e90feacd98",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.81283546704799,
+      "timing": {
+        "_show_seconds": 0.00260424567386508,
+        "close_seconds": 3.0652619898319244e-05,
+        "conclude_seconds": 0.002639234997332096,
+        "pidfd_after_exit": 0.0030181407928466797,
+        "record_after_pidfd": 0.004654645919799805
+      },
+      "unit": "veldo-dispatch-3259a35dc0f1a78f6cf4a1350c3405cc.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215839.4918675,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215839.499443,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-006",
+      "log_sha256": "3fb9583fcee52878b17d8dde23de4d23ac9f36dce5451205c3ed5826c85ac520",
+      "observed_sha256": "57621024e0a7c793741ebfc3f062b37f7eff04e769deb35363756c927fa714d9",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.802893333137035,
+      "timing": {
+        "_show_seconds": 0.0024712253361940384,
+        "close_seconds": 3.3387914299964905e-05,
+        "conclude_seconds": 0.002506671939045191,
+        "pidfd_after_exit": 0.0030994415283203125,
+        "record_after_pidfd": 0.004476070404052734
+      },
+      "unit": "veldo-dispatch-b6ee53ead8c2f185df4c3231721cfbfc.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215850.3162136,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.01,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215850.325775,
+        "window_seconds": 1.89
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-007",
+      "log_sha256": "c19e16f90f2335c443f66791404f8b3f4ae7cf2f544bc75053ce28c5c72abb04",
+      "observed_sha256": "6007ab37b625408f07a8939e39de4add2547dd3577dc9e25d7dd0933eb68747f",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.868692323099822,
+      "timing": {
+        "_show_seconds": 0.0037814276292920113,
+        "close_seconds": 3.545684739947319e-05,
+        "conclude_seconds": 0.003833289258182049,
+        "pidfd_after_exit": 0.0045337677001953125,
+        "record_after_pidfd": 0.0050275325775146484
+      },
+      "unit": "veldo-dispatch-fc27f30742673d71ebc2d79e6742eb26.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215861.199972,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215861.208904,
+        "window_seconds": 1.83
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-008",
+      "log_sha256": "e528bce104168e46684634dbe0b710a27c389fbb8960349882d312571808243a",
+      "observed_sha256": "bb668dd850cdd08796cff9a3c3750c6cd85b7d44773b2e28cd803eacca64f11d",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.809536115732044,
+      "timing": {
+        "_show_seconds": 0.0037857843562960625,
+        "close_seconds": 2.973480150103569e-05,
+        "conclude_seconds": 0.003832838963717222,
+        "pidfd_after_exit": 0.0031523704528808594,
+        "record_after_pidfd": 0.005779743194580078
+      },
+      "unit": "veldo-dispatch-87561195570101664c38edeb0b1cd0ef.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215872.082287,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215872.0910501,
+        "window_seconds": 1.82
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-009",
+      "log_sha256": "e1a0cc0a29df08feaf9afe26a46085f679b61a24edbeb7e9caefa118b7197860",
+      "observed_sha256": "fc728af69a2225c6a87c0e3acd3e0a195449386df63201cc0fd42e39aa40f9ca",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.96261106012389,
+      "timing": {
+        "_show_seconds": 0.003498485777527094,
+        "close_seconds": 3.344705328345299e-05,
+        "conclude_seconds": 0.003556338604539633,
+        "pidfd_after_exit": 0.002954721450805664,
+        "record_after_pidfd": 0.005808353424072266
+      },
+      "unit": "veldo-dispatch-6d282fedc348c371939364e135e6bb87.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215882.8569188,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215882.8644845,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-010",
+      "log_sha256": "8f98519a828b59b8ed640e5d72c1da3da95af83f7ad5cd451443cb3b1979f527",
+      "observed_sha256": "32dbb652d99bba6208a964254e65daf80797cf1dd8183ac7f93f69ca910b4663",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694088113959879,
+      "timing": {
+        "_show_seconds": 0.0030449656769633293,
+        "close_seconds": 3.436487168073654e-05,
+        "conclude_seconds": 0.00310022896155715,
+        "pidfd_after_exit": 0.003040313720703125,
+        "record_after_pidfd": 0.004525423049926758
+      },
+      "unit": "veldo-dispatch-9d6b0afe1202937d20092829cbe0b354.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215893.5975628,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215893.6050673,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-011",
+      "log_sha256": "126c60a833c3332fc840f81595c1235fc69d931f2d198a2d46bf37a2f701e5b6",
+      "observed_sha256": "c648eeae99d82e7e9bfedb4851831f8c5b12daa35c3cc1d7cf94d8994c1f5e3b",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.891843327321112,
+      "timing": {
+        "_show_seconds": 0.002996359020471573,
+        "close_seconds": 2.9452145099639893e-05,
+        "conclude_seconds": 0.0030473340302705765,
+        "pidfd_after_exit": 0.0029709339141845703,
+        "record_after_pidfd": 0.004533529281616211
+      },
+      "unit": "veldo-dispatch-eda57acbe9ccd0b7496eb326a53209a3.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215904.4752345,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215904.4837122,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-012",
+      "log_sha256": "c665b59e6b892e5ce38c6b453da58939f7bcc4714ebcc89cc561c146ae644268",
+      "observed_sha256": "aadbf86cbc079a61c9faafe5a5b0c4cba39d5f91af0843f08e75b3929f684478",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.79275114601478,
+      "timing": {
+        "_show_seconds": 0.002822096925228834,
+        "close_seconds": 2.9305927455425262e-05,
+        "conclude_seconds": 0.0028751990757882595,
+        "pidfd_after_exit": 0.003734588623046875,
+        "record_after_pidfd": 0.004743099212646484
+      },
+      "unit": "veldo-dispatch-bea5eb2c0f15b01b256a6c83925c0e89.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215915.224882,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215915.233546,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-013",
+      "log_sha256": "f9a9e36ae1a1b5eeae088c4202742b76a3e3fb43151baeb0395bf6f1f79636b2",
+      "observed_sha256": "6b8a1dda268542d7f6b2d4ad402da736ff5475d7aaac4ae92577b8098c4bf7a0",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694511550944299,
+      "timing": {
+        "_show_seconds": 0.0028955447487533092,
+        "close_seconds": 3.586476668715477e-05,
+        "conclude_seconds": 0.002952203154563904,
+        "pidfd_after_exit": 0.003828287124633789,
+        "record_after_pidfd": 0.004835844039916992
+      },
+      "unit": "veldo-dispatch-7d0821d2e9636923cb66752116daf0d4.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215925.9119492,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215925.9200165,
+        "window_seconds": 1.77
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-014",
+      "log_sha256": "75aa09785a7ec1731fbbc5eb8c0f40fc8dc65265975600a9206a1c4c70e46eda",
+      "observed_sha256": "4fd737d0952d2923b118cdd3ceef45d7d506d067db1c67a50ca8e7c7211a54bb",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.690233944915235,
+      "timing": {
+        "_show_seconds": 0.002930009737610817,
+        "close_seconds": 2.8531067073345184e-05,
+        "conclude_seconds": 0.002976655028760433,
+        "pidfd_after_exit": 0.002905607223510742,
+        "record_after_pidfd": 0.005161762237548828
+      },
+      "unit": "veldo-dispatch-1ec47e2863f8174dcfc7482166edabd3.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215936.6252775,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215936.6334453,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-015",
+      "log_sha256": "9e12bb6f47bdf9effd3d9d9aaa2b111c50413578d5c5cb9dddb4970c1affd3e0",
+      "observed_sha256": "eda0f9b016e24aee15f0a6506083e374ae0235a3af7472c65413dbe20d79c92b",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.69407373899594,
+      "timing": {
+        "_show_seconds": 0.0028628623113036156,
+        "close_seconds": 3.727106377482414e-05,
+        "conclude_seconds": 0.002923311199992895,
+        "pidfd_after_exit": 0.0029311180114746094,
+        "record_after_pidfd": 0.005236625671386719
+      },
+      "unit": "veldo-dispatch-8a7641478d42a02b956578f2db8e461c.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215947.3114123,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215947.3190563,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-016",
+      "log_sha256": "1879082d3a7e405ba19195a6a337520119240d95de3426db85c1b027f596e3de",
+      "observed_sha256": "1378d92c78e1a26deebc0b563594f2cc97ee718708e2c6aa198cfc6f50b7fd5c",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.691423485986888,
+      "timing": {
+        "_show_seconds": 0.0027055260725319386,
+        "close_seconds": 2.9637012630701065e-05,
+        "conclude_seconds": 0.0027559539303183556,
+        "pidfd_after_exit": 0.0027260780334472656,
+        "record_after_pidfd": 0.00491786003112793
+      },
+      "unit": "veldo-dispatch-a0834816547380b8e7b9f26903456db1.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215958.039246,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215958.0479958,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-017",
+      "log_sha256": "fc3a277aa103092f09cf5d86bfa335a7ae72f2e262b6b4290ddbe16a10adb74f",
+      "observed_sha256": "b05d98ed7166d827e927af38828031e9c7dcb4b8a148d3b6af2a46086396b5fb",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.844843291211873,
+      "timing": {
+        "_show_seconds": 0.003308531828224659,
+        "close_seconds": 3.403611481189728e-05,
+        "conclude_seconds": 0.00336469616740942,
+        "pidfd_after_exit": 0.003107786178588867,
+        "record_after_pidfd": 0.005641937255859375
+      },
+      "unit": "veldo-dispatch-492a98806dd7be9999e79759881c14d8.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215968.8900483,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.007,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215968.8973558,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-018",
+      "log_sha256": "bca4f3642fcd2becebae0f8e0f4ed764fdca9b2f025a4aeaa126ea87ef6eb06c",
+      "observed_sha256": "d6382919a0cc653d0a316501e5a5fe376bdb0e79704f408fc1e497c7b2dcb8ca",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.844645149074495,
+      "timing": {
+        "_show_seconds": 0.003059391863644123,
+        "close_seconds": 3.09930182993412e-05,
+        "conclude_seconds": 0.003120092675089836,
+        "pidfd_after_exit": 0.002790212631225586,
+        "record_after_pidfd": 0.004517316818237305
+      },
+      "unit": "veldo-dispatch-cdf4536ae084498daf384631dc2e0e18.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215979.7327719,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215979.7409928,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-019",
+      "log_sha256": "6186f60bb97c0b65245168948f235171ec54a8780ebfc941fb99423ecb6fe514",
+      "observed_sha256": "879592b36298086c73683f55d7262f34e4acddd5595bb702149b5afd41182e11",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.691961150150746,
+      "timing": {
+        "_show_seconds": 0.0030628680251538754,
+        "close_seconds": 3.427080810070038e-05,
+        "conclude_seconds": 0.0031827972270548344,
+        "pidfd_after_exit": 0.003129243850708008,
+        "record_after_pidfd": 0.005091667175292969
+      },
+      "unit": "veldo-dispatch-e219f3fcda46cdb1bc7239c466b4a9f9.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791215990.3686442,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791215990.3764467,
+        "window_seconds": 1.78
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-020",
+      "log_sha256": "f92cc2a910085972533e381cf73d9449ade0608234edea78dc98510d0ef3e4a7",
+      "observed_sha256": "f6798e0b0c56db5553e2676f9c65cf82a410e5b434a3ea43397d323fd7e19175",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694908984936774,
+      "timing": {
+        "_show_seconds": 0.0029862909577786922,
+        "close_seconds": 3.616511821746826e-05,
+        "conclude_seconds": 0.0030523105524480343,
+        "pidfd_after_exit": 0.0029053688049316406,
+        "record_after_pidfd": 0.004897117614746094
+      },
+      "unit": "veldo-dispatch-1c55edfc1456167feb54c3b1f456e41d.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216001.0957,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216001.1041274,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-021",
+      "log_sha256": "4d28c52630fb18768d2451f272248d596d6c1275e586d9a2590bccbea4692ef7",
+      "observed_sha256": "1209499f4208f596f44b9fc491d42ca93c9905b3e531a09aaf8c5ed852e99ff3",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.79508101195097,
+      "timing": {
+        "_show_seconds": 0.0033599589951336384,
+        "close_seconds": 3.1079165637493134e-05,
+        "conclude_seconds": 0.003415584098547697,
+        "pidfd_after_exit": 0.002863645553588867,
+        "record_after_pidfd": 0.0055637359619140625
+      },
+      "unit": "veldo-dispatch-b05a946c573a4ea94d0f414c8b902312.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216011.8719504,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216011.880365,
+        "window_seconds": 1.78
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-022",
+      "log_sha256": "b1a8d82e71095e3da18a0d3b4084d73c79038672d32254e727f1daff6ae4ddf9",
+      "observed_sha256": "a8decdc764ad1a892ff20524d01a9df6b8318a0f115ec0d338b72ff8f9592d99",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694836913608015,
+      "timing": {
+        "_show_seconds": 0.00296870619058609,
+        "close_seconds": 3.179488703608513e-05,
+        "conclude_seconds": 0.0030211391858756542,
+        "pidfd_after_exit": 0.0028798580169677734,
+        "record_after_pidfd": 0.005534648895263672
+      },
+      "unit": "veldo-dispatch-25190d20b80397f8c6b3bba3e452a0df.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216022.5516977,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216022.5595822,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-023",
+      "log_sha256": "8fa29330ad703ee79a1a4a21835dd7bb9eb0851e24b4f79ac61bbaec882c78a7",
+      "observed_sha256": "5f82033d646d70bc017a08c9cae7fb18c1123d4a826d24382edf6f0051112879",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.644796231295913,
+      "timing": {
+        "_show_seconds": 0.0030218656174838543,
+        "close_seconds": 3.133388236165047e-05,
+        "conclude_seconds": 0.0030767940916121006,
+        "pidfd_after_exit": 0.002829313278198242,
+        "record_after_pidfd": 0.00505518913269043
+      },
+      "unit": "veldo-dispatch-6e1dd82934ff3ede660c46f3c7b6dc43.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216033.2268608,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216033.235674,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-024",
+      "log_sha256": "16d1993e32063de7e831e38288f13e6d89e82c9a829f9101d7ec72e9bc155ad7",
+      "observed_sha256": "35af1ec145d300af513fd3184714de4c55cace82c2dfb50445cdc056f0e4f934",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.697131474036723,
+      "timing": {
+        "_show_seconds": 0.0033868500031530857,
+        "close_seconds": 3.157788887619972e-05,
+        "conclude_seconds": 0.0034509673714637756,
+        "pidfd_after_exit": 0.0031604766845703125,
+        "record_after_pidfd": 0.005652666091918945
+      },
+      "unit": "veldo-dispatch-2d3d74a43d4205cb9280124f3cbd7898.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216043.9569697,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216043.9649348,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-025",
+      "log_sha256": "34a2af95536bcfde598827ed73207227b23b7f68ef003ce2eb4d3a11c2f4ccbd",
+      "observed_sha256": "254e40dc16c1919083e4e1521fefc611cb6bdab8aad480914d43cbabb6149a25",
+      "passed": true,
+      "raised": [],
+      "seconds": 11.004252932965755,
+      "timing": {
+        "_show_seconds": 0.00309852696955204,
+        "close_seconds": 3.0030962079763412e-05,
+        "conclude_seconds": 0.0031561660580337048,
+        "pidfd_after_exit": 0.003095865249633789,
+        "record_after_pidfd": 0.004869222640991211
+      },
+      "unit": "veldo-dispatch-3ab0bedbba8351839a2a0e58ea8f1f85.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216055.1357408,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.013,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216055.1490762,
+        "window_seconds": 1.83
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-026",
+      "log_sha256": "2341055c9efed2818693decacfced2453c5c295570c06f988d2341a30abd7b21",
+      "observed_sha256": "5ff727dcdf9b713c9ffac165b6657cc330dc428e51d90945b45db30b4fa3991c",
+      "passed": true,
+      "raised": [],
+      "seconds": 11.012812216300517,
+      "timing": {
+        "_show_seconds": 0.004004642367362976,
+        "close_seconds": 0.003733773250132799,
+        "conclude_seconds": 0.004057121928781271,
+        "pidfd_after_exit": 0.0037169456481933594,
+        "record_after_pidfd": 0.009618520736694336
+      },
+      "unit": "veldo-dispatch-562f263be48fec3a314be24eb8dec96b.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216066.0151103,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.014,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216066.0295007,
+        "window_seconds": 1.84
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-027",
+      "log_sha256": "7011b2bcd705b61365790d53d5aedbe822fb6628c7765443956049c58469c11e",
+      "observed_sha256": "a83bfddf2da533c883d584f6f6807fdecab64b578c10a2c83faa68cc9a44af8e",
+      "passed": true,
+      "raised": [],
+      "seconds": 11.0295096822083,
+      "timing": {
+        "_show_seconds": 0.007399112917482853,
+        "close_seconds": 0.0020207539200782776,
+        "conclude_seconds": 0.007448998745530844,
+        "pidfd_after_exit": 0.004346370697021484,
+        "record_after_pidfd": 0.010044097900390625
+      },
+      "unit": "veldo-dispatch-55cfe0793bb5c3cc18c51e2e2bae37d3.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216077.3846517,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216077.3929508,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-028",
+      "log_sha256": "f439dc66b914e2cd68f8e24f2319b038ae56faf75d5750122f981a764a9ac1a2",
+      "observed_sha256": "513edb45168dc807278b18ed4c1856711047e9a6aa0ad9c8b996a473891aa3c6",
+      "passed": true,
+      "raised": [],
+      "seconds": 11.194913882762194,
+      "timing": {
+        "_show_seconds": 0.00307521503418684,
+        "close_seconds": 3.8076192140579224e-05,
+        "conclude_seconds": 0.003121939953416586,
+        "pidfd_after_exit": 0.0036580562591552734,
+        "record_after_pidfd": 0.004641056060791016
+      },
+      "unit": "veldo-dispatch-ba0d51b6f2ef4e12d58cb39f40c47d34.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216088.2371824,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.007,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216088.244623,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-029",
+      "log_sha256": "e75107e51e4867431c386a11bd24bb460279270a04c72a974f901a33c0690b11",
+      "observed_sha256": "e92df317b880eceb7fe075122b101f1c9ac1de8537415c37aecae5f7cf18b566",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.89634454390034,
+      "timing": {
+        "_show_seconds": 0.0030655981972813606,
+        "close_seconds": 3.1703151762485504e-05,
+        "conclude_seconds": 0.0031233448535203934,
+        "pidfd_after_exit": 0.0028188228607177734,
+        "record_after_pidfd": 0.004621744155883789
+      },
+      "unit": "veldo-dispatch-08c717f56cef1c62dcfc90227ec88d2a.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216099.0966682,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216099.1056046,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-030",
+      "log_sha256": "531d3a10f102148bd759d1b8c50958a18bd4d0d31b316ffbe49d4deed7a856e5",
+      "observed_sha256": "c1f5afe031e764ec3c5c81430eea06eee75bdb22fdff39931e8661dd907b2741",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.793986414093524,
+      "timing": {
+        "_show_seconds": 0.0028816056437790394,
+        "close_seconds": 3.2918062061071396e-05,
+        "conclude_seconds": 0.0029445327818393707,
+        "pidfd_after_exit": 0.003615140914916992,
+        "record_after_pidfd": 0.0053212642669677734
+      },
+      "unit": "veldo-dispatch-b7a124bbebb5b847ee95ffa848b27225.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216109.8706641,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.007,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216109.87814,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-031",
+      "log_sha256": "23342d66ba2789f79c16d1bddb5657b68398e1e97113b22dfa932522caccc4fa",
+      "observed_sha256": "ceb990e47366c329810d75d5b02a9dd65af66de85663bff029c839647aba5811",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.746036203112453,
+      "timing": {
+        "_show_seconds": 0.003006294835358858,
+        "close_seconds": 3.13417986035347e-05,
+        "conclude_seconds": 0.0030628452077507973,
+        "pidfd_after_exit": 0.0028204917907714844,
+        "record_after_pidfd": 0.004655361175537109
+      },
+      "unit": "veldo-dispatch-cad59fe9f2176647c725540c2dc54714.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216120.6025097,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216120.6106062,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-032",
+      "log_sha256": "39704f03fd1a7a213292c4a05eae62647f1238b28bc83f474574cecdb4af003c",
+      "observed_sha256": "985edb35ff0ceca4045e1e2a9e89f713d1a78042d4705327baaff271fefdc0d2",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.695354764349759,
+      "timing": {
+        "_show_seconds": 0.0028257351368665695,
+        "close_seconds": 3.0141789466142654e-05,
+        "conclude_seconds": 0.002870241180062294,
+        "pidfd_after_exit": 0.0029664039611816406,
+        "record_after_pidfd": 0.00513005256652832
+      },
+      "unit": "veldo-dispatch-fcb88f33539816f3352bfd1cbbea0abc.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216131.283412,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216131.2913272,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-033",
+      "log_sha256": "678ebe265dab75e623e853e2451c50f33e23ec059a084dd9840beb208b461fca",
+      "observed_sha256": "fff204f89a9a2cd0643d46f50b2d3bb12ba75c261969d5a49fadb8c2294d3e95",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.6956279813312,
+      "timing": {
+        "_show_seconds": 0.002857307903468609,
+        "close_seconds": 3.158021718263626e-05,
+        "conclude_seconds": 0.0029115211218595505,
+        "pidfd_after_exit": 0.002858400344848633,
+        "record_after_pidfd": 0.005056858062744141
+      },
+      "unit": "veldo-dispatch-3dd10090cbc030cd069a0858b7ea3731.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216141.9803813,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216141.98892,
+        "window_seconds": 1.77
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-034",
+      "log_sha256": "0a594a7bf3619b9f5b918f3621cfcfc3cbf1a3fc38cdbdcdd98efc48cf0b6323",
+      "observed_sha256": "2be3520b0c5e73587e525d0c724992eb800f34e586ec1f501fb840f456260e87",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.694404645822942,
+      "timing": {
+        "_show_seconds": 0.003162022680044174,
+        "close_seconds": 3.182981163263321e-05,
+        "conclude_seconds": 0.0032155360095202923,
+        "pidfd_after_exit": 0.003055572509765625,
+        "record_after_pidfd": 0.005483150482177734
+      },
+      "unit": "veldo-dispatch-91320614c9b24268a6a10f48847ebc2a.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216152.6684005,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216152.6765947,
+        "window_seconds": 1.78
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-035",
+      "log_sha256": "e74036c12e24ed07ec8b783f746a071c950e2f667c98e1b5fc85b2a754f21da7",
+      "observed_sha256": "ed807b7fb78a6027018e8283fb9754316be3b72ddd8ef799fe18f7c6099124d9",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.696249232627451,
+      "timing": {
+        "_show_seconds": 0.002971094101667404,
+        "close_seconds": 3.555510193109512e-05,
+        "conclude_seconds": 0.003026639111340046,
+        "pidfd_after_exit": 0.0029060840606689453,
+        "record_after_pidfd": 0.005288124084472656
+      },
+      "unit": "veldo-dispatch-d58af12e022aa2a4df748daa7e0fa33f.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216163.3813443,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216163.3895211,
+        "window_seconds": 1.78
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-036",
+      "log_sha256": "4980729a186d517ac52bc814df54b9d2b9cdb636d3d2400d4cc8a549093961c4",
+      "observed_sha256": "5314c4aca5ce3ed5cc57d37c650327aa908465149e86b3988ec0691f8d3c9a24",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.692737569101155,
+      "timing": {
+        "_show_seconds": 0.003227081149816513,
+        "close_seconds": 3.068288788199425e-05,
+        "conclude_seconds": 0.003278912976384163,
+        "pidfd_after_exit": 0.003121614456176758,
+        "record_after_pidfd": 0.00505518913269043
+      },
+      "unit": "veldo-dispatch-4090dd078d909bf038ef9f3ebca65cb7.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216174.0272677,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216174.0354245,
+        "window_seconds": 1.78
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-037",
+      "log_sha256": "a2c7fb3526dd17e5d414fb44a9862e1b5a0ec1281086e5290152a9a0704e6ea9",
+      "observed_sha256": "229f2c465a3b10f2a7e1db397e792e4e14c6f5da16d0bdfae112fef7cf0e4797",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.738804603926837,
+      "timing": {
+        "_show_seconds": 0.0031458078883588314,
+        "close_seconds": 3.151176497340202e-05,
+        "conclude_seconds": 0.003202171064913273,
+        "pidfd_after_exit": 0.002838134765625,
+        "record_after_pidfd": 0.005318641662597656
+      },
+      "unit": "veldo-dispatch-4abe46f2f5b16582b2ea7ee3135d876e.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216184.802443,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.008,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216184.8105938,
+        "window_seconds": 1.79
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-038",
+      "log_sha256": "4ec4b61b42c12dfdb40cbd2d8c1a333dfece784a73486be3c22c8cc81c43302f",
+      "observed_sha256": "3bdd4d0c50e21617914e88eafc2638595bccf60debce11660a7103fc37e580e9",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.743293755687773,
+      "timing": {
+        "_show_seconds": 0.0030435468070209026,
+        "close_seconds": 3.490736708045006e-05,
+        "conclude_seconds": 0.003093740902841091,
+        "pidfd_after_exit": 0.0028619766235351562,
+        "record_after_pidfd": 0.005288839340209961
+      },
+      "unit": "veldo-dispatch-b0e0599ed217babb72d446dd023443c5.scope"
+    },
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791216195.6430726,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.009,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216195.6517572,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-039",
+      "log_sha256": "cc5ee42eb5952918729b6cbef6514cf82ebca3f09a2cd3ab00695c3a86435041",
+      "observed_sha256": "72a19b7f038fc77400c40cdb8e8d5ca5e02376e0b7fddbca562f1cce89774e0d",
+      "passed": true,
+      "raised": [],
+      "seconds": 10.847106026019901,
+      "timing": {
+        "_show_seconds": 0.0034850239753723145,
+        "close_seconds": 3.2703857868909836e-05,
+        "conclude_seconds": 0.0035465252585709095,
+        "pidfd_after_exit": 0.003052949905395508,
+        "record_after_pidfd": 0.005631685256958008
+      },
+      "unit": "veldo-dispatch-904125fb3d83351e01c4128a861e5094.scope"
+    }
+  ],
+  "sources": {
+    ".veldo/control_containment.py": "aa31a64bcb54fdacfbbf843fd6cfa7bdb909122589b5b931f20046dc53cbb43c",
+    ".veldo/control_launch.py": "220bfc3bd61a86ed953bc2d6ea73893559ba77bee0a69ff9981f8edf2af23172",
+    "scripts/check_gate_mutations.py": "a84d341123cc64dc5e54464f915d3b8b7683111f8f5acba8aa7879db6758e8b7",
+    "scripts/suites/63_veldo_0040_containment.py": "12611443b478e0e002fa8ee3233ca5bf86fbe539694b6d9f98685aae450470c1"
+  },
+  "summary": {
+    "latency": {
+      "max": 0.014,
+      "min": 0.007,
+      "p50": 0.008,
+      "p95": 0.01
+    },
+    "passed": 40,
+    "suite_passed": 40,
+    "total": 40,
+    "wakes": [
+      0
+    ]
+  },
+  "trace_sha256": "5912668f3b16a30eefe08d32e863470dacface0ba079c5e41fd2be9217c8b7cc",
+  "workers": 1
+}

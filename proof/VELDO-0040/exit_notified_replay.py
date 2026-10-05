@@ -46,6 +46,7 @@ def main():
     parser.add_argument('--runs', type=int, required=True)
     parser.add_argument('--workers', type=int, default=1)
     parser.add_argument('--reload', action='store_true')
+    parser.add_argument('--scope-load', type=int, default=0)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
     # Import only snapshot/identity/environment helpers, never invoke either driver.
@@ -55,7 +56,7 @@ def main():
     files = gate.read_inputs(ROOT)
     head = gate.git(ROOT, 'rev-parse', 'HEAD')
     result = dict(head=head, input_digest=gate.digest(dict(files=gate.file_identity(files), head=head)),
-                  workers=args.workers, reload=args.reload, runs=[], reloads=[],
+                  workers=args.workers, scope_load=args.scope_load, reload=args.reload, runs=[], reloads=[], load=[],
                   sources={name: sha((ROOT / name).read_bytes()) for name in (
                       '.veldo/control_launch.py', '.veldo/control_containment.py',
                       'scripts/suites/' + SUITE + '.py', 'scripts/check_gate_mutations.py')})
@@ -136,6 +137,26 @@ for _name in ('conclude', '_show', 'close'):
                     proc = subprocess.run(['systemctl', '--user', 'daemon-reload'], env=env,
                                           stdout=log, stderr=log, timeout=30)
                     result['reloads'].append(dict(start=start, end=time.time(), code=proc.returncode))
+        def scope_load(index):
+            env = dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid())
+            count, failures = 0, []
+            began = time.monotonic()
+            while not finished.is_set():
+                unit = 'v40exitload-%d-%d-%d.scope' % (os.getpid(), index, count)
+                proc = subprocess.run(['systemd-run', '--user', '--scope', '--quiet',
+                                       '--unit=' + unit, '/usr/bin/sleep', '0.5'], env=env,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+                if proc.returncode:
+                    failures.append(dict(unit=unit, code=proc.returncode,
+                                         error=proc.stderr.decode(errors='replace')[:300]))
+                    subprocess.run(['systemctl', '--user', 'stop', unit], env=env, capture_output=True, timeout=30)
+                    subprocess.run(['systemctl', '--user', 'reset-failed', unit], env=env, capture_output=True, timeout=30)
+                count += 1
+            result['load'].append(dict(worker=index, scopes=count, seconds=time.monotonic()-began,
+                                       failures=failures))
+        loaders = [threading.Thread(target=scope_load, args=(i,)) for i in range(args.scope_load)]
+        for loader in loaders:
+            loader.start()
         reloader = threading.Thread(target=reload_manager) if args.reload else None
         if reloader:
             reloader.start()
@@ -165,6 +186,8 @@ for _name in ('conclude', '_show', 'close'):
             finished.set()
             if reloader:
                 reloader.join()
+            for loader in loaders:
+                loader.join()
         events = [json.loads(line) for line in trace.read_text().splitlines()] if trace.exists() else []
         for row in result['runs']:
             own = [e for e in events if e['unit'] == row['unit']]
