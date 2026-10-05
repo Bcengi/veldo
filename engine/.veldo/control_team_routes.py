@@ -272,7 +272,8 @@ class TeamRoutes:
         pinned = [tid, target['ref'], default_id(default['revision']), request, reference['settlement_id'],
                   reference['effect_id'], owner, t.membership.VERSIONS_ENTITY]
         cid = 'default-team-answer-' + reference['settlement_id']
-        params = dict(action='owner_save', team_id=tid, project=name, principal=owner, command_id=cid, at=t.clock())
+        params = dict(action='owner_save', team_id=tid, project=name, principal=owner, command_id=cid, at=t.clock(),
+                      repository_uuid=t.ids['repository_uuid'])
         t._propose({'team': default['team']}, state, project['data'], None, params, pinned, t.clock())
         params['acceptance'] = dict(request_id=request, settlement_id=reference['settlement_id'],
             effect_id=reference['effect_id'], principals=[owner], ruling='approve',

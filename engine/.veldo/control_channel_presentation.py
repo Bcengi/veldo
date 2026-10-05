@@ -205,6 +205,19 @@ def subject_digests(content):
     return [{'kind': subject.get('kind'), 'ref': subject.get('ref'), 'digest': subject.get('digest')}]
 
 
+def repository_label(store, conn, domain_uuid, repository_uuid):
+    """How a message names its repository when the factory serves more than one (VELDO-0205): the final
+    component of the path the store binds for it, then the first eight characters of its uuid."""
+    bound = store.bound_repository(conn, domain_uuid, repository_uuid)
+    name = Path(bound).name if bound else repository_uuid
+    return '%s (%s)' % (name, repository_uuid[:8])
+
+
+def heading(label, project=None):
+    """The lines a message for a repository begins with when the factory serves more than one."""
+    return 'Repository: %s' % label + ('\nProject: %s' % project if project else '')
+
+
 def presentation_id(request_id, request_version, digest):
     """The presentation key: request, request version and presentation content digest (R72)."""
     return 'presentation:%s:%s:%d:%s' % (CHANNEL, request_id, request_version, digest.split(':', 1)[-1])
@@ -387,6 +400,9 @@ def render(record, version=TEXT.VERSION, stats=None):
              'Subject: %s' % '; '.join('%s %s %s' % (s['kind'], s['ref'], s['digest']) for s in record['subject_digests']),
              'Risk (stated by %s): %s' % (record['framed_by'], TEXT.lines(record['risk_statement'])),
              'Authority: %s' % record['authority_statement']]
+    # VELDO-0205: the repository heading, bound in the receipt, comes first when the factory serves several.
+    if record.get('repository_label') is not None:
+        head = [record['repository_label']] + head
     body = TEXT.visible('\n'.join(head + ['', c['brief']]), stats)
     tail = '\n'.join(['Choices: %s' % ' | '.join(record['choices']),
                       'Answer by replying to this message: <choice>: <your reason>'])
@@ -569,7 +585,8 @@ def _record_transition(params, before, notice_kind):
     current = before.get(pid, {}).get('data')
     if phase == 'intent':
         record = params.get('record')
-        if not isinstance(record, dict) or set(record) != set(INTENT_FIELDS) | {'renderer_version', 'render_stats'} or record['presentation_id'] != pid:
+        if (not isinstance(record, dict) or set(record) - {'repository_label'} != set(INTENT_FIELDS) | {'renderer_version', 'render_stats'}
+                or not isinstance(record.get('repository_label', ''), str) or record['presentation_id'] != pid):
             raise ValueError('an intent carries exactly the presentation it binds')
         if current is not None and current.get('outcome') not in RETRYABLE:
             raise ValueError('a receipt is immutable; only a definite refusal is attempted again')
@@ -715,6 +732,28 @@ def _hint_transition(params, before):
                                                   refusal=params.get('refusal'))}}
 
 
+def _serve_frames(store, conn, presenter, guarded):
+    """Register `presenter` as its repository's framing authority on `conn` (VELDO-0205). The connection
+    keeps ONE framing transition whichever repositories' presenters are built on it: the repository of the
+    request the framing names, an id the presenter derived from its own coordinates, picks the presenter
+    that writes it, and a repository with no presenter on the connection is refused invalid_input:repository."""
+    served = (conn.command_registry.get(FRAME_OPERATION) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transition(params, before):
+            request = params.get('request_id') if isinstance(params, dict) else None
+            judge = next((one for repository, one in served.items()
+                          if isinstance(request, str) and request.startswith('assignment:%s:' % repository)), None)
+            if judge is None:
+                raise store.StoreRefused('invalid_input:repository', 'no presenter of this repository is on this connection')
+            return guarded(judge._frame_transition)(params, before)
+
+        conn.command_registry[FRAME_OPERATION] = {'transition': transition, 'writes': ('entities', 'journal', 'commands', 'nonces'),
+                                                  'repositories': served}
+    served[presenter.ids['repository_uuid']] = presenter
+
+
 class Presenter:
     """Presents one inbox on Telegram, keeps the receipts and decides presentation-bound answers.
 
@@ -725,8 +764,10 @@ class Presenter:
     accepted versions and outcome, never rendered text, rationale, signatures or the token."""
 
     def __init__(self, store, membership, projection, inbox, edge, conn, journal_signer, sign,
-                 authority_generation=1, clock=time.time, *, assignment):
+                 authority_generation=1, clock=time.time, *, assignment, labelled=False):
         self.store, self.membership, self.P, self.inbox, self.edge = store, membership, projection, inbox, edge
+        # VELDO-0205: whether the factory serves more than one repository, so each message names its own.
+        self.labelled = labelled
         self.assignment = assignment
         self.AC = membership.AC
         self.conn, self.ids = conn, dict(inbox.ids)
@@ -746,7 +787,7 @@ class Presenter:
         writes = ('entities', 'journal', 'commands', 'nonces')
         conn.command_registry[RECORD_OPERATION] = {
             'transition': guarded(lambda p, b: _record_transition(p, b, projection.ENTITY_KIND)), 'writes': writes}
-        conn.command_registry[FRAME_OPERATION] = {'transition': guarded(self._frame_transition), 'writes': writes}
+        _serve_frames(store, conn, self, guarded)
         conn.command_registry[ANSWER_OPERATION] = {
             'transition': guarded(lambda p, b: _write_new(p, b, (('answer', ANSWER_KIND),))),
             'writes': writes}
@@ -1022,6 +1063,24 @@ class Presenter:
     def inbox_request(self, alias):
         return 'assignment:%s:%s' % (self.ids['repository_uuid'], alias)
 
+    def label(self):
+        """This presenter's repository label (repository_label), or None when the factory serves one."""
+        if not self.labelled:
+            return None
+        return repository_label(self.store, self.conn, self.ids['domain_uuid'], self.ids['repository_uuid'])
+
+    def heading(self, request):
+        """The heading of a message about `request`: its repository, and its project when its scope is one
+        project; None when the factory serves one repository."""
+        label = self.label()
+        if label is None:
+            return None
+        scope = ((self._entity(request) or {}).get('data') or {}).get('scope')
+        project = scope[0] if isinstance(scope, list) and len(scope) == 1 and _is_str(scope[0]) else None
+        if project is not None and (self._entity('project:' + project) or {}).get('kind') != 'project':
+            project = None
+        return heading(label, project)
+
     # publication
 
     def _commit(self, operation, params, expected, principal=None, command_id=None):
@@ -1074,6 +1133,9 @@ class Presenter:
             return None, None, versions
         record = dict(b, schema=SCHEMA, channel=CHANNEL, presentation_version=(head or {}).get('presentation_version', 0) + 1,
                       supersedes=None, reply_to=None)
+        shown = self.heading(request)
+        if shown is not None:
+            record['repository_label'] = shown
         notices = self._notices(request, b['enrolled_chat']) if prior is None else []
         if notices:
             for n in notices:
@@ -1222,6 +1284,9 @@ class Presenter:
         """A short plain reply to the owner's own message when it cannot count as an answer, so a
         reply is never met with silence. It grants nothing. It is recorded by the inbound message's
         platform identity before it is sent, so a redelivered message is never told twice."""
+        shown = receipt.get('repository_label') or self.heading(receipt.get('request_id'))
+        if shown:
+            text = shown + '\n' + text
         text = TEXT.message(text, free_text=False)
         tid = tell_id(ev['chat_id'], ev['platform_message_id'])
         if self._entity(tid) is not None:
@@ -1264,7 +1329,7 @@ class Presenter:
         return type(chat) is int and type(message_id) is int and self._entity(hint_id(chat, message_id)) is not None
 
     @staticmethod
-    def _hint_text(cause, receipts, taken=None, lead=None):
+    def _hint_text(cause, receipts, taken=None, lead=None, shown=None, notice=None):
         """The hint's plain text: what the message counted for (nothing, when intake did not take it;
         new work, when it did), how to answer, and each request named as its presentation names it,
         after `lead` (intake's question) when the hint is merged into it. None when not even one
@@ -1277,7 +1342,11 @@ class Presenter:
             first = 'I took your message as new work, not as an answer to a request.'
             how = ('To answer a waiting request, press Reply on the request message itself and write '
                    '<choice>: <your reason>.')
+        if notice is not None:
+            first = notice
         lines = ([TEXT.visible(TEXT.lines(lead)), ''] if lead else []) + [first, how, 'Waiting for your answer:']
+        if shown:
+            lines = [TEXT.visible(shown)] + lines
         named = []
         for r in receipts:
             line = 'Request: %s (version %d), choices %s' % (r['request_id'], r['request_version'], ' | '.join(r['choices']))
@@ -1286,9 +1355,12 @@ class Presenter:
                 break
             lines.append(line)
             named.append(r)
+        if not named and notice is not None:
+            # VELDO-0205: what intake must tell the owner is sent even when nothing waits for him.
+            return TEXT.edges('\n'.join(lines[:-1])), []
         return (TEXT.edges('\n'.join(lines)), named) if named else (None, [])
 
-    def hint_owner(self, message, taken=None, lead=None, remember=False):
+    def hint_owner(self, message, taken=None, lead=None, remember=False, shown=None, notice=None):
         """Tell the owner, once, how to answer, when his attributed message replies to no presentation
         (`message`: cause, principal, chat_id, sender_id, message_id, evidence_id, update_id, from the
         VELDO-0066 evidence). `taken` is what intake made of it (HINT_TAKEN); `lead` is intake's
@@ -1298,7 +1370,8 @@ class Presenter:
         answer and grants nothing; a request already hinted is not named again until its version is
         answered. With `remember`, a decision that sends nothing is kept too, so the message is never
         decided again. Returns the observation's result; when a send was made, `attempted` is set and
-        `delivery` names where the platform put the message it confirmed."""
+        `delivery` names where the platform put the message it confirmed. `shown` is the heading the hint
+        begins with and `notice` replaces its first sentence and is sent even with nothing waiting (VELDO-0205)."""
         m = message if isinstance(message, dict) else {}
         chat, principal = m.get('chat_id'), m.get('principal')
         about = {k: m.get(k) for k in ('cause', 'principal', 'evidence_id', 'update_id', 'chat_id', 'message_id')}
@@ -1316,11 +1389,13 @@ class Presenter:
         except Exception:  # noqa: BLE001 - the refusal is already recorded; a failed read is named, never raised
             return self._observe_hint('refused', 'unavailable_service', about)
         due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]
-        text, named = self._hint_text(m.get('cause'), due, taken, lead)
+        text, named = self._hint_text(m.get('cause'), due, taken, lead, shown, notice)
         about.update(request_ids=[r['request_id'] for r in (named or waiting)],
                      presentation_ids=[r['presentation_id'] for r in (named or waiting)])
         skip = ('nothing_pending', None) if not waiting else ('already_hinted', None) if not due else (
             ('refused', 'presentation_too_long') if not named else None)
+        if skip is not None and notice is not None and text is not None:
+            skip = None
         if skip is not None:
             if remember:
                 self._skip_hint(hid, m, about, skip[1] or skip[0])

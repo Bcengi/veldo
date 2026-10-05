@@ -132,7 +132,8 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'no_such_project': 'invalid_input'
             'not_staffed': 'missing_authority', 'reviewer_not_independent': 'missing_authority',
             'not_accepted': 'missing_authority', 'stale_subject': 'stale_subject', 'stale_version': 'stale_subject',
             'wrong_subject': 'stale_subject', 'missing_evidence': 'missing_evidence',
-            'insufficient_reviews': 'missing_evidence', 'unavailable_service': 'unavailable_service'}
+            'insufficient_reviews': 'missing_evidence', 'unavailable_service': 'unavailable_service',
+            'wrong_repository': 'invalid_input'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 
@@ -313,6 +314,27 @@ def _row(conn, identity):
     return None if row is None else {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
 
 
+def _serve(store, conn, service):
+    """Register `service` as its repository's team service on `conn` (VELDO-0205). The connection keeps
+    ONE team transition whichever repositories' team services are built on it: the repository_uuid the
+    service put in the store parameters, after checking the signed command against its own coordinates,
+    picks the service that judges and writes the command, and a repository with no team service on the
+    connection is refused invalid_input:repository."""
+    served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transaction_transition(conn, params, before):
+            judge = served.get(params.get('repository_uuid'))
+            if judge is None:
+                raise store.StoreRefused('invalid_input:repository', 'no team service of this repository is on this connection')
+            return judge._in_transaction(conn, params, before)
+
+        conn.command_registry[OPERATION] = {'transaction_transition': transaction_transition, 'writes': WRITES,
+                                            'repositories': served}
+    served[service.ids['repository_uuid']] = service
+
+
 class Refused(Exception):
     def __init__(self, code, detail='', problems=(), owner_request=None):
         super().__init__('%s: %s' % (code, detail))
@@ -339,7 +361,7 @@ class Teams:
         self.inbox, self.assignment, self.requester, self.request_sign = inbox, assignment, requester, request_sign
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
+        _serve(store, conn, self)
         store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,), ASSIGNMENT_KIND: (OPERATION,)},
                              prefixes={ID_PREFIX: (OPERATION,), ASSIGNMENT_PREFIX: (OPERATION,)}, module=__file__)
 
@@ -406,6 +428,9 @@ class Teams:
             raise Refused('no_such_project', name)
         if project['data'].get('state') != 'ACTIVE':
             raise Refused('project_not_active:%s' % project['data'].get('state'))
+        if project['data'].get('execution_repository') != self.ids['repository_uuid']:
+            # VELDO-0205: refused before anything is asked of the owner; the transaction checks it again.
+            raise Refused('wrong_repository', 'the project is executed in another repository')
         current = entities.get(tid)
         record = dict(current['data'], version=current['version']) if current and current.get('kind') == KIND else None
         if (api_assertion is not None and op == 'propose' and record and record.get('proposal')
@@ -417,7 +442,7 @@ class Teams:
             raise Refused('stale_subject:version', 'the command names another team version')
         pinned = [tid, PJ.project_id(name), principal, key['key_id'], self.membership.VERSIONS_ENTITY]
         params = dict(action=op, team_id=tid, project=name, principal=principal, command_id=command['command_id'],
-                      at=now)
+                      at=now, repository_uuid=self.ids['repository_uuid'])
         if op == 'propose':
             self._propose(command, state, project['data'], record, params, pinned, now)
             if api_assertion is not None:
@@ -586,6 +611,8 @@ class Teams:
             raise Refused('stale_subject:team_revision', 'the assignment names another team revision')
         unit_id = command.get('unit')
         unit = state['entities'].get(unit_id) if _is_str(unit_id) else None
+        if unit is not None and (unit.get('data') or {}).get('repository_uuid') != self.ids['repository_uuid']:
+            raise Refused('wrong_repository', 'the unit belongs to another repository')
         if unit is None or unit.get('kind') != 'execution_unit' or (unit.get('data') or {}).get('project') != project['name']:
             raise Refused('invalid_input:unit', 'the unit is not an execution unit of this project')
         data = dict(unit['data'])
@@ -698,6 +725,14 @@ class Teams:
         """Inside the store's write transaction: the team row is read here, so what the command decided
         on is what it commits over (every other input's version is pinned by the command)."""
         tid, op, now = params['team_id'], params['action'], params['at']
+        # VELDO-0205: the repository a command names only picks this service; the project's repository is
+        # its record's execution_repository (fixed at activation), and an assigned unit's its own record's.
+        project = (before.get(PJ.project_id(params['project'])) or {}).get('data') or {}
+        if project.get('execution_repository') != self.ids['repository_uuid']:
+            raise Refused('wrong_repository', 'the project is executed in another repository')
+        if op == 'assign' and ((before.get(params['assignment']['unit']) or {}).get('data') or {}).get(
+                'repository_uuid') != self.ids['repository_uuid']:
+            raise Refused('wrong_repository', 'the unit belongs to another repository')
         current = before.get(tid)
         entry = {'by': params['principal'], 'at': now, 'command_id': params['command_id'], 'operation': op}
         if op == 'assign':

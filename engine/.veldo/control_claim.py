@@ -193,6 +193,29 @@ def _changes(params, before):
     return {cid: {'kind': 'claim', 'data': data}}
 
 
+def _serve(conn, receiver):
+    """Register `receiver` as its repository's claim service on `conn` (VELDO-0205). The connection keeps
+    ONE claim transition whichever repositories' receivers are built on it: the repository in the claim
+    id the receiver derived from its own coordinates picks the receiver that judges and writes the
+    command, and a repository with no receiver on the connection is refused invalid_input:repository."""
+    served = (conn.command_registry.get('claim_operation') or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transaction_transition(conn, params, before):
+            cid = params.get('claim_id')
+            judge = next((one for repository, one in served.items()
+                          if isinstance(cid, str) and cid.startswith(claim_id(repository, ''))), None)
+            if judge is None:
+                raise S.StoreRefused('invalid_input:repository', 'no claim service of this repository is on this connection')
+            return judge._in_transaction(conn, params, before)
+
+        conn.command_registry['claim_operation'] = {
+            'transaction_transition': transaction_transition, 'writes': ('entities', 'journal', 'commands', 'nonces'),
+            'repositories': served}
+    served[receiver.ids['repository_uuid']] = receiver
+
+
 class Receiver:
     """One repository's claim operations on the configured real store connection.
 
@@ -207,8 +230,7 @@ class Receiver:
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
         # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection.
-        conn.command_registry['claim_operation'] = {
-            'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
+        _serve(conn, self)
 
     def apply(self, packet):
         command = packet.get('command', {}) if isinstance(packet, dict) else {}

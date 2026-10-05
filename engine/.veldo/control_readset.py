@@ -119,6 +119,38 @@ def root_commits(repo, revision='HEAD'):
     return sorted(line for line in result.stdout.decode().split() if line) or None
 
 
+def _field(data, path):
+    """The value at a dotted field path of a record (VELDO-0205: `contract.repository`), or None."""
+    for name in path.split('.'):
+        data = data.get(name) if isinstance(data, dict) else None
+    return data
+
+
+def _keyed(store, conn, operation, reader, entry):
+    """Register `reader` for `operation` on `conn` (VELDO-0205). The connection keeps ONE transition per
+    operation whichever repositories' read sets are attached to it: the repository_uuid ReadSets.execute
+    put in the parameters picks the read set, never the stored revision or snapshot, so the picked one
+    still checks they are its own; a repository with no read set on the connection is refused
+    invalid_input:repository. Parameters naming no repository are judged by the connection's only read
+    set when it has exactly one. `entry` is the registration the first reader makes."""
+    served = (conn.command_registry.get(operation) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transaction_transition(conn, parameters, before):
+            repository = parameters.get('repository_uuid') if isinstance(parameters, dict) else None
+            if repository is None and len(served) == 1:
+                repository = next(iter(served))
+            judge = served.get(repository)
+            if judge is None:
+                raise store.StoreRefused('invalid_input:repository', 'no read set of this repository is on this connection')
+            return judge[1](conn, parameters, before)
+
+        conn.command_registry[operation] = dict(entry, transaction_transition=transaction_transition,
+                                                repositories=served)
+    served[reader.repository_uuid] = (reader, entry['transaction_transition'])
+
+
 def _holds(repo, commit):
     """Whether the Git repository at `repo` holds `commit` as a commit object now."""
     try:
@@ -187,8 +219,8 @@ class ReadSets:
             except (KeyError, TypeError, ValueError) as error:
                 raise self.store.StoreRefused('invalid_input', 'malformed registered inputs') from error
 
-        self.conn.command_registry[operation] = dict(original, transaction_transition=transition,
-                                                     read_set=declaration)
+        _keyed(self.store, self.conn, operation, self, dict(original, transaction_transition=transition,
+                                                            read_set=declaration))
 
     def require_transaction(self, conn):
         if conn is not self.conn:
@@ -218,7 +250,7 @@ class ReadSets:
             for (identity,) in self.conn.execute('SELECT id FROM entities WHERE kind=? ORDER BY id', (query['kind'],)):
                 value = SN.entity(self.store, self.conn, identity)
                 data = value['value']['data']
-                if all(data.get(key) == expected for key, expected in where.items()):
+                if all(_field(data, key) == expected for key, expected in where.items()):
                     values.append(value)
                     for field in query.get('references', []):
                         target = self._resolve(data.get(field), {})
@@ -272,6 +304,8 @@ class ReadSets:
         try:
             if command['operation'] != 'accept_snapshot' and command['operation'] not in self.registrations:
                 raise self.store.StoreRefused('unregistered_inputs', command['operation'])
+            # VELDO-0205: this read set's own repository picks it on a connection several repositories share.
+            command = dict(command, parameters=dict(command['parameters'], repository_uuid=self.repository_uuid))
             result = self.store.execute(self.conn, command, **signing)
         except self.store.StoreRefused as error:
             self.counts['refused'] += 1
@@ -413,11 +447,15 @@ def attach_revisions(store, conn, domain_uuid, repositories):
 
 
 def attach(store, conn, repo, domain_uuid, repository_uuid):
-    if 'accept_snapshot' in conn.command_registry:
+    """The snapshot authority of one repository on `conn`: one read set per repository (VELDO-0205), so a
+    second attach for the same repository, or over a registration that is not this module's, is refused."""
+    existing = conn.command_registry.get('accept_snapshot')
+    if existing is not None and (not isinstance(existing.get('repositories'), dict)
+                                 or repository_uuid in existing['repositories']):
         raise SN.Refused('invalid_registration', 'connection already has a snapshot authority')
     reader = ReadSets(store, conn, repo, domain_uuid, repository_uuid)
     store.declare_owners(conn, OWNER, kinds=SNAPSHOT_KINDS, module=__file__)
-    conn.command_registry['accept_snapshot'] = {
+    _keyed(store, conn, 'accept_snapshot', reader, {
         'transaction_transition': reader.accept, 'writes': ('entities', 'journal', 'commands', 'nonces'),
-        'read_set': 'enabled operation declaration plus accepted revision projections'}
+        'read_set': 'enabled operation declaration plus accepted revision projections'})
     return reader

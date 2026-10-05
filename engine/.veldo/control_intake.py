@@ -57,7 +57,10 @@ TAXONOMY = {'unsupported_configuration': 'unsupported_configuration', 'unauthent
             'stale_version': 'stale_version', 'unsupported_source': 'unsupported_configuration',
             'not_intake': 'unsupported_configuration', 'invalid_input': 'unsupported_configuration',
             'missing_evidence': 'missing_evidence', 'unavailable_service': 'unavailable_service',
-            'unknown_outcome': 'unknown_outcome', 'channel_refused': 'unavailable_service'}
+            'unknown_outcome': 'unknown_outcome', 'channel_refused': 'unavailable_service',
+            'missing_authority': 'missing_authority'}
+# VELDO-0205: what the owner is told when his message names a project of a repository not served here.
+NOT_SERVED = 'That message names a project whose repository this factory does not serve, so nothing was taken.'
 
 
 class Refused(Exception):
@@ -175,7 +178,7 @@ class Intake(RT.Routes):
     signs journal records as `journal_signer`."""
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
-                 sign, asker=None, authority_generation=1, clock=time.time, observe=None):
+                 sign, asker=None, authority_generation=1, clock=time.time, observe=None, repositories=None):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
         if not projects or not all(_identifier(p) for p in projects) or len(set(projects)) != len(projects):
@@ -184,6 +187,9 @@ class Intake(RT.Routes):
         self.domain, self.projects, self.api_edge = domain, tuple(projects), api_edge
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
+        # VELDO-0205: the repositories this instance serves (None: not checked), each project's being its
+        # execution_repository, fixed at activation.
+        self.repositories = None if repositories is None else tuple(repositories)
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -198,6 +204,13 @@ class Intake(RT.Routes):
 
     def _route_transition(self, conn, params, before):
         return self._route_plan(params)[0]
+
+    def label(self, repository):
+        """The repository label a message about `repository` names when the instance serves more than one
+        repository (control_channel_presentation.repository_label); None when it serves one."""
+        if self.repositories is None or len(self.repositories) < 2 or not _identifier(repository):
+            return None
+        return self.acquirer.V.repository_label(self.store, self.conn, self.acquirer.ids['domain_uuid'], repository)
 
     # reading
 
@@ -279,7 +292,11 @@ class Intake(RT.Routes):
             # intake did not take gets the plain hint. The PM's later unclear-route question is a
             # separate reply (VELDO-0152); a clarification or a resolution gets no hint.
             if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):
-                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
+                taken = self.proposal(result.get('proposal_id')) or {}
+                label = self.label(taken.get('repository')) if result['outcome'] == 'proposed' else None
+                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None,
+                           shown=None if label is None else self.acquirer.V.heading(label, taken.get('project')),
+                           notice=NOT_SERVED if result.get('reason') == 'missing_authority:repository_not_served' else None)
         return result
 
     def take_telegram(self):
@@ -537,6 +554,7 @@ class Intake(RT.Routes):
             if data['state'] == 'AWAITING_PROJECT' and question is not None and chosen is not None:
                 resolved = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective', 'state': 'PROPOSED',
                             'domain': self.domain, 'project': chosen, 'principal': principal, 'text': data['text'],
+                            'repository': self._repository(records.get(chosen)),
                             'sources': list(data['sources']) + [key], 'clarifications': data['clarifications'],
                             'question_id': None, 'resolves': live, 'resolved_to': None}
                 resolved.update(context=data.get('context', {}), decision=data.get('decision'), route=dict(data.get('route') or {}, route='existing_project', project=chosen,
@@ -556,11 +574,16 @@ class Intake(RT.Routes):
             rule = 'request' if explicit else ('ticket_key' if project else None)
             if project is None and (factory is None or factory['kind'] != PJ.KIND):
                 raise Refused('unsupported_configuration:factory_project')
+            # VELDO-0205: the message is addressed to its project's execution repository, which this
+            # instance must serve; a message naming no project waits in the factory's.
+            repository = self._repository(records.get(project) if project else factory)
+            if project is not None and self.repositories is not None and repository not in self.repositories:
+                raise Refused('missing_authority:repository_not_served', project)
             decision = dict(context, decided_by=rule, unresolved=None if project else 'undecided', hints=hints,
                             shared_ticket_keys=shared)
             proposal = {'schema': PROPOSAL_SCHEMA, 'proposal_id': pid, 'proposal': 'objective' if project else 'inbox',
                         'state': 'PROPOSED' if project else 'AWAITING_ROUTE', 'domain': self.domain,
-                        'project': project or PJ.FACTORY_PROJECT, 'principal': principal, 'text': text,
+                        'project': project or PJ.FACTORY_PROJECT, 'repository': repository, 'principal': principal, 'text': text,
                         'sources': [key], 'clarifications': [], 'question_id': None, 'resolves': None,
                         'resolved_to': None, 'hints': hints, 'context': context, 'decision': decision, 'route': None}
             result = {'outcome': 'proposed' if project else 'inbox', 'proposal_id': pid,
@@ -570,6 +593,11 @@ class Intake(RT.Routes):
                       result={k: v for k, v in result.items() if k != 'project'})
         changes[key] = {'kind': SOURCE_KIND, 'data': source}
         return changes, reads, result
+
+    @staticmethod
+    def _repository(record):
+        """A project record's execution repository, or None."""
+        return ((record or {}).get('data') or {}).get('execution_repository') if (record or {}).get('kind') == PJ.KIND else None
 
     def _live_proposal(self, clarifies, principal, read, reads):
         """(id, entity) of the live proposal a follow-up clarifies. A follow-up names the proposal it
@@ -610,7 +638,7 @@ class Intake(RT.Routes):
 
     # telling the owner about waiting requests (VELDO-0136)
 
-    def _hint(self, evidence_id, taken, lead=None):
+    def _hint(self, evidence_id, taken, lead=None, shown=None, notice=None):
         """The presenter's one decision about a Telegram message the Acquirer refused as replying to no
         presentation, from a person it attributed: its recorded decision, taken once when the message
         was acquired, never a reading made now. `taken` is what intake made of it (None: not taken).
@@ -631,7 +659,9 @@ class Intake(RT.Routes):
                                              chat_id=fields.get('chat_id'), sender_id=fields.get('sender_id'),
                                              message_id=fields.get('message_id'), evidence_id=record['evidence_id'],
                                              update_id=record.get('update_id')),
-                                        taken=taken, lead=lead, remember=taken is None)
+                                        taken=taken, lead=lead, remember=taken is None,
+                                        **({'shown': shown} if shown is not None else {}),
+                                        **({'notice': notice} if notice is not None else {}))
         except Exception:  # noqa: BLE001 - a hint never undoes or blocks what intake recorded
             return {}
 

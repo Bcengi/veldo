@@ -179,13 +179,14 @@ def installable(path, binding, principal, journal_key, repositories):
     return Path(path).read_bytes()
 
 
-def open_channel(path, clock=time.time):
+def open_channel(path, clock=time.time, *, repositories=None, lock=None):
     """(Channel, None) for an installation's ingress configuration, (None, refusal) when it cannot be
-    constructed, and (None, None) when the installation names none."""
+    constructed, and (None, None) when the installation names none. `repositories` are the instance's
+    served repositories and `lock` its authority lock descriptor (control_channel_ingress.open_ingress)."""
     if not path:
         return None, None
     try:
-        return Channel(path, clock), None
+        return Channel(path, clock, repositories=repositories, lock=lock), None
     except Exception as exc:  # noqa: BLE001 - the service keeps serving; the refusal is reported by name
         return None, _code(exc)
 
@@ -193,10 +194,10 @@ def open_channel(path, clock=time.time):
 class Channel:
     """The ingress of one running authority service and its owner's commands."""
 
-    def __init__(self, config_path, clock=time.time):
+    def __init__(self, config_path, clock=time.time, *, repositories=None, lock=None):
         self.clock = clock
         self.config = IN.load_config(config_path)
-        self.ingress = IN.open_ingress(config_path, clock)
+        self.ingress = IN.open_ingress(config_path, clock, repositories=repositories, lock=lock)
         self.passes, self.last, self.run = 0, None, None
         self.requests = []
         self.reporter = None
@@ -422,7 +423,9 @@ class Channel:
         published, recorded = [], None
         told, reported = [], []
         if woke.get('outcome') == 'woken':
-            published = [r.get('outcome') for r in ing.presenter.publish()]
+            # VELDO-0205: every served repository's pending requests, through the one bot.
+            published = [r.get('outcome') for repository in sorted(ing.served)
+                         for r in ing.served[repository][1].publish()]
             told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
             if self.run is not None:
                 recorded = self._qualification(woke)
@@ -496,13 +499,14 @@ class Channel:
             refusal = next((r.get('refusal') for r in reversed(results)
                             if (r.get('diagnostic') or {}).get('evidence_id') == row['evidence_id']), None)
             standing = self._standing(evidence['principal'])
-            before = len(ing.presenter.observations)
-            ing.presenter._tell({'chat_id': fields.get('chat_id'), 'platform_message_id': fields.get('message_id')},
-                                {'request_id': evidence['request_id']},
-                                self.why_unsigned(refusal or 'signing-unavailable', standing))
-            if len(ing.presenter.observations) > before:
+            presenter = ing.acquirer.presenter_of(evidence['request_id']) or ing.presenter
+            before = len(presenter.observations)
+            presenter._tell({'chat_id': fields.get('chat_id'), 'platform_message_id': fields.get('message_id')},
+                            {'request_id': evidence['request_id']},
+                            self.why_unsigned(refusal or 'signing-unavailable', standing))
+            if len(presenter.observations) > before:
                 told.append({'kind': 'unsigned', 'evidence_id': row['evidence_id'], 'status': standing['status'],
-                             'refusal': refusal, 'outcome': ing.presenter.observations[-1].get('outcome')})
+                             'refusal': refusal, 'outcome': presenter.observations[-1].get('outcome')})
         return told
 
     def tell_renewal(self, record):
@@ -538,8 +542,8 @@ class Channel:
     def _trim(self):
         ing = self.ingress
         ing.gate.exchanges[:] = [x for x in ing.gate.exchanges if x.get('mode') == 'qualifying']
-        for holder in (ing, ing.gate, ing.activations, ing.acquirer, ing.presenter, ing.settlement, ing.inbox,
-                       self.reporter):
+        for holder in (ing, ing.gate, ing.activations, ing.acquirer, self.reporter) + tuple(
+                one for repository in sorted(ing.served) for one in ing.served[repository]):
             kept = getattr(holder, 'observations', None)
             if isinstance(kept, list) and len(kept) > OBSERVATION_LIMIT:
                 del kept[:-OBSERVATION_LIMIT]
