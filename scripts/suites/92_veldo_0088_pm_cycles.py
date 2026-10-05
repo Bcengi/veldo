@@ -178,7 +178,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
                 # The production channel over the REAL ingress, which opens its own store connection.
                 ingress_config = load('v88_ingress_fixture', Path(__suite_file__).resolve().parents[2]
                                       / 'proof/VELDO-0088/ingress_fixture.py').config(f, base, source)
-                service.channel, channel_refusal = SV.CH.open_channel(str(ingress_config))
+                # VELDO-0205: the ingress serves every repository the service serves.
+                service.channel, channel_refusal = SV.CH.open_channel(str(ingress_config), repositories=sorted(served))
                 check('followup/real-ingress', 'the production channel opens the real ingress',
                       channel_refusal is None and service.channel is not None and service.channel.ingress.conn is not conn)
             else:
@@ -384,33 +385,22 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
             result_file.write_text(json.dumps(doc))
             if two_repositories:
                 # The second line's PM services, as Line.run builds them once a project of its repository is
-                # active: the connection's allocation and snapshot authorities are the first line's, so they
-                # are refused by name, and nothing of them is left registered on either connection.
+                # active (VELDO-0205): on the same two connections, each keyed by repository, beside the first's.
                 ing = service.channel.ingress
-                registered = [dict(c.command_registry) for c in (conn, ing.conn)]
                 try:
-                    SV._organ('control_workflow_cycle_pm').from_line(line_b)
+                    line_b.pm_cycles = SV._organ('control_workflow_cycle_pm').from_line(line_b)
                     second_refusal = None
                 except Exception as error:
                     second_refusal = getattr(error, 'code', type(error).__name__)
                 print('  VELDO-0088 detail: second line PM services:', second_refusal)
-                check('followup/two-repositories', 'the second line\'s PM services are refused and register nothing',
-                      str(second_refusal).startswith('invalid_registration')
-                      and all(set(before) == set(c.command_registry)
-                              and all(c.command_registry[k] is v for k, v in before.items())
-                              for before, c in zip(registered, (conn, ing.conn))))
-                # The second repository's grooming on the ONE ingress connection, built after the first line's
-                # with the constructors from_line uses: its backlog and grooming, its own coordinates and checkout.
+                check('followup/two-repositories', 'the second line\'s PM services build beside the first\'s',
+                      second_refusal is None and all(
+                          set((c.command_registry.get(op) or {}).get('repositories') or {}) == {repository, repository_b}
+                          for c, op in ((conn, CB.OPERATION), (ing.conn, CB.OPERATION), (ing.conn, GR.OPERATION))))
                 ids_b = dict(ids, repository_uuid=repository_b)
-                allocations_b = AL.attach(SV.S, ing.conn, domain, {repository_b: str(source_b)})
-                backlog_b = CB.Backlog(SV.S, SV.CM, ing.conn, ids_b, service.principal, service.sign,
-                                       workspace=str(source_b), authority_generation=service.generation)
-                decomposition_b = DP.Decomposition(backlog_b, allocations_b, DOC.Publisher(
-                    allocations_b, str(source_b), service.verify, service.config['host_identity']))
-                grooming_b = GR.Grooming(SV.S, SV.CM, ing.conn, ids_b, service.principal, service.sign,
-                    backlog=CB, service=backlog_b, assignment=SV.I, inbox=ing.inbox, presenter=ing.presenter,
-                    settlement=ing.settlement, requester=('pm', lambda body: f['sign_as']('pm', body)),
-                    workspace=str(source_b), authority_generation=service.generation)
+                services_b = line_b.pm_cycles.services if second_refusal is None else {}
+                backlog_b, decomposition_b = services_b.get('backlog'), services_b.get('decomposition')
+                grooming_b = services_b.get('grooming')
             factory.wake('accepted_objective')
             started = factory.run()
             cycles = line.pm_cycles
@@ -469,18 +459,33 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
                     return f['signed'](who, dict(ids_b, operation=operation, principal=who,
                         command_id=f['next_id']('work-b'), nonce=f['next_id']('work-b-nonce'), **fields))
 
-                message_b = dict(message, request_id=f['next_id']('intake'), text='please do BCG-124')
-                received_b = intake.receive('api_request', dict(request=message_b,
+                # The second repository's work is its own project's, activated on it (VELDO-0205: a backlog
+                # take judges the feature's project's execution repository), with its own owner and assessor.
+                v205 = load('v88_v205_people', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0205/pm_fixture.py')
+                for who in ('bea', 'bob'):
+                    v205.keypair(f, who)
+                f['enroll']('bea', 'person', ['project_owner', 'admission_authority', 'priority_authority'], ['proj-b'])
+                f['enroll']('bob', 'person', ['project_owner'], ['proj-b'])
+                f['projects'].apply(f['signed']('bea', dict(ids, operation='activate', project='proj-b', principal='bea',
+                    command_id=f['next_id']('pc'), nonce=f['next_id']('pn'), owner='bea',
+                    charter={'purpose': 'Bill the travelers.'}, execution_repository=repository_b,
+                    authority_policy={'team_amendment': ['project_owner'], 'admission': ['admission_authority']},
+                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
+                intake_b = IN.Intake(S, f['CM'], f['AC'], acquirer, conn, domain=domain, projects=['proj-a', 'proj-b'],
+                    api_edge='api-edge', journal_signer='authority', sign=sign)
+                message_b = dict(message, request_id=f['next_id']('intake'), text='please do BCG-124', principal='bea',
+                                 project='proj-b')
+                received_b = intake_b.receive('api_request', dict(request=message_b,
                     signature=f['sign_as']('api-edge', S.canonical_bytes(message_b))))
                 objectives_b = OB.Objectives(S, f['CM'], conn, ids_b, 'authority', sign)
-                oid_b = objectives_b.apply(command_b('olga', 'propose', proposal=received_b.get('proposal_id'),
-                    outcome='Do the second ticket.', scope=['design'], authority={'acceptor': 'olga', 'assessor': 'zed'},
+                oid_b = objectives_b.apply(command_b('bea', 'propose', proposal=received_b.get('proposal_id'),
+                    outcome='Do the second ticket.', scope=['design'], authority={'acceptor': 'bea', 'assessor': 'bob'},
                     evidence_requirements=[{'id': 'outcome', 'kind': 'gate_observation'}])).get('objective_id')
                 objective_b = OB.read(conn, oid_b) or {}
                 key_b = IN.source_key('api_request', message_b['request_id'])
                 intake_b = next((c for c, transition in conn.execute('SELECT command_id, transition FROM journal')
                                  if key_b in json.loads(transition)), None)
-                objectives_b.apply(command_b('olga', 'accept_message', objective=oid_b,
+                objectives_b.apply(command_b('bea', 'accept_message', objective=oid_b,
                     objective_version=objective_b.get('version'), revision=objective_b.get('revision'),
                     bound_digest=objective_b.get('bound_digest'), intake_command=intake_b))
                 feature_b = objectives_b.apply(command_b('pm', 'propose_feature', objective=oid_b,
@@ -488,7 +493,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
                     title='Implement BCG-124', scope=['design']))
                 iid_b = backlog_b.apply(command_b('pm', 'take', feature=feature_b.get('feature_id'),
                                                   work_class='PRODUCT_CHANGE')).get('item_id')
-                allocations_b.enable_kind(dict(request_id='kind-88b', principal='olga', repository_uuid=repository_b,
+                decomposition_b.allocations.enable_kind(dict(request_id='kind-88b', principal='bea', repository_uuid=repository_b,
                     kind='specification', prefix='VELDO', width=4, path_template='specs/{alias}-{slug}.md',
                     revision_id='revision-88b'), signer='authority', sign=sign, authority_generation=1)
                 requirements_b = 'Implement the second ticket. Owner: please do BCG-124'
@@ -515,7 +520,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False, ingress_on
                       all(r.get('ok') is False and r.get('reason') == 'no_such_item' for r in crossed)
                       and before_b is not None and CB.read(conn, iid_b) == before_b
                       and GR.read(ing.conn, GR.GR.request_id(iid_b)) is None)
-                proposed_b = grooming_b.apply(command_b('pm', 'propose', item=iid_b, item_version=3,
+                proposed_b = grooming_b.apply(command_b('bea', 'propose', item=iid_b, item_version=3,
                     proposal={'ceiling': {'invocations': 1}, 'expiry': '2026-10-30T17:00:00Z'}))
                 groomed_b = grooming_b.groom(iid_b)
                 record_b = GR.read(ing.conn, GR.GR.request_id(iid_b)) or {}

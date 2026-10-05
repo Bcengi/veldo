@@ -1389,7 +1389,10 @@ class Presenter:
         except Exception:  # noqa: BLE001 - the refusal is already recorded; a failed read is named, never raised
             return self._observe_hint('refused', 'unavailable_service', about)
         due = [r for r in waiting if self._entity(hinted_id(r['request_id'], r['request_version'], principal)) is None]
-        text, named = self._hint_text(m.get('cause'), due, taken, lead, shown, notice)
+        text, named = self._hint_text(m.get('cause'), due, taken, lead)
+        if shown is not None or notice is not None:
+            # VELDO-0205: the repository heading, and what intake must tell even with nothing waiting.
+            text, named = self._hint_text(m.get('cause'), due, taken, lead, shown, notice)
         about.update(request_ids=[r['request_id'] for r in (named or waiting)],
                      presentation_ids=[r['presentation_id'] for r in (named or waiting)])
         skip = ('nothing_pending', None) if not waiting else ('already_hinted', None) if not due else (

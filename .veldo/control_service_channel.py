@@ -422,8 +422,8 @@ class Channel:
         self.passes += 1
         published, recorded = [], None
         told, reported = [], []
+        # VELDO-0205: a woken pass presents every served repository's pending requests, through the one bot.
         if woke.get('outcome') == 'woken':
-            # VELDO-0205: every served repository's pending requests, through the one bot.
             published = [r.get('outcome') for repository in sorted(ing.served)
                          for r in ing.served[repository][1].publish()]
             told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
