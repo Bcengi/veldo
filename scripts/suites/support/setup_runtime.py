@@ -6,6 +6,7 @@ Installed records, host state, setup calls and service processes are never cache
 """
 import base64
 import contextlib
+import gc
 import hashlib
 import importlib.machinery
 import json
@@ -69,14 +70,33 @@ def install(base, cache):
             answer = json.loads(target.read_text())
             return ({k: base64.b64decode(v) for k, v in answer.items()}
                     if function.__name__ == 'runtime_assets' else answer)
-        answer = function(*args)
+        # The parser's trees and parent maps are all live until this derivation
+        # returns. Trace cycles after the temporary graph has been released.
+        collecting = gc.isenabled()
+        if collecting:
+            gc.disable()
+        try:
+            answer = function(*args)
+        finally:
+            if collecting:
+                gc.enable()
         encoded = ({k: base64.b64encode(v).decode() for k, v in answer.items()}
                    if function.__name__ == 'runtime_assets' else answer)
         publish(target, json.dumps(encoded).encode())
         return answer
 
     def execute(self, module):
-        original_exec(self, module)
+        # A module graph stays live throughout construction. Avoid repeatedly
+        # tracing its unfinished cycles during nested imports; restore collection
+        # before returning to setup, including when an import fails.
+        collecting = gc.isenabled()
+        if collecting:
+            gc.disable()
+        try:
+            original_exec(self, module)
+        finally:
+            if collecting:
+                gc.enable()
         if Path(self.path).name == 'control_service.py' and Path(self.path).is_relative_to(base):
             for name in ('closure', 'runtime_assets'):
                 if hasattr(module, name):
@@ -124,6 +144,20 @@ def ready(proc, listener, expected, seconds=5):
             if exited in events:
                 return False
     return False
+
+
+def wait(proc, seconds):
+    """Reap on this child's exit event instead of Popen.wait's timeout polling."""
+    import subprocess
+    if proc.poll() is not None:
+        return proc.returncode
+    exited = os.pidfd_open(proc.pid)
+    try:
+        if not select.select([exited], [], [], seconds)[0]:
+            raise subprocess.TimeoutExpired(proc.args, seconds)
+        return proc.wait()
+    finally:
+        os.close(exited)
 
 
 def wake_authority(config):

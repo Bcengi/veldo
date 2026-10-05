@@ -148,6 +148,16 @@ def _v189_suite():
     S = claims.S
     ACC = load('v189_accounts', mods / 'control_accounts.py')
     F = load('v189_setup', mods / 'control_factory_setup.py')
+    # This source service is a read-only installer fixture: the parent only calls
+    # its inventory, validation and installation functions. Every running service
+    # still executes its own installed bytes in a separate process. Asset changes
+    # are read afresh by the inventory's content-keyed cache.
+    source_organ = F.organ
+
+    def fixture_organ(name):
+        return CS if name == 'control_service' else source_organ(name)
+
+    F.organ = fixture_organ
     UP = (load('v189_upgrade', mods / 'control_factory_setup_upgrade.py')
           if (mods / 'control_factory_setup_upgrade.py').is_file() else None)
     CAPTURE = ROOT / 'proof' / 'VELDO-0171' / 'tailscale-capture.json'
@@ -332,10 +342,10 @@ def _v189_suite():
                 proc.send_signal(signal.SIGTERM)
                 runtime.wake_authority(shlex.split(self._field(unit, 'ExecStart')[0])[-1])
                 try:
-                    proc.wait(15)
+                    runtime.wait(proc, 15)
                 except subprocess.TimeoutExpired:
                     proc.kill()
-                    proc.wait(5)
+                    runtime.wait(proc, 5)
 
         def stop_all(self):
             for unit in sorted(self.procs):
@@ -345,7 +355,7 @@ def _v189_suite():
             for proc in self.procs.values():
                 if proc.poll() is None:
                     proc.kill()
-                    proc.wait(5)
+                    runtime.wait(proc, 5)
 
     class Bridge:
         """The stand-in manager reached from a setup running in a process of its own: one JSON line of
@@ -1826,10 +1836,10 @@ def _v189_suite():
                 manual.send_signal(signal.SIGTERM)
                 runtime.wake_authority(config)
                 with contextlib.suppress(subprocess.TimeoutExpired):
-                    manual.wait(15)
+                    runtime.wait(manual, 15)
                 if manual.poll() is None:
                     manual.kill()
-                    manual.wait(5)
+                    runtime.wait(manual, 5)
             steps = {s.get('step'): s for s in report.get('steps') or []}
             upgrade = steps.get('engine_upgrade') or {}
             fixture_engine = {n: 'sha256:' + hashlib.sha256((fixture / n).read_bytes()).hexdigest()

@@ -161,8 +161,10 @@ import time
 HERE = Path(__file__).resolve().parent
 
 
-def _organ(name):
+def _organ(name, *, lazy=False):
     spec = importlib.util.spec_from_file_location('authority_service_' + name, HERE / (name + '.py'))
+    if lazy:
+        spec.loader = importlib.util.LazyLoader(spec.loader)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -179,20 +181,21 @@ C = L.C
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
-OR = _organ('control_owner_revisions')
+# These writers are needed only by owner commands and configured factory loops.
+OR = _organ('control_owner_revisions', lazy=True)
 # VELDO-0204: the reservation policies of every account, project and unit, provisioned by the factory loop.
-RP = _organ('control_reservation_policies')
+RP = _organ('control_reservation_policies', lazy=True)
 # VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
 EDGE = _organ('control_channel_enrollment')
 API_SERVICE = 'api-service.json'
 # VELDO-0154: the factory loop's organs: the person inbox its questions go to (VELDO-0064), the entity contract
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
-I = _organ('control_assignment')
-ENT = _organ('entity_contract')
-TA = _organ('control_workflow_cycle_assignment')
-LIM = _organ('control_account_limit')
+I = _organ('control_assignment', lazy=True)
+ENT = _organ('entity_contract', lazy=True)
+TA = _organ('control_workflow_cycle_assignment', lazy=True)
+LIM = _organ('control_account_limit', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
-LS = _organ('control_landing_station')
+LS = _organ('control_landing_station', lazy=True)
 WORK = 'work.json'
 
 # The store's own generic commands, taken before any service registers one of its own on this module
@@ -316,17 +319,25 @@ class _Loads:
     def __init__(self, path):
         self.name = path.name
         self.tree = ast.parse(path.read_bytes(), str(path))
-        parents = {child: parent for parent in ast.walk(self.tree) for child in ast.iter_child_nodes(parent)}
+        # The parsed tree is immutable throughout closure resolution.
+        self.nodes, parents = [self.tree], {}
+        for parent in self.nodes:
+            for child in ast.iter_child_nodes(parent):
+                parents[child] = parent
+                self.nodes.append(child)
+        self.assignments = [node for node in self.nodes if isinstance(node, ast.Assign)]
+        self.references = [node for node in self.nodes
+                           if isinstance(node, (ast.Name, ast.Attribute)) and isinstance(node.ctx, ast.Load)]
         # Every binding of every name: the files a plain assignment's value names, or none for any other
         # binding (a parameter, a loop or with target, an unpacking, an import, an exception name).
         plain = {}
-        for node in ast.walk(self.tree):
+        for node in self.nodes:
             if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
                 plain[id(node.targets[0])] = node.value
             elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.value is not None:
                 plain[id(node.target)] = node.value
         bindings = {}
-        for node in ast.walk(self.tree):
+        for node in self.nodes:
             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
                 value = plain.get(id(node))
                 bindings.setdefault(node.id, []).append(_constants(value) if value is not None else set())
@@ -346,7 +357,7 @@ class _Loads:
                                   if isinstance(e, ast.Constant) and isinstance(e.value, str)}
         self.mixed = {name for name, found in bindings.items() if any(found) and not all(found)}
         self.helpers, self.loads, self.unresolved, self.calls = {}, set(), [], []
-        for call in (node for node in ast.walk(self.tree) if isinstance(node, ast.Call)):
+        for call in (node for node in self.nodes if isinstance(node, ast.Call)):
             if _callee(call) != LOADER:
                 self.calls.append(call)
                 continue
@@ -407,7 +418,7 @@ class _Loads:
                 self.delegated.discard(call_id)
                 self.helpers.pop(name, None)
         self.imports = set()
-        for node in ast.walk(self.tree):
+        for node in self.nodes:
             if isinstance(node, ast.Import):
                 self.imports |= {alias.name.partition('.')[0] + '.py' for alias in node.names}
             elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
@@ -431,7 +442,7 @@ class _Loads:
         name."""
         named, unresolved, accounted = set(self.loads), list(self.unresolved), set()
         aliases = {}
-        for node in ast.walk(self.tree):
+        for node in self.assignments:
             if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
                 value = node.value
                 held = value.attr if isinstance(value, ast.Attribute) else value.id if isinstance(value, ast.Name) else None
@@ -482,7 +493,7 @@ class _Loads:
                 unresolved.append('%s:%d' % (self.name, call.lineno))
             named |= found
         # A loader helper handed on as a value (to map, a table, a callback) loads what no call here names.
-        for node in ast.walk(self.tree):
+        for node in self.references:
             handed = ((isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
                        and (node.id in self.helpers or node.id in aliases))
                       or (isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load) and node.attr in helpers))
@@ -513,7 +524,9 @@ def closure():
         helpers = {}
         for reading in readings.values():
             for name, helper in reading.helpers.items():
-                helpers.setdefault(name, []).append(helper)
+                known_helpers = helpers.setdefault(name, [])
+                if helper not in known_helpers:
+                    known_helpers.append(helper)
         known = len(readings)
         members, loaded_by, absent, unresolved = set(), {}, [], []
         todo = sorted(seeds, reverse=True)

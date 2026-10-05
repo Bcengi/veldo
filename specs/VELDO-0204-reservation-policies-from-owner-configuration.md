@@ -30,6 +30,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0204_*.py"
   - "scripts/suites/support/setup_runtime.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -301,8 +302,8 @@ to open_loop and reds it.
 2026-10-04, upgrade suite runtime: the gate cannot land VELDO-0203 and VELDO-0204 while
 VELDO-0189 exceeds the mutation worker budget. Extend the footprint to the setup suites' shared
 runtime helper to reuse immutable compiled code by source path, bytes and optimization level.
-Every module still executes with separate globals, and every setup, store, service process,
-kill point, behavior assertion and fake/capture check remains in place. The suite file is unchanged.
+Sharing compiled code does not share module globals between loads. Every setup, store, service
+process, kill point, behavior assertion and fake/capture check remains in place.
 Selected-suite measurements and checks are recorded separately from gate evidence in
 proof/VELDO-0204/upgrade-suite-runtime.json; the full gate and mutations remain the reviewer's work.
 
@@ -317,3 +318,19 @@ Cache those module instances only for the duration of a single setup invocation,
 context on success and refusal. A later setup still starts with fresh module globals and re-reads
 its engine. This removes repeated production startup work without sharing host or store state
 between the suite's rows. The setup module's two copies join the footprint for this change.
+
+2026-10-05, remaining startup and census work: the service defers owner writers and factory-loop
+organs until their first use, so setup and an authority with no configured loop do not construct
+unused dependency trees. The closure reader keeps one breadth-first traversal of each immutable
+parsed tree, its assignments and loaded references, then resolves dependencies against every pass's
+current helper set as before. No assertions, rows, captures, formats or deadlines are changed.
+
+The suite file joins the footprint to share the source service module used only as a read-only
+installer fixture in the parent process. Its inventory still reads current source and asset bytes;
+every launched authority loads its own installed engine. This extension is needed because the gate
+cannot land 0203 and 0204 while suite 0189 exceeds the mutation worker budget. All 33 rows remain.
+
+The shared test runtime also reaps services on pidfd exit events with the same deadlines. During
+module construction and pure census computation it defers cyclic collection, restoring its prior
+state in finally blocks before setup continues; this avoids repeatedly tracing live temporary graphs.
+The suite still starts and kills real processes and runs every original assertion.
