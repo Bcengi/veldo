@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -576 +576 @@
+-    if line.repository in ((service.conn.command_registry.get('accept_snapshot') or {}).get('repositories') or {}):
++    if False:  # defect: a second build of one repository's services registers again

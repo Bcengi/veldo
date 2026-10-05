@@ -1,0 +1,6 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -108,2 +108 @@
+-                   for repository in sorted(self.served) for r in (self.served[repository][2].run()
+-                                                                   if self.served[repository][2] is not None else [])]
++                   for r in (self.settlement.run() if self.settlement is not None else [])]  # defect: one settlement

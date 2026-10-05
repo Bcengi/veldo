@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -226 +226 @@
+-                'decisions': {'kind': 'assignment', 'where': {'repository_uuid': '$repository'}},
++                'decisions': {'kind': 'assignment', 'where': {}},  # defect: every repository's requests

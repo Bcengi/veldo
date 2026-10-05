@@ -1,0 +1,5 @@
+--- a/.veldo/control_backlog.py
++++ b/.veldo/control_backlog.py
+@@ -560 +560 @@
+-        if project['data'].get('execution_repository') != self.ids['repository_uuid']:
++        if False:  # defect: the feature's project's repository is not checked

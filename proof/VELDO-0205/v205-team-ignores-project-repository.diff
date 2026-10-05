@@ -1,0 +1,8 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -431 +431 @@
+-        if project['data'].get('execution_repository') != self.ids['repository_uuid']:
++        if False:  # defect: the project's repository is not checked
+@@ -731 +731 @@
+-        if project.get('execution_repository') != self.ids['repository_uuid']:
++        if False:  # defect: the project's repository is not checked

@@ -1,0 +1,6 @@
+--- a/.veldo/control_assignment.py
++++ b/.veldo/control_assignment.py
+@@ -324,2 +324 @@
+-            judge = next((inbox for repository, inbox in served.items()
+-                          if isinstance(aid, str) and aid.startswith(assignment_id(repository, ''))), None)
++            judge = list(served.values())[-1]  # defect: the last inbox built judges every command

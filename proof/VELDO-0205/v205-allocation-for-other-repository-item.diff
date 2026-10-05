@@ -1,0 +1,5 @@
+--- a/.veldo/control_decomposition.py
++++ b/.veldo/control_decomposition.py
+@@ -90 +90 @@
+-        if item is not None and item.get('repository_uuid') != bl.ids['repository_uuid']:
++        if False:  # defect: another repository's item is allocated for

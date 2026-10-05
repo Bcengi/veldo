@@ -1,0 +1,2943 @@
+{
+ "all_by_assertion": true,
+ "all_named_rows_red": true,
+ "baseline": {
+  "details": [
+   "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+   "VELDO-0205 detail: proj-a chain: []",
+   "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+   "VELDO-0205 detail: proj-b chain: []",
+   "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+   "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+   "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+   "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+   "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+   "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+   "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+   "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+   "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+   "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+   "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+   "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+   "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+   "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+   "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+   "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+   "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+   "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+   "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+   "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+   "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+   "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+  ],
+  "failed_rows": [],
+  "preamble_rows": 26,
+  "rows": [
+   [
+    "VELDO-0205 pm/two-lines",
+    true
+   ],
+   [
+    "VELDO-0205 pm/same-repository-twice",
+    true
+   ],
+   [
+    "VELDO-0205 pm/unserved-repository",
+    true
+   ],
+   [
+    "VELDO-0205 lock/not-the-authority",
+    true
+   ],
+   [
+    "VELDO-0205 pm/cross-repository",
+    true
+   ],
+   [
+    "VELDO-0205 pm/views",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/one-repository",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/two-presentations",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/reply-routes",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/label-bound",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/addressed-by-project",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/unaddressed",
+    true
+   ],
+   [
+    "VELDO-0205 telegram/unserved-project",
+    true
+   ]
+  ],
+  "seconds": 11.905
+ },
+ "commit": "9ce23d4d4a77dfd86aaf04b105f5ce934b88e759",
+ "controls_green": true,
+ "mutants": [
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: [('team', False, 'wrong_repository', None)]",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/two-lines each connection keeps one transition per command, serving both repositories; proj-a: every command is accepted and committed with its own ids",
+    "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError)"
+   ],
+   "diff": "proof/VELDO-0205/v205-team-single-registration.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/two-lines",
+    "VELDO-0205 pm/unserved-repository"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "316fef2f873b742bfecf8f5e9ac23182cecc30d576d88cf200182ac308e2da69",
+   "name": "v205-team-single-registration",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/two-lines"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     false
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     false
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.939,
+   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: invalid_input",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/cross-repository a snapshot under A over B's accepted revision is refused snapshot_identity_mismatch, nothing changed (invalid_input)"
+   ],
+   "diff": "proof/VELDO-0205/v205-snapshot-skips-revision-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/cross-repository"
+   ],
+   "module": ".veldo/control_readset.py",
+   "mutant_sha256": "b16a90199d3ebdbe7c182ba8e68dc76a295cdb346267cd9de81a9cd9727ecdac",
+   "name": "v205-snapshot-skips-revision-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/cross-repository"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     false
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.243,
+   "source_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('answered', None)]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/reply-routes B's answer settles B's request by B's settlement, A's stays pending"
+   ],
+   "diff": "proof/VELDO-0205/v205-replies-settle-through-authority.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/reply-routes"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "5343dfbc37ee3d1d15ee7a8e454e778837749a307df0e8c9b8da08c5ff7ee11f",
+   "name": "v205-replies-settle-through-authority",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/reply-routes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.282,
+   "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: importer (0a0a0a0a)\\nProject: project-b\\nI took your message']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: proposed None ['Repository: importer (0a0a0a0a)\\nProject: project-c\\nI took your message']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/addressed-by-project each proposal records its own project's repository; each taken-as-work hint begins with its repository's label and names the project; only its own repository's snapshot inputs list each proposal",
+    "VELDO-0205 detail: telegram/unserved-project the message is refused missing_authority:repository_not_served; no proposal is written; the owner is told so in the hint"
+   ],
+   "diff": "proof/VELDO-0205/v205-proposal-records-authority-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/addressed-by-project",
+    "VELDO-0205 telegram/unserved-project"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "83e290c6f5ac76679b16f264ea5972bcd40f7ed88aeb37ec44f81a61c39182b0",
+   "name": "v205-proposal-records-authority-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/addressed-by-project"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     false
+    ]
+   ],
+   "seconds": 11.089,
+   "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: [('answer', False, 'invalid_record', None)]",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89-b', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 1} ['Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} []",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/two-lines proj-a: every command is accepted and committed with its own ids; proj-a: every record it wrote is stored with its own repository",
+    "VELDO-0205 detail: pm/unserved-repository assignment_operation for C is refused invalid_input:repository (raised:KeyError); assignment_operation for C is refused invalid_input:repository (raised:KeyError)",
+    "VELDO-0205 detail: pm/views proj-a: its accepted pm_snapshot_inputs holds its own decisions only; proj-b: its accepted pm_snapshot_inputs holds its own decisions only",
+    "VELDO-0205 detail: telegram/two-presentations the one bot sends two messages, one per repository's request; project-a's message begins with its own label",
+    "VELDO-0205 detail: telegram/reply-routes then A's answer settles A's request",
+    "VELDO-0205 detail: telegram/label-bound the receipt binds its label in the rendered bytes it digests",
+    "VELDO-0205 detail: telegram/addressed-by-project each taken-as-work hint begins with its repository's label and names the project"
+   ],
+   "diff": "proof/VELDO-0205/v205-inbox-last-registration-wins.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/two-lines",
+    "VELDO-0205 pm/unserved-repository",
+    "VELDO-0205 pm/views",
+    "VELDO-0205 telegram/two-presentations",
+    "VELDO-0205 telegram/reply-routes",
+    "VELDO-0205 telegram/label-bound",
+    "VELDO-0205 telegram/addressed-by-project"
+   ],
+   "module": ".veldo/control_assignment.py",
+   "mutant_sha256": "ff3846cba5090015a9746c3bf76e821cb1ef2eb75f5eb312c5f47593cf21d3ec",
+   "name": "v205-inbox-last-registration-wins",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/two-lines"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     false
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     false
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.044,
+   "source_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError)"
+   ],
+   "diff": "proof/VELDO-0205/v205-unserved-repository-judged.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/unserved-repository"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "11d7dca5bdeca14f0ed75f36c3b29a16499580715a441c39a810b45eb16251b0",
+   "name": "v205-unserved-repository-judged",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/unserved-repository"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     false
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.843,
+   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/same-repository-twice a second build of A's services is refused by name; the journal head and both registries are unchanged"
+   ],
+   "diff": "proof/VELDO-0205/v205-same-repository-builds-twice.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/same-repository-twice"
+   ],
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "mutant_sha256": "7c5d7316460a4e1f77d4d345e658e481f636f121ebe65dae078fb762d0be2ef8",
+   "name": "v205-same-repository-builds-twice",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/same-repository-twice"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     false
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.848,
+   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: invalid_registration:pm_services missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: lock/not-the-authority from_line refuses on connections whose process does not hold the lock"
+   ],
+   "diff": "proof/VELDO-0205/v205-pm-services-lock-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0205 lock/not-the-authority"
+   ],
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "mutant_sha256": "c74d2a0dbba1ec9287f904f6a26bdea813198c5a621df76e78b744135b29d7a0",
+   "name": "v205-pm-services-lock-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "lock/not-the-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     false
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 9.706,
+   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority None",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: lock/not-the-authority open_ingress refuses to register with that descriptor"
+   ],
+   "diff": "proof/VELDO-0205/v205-ingress-lock-unchecked.diff",
+   "failed_rows": [
+    "VELDO-0205 lock/not-the-authority"
+   ],
+   "module": ".veldo/control_channel_ingress.py",
+   "mutant_sha256": "fcd101b793e3a4f0aa0bcad0657452c037c0d5446826caa90826f3972bf12c0e",
+   "name": "v205-ingress-lock-unchecked",
+   "named_row_red": true,
+   "named_rows": [
+    "lock/not-the-authority"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     false
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.559,
+   "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: propose",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: propose",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/cross-repository a team propose under A's ids naming B's project is refused wrong_repository, nothing changed (propose); a team propose under B's ids naming A's project is refused wrong_repository, nothing changed (propose)"
+   ],
+   "diff": "proof/VELDO-0205/v205-team-ignores-project-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/cross-repository"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "84320290cfd8210fd48039c34b7c52bc20047f97868f37bcfd44eac3a7936628",
+   "name": "v205-team-ignores-project-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/cross-repository"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     false
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.041,
+   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: no_such_feature",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: no_such_feature",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/cross-repository a backlog take under A's ids of B's feature is refused wrong_repository, nothing changed (no_such_feature); a backlog take under B's ids of A's feature is refused wrong_repository, nothing changed (no_such_feature)"
+   ],
+   "diff": "proof/VELDO-0205/v205-take-ignores-project-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/cross-repository"
+   ],
+   "module": ".veldo/control_backlog.py",
+   "mutant_sha256": "0e87f362dd0a00ea8daa1ebdc57335ba93b90dab8dffe8ffd9fcf2a350bde14c",
+   "name": "v205-take-ignores-project-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/cross-repository"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     false
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.338,
+   "source_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: None",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/cross-repository an allocation under A's ids for B's item is refused wrong_repository, nothing changed (None)"
+   ],
+   "diff": "proof/VELDO-0205/v205-allocation-for-other-repository-item.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/cross-repository"
+   ],
+   "module": ".veldo/control_decomposition.py",
+   "mutant_sha256": "d1c4df99121b1e84c18eee0db2172bf4d647bfd57526732cd75b410abc3944cc",
+   "name": "v205-allocation-for-other-repository-item",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/cross-repository"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     false
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.969,
+   "source_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/views proj-a: its accepted pm_snapshot_inputs holds its own decisions only; proj-b: its accepted pm_snapshot_inputs holds its own decisions only"
+   ],
+   "diff": "proof/VELDO-0205/v205-snapshot-reads-every-decision.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/views"
+   ],
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "mutant_sha256": "b9dc2091af56a43c8a68d43ba0cf68309283c3df8ef2b580c35ff73303aca7a0",
+   "name": "v205-snapshot-reads-every-decision",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/views"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.722,
+   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-', 'Veldo needs your decision\\nRequest: assignment:0b0b0b0b-205b-']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/two-presentations project-a's message begins with its own label; project-b's message begins with its own label",
+    "VELDO-0205 detail: telegram/label-bound the receipt binds its label in the rendered bytes it digests; a receipt with the label omitted is presentation_mismatch"
+   ],
+   "diff": "proof/VELDO-0205/v205-presentation-unlabelled.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/two-presentations",
+    "VELDO-0205 telegram/label-bound"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9d994d88e3a846c768fd32bf533ea14cd029ed1f132ff961d979cfd687dbb602",
+   "name": "v205-presentation-unlabelled",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/two-presentations"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 9.818,
+   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-', 'Veldo needs your decision\\nRequest: assignment:0b0b0b0b-205b-']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/two-presentations project-a's message begins with its own label; project-b's message begins with its own label",
+    "VELDO-0205 detail: telegram/label-bound a receipt with the label omitted is presentation_mismatch; a receipt with the label changed is presentation_mismatch"
+   ],
+   "diff": "proof/VELDO-0205/v205-label-not-rendered.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/two-presentations",
+    "VELDO-0205 telegram/label-bound"
+   ],
+   "module": ".veldo/control_channel_presentation.py",
+   "mutant_sha256": "9b6557356915f0a4e93462dc38a93608296faa719dd63f4330134a1355cd59ba",
+   "name": "v205-label-not-rendered",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/label-bound"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 8.742,
+   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('refused', 'request_closed')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/reply-routes B's answer settles B's request by B's settlement, A's stays pending"
+   ],
+   "diff": "proof/VELDO-0205/v205-replies-decided-by-authority-presenter.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/reply-routes"
+   ],
+   "module": ".veldo/control_channel_attribution.py",
+   "mutant_sha256": "92fa5c1dbaa264b51262fbdabd69f4d589ece7a3a16d5752d2223ad9bd8ed047",
+   "name": "v205-replies-decided-by-authority-presenter",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/reply-routes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 8.816,
+   "source_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('refused', 'unavailable_service')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/reply-routes B's answer settles B's request by B's settlement, A's stays pending"
+   ],
+   "diff": "proof/VELDO-0205/v205-signer-only-configured-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/reply-routes"
+   ],
+   "module": ".veldo/control_signer_answers.py",
+   "mutant_sha256": "827018d7489d377bee1c228b49e64782fe8106dd053d536f6c0f42b30910e1c0",
+   "name": "v205-signer-only-configured-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/reply-routes"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 8.767,
+   "source_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: proposed None ['Repository: ledger (0c0c0c0c)\\nProject: project-c\\nI took your message a']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: telegram/unserved-project the message is refused missing_authority:repository_not_served; no proposal is written; the owner is told so in the hint"
+   ],
+   "diff": "proof/VELDO-0205/v205-unserved-project-taken.diff",
+   "failed_rows": [
+    "VELDO-0205 telegram/unserved-project"
+   ],
+   "module": ".veldo/control_intake.py",
+   "mutant_sha256": "470af25d8db9a4154de7397f15ff19e6fc767b917fc1b7e93270b476c37aa884",
+   "name": "v205-unserved-project-taken",
+   "named_row_red": true,
+   "named_rows": [
+    "telegram/unserved-project"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     false
+    ]
+   ],
+   "seconds": 8.78,
+   "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
+  }
+ ],
+ "mutations_per_row": {
+  "lock/not-the-authority": [
+   "v205-pm-services-lock-unchecked",
+   "v205-ingress-lock-unchecked"
+  ],
+  "pm/cross-repository": [
+   "v205-snapshot-skips-revision-repository",
+   "v205-team-ignores-project-repository",
+   "v205-take-ignores-project-repository",
+   "v205-allocation-for-other-repository-item"
+  ],
+  "pm/same-repository-twice": [
+   "v205-same-repository-builds-twice"
+  ],
+  "pm/two-lines": [
+   "v205-team-single-registration",
+   "v205-inbox-last-registration-wins"
+  ],
+  "pm/unserved-repository": [
+   "v205-unserved-repository-judged"
+  ],
+  "pm/views": [
+   "v205-snapshot-reads-every-decision"
+  ],
+  "telegram/addressed-by-project": [
+   "v205-proposal-records-authority-repository"
+  ],
+  "telegram/label-bound": [
+   "v205-label-not-rendered"
+  ],
+  "telegram/reply-routes": [
+   "v205-replies-settle-through-authority",
+   "v205-replies-decided-by-authority-presenter",
+   "v205-signer-only-configured-repository"
+  ],
+  "telegram/two-presentations": [
+   "v205-presentation-unlabelled"
+  ],
+  "telegram/unserved-project": [
+   "v205-unserved-project-taken"
+  ]
+ },
+ "noop": {
+  "control_assignment.py": {
+   "copy_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.5,
+   "source_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+  },
+  "control_backlog.py": {
+   "copy_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.58,
+   "source_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+  },
+  "control_channel_attribution.py": {
+   "copy_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.977,
+   "source_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748"
+  },
+  "control_channel_ingress.py": {
+   "copy_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.364,
+   "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
+  },
+  "control_channel_presentation.py": {
+   "copy_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.685,
+   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+  },
+  "control_decomposition.py": {
+   "copy_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 12.178,
+   "source_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633"
+  },
+  "control_intake.py": {
+   "copy_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.234,
+   "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
+  },
+  "control_readset.py": {
+   "copy_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.568,
+   "source_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+  },
+  "control_signer_answers.py": {
+   "copy_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 11.021,
+   "source_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e"
+  },
+  "control_team.py": {
+   "copy_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.177,
+   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+  },
+  "control_workflow_cycle_pm.py": {
+   "copy_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e",
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']"
+   ],
+   "failed_rows": [],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 10.974,
+   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+  }
+ },
+ "registry": "scripts/check_teeth_mutations.py --finding 205",
+ "schema": "veldo.proof-mutations/v1",
+ "serial_seconds": 318.709,
+ "spec_id": "VELDO-0205",
+ "suite": "scripts/suites/95_veldo_0205_multirepo.py"
+}

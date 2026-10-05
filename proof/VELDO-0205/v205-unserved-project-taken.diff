@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -580 +580 @@
+-            if project is not None and self.repositories is not None and repository not in self.repositories:
++            if False:  # defect: an unserved repository's project is taken

@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_presentation.py
++++ b/.veldo/control_channel_presentation.py
+@@ -404 +404 @@
+-    if record.get('repository_label') is not None:
++    if False:  # defect: the label is not in the bytes the digest covers

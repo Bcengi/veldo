@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake.py
++++ b/.veldo/control_intake.py
+@@ -579 +579 @@
+-            repository = self._repository(records.get(project) if project else factory)
++            repository = self.acquirer.ids['repository_uuid']  # defect: the configured repository, not the project's

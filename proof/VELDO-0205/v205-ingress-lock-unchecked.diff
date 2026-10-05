@@ -1,0 +1,5 @@
+--- a/.veldo/control_channel_ingress.py
++++ b/.veldo/control_channel_ingress.py
+@@ -246 +246 @@
+-    if lock is not None:
++    if False:  # defect: the lock holder is never asked

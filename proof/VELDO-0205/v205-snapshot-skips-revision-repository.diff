@@ -1,0 +1,5 @@
+--- a/.veldo/control_readset.py
++++ b/.veldo/control_readset.py
+@@ -263 +263 @@
+-        if data.get('domain_uuid') != self.domain_uuid or data.get('repository_uuid') != self.repository_uuid:
++        if data.get('domain_uuid') != self.domain_uuid:  # defect: another repository's revision is accepted

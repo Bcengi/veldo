@@ -44,6 +44,15 @@ footprint:
   - ".veldo/control_service_channel.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/control_team_routes.py"
+  - ".veldo/control_team_routes.py"
+  - "engine/.veldo/control_decomposition.py"
+  - ".veldo/control_decomposition.py"
+  - "engine/.veldo/control_intake_routes.py"
+  - ".veldo/control_intake_routes.py"
+  - "engine/.veldo/control_signer_answers.py"
+  - ".veldo/control_signer_answers.py"
+  - "scripts/suites/92_veldo_0088_pm_cycles.py"
   - "scripts/suites/*_veldo_0205_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -313,3 +322,27 @@ already binds, so no new configuration names a repository for display.
 2026-10-04: new specification for the second-repository blocker the VELDO-0088 fix recorded
 (invalid_registration:pm_services and the one-repository Telegram ingress), written and marked ready at
 the owner's request.
+
+2026-10-04: built on branch build-veldo-0205 (the VELDO-0088 fix branch merged with this specification).
+Teams, Inbox, the claim Receiver, ReadSets, the framing Presenter and Settlement now each keep one
+transition per command on their connection that hands it to the service of the repository it names
+(invalid_input:repository otherwise); ReadSets.execute adds its own repository_uuid and the read-set where
+gains dotted paths. from_line builds every line's services: it asks control_api_authority.authority_problem
+with the service's authority lock first, refuses only a second build of the same repository, attaches the
+one allocation authority over every line's repository, shares one Intake, and gives each line's Grooming
+its repository's ingress Inbox, Presenter and Settlement. open_ingress takes the served repositories and
+the lock, builds one gate and acquirer, and the Acquirer hands each reply to the presenter of the
+repository its receipt's request names. With more than one served repository, presentations, tells and
+hints begin with `Repository: <label>` (and `Project: <name>`), bound in the receipt's repository_label;
+with one, every byte is unchanged. Footprint additions, each needed by a criterion: control_team_routes
+(its owner_save command now carries the repository Teams is keyed by), control_decomposition (an allocation
+for another repository's item is refused wrong_repository, the AC2 allocation refusal, and its pending
+obligations are its own), control_intake_routes (a routed proposal records its project's repository and
+the unclear-route question labels each project), control_signer_answers (the protected signer signs an
+answer naming the repository whose request it answers, else no reply to a second repository could
+settle), and suite 92, whose followup/two-repositories row asserted the second-line refusal this
+specification removes; finding 88's v88-second-line-registers is retired with it, and findings 136 and
+138 keep their mutations with the anchors of the calls that now pass the served repositories. Proof:
+suite 95_veldo_0205_multirepo (13 rows), proof/VELDO-0205 (drive.py, red-at-01734c59.json: every
+behaviour row red by assertion; pm/same-repository-twice and telegram/one-repository hold there too, by
+design), and 18 finding 205 mutations, each red on its named row.

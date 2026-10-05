@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -328 +328 @@
+-            judge = served.get(params.get('repository_uuid'))
++            judge = served.get(params.get('repository_uuid')) or next(iter(served.values()))  # defect

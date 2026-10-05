@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -570 +570 @@
+-    if lock is not None:
++    if False:  # defect: the lock holder is never asked

@@ -1,0 +1,5 @@
+--- a/.veldo/control_signer_answers.py
++++ b/.veldo/control_signer_answers.py
+@@ -214 +214 @@
+-        and a['request_id'].startswith('assignment:%s:' % a['repository_uuid'])) else ids
++        and a['request_id'].startswith('assignment:%s:' % a['repository_uuid'])) and False else ids  # defect
