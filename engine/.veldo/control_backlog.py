@@ -355,16 +355,17 @@ def _serve(store, conn, service):
     earlier line's commands as its own, and a repository with no backlog on the connection is refused."""
     served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transaction_transition(conn, params, before):
             judge = served.get((params.get('command') or {}).get('repository_uuid'))
             if judge is None:
                 raise store.StoreRefused('invalid_input:repository', 'no backlog of this repository is on this connection')
+            handoffs.append({'operation': OPERATION, 'repository': judge.ids['repository_uuid']})
             return judge._in_transaction(conn, params, before)
 
         conn.command_registry[OPERATION] = {'transaction_transition': transaction_transition, 'writes': WRITES,
-                                            'repositories': served}
+                                            'repositories': served, 'handoffs': handoffs}
     served[service.ids['repository_uuid']] = service
 
 

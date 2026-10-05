@@ -24,7 +24,7 @@ def _v205_suite():
     import traceback
 
     names = ('pm/two-lines', 'pm/same-repository-twice', 'pm/unserved-repository', 'lock/not-the-authority',
-             'pm/cross-repository', 'pm/views',
+             'pm/cross-repository', 'pm/views', 'pm/observed',
              'telegram/one-repository', 'telegram/two-presentations', 'telegram/reply-routes', 'telegram/label-bound',
              'telegram/addressed-by-project', 'telegram/unaddressed', 'telegram/unserved-project')
     rows = {name: [] for name in names}
@@ -385,18 +385,58 @@ def _v205_suite():
                           [r['cycle'] for r in cycles[repository].records()] == ['v205-' + p['project']])
                     check('pm/views', '%s: the pending publication obligations are its own' % p['project'],
                           all(o[0] == repository for o in services['decomposition'].pending()))
+                # One dispatch per repository, written around execute: what each snapshot's dispatches read.
+                for repository in (A, B):
+                    data = {'state': 'exited', 'contract': {'repository': repository, 'station': 'v205-view'}}
+                    conn.execute('INSERT INTO entities (id, kind, version, digest, data) VALUES (?,?,?,?,?)', (
+                        'dispatch-v205-' + repository, 'dispatch', 1,
+                        S.digest_of({'kind': 'dispatch', 'version': 1, 'data': data}), json.dumps(data, sort_keys=True)))
+                conn.commit()
                 for repository, other_repository in ((A, B), (B, A)):
                     if repository not in cycles or repository not in made:
                         continue
                     snapshot = cycles[repository].snapshot(people[repository]['project']) or {}
                     inputs = (snapshot.get('data') or {}).get('inputs') or {}
                     decisions = [d['id'] for d in inputs.get('collection/decisions') or []]
-                    dispatches = [d['value']['data'] for d in inputs.get('collection/dispatches') or [] if d.get('value')]
-                    print('  VELDO-0205 detail: %s snapshot decisions:' % people[repository]['project'], decisions)
+                    dispatches = [d['id'] for d in inputs.get('collection/dispatches') or []]
+                    print('  VELDO-0205 detail: %s snapshot decisions:' % people[repository]['project'], decisions,
+                          'dispatches:', dispatches)
                     check('pm/views', '%s: its accepted pm_snapshot_inputs holds its own decisions only' % people[repository]['project'],
                           'assignment:%s:%s' % (repository, made[repository]['alias']) in decisions
-                          and not any(d.startswith('assignment:%s:' % other_repository) for d in decisions)
-                          and all(((d.get('contract') or {}).get('repository')) == repository for d in dispatches))
+                          and not any(d.startswith('assignment:%s:' % other_repository) for d in decisions))
+                    check('pm/views', '%s: its accepted pm_snapshot_inputs holds its own dispatch only' % people[repository]['project'],
+                          dispatches == ['dispatch-v205-' + repository])
+
+            # pm/observed: each keyed hand-off is recorded with its operation and the repository it went to,
+            # and each line's registrations are observed and counted by repository.
+            with section('pm/observed'):
+                keyed = {'service': (svc.conn, ('team_operation', 'assignment_operation', 'backlog_operation',
+                                                'accept_snapshot')),
+                         'ingress': (ing.conn, ('backlog_operation', 'grooming_operation'))}
+                for where, (connection, operations) in keyed.items():
+                    for operation in operations:
+                        handoffs = (connection.command_registry.get(operation) or {}).get('handoffs') or []
+                        print('  VELDO-0205 detail: %s %s hand-offs:' % (where, operation),
+                              sorted({(h.get('operation'), h.get('repository')) for h in handoffs}))
+                        check('pm/observed', 'the %s connection records each %s hand-off with the repository it went to'
+                              % (where, operation), all(h.get('operation') == operation for h in handoffs)
+                              and {h.get('repository') for h in handoffs} == {A, B})
+                counted = getattr(svc, 'pm_registrations', None) or {}
+                try:
+                    events = [json.loads(line) for line in Path(x['config']['observations']).read_text().splitlines()]
+                except OSError:
+                    events = []
+                logged = [e for e in events if e.get('operation') == 'pm_registration']
+                print('  VELDO-0205 detail: registrations counted:', counted)
+                for repository in (A, B):
+                    kinds = {'inbox', 'backlog', 'teams', 'decomposition', 'grooming', 'snapshot'}
+                    check('pm/observed', '%s: its registrations are counted once per service kind' % people[repository]['project'],
+                          kinds <= set(counted.get(repository) or {})
+                          and all(n == 1 for n in (counted.get(repository) or {}).values()))
+                    check('pm/observed', '%s: each registration is observed with its repository and connection'
+                          % people[repository]['project'],
+                          {(e.get('service'), e.get('connection')) for e in logged if e.get('repository') == repository}
+                          >= {(kind, 'ingress' if kind == 'grooming' else 'service') for kind in kinds})
             if svc.channel is not None:
                 svc.channel.close()
             os.close(lock)

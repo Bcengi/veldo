@@ -200,7 +200,7 @@ def _serve(conn, receiver):
     command, and a repository with no receiver on the connection is refused invalid_input:repository."""
     served = (conn.command_registry.get('claim_operation') or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transaction_transition(conn, params, before):
             cid = params.get('claim_id')
@@ -208,10 +208,12 @@ def _serve(conn, receiver):
                           if isinstance(cid, str) and cid.startswith(claim_id(repository, ''))), None)
             if judge is None:
                 raise S.StoreRefused('invalid_input:repository', 'no claim service of this repository is on this connection')
+            handoffs.append({'operation': 'claim_operation', 'repository': judge.ids['repository_uuid']})
             return judge.registration['claim_operation']['transaction_transition'](conn, params, before)
 
         conn.command_registry['claim_operation'] = dict(receiver.registration['claim_operation'],
-                                                        transaction_transition=transaction_transition, repositories=served)
+                                                        transaction_transition=transaction_transition, repositories=served,
+                                                        handoffs=handoffs)
     served[receiver.ids['repository_uuid']] = receiver
 
 

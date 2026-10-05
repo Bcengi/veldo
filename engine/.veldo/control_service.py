@@ -1501,7 +1501,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership'):
+        if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership', 'pm'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':

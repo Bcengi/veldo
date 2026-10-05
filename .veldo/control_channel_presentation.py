@@ -739,7 +739,7 @@ def _serve_frames(store, conn, presenter, guarded):
     that writes it, and a repository with no presenter on the connection is refused invalid_input:repository."""
     served = (conn.command_registry.get(FRAME_OPERATION) or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transition(params, before):
             request = params.get('request_id') if isinstance(params, dict) else None
@@ -747,10 +747,11 @@ def _serve_frames(store, conn, presenter, guarded):
                           if isinstance(request, str) and request.startswith('assignment:%s:' % repository)), None)
             if judge is None:
                 raise store.StoreRefused('invalid_input:repository', 'no presenter of this repository is on this connection')
+            handoffs.append({'operation': FRAME_OPERATION, 'repository': judge.ids['repository_uuid']})
             return guarded(judge._frame_transition)(params, before)
 
         conn.command_registry[FRAME_OPERATION] = {'transition': transition, 'writes': ('entities', 'journal', 'commands', 'nonces'),
-                                                  'repositories': served}
+                                                  'repositories': served, 'handoffs': handoffs}
     served[presenter.ids['repository_uuid']] = presenter
 
 

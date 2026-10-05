@@ -125,15 +125,17 @@ def _serve(store, conn, service):
     the connection is refused. What grooming asks of the backlog is judged the same way (control_backlog)."""
     served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transition(params, before):
             writer = served.get((params.get('record') or {}).get('repository_uuid'))
             if writer is None:
                 raise store.StoreRefused('invalid_input:repository', 'no grooming of this repository is on this connection')
+            handoffs.append({'operation': OPERATION, 'repository': writer.ids['repository_uuid']})
             return writer._transition(params, before)
 
-        conn.command_registry[OPERATION] = {'transition': transition, 'writes': WRITES, 'repositories': served}
+        conn.command_registry[OPERATION] = {'transition': transition, 'writes': WRITES, 'repositories': served,
+                                            'handoffs': handoffs}
     served[service.ids['repository_uuid']] = service
 
 

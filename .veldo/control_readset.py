@@ -135,7 +135,7 @@ def _keyed(store, conn, operation, reader, entry):
     set when it has exactly one. `entry` is the registration the first reader makes."""
     served = (conn.command_registry.get(operation) or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transaction_transition(conn, parameters, before):
             repository = parameters.get('repository_uuid') if isinstance(parameters, dict) else None
@@ -144,10 +144,11 @@ def _keyed(store, conn, operation, reader, entry):
             judge = served.get(repository)
             if judge is None:
                 raise store.StoreRefused('invalid_input:repository', 'no read set of this repository is on this connection')
+            handoffs.append({'operation': operation, 'repository': repository})
             return judge[1](conn, parameters, before)
 
         conn.command_registry[operation] = dict(entry, transaction_transition=transaction_transition,
-                                                repositories=served)
+                                                repositories=served, handoffs=handoffs)
     served[reader.repository_uuid] = (reader, entry['transaction_transition'])
 
 

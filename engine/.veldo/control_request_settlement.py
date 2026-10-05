@@ -160,18 +160,21 @@ def _serve(store, conn, service):
     for operation, (field, prefix, method) in keys.items():
         served = (conn.command_registry.get(operation) or {}).get('repositories')
         if not isinstance(served, dict):
-            served = {}
+            served, handoffs = {}, []
 
-            def transition(params, before, served=served, field=field, prefix=prefix, method=method):
+            def transition(params, before, served=served, handoffs=handoffs, operation=operation, field=field,
+                           prefix=prefix, method=method):
                 named = params.get(field) if isinstance(params, dict) else None
                 judge = next((one for repository, one in served.items()
                               if isinstance(named, str) and named.startswith(prefix(repository))), None)
                 if judge is None:
                     raise store.StoreRefused('invalid_input:repository',
                                              'no settlement of this repository is on this connection')
+                handoffs.append({'operation': operation, 'repository': judge.ids['repository_uuid']})
                 return method(judge)(params, before)
 
-            conn.command_registry[operation] = {'transition': transition, 'writes': WRITES, 'repositories': served}
+            conn.command_registry[operation] = {'transition': transition, 'writes': WRITES, 'repositories': served,
+                                                'handoffs': handoffs}
         served[service.ids['repository_uuid']] = service
 
 

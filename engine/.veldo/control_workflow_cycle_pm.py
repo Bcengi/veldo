@@ -621,7 +621,18 @@ def from_line(line):
             inbox=own[0], presenter=own[1], settlement=own[2],
             requester=(service.principal, signature), workspace=line.workspace,
             authority_generation=service.generation)
-    return ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
+    cycles = ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
         workspace=line.workspace, principal=service.principal, sign=service.sign, command_sign=signature,
         runner=line.runner, adapters=line.engines, services=services, generation=service.generation,
         execution_records=line.records, observe=service._log)
+    # VELDO-0205: one observation per PM service this line registered, counted by repository and kind.
+    registered = getattr(service, 'pm_registrations', None)
+    if registered is None:
+        registered = service.pm_registrations = {}
+    counted = registered.setdefault(line.repository, {})
+    for kind in sorted(services) + ['snapshot']:
+        counted[kind] = counted.get(kind, 0) + 1
+        service._log({'kind': 'pm', 'operation': 'pm_registration', 'at': time.time(), 'domain_uuid': service.domain,
+                      'repository': line.repository, 'connection': 'ingress' if kind == 'grooming' else 'service',
+                      'service': kind})
+    return cycles

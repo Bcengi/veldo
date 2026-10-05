@@ -317,7 +317,7 @@ def _serve(store, conn, service):
     repository with no inbox on the connection is refused invalid_input:repository."""
     served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
     if not isinstance(served, dict):
-        served = {}
+        served, handoffs = {}, []
 
         def transaction_transition(conn, params, before):
             aid = params.get('assignment_id')
@@ -325,11 +325,12 @@ def _serve(store, conn, service):
                           if isinstance(aid, str) and aid.startswith(assignment_id(repository, ''))), None)
             if judge is None:
                 raise store.StoreRefused('invalid_input:repository', 'no inbox of this repository is on this connection')
+            handoffs.append({'operation': OPERATION, 'repository': judge.ids['repository_uuid']})
             return judge._in_transaction(conn, params, before)
 
         conn.command_registry[OPERATION] = {'transaction_transition': transaction_transition,
                                             'writes': ('entities', 'journal', 'commands', 'nonces'),
-                                            'repositories': served}
+                                            'repositories': served, 'handoffs': handoffs}
     served[service.ids['repository_uuid']] = service
 
 
