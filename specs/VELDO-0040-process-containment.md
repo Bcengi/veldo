@@ -227,5 +227,5 @@ unreadable OOM counters, and groups emptying at or after the cap retain manager 
 cause precedence. The 0.75 second latency bound and zero idle wakes are unchanged.
 A deterministic delayed-manager row and three registered mutations protect this
 path and its empty-group deadline guard. Measurements and replay instructions
-are in proof/VELDO-0040/exit-notified.md. Full gate and finding 40 driver execution
+are in proof/VELDO-0040/exit-notified-summary.json. Full gate and finding 40 driver execution
 remain with the reviewer under this task's test restrictions.

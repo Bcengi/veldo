@@ -1,0 +1,125 @@
+{
+  "cause": "The pidfd notification is prompt. The subsequent synchronous Group.conclude systemctl query waits for the shared user manager during reloads, delaying the durable exit record.",
+  "evidence": {
+    "exit-notified-after-smoke.json": {
+      "sha256": "6623e02a05fe7a587beb79fda24f6d1080bd984280d1cb3f61ec906b1032346b",
+      "summary": {
+        "latency": {
+          "max": 0.005,
+          "min": 0.005,
+          "p50": 0.005,
+          "p95": 0.005
+        },
+        "passed": 1,
+        "reload_covered_exits": 1,
+        "scopes_created": 285,
+        "suite_passed": 1,
+        "total": 1,
+        "wakes": [
+          0
+        ]
+      }
+    },
+    "exit-notified-alone.json": {
+      "sha256": "118c143c0c10b94269d27fe017993eed3e1ea2d4e00dcacb9ae51797ad44f5e6",
+      "summary": {
+        "failed": 0,
+        "suite_passed": 56
+      }
+    },
+    "exit-notified-before-reloads.json": {
+      "sha256": "6190dbe96d7e4bdc4d45d66d37699214525189198701d05fdc64e7c4f11df920",
+      "summary": {
+        "latency": {
+          "max": 5.01,
+          "min": 2.234,
+          "p50": 2.345,
+          "p95": 2.422
+        },
+        "passed": 0,
+        "reload_covered_exits": 40,
+        "scopes_created": 10740,
+        "suite_passed": 0,
+        "total": 40,
+        "wakes": [
+          0
+        ]
+      }
+    },
+    "exit-notified-before-scopes.json": {
+      "sha256": "8f283c226e89b9ed6dc901f21dfa0a8e2cf15671f06d95daf2028763fc9b6db2",
+      "summary": {
+        "latency": {
+          "max": 0.068,
+          "min": 0.007,
+          "p50": 0.008,
+          "p95": 0.027
+        },
+        "passed": 40,
+        "suite_passed": 40,
+        "total": 40,
+        "wakes": [
+          0
+        ]
+      }
+    },
+    "exit-notified-before-serial.json": {
+      "sha256": "b992b372bbdd65910f30415fc37058b481188452cf885cef32f24c27d498db36",
+      "summary": {
+        "latency": {
+          "max": 0.014,
+          "min": 0.007,
+          "p50": 0.008,
+          "p95": 0.01
+        },
+        "passed": 40,
+        "suite_passed": 40,
+        "total": 40,
+        "wakes": [
+          0
+        ]
+      }
+    },
+    "exit-notified-original-regression.json": {
+      "sha256": "a86aab9d30fe10bf5544b7b41121a12df5bf00c6ca2163992fcf01ca0345603f",
+      "summary": {
+        "latency": {
+          "max": 0.008,
+          "min": 0.008,
+          "p50": 0.008,
+          "p95": 0.008
+        },
+        "passed": 1,
+        "reload_covered_exits": 0,
+        "scopes_created": 0,
+        "suite_passed": 0,
+        "total": 1,
+        "wakes": [
+          0
+        ]
+      }
+    }
+  },
+  "fix": "Use successful adapter exit, kernel-empty group before the installed activation deadline, no stop, and a readable final zero OOM counter as ordinary-exit evidence. Keep unread manager results absent. Retain manager settlement for ambiguous exits.",
+  "implementation_commit": "01778c04",
+  "limitations": [
+    "The explicit one-suite-at-a-time rule prevented the requested parallel-suite mix. Transient-scope churn reproduces shared-manager interference but does not claim the exact full gate workload.",
+    "The explicit prohibition on mutation-driver execution takes precedence over the later request to run finding 40. All 40 anchors were statically checked; rejection of the full inventory remains for the reviewer.",
+    "The full gate was not run."
+  ],
+  "method": {
+    "cleanup": "Temporary snapshots, homes, logs and traces are removed by TemporaryDirectory; suite fixtures stop their own slices and remove their own shm directories.",
+    "latency_precision": "Per-run row latency is rounded to milliseconds; the unchanged assertion uses original unrounded timestamps.",
+    "reloads": "A joined thread issues synchronous daemon-reload calls around the idle worker release until its exit row completes. The idle wake window precedes these reloads.",
+    "scope_load": "15 joined foreground workers repeatedly run transient systemd scopes, each containing sleep 0.5. Every subprocess is waited for.",
+    "snapshot": "Uses check_gate_mutations read_inputs, snapshot and fixed_env helpers without invoking a mutation driver. Production bytes in all before cohorts match 7aca8f15. Diagnostics time pidfd notification, manager queries and scope close.",
+    "suite_execution": "Only python3 scripts/selftest.py --suite 63_veldo_0040_containment, one copy at a time."
+  },
+  "specification": "VELDO-0040 AC3",
+  "status": "80-run combined stress proof in progress",
+  "unchanged_assertions": [
+    "state is exited",
+    "receiver_wakes == 0 over at least 1.5 seconds",
+    "0 <= recorded_at - exit_at < 0.75 seconds"
+  ]
+}

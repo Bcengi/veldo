@@ -1,0 +1,22 @@
+{
+  "bad_mutation_anchors": [],
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "63_veldo_0040_containment"
+  ],
+  "exit_code": 2,
+  "exit_note": "The selected-suite entry point returns 2 for a successful partial run.",
+  "failed": 0,
+  "implementation_commit": "01778c04",
+  "log_sha256": "8c9a69f12497e6a18f420e82b68483f1d7a5369442155ffc82e1183c7b78dc36",
+  "mutation_anchor_count": 40,
+  "shared_passed": 26,
+  "sources": {
+    ".veldo/control_containment.py": "7c52794ef504ad3896a07d2c4f35d36dfdb39badb1332d9b40a265e33493ef07",
+    ".veldo/control_launch.py": "16b40a77a8552288e64d4d71be07d08df9eea929ffcbda75c3386b529c0e2a3d",
+    "scripts/suites/63_veldo_0040_containment.py": "b1e8ebd58bb1c462df4d4dc25eab1b40a1218fbcebaf8bb8058f9bbeaee7283c"
+  },
+  "suite_passed": 56
+}

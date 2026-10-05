@@ -1,0 +1,167 @@
+{
+  "diagnostic_digests": {
+    ".veldo/control_containment.py": "c9d8466da92efb89643f49f612974aad8c0d930f49a096a2b84c62985c458716",
+    ".veldo/control_launch.py": "44ea8311f141189bd9074170ecaf1a0b7d0205555dc63c3c4a98b4c4eb28ad6a",
+    "scripts/suites/63_veldo_0040_containment.py": "a76b1192d1371a274a8344a3972a1f5b357903eb0fae0ad84b7e4dbb32023483"
+  },
+  "head": "01778c0463c18f79008b7f9eaa2f44992cd4b42c",
+  "input_digest": "44d7ded99ad630426071a479cfc82a7b089b89c1c3ad1f7fd8f52a52b9b2e8de",
+  "load": [
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.394483969081193,
+      "worker": 0
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.391021778341383,
+      "worker": 8
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.394460376817733,
+      "worker": 1
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.390582012012601,
+      "worker": 10
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.390608167275786,
+      "worker": 13
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.394500909838825,
+      "worker": 5
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.391152533236891,
+      "worker": 11
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.395151022821665,
+      "worker": 3
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.39215481095016,
+      "worker": 9
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.391179244033992,
+      "worker": 12
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.390951469074935,
+      "worker": 14
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.392714450601488,
+      "worker": 7
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.395821684971452,
+      "worker": 2
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.39502457017079,
+      "worker": 6
+    },
+    {
+      "failures": [],
+      "scopes": 19,
+      "seconds": 14.40048354677856,
+      "worker": 4
+    }
+  ],
+  "receiver_ref": null,
+  "reload": true,
+  "reloads": [
+    {
+      "code": 0,
+      "end": 1791217584.7386858,
+      "start": 1791217582.369364
+    }
+  ],
+  "runs": [
+    {
+      "code": 2,
+      "exit": {
+        "exit_at": 1791217582.4307008,
+        "idle_worker_alive_in_window": true,
+        "latency": 0.005,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217582.4356382,
+        "window_seconds": 1.97
+      },
+      "failed_assertions": [],
+      "failures": [],
+      "index": "run-000",
+      "log_sha256": "21f759bb7e6a4906f603b5c4765afee0a500eb5f2595aec9dccbf00f9d7a1cc3",
+      "observed_sha256": "df92341f1160691f9822d1390035615966f30104ccae71bc66c8ab5914f3f226",
+      "passed": true,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 13.747177653945982,
+      "timing": {
+        "_show_seconds": 0,
+        "close_seconds": 3.611203283071518e-05,
+        "conclude_seconds": 0,
+        "kernel_exit": true,
+        "memory_sampled": true,
+        "pidfd_after_exit": 0.0028839111328125,
+        "record_after_pidfd": 0.002053499221801758
+      },
+      "unit": "veldo-dispatch-efd238ceb51a6a8d444983453e7988f9.scope"
+    }
+  ],
+  "scope_load": 15,
+  "sources": {
+    ".veldo/control_containment.py": "7c52794ef504ad3896a07d2c4f35d36dfdb39badb1332d9b40a265e33493ef07",
+    ".veldo/control_launch.py": "16b40a77a8552288e64d4d71be07d08df9eea929ffcbda75c3386b529c0e2a3d",
+    "scripts/check_gate_mutations.py": "a84d341123cc64dc5e54464f915d3b8b7683111f8f5acba8aa7879db6758e8b7",
+    "scripts/suites/63_veldo_0040_containment.py": "b1e8ebd58bb1c462df4d4dc25eab1b40a1218fbcebaf8bb8058f9bbeaee7283c"
+  },
+  "summary": {
+    "latency": {
+      "max": 0.005,
+      "min": 0.005,
+      "p50": 0.005,
+      "p95": 0.005
+    },
+    "passed": 1,
+    "reload_covered_exits": 1,
+    "scopes_created": 285,
+    "suite_passed": 1,
+    "total": 1,
+    "wakes": [
+      0
+    ]
+  },
+  "trace_sha256": "9297c0d33b90b6089f91fe563c4ec64c7ea1b7f9afa456d323aba43cdc0b7e2f",
+  "workers": 1
+}

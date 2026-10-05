@@ -38,6 +38,8 @@ def timings(events, observation):
     pidfd = next((e['wall'] for e in own if e['event'] == 'pidfd'), None)
     result['pidfd_after_exit'] = pidfd - exit_at if pidfd else None
     result['record_after_pidfd'] = recorded - pidfd if recorded and pidfd else None
+    evidence = next((e for e in own if e['event'] == 'evidence'), {})
+    result.update({k: evidence[k] for k in ('memory_sampled', 'kernel_exit') if k in evidence})
     return result
 
 
@@ -47,6 +49,7 @@ def main():
     parser.add_argument('--workers', type=int, default=1)
     parser.add_argument('--reload', action='store_true')
     parser.add_argument('--scope-load', type=int, default=0)
+    parser.add_argument('--receiver-ref', help='rebuild a complete historical receiver against current rows')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
     # Import only snapshot/identity/environment helpers, never invoke either driver.
@@ -55,9 +58,12 @@ def main():
     spec.loader.exec_module(gate)
     files = gate.read_inputs(ROOT)
     head = gate.git(ROOT, 'rev-parse', 'HEAD')
+    if args.receiver_ref:
+        for name in ('.veldo/control_launch.py', 'engine/.veldo/control_launch.py'):
+            files[name] = (files[name][0], gate.git_bytes(ROOT, 'show', args.receiver_ref + ':' + name))
     result = dict(head=head, input_digest=gate.digest(dict(files=gate.file_identity(files), head=head)),
                   workers=args.workers, scope_load=args.scope_load, reload=args.reload, runs=[], reloads=[], load=[],
-                  sources={name: sha((ROOT / name).read_bytes()) for name in (
+                  receiver_ref=args.receiver_ref, sources={name: sha(files[name][1]) for name in (
                       '.veldo/control_launch.py', '.veldo/control_containment.py',
                       'scripts/suites/' + SUITE + '.py', 'scripts/check_gate_mutations.py')})
     with tempfile.TemporaryDirectory(prefix='exit-notified-') as directory:
@@ -95,6 +101,11 @@ for _name in ('conclude', '_show', 'close'):
         source = source.replace('                        adapter_exit_monotonic = time.monotonic()',
                                 '                        adapter_exit_monotonic = time.monotonic()\n'
                                 "                        _exit_trace('pidfd', group.unit if group else '')")
+        source = source.replace('        manager_result = result',
+                    "        _exit_trace('evidence', group.unit if group else '',\n"
+                    "                    memory_sampled=getattr(group, 'memory_sampled', None),\n"
+                    "                    kernel_exit=locals().get('kernel_exit'))\n"
+                    '        manager_result = result')
         target.write_text(source.replace('class Receiver:', helper + '\nclass Receiver:'))
         suite = snapshot / 'scripts/suites' / (SUITE + '.py')
         source = suite.read_text().replace('            emitted.add(label)',
@@ -192,6 +203,9 @@ for _name in ('conclude', '_show', 'close'):
         for row in result['runs']:
             own = [e for e in events if e['unit'] == row['unit']]
             row['timing'] = timings(own, row['exit'])
+            at = (row['exit'] or {}).get('exit_at')
+            row['reload_during_exit'] = any(r['start'] <= at <= r['end']
+                                          for r in result['reloads']) if at else False
         result['trace_sha256'] = sha(trace.read_bytes()) if trace.exists() else None
         values = sorted(r['exit']['latency'] for r in result['runs'] if r['exit'] and r['exit']['latency'] is not None)
         result['summary'] = dict(total=len(result['runs']),
@@ -200,6 +214,8 @@ for _name in ('conclude', '_show', 'close'):
               latency={k: values[min(len(values)-1, int((len(values)-1)*q))] for k, q in
                        [('min', 0), ('p50', .5), ('p95', .95), ('max', 1)]} if values else {},
               wakes=sorted(set(r['exit']['receiver_wakes'] for r in result['runs'] if r['exit'])))
+        result['summary']['reload_covered_exits'] = sum(r['reload_during_exit'] for r in result['runs'])
+        result['summary']['scopes_created'] = sum(r['scopes'] for r in result['load'])
         args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
         print(json.dumps(result['summary']), flush=True)
 

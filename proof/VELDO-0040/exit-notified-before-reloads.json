@@ -1,0 +1,1811 @@
+{
+  "diagnostic_digests": {
+    ".veldo/control_containment.py": "b47b09d506810955315959dbba0d98e26ba68ed5d1ead00a1d0d0d51958c01c7",
+    ".veldo/control_launch.py": "71959cb3335457a2d265cb537f64a2c463c51f61a8bb523751c45b5422c04be1",
+    "scripts/suites/63_veldo_0040_containment.py": "c4886c6a1d732198253b48f38c1ebe4580d7102b195aa6a2bc4dc2e23111e150"
+  },
+  "head": "d0b678a5026d527ce5160d43368361cd551b0df7",
+  "input_digest": "c9a3d218734169afbe2588d3eca691eca96412885427e36f6235f2f1ce3a1566",
+  "load": [
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0614939462394,
+      "worker": 9
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.063321578782,
+      "worker": 3
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0627617817372,
+      "worker": 5
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0627663149498,
+      "worker": 7
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0607825568877,
+      "worker": 12
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0626758979633,
+      "worker": 8
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0618862248957,
+      "worker": 11
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0648676897399,
+      "worker": 2
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0649358271621,
+      "worker": 4
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.064498113934,
+      "worker": 13
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0672305421904,
+      "worker": 10
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0697168158367,
+      "worker": 1
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0683238678612,
+      "worker": 6
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.065524332691,
+      "worker": 14
+    },
+    {
+      "failures": [],
+      "scopes": 716,
+      "seconds": 651.0707776257768,
+      "worker": 0
+    }
+  ],
+  "reload": true,
+  "reloads": [
+    {
+      "code": 0,
+      "end": 1791216691.374953,
+      "start": 1791216689.055875
+    },
+    {
+      "code": 0,
+      "end": 1791216694.0504267,
+      "start": 1791216691.380369
+    },
+    {
+      "code": 0,
+      "end": 1791216707.6436849,
+      "start": 1791216705.3238678
+    },
+    {
+      "code": 0,
+      "end": 1791216710.3180654,
+      "start": 1791216707.6490176
+    },
+    {
+      "code": 0,
+      "end": 1791216723.8667123,
+      "start": 1791216721.4947348
+    },
+    {
+      "code": 0,
+      "end": 1791216726.5932248,
+      "start": 1791216723.8720577
+    },
+    {
+      "code": 0,
+      "end": 1791216740.6273413,
+      "start": 1791216738.2063382
+    },
+    {
+      "code": 0,
+      "end": 1791216743.3529115,
+      "start": 1791216740.6327803
+    },
+    {
+      "code": 0,
+      "end": 1791216757.0075428,
+      "start": 1791216754.6869378
+    },
+    {
+      "code": 0,
+      "end": 1791216759.6327722,
+      "start": 1791216757.012952
+    },
+    {
+      "code": 0,
+      "end": 1791216773.1973338,
+      "start": 1791216770.8769503
+    },
+    {
+      "code": 0,
+      "end": 1791216775.7723389,
+      "start": 1791216773.2027872
+    },
+    {
+      "code": 0,
+      "end": 1791216789.384882,
+      "start": 1791216787.0654123
+    },
+    {
+      "code": 0,
+      "end": 1791216792.1596725,
+      "start": 1791216789.3903358
+    },
+    {
+      "code": 0,
+      "end": 1791216805.9822087,
+      "start": 1791216803.611902
+    },
+    {
+      "code": 0,
+      "end": 1791216808.7082224,
+      "start": 1791216805.9876976
+    },
+    {
+      "code": 0,
+      "end": 1791216822.359858,
+      "start": 1791216820.0900466
+    },
+    {
+      "code": 0,
+      "end": 1791216825.0850208,
+      "start": 1791216822.36531
+    },
+    {
+      "code": 0,
+      "end": 1791216838.751169,
+      "start": 1791216836.2312663
+    },
+    {
+      "code": 0,
+      "end": 1791216841.4266896,
+      "start": 1791216838.756702
+    },
+    {
+      "code": 0,
+      "end": 1791216855.1717298,
+      "start": 1791216852.8019595
+    },
+    {
+      "code": 0,
+      "end": 1791216857.8468442,
+      "start": 1791216855.177187
+    },
+    {
+      "code": 0,
+      "end": 1791216871.484012,
+      "start": 1791216869.1644633
+    },
+    {
+      "code": 0,
+      "end": 1791216874.1593974,
+      "start": 1791216871.4893954
+    },
+    {
+      "code": 0,
+      "end": 1791216887.4680629,
+      "start": 1791216885.1483965
+    },
+    {
+      "code": 0,
+      "end": 1791216890.042402,
+      "start": 1791216887.4736135
+    },
+    {
+      "code": 0,
+      "end": 1791216903.5688462,
+      "start": 1791216901.249173
+    },
+    {
+      "code": 0,
+      "end": 1791216906.2420537,
+      "start": 1791216903.574319
+    },
+    {
+      "code": 0,
+      "end": 1791216919.7174273,
+      "start": 1791216917.3982353
+    },
+    {
+      "code": 0,
+      "end": 1791216922.4433012,
+      "start": 1791216919.7228873
+    },
+    {
+      "code": 0,
+      "end": 1791216935.9033802,
+      "start": 1791216933.5844162
+    },
+    {
+      "code": 0,
+      "end": 1791216938.5782492,
+      "start": 1791216935.9087665
+    },
+    {
+      "code": 0,
+      "end": 1791216952.373337,
+      "start": 1791216950.001121
+    },
+    {
+      "code": 0,
+      "end": 1791216954.9996037,
+      "start": 1791216952.3789504
+    },
+    {
+      "code": 0,
+      "end": 1791216968.7384684,
+      "start": 1791216966.4189048
+    },
+    {
+      "code": 0,
+      "end": 1791216971.4636724,
+      "start": 1791216968.7438993
+    },
+    {
+      "code": 0,
+      "end": 1791216985.0153818,
+      "start": 1791216982.746222
+    },
+    {
+      "code": 0,
+      "end": 1791216987.6405444,
+      "start": 1791216985.0209436
+    },
+    {
+      "code": 0,
+      "end": 1791217000.6573045,
+      "start": 1791216998.38878
+    },
+    {
+      "code": 0,
+      "end": 1791217003.3326173,
+      "start": 1791217000.6628041
+    },
+    {
+      "code": 0,
+      "end": 1791217016.631546,
+      "start": 1791217014.3113549
+    },
+    {
+      "code": 0,
+      "end": 1791217019.20527,
+      "start": 1791217016.6370518
+    },
+    {
+      "code": 0,
+      "end": 1791217032.7862058,
+      "start": 1791217030.316417
+    },
+    {
+      "code": 0,
+      "end": 1791217035.411379,
+      "start": 1791217032.7917778
+    },
+    {
+      "code": 0,
+      "end": 1791217048.9375594,
+      "start": 1791217046.6174238
+    },
+    {
+      "code": 0,
+      "end": 1791217051.6133099,
+      "start": 1791217048.9430077
+    },
+    {
+      "code": 0,
+      "end": 1791217065.2228017,
+      "start": 1791217062.9028728
+    },
+    {
+      "code": 0,
+      "end": 1791217067.7976494,
+      "start": 1791217065.228224
+    },
+    {
+      "code": 0,
+      "end": 1791217081.2064598,
+      "start": 1791217078.9865274
+    },
+    {
+      "code": 0,
+      "end": 1791217083.9316907,
+      "start": 1791217081.2119057
+    },
+    {
+      "code": 0,
+      "end": 1791217097.3605895,
+      "start": 1791217095.090383
+    },
+    {
+      "code": 0,
+      "end": 1791217099.934869,
+      "start": 1791217097.366136
+    },
+    {
+      "code": 0,
+      "end": 1791217113.5427372,
+      "start": 1791217111.1740546
+    },
+    {
+      "code": 0,
+      "end": 1791217116.266618,
+      "start": 1791217113.548169
+    },
+    {
+      "code": 0,
+      "end": 1791217129.8411524,
+      "start": 1791217127.5206337
+    },
+    {
+      "code": 0,
+      "end": 1791217132.4661973,
+      "start": 1791217129.8468003
+    },
+    {
+      "code": 0,
+      "end": 1791217145.9160802,
+      "start": 1791217143.6473658
+    },
+    {
+      "code": 0,
+      "end": 1791217148.693161,
+      "start": 1791217145.9216201
+    },
+    {
+      "code": 0,
+      "end": 1791217162.5490844,
+      "start": 1791217160.2288084
+    },
+    {
+      "code": 0,
+      "end": 1791217165.2233067,
+      "start": 1791217162.554626
+    },
+    {
+      "code": 0,
+      "end": 1791217178.6911204,
+      "start": 1791217176.3705232
+    },
+    {
+      "code": 0,
+      "end": 1791217181.4174204,
+      "start": 1791217178.6972358
+    },
+    {
+      "code": 0,
+      "end": 1791217195.096048,
+      "start": 1791217192.6771014
+    },
+    {
+      "code": 0,
+      "end": 1791217197.771994,
+      "start": 1791217195.1016002
+    },
+    {
+      "code": 0,
+      "end": 1791217211.4251013,
+      "start": 1791217209.1047025
+    },
+    {
+      "code": 0,
+      "end": 1791217214.150169,
+      "start": 1791217211.4306908
+    },
+    {
+      "code": 0,
+      "end": 1791217227.6292436,
+      "start": 1791217225.358808
+    },
+    {
+      "code": 0,
+      "end": 1791217230.2551177,
+      "start": 1791217227.634819
+    },
+    {
+      "code": 0,
+      "end": 1791217244.6516788,
+      "start": 1791217242.330174
+    },
+    {
+      "code": 0,
+      "end": 1791217247.2770581,
+      "start": 1791217244.6571605
+    },
+    {
+      "code": 0,
+      "end": 1791217260.8202434,
+      "start": 1791217258.4997962
+    },
+    {
+      "code": 0,
+      "end": 1791217263.495517,
+      "start": 1791217260.825837
+    },
+    {
+      "code": 0,
+      "end": 1791217277.1801639,
+      "start": 1791217274.7589657
+    },
+    {
+      "code": 0,
+      "end": 1791217279.905449,
+      "start": 1791217277.1857338
+    },
+    {
+      "code": 0,
+      "end": 1791217293.576804,
+      "start": 1791217291.205621
+    },
+    {
+      "code": 0,
+      "end": 1791217296.302519,
+      "start": 1791217293.582293
+    },
+    {
+      "code": 0,
+      "end": 1791217309.8576686,
+      "start": 1791217307.5370936
+    },
+    {
+      "code": 0,
+      "end": 1791217312.481906,
+      "start": 1791217309.8631616
+    },
+    {
+      "code": 0,
+      "end": 1791217326.0612342,
+      "start": 1791217323.7419007
+    },
+    {
+      "code": 0,
+      "end": 1791217328.7367146,
+      "start": 1791217326.0668588
+    }
+  ],
+  "runs": [
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216689.117961,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.314,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216691.432344,
+        "window_seconds": 1.91
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-000",
+      "log_sha256": "d7a4cb7b688c231ceaef53d3f86e99e081ee70524406404b7bed790826714dd4",
+      "observed_sha256": "1a799c9f34e442c9355b587ffeba767e3a15900bd376a60a0cd2eb3fc777d7d1",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.304631215054542,
+      "timing": {
+        "_show_seconds": 2.309272169601172,
+        "close_seconds": 4.2922329157590866e-05,
+        "conclude_seconds": 2.309358965139836,
+        "pidfd_after_exit": 0.0030171871185302734,
+        "record_after_pidfd": 2.311365842819214
+      },
+      "unit": "veldo-dispatch-276a973d6581900c04b6f160a5ba98de.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216705.3770196,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.356,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216707.7332282,
+        "window_seconds": 1.85
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-001",
+      "log_sha256": "818cb317c52962f542d28a97c816673c62058ef465a585bbc2cfc65035c2817c",
+      "observed_sha256": "78a24f88285247f421abf94e834f5454d2fe799589617099081f0e1944a408ab",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.953014528844506,
+      "timing": {
+        "_show_seconds": 2.350603324826807,
+        "close_seconds": 3.170780837535858e-05,
+        "conclude_seconds": 2.350673692766577,
+        "pidfd_after_exit": 0.0029342174530029297,
+        "record_after_pidfd": 2.353274345397949
+      },
+      "unit": "veldo-dispatch-b4047604835c42d2b128626a3e962230.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216721.5545952,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.416,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216723.9705336,
+        "window_seconds": 1.85
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-002",
+      "log_sha256": "60dca7dfce842a8bbfd88871f79cdf5c3e152b827a04f152a4f27c8715cc7180",
+      "observed_sha256": "b66cec12106099dde2aa736f6cda523307dc883c3c11c3c98b4c999eff4cc812",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.6033469629474,
+      "timing": {
+        "_show_seconds": 2.410638501867652,
+        "close_seconds": 3.0314084142446518e-05,
+        "conclude_seconds": 2.4107284429483116,
+        "pidfd_after_exit": 0.0029752254486083984,
+        "record_after_pidfd": 2.4129631519317627
+      },
+      "unit": "veldo-dispatch-62b9d41b53a80b41e083566a1a827d6e.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216738.2736785,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.417,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216740.6909044,
+        "window_seconds": 1.93
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-003",
+      "log_sha256": "812032fdb6386d223210caab0f746ead2c46bd92fd39d7cbee42429e8189a95e",
+      "observed_sha256": "cef2b1283aee9d08be9e6585c03fac713af46d643719b2086980af0d17de2475",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.80556079186499,
+      "timing": {
+        "_show_seconds": 2.4123853971250355,
+        "close_seconds": 2.9243063181638718e-05,
+        "conclude_seconds": 2.4124575089663267,
+        "pidfd_after_exit": 0.0030548572540283203,
+        "record_after_pidfd": 2.414170980453491
+      },
+      "unit": "veldo-dispatch-e2942632aa08cac1451f738bc9d0efa3.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216754.7577653,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.311,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216757.069147,
+        "window_seconds": 1.83
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-004",
+      "log_sha256": "3bf90275b887433f552d6c07fc5ae2688b8ea0da40d6a655903f15c1bc48125c",
+      "observed_sha256": "15bc74caea55eb08faf3f1be6f64d7ff8fcd796328999ff8071badc85838de42",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.15762462373823,
+      "timing": {
+        "_show_seconds": 2.306303190998733,
+        "close_seconds": 3.057112917304039e-05,
+        "conclude_seconds": 2.3063756190240383,
+        "pidfd_after_exit": 0.0030515193939208984,
+        "record_after_pidfd": 2.3083302974700928
+      },
+      "unit": "veldo-dispatch-2ba6c1b735d62fa68e00fb7379f49101.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216770.9382021,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.315,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216773.252793,
+        "window_seconds": 1.84
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-005",
+      "log_sha256": "ea04c6ac1532e536bc0245fd8954a9ff1afe1a5eff7dc8c7d4a9efc0e45fda1b",
+      "observed_sha256": "c39f0514700564407ace1b8236298ce857186c9c32a5f866f9ea73f69b111d3b",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.95339093497023,
+      "timing": {
+        "_show_seconds": 2.3088114131242037,
+        "close_seconds": 2.8695911169052124e-05,
+        "conclude_seconds": 2.308883191086352,
+        "pidfd_after_exit": 0.003619670867919922,
+        "record_after_pidfd": 2.310971260070801
+      },
+      "unit": "veldo-dispatch-05c26e1e392f4da873eefc848bfb0d50.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216787.1220684,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.377,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216789.4992824,
+        "window_seconds": 1.96
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-006",
+      "log_sha256": "c0bf70c0ebd91e32dc4ffccd25e61c45ea09c21cea68fee8c6794ee037febba7",
+      "observed_sha256": "6f288d3adbed175d05e8afa626fb43c254a54e6528fe6ba1dd1a7d8da4395e36",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.709713665302843,
+      "timing": {
+        "_show_seconds": 2.37233743397519,
+        "close_seconds": 2.9869843274354935e-05,
+        "conclude_seconds": 2.372409829404205,
+        "pidfd_after_exit": 0.002984285354614258,
+        "record_after_pidfd": 2.374229669570923
+      },
+      "unit": "veldo-dispatch-0fc8f1dc41eada366402d0a536be064f.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216803.6669307,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.418,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216806.0849745,
+        "window_seconds": 1.83
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-007",
+      "log_sha256": "333e1f3f85bdd66062811beb4202c3afd979a58d724062bba39e79fb07f770d5",
+      "observed_sha256": "7186beca245ed68dedc1c8050f17a2b694091923595e9ae8f7c57d1eefeef173",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.555760813876987,
+      "timing": {
+        "_show_seconds": 2.413073319941759,
+        "close_seconds": 3.070663660764694e-05,
+        "conclude_seconds": 2.4131451626308262,
+        "pidfd_after_exit": 0.0029714107513427734,
+        "record_after_pidfd": 2.415072441101074
+      },
+      "unit": "veldo-dispatch-3b16bbe75777e8b596bd3e7b4ab2d965.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216820.1642303,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.281,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216822.445703,
+        "window_seconds": 1.84
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-008",
+      "log_sha256": "3b9a7dd61c0a03c6095d1723224251ad92a1a75b026ba43a151152441af0e9e1",
+      "observed_sha256": "7c175d4c17533c2eba3ce07c7cfc4809f7212321a7e3b32e53c33783bbcebecf",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.1075471281074,
+      "timing": {
+        "_show_seconds": 2.2763376692309976,
+        "close_seconds": 3.139488399028778e-05,
+        "conclude_seconds": 2.2764081470668316,
+        "pidfd_after_exit": 0.00313568115234375,
+        "record_after_pidfd": 2.278337001800537
+      },
+      "unit": "veldo-dispatch-f188495d3d20a062a24d9e343b772bf0.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216836.2893178,
+        "idle_worker_alive_in_window": true,
+        "latency": 5.01,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216841.2996373,
+        "window_seconds": 1.88
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-009",
+      "log_sha256": "1e420c4979eb1a4865cf4fa5cef28129f2d32d485cb52fa5d77d2866a694438a",
+      "observed_sha256": "9b323e0f4c4fd1ea75927324ae37098fbe458f51ed7a8333a662e426003f0261",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.556718590669334,
+      "timing": {
+        "_show_seconds": 5.005393114872277,
+        "close_seconds": 3.320397809147835e-05,
+        "conclude_seconds": 5.005533162970096,
+        "pidfd_after_exit": 0.0030171871185302734,
+        "record_after_pidfd": 5.007302284240723
+      },
+      "unit": "veldo-dispatch-7b3b2a746b0911c739f4c23c814df49d.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216852.8648407,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.378,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216855.242759,
+        "window_seconds": 1.86
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-010",
+      "log_sha256": "a46783e926e8f3edfe775975b2872e037affce367f4bd7d9e5a2610915a3485e",
+      "observed_sha256": "88e1266c7d918f2d4fa522ad7681d9823855e1f8117b2ece675739e4723ebae6",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.45528703695163,
+      "timing": {
+        "_show_seconds": 2.3728131968528032,
+        "close_seconds": 3.289105370640755e-05,
+        "conclude_seconds": 2.372888416983187,
+        "pidfd_after_exit": 0.003243684768676758,
+        "record_after_pidfd": 2.3746745586395264
+      },
+      "unit": "veldo-dispatch-4aebe83b1e7a7d471d8ad6fcbd7bc35c.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216869.2320786,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.347,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216871.5789082,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-011",
+      "log_sha256": "f4684979dcf3c99e8af621adb28fd7d919f942652b45b60fd61da6156b552d7e",
+      "observed_sha256": "ad458a5ce79f3423782d12c9c0eb2867a9d20ee0cfb3ce06da15a9ed52820ac9",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.007506408262998,
+      "timing": {
+        "_show_seconds": 2.3420533491298556,
+        "close_seconds": 3.109220415353775e-05,
+        "conclude_seconds": 2.3421283811330795,
+        "pidfd_after_exit": 0.0030488967895507812,
+        "record_after_pidfd": 2.343780755996704
+      },
+      "unit": "veldo-dispatch-bc951520ff907f87c776a63c13e09eb2.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216885.2162619,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.342,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216887.55788,
+        "window_seconds": 1.82
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-012",
+      "log_sha256": "0e343027640ae328ad2a50988e95ae3783df5116adf91eba7b3a3236583688be",
+      "observed_sha256": "d6f6b08802df10c5e08b02392493b103335e20dddd80824d8e5dba1f05ebfd7f",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.104242001194507,
+      "timing": {
+        "_show_seconds": 2.3368928330019116,
+        "close_seconds": 3.1291041523218155e-05,
+        "conclude_seconds": 2.336961719673127,
+        "pidfd_after_exit": 0.002994537353515625,
+        "record_after_pidfd": 2.338623523712158
+      },
+      "unit": "veldo-dispatch-68ff922a446abbc2a98162b959442477.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216901.3137245,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.349,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216903.6630628,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-013",
+      "log_sha256": "dfda2a04ae557bc62a70165ad937c7840d748c755fcd8b424fbd19bc610df6d6",
+      "observed_sha256": "487ea2d629f6a1f89459327dbbcb2946ed46201c3c7771a249a98e52d537b91e",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.150885555893183,
+      "timing": {
+        "_show_seconds": 2.3434514668770134,
+        "close_seconds": 3.1522009521722794e-05,
+        "conclude_seconds": 2.3435284453444183,
+        "pidfd_after_exit": 0.0030379295349121094,
+        "record_after_pidfd": 2.3463003635406494
+      },
+      "unit": "veldo-dispatch-f5b1b396a89123932fce962bbffe785e.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216917.4569137,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.359,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216919.8160646,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-014",
+      "log_sha256": "7727b96d77c8f46a780d0ef1faa4ca842d1c9c3ffe1efbf15309317ac136367f",
+      "observed_sha256": "a591e5badfaecff7cb580356493656d06a56555397473fcae2b096398bba8aad",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.201857164036483,
+      "timing": {
+        "_show_seconds": 2.3538423641584814,
+        "close_seconds": 3.144005313515663e-05,
+        "conclude_seconds": 2.3539221873506904,
+        "pidfd_after_exit": 0.0032951831817626953,
+        "record_after_pidfd": 2.355855703353882
+      },
+      "unit": "veldo-dispatch-f941736b29920bdcb4e3be7c9825b898.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216933.6488667,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.347,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216935.9955094,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-015",
+      "log_sha256": "5c06f2913cb58846cb26cac4dfa1e407b0cedfb3369ee633110a38a3d53d0da2",
+      "observed_sha256": "298b71d5af80c013ab9ff0620ba66c2421729c61863ca81cc7b76131d1c2d045",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.207065035123378,
+      "timing": {
+        "_show_seconds": 2.3416638877242804,
+        "close_seconds": 3.1478237360715866e-05,
+        "conclude_seconds": 2.3417454441078007,
+        "pidfd_after_exit": 0.0030672550201416016,
+        "record_after_pidfd": 2.3435754776000977
+      },
+      "unit": "veldo-dispatch-aef116d95ee5d1292f3adcae273cf51f.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216950.060674,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.415,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216952.4759514,
+        "window_seconds": 1.86
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-016",
+      "log_sha256": "d230ebd943af9bebf5b85241e4282c02f87ca6ceddac64b882e9ca08a90109c2",
+      "observed_sha256": "89e35c354e8541c2d3d301bddebb950eff7bb51545c1b38665df3c7f34aad9f3",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.310409183148295,
+      "timing": {
+        "_show_seconds": 2.4097780701704323,
+        "close_seconds": 3.31047922372818e-05,
+        "conclude_seconds": 2.409843474626541,
+        "pidfd_after_exit": 0.003612041473388672,
+        "record_after_pidfd": 2.411665439605713
+      },
+      "unit": "veldo-dispatch-1db014a76ea3dc1e4bb4e61cc89aea96.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216966.4816499,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.377,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216968.858582,
+        "window_seconds": 1.88
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-017",
+      "log_sha256": "c8457b37ae1a79864ca0deb9afff21d0ea0b2cf1ca52d20151a68086cdc7c7a1",
+      "observed_sha256": "a1f9006ecaee350c780da69ca6fd118ba93d4569d927931bf952b7beb34df773",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.55427619162947,
+      "timing": {
+        "_show_seconds": 2.37163816485554,
+        "close_seconds": 2.9477756470441818e-05,
+        "conclude_seconds": 2.3717249208129942,
+        "pidfd_after_exit": 0.003001689910888672,
+        "record_after_pidfd": 2.3739304542541504
+      },
+      "unit": "veldo-dispatch-255109f0132662b79543425cd39ea875.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216982.8148973,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.296,
+        "receiver_wakes": 0,
+        "recorded_at": 1791216985.1107805,
+        "window_seconds": 1.84
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-018",
+      "log_sha256": "7ce6ccae54417d16161b5e27ab9a4d9c4a23c36d973a1f16e9c8ad5357b73a98",
+      "observed_sha256": "8774d1780f5099d9844eebe5d7da92e0d818117b3346502d81a26c2f5477b726",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.757909215986729,
+      "timing": {
+        "_show_seconds": 2.290695862378925,
+        "close_seconds": 2.8235837817192078e-05,
+        "conclude_seconds": 2.290773709770292,
+        "pidfd_after_exit": 0.0031173229217529297,
+        "record_after_pidfd": 2.2927658557891846
+      },
+      "unit": "veldo-dispatch-d1170c9d00b0685c9e845c1d70a03b8a.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791216998.4539986,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.304,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217000.7582543,
+        "window_seconds": 1.86
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-019",
+      "log_sha256": "3508866630f74134020f27bce0386c934bca4863d9018ff31ae806f466636f6e",
+      "observed_sha256": "059cfe4cae63780b3112bb1ed7fe78817a1c24d2e9f7f2faa54f51ed8b56942a",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.804470645263791,
+      "timing": {
+        "_show_seconds": 2.2988308649510145,
+        "close_seconds": 3.5466160625219345e-05,
+        "conclude_seconds": 2.298910065088421,
+        "pidfd_after_exit": 0.0030999183654785156,
+        "record_after_pidfd": 2.3011558055877686
+      },
+      "unit": "veldo-dispatch-a0d709fb55bcb4e4a1a37332a3ab9852.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217014.3664474,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.348,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217016.7148173,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-020",
+      "log_sha256": "11e24611837e896a8a13d4b14b20bd33bc3e3ade2a634ee8ad4e06d2c4edffbd",
+      "observed_sha256": "ff91c0e34534d929d7aaae000636dfbc1760073525d854b5daed3702601dc05d",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.951198401860893,
+      "timing": {
+        "_show_seconds": 2.342894107569009,
+        "close_seconds": 3.0627939850091934e-05,
+        "conclude_seconds": 2.3429692653007805,
+        "pidfd_after_exit": 0.002955198287963867,
+        "record_after_pidfd": 2.345414638519287
+      },
+      "unit": "veldo-dispatch-46b2ed8de8f881a5b537de25716925a3.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217030.383804,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.497,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217032.8812757,
+        "window_seconds": 1.85
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-021",
+      "log_sha256": "e8f787041a2bf567c94e7f4f0f30315f3bb014c023ecd987c6cda3b2cc0b0cdc",
+      "observed_sha256": "0748f0e6605dc013932eb13b82b63d765749af38db38628e04cece06b815ec59",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.452937874011695,
+      "timing": {
+        "_show_seconds": 2.49253486096859,
+        "close_seconds": 3.0149240046739578e-05,
+        "conclude_seconds": 2.4926055213436484,
+        "pidfd_after_exit": 0.0029621124267578125,
+        "record_after_pidfd": 2.49450945854187
+      },
+      "unit": "veldo-dispatch-104bbe501dcdd09579e06c19eef04146.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217046.6847944,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.334,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217049.0183885,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-022",
+      "log_sha256": "5ec18b0e2060a971a1f7cec1617081bd3b02be2d252b360c42e7d5d3edef1b47",
+      "observed_sha256": "f73a1623f571d7d0f0f89834512e8a63b76a2949743adb4933f57c9d3fdf847c",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.201707591302693,
+      "timing": {
+        "_show_seconds": 2.3282971791923046,
+        "close_seconds": 2.971198409795761e-05,
+        "conclude_seconds": 2.328382282052189,
+        "pidfd_after_exit": 0.002872943878173828,
+        "record_after_pidfd": 2.330721139907837
+      },
+      "unit": "veldo-dispatch-e6440a0e4bdd469001c8a073743ff13a.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217062.9745717,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.308,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217065.2829542,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-023",
+      "log_sha256": "0c7251252c67d2fabf95d30927243a321f3ef30a121e75bf8a7756b5d8acf574",
+      "observed_sha256": "2ebdda870c8babcc336c9c9d41220d027de6f897df67ce282f77c47caabfd12e",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.15169770643115,
+      "timing": {
+        "_show_seconds": 2.303562509827316,
+        "close_seconds": 3.106333315372467e-05,
+        "conclude_seconds": 2.303640187717974,
+        "pidfd_after_exit": 0.003049612045288086,
+        "record_after_pidfd": 2.305332899093628
+      },
+      "unit": "veldo-dispatch-23d0b406a7240fc363de534aea66b863.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217079.0436738,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.234,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217081.2772324,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-024",
+      "log_sha256": "2794b0bd8dc3e163b504f06520fd742dc34e6c6ee3959c3abe0592c4dda53e84",
+      "observed_sha256": "dbecbe7bde6e295b608a688c79026adf37af1dd111b4b11cb5f9d7d4b9f57f9a",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.103179385885596,
+      "timing": {
+        "_show_seconds": 2.2279524100013077,
+        "close_seconds": 3.6778394132852554e-05,
+        "conclude_seconds": 2.2280342411249876,
+        "pidfd_after_exit": 0.0029807090759277344,
+        "record_after_pidfd": 2.2305779457092285
+      },
+      "unit": "veldo-dispatch-1dd945ff084e2d4911b21c88a79d2d63.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217095.15559,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.276,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217097.4319065,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-025",
+      "log_sha256": "a83d66e8457b9dec43c926d0b8ca69cefc3bdeae14127ea9d4c44d2449eae0b9",
+      "observed_sha256": "67c4f65c6ccacd84af1f02743497641582fbec87622d8b241da850282155d5cc",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 15.902979959733784,
+      "timing": {
+        "_show_seconds": 2.271432696841657,
+        "close_seconds": 3.0765775591135025e-05,
+        "conclude_seconds": 2.2714996756985784,
+        "pidfd_after_exit": 0.0031585693359375,
+        "record_after_pidfd": 2.273157835006714
+      },
+      "unit": "veldo-dispatch-746aeb08d2fb487ada49f6cd88f1cd71.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217111.2296999,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.417,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217113.6465285,
+        "window_seconds": 1.85
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-026",
+      "log_sha256": "3377635466c12b46be7700d6d3c4d999c096a38d3b37ba7956fc703f9150b474",
+      "observed_sha256": "10cb57204560c33ca536f3cb8f208984d400fd1866d1fc784919d6885897cbc6",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.5022608442232,
+      "timing": {
+        "_show_seconds": 2.410859289113432,
+        "close_seconds": 3.631226718425751e-05,
+        "conclude_seconds": 2.4109307234175503,
+        "pidfd_after_exit": 0.00414586067199707,
+        "record_after_pidfd": 2.4126827716827393
+      },
+      "unit": "veldo-dispatch-a93bd27551ef5e6ab9ada5e11ef26a12.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217127.58831,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.341,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217129.9296806,
+        "window_seconds": 1.85
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-027",
+      "log_sha256": "ebef8c777a50bf6ef898e8eb35ab0e3f1679bc72dc1eee6a04407cd2653c157a",
+      "observed_sha256": "58c707dea6dab3196c17f1dc60266f67fccf0669720c1af285004bff095d7927",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.151299722027034,
+      "timing": {
+        "_show_seconds": 2.3364179600030184,
+        "close_seconds": 4.377216100692749e-05,
+        "conclude_seconds": 2.3364950180985034,
+        "pidfd_after_exit": 0.002913951873779297,
+        "record_after_pidfd": 2.338456630706787
+      },
+      "unit": "veldo-dispatch-3fc1c5078e78257e5dfbc94108266e80.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217143.70975,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.285,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217145.9946768,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-028",
+      "log_sha256": "96175614fa058a324d953794194e5abfd96359bee802b449b125bbee3b9a762b",
+      "observed_sha256": "cf4ed4090c377dce574844ddf02876f76cca01d09eebafdfb9f100c5783f2f91",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.507185004185885,
+      "timing": {
+        "_show_seconds": 2.2802191744558513,
+        "close_seconds": 2.866983413696289e-05,
+        "conclude_seconds": 2.2802907712757587,
+        "pidfd_after_exit": 0.002969026565551758,
+        "record_after_pidfd": 2.2819578647613525
+      },
+      "unit": "veldo-dispatch-67073002d9b4e627f10ec3179e64ec7f.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217160.2976322,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.333,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217162.6304219,
+        "window_seconds": 1.8
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-029",
+      "log_sha256": "ee7b78db6749cf7cf7e5db9994909ddb5f396bc6c6aedbc262277dbb678df33a",
+      "observed_sha256": "8daa0ebae44172589436885e31de3f4b462993964ecfe0d8190222681201322c",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.10873161116615,
+      "timing": {
+        "_show_seconds": 2.3271523020230234,
+        "close_seconds": 2.9764138162136078e-05,
+        "conclude_seconds": 2.3272216110490263,
+        "pidfd_after_exit": 0.003022909164428711,
+        "record_after_pidfd": 2.3297667503356934
+      },
+      "unit": "veldo-dispatch-4710cc8e34a13d236732167582f28059.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217176.4411728,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.328,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217178.7691681,
+        "window_seconds": 1.82
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-030",
+      "log_sha256": "3c58c99a9423dca79d2f8b18b4fabf238af6df8164e91c9741ccaa5beba2e3f8",
+      "observed_sha256": "2ed158e381e748e3c2780f0ccea96771ea58a934d1040dfc5fdd7871234b08d7",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.206899653188884,
+      "timing": {
+        "_show_seconds": 2.3226067502982914,
+        "close_seconds": 3.60412523150444e-05,
+        "conclude_seconds": 2.3226799299009144,
+        "pidfd_after_exit": 0.003222227096557617,
+        "record_after_pidfd": 2.324773073196411
+      },
+      "unit": "veldo-dispatch-524ef36dc0d7e4febe6dd1a5550624ae.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217192.7363043,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.422,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217195.1587853,
+        "window_seconds": 1.87
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-031",
+      "log_sha256": "85ba2961049fb44733768b8e74b70de9755e11ac0be339e1093f8e0692f01e9e",
+      "observed_sha256": "a884ee623be32129dca90318c7b65d0e8bb8fea527336b4086dbadb488d4d5b7",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.55551615310833,
+      "timing": {
+        "_show_seconds": 2.4173655891790986,
+        "close_seconds": 2.9593240469694138e-05,
+        "conclude_seconds": 2.4174406067468226,
+        "pidfd_after_exit": 0.003017425537109375,
+        "record_after_pidfd": 2.419463634490967
+      },
+      "unit": "veldo-dispatch-36e65d9a435569ca5e2dfea967c935b0.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217209.1566188,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.37,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217211.527015,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-032",
+      "log_sha256": "b53620d38cfaf396c36c85a9abd5e3e0c27f582e42b642e88b2b46d5ed54fb69",
+      "observed_sha256": "f3418c36b34b77db86563de28375f399510f2896621fe6c82f301470d66c11f0",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.360471948981285,
+      "timing": {
+        "_show_seconds": 2.364335548132658,
+        "close_seconds": 3.123283386230469e-05,
+        "conclude_seconds": 2.3644061950035393,
+        "pidfd_after_exit": 0.003360748291015625,
+        "record_after_pidfd": 2.367035388946533
+      },
+      "unit": "veldo-dispatch-ff6e6813e4400b4fd84e4ec7a27c0380.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217225.420018,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.308,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217227.7280743,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-033",
+      "log_sha256": "35dca3caf8d5d4c1c962ace7ab1b66a27fe06f0d9f41c6f924bccf5cb2a7ebe1",
+      "observed_sha256": "3c2f6fcc5bc9228f5358cf17fce6c0c36056d849889bb8e09f0a479ef5558e68",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.80403535393998,
+      "timing": {
+        "_show_seconds": 2.303225096780807,
+        "close_seconds": 2.956204116344452e-05,
+        "conclude_seconds": 2.3032967508770525,
+        "pidfd_after_exit": 0.0030107498168945312,
+        "record_after_pidfd": 2.3050456047058105
+      },
+      "unit": "veldo-dispatch-75deef50c82e1c199dd8620c2bd8c53f.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217242.3924541,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.325,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217244.717719,
+        "window_seconds": 1.86
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-034",
+      "log_sha256": "01387f1574ad53badc7d676f0d689cbbf6fa070306de12adf48081734ff25ee6",
+      "observed_sha256": "9a853e61c3b7e179ac358b67e80ce907948e5fee3b0a290b69c00deb3988f28b",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.255664184689522,
+      "timing": {
+        "_show_seconds": 2.317281958181411,
+        "close_seconds": 3.221677616238594e-05,
+        "conclude_seconds": 2.3206662056036294,
+        "pidfd_after_exit": 0.0030295848846435547,
+        "record_after_pidfd": 2.322235345840454
+      },
+      "unit": "veldo-dispatch-db0df17d87c30ee5035b90d8bad61bf4.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217258.5689573,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.338,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217260.9072013,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-035",
+      "log_sha256": "535c9da9d033535bf4e258563688a3db5a8d63ce6af41f22dc0046196a864667",
+      "observed_sha256": "a14e9111633612779b4882d178e00bc8d56032f05181f8d63622f68daecd4241",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.056619653943926,
+      "timing": {
+        "_show_seconds": 2.3337122993543744,
+        "close_seconds": 3.1847041100263596e-05,
+        "conclude_seconds": 2.333788633812219,
+        "pidfd_after_exit": 0.0028786659240722656,
+        "record_after_pidfd": 2.3353652954101562
+      },
+      "unit": "veldo-dispatch-2d049e6f436d96514ee2f4d832983eb6.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217274.8256264,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.414,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217277.2399435,
+        "window_seconds": 1.87
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-036",
+      "log_sha256": "37618d58478835ed798c5e33282074ce0b45002916835195e51a744dc6360200",
+      "observed_sha256": "c0c605f45fb88fee8ce6a850de25d7bb8bec7347eabd60bcab8ac9b3875271d5",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.45809780759737,
+      "timing": {
+        "_show_seconds": 2.408133468590677,
+        "close_seconds": 3.542797639966011e-05,
+        "conclude_seconds": 2.408216943964362,
+        "pidfd_after_exit": 0.003759622573852539,
+        "record_after_pidfd": 2.410557508468628
+      },
+      "unit": "veldo-dispatch-7ad9d06239031d03a96ac1c891cc31ae.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217291.2681477,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.401,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217293.6692367,
+        "window_seconds": 1.87
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-037",
+      "log_sha256": "02d87a8a8af264783dd0a0737f5dd906ffd91da3befa6af7ebff804dfa84a316",
+      "observed_sha256": "8a3592bbf19e9a92285eff884b7ee02d0208eca2be9d7506481895c988c20d4c",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.554831763729453,
+      "timing": {
+        "_show_seconds": 2.3956392030231655,
+        "close_seconds": 2.9962975531816483e-05,
+        "conclude_seconds": 2.39572008093819,
+        "pidfd_after_exit": 0.003171682357788086,
+        "record_after_pidfd": 2.3979172706604004
+      },
+      "unit": "veldo-dispatch-34cd771aeee4d8eb4557c85d4b8dfb91.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217307.5895102,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.343,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217309.9326284,
+        "window_seconds": 1.82
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-038",
+      "log_sha256": "645a568f8f744158a492bc3722be99abd47dbcac40f81aa04ce244e1440f5a46",
+      "observed_sha256": "dd5a4376ac40421c314627eef4f35e2ea3041ca8f1944c63332ee010e5d97bf3",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.15933462092653,
+      "timing": {
+        "_show_seconds": 2.33781327214092,
+        "close_seconds": 3.123423084616661e-05,
+        "conclude_seconds": 2.3378877881914377,
+        "pidfd_after_exit": 0.0028536319732666016,
+        "record_after_pidfd": 2.3402645587921143
+      },
+      "unit": "veldo-dispatch-50e4193b428aa09c29c8a971c14ce7d0.scope"
+    },
+    {
+      "code": 1,
+      "exit": {
+        "exit_at": 1791217323.7954872,
+        "idle_worker_alive_in_window": true,
+        "latency": 2.345,
+        "receiver_wakes": 0,
+        "recorded_at": 1791217326.1409566,
+        "window_seconds": 1.81
+      },
+      "failed_assertions": [
+        "containment/exit-notified"
+      ],
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-notified"
+      ],
+      "index": "run-039",
+      "log_sha256": "09dba9eed02f10bfd6c2ff2271f2425a5ec9e32841e8b80426ebed7eb059542c",
+      "observed_sha256": "68e52b00b0d0e16f2e266648397e620861c1375c4451dcb1e504dbfd4bc55f8a",
+      "passed": false,
+      "raised": [],
+      "reload_during_exit": true,
+      "seconds": 16.318605274427682,
+      "timing": {
+        "_show_seconds": 2.3399173226207495,
+        "close_seconds": 3.396114334464073e-05,
+        "conclude_seconds": 2.3399937408976257,
+        "pidfd_after_exit": 0.0033905506134033203,
+        "record_after_pidfd": 2.342078924179077
+      },
+      "unit": "veldo-dispatch-6e3f62fa67c37192966cc513fe4a09dd.scope"
+    }
+  ],
+  "scope_load": 15,
+  "sources": {
+    ".veldo/control_containment.py": "aa31a64bcb54fdacfbbf843fd6cfa7bdb909122589b5b931f20046dc53cbb43c",
+    ".veldo/control_launch.py": "220bfc3bd61a86ed953bc2d6ea73893559ba77bee0a69ff9981f8edf2af23172",
+    "scripts/check_gate_mutations.py": "a84d341123cc64dc5e54464f915d3b8b7683111f8f5acba8aa7879db6758e8b7",
+    "scripts/suites/63_veldo_0040_containment.py": "12611443b478e0e002fa8ee3233ca5bf86fbe539694b6d9f98685aae450470c1"
+  },
+  "summary": {
+    "latency": {
+      "max": 5.01,
+      "min": 2.234,
+      "p50": 2.345,
+      "p95": 2.422
+    },
+    "passed": 0,
+    "reload_covered_exits": 40,
+    "scopes_created": 10740,
+    "suite_passed": 0,
+    "total": 40,
+    "wakes": [
+      0
+    ]
+  },
+  "trace_sha256": "521df241deeb0e084267c91721530ef08f80052f31fe4f4da7ca9a0c0bfaa229",
+  "workers": 1
+}
