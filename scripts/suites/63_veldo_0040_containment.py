@@ -486,9 +486,10 @@ sys.exit(payload.get('code', 0))
                 yield group, clock, calls, resets
 
         def reap_sequence(sequence, explicit=None, start=None, code=143, exit_at=0, kill_rest=False, oom=0,
-                          empty_on_exit=False, missing_result=False, late_oom=False, show_seconds=0, empty_at=None):
+                          empty_on_exit=False, missing_result=False, late_oom=False, show_seconds=0, empty_at=None, memory_readable=True):
             with manager_sequence(sequence, show_seconds=show_seconds) as (group, clock, calls, resets):
                 group.start_evidence, group.oom_kill = start or {}, oom
+                group.cgroup = '/fake.scope'
                 population = iter((False, False) if empty_on_exit else
                                   (True, True, False) if kill_rest else (True, False))
                 def populated():
@@ -517,7 +518,7 @@ sys.exit(payload.get('code', 0))
                 def read_memory(path):
                     assert path.name == 'memory.events'
                     reads.append('memory:' + str(memory[0]))
-                    return 'oom_kill ' + str(memory[0])
+                    return 'oom_kill ' + str(memory[0]) if memory_readable else None
 
                 def read_population(*args):
                     populated = next(population)
@@ -688,6 +689,9 @@ sys.exit(payload.get('code', 0))
             guards.append(reap_sequence([manager_record('inactive', 'success')], start=start,
                                         code=0, exit_at=10.5, empty_on_exit=True, empty_at=11.2,
                                         show_seconds=1))
+            unreadable = reap_sequence([manager_record(result='oom-kill')], start=start,
+                                       code=0, exit_at=10.5, empty_on_exit=True, memory_readable=False)
+            guards.append(unreadable)
             observed['exit_independent_of_manager'] = dict(rows=rows, guards=guards)
             check('containment/exit-independent-of-manager', all(
                 0 <= row['elapsed'] - 10.5 < 0.75 and row['calls'] == 0
@@ -696,7 +700,8 @@ sys.exit(payload.get('code', 0))
                 and row['supervision']['manager_result'] is None
                 and row['supervision']['steps'] == [] and len(row['waits']) == 1
                 and row['termination']['returncode'] == 0
-                for row in rows) and all(row['calls'] > 0 for row in guards),
+                for row in rows) and all(row['calls'] > 0 for row in guards)
+                and unreadable['supervision']['cause'] == 'memory_cap',
                 observed['exit_independent_of_manager'])
 
         with region('containment/oom-after-final-populated-sample'):

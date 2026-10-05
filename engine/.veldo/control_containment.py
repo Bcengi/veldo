@@ -516,13 +516,15 @@ class Group:
         return [int(line) for line in (text or '').split()]
 
     def sample_memory(self):
-        """Retain OOM kills while the cgroup exists, before receiver cleanup can remove it."""
+        """Retain OOM kills and whether this sample actually read the counter."""
+        self.memory_sampled = False
         if self.cgroup:
             text = _read(CGROUP / self.cgroup.lstrip('/') / 'memory.events') or ''
             for line in text.splitlines():
                 key, value = line.split()
                 if key == 'oom_kill':
                     self.oom_kill = max(self.oom_kill, int(value))
+                    self.memory_sampled = True
 
     def populated(self):
         """Whether any process is left in the group (read from its cgroup.events, which also consumes

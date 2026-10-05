@@ -1976,6 +1976,7 @@ class Receiver:
         kernel_exit = (group is not None and empty and code == 0 and cause is None
                        and stop.cause is None and active > 0 and runtime is not None
                        and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline
+                       and getattr(group, 'memory_sampled', False)
                        and getattr(group, 'oom_kill', 0) == 0)
         result = group.conclude() if group is not None and empty and not kernel_exit else None
         manager_result = result

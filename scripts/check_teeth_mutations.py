@@ -3135,6 +3135,9 @@ def cases():
             'and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline\n',
             'and adapter_exit_monotonic is not None and adapter_exit_monotonic < runtime_deadline\n',
             'exit-independent-of-manager')
+    contain('containment-unreadable-memory-skips-manager', 'control_launch.py',
+            "                       and getattr(group, 'memory_sampled', False)\n",
+            '', 'exit-independent-of-manager')
     contain('containment-result-before-settled', 'control_containment.py',
             "                if (shown.get('LoadState') == 'loaded'\n"
             "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",
