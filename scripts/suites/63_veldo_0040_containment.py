@@ -713,7 +713,7 @@ sys.exit(payload.get('code', 0))
                 and row['supervision']['empty'] and row['supervision']['cause'] is None
                 and row['supervision']['steps'] == [] and len(row['waits']) == 1
                 and row['termination']['returncode'] == 0
-                for row in rows) and all(row['calls'] > 0 for row in guards)
+                for row in rows) and all(row['calls'] > 0 and not row['recorded'] for row in guards)
                 and unreadable['supervision']['cause'] == 'memory_cap',
                 observed['exit_independent_of_manager'])
             absent = reap_sequence([subprocess.TimeoutExpired('show', C.SETTLE_SECONDS)], start=start,
