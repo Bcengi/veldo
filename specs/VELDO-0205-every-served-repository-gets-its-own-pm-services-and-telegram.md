@@ -54,6 +54,7 @@ footprint:
   - ".veldo/control_signer_answers.py"
   - "scripts/suites/92_veldo_0088_pm_cycles.py"
   - "scripts/suites/68_veldo_0126_intake.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/*_veldo_0205_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -346,4 +347,10 @@ specification removes; finding 88's v88-second-line-registers is retired with it
 138 keep their mutations with the anchors of the calls that now pass the served repositories. Proof:
 suite 95_veldo_0205_multirepo (13 rows), proof/VELDO-0205 (drive.py, red-at-01734c59.json: every
 behaviour row red by assertion; pm/same-repository-twice and telegram/one-repository hold there too, by
-design), and 18 finding 205 mutations, each red on its named row.
+design), and 18 finding 205 mutations, each red on its named row. Two more suites follow the specified
+change: suite 68_veldo_0126_intake's exact proposal fields now include `repository`, and suite
+86_veldo_0189_engine_upgrade's restore-reported row names as blocked the rows of the file it damages
+(a recorded row of control_request_settlement, an owning module this specification changes since that
+row's older engine, restores, so the refusal rightly does not name it). The claim Receiver keeps its own
+registration literal and Settlement's dispatch has no getattr, so the VELDO-0169 writer census still
+traces every claim write to the Gate's project check.

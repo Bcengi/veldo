@@ -1573,15 +1573,19 @@ def _v189_suite():
             kill.manager.after_failed_start = damage_previous
             code, report = kill.setup()
             clear_failure()
-            blocked = recorded_previous(kill)
+            recorded = recorded_previous(kill)
+            # Blocked are the recorded rows of the file damaged here; a recorded row of another owning module
+            # changed since the older engine (VELDO-0205 changed control_request_settlement) restores, so the
+            # refusal does not name it.
+            blocked = [row for row in recorded if str(row[2]).endswith('/control_channel_activation.py')]
             detail = report.get('detail', '')
             check(RP, 'restore refusal and forward recovery are in the owner answer',
                   code == 1 and 'ownership_restore_differs' in detail and 're-run setup forward' in detail)
             check(RP, 'every blocked ownership row is named in the answer',
                   len(blocked) >= 2 and all(value in detail and module in detail for _, value, module, _, _ in blocked))
             check(RP, 'a refused restore leaves all bindings and records intact',
-                  blocked and all(r[5] == next((b[4] for b in blocked if b[0:2] == r[0:2]), r[5])
-                                  for r in read_store(kill.store, S.entity_owners)))
+                  recorded and all(r[5] == next((b[4] for b in recorded if b[0:2] == r[0:2]), r[5])
+                                   for r in read_store(kill.store, S.entity_owners)))
             # Restore the edited fixture bytes; the refused transaction itself changes no row.
             path = kill.home / 'bin' / 'control_channel_activation.py'
             path.write_bytes(saved['entries'][str(path)][2])
