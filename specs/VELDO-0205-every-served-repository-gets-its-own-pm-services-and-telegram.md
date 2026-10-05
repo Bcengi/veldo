@@ -362,5 +362,6 @@ it. The observability section is now emitted: each keyed transition records ever
 operation and the repository it went to (the `handoffs` list of the connection's entry for the command),
 and from_line logs each PM service a line registers with its repository, connection and kind through
 Service._log and counts them in Service.pm_registrations; new row pm/observed reads both back for both
-repositories, and mutation v205-handoff-names-no-repository reds it. Suite 95 has 14 rows, finding 205 has
+repositories, and mutation v205-handoff-names-no-repository reds it. The claim transition records its
+hand-off through a helper taking the operation, so the VELDO-0169 writer census reads no claim commit there. Suite 95 has 14 rows, finding 205 has
 20 mutations, each red on its named row; red-at-01734c59.json regenerated (pm/observed red there too).
