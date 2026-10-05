@@ -139,6 +139,9 @@ def _v205_suite():
                                                  command_id=f['next_id']('v205'), nonce=f['next_id']('v205-nonce'), **fields))
 
                 for repository in (A, B):
+                    if repository not in cycles:
+                        check('pm/two-lines', '%s: its line built its PM services' % people[repository]['project'], False)
+                        continue
                     p, services = people[repository], cycles[repository].services
                     done = made[repository] = {}
                     # Its own document, through its line's decomposition, of a kind enabled for it.
@@ -286,7 +289,8 @@ def _v205_suite():
                     except Exception as error:  # noqa: BLE001 - the refusal is the answer
                         refused = getattr(error, 'code', type(error).__name__)
                     svc.lock = lock
-                    channel, channel_refusal = x['SV'].CH.open_channel(str(x['ingress_config']), repositories=[A, B], lock=other)
+                    channel, channel_refusal = compat(x['SV'].CH.open_channel, str(x['ingress_config']),
+                                                      repositories=[A, B], lock=other)
                     if channel is not None:
                         channel.close()
                     print('  VELDO-0205 detail: not the authority:', refused, channel_refusal)
@@ -314,11 +318,12 @@ def _v205_suite():
                           reason == code and (head(svc.conn), head(ing.conn)) == seq
                           and all(entity(eid) == value for eid, value in seen.items()))
 
-                sa, sb = cycles[A].services, cycles[B].services
-                item_b, item_a = made[B]['item'], made[A]['item']
+                sa, sb = ((cycles[r].services if r in cycles else {}) for r in (A, B))
+                item_b = made.get(B, {}).get('item')
+                check('pm/cross-repository', 'both repositories have their own work to cross', A in made and B in made)
                 crossed('an allocation under A\'s ids for B\'s item', 'wrong_repository',
                         lambda: sa['decomposition'].publish(command(A, 'pm', 'publish_decomposition', item=item_b,
-                            item_version=(CB.read(conn, item_b) or {}).get('version'), unit=dict(made[B]['raw'], unit='VELDO-9503'))),
+                            item_version=(CB.read(conn, item_b) or {}).get('version'), unit=dict(made.get(B, {}).get('raw', {}), unit='VELDO-9503'))),
                         item_b)
                 snapshot_id = 'pm-snapshot-v205-cross'
                 crossed('a snapshot under A over B\'s accepted revision', 'snapshot_identity_mismatch',
@@ -341,17 +346,17 @@ def _v205_suite():
                             unit='VELDO-9502', role='implementation', builder='w-build',
                             reviewers=[{'reviewer': 'w-rev1', 'subject': {}}], subject={})), 'VELDO-9502', 'team:proj-a')
                 crossed('a backlog take under A\'s ids of B\'s feature', 'wrong_repository',
-                        lambda: sa['backlog'].apply(command(A, 'pm', 'take', feature=made[B]['feature'],
-                                                            work_class='PRODUCT_CHANGE')), made[B]['feature'])
+                        lambda: sa['backlog'].apply(command(A, 'pm', 'take', feature=made.get(B, {}).get('feature'),
+                                                            work_class='PRODUCT_CHANGE')), made.get(B, {}).get('feature'))
                 crossed('a backlog take under B\'s ids of A\'s feature', 'wrong_repository',
-                        lambda: sb['backlog'].apply(command(B, 'pm', 'take', feature=made[A]['feature'],
-                                                            work_class='PRODUCT_CHANGE')), made[A]['feature'])
-                note_b = 'assignment:%s:%s' % (B, made[B]['alias'])
+                        lambda: sb['backlog'].apply(command(B, 'pm', 'take', feature=made.get(A, {}).get('feature'),
+                                                            work_class='PRODUCT_CHANGE')), made.get(A, {}).get('feature'))
+                note_b = 'assignment:%s:%s' % (B, made.get(B, {}).get('alias'))
                 crossed('an inbox answer under A\'s ids naming an alias only B holds', 'missing_authority',
-                        lambda: sa['inbox'].apply(command(A, 'bea', 'answer', alias=made[B]['alias'], request_version=1,
+                        lambda: sa['inbox'].apply(command(A, 'bea', 'answer', alias=made.get(B, {}).get('alias'), request_version=1,
                                                           ruling='accept')), note_b)
                 crossed('an inbox disposition under A\'s ids naming an alias only B holds', 'missing_authority',
-                        lambda: sa['inbox'].apply(command(A, 'bea', 'dispose', alias=made[B]['alias'], request_version=1,
+                        lambda: sa['inbox'].apply(command(A, 'bea', 'dispose', alias=made.get(B, {}).get('alias'), request_version=1,
                                                           ruling='close')), note_b)
                 crossed('a backlog operation under A\'s ids naming B\'s item', 'no_such_item',
                         lambda: sa['backlog'].apply(command(A, 'pm', 'request_grooming', item=item_b,
@@ -364,6 +369,9 @@ def _v205_suite():
             # pm/views: every read of one repository's services lists its own records only.
             with section('pm/views'):
                 for repository, other_repository in ((A, B), (B, A)):
+                    if repository not in cycles or repository not in made:
+                        check('pm/views', '%s: its line built its PM services and work' % people[repository]['project'], False)
+                        continue
                     services, p = cycles[repository].services, people[repository]
                     entries = services['inbox'].index()['entries']
                     check('pm/views', '%s: the inbox index lists its own requests only' % p['project'],
@@ -380,6 +388,8 @@ def _v205_suite():
                     check('pm/views', '%s: the pending publication obligations are its own' % p['project'],
                           all(o[0] == repository for o in services['decomposition'].pending()))
                 for repository, other_repository in ((A, B), (B, A)):
+                    if repository not in cycles or repository not in made:
+                        continue
                     snapshot = cycles[repository].snapshot(people[repository]['project']) or {}
                     inputs = (snapshot.get('data') or {}).get('inputs') or {}
                     decisions = [d['id'] for d in inputs.get('collection/decisions') or []]
@@ -452,7 +462,12 @@ def _v205_suite():
                 row = f.conn.execute('SELECT data FROM entities WHERE id=?', (rid,)).fetchone()
                 return json.loads(row[0]).get('state') if row else None
 
+            def members(repository, project):
+                return [m[0] for m in cycles[repository].input_members(project)] if repository in cycles else []
+
             def inputs(repository, project):
+                if repository not in cycles:
+                    return {'inbox': [], 'proposals': []}  # no snapshot authority of this repository: lists nothing
                 snapshot = cycles[repository].snapshot(project) or {}
                 found = (snapshot.get('data') or {}).get('inputs') or {}
                 return {label: [m['id'] for m in found.get('collection/' + label) or []] for label in ('inbox', 'proposals')}
@@ -563,8 +578,7 @@ def _v205_suite():
                 check('telegram/unaddressed', 'only the factory project\'s cycle inputs list it',
                       pid in lists['factory']['inbox'] and pid not in lists['a']['inbox'] + lists['a']['proposals']
                       and pid not in lists['b']['inbox'] + lists['b']['proposals'] and pid not in inboxes
-                      and cycles[A].input_members('factory') and pid in [m[0] for m in cycles[A].input_members('factory')]
-                      and pid not in [m[0] for m in cycles[B].input_members('factory')])
+                      and pid in members(A, 'factory') and pid not in members(B, 'factory'))
                 routed = intake.route({'schema': RT.SCHEMA, 'proposal_id': pid, 'route': 'existing_project',
                                        'reason': 'It is the billing team\'s work.', 'project': 'project-b'},
                                       dispatch='v205-route-dispatch', proposal_id=pid)
@@ -587,7 +601,8 @@ def _v205_suite():
                 check('telegram/unserved-project', 'no proposal is written',
                       f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='intake_proposal'").fetchone()[0] == count)
                 check('telegram/unserved-project', 'the owner is told so in the hint',
-                      len(hints_c) == 1 and hints_c[0].startswith(IN.NOT_SERVED))
+                      len(hints_c) == 1 and getattr(IN, 'NOT_SERVED', None) is not None
+                      and hints_c[0].startswith(IN.NOT_SERVED))
             channel.close()
 
             # telegram/one-repository: the same store served as one repository is today's bytes.

@@ -1,0 +1,205 @@
+{
+ "by_assertion": false,
+ "commit": "01734c5992b65c0326e326dae1497a9266d84dec",
+ "details": [
+  "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {'repository-89-b': 'invalid_registration:pm_services'}",
+  "VELDO-0205 detail: proj-a chain: []",
+  "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+  "VELDO-0205 detail:   Traceback (most recent call last):",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 142, in pm_part",
+  "VELDO-0205 detail:   KeyError: 'repository-89-b'",
+  "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+  "VELDO-0205 detail:   Traceback (most recent call last):",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 289, in pm_part",
+  "VELDO-0205 detail:   TypeError: open_channel() got an unexpected keyword argument 'repositories'",
+  "VELDO-0205 detail:   Traceback (most recent call last):",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 317, in pm_part",
+  "VELDO-0205 detail:   KeyError: 'repository-89-b'",
+  "VELDO-0205 detail:   Traceback (most recent call last):",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 367, in pm_part",
+  "VELDO-0205 detail:   KeyError: 'repository-89-b'",
+  "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 1} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-']",
+  "VELDO-0205 detail: after B's reply: OFFERED None [('acquired', None), ('refused', 'missing_reply_reference')]",
+  "VELDO-0205 detail: addressed: {'a': ('project-a', None, 'PROPOSED'), 'b': ('project-b', None, 'PROPOSED'), 'named': ('project-a', None, 'PROPOSED')} ['I took your message as new work, not as an answer to a request.\\nTo ans', 'I took your message as new work, not as an answer to a request.\\nTo ans']",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 548, in telegram_part",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 456, in inputs",
+  "VELDO-0205 detail:   KeyError: '0b0b0b0b-205b-4000-8000-00000000000b'",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 559, in telegram_part",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 456, in inputs",
+  "VELDO-0205 detail:   KeyError: '0b0b0b0b-205b-4000-8000-00000000000b'",
+  "VELDO-0205 detail: unserved: proposed None ['I took your message as new work, not as an answer to a request.\\nTo ans']",
+  "VELDO-0205 detail:   Traceback (most recent call last):",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 40, in section",
+  "VELDO-0205 detail:     File \"95_veldo_0205_multirepo.py\", line 590, in telegram_part",
+  "VELDO-0205 detail:   AttributeError: module 'v205_t_intake' has no attribute 'NOT_SERVED'",
+  "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+  "VELDO-0205 detail: pm/two-lines both lines build their PM services; each connection keeps one transition per command, serving both repositories; the row ran to its end (KeyError: 'repository-89-b')",
+  "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError); assignment_operation for C is refused invalid_input:repository (raised:KeyError); claim_operation for C is refused invalid_input:repository (raised:KeyError); accept_snapshot for C is refused invalid_input:repository (invalid_input); pm_snapshot_inputs for C is refused invalid_input:repository (missing_snapshot); assignment_operation for C is refused invalid_input:repository (raised:KeyError); presentation_frame for C is refused invalid_input:repository (invalid_input); request_settle for C is refused invalid_input:repository (stale_subject); settlement_terms_record for C is refused invalid_input:repository (invalid_input); settlement_api_answer for C is refused invalid_input:repository (invalid_input)",
+  "VELDO-0205 detail: lock/not-the-authority the row ran to its end (TypeError: open_channel() got an unexpected keyword argument 'repositories')",
+  "VELDO-0205 detail: pm/cross-repository the row ran to its end (KeyError: 'repository-89-b')",
+  "VELDO-0205 detail: pm/views the row ran to its end (KeyError: 'repository-89-b')",
+  "VELDO-0205 detail: telegram/two-presentations the one bot sends two messages, one per repository's request; project-a's message begins with its own label; project-b's message begins with its own label",
+  "VELDO-0205 detail: telegram/reply-routes B's answer settles B's request by B's settlement, A's stays pending",
+  "VELDO-0205 detail: telegram/label-bound the receipt binds its label in the rendered bytes it digests; a receipt with the label omitted is presentation_mismatch; a receipt with the label changed is presentation_mismatch",
+  "VELDO-0205 detail: telegram/addressed-by-project each proposal records its own project's repository; each taken-as-work hint begins with its repository's label and names the project; the row ran to its end (KeyError: '0b0b0b0b-205b-4000-8000-00000000000b')",
+  "VELDO-0205 detail: telegram/unaddressed the row ran to its end (KeyError: '0b0b0b0b-205b-4000-8000-00000000000b')",
+  "VELDO-0205 detail: telegram/unserved-project the message is refused missing_authority:repository_not_served; no proposal is written; the row ran to its end (AttributeError: module 'v205_t_intake' has no attribute 'NOT_SERVED')"
+ ],
+ "failed_rows": [
+  "VELDO-0205 pm/two-lines",
+  "VELDO-0205 pm/unserved-repository",
+  "VELDO-0205 lock/not-the-authority",
+  "VELDO-0205 pm/cross-repository",
+  "VELDO-0205 pm/views",
+  "VELDO-0205 telegram/two-presentations",
+  "VELDO-0205 telegram/reply-routes",
+  "VELDO-0205 telegram/label-bound",
+  "VELDO-0205 telegram/addressed-by-project",
+  "VELDO-0205 telegram/unaddressed",
+  "VELDO-0205 telegram/unserved-project"
+ ],
+ "modules": {
+  ".veldo/control_alias.py": {
+   "at_commit": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64",
+   "now": "2add72c8ccaaec468f00adb4fdc531b2b1bf791640a3a5d4f78ad938b7e84b64"
+  },
+  ".veldo/control_assignment.py": {
+   "at_commit": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2",
+   "now": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+  },
+  ".veldo/control_backlog.py": {
+   "at_commit": "c377fe604b9aacb1ad2b7c5cd818485bbd97bd5a8313c0c7a2e2098b57b4c503",
+   "now": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+  },
+  ".veldo/control_channel_attribution.py": {
+   "at_commit": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c",
+   "now": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748"
+  },
+  ".veldo/control_channel_ingress.py": {
+   "at_commit": "ddf6b5829912ce38756ffd01f2f5fe47ff2852721559b32449399f8805a586eb",
+   "now": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
+  },
+  ".veldo/control_channel_presentation.py": {
+   "at_commit": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
+   "now": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+  },
+  ".veldo/control_claim.py": {
+   "at_commit": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d",
+   "now": "519d02dc3d9416b0049470c4d8027da8dfe1715ad78c45f098468747d80c001f"
+  },
+  ".veldo/control_decomposition.py": {
+   "at_commit": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
+   "now": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633"
+  },
+  ".veldo/control_grooming.py": {
+   "at_commit": "bed857eaf026c0074c36ef3b10ca6f31a5e8f4650ab3fc8a565198e4f195f3ef",
+   "now": "bed857eaf026c0074c36ef3b10ca6f31a5e8f4650ab3fc8a565198e4f195f3ef"
+  },
+  ".veldo/control_intake.py": {
+   "at_commit": "c892d1c0359348de480a1be14dab5b59b99fd8faa648d831efa18f3cd337083e",
+   "now": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
+  },
+  ".veldo/control_intake_routes.py": {
+   "at_commit": "1b2ffdd33dcbe550f3fa424affae4e8c8458b89b1ac7e5522ad54b028c9218ea",
+   "now": "3d3141f48937835674496b5850c08ab8ac8b68186f49f074d88faaf503b0cd48"
+  },
+  ".veldo/control_readset.py": {
+   "at_commit": "dac254fe5c697256aba8a0370b28a16e513a8c6477be73b38dcc8fdc8499e9e8",
+   "now": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+  },
+  ".veldo/control_request_settlement.py": {
+   "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
+   "now": "5c2b55a14e4f77a84d61fe12d568f236633180b700d7058536d283b58868f67e"
+  },
+  ".veldo/control_service.py": {
+   "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
+   "now": "9a9b9768f4146eaec05283a8116d2c8ea2d55b62dc569ed246602153a8a6c554"
+  },
+  ".veldo/control_service_channel.py": {
+   "at_commit": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae",
+   "now": "aeaa55b2539e933402d3689ecc2dcacf928add7f3728ba430134322f13cc6caa"
+  },
+  ".veldo/control_signer_answers.py": {
+   "at_commit": "51379bd2d0dcadcf60e0b054a49dbe4ef8c6db1944a8b1a3e6745ce6b633b40f",
+   "now": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e"
+  },
+  ".veldo/control_team.py": {
+   "at_commit": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
+   "now": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+  },
+  ".veldo/control_team_routes.py": {
+   "at_commit": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
+   "now": "6a399c0aeeb0d992db706f87c3aa22d5c5a269b08acfba90738172cb61cae2d2"
+  },
+  ".veldo/control_workflow_cycle_pm.py": {
+   "at_commit": "df60251d4d7042895d362c1b1a2172c6a799c548fdcf3268d8c513244f077724",
+   "now": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+  }
+ },
+ "preamble_rows": 26,
+ "rows": [
+  [
+   "VELDO-0205 pm/two-lines",
+   false
+  ],
+  [
+   "VELDO-0205 pm/same-repository-twice",
+   true
+  ],
+  [
+   "VELDO-0205 pm/unserved-repository",
+   false
+  ],
+  [
+   "VELDO-0205 lock/not-the-authority",
+   false
+  ],
+  [
+   "VELDO-0205 pm/cross-repository",
+   false
+  ],
+  [
+   "VELDO-0205 pm/views",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/one-repository",
+   true
+  ],
+  [
+   "VELDO-0205 telegram/two-presentations",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/reply-routes",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/label-bound",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/addressed-by-project",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/unaddressed",
+   false
+  ],
+  [
+   "VELDO-0205 telegram/unserved-project",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 6.909,
+ "spec_id": "VELDO-0205",
+ "suite": "scripts/suites/95_veldo_0205_multirepo.py",
+ "tree": "git archive 01734c5992b65c0326e326dae1497a9266d84dec, unchanged; the current suite file run against it"
+}
