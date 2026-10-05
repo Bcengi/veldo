@@ -47,7 +47,8 @@ class Decomposition:
         self.counts = {'accepted': 0, 'refused': 0}
 
     def pending(self):
-        return self.allocations.pending()
+        # VELDO-0205: one domain's allocation authority serves every repository; this line's are its own.
+        return [p for p in self.allocations.pending() if p[0] == self.publisher.repository]
 
     def publish(self, packet):
         CB = self.CB
@@ -86,6 +87,10 @@ class Decomposition:
         if not CB._is_str(command.get('item')):
             raise CB.Refused('invalid_input:backlog_item')
         item = CB.read(bl.conn, command['item'])
+        if item is not None and item.get('repository_uuid') != bl.ids['repository_uuid']:
+            # VELDO-0205: one domain's allocation authority serves every repository; this line allocates
+            # only for its own repository's items.
+            raise CB.Refused('wrong_repository', 'the item belongs to another repository')
         if item is None or item.get('version') != command.get('item_version'):
             raise CB.Refused('stale_subject:item')
         event['accepted_versions'] = {'item': item['version']}

@@ -146,6 +146,34 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'unmatched_choice': 'invalid_input
             'unavailable_service': 'unavailable_service'}
 
 
+def _serve(store, conn, service):
+    """Register `service` as its repository's settlement on `conn` (VELDO-0205). The connection keeps ONE
+    transition per settlement command whichever repositories' settlements are built on it: the
+    repository in the identity the command writes (the request it settles, the terms or the API answer),
+    which the service derived from its own coordinates, picks the settlement that judges and writes it,
+    and a repository with no settlement on the connection is refused invalid_input:repository."""
+    keys = {SETTLE: ('request_id', lambda repository: 'assignment:%s:' % repository),
+            TERMS: ('entity_id', lambda repository: terms_id(repository, '')),
+            API: ('entity_id', lambda repository: 'settlement-api-answer:assignment:%s:' % repository)}
+    for operation, method in ((SETTLE, '_settle_transition'), (TERMS, '_new_transition'), (API, '_new_transition')):
+        served = (conn.command_registry.get(operation) or {}).get('repositories')
+        if not isinstance(served, dict):
+            served = {}
+
+            def transition(params, before, served=served, field=keys[operation][0], prefix=keys[operation][1],
+                           method=method):
+                named = params.get(field) if isinstance(params, dict) else None
+                judge = next((one for repository, one in served.items()
+                              if isinstance(named, str) and named.startswith(prefix(repository))), None)
+                if judge is None:
+                    raise store.StoreRefused('invalid_input:repository',
+                                             'no settlement of this repository is on this connection')
+                return getattr(judge, method)(params, before)
+
+            conn.command_registry[operation] = {'transition': transition, 'writes': WRITES, 'repositories': served}
+        served[service.ids['repository_uuid']] = service
+
+
 class Refused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail))
@@ -295,9 +323,7 @@ class Settlement:
         self.api_edge, self.authority_generation, self.clock = api_edge, authority_generation, clock
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        conn.command_registry[SETTLE] = {'transition': self._settle_transition, 'writes': WRITES}
-        conn.command_registry[TERMS] = {'transition': self._new_transition, 'writes': WRITES}
-        conn.command_registry[API] = {'transition': self._new_transition, 'writes': WRITES}
+        _serve(store, conn, self)
         store.declare_owners(conn, OWNER, kinds={SETTLEMENT_KIND: (SETTLE,), EFFECT_KIND: (SETTLE,),
                                                  RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,),
                                                  DECISION_SETTLEMENT_KIND: (SETTLE,)},

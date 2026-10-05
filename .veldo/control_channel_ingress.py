@@ -73,9 +73,14 @@ class Ingress:
     """The Telegram ingress of one store connection: `gate`, the VELDO-0066 `acquirer` and the VELDO-0068
     `settlement` service, with the presenter and inbox they share."""
 
-    def __init__(self, gate, acquirer, settlement, *, presenter=None, inbox=None, activations=None, conn=None):
+    def __init__(self, gate, acquirer, settlement, *, presenter=None, inbox=None, activations=None, conn=None,
+                 served=None):
         self.gate, self.acquirer, self.settlement = gate, acquirer, settlement
         self.presenter, self.inbox, self.activations, self.conn = presenter, inbox, activations, conn
+        # VELDO-0205: {repository_uuid: (inbox, presenter, settlement)} of every repository the instance
+        # serves, on this one connection; inbox, presenter and settlement are the configuration's own.
+        self.served = dict(served or {(inbox.ids if inbox is not None else {}).get('repository_uuid'):
+                                      (inbox, presenter, settlement)})
         self.observations = []
         self.counts = {'woken': 0, 'refused': 0}
 
@@ -100,7 +105,8 @@ class Ingress:
                 row['evidence_id'] = evidence.get('evidence_id')
             acquired.append(row)
         settled = [{k: r.get(k) for k in ('request_id', 'outcome', 'reason', 'settlement_id') if k in r}
-                   for r in (self.settlement.run() if self.settlement is not None else [])]
+                   for repository in sorted(self.served) for r in (self.served[repository][2].run()
+                                                                   if self.served[repository][2] is not None else [])]
         self.counts['woken'] += 1
         self.observations.append({'operation': 'wake', 'woken_by': woken, 'outcome': 'woken', 'reason': None,
                                   'acquired': len(acquired), 'settled': len(settled)})
@@ -115,7 +121,8 @@ class Ingress:
 
     def metrics(self):
         return dict(self.counts, gate=dict(self.gate.counts),
-                    pending=[e['id'] for e in (self.inbox.index()['entries'] if self.inbox is not None else [])
+                    pending=[e['id'] for repository in sorted(self.served) for e in (
+                        self.served[repository][0].index()['entries'] if self.served[repository][0] is not None else [])
                              if e.get('category') == 'pending'])
 
 
@@ -199,8 +206,13 @@ def decision_signer(config, settlement_trust):
     return principal, sign
 
 
-def open_ingress(config_path, clock=time.time):
-    """THE PRODUCTION CONSTRUCTION of the activated Telegram ingress from the host configuration."""
+def open_ingress(config_path, clock=time.time, *, repositories=None, lock=None):
+    """THE PRODUCTION CONSTRUCTION of the activated Telegram ingress from the host configuration.
+
+    VELDO-0205: `repositories` are the instance's served repositories (the service's configured ones, of
+    which the configuration's authority_ids repository is one); one gate and one acquirer serve them all,
+    and each gets its inbox, presenter and settlement on the one connection. With `lock`, the service's
+    authority lock descriptor, nothing is registered on a connection whose process does not hold the lock."""
     config = load_config(config_path)
     if config['channel'] != 'telegram_chat':
         raise Refused('invalid_input', 'Release 1 activates the Telegram chat channel only')
@@ -227,19 +239,34 @@ def open_ingress(config_path, clock=time.time):
     I, P, V = organ('control_assignment'), organ('control_channel_projection'), organ('control_channel_presentation')
     EV, A, ST = organ('control_channel_attribution'), organ('control_signer_answers'), organ('control_request_settlement')
     contract = organ('entity_contract')
+    served = sorted(set(repositories or ()) | {ids['repository_uuid']})
+    if repositories is not None and ids['repository_uuid'] not in repositories:
+        raise Refused('invalid_input', 'the ingress acts for a repository this instance does not serve')
     conn = S.open_store(config['store_path'])
+    if lock is not None:
+        problem = organ('control_api_authority').authority_problem(lock, conn)
+        if problem is not None:
+            conn.close()
+            raise Refused(problem, 'the ingress registers only on a connection the authority\'s process opened')
     CM.attach(S)
     K.attach(S)
     gate = ACT.Gate(S, conn, clock=clock)
     activations = ACT.Activations(S, conn, ids, principal, sign, generation, clock=clock)
-    inbox = I.Inbox(S, CM, claims, contract, conn, ids, principal, sign)
-    presenter = V.Presenter(S, CM, P, inbox, V.TelegramPresentationEdge(P, origin, token, activation=gate), conn,
-                            principal, sign, generation, clock, assignment=I)
     edge = config['signer']
+    sets = {}
+    for repository in served:
+        own = dict(ids, repository_uuid=repository)
+        inbox = I.Inbox(S, CM, claims, contract, conn, own, principal, sign)
+        presenter = V.Presenter(S, CM, P, inbox, V.TelegramPresentationEdge(P, origin, token, activation=gate), conn,
+                                principal, sign, generation, clock, assignment=I, labelled=len(served) > 1)
+        settlement = ST.Settlement(S, CM, inbox, presenter, conn, principal, sign, assignment=I, presentation=V,
+                                   api_edge=config['api_edge'], authority_generation=generation, clock=clock,
+                                   decision_signer=signer)
+        sets[repository] = (inbox, presenter, settlement)
+    inbox, presenter, settlement = sets[ids['repository_uuid']]
     edge_sign = A.EdgeSigner(S, CM, conn, edge['config'], edge['edge_key_id'], edge['connection_key'], clock=clock)
     acquirer = EV.Acquirer(S, CM, P, V, presenter, EV.TelegramAcquisitionEdge(P, origin, token, activation=gate), conn,
-                           principal, sign, config['edge_principal'], edge_sign, generation, clock)
-    settlement = ST.Settlement(S, CM, inbox, presenter, conn, principal, sign, assignment=I, presentation=V,
-                               api_edge=config['api_edge'], authority_generation=generation, clock=clock,
-                               decision_signer=signer)
-    return Ingress(gate, acquirer, settlement, presenter=presenter, inbox=inbox, activations=activations, conn=conn)
+                           principal, sign, config['edge_principal'], edge_sign, generation, clock,
+                           presenters={repository: one[1] for repository, one in sets.items()})
+    return Ingress(gate, acquirer, settlement, presenter=presenter, inbox=inbox, activations=activations, conn=conn,
+                   served=sets)

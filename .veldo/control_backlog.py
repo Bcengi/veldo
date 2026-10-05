@@ -219,7 +219,8 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 
             'already_exists': 'stale_subject', 'already_applied': 'stale_subject', 'stale_subject': 'stale_subject',
             'stale_version': 'stale_subject', 'invalid_transition': 'stale_subject',
             'nothing_to_prioritize': 'stale_subject', 'missing_evidence': 'missing_evidence',
-            'missing_outcome': 'missing_evidence', 'unavailable_service': 'unavailable_service'}
+            'missing_outcome': 'missing_evidence', 'unavailable_service': 'unavailable_service',
+            'wrong_repository': 'invalid_input'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 
@@ -555,6 +556,9 @@ class Backlog:
         return getattr(self, '_' + op)(conn, command, data, project, entry)
 
     def _take(self, conn, command, iid, project, entry):
+        # VELDO-0205: the project's repository is its record's execution_repository, never the command's.
+        if project['data'].get('execution_repository') != self.ids['repository_uuid']:
+            raise Refused('wrong_repository', 'the feature\'s project is executed in another repository')
         feature = _row(conn, command['feature'])
         found = feature['data'] if feature is not None and feature['kind'] == KIND else {}
         if found.get('state') != 'RAW' or found.get('repository_uuid') != self.ids['repository_uuid']:
@@ -1059,11 +1063,12 @@ class Backlog:
         states, planned = {}, 0
         for (text,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (KIND,)):
             data = json.loads(text)
-            if data.get('schema') == SCHEMA:
+            if data.get('schema') == SCHEMA and data.get('repository_uuid') == self.ids['repository_uuid']:
                 states[str(data.get('state'))] = states.get(str(data.get('state')), 0) + 1
         for (text,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (UNIT_KIND,)):
             data = json.loads(text)
-            planned += data.get('schema') == UNIT_SCHEMA and data.get('state') == 'PLANNED'
+            planned += (data.get('schema') == UNIT_SCHEMA and data.get('state') == 'PLANNED'
+                        and data.get('repository_uuid') == self.ids['repository_uuid'])
         return dict(self.counts, items=states,
                     pending={'awaiting_grooming': states.get('PREPARED', 0) + states.get('AWAITING_GROOMING', 0),
                              'awaiting_priority': states.get('ADMITTED', 0), 'units_awaiting_priority': planned,

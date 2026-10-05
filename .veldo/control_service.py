@@ -1146,6 +1146,9 @@ class Service:
         self.principal, self.generation = config['principal'], config['authority_generation']
         self.enrollment_signers = Path(config['enrollment_signers']).read_text()
         self.receivers, self.counts, self.refusals = {}, {'accepted': 0, 'refused': 0}, {}
+        # VELDO-0205: each served repository's inbox on this connection, built on first use; the authority
+        # lock descriptor serve() holds, which every registration of a line's PM services is checked against.
+        self.inboxes, self.lock = {}, None
         # The Telegram channel (VELDO-0138): set by serve() when the installation names an ingress.
         self.channel, self.channel_refusal = None, None
         # The authenticated API (VELDO-0130): set by serve() when the installation names its configuration.
@@ -1367,10 +1370,14 @@ class Service:
         return dict(self.api.status(), configured=True)
 
     def inbox(self, repository):
-        """VELDO-0064's inbox of `repository` on this instance's connection, made for each use: its
-        construction registers its transition on the connection, so the transition is always this inbox's."""
-        return I.Inbox(S, CM, CLM, ENT, self.conn, {'domain_uuid': self.domain, 'repository_uuid': repository,
-                                                     'store_uuid': self.store}, self.principal, self.sign, self.generation)
+        """VELDO-0064's inbox of `repository` on this instance's connection, built on first use, with or
+        without a line, and the same one afterwards: the connection's one inbox transition hands each command
+        to the inbox of the repository it names (VELDO-0205)."""
+        if repository not in self.inboxes:
+            self.inboxes[repository] = I.Inbox(S, CM, CLM, ENT, self.conn, {
+                'domain_uuid': self.domain, 'repository_uuid': repository, 'store_uuid': self.store},
+                self.principal, self.sign, self.generation)
+        return self.inboxes[repository]
 
     def loop_status(self):
         if self.loop is None:
@@ -2168,7 +2175,9 @@ def serve(config_path):
             if previous is not None and not keep:
                 S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
-            service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
+            service.lock = lock
+            service.channel, service.channel_refusal = CH.open_channel(
+                config.get('channel_ingress'), repositories=sorted(service.repositories), lock=lock)
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,

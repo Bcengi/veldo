@@ -77,7 +77,9 @@ class Routes:
             data['state'] = 'NEW_PROJECT'
         elif doc['route'] == 'existing_project':
             target = pid + ':routed'
+            # VELDO-0205: the routed work belongs to its project's execution repository.
             objective = dict(data, proposal_id=target, proposal='objective', state='PROPOSED', project=chosen,
+                             repository=project['data'].get('execution_repository'),
                              question_id=None, resolves=pid, resolved_to=None)
             changes[target] = dict(kind='intake_proposal', data=objective)
             data.update(state='ROUTED', resolved_to=target)
@@ -86,9 +88,15 @@ class Routes:
             source = self._data(data['sources'][0], 'intake_source')
             reads.append(data['sources'][0])
             options = candidates + ['a new project']
+            # VELDO-0205: each project offered with its repository's label when the factory serves several.
+            def offered(name):
+                repository = ((self._entity('project:' + name) or {}).get('data') or {}).get('execution_repository')
+                label = None if name == 'a new project' else self.label(repository)
+                return name if label is None else '%s (%s)' % (name, label)
+            shown = [offered(name) for name in options]
             question = dict(schema='veldo.intake_question/v1', question_id=qid, proposal_id=pid,
                 principal=principal, asks='project', candidates=options,
-                prompt='Which project is this for? Reply to this message with one of: %s.' % ', '.join(options),
+                prompt='Which project is this for? Reply to this message with one of: %s.' % ', '.join(shown),
                 state='open', asked_on=source['source_kind'], answered_by=None, project=None,
                 delivery=({'channel': 'api', 'request_id': source['source_ref']}
                           if source['source_kind'] == 'api_request' else None))

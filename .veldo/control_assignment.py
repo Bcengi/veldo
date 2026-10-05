@@ -310,6 +310,29 @@ def record_problems(data, states, repository_uuid):
     return problems
 
 
+def _serve(store, conn, service):
+    """Register `service` as its repository's inbox on `conn` (VELDO-0205). The connection keeps ONE inbox
+    transition whichever repositories' inboxes are built on it: the repository in the assignment id the
+    service derived from its own coordinates picks the inbox that judges and writes the command, and a
+    repository with no inbox on the connection is refused invalid_input:repository."""
+    served = (conn.command_registry.get(OPERATION) or {}).get('repositories')
+    if not isinstance(served, dict):
+        served = {}
+
+        def transaction_transition(conn, params, before):
+            aid = params.get('assignment_id')
+            judge = next((inbox for repository, inbox in served.items()
+                          if isinstance(aid, str) and aid.startswith(assignment_id(repository, ''))), None)
+            if judge is None:
+                raise store.StoreRefused('invalid_input:repository', 'no inbox of this repository is on this connection')
+            return judge._in_transaction(conn, params, before)
+
+        conn.command_registry[OPERATION] = {'transaction_transition': transaction_transition,
+                                            'writes': ('entities', 'journal', 'commands', 'nonces'),
+                                            'repositories': served}
+    served[service.ids['repository_uuid']] = service
+
+
 class Refused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail))
@@ -346,8 +369,7 @@ class Inbox:
         self.states = states
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
-        conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction,
-                                            'writes': ('entities', 'journal', 'commands', 'nonces')}
+        _serve(store, conn, self)
 
     # -- commands --------------------------------------------------------------------------
 

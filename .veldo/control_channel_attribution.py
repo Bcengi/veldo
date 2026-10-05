@@ -322,9 +322,12 @@ class Acquirer:
     text, display names, signatures or the token."""
 
     def __init__(self, store, membership, projection, presentation, presenter, edge, conn, journal_signer, sign,
-                 edge_principal, edge_sign, authority_generation=1, clock=time.time):
+                 edge_principal, edge_sign, authority_generation=1, clock=time.time, presenters=None):
         self.store, self.membership, self.P, self.V = store, membership, projection, presentation
         self.presenter, self.edge, self.conn = presenter, edge, conn
+        # VELDO-0205: the presenter of every served repository on this connection; a reply is decided by
+        # the presenter of the repository whose request the replied presentation carries.
+        self.presenters = dict(presenters or {presenter.ids['repository_uuid']: presenter})
         self.AC = membership.AC
         self.ids = dict(presenter.ids)
         self.journal_signer, self.sign = journal_signer, sign
@@ -340,6 +343,12 @@ class Acquirer:
                 raise store.StoreRefused('invalid_input', str(exc))
         conn.command_registry[EVIDENCE_OPERATION] = {'transition': transition,
                                                      'writes': ('entities', 'journal', 'commands', 'nonces')}
+
+    def presenter_of(self, request):
+        """The presenter of the served repository whose request `request` is (the id its presenter wrote,
+        assignment:<repository_uuid>:<alias>), or None for a request of no served repository."""
+        return next((one for repository, one in self.presenters.items()
+                     if isinstance(request, str) and request.startswith('assignment:%s:' % repository)), None)
 
     # reading
 
@@ -507,12 +516,15 @@ class Acquirer:
         if receipt is None:
             return 'unknown_presentation', known
         known.update(request_id=receipt['request_id'], presentation_id=receipt['presentation_id'])
+        presenter = self.presenter_of(receipt['request_id'])
+        if presenter is None:
+            return 'unknown_presentation', known
         if replied_problems(receipt, reply, record['bot_id']):
             return 'presentation_mismatch', known
         if known['principal'] != receipt['owner']:
             return 'not_owner', known
         try:
-            assertion = self.presenter.canonical_answer(message, self.edge_principal)
+            assertion = presenter.canonical_answer(message, self.edge_principal)
         except self.V.Refused as exc:
             return exc.code, known
         if assertion.get('presentation_id') != receipt['presentation_id']:
@@ -540,7 +552,8 @@ class Acquirer:
             if signature is None:
                 refusal = 'unavailable_service'
             else:
-                result = self.presenter.answer({'assertion': known['assertion'], 'signature': signature})
+                result = self.presenter_of(known['request_id']).answer({'assertion': known['assertion'],
+                                                                         'signature': signature})
                 if result.get('outcome') == 'accepted':
                     answer = result.get('answer_id')
                 else:

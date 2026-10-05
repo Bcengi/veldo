@@ -220,8 +220,11 @@ class ProjectCycles:
             'entities': {'project': '$project', 'team': '$team'}, 'collections': {
                 'objectives': {'kind': 'objective', 'where': {'project': '$name'}, 'references': ['proposal_id']},
                 'inbox': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': 'AWAITING_ROUTE'}},
-                'decisions': {'kind': 'assignment', 'where': {}},
-                'dispatches': {'kind': 'dispatch', 'where': {}}}})
+                # VELDO-0205: a line's PM reads its own repository's work only.
+                'proposals': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': 'PROPOSED',
+                                                                   'repository': '$repository'}},
+                'decisions': {'kind': 'assignment', 'where': {'repository_uuid': '$repository'}},
+                'dispatches': {'kind': 'dispatch', 'where': {'contract.repository': '$repository'}}}})
 
     def records(self, project=None):
         records = [json.loads(r[0]) for r in self.conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,))]
@@ -248,6 +251,7 @@ class ProjectCycles:
             relevant = (identity in ('project:' + project, 'team:' + project)
                         or kind == 'accepted_revision' and data.get('repository_uuid') == self.repository
                         or kind == 'intake_proposal' and data.get('project') == project and data.get('state') == 'AWAITING_ROUTE'
+                        and data.get('repository', self.repository) == self.repository
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
                         or kind == 'dispatch' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
@@ -269,7 +273,8 @@ class ProjectCycles:
         command = 'pm-snapshot/' + uuid.uuid4().hex
         self.readsets.execute(dict(command_id=command, principal=self.principal, operation='accept_snapshot',
             parameters={'snapshot_id': identity, 'operation': 'pm_snapshot_inputs', 'arguments': {
-                'revision': revisions[-1], 'project': 'project:' + project, 'team': 'team:' + project, 'name': project}},
+                'revision': revisions[-1], 'project': 'project:' + project, 'team': 'team:' + project, 'name': project,
+                'repository': self.repository}},
             expected_versions={identity: 0}, artifact_digests=[], nonce=command),
             signer=self.principal, sign=self.sign, authority_generation=self.generation)
         return row(self.conn, identity)
@@ -556,12 +561,23 @@ def from_line(line):
     Team membership and its accepted PM worker still authorize every command.
     """
     service = line.service
-    # The allocation and snapshot authorities are one per connection (control_alias.attach,
-    # control_readset.attach): a second repository's line is refused here, before it registers anything
-    # on the service's or the ingress's connection that would judge the first line's commands as its own.
-    if any(operation in service.conn.command_registry
-           for operation in organ('control_alias').OPERATIONS + ('accept_snapshot',)):
-        raise Refused('invalid_registration:pm_services', 'this connection already holds a line\'s PM authorities')
+    channel = getattr(service, 'channel', None)
+    ingress = channel.ingress if channel is not None else None
+    # VELDO-0205: every line builds its own repository's PM services on the service's connection and the
+    # ingress's, each keyed by repository there; only the process holding the authority lock registers,
+    # and a second build of one repository's services is refused before anything is registered.
+    lock = getattr(service, 'lock', None)
+    if lock is not None:
+        for conn in (service.conn,) + ((ingress.conn,) if ingress is not None else ()):
+            problem = organ('control_api_authority').authority_problem(lock, conn)
+            if problem is not None:
+                raise Refused(problem, 'PM services register only on a connection the authority\'s process opened')
+    if any(line.repository in ((service.conn.command_registry.get(operation) or {}).get('repositories') or {})
+           for operation in (CT.OPERATION, organ('control_backlog').OPERATION, 'accept_snapshot')):
+        raise Refused('invalid_registration:pm_services', 'this repository\'s PM services are on this connection')
+    served = getattr(ingress, 'served', None)
+    if served is not None and line.repository not in served:
+        raise Refused('invalid_input:repository', 'the ingress serves no inbox of this repository')
     modules = line.run.__func__.__globals__
     store, membership, assignment = modules['S'], modules['CM'], modules['I']
     ids = dict(domain_uuid=service.domain, repository_uuid=line.repository, store_uuid=service.store)
@@ -575,27 +591,34 @@ def from_line(line):
                      inbox=inbox, assignment=assignment, requester=service.principal, request_sign=signature,
                      authority_generation=service.generation)
     services = {'inbox': inbox, 'backlog': backlog, 'teams': teams}
-    allocations = organ('control_alias').attach(store, service.conn, service.domain, {line.repository: line.workspace})
+    # The allocation authority is one domain's over every served repository: the first line attaches it,
+    # over every line's repository and workspace, and each line binds its own publisher to it.
+    allocations = getattr(service, 'allocations', None)
+    if allocations is None:
+        workspaces = {repository: one.workspace for repository, one in (getattr(line.loop, 'lines', None) or {}).items()}
+        workspaces[line.repository] = line.workspace
+        allocations = service.allocations = organ('control_alias').attach(store, service.conn, service.domain, workspaces)
     publisher = organ('control_document').Publisher(allocations, line.workspace, service.verify,
                                                     service.config['host_identity'])
     services['decomposition'] = organ('control_decomposition').Decomposition(backlog, allocations, publisher)
-    channel = getattr(service, 'channel', None)
-    if channel is not None:
-        ingress = channel.ingress
+    if ingress is not None:
         if row(service.conn, 'project:factory') is not None:
-            intake_module = organ('control_intake')
-            services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
-                domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
-                    "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
-                journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
-                authority_generation=service.generation)
+            # Intake is domain wide: built once on the service's connection and shared by every line.
+            if getattr(service, 'intake', None) is None:
+                service.intake = organ('control_intake').Intake(store, membership, modules['AC'], ingress.acquirer,
+                    service.conn, domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
+                        "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
+                    journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
+                    authority_generation=service.generation, repositories=sorted(getattr(service, 'repositories', ())))
+            services['intake'] = service.intake
         # Grooming has one authority, the connection its services use: the ingress's own, which the
         # locked service opened for its channel (VELDO-0138), so its backlog is built on that one too.
         groomed = backlog_module.Backlog(store, membership, ingress.conn, ids, service.principal, service.sign,
                                          workspace=line.workspace, authority_generation=service.generation)
+        own = served[line.repository] if served is not None else (ingress.inbox, ingress.presenter, ingress.settlement)
         services['grooming'] = organ('control_grooming').Grooming(store, membership, ingress.conn, ids,
             service.principal, service.sign, backlog=backlog_module, service=groomed, assignment=assignment,
-            inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,
+            inbox=own[0], presenter=own[1], settlement=own[2],
             requester=(service.principal, signature), workspace=line.workspace,
             authority_generation=service.generation)
     return ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
