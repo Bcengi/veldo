@@ -47,21 +47,19 @@ its new project's repository, and the unclear-route question labels each project
 
 ## Rows (scripts/suites/95_veldo_0205_multirepo.py)
 
-| Row | What it drives and requires |
-| --- | --- |
-| pm/two-lines | The production Service on its own connection holding the lock, the real ingress, two lines and from_line: exactly two connections opened; every keyed command serves both repositories; per repository a signed chain (intake, objective, feature, take, publish, prepare, grooming, admission), a snapshot, a team proposal and an inbox request opened and answered, every record read back with its own repository_uuid. |
-| pm/same-repository-twice | A's line built again: `invalid_registration:pm_services`, journal head and both registries unchanged. |
-| pm/unserved-repository | Each keyed command on each connection, named for a third repository directly through control_store execute: `invalid_input:repository`, nothing written; the signed command for it through the service: `missing_authority:repository_not_served`. |
-| lock/not-the-authority | from_line and open_channel with a descriptor of the store's lock this process does not hold: `missing_authority:not_the_authority`, registries unchanged. |
-| pm/cross-repository | An allocation, snapshot, team propose (both directions), team assign, backlog take (both directions), inbox answer and disposition, backlog operation and grooming proposal signed with one repository's ids naming the other's entity: each named refusal, the entity and both journal heads unchanged. |
-| pm/views | Each repository's inbox index, backlog listing, cycle records, pending obligations and accepted pm_snapshot_inputs list its own records only. |
-| telegram/one-repository | The same store served as one repository: no repository_label, and the presentation, hint and notice are the bytes control_channel_presentation renders at 01734c59 (read with git show). |
-| telegram/two-presentations | One pending request per repository, one tick: two messages through the one bot, each beginning with its own label. |
-| telegram/reply-routes | B's message answered: B's request settled by B's settlement, A's pending; then A's answered and settled. |
-| telegram/label-bound | A receipt whose label is removed or changed (written into the store) is `presentation_mismatch`. |
-| telegram/addressed-by-project | Messages carrying A's and B's ticket keys and an API request naming A's project: each proposal records its project's repository, each hint begins with that label, and only that repository's snapshot inputs list it. |
-| telegram/unaddressed | A message naming no project: a factory inbox proposal only the factory project's cycle inputs list; routed to B's project, listed in B's inputs only. |
-| telegram/unserved-project | A ticket key of a project on an adopted but unserved repository: refused `missing_authority:repository_not_served`, no proposal, the owner told so. |
+- **pm/two-lines**: The production Service on its own connection holding the lock, the real ingress, two lines and from_line: exactly two connections opened; every keyed command serves both repositories; per repository a signed chain (intake, objective, feature, take, publish, prepare, grooming, admission), a snapshot, a team proposal and an inbox request opened and answered, every record read back with its own repository_uuid.
+- **pm/same-repository-twice**: A's line built again: `invalid_registration:pm_services`, journal head and both registries unchanged.
+- **pm/unserved-repository**: Each keyed command on each connection, named for a third repository directly through control_store execute: `invalid_input:repository`, nothing written; the signed command for it through the service: `missing_authority:repository_not_served`.
+- **lock/not-the-authority**: from_line and open_channel with a descriptor of the store's lock this process does not hold: `missing_authority:not_the_authority`, registries unchanged.
+- **pm/cross-repository**: An allocation, snapshot, team propose (both directions), team assign, backlog take (both directions), inbox answer and disposition, backlog operation and grooming proposal signed with one repository's ids naming the other's entity: each named refusal, the entity and both journal heads unchanged.
+- **pm/views**: Each repository's inbox index, backlog listing, cycle records, pending obligations and accepted pm_snapshot_inputs list its own records only.
+- **telegram/one-repository**: The same store served as one repository: no repository_label, and the presentation, hint and notice are the bytes control_channel_presentation renders at 01734c59 (read with git show).
+- **telegram/two-presentations**: One pending request per repository, one tick: two messages through the one bot, each beginning with its own label.
+- **telegram/reply-routes**: B's message answered: B's request settled by B's settlement, A's pending; then A's answered and settled.
+- **telegram/label-bound**: A receipt whose label is removed or changed (written into the store) is `presentation_mismatch`.
+- **telegram/addressed-by-project**: Messages carrying A's and B's ticket keys and an API request naming A's project: each proposal records its project's repository, each hint begins with that label, and only that repository's snapshot inputs list it.
+- **telegram/unaddressed**: A message naming no project: a factory inbox proposal only the factory project's cycle inputs list; routed to B's project, listed in B's inputs only.
+- **telegram/unserved-project**: A ticket key of a project on an adopted but unserved repository: refused `missing_authority:repository_not_served`, no proposal, the owner told so.
 
 ## Red record
 

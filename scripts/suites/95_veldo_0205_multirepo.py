@@ -61,9 +61,7 @@ def _v205_suite():
 
     proof = Path(__suite_file__).resolve().parents[2] / 'proof'
 
-    # ---------------------------------------------------------------------------------------------
     # AC1 and AC2: the PM services of two lines on the service's and the ingress's connections.
-    # ---------------------------------------------------------------------------------------------
 
     def pm_part():
         helper = load('v205_v88_fixture', proof / 'VELDO-0088/fixture.py')
@@ -403,9 +401,7 @@ def _v205_suite():
                 svc.channel.close()
             os.close(lock)
 
-    # ---------------------------------------------------------------------------------------------
     # AC3 and AC4: one bot for both repositories.
-    # ---------------------------------------------------------------------------------------------
 
     def telegram_part():
         H = load('v205_v73', ROOT / 'scripts/suites/support/v73_authority.py')

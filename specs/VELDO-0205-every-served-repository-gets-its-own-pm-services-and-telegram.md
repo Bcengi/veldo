@@ -53,6 +53,7 @@ footprint:
   - "engine/.veldo/control_signer_answers.py"
   - ".veldo/control_signer_answers.py"
   - "scripts/suites/92_veldo_0088_pm_cycles.py"
+  - "scripts/suites/68_veldo_0126_intake.py"
   - "scripts/suites/*_veldo_0205_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

@@ -208,11 +208,10 @@ def _serve(conn, receiver):
                           if isinstance(cid, str) and cid.startswith(claim_id(repository, ''))), None)
             if judge is None:
                 raise S.StoreRefused('invalid_input:repository', 'no claim service of this repository is on this connection')
-            return judge._in_transaction(conn, params, before)
+            return judge.registration['claim_operation']['transaction_transition'](conn, params, before)
 
-        conn.command_registry['claim_operation'] = {
-            'transaction_transition': transaction_transition, 'writes': ('entities', 'journal', 'commands', 'nonces'),
-            'repositories': served}
+        conn.command_registry['claim_operation'] = dict(receiver.registration['claim_operation'],
+                                                        transaction_transition=transaction_transition, repositories=served)
     served[receiver.ids['repository_uuid']] = receiver
 
 
@@ -229,7 +228,11 @@ class Receiver:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self.gate = None
-        # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection.
+        # VELDO-0169: the claim organ decides every claim record, on this receiver's own connection, through
+        # this registration, which the connection's one claim transition hands its repository's commands to.
+        self.registration = {}
+        self.registration['claim_operation'] = {
+            'transaction_transition': self._in_transaction, 'writes': ('entities', 'journal', 'commands', 'nonces')}
         _serve(conn, self)
 
     def apply(self, packet):

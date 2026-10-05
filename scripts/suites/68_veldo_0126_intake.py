@@ -599,8 +599,10 @@ def _v126_suite():
                 touched = set()
                 for (t,) in conn.execute("SELECT transition FROM journal WHERE command_id LIKE 'intake%'"):
                     touched |= {v.get('kind') for v in json.loads(t).values()}
-                fields = {'schema', 'proposal_id', 'proposal', 'state', 'domain', 'project', 'principal', 'text', 'sources',
-                          'clarifications', 'question_id', 'resolves', 'resolved_to', 'context', 'decision', 'route', 'hints'}
+                # VELDO-0205: a proposal records its project's execution repository.
+                fields = {'schema', 'proposal_id', 'proposal', 'state', 'domain', 'project', 'repository', 'principal', 'text',
+                          'sources', 'clarifications', 'question_id', 'resolves', 'resolved_to', 'context', 'decision',
+                          'route', 'hints'}
                 observed['admission'] = {'kinds': sorted(kinds), 'touched': sorted(touched), 'proposals': len(proposals)}
                 check('intake/no-admission', [
                     ('proposals were made', len(proposals) >= 10),
