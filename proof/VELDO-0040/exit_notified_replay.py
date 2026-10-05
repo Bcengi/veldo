@@ -121,6 +121,7 @@ for _name in ('conclude', '_show', 'close'):
                     + '                release(idle)')
         source = source.replace("                window = counted[-1][0]",
                     "                (Path(os.environ['HOME']) / 'exit-row-done').touch()\n"
+                    "                observed['idle_supervision'] = idle.supervision\n"
                     "                window = counted[-1][0]")
         suite.write_text(source + '\n__import__("pathlib").Path(__import__("os").environ["HOME"], '
                          '"observed.json").write_text(__import__("json").dumps(_V40_OBSERVED))\n')
@@ -183,6 +184,7 @@ for _name in ('conclude', '_show', 'close'):
             row = dict(index=home.name, code=proc.returncode, seconds=time.monotonic() - started,
                        log_sha256=sha(output), observed_sha256=sha(observed_path.read_bytes()) if observed else None,
                        exit=observed.get('exit_notified'), unit=observed.get('idle_unit'),
+                       supervision=observed.get('idle_supervision'),
                        passed=observed.get('assertions', {}).get('containment/exit-notified', False),
                        failed_assertions=[k for k, v in observed.get('assertions', {}).items() if not v],
                        raised=observed.get('raised'),
@@ -223,6 +225,12 @@ for _name in ('conclude', '_show', 'close'):
               wakes=sorted(set(r['exit']['receiver_wakes'] for r in result['runs'] if r['exit'])))
         result['summary']['reload_covered_exits'] = sum(r['reload_during_exit'] for r in result['runs'])
         result['summary']['scopes_created'] = sum(r['scopes'] for r in result['load'])
+        result['summary']['manager_successes'] = sum(
+            (r['supervision'] or {}).get('manager_result') == 'success'
+            and bool((r['supervision'] or {}).get('scope_timestamps')) for r in result['runs'])
+        result['summary']['manager_absent_with_reason'] = sum(
+            (r['supervision'] or {}).get('manager_result') is None
+            and bool((r['supervision'] or {}).get('manager_result_absent_reason')) for r in result['runs'])
         args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
         print(json.dumps(result['summary']), flush=True)
 
