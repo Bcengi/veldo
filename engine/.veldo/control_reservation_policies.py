@@ -39,7 +39,7 @@ def organ(name):
     return module
 
 
-AUTH = organ('control_api_authority')
+AUTH = organ('control_authority_lock')
 RES = organ('control_reservations')
 TR = organ('control_team_routes')
 CT = TR.CT

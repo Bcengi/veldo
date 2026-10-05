@@ -65,12 +65,10 @@ refused missing_authority:not_the_authority with nothing read or written.
 WHAT IT IS NOT. Not the transport: the service socket and its client are control_service_api and
 control_client_api. Standard library only.
 """
-import fcntl
 import hashlib
 import hmac
 import importlib.util
 import json
-import os
 from pathlib import Path
 import sqlite3
 import time
@@ -83,6 +81,7 @@ def organ(name):
     return module
 
 
+LOCK = organ('control_authority_lock')
 AS = organ('control_api_assertion')
 CR = organ('control_api_credentials')
 MO = organ('control_api_models')
@@ -98,7 +97,7 @@ ENDED = ('exited', 'refused', 'unknown')
 CM, AC = CR.CM, CR.AC
 SCHEMA = 'veldo.api_authority_observation/v1'
 HINT_SCHEMA = 'veldo.control_notification/v1'  # control_notify.SCHEMA, the VELDO-0046 hint
-LOCK_NAME = 'authority.lock'  # control_service.LOCK_NAME: the stable lock file beside the store
+LOCK_NAME = LOCK.LOCK_NAME
 # The error classes of the specification's taxonomy, from each organ's own class names.
 CLASSES = {'missing_authority': 'unauthorized', 'stale_subject': 'stale_version', 'invalid_input': 'invalid_input',
            'unsupported_configuration': 'invalid_input', 'missing_evidence': 'missing_evidence',
@@ -131,23 +130,8 @@ def _class_of(code):
     return CLASSES[head] if head in CLASSES else CLASSES.get(WF.taxonomy(code), 'unknown_outcome')
 
 
-def authority_problem(lock, conn):
-    """Why this process may not run the authority's commands and reads on `conn`, or None: `lock` must be
-    an open descriptor of the stable lock file beside the store `conn` opened, on which this process holds
-    the exclusive flock (taking it again on the same descriptor succeeds only for its holder). A store the
-    connection cannot name is a store error (sqlite3.Error), as any unreadable store is."""
-    rows = conn.execute('PRAGMA database_list').fetchall()
-    store = next((row[2] for row in rows if row[1] == 'main' and row[2]), None)
-    if store is None or type(lock) is not int:
-        return 'missing_authority:not_the_authority'
-    try:
-        held, named = os.fstat(lock), os.stat(os.path.join(os.path.dirname(store), LOCK_NAME))
-        if (held.st_dev, held.st_ino) != (named.st_dev, named.st_ino):
-            return 'missing_authority:not_the_authority'
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        return 'missing_authority:not_the_authority'
-    return None
+# Preserve the API authority's public check; all writers use the same implementation.
+authority_problem = LOCK.authority_problem
 
 
 class ApiAuthority:

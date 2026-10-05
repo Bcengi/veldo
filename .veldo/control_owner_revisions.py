@@ -12,7 +12,7 @@ def organ(name):
     return module
 
 
-AUTH = organ('control_api_authority')
+AUTH = organ('control_authority_lock')
 CG = organ('control_agent_config')
 TR = organ('control_team_routes')
 OPERATIONS = {'save_capability_configuration': CG.SAVE, 'save_default_team': TR.SAVE}

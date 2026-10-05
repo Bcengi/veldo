@@ -22,6 +22,8 @@ def install(base, cache):
     base, cache = Path(base), Path(cache)
     loader = importlib.machinery.SourceFileLoader
     original_compile, original_exec = loader.source_to_code, loader.exec_module
+    original_get_code = loader.get_code
+    codes = {}
 
     def publish(path, data):
         temporary = path.with_suffix('.%d.tmp' % os.getpid())
@@ -38,6 +40,18 @@ def install(base, cache):
         code = original_compile(self, data, path, _optimize=_optimize)
         publish(target, marshal.dumps(code))
         return code
+
+    def get_code(self, fullname):
+        # Sharing immutable code keeps every module execution and its globals separate.
+        # Read the source on every load: a restored or mutated file must never reuse
+        # bytecode solely because its timestamp and length happen to match.
+        if not Path(self.path).is_relative_to(base):
+            return original_get_code(self, fullname)
+        data = self.get_data(self.path)
+        key = (self.path, hashlib.sha256(data).digest(), sys.flags.optimize)
+        if key not in codes:
+            codes[key] = compile_source(self, data, self.path)
+        return codes[key]
 
     def census(module, function, args):
         directory = module.HERE
@@ -72,9 +86,12 @@ def install(base, cache):
                     setattr(module, name, cached)
 
     loader.source_to_code, loader.exec_module = compile_source, execute
+    loader.get_code = get_code
 
     def close():
         loader.source_to_code, loader.exec_module = original_compile, original_exec
+        loader.get_code = original_get_code
+        codes.clear()
     return close
 
 

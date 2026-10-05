@@ -14,6 +14,14 @@ depends_on: [VELDO-0036, VELDO-0062, VELDO-0076, VELDO-0089, VELDO-0139, VELDO-0
 placement: [engine, fleet, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_factory_setup.py"
+  - ".veldo/control_factory_setup.py"
+  - "engine/.veldo/control_authority_lock.py"
+  - ".veldo/control_authority_lock.py"
+  - "engine/.veldo/control_api_authority.py"
+  - ".veldo/control_api_authority.py"
+  - "engine/.veldo/control_owner_revisions.py"
+  - ".veldo/control_owner_revisions.py"
   - "engine/.veldo/control_reservation_policies.py"
   - ".veldo/control_reservation_policies.py"
   - "engine/.veldo/control_service.py"
@@ -21,6 +29,7 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0204_*.py"
+  - "scripts/suites/support/setup_runtime.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -288,3 +297,23 @@ account pool re-raises it (it is no account refusal, so never no_account); AC1's
 missing_ceiling:account stands. A service/serve row starts serve as its own process and requires its start
 record's provisioning done, and the finding-204 mutation v204-serve-lock-dropped drops the lock serve hands
 to open_loop and reds it.
+
+2026-10-04, upgrade suite runtime: the gate cannot land VELDO-0203 and VELDO-0204 while
+VELDO-0189 exceeds the mutation worker budget. Extend the footprint to the setup suites' shared
+runtime helper to reuse immutable compiled code by source path, bytes and optimization level.
+Every module still executes with separate globals, and every setup, store, service process,
+kill point, behavior assertion and fake/capture check remains in place. The suite file is unchanged.
+Selected-suite measurements and checks are recorded separately from gate evidence in
+proof/VELDO-0204/upgrade-suite-runtime.json; the full gate and mutations remain the reviewer's work.
+
+The same profile exposed a production startup regression: both new owner-configuration modules
+loaded the full API judge only to check its store lock. Extract that unchanged check into
+control_authority_lock, keep control_api_authority.authority_problem as its public alias, and
+have both new writers load the small shared module. The footprint includes these files and
+control_owner_revisions for this fix; init_scaffold installs the shared lock module.
+
+Setup also reloaded the service and other fixed engine modules repeatedly during one command.
+Cache those module instances only for the duration of a single setup invocation, resetting the
+context on success and refusal. A later setup still starts with fresh module globals and re-reads
+its engine. This removes repeated production startup work without sharing host or store state
+between the suite's rows. The setup module's two copies join the footprint for this change.

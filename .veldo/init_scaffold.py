@@ -274,6 +274,7 @@ _FILES = [
     ".veldo/control_api.py",
     ".veldo/control_api_assertion.py",
     ".veldo/control_api_authority.py",
+    ".veldo/control_authority_lock.py",
     ".veldo/control_api_credentials.py",
     ".veldo/control_api_models.py",
     ".veldo/control_api_signer.py",

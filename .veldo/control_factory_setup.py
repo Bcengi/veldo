@@ -50,6 +50,8 @@ state root's contents, the host trust file and the workspace binding at
 Observations and output carry paths, identities and digests, never a private key byte, a signature or the
 token. Standard library only; every organ is loaded as a sibling by path.
 """
+import contextvars
+import functools
 import importlib.util
 import json
 import os
@@ -63,10 +65,30 @@ import time
 import uuid
 
 
+_SETUP_MODULES = contextvars.ContextVar('factory_setup_modules', default=None)
+
+
+def _one_setup(function):
+    """Load fixed engine modules once per setup, never share mutable modules across runs."""
+    @functools.wraps(function)
+    def call(*args, **kwargs):
+        token = _SETUP_MODULES.set({})
+        try:
+            return function(*args, **kwargs)
+        finally:
+            _SETUP_MODULES.reset(token)
+    return call
+
+
 def organ(name):
+    modules = _SETUP_MODULES.get()
+    if modules is not None and name in modules:
+        return modules[name]
     spec = importlib.util.spec_from_file_location('factory_setup_' + name, Path(__file__).with_name(name + '.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    if modules is not None:
+        modules[name] = module
     return module
 
 
@@ -361,6 +383,7 @@ class _Step:
         return False
 
 
+@_one_setup
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
           tailscale=None, api_port=None):
