@@ -1409,7 +1409,7 @@ work:
     stage: 5
   - item: W152
     spec: VELDO-0205
-    title: Every repository the factory serves gets its own working PM services on the one shared store connection, each command judged, written and shown only by the services of the repository it names, and the owner's Telegram requests and replies reach the right repository through the one bot, each message naming its repository
+    title: Every repository the factory serves gets its own working PM services on the one shared store connection, each command judged, written and shown only by the services of the repository it names, and the owner's Telegram requests and replies reach the right repository through the one bot, each message naming its repository when the factory serves more than one
     feature_refs: [F7, F5]
     depends_on: [VELDO-0035, VELDO-0037, VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0078, VELDO-0079, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0149, VELDO-0152, VELDO-0154, VELDO-0171]
     order: 15190
