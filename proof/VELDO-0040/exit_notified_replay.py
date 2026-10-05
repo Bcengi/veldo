@@ -186,7 +186,14 @@ for _name in ('conclude', '_show', 'close'):
                        passed=observed.get('assertions', {}).get('containment/exit-notified', False),
                        failed_assertions=[k for k, v in observed.get('assertions', {}).items() if not v],
                        raised=observed.get('raised'),
-                       failures=[line for line in output.decode(errors='replace').splitlines() if 'SELFTEST FAIL:' in line])
+                       failures=[': '.join(line.split(': ', 2)[:2]) for line in output.decode(errors='replace').splitlines()
+                                 if 'SELFTEST FAIL:' in line])
+            regression = observed.get('exit_independent_of_manager')
+            if regression and args.receiver_ref:
+                row['regression'] = dict(
+                    manager_delay_seconds=[r['elapsed'] - 10.5 for r in regression['rows']],
+                    manager_calls=[r['calls'] for r in regression['rows']],
+                    guard_manager_calls=[r['calls'] for r in regression['guards']])
             print(home.name, row['code'], row['exit'], flush=True)
             return row
         try:

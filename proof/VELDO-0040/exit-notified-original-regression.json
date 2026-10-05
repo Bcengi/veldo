@@ -1,11 +1,11 @@
 {
   "diagnostic_digests": {
-    ".veldo/control_containment.py": "7fa168055772235754e90a533c482801550471d4f6da65e5d9bba58a0cc175ba",
-    ".veldo/control_launch.py": "7f64e9357a8cf644a95e82b9a97c72d9d626ed3cc734d730eaf56c4852a8097f",
-    "scripts/suites/63_veldo_0040_containment.py": "837296c03361762e8baf5b8c3edb61128752e1e38bb32eafcf3aca8606e4a263"
+    ".veldo/control_containment.py": "624ac326fa293d7372c6eccc7fdfeef477208bb4e15a4c53173a2cbe01a721b9",
+    ".veldo/control_launch.py": "93f3f584411bc5f1f9a87c493e4b032180769c11789672f30347baa160dcb0bb",
+    "scripts/suites/63_veldo_0040_containment.py": "aa7aa3df99b7dde8e0e8260c74510b8731cdc157702a4ec2bd2449e75a3e357c"
   },
-  "head": "e4f5a7caf48a07dfb14fd1ccea4a8dceb66bf1f8",
-  "input_digest": "ecad9605172a58b51d64478e5e3d637c0425cd4dddebc138c48c7a2b0f02fca0",
+  "head": "4bf99c9dcad7ba1d1642125fa6962410d29c2e40",
+  "input_digest": "cfc994b5a7ebf4deaa818851cff12a61b9b091329ab21dd0f071dab97e5e23d8",
   "load": [],
   "receiver_ref": "7aca8f15",
   "reload": false,
@@ -14,42 +14,64 @@
     {
       "code": 1,
       "exit": {
-        "exit_at": 1791217429.7531972,
+        "exit_at": 1791218764.2567291,
         "idle_worker_alive_in_window": true,
         "latency": 0.008,
         "receiver_wakes": 0,
-        "recorded_at": 1791217429.7615154,
-        "window_seconds": 1.84
+        "recorded_at": 1791218764.2646759,
+        "window_seconds": 1.79
       },
       "failed_assertions": [
         "containment/exit-independent-of-manager"
       ],
       "failures": [
-        "  SELFTEST FAIL: VELDO-0040 containment/exit-independent-of-manager: {\"guards\": [{\"calls\": 1, \"elapsed\": 11.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [1000000]}, {\"calls\": 1, \"elapsed\": 11.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 1, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 11.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": 10.5}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 143, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 12.2, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 11.2, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1011.2, \"empty_monotonic\": 11.2, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 11.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": \"memory_cap\", \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 1, \"result\": \"oom-kill\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 11.5, \"inferred\": \"exit\", \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": \"exit\", \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [{\"at\": 1010.5, \"monotonic\": 10.5, \"step\": \"terminate\"}], \"stop_monotonic\": 10.5}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 12.2, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1011.2, \"empty_monotonic\": 11.2, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}], \"rows\": [{\"calls\": 1, \"elapsed\": 11.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}, {\"calls\": 1, \"elapsed\": 15.5, \"inferred\": null, \"reads\": [\"conclude\"], \"supervision\": {\"adapter_exit_monotonic\": 10.5, \"cause\": null, \"deadline\": 2000, \"empty\": true, \"empty_at\": 1010.5, \"empty_monotonic\": 10.5, \"graces\": {\"kill_grace_seconds\": 1, \"stop_grace_seconds\": 1}, \"group\": {\"unit\": \"fake.scope\"}, \"heartbeat\": null, \"manager_result\": \"success\", \"oom_kill\": 0, \"result\": \"success\", \"scope_start\": {\"ActiveEnterTimestampMonotonic\": 10000000, \"RuntimeMaxUSec\": 1200000, \"TimeoutStopUSec\": 500000}, \"scope_timestamps\": {\"ActiveEnterTimestampMonotonic\": 100, \"ActiveExitTimestampMonotonic\": 200, \"InactiveEnterTimestampMonotonic\": 300}, \"steps\": [], \"stop_monotonic\": null}, \"termination\": {\"deadline_stop\": false, \"output_bytes\": 0, \"output_digest\": \"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"returncode\": 0, \"signal\": null}, \"waits\": [11200]}]}"
+        "  SELFTEST FAIL: VELDO-0040 containment/exit-independent-of-manager"
       ],
       "index": "run-000",
-      "log_sha256": "3df88ec3e710c21ffa9f976108798c3d3c7e81edb9a503e0a652bff093f5425b",
-      "observed_sha256": "da749305a807a2ad82915ae228a05a9e112ea0d9a2d0947d9b66304a84977ef1",
+      "log_sha256": "f65f4225e3ae2722e68b3b422c752bb64814ae2fb0bb59ad23b77a71b8f29c36",
+      "observed_sha256": "f11927733bbcca72320c055a70031e74d15f4a56b2658dc3cd86dda1704c081b",
       "passed": true,
       "raised": [],
-      "reload_during_exit": false,
-      "seconds": 10.842160840053111,
-      "timing": {
-        "_show_seconds": 0.003091936931014061,
-        "close_seconds": 3.238813951611519e-05,
-        "conclude_seconds": 0.0031561623327434063,
-        "pidfd_after_exit": 0.00318145751953125,
-        "record_after_pidfd": 0.005136728286743164
+      "regression": {
+        "guard_manager_calls": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "manager_calls": [
+          1,
+          1
+        ],
+        "manager_delay_seconds": [
+          1.0,
+          5.0
+        ]
       },
-      "unit": "veldo-dispatch-0d6257b910b4af56e24fa7f8b7408a2f.scope"
+      "reload_during_exit": false,
+      "seconds": 10.649656263180077,
+      "timing": {
+        "_show_seconds": 0.0030844667926430702,
+        "close_seconds": 3.049708902835846e-05,
+        "conclude_seconds": 0.00313251418992877,
+        "kernel_exit": null,
+        "memory_sampled": true,
+        "pidfd_after_exit": 0.0028400421142578125,
+        "record_after_pidfd": 0.005106687545776367
+      },
+      "unit": "veldo-dispatch-2bfe091ef83733b7542f8394d4cbc8fe.scope"
     }
   ],
   "scope_load": 0,
   "sources": {
-    ".veldo/control_containment.py": "aa31a64bcb54fdacfbbf843fd6cfa7bdb909122589b5b931f20046dc53cbb43c",
+    ".veldo/control_containment.py": "7c52794ef504ad3896a07d2c4f35d36dfdb39badb1332d9b40a265e33493ef07",
     ".veldo/control_launch.py": "220bfc3bd61a86ed953bc2d6ea73893559ba77bee0a69ff9981f8edf2af23172",
     "scripts/check_gate_mutations.py": "a84d341123cc64dc5e54464f915d3b8b7683111f8f5acba8aa7879db6758e8b7",
-    "scripts/suites/63_veldo_0040_containment.py": "b62e7fd3208b5c4e23cbed54e40a8cac59820ac19f20e41f98af1fee10125d67"
+    "scripts/suites/63_veldo_0040_containment.py": "b1e8ebd58bb1c462df4d4dc25eab1b40a1218fbcebaf8bb8058f9bbeaee7283c"
   },
   "summary": {
     "latency": {
@@ -67,6 +89,6 @@
       0
     ]
   },
-  "trace_sha256": "b666d61c12110c6300888336753c0435ae1549df1e80e753eb427eac73aaa9b7",
+  "trace_sha256": "0ae521207f71ff8e504b799c4bc6f98209cf2d224a2f1cb3d4352b8655e5b69c",
   "workers": 1
 }

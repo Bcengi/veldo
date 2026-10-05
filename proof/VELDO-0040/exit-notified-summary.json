@@ -1,7 +1,42 @@
 {
   "cause": "The pidfd notification is prompt. The subsequent synchronous Group.conclude systemctl query waits for the shared user manager during reloads, delaying the durable exit record.",
+  "cleanup_observed": {
+    "preexisting_slice_observation_sha256": "706ceed93260cf374d957948910edc247be4944315bc48fd2dc72311500fc7a1",
+    "preexisting_slices_active_since": "2026-10-02",
+    "preexisting_slices_left_untouched": [
+      "v40cce045c3a.slice",
+      "v40cce045c3b.slice"
+    ],
+    "scope_load_units": 0,
+    "suite_shm_directories": 0,
+    "task_created_suite_slices": 0,
+    "temporary_replay_directories": 0
+  },
   "evidence": {
+    "exit-notified-after-reloads.json": {
+      "max_final_manager_query_seconds": 0,
+      "max_pidfd_latency_seconds": 0.00493621826171875,
+      "sha256": "232790bd4e4d0116e066379f3c11ef01192171a9f8ae9afbcbfae5439aec502f",
+      "summary": {
+        "latency": {
+          "max": 0.007,
+          "min": 0.004,
+          "p50": 0.005,
+          "p95": 0.006
+        },
+        "passed": 80,
+        "reload_covered_exits": 80,
+        "scopes_created": 21420,
+        "suite_passed": 80,
+        "total": 80,
+        "wakes": [
+          0
+        ]
+      }
+    },
     "exit-notified-after-smoke.json": {
+      "max_final_manager_query_seconds": 0,
+      "max_pidfd_latency_seconds": 0.0028839111328125,
       "sha256": "6623e02a05fe7a587beb79fda24f6d1080bd984280d1cb3f61ec906b1032346b",
       "summary": {
         "latency": {
@@ -28,6 +63,8 @@
       }
     },
     "exit-notified-before-reloads.json": {
+      "max_final_manager_query_seconds": 5.005393114872277,
+      "max_pidfd_latency_seconds": 0.00414586067199707,
       "sha256": "6190dbe96d7e4bdc4d45d66d37699214525189198701d05fdc64e7c4f11df920",
       "summary": {
         "latency": {
@@ -47,6 +84,8 @@
       }
     },
     "exit-notified-before-scopes.json": {
+      "max_final_manager_query_seconds": 0.06206770800054073,
+      "max_pidfd_latency_seconds": 0.003777027130126953,
       "sha256": "8f283c226e89b9ed6dc901f21dfa0a8e2cf15671f06d95daf2028763fc9b6db2",
       "summary": {
         "latency": {
@@ -64,6 +103,8 @@
       }
     },
     "exit-notified-before-serial.json": {
+      "max_final_manager_query_seconds": 0.007399112917482853,
+      "max_pidfd_latency_seconds": 0.0045337677001953125,
       "sha256": "b992b372bbdd65910f30415fc37058b481188452cf885cef32f24c27d498db36",
       "summary": {
         "latency": {
@@ -81,7 +122,9 @@
       }
     },
     "exit-notified-original-regression.json": {
-      "sha256": "a86aab9d30fe10bf5544b7b41121a12df5bf00c6ca2163992fcf01ca0345603f",
+      "max_final_manager_query_seconds": 0.0030844667926430702,
+      "max_pidfd_latency_seconds": 0.0028400421142578125,
+      "sha256": "146de107dd602ab42c46f79916f4a86e32f61de656ec5ce57a936cd40d4a50ab",
       "summary": {
         "latency": {
           "max": 0.008,
@@ -110,13 +153,64 @@
   "method": {
     "cleanup": "Temporary snapshots, homes, logs and traces are removed by TemporaryDirectory; suite fixtures stop their own slices and remove their own shm directories.",
     "latency_precision": "Per-run row latency is rounded to milliseconds; the unchanged assertion uses original unrounded timestamps.",
+    "post_fix_cohorts": "One 80-run cohort exercised scope churn and manager reloads simultaneously, with the suite still sequential. It is not two separate 80-run cohorts.",
     "reloads": "A joined thread issues synchronous daemon-reload calls around the idle worker release until its exit row completes. The idle wake window precedes these reloads.",
     "scope_load": "15 joined foreground workers repeatedly run transient systemd scopes, each containing sleep 0.5. Every subprocess is waited for.",
     "snapshot": "Uses check_gate_mutations read_inputs, snapshot and fixed_env helpers without invoking a mutation driver. Production bytes in all before cohorts match 7aca8f15. Diagnostics time pidfd notification, manager queries and scope close.",
     "suite_execution": "Only python3 scripts/selftest.py --suite 63_veldo_0040_containment, one copy at a time."
   },
+  "post_fix_stress": {
+    "all_final_oom_counters_readable": true,
+    "all_reload_commands_succeeded": true,
+    "final_manager_queries": 0,
+    "latency": {
+      "max": 0.007,
+      "min": 0.004,
+      "p50": 0.005,
+      "p95": 0.006
+    },
+    "passed": 80,
+    "reload_covered_exits": 80,
+    "scope_load_errors": 0,
+    "scopes_created": 21420,
+    "simultaneous_scope_workers": 15,
+    "suite_passed": 80,
+    "total": 80,
+    "wakes": [
+      0
+    ]
+  },
+  "regression": {
+    "current_suite_passed": 56,
+    "failed_rows": [
+      "containment/exit-independent-of-manager"
+    ],
+    "guard_manager_calls": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "historical_receiver": "7aca8f15",
+    "manager_calls": [
+      1,
+      1
+    ],
+    "manager_delay_seconds": [
+      1.0,
+      5.0
+    ],
+    "mutation_driver_executed": false,
+    "new_mutants": 3,
+    "registered_finding_40_mutants": 40
+  },
+  "replay_sha256": "acb587d6a24bd7b59a257d762c455bab4e13aa56d2329b1d5fed80a67ab139f6",
   "specification": "VELDO-0040 AC3",
-  "status": "80-run combined stress proof in progress",
+  "status": "Scoped proof complete; full gate and mutation inventory execution reserved for reviewer",
   "unchanged_assertions": [
     "state is exited",
     "receiver_wakes == 0 over at least 1.5 seconds",
