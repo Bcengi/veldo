@@ -1969,7 +1969,15 @@ class Receiver:
         if group is not None:
             # The last populated read can observe an OOM after its memory.events sample.
             group.sample_memory()
-        result = group.conclude() if group is not None and empty else None
+        # A successful adapter and an empty group before the installed runtime
+        # deadline are kernel evidence of ordinary exit. With no stop or OOM,
+        # waiting for the shared manager adds no authority and delays recording
+        # that exit during reloads. Leave its unread result explicitly absent.
+        kernel_exit = (group is not None and empty and code == 0 and cause is None
+                       and stop.cause is None and active > 0 and runtime is not None
+                       and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline
+                       and getattr(group, 'oom_kill', 0) == 0)
+        result = group.conclude() if group is not None and empty and not kernel_exit else None
         manager_result = result
         # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
         signaled = code is not None and (code < 0 or 128 < code <= 192)

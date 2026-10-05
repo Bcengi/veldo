@@ -3127,6 +3127,14 @@ def cases():
             "        if cause in (None, 'exit'):\n",
             "        if cause is None:\n",
             'manager-cap-after-adapter-exit')
+    contain('containment-exit-waits-for-manager', 'control_launch.py',
+            '        result = group.conclude() if group is not None and empty and not kernel_exit else None\n',
+            '        result = group.conclude() if group is not None and empty else None\n',
+            'exit-independent-of-manager')
+    contain('containment-empty-after-cap-skips-manager', 'control_launch.py',
+            'and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline\n',
+            'and adapter_exit_monotonic is not None and adapter_exit_monotonic < runtime_deadline\n',
+            'exit-independent-of-manager')
     contain('containment-result-before-settled', 'control_containment.py',
             "                if (shown.get('LoadState') == 'loaded'\n"
             "                        and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):\n",

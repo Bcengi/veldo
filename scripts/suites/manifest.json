@@ -678,7 +678,7 @@
    "requires": [
     "63_veldo_0040_containment"
    ],
-   "regions": "Each Linux worker in its dispatch's own systemd scope and cgroup under the trusted wrapper, declared caps installed and holding, whole-group stop escalation and OS-notified exit before retirement, activation-based receiver cap during manager reloads, deterministic manager result precedence and bounded settlement",
+   "regions": "Each Linux worker in its dispatch's own systemd scope and cgroup under the trusted wrapper, declared caps installed and holding, whole-group stop escalation and OS-notified exit before retirement, activation-based receiver cap during manager reloads, kernel-confirmed ordinary exit without manager latency, deterministic manager result precedence and bounded settlement",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the owner's systemd user manager (transient scopes in slices of the run's own, stopped at its end) and real receiver, wrapper, worker and descendant processes. Writes only temporary fixtures."
   },
   {

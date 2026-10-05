@@ -486,12 +486,17 @@ sys.exit(payload.get('code', 0))
                 yield group, clock, calls, resets
 
         def reap_sequence(sequence, explicit=None, start=None, code=143, exit_at=0, kill_rest=False, oom=0,
-                          empty_on_exit=False, missing_result=False, late_oom=False):
-            with manager_sequence(sequence) as (group, clock, calls, resets):
+                          empty_on_exit=False, missing_result=False, late_oom=False, show_seconds=0, empty_at=None):
+            with manager_sequence(sequence, show_seconds=show_seconds) as (group, clock, calls, resets):
                 group.start_evidence, group.oom_kill = start or {}, oom
                 population = iter((False, False) if empty_on_exit else
                                   (True, True, False) if kill_rest else (True, False))
-                group.populated = lambda: next(population)
+                def populated():
+                    value = next(population)
+                    if not value and empty_at is not None:
+                        clock[0] = max(clock[0], empty_at)
+                    return value
+                group.populated = populated
                 group.members = lambda: [44]
                 group.terminate = lambda: None
                 group.kill = lambda: None
@@ -666,6 +671,33 @@ sys.exit(payload.get('code', 0))
                                         and row['inferred'] is None and row['supervision']['steps'] == []
                                         and not row['termination']['deadline_stop'] for row in controls),
                 observed['empty_ordinary_after_cap_unknown'])
+
+        with region('containment/exit-independent-of-manager'):
+            # The kernel has witnessed a successful adapter exit and an empty group
+            # before its cap. A manager taking a full second must not delay that exit.
+            rows = [reap_sequence([manager_record('inactive', 'success')], start=start,
+                                 code=0, exit_at=10.5, empty_on_exit=True, show_seconds=delay)
+                    for delay in (1, 5)]
+            guards = [reap_sequence([manager_record('inactive', 'success')],
+                                   start=evidence, code=status, exit_at=at, empty_on_exit=empty,
+                                   oom=oom, show_seconds=1)
+                      for evidence, status, at, empty, oom in (
+                          ({}, 0, 10.5, True, 0), (start, 1, 10.5, True, 0),
+                          (start, 143, 10.5, True, 0), (start, 0, 11.2, True, 0),
+                          (start, 0, 10.5, True, 1), (start, 0, 10.5, False, 0))]
+            guards.append(reap_sequence([manager_record('inactive', 'success')], start=start,
+                                        code=0, exit_at=10.5, empty_on_exit=True, empty_at=11.2,
+                                        show_seconds=1))
+            observed['exit_independent_of_manager'] = dict(rows=rows, guards=guards)
+            check('containment/exit-independent-of-manager', all(
+                0 <= row['elapsed'] - 10.5 < 0.75 and row['calls'] == 0
+                and row['supervision']['adapter_exit_monotonic'] == 10.5
+                and row['supervision']['empty'] and row['supervision']['cause'] is None
+                and row['supervision']['manager_result'] is None
+                and row['supervision']['steps'] == [] and len(row['waits']) == 1
+                and row['termination']['returncode'] == 0
+                for row in rows) and all(row['calls'] > 0 for row in guards),
+                observed['exit_independent_of_manager'])
 
         with region('containment/oom-after-final-populated-sample'):
             row = reap_sequence([gone], start=start, code=0, exit_at=10.5, late_oom=True)
@@ -937,7 +969,7 @@ sys.exit(payload.get('code', 0))
                 check('containment/exit-notified',
                       ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
                       and exit_at is not None and recorded_at is not None
-                      and 0 <= recorded_at - exit_at < 0.75)
+                      and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
 
             # AC2: every declared cap installed before the worker runs, and holding against real descendants
             with region('containment/caps-installed'):

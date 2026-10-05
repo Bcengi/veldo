@@ -216,3 +216,15 @@ signal rows test new behavior; the three negative D1 rows guard existing
 behavior. Selected suite results and mutation evidence live in
 proof/VELDO-0040/empty-scope-runs.json. Full gate and live capture remain with
 the reviewer.
+
+2026-10-05, exit notification during manager reloads (fix-0204-exit-notified):
+a successful pidfd exit and a kernel-empty group before the installed activation
+runtime deadline establish ordinary exit when no stop or OOM occurred. The
+receiver records that exit without a synchronous manager query. Unread manager
+results remain absent. Signals, missing activation evidence, OOM, cleanup stops,
+and groups emptying at or after the cap retain manager settlement and existing
+cause precedence. The 0.75 second latency bound and zero idle wakes are unchanged.
+A deterministic delayed-manager row and two registered mutations protect this
+path and its empty-group deadline guard. Measurements and replay instructions
+are in proof/VELDO-0040/exit-notified.md. Full gate and finding 40 driver execution
+remain with the reviewer under this task's test restrictions.
