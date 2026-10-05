@@ -21,8 +21,15 @@
    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-   "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-   "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+   "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+   "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+   "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+   "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+   "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+   "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+   "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+   "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+   "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -58,6 +65,10 @@
     true
    ],
    [
+    "VELDO-0205 pm/observed",
+    true
+   ],
+   [
     "VELDO-0205 telegram/one-repository",
     true
    ],
@@ -86,9 +97,9 @@
     true
    ]
   ],
-  "seconds": 7.442
+  "seconds": 6.822
  },
- "commit": "30e998fa4e416b2fa4a716676e6b84c6dffdf3f5",
+ "commit": "0c8e97c03f87ef382fbd96325f8005a6ffaed6b4",
  "controls_green": true,
  "mutants": [
   {
@@ -112,8 +123,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: []",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -121,15 +139,17 @@
     "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
     "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
     "VELDO-0205 detail: pm/two-lines each connection keeps one transition per command, serving both repositories; proj-a: every command is accepted and committed with its own ids",
-    "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError)"
+    "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError)",
+    "VELDO-0205 detail: pm/observed the service connection records each team_operation hand-off with the repository it went to"
    ],
    "diff": "proof/VELDO-0205/v205-team-single-registration.diff",
    "failed_rows": [
     "VELDO-0205 pm/two-lines",
-    "VELDO-0205 pm/unserved-repository"
+    "VELDO-0205 pm/unserved-repository",
+    "VELDO-0205 pm/observed"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "316fef2f873b742bfecf8f5e9ac23182cecc30d576d88cf200182ac308e2da69",
+   "mutant_sha256": "ef88a9c9cce05334b822cba20d24c063f42f70f1b2380fc8bac793633474cbc2",
    "name": "v205-team-single-registration",
    "named_row_red": true,
    "named_rows": [
@@ -162,6 +182,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     false
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -190,8 +214,8 @@
      true
     ]
    ],
-   "seconds": 7.421,
-   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+   "seconds": 7.476,
+   "source_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
   },
   {
    "by_assertion": true,
@@ -214,8 +238,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -229,7 +260,7 @@
     "VELDO-0205 pm/cross-repository"
    ],
    "module": ".veldo/control_readset.py",
-   "mutant_sha256": "b16a90199d3ebdbe7c182ba8e68dc76a295cdb346267cd9de81a9cd9727ecdac",
+   "mutant_sha256": "cf495ef07a05d6b75fe6a2b52d437a412d9ef55a80ddfb55cd67cd65a14b5b87",
    "name": "v205-snapshot-skips-revision-repository",
    "named_row_red": true,
    "named_rows": [
@@ -262,6 +293,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -290,8 +325,8 @@
      true
     ]
    ],
-   "seconds": 7.41,
-   "source_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+   "seconds": 7.469,
+   "source_sha256": "e6fb474927d781bdeded1aa54d336f8c81d0dc6e0fee35d66c55586165ea3c9f"
   },
   {
    "by_assertion": true,
@@ -314,8 +349,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('answered', None)]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -362,6 +404,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -390,7 +436,7 @@
      true
     ]
    ],
-   "seconds": 7.477,
+   "seconds": 7.419,
    "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
   },
   {
@@ -414,8 +460,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: importer (0a0a0a0a)\\nProject: project-b\\nI took your message']",
@@ -464,6 +517,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -492,7 +549,7 @@
      false
     ]
    ],
-   "seconds": 7.462,
+   "seconds": 7.395,
    "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
   },
   {
@@ -516,8 +573,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 1} ['Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} []",
@@ -527,6 +591,7 @@
     "VELDO-0205 detail: pm/two-lines proj-a: every command is accepted and committed with its own ids; proj-a: every record it wrote is stored with its own repository",
     "VELDO-0205 detail: pm/unserved-repository assignment_operation for C is refused invalid_input:repository (raised:KeyError); assignment_operation for C is refused invalid_input:repository (raised:KeyError)",
     "VELDO-0205 detail: pm/views proj-a: its accepted pm_snapshot_inputs holds its own decisions only; proj-b: its accepted pm_snapshot_inputs holds its own decisions only",
+    "VELDO-0205 detail: pm/observed the service connection records each assignment_operation hand-off with the repository it went to",
     "VELDO-0205 detail: telegram/two-presentations the one bot sends two messages, one per repository's request; project-a's message begins with its own label",
     "VELDO-0205 detail: telegram/reply-routes then A's answer settles A's request",
     "VELDO-0205 detail: telegram/label-bound the receipt binds its label in the rendered bytes it digests",
@@ -537,13 +602,14 @@
     "VELDO-0205 pm/two-lines",
     "VELDO-0205 pm/unserved-repository",
     "VELDO-0205 pm/views",
+    "VELDO-0205 pm/observed",
     "VELDO-0205 telegram/two-presentations",
     "VELDO-0205 telegram/reply-routes",
     "VELDO-0205 telegram/label-bound",
     "VELDO-0205 telegram/addressed-by-project"
    ],
    "module": ".veldo/control_assignment.py",
-   "mutant_sha256": "ff3846cba5090015a9746c3bf76e821cb1ef2eb75f5eb312c5f47593cf21d3ec",
+   "mutant_sha256": "f140d7427480fc70796b16f066a0d07981b461e719c95cb4c0091dc8ae37b529",
    "name": "v205-inbox-last-registration-wins",
    "named_row_red": true,
    "named_rows": [
@@ -576,6 +642,10 @@
      false
     ],
     [
+     "VELDO-0205 pm/observed",
+     false
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -604,8 +674,8 @@
      true
     ]
    ],
-   "seconds": 6.743,
-   "source_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+   "seconds": 6.734,
+   "source_sha256": "678f2e81f9c0c979e48f177cec643d9a9190775e5358cf121afcf49f1ad9a743"
   },
   {
    "by_assertion": true,
@@ -628,8 +698,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -643,7 +720,7 @@
     "VELDO-0205 pm/unserved-repository"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "11d7dca5bdeca14f0ed75f36c3b29a16499580715a441c39a810b45eb16251b0",
+   "mutant_sha256": "3eb0abf77c680db8b0cb54cd98a809f1576c0b2668e7c5ca9425cfe7174bb590",
    "name": "v205-unserved-repository-judged",
    "named_row_red": true,
    "named_rows": [
@@ -676,6 +753,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -704,8 +785,8 @@
      true
     ]
    ],
-   "seconds": 7.41,
-   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+   "seconds": 7.464,
+   "source_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
   },
   {
    "by_assertion": true,
@@ -728,8 +809,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -743,7 +831,7 @@
     "VELDO-0205 pm/same-repository-twice"
    ],
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "mutant_sha256": "7c5d7316460a4e1f77d4d345e658e481f636f121ebe65dae078fb762d0be2ef8",
+   "mutant_sha256": "dac1c73b0235e2692e886f35ebbff8d2f5592fb23f181ec673aeba9c50137ebd",
    "name": "v205-same-repository-builds-twice",
    "named_row_red": true,
    "named_rows": [
@@ -776,6 +864,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -804,8 +896,8 @@
      true
     ]
    ],
-   "seconds": 7.353,
-   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+   "seconds": 7.494,
+   "source_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
   },
   {
    "by_assertion": true,
@@ -828,8 +920,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -843,7 +942,7 @@
     "VELDO-0205 lock/not-the-authority"
    ],
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "mutant_sha256": "c74d2a0dbba1ec9287f904f6a26bdea813198c5a621df76e78b744135b29d7a0",
+   "mutant_sha256": "d7a4a55a0f2051f3d327960bc71b2d8ee3c1d3570166c0f26867b127b16bbc57",
    "name": "v205-pm-services-lock-unchecked",
    "named_row_red": true,
    "named_rows": [
@@ -876,6 +975,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -904,8 +1007,8 @@
      true
     ]
    ],
-   "seconds": 6.835,
-   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+   "seconds": 6.467,
+   "source_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
   },
   {
    "by_assertion": true,
@@ -928,8 +1031,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -976,6 +1086,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1004,7 +1118,7 @@
      true
     ]
    ],
-   "seconds": 6.853,
+   "seconds": 6.956,
    "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
   },
   {
@@ -1028,8 +1142,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1043,7 +1164,7 @@
     "VELDO-0205 pm/cross-repository"
    ],
    "module": ".veldo/control_team.py",
-   "mutant_sha256": "84320290cfd8210fd48039c34b7c52bc20047f97868f37bcfd44eac3a7936628",
+   "mutant_sha256": "6b51aead5a00e20785c218bba743cfb397c4a63d4a9ccbaabbdf4be4c29497dd",
    "name": "v205-team-ignores-project-repository",
    "named_row_red": true,
    "named_rows": [
@@ -1076,6 +1197,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1104,8 +1229,8 @@
      true
     ]
    ],
-   "seconds": 6.881,
-   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+   "seconds": 7.484,
+   "source_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
   },
   {
    "by_assertion": true,
@@ -1128,8 +1253,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1143,7 +1275,7 @@
     "VELDO-0205 pm/cross-repository"
    ],
    "module": ".veldo/control_backlog.py",
-   "mutant_sha256": "0e87f362dd0a00ea8daa1ebdc57335ba93b90dab8dffe8ffd9fcf2a350bde14c",
+   "mutant_sha256": "34bb265eee8756b1e815c434389cb0d895440d8e98838e3f98effd7b361d1f13",
    "name": "v205-take-ignores-project-repository",
    "named_row_red": true,
    "named_rows": [
@@ -1176,6 +1308,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1204,8 +1340,8 @@
      true
     ]
    ],
-   "seconds": 6.839,
-   "source_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+   "seconds": 7.479,
+   "source_sha256": "561916a1540215fc5de56072994558f805f9e4cb7471610a6dfd2969815d9edb"
   },
   {
    "by_assertion": true,
@@ -1228,8 +1364,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1276,6 +1419,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1304,7 +1451,7 @@
      true
     ]
    ],
-   "seconds": 7.397,
+   "seconds": 7.496,
    "source_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633"
   },
   {
@@ -1328,8 +1475,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b', 'assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1343,7 +1497,7 @@
     "VELDO-0205 pm/views"
    ],
    "module": ".veldo/control_workflow_cycle_pm.py",
-   "mutant_sha256": "b9dc2091af56a43c8a68d43ba0cf68309283c3df8ef2b580c35ff73303aca7a0",
+   "mutant_sha256": "28f56b164cad4ce372f0596161ada202ac6a5a38be6b23b97c7b23ea9b19b332",
    "name": "v205-snapshot-reads-every-decision",
    "named_row_red": true,
    "named_rows": [
@@ -1376,6 +1530,10 @@
      false
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1404,8 +1562,8 @@
      true
     ]
    ],
-   "seconds": 7.429,
-   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+   "seconds": 7.499,
+   "source_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
   },
   {
    "by_assertion": true,
@@ -1428,8 +1586,237 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89', 'dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89', 'dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/views proj-a: its accepted pm_snapshot_inputs holds its own dispatch only; proj-b: its accepted pm_snapshot_inputs holds its own dispatch only"
+   ],
+   "diff": "proof/VELDO-0205/v205-snapshot-reads-every-dispatch.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/views"
+   ],
+   "module": ".veldo/control_workflow_cycle_pm.py",
+   "mutant_sha256": "8e4591e64525f0c500987fc2b52bfa8c5f2f55bbd4d6c832485bfef00e903977",
+   "name": "v205-snapshot-reads-every-dispatch",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/views"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     false
+    ],
+    [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 7.553,
+   "source_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', None)]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
+    "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
+    "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
+    "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
+    "VELDO-0205 detail: routed: True None project-b 0b0b0b0b-205b-4000-8000-00000000000b",
+    "VELDO-0205 detail: unserved: refused missing_authority:repository_not_served ['That message names a project whose repository this factory does not se']",
+    "VELDO-0205 detail: one-repository hint: ['I took your message as new work, not as an answer to a reque']",
+    "VELDO-0205 detail: pm/observed the service connection records each team_operation hand-off with the repository it went to"
+   ],
+   "diff": "proof/VELDO-0205/v205-handoff-names-no-repository.diff",
+   "failed_rows": [
+    "VELDO-0205 pm/observed"
+   ],
+   "module": ".veldo/control_team.py",
+   "mutant_sha256": "f331291e42d8ffb7ef23e731427e956679ccfa8e0bf247f4ab8fcbdf44c1cfba",
+   "name": "v205-handoff-names-no-repository",
+   "named_row_red": true,
+   "named_rows": [
+    "pm/observed"
+   ],
+   "preamble_rows": 26,
+   "rows": [
+    [
+     "VELDO-0205 pm/two-lines",
+     true
+    ],
+    [
+     "VELDO-0205 pm/same-repository-twice",
+     true
+    ],
+    [
+     "VELDO-0205 pm/unserved-repository",
+     true
+    ],
+    [
+     "VELDO-0205 lock/not-the-authority",
+     true
+    ],
+    [
+     "VELDO-0205 pm/cross-repository",
+     true
+    ],
+    [
+     "VELDO-0205 pm/views",
+     true
+    ],
+    [
+     "VELDO-0205 pm/observed",
+     false
+    ],
+    [
+     "VELDO-0205 telegram/one-repository",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/two-presentations",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/reply-routes",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/label-bound",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/addressed-by-project",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unaddressed",
+     true
+    ],
+    [
+     "VELDO-0205 telegram/unserved-project",
+     true
+    ]
+   ],
+   "seconds": 7.514,
+   "source_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
+  },
+  {
+   "by_assertion": true,
+   "details": [
+    "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
+    "VELDO-0205 detail: proj-a chain: []",
+    "VELDO-0205 detail: proj-a records: {'team': 'repository-89', 'assignment': 'repository-89', 'backlog item': 'repository-89', 'grooming request': 'repository-89', 'snapshot': 'repository-89', 'allocation': 'repository-89'}",
+    "VELDO-0205 detail: proj-b chain: []",
+    "VELDO-0205 detail: proj-b records: {'team': 'repository-89-b', 'assignment': 'repository-89-b', 'backlog item': 'repository-89-b', 'grooming request': 'repository-89-b', 'snapshot': 'repository-89-b', 'allocation': 'repository-89-b'}",
+    "VELDO-0205 detail: second build of A: invalid_registration:pm_services",
+    "VELDO-0205 detail: not the authority: missing_authority:not_the_authority missing_authority:not_the_authority",
+    "VELDO-0205 detail: cross an allocation under A's ids for B's item: wrong_repository",
+    "VELDO-0205 detail: cross a snapshot under A over B's accepted revision: snapshot_identity_mismatch",
+    "VELDO-0205 detail: cross a team propose under A's ids naming B's project: wrong_repository",
+    "VELDO-0205 detail: cross a team propose under B's ids naming A's project: wrong_repository",
+    "VELDO-0205 detail: cross a team assign under A's ids of B's unit: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under A's ids of B's feature: wrong_repository",
+    "VELDO-0205 detail: cross a backlog take under B's ids of A's feature: wrong_repository",
+    "VELDO-0205 detail: cross an inbox answer under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
+    "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-', 'Veldo needs your decision\\nRequest: assignment:0b0b0b0b-205b-']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1445,7 +1832,7 @@
     "VELDO-0205 telegram/label-bound"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9d994d88e3a846c768fd32bf533ea14cd029ed1f132ff961d979cfd687dbb602",
+   "mutant_sha256": "e40e6d40f5a7f99b2a713bb6b133d177426d4a07ba5e3e44eababdd5ce33e661",
    "name": "v205-presentation-unlabelled",
    "named_row_red": true,
    "named_rows": [
@@ -1478,6 +1865,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1506,8 +1897,8 @@
      true
     ]
    ],
-   "seconds": 7.359,
-   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+   "seconds": 7.567,
+   "source_sha256": "8334260f058c622c8c1e4b17a58eadc2508ba04987dafd36cf1d7addc4d7b159"
   },
   {
    "by_assertion": true,
@@ -1530,8 +1921,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-', 'Veldo needs your decision\\nRequest: assignment:0b0b0b0b-205b-']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1547,7 +1945,7 @@
     "VELDO-0205 telegram/label-bound"
    ],
    "module": ".veldo/control_channel_presentation.py",
-   "mutant_sha256": "9b6557356915f0a4e93462dc38a93608296faa719dd63f4330134a1355cd59ba",
+   "mutant_sha256": "e1bb1179e5779a281654af8fb231bf39548b420e7b48de73bbb63dac646e3486",
    "name": "v205-label-not-rendered",
    "named_row_red": true,
    "named_rows": [
@@ -1580,6 +1978,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1608,8 +2010,8 @@
      true
     ]
    ],
-   "seconds": 7.375,
-   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+   "seconds": 7.614,
+   "source_sha256": "8334260f058c622c8c1e4b17a58eadc2508ba04987dafd36cf1d7addc4d7b159"
   },
   {
    "by_assertion": true,
@@ -1632,8 +2034,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('refused', 'request_closed')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1680,6 +2089,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1708,7 +2121,7 @@
      true
     ]
    ],
-   "seconds": 7.419,
+   "seconds": 7.641,
    "source_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748"
   },
   {
@@ -1732,8 +2145,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED OFFERED [('acquired', None), ('refused', 'unavailable_service')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1780,6 +2200,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1808,7 +2232,7 @@
      true
     ]
    ],
-   "seconds": 7.392,
+   "seconds": 7.637,
    "source_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e"
   },
   {
@@ -1832,8 +2256,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -1880,6 +2311,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -1908,7 +2343,7 @@
      false
     ]
    ],
-   "seconds": 7.348,
+   "seconds": 7.579,
    "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
   }
  ],
@@ -1923,6 +2358,9 @@
    "v205-take-ignores-project-repository",
    "v205-allocation-for-other-repository-item"
   ],
+  "pm/observed": [
+   "v205-handoff-names-no-repository"
+  ],
   "pm/same-repository-twice": [
    "v205-same-repository-builds-twice"
   ],
@@ -1934,7 +2372,8 @@
    "v205-unserved-repository-judged"
   ],
   "pm/views": [
-   "v205-snapshot-reads-every-decision"
+   "v205-snapshot-reads-every-decision",
+   "v205-snapshot-reads-every-dispatch"
   ],
   "telegram/addressed-by-project": [
    "v205-proposal-records-authority-repository"
@@ -1956,7 +2395,7 @@
  },
  "noop": {
   "control_assignment.py": {
-   "copy_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a",
+   "copy_sha256": "678f2e81f9c0c979e48f177cec643d9a9190775e5358cf121afcf49f1ad9a743",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -1976,8 +2415,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2013,6 +2459,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2041,11 +2491,11 @@
      true
     ]
    ],
-   "seconds": 7.437,
-   "source_sha256": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+   "seconds": 6.835,
+   "source_sha256": "678f2e81f9c0c979e48f177cec643d9a9190775e5358cf121afcf49f1ad9a743"
   },
   "control_backlog.py": {
-   "copy_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b",
+   "copy_sha256": "561916a1540215fc5de56072994558f805f9e4cb7471610a6dfd2969815d9edb",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -2065,8 +2515,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2102,6 +2559,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2130,8 +2591,8 @@
      true
     ]
    ],
-   "seconds": 7.339,
-   "source_sha256": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+   "seconds": 7.352,
+   "source_sha256": "561916a1540215fc5de56072994558f805f9e4cb7471610a6dfd2969815d9edb"
   },
   "control_channel_attribution.py": {
    "copy_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748",
@@ -2154,8 +2615,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2191,6 +2659,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2219,7 +2691,7 @@
      true
     ]
    ],
-   "seconds": 6.901,
+   "seconds": 6.861,
    "source_sha256": "2b9556823c11214a49f52314fe9d871db621e9fd01199eaa353d3c9045540748"
   },
   "control_channel_ingress.py": {
@@ -2243,8 +2715,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2280,6 +2759,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2308,11 +2791,11 @@
      true
     ]
    ],
-   "seconds": 6.89,
+   "seconds": 7.452,
    "source_sha256": "e224a0efefc84846b00c8e9fe90e876b4feb2d43a37ce09518c5639ca2da01d0"
   },
   "control_channel_presentation.py": {
-   "copy_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a",
+   "copy_sha256": "8334260f058c622c8c1e4b17a58eadc2508ba04987dafd36cf1d7addc4d7b159",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -2332,8 +2815,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2369,6 +2859,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2397,8 +2891,8 @@
      true
     ]
    ],
-   "seconds": 6.923,
-   "source_sha256": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+   "seconds": 7.487,
+   "source_sha256": "8334260f058c622c8c1e4b17a58eadc2508ba04987dafd36cf1d7addc4d7b159"
   },
   "control_decomposition.py": {
    "copy_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633",
@@ -2421,8 +2915,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2458,6 +2959,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2486,7 +2991,7 @@
      true
     ]
    ],
-   "seconds": 7.429,
+   "seconds": 7.487,
    "source_sha256": "7c1623c5fdf36381b69075c31a610311cffe4e21923c77b5ceba0fa2f1b1f633"
   },
   "control_intake.py": {
@@ -2510,8 +3015,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2547,6 +3059,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2575,11 +3091,11 @@
      true
     ]
    ],
-   "seconds": 7.415,
+   "seconds": 6.97,
    "source_sha256": "1c94edb1e79af71f396e6174c9c04b2b020a55d3bc94373424be5527040ab3d9"
   },
   "control_readset.py": {
-   "copy_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018",
+   "copy_sha256": "e6fb474927d781bdeded1aa54d336f8c81d0dc6e0fee35d66c55586165ea3c9f",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -2599,8 +3115,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2636,6 +3159,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2664,8 +3191,8 @@
      true
     ]
    ],
-   "seconds": 7.387,
-   "source_sha256": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+   "seconds": 7.441,
+   "source_sha256": "e6fb474927d781bdeded1aa54d336f8c81d0dc6e0fee35d66c55586165ea3c9f"
   },
   "control_signer_answers.py": {
    "copy_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e",
@@ -2688,8 +3215,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2725,6 +3259,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2753,11 +3291,11 @@
      true
     ]
    ],
-   "seconds": 7.438,
+   "seconds": 7.426,
    "source_sha256": "2cf86408ebe62a16bd92a63f140c97a616d1378fba173d4f023cd4a8bb9b855e"
   },
   "control_team.py": {
-   "copy_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984",
+   "copy_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -2777,8 +3315,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2814,6 +3359,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2842,11 +3391,11 @@
      true
     ]
    ],
-   "seconds": 7.363,
-   "source_sha256": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+   "seconds": 7.528,
+   "source_sha256": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
   },
   "control_workflow_cycle_pm.py": {
-   "copy_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e",
+   "copy_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d",
    "details": [
     "VELDO-0205 detail: connections opened: 2 channel refusal: None line refusals: {}",
     "VELDO-0205 detail: proj-a chain: []",
@@ -2866,8 +3415,15 @@
     "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: missing_authority",
     "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
     "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: no_such_item",
-    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
-    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b']",
+    "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89']",
+    "VELDO-0205 detail: proj-b snapshot decisions: ['assignment:repository-89-b:v205-note-proj-b'] dispatches: ['dispatch-v205-repository-89-b']",
+    "VELDO-0205 detail: service team_operation hand-offs: [('team_operation', 'repository-89'), ('team_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service assignment_operation hand-offs: [('assignment_operation', 'repository-89'), ('assignment_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: service accept_snapshot hand-offs: [('accept_snapshot', 'repository-89'), ('accept_snapshot', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress backlog_operation hand-offs: [('backlog_operation', 'repository-89'), ('backlog_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: ingress grooming_operation hand-offs: [('grooming_operation', 'repository-89'), ('grooming_operation', 'repository-89-b')]",
+    "VELDO-0205 detail: registrations counted: {'repository-89': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}, 'repository-89-b': {'backlog': 1, 'decomposition': 1, 'grooming': 1, 'inbox': 1, 'teams': 1, 'snapshot': 1}}",
     "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 2} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nVeldo nee', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nVeldo need']",
     "VELDO-0205 detail: after B's reply: OFFERED SATISFIED [('acquired', None), ('refused', 'unknown_sender')]",
     "VELDO-0205 detail: addressed: {'a': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED'), 'b': ('project-b', '0b0b0b0b-205b-4000-8000-00000000000b', 'PROPOSED'), 'named': ('project-a', '0a0a0a0a-205a-4000-8000-00000000000a', 'PROPOSED')} ['Repository: importer (0a0a0a0a)\\nProject: project-a\\nI took your message', 'Repository: billing (0b0b0b0b)\\nProject: project-b\\nI took your message ']",
@@ -2903,6 +3459,10 @@
      true
     ],
     [
+     "VELDO-0205 pm/observed",
+     true
+    ],
+    [
      "VELDO-0205 telegram/one-repository",
      true
     ],
@@ -2931,13 +3491,13 @@
      true
     ]
    ],
-   "seconds": 7.376,
-   "source_sha256": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+   "seconds": 7.517,
+   "source_sha256": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
   }
  },
  "registry": "scripts/check_teeth_mutations.py --finding 205",
  "schema": "veldo.proof-mutations/v1",
- "serial_seconds": 217.743,
+ "serial_seconds": 235.115,
  "spec_id": "VELDO-0205",
  "suite": "scripts/suites/95_veldo_0205_multirepo.py"
 }

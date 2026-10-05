@@ -1,5 +1,5 @@
 --- a/.veldo/control_channel_presentation.py
 +++ b/.veldo/control_channel_presentation.py
-@@ -1137 +1137 @@
+@@ -1138 +1138 @@
 -        if shown is not None:
 +        if False:  # defect: the presentation names no repository

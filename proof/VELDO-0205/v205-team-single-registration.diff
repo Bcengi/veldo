@@ -1,5 +1,5 @@
 --- a/.veldo/control_team.py
 +++ b/.veldo/control_team.py
-@@ -364 +364 @@
+@@ -365 +365 @@
 -        _serve(store, conn, self)
 +        conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}  # defect: the last built judges every repository

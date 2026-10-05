@@ -18,7 +18,14 @@
   "VELDO-0205 detail: cross an inbox disposition under A's ids naming an alias only B holds: invalid_input",
   "VELDO-0205 detail: cross a backlog operation under A's ids naming B's item: no_such_item",
   "VELDO-0205 detail: cross a grooming proposal under A's ids naming B's item: invalid_input",
-  "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a']",
+  "VELDO-0205 detail: proj-a snapshot decisions: ['assignment:repository-89:TEAM-25', 'assignment:repository-89:v205-note-proj-a'] dispatches: ['dispatch-v205-repository-89', 'dispatch-v205-repository-89-b']",
+  "VELDO-0205 detail: service team_operation hand-offs: []",
+  "VELDO-0205 detail: service assignment_operation hand-offs: []",
+  "VELDO-0205 detail: service backlog_operation hand-offs: []",
+  "VELDO-0205 detail: service accept_snapshot hand-offs: []",
+  "VELDO-0205 detail: ingress backlog_operation hand-offs: []",
+  "VELDO-0205 detail: ingress grooming_operation hand-offs: []",
+  "VELDO-0205 detail: registrations counted: {}",
   "VELDO-0205 detail: tick: {'outcome': 'woken', 'reason': None, 'published': 1} ['Veldo needs your decision\\nRequest: assignment:0a0a0a0a-205a-']",
   "VELDO-0205 detail: after B's reply: OFFERED None [('acquired', None), ('refused', 'missing_reply_reference')]",
   "VELDO-0205 detail: addressed: {'a': ('project-a', None, 'PROPOSED'), 'b': ('project-b', None, 'PROPOSED'), 'named': ('project-a', None, 'PROPOSED')} ['I took your message as new work, not as an answer to a request.\\nTo ans', 'I took your message as new work, not as an answer to a request.\\nTo ans']",
@@ -29,7 +36,8 @@
   "VELDO-0205 detail: pm/unserved-repository team_operation for C is refused invalid_input:repository (raised:KeyError); assignment_operation for C is refused invalid_input:repository (raised:KeyError); claim_operation for C is refused invalid_input:repository (raised:KeyError); accept_snapshot for C is refused invalid_input:repository (invalid_input); pm_snapshot_inputs for C is refused invalid_input:repository (missing_snapshot); assignment_operation for C is refused invalid_input:repository (raised:KeyError); presentation_frame for C is refused invalid_input:repository (invalid_input); request_settle for C is refused invalid_input:repository (stale_subject); settlement_terms_record for C is refused invalid_input:repository (invalid_input); settlement_api_answer for C is refused invalid_input:repository (invalid_input)",
   "VELDO-0205 detail: lock/not-the-authority from_line refuses on connections whose process does not hold the lock; open_ingress refuses to register with that descriptor",
   "VELDO-0205 detail: pm/cross-repository both repositories have their own work to cross; an allocation under A's ids for B's item is refused wrong_repository, nothing changed (invalid_input:backlog_item); a team propose under A's ids naming B's project is refused wrong_repository, nothing changed (propose); a team propose under B's ids naming A's project is refused wrong_repository, nothing changed (raised:KeyError); a team assign under A's ids of B's unit is refused wrong_repository, nothing changed (invalid_input:unit); a backlog take under A's ids of B's feature is refused wrong_repository, nothing changed (no_such_feature); a backlog take under B's ids of A's feature is refused wrong_repository, nothing changed (raised:KeyError); an inbox answer under A's ids naming an alias only B holds is refused missing_authority, nothing changed (invalid_input); an inbox disposition under A's ids naming an alias only B holds is refused missing_authority, nothing changed (invalid_input); a grooming proposal under A's ids naming B's item is refused no_such_item, nothing changed (invalid_input)",
-  "VELDO-0205 detail: pm/views proj-b: its line built its PM services and work",
+  "VELDO-0205 detail: pm/views proj-b: its line built its PM services and work; proj-a: its accepted pm_snapshot_inputs holds its own dispatch only",
+  "VELDO-0205 detail: pm/observed the service connection records each team_operation hand-off with the repository it went to; the service connection records each assignment_operation hand-off with the repository it went to; the service connection records each backlog_operation hand-off with the repository it went to; the service connection records each accept_snapshot hand-off with the repository it went to; the ingress connection records each backlog_operation hand-off with the repository it went to; the ingress connection records each grooming_operation hand-off with the repository it went to; proj-a: its registrations are counted once per service kind; proj-a: each registration is observed with its repository and connection; proj-b: its registrations are counted once per service kind; proj-b: each registration is observed with its repository and connection",
   "VELDO-0205 detail: telegram/two-presentations the one bot sends two messages, one per repository's request; project-a's message begins with its own label; project-b's message begins with its own label",
   "VELDO-0205 detail: telegram/reply-routes B's answer settles B's request by B's settlement, A's stays pending",
   "VELDO-0205 detail: telegram/label-bound the receipt binds its label in the rendered bytes it digests; a receipt with the label omitted is presentation_mismatch; a receipt with the label changed is presentation_mismatch",
@@ -43,6 +51,7 @@
   "VELDO-0205 lock/not-the-authority",
   "VELDO-0205 pm/cross-repository",
   "VELDO-0205 pm/views",
+  "VELDO-0205 pm/observed",
   "VELDO-0205 telegram/two-presentations",
   "VELDO-0205 telegram/reply-routes",
   "VELDO-0205 telegram/label-bound",
@@ -57,11 +66,11 @@
   },
   ".veldo/control_assignment.py": {
    "at_commit": "d36823327fce3fb3d0bd6383a3876ad3bfde8acdbf276ce4a726b77fd36199b2",
-   "now": "4d13c5be5dfcf220417ca1b1402499aaca1b8909c8d2e70d19d39f6a09925e0a"
+   "now": "678f2e81f9c0c979e48f177cec643d9a9190775e5358cf121afcf49f1ad9a743"
   },
   ".veldo/control_backlog.py": {
    "at_commit": "c377fe604b9aacb1ad2b7c5cd818485bbd97bd5a8313c0c7a2e2098b57b4c503",
-   "now": "2f64ca09f82f8fffdb4182aefa1fd124d1b1f47dd4e95a896eea39485d0b882b"
+   "now": "561916a1540215fc5de56072994558f805f9e4cb7471610a6dfd2969815d9edb"
   },
   ".veldo/control_channel_attribution.py": {
    "at_commit": "b69aefa7ba333481f731a8fd7e0d639de21333c74a4700f1040887257e45899c",
@@ -73,11 +82,11 @@
   },
   ".veldo/control_channel_presentation.py": {
    "at_commit": "dec58043fc28f3ff75a89c62b20a2eefd40eab70d4f061fc317bf7b9134286af",
-   "now": "76f25513fb7d19f35a1474ce9713e8eee0133df83656bc9f9be7394d7eb6e75a"
+   "now": "8334260f058c622c8c1e4b17a58eadc2508ba04987dafd36cf1d7addc4d7b159"
   },
   ".veldo/control_claim.py": {
    "at_commit": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d",
-   "now": "b105b1fad7a599c4b06f19fe7e5bd5ddbfa1b12b257907ad04424a7ab3f05910"
+   "now": "d6c970017bcbc81a2404411018cf897fc2bab844765ed1b35a7a3016c2d59574"
   },
   ".veldo/control_decomposition.py": {
    "at_commit": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
@@ -85,7 +94,7 @@
   },
   ".veldo/control_grooming.py": {
    "at_commit": "bed857eaf026c0074c36ef3b10ca6f31a5e8f4650ab3fc8a565198e4f195f3ef",
-   "now": "bed857eaf026c0074c36ef3b10ca6f31a5e8f4650ab3fc8a565198e4f195f3ef"
+   "now": "9dd02534e69cc9734ff321a32cb6c1bacd07693b3111e2d811d5d04e1d47e439"
   },
   ".veldo/control_intake.py": {
    "at_commit": "c892d1c0359348de480a1be14dab5b59b99fd8faa648d831efa18f3cd337083e",
@@ -97,15 +106,15 @@
   },
   ".veldo/control_readset.py": {
    "at_commit": "dac254fe5c697256aba8a0370b28a16e513a8c6477be73b38dcc8fdc8499e9e8",
-   "now": "7223344b0c2b6b6d1597fa12afe0966f7bb1e1c299b088add05ba4b0e7c33018"
+   "now": "e6fb474927d781bdeded1aa54d336f8c81d0dc6e0fee35d66c55586165ea3c9f"
   },
   ".veldo/control_request_settlement.py": {
    "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
-   "now": "87475d6c06985cd52cf446026faa85775cda328dd0e56ac4beaa625ec3d90cd5"
+   "now": "fa93bfbe42b87e66834bb709e12cc6694626ed5d0a6e00233f5698e09d940516"
   },
   ".veldo/control_service.py": {
    "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
-   "now": "9a9b9768f4146eaec05283a8116d2c8ea2d55b62dc569ed246602153a8a6c554"
+   "now": "fb4025ac6fdd79273dc77bc8a77dbc29a56ccf95a5a15a1e9275d250d22826c3"
   },
   ".veldo/control_service_channel.py": {
    "at_commit": "95efd332387f282aa74e0d5435cf07dc8ea54e1222712d1b4204e517d879bdae",
@@ -117,7 +126,7 @@
   },
   ".veldo/control_team.py": {
    "at_commit": "84453b20ac3fde54d1ac10023db0b3ab2a7e5b42235c55d1c1fdfad44dbecfd5",
-   "now": "0a2e0b772b64ce9db3891e4debf72767606f4f3ef03e4998d1c5b50270e39984"
+   "now": "0e3d172e3bbb8a5e8bc2fba94e1ade7de92048d259b4750e5f7ba88b1846db8e"
   },
   ".veldo/control_team_routes.py": {
    "at_commit": "d391d72d7e15a588759d3d179a6a9c703e5b4d248a7069c868be6f8df7eb0190",
@@ -125,7 +134,7 @@
   },
   ".veldo/control_workflow_cycle_pm.py": {
    "at_commit": "df60251d4d7042895d362c1b1a2172c6a799c548fdcf3268d8c513244f077724",
-   "now": "836ff5c69565ec23068768c6cffaed1408e1de300236b4627e865e8c02caeb1e"
+   "now": "75dda9e3bd758b1050f578d9325e40e12de58887171751db56ecc67aa6ef887d"
   }
  },
  "preamble_rows": 26,
@@ -152,6 +161,10 @@
   ],
   [
    "VELDO-0205 pm/views",
+   false
+  ],
+  [
+   "VELDO-0205 pm/observed",
    false
   ],
   [
@@ -184,7 +197,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 5.652,
+ "seconds": 5.747,
  "spec_id": "VELDO-0205",
  "suite": "scripts/suites/95_veldo_0205_multirepo.py",
  "tree": "git archive 01734c5992b65c0326e326dae1497a9266d84dec, unchanged; the current suite file run against it"

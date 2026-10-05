@@ -1,0 +1,5 @@
+--- a/.veldo/control_workflow_cycle_pm.py
++++ b/.veldo/control_workflow_cycle_pm.py
+@@ -227 +227 @@
+-                'dispatches': {'kind': 'dispatch', 'where': {'contract.repository': '$repository'}}}})
++                'dispatches': {'kind': 'dispatch', 'where': {}}}})  # defect: every repository's dispatches

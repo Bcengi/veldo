@@ -45,6 +45,13 @@ naming none), refuses `missing_authority:repository_not_served` for a project of
 and tells the owner so in the hint, which is then sent even with nothing waiting; a routed proposal records
 its new project's repository, and the unclear-route question labels each project.
 
+**Observability.** Each keyed transition appends one record per command it hands on, naming the operation
+and the repository of the service it picked, to the `handoffs` list of the connection's entry for the
+command (beside `repositories`), as ReadSets keeps its observations. from_line logs one `pm_registration`
+observation per PM service a line registers (its repository, connection and service kind) to the
+installation's observation log through `Service._log`, and counts them in `Service.pm_registrations` by
+repository and kind; the service's own accepted and refused tally skips them.
+
 ## Rows (scripts/suites/95_veldo_0205_multirepo.py)
 
 - **pm/two-lines**: The production Service on its own connection holding the lock, the real ingress, two lines and from_line: exactly two connections opened; every keyed command serves both repositories; per repository a signed chain (intake, objective, feature, take, publish, prepare, grooming, admission), a snapshot, a team proposal and an inbox request opened and answered, every record read back with its own repository_uuid.
@@ -52,7 +59,8 @@ its new project's repository, and the unclear-route question labels each project
 - **pm/unserved-repository**: Each keyed command on each connection, named for a third repository directly through control_store execute: `invalid_input:repository`, nothing written; the signed command for it through the service: `missing_authority:repository_not_served`.
 - **lock/not-the-authority**: from_line and open_channel with a descriptor of the store's lock this process does not hold: `missing_authority:not_the_authority`, registries unchanged.
 - **pm/cross-repository**: An allocation, snapshot, team propose (both directions), team assign, backlog take (both directions), inbox answer and disposition, backlog operation and grooming proposal signed with one repository's ids naming the other's entity: each named refusal, the entity and both journal heads unchanged.
-- **pm/views**: Each repository's inbox index, backlog listing, cycle records, pending obligations and accepted pm_snapshot_inputs list its own records only.
+- **pm/views**: Each repository's inbox index, backlog listing, cycle records, pending obligations and accepted pm_snapshot_inputs list its own records only; one dispatch per repository (a fixture row written around execute, `contract.repository` set to that repository) is listed in its own snapshot and not in the other's.
+- **pm/observed**: The team, inbox, backlog and snapshot hand-offs on the service's connection and the backlog and grooming hand-offs on the ingress's each recorded with their operation and both repositories; each line's six PM registrations counted once by repository and kind, and each observed in the log with its repository and connection.
 - **telegram/one-repository**: The same store served as one repository: no repository_label, and the presentation, hint and notice are the bytes control_channel_presentation renders at 01734c59 (read with git show).
 - **telegram/two-presentations**: One pending request per repository, one tick: two messages through the one bot, each beginning with its own label.
 - **telegram/reply-routes**: B's message answered: B's request settled by B's settlement, A's pending; then A's answered and settled.
@@ -65,14 +73,16 @@ its new project's repository, and the unclear-route question labels each project
 
 `python3 -B proof/VELDO-0205/drive.py --red 01734c59` runs the current suite against the whole tree of
 01734c59 (red-at-01734c59.json): pm/two-lines, pm/unserved-repository, lock/not-the-authority,
-pm/cross-repository, pm/views and all six telegram behaviour rows are red, by their own checks
+pm/cross-repository, pm/views, pm/observed and all six telegram behaviour rows are red, by their own checks
 (`by_assertion: true`). Two rows hold there by design: pm/same-repository-twice (the code before this
 refused every second line by the same name) and telegram/one-repository (it asserts the single-repository
 bytes are unchanged).
 
 ## Mutations
 
-Finding 205 in scripts/check_teeth_mutations.py, 18 mutations; drive.py writes mutations.json and one diff
-each. The four declared falsifiers: v205-team-single-registration (pm/two-lines),
+Finding 205 in scripts/check_teeth_mutations.py, 20 mutations, each red on its named row by assertion with
+the baseline and every no-op control green; drive.py writes mutations.json and one diff each.
+v205-snapshot-reads-every-dispatch (the dispatches `where` back to `{}`) reds pm/views, and
+v205-handoff-names-no-repository (the team hand-off record without its repository) reds pm/observed. The four declared falsifiers: v205-team-single-registration (pm/two-lines),
 v205-snapshot-skips-revision-repository (pm/cross-repository), v205-replies-settle-through-authority
 (telegram/reply-routes), v205-proposal-records-authority-repository (telegram/addressed-by-project).

@@ -354,3 +354,13 @@ change: suite 68_veldo_0126_intake's exact proposal fields now include `reposito
 row's older engine, restores, so the refusal rightly does not name it). The claim Receiver keeps its own
 registration literal and Settlement's dispatch has no getattr, so the VELDO-0169 writer census still
 traces every claim write to the Gate's project check.
+
+2026-10-04: independent review fix. pm/views now writes one dispatch per repository (a fixture row,
+`contract.repository` set to it) and requires each repository's accepted pm_snapshot_inputs to list its own
+and not the other's, so the dotted `where` path is reached; mutation v205-snapshot-reads-every-dispatch reds
+it. The observability section is now emitted: each keyed transition records every hand-off with its
+operation and the repository it went to (the `handoffs` list of the connection's entry for the command),
+and from_line logs each PM service a line registers with its repository, connection and kind through
+Service._log and counts them in Service.pm_registrations; new row pm/observed reads both back for both
+repositories, and mutation v205-handoff-names-no-repository reds it. Suite 95 has 14 rows, finding 205 has
+20 mutations, each red on its named row; red-at-01734c59.json regenerated (pm/observed red there too).

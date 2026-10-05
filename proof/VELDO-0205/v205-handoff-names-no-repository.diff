@@ -1,0 +1,5 @@
+--- a/.veldo/control_team.py
++++ b/.veldo/control_team.py
+@@ -331 +331 @@
+-            handoffs.append({'operation': OPERATION, 'repository': judge.ids['repository_uuid']})
++            handoffs.append({'operation': OPERATION})  # defect: the hand-off names no repository
