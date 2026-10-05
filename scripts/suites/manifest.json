@@ -1283,6 +1283,15 @@
    ],
    "regions": "Capability configuration saves, team owner decisions and immutable default revisions.",
    "requires_note": "Standalone fragment; signed store and passkey fixtures in proof/VELDO-0162. No fake engine or model."
+  },
+  {
+   "name": "95_veldo_0205_multirepo",
+   "file": "95_veldo_0205_multirepo.py",
+   "requires": [
+    "95_veldo_0205_multirepo"
+   ],
+   "regions": "Per-repository PM services keyed on the shared service and ingress connections, cross-repository refusals, per-repository views, and one Telegram bot presenting, routing and taking work for every served repository.",
+   "requires_note": "Only ROOT and expect. Two signed fixtures in proof/VELDO-0205 (one extending the VELDO-0088 fixture), the real ingress over a loopback Bot API stand-in; no model or fake engine."
   }
  ]
 }
