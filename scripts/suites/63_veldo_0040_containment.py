@@ -587,8 +587,21 @@ sys.exit(payload.get('code', 0))
                                                                       POLLPRI=2, POLLERR=8)), \
                         patch.object(L, 'time', C.time), patch.object(C, '_read', read_memory):
                     termination = L.Receiver._reap(receiver, worker, contract)
+                    recorded = []
+                    if receiver._exit_group is not None:
+                        # Exercise the real finish path: the durable exit must precede
+                        # the delayed query, and completion must include its evidence.
+                        receiver.committed = None
+                        receiver._remove_run = lambda: None
+                        receiver._ended = lambda: {}
+                        receiver.emit = lambda message: None
+                        receiver.dispatches = types.SimpleNamespace(exit=lambda *args, **kwargs:
+                            recorded.append(dict(at=clock[0], calls=len(calls))))
+                        receiver._conclude_exit = lambda: L.Receiver._conclude_exit(receiver)
+                        L.Receiver._finish(receiver, termination, contract, None, None, False)
                 return dict(termination=termination, supervision=receiver.supervision,
-                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads, waits=waits)
+                            inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads, waits=waits,
+                            recorded=recorded)
 
         gone = dict(LoadState='not-found', ActiveState='inactive', Result='success',
                     **dict.fromkeys(stamp_names, '0'))
@@ -673,7 +686,7 @@ sys.exit(payload.get('code', 0))
                                         and not row['termination']['deadline_stop'] for row in controls),
                 observed['empty_ordinary_after_cap_unknown'])
 
-        with region('containment/exit-independent-of-manager'):
+        with region('containment/exit-independent-of-manager', 'containment/exit-manager-settled'):
             # The kernel has witnessed a successful adapter exit and an empty group
             # before its cap. A manager taking a full second must not delay that exit.
             rows = [reap_sequence([manager_record('inactive', 'success')], start=start,
@@ -694,15 +707,31 @@ sys.exit(payload.get('code', 0))
             guards.append(unreadable)
             observed['exit_independent_of_manager'] = dict(rows=rows, guards=guards)
             check('containment/exit-independent-of-manager', all(
-                0 <= row['elapsed'] - 10.5 < 0.75 and row['calls'] == 0
+                row['recorded'] and 0 <= row['recorded'][0]['at'] - 10.5 < 0.75
+                and row['recorded'][0]['calls'] == 0
                 and row['supervision']['adapter_exit_monotonic'] == 10.5
                 and row['supervision']['empty'] and row['supervision']['cause'] is None
-                and row['supervision']['manager_result'] is None
                 and row['supervision']['steps'] == [] and len(row['waits']) == 1
                 and row['termination']['returncode'] == 0
                 for row in rows) and all(row['calls'] > 0 for row in guards)
                 and unreadable['supervision']['cause'] == 'memory_cap',
                 observed['exit_independent_of_manager'])
+            absent = reap_sequence([subprocess.TimeoutExpired('show', C.SETTLE_SECONDS)], start=start,
+                                   code=0, exit_at=10.5, empty_on_exit=True)
+            observed['exit_manager_absent'] = absent
+            check('containment/exit-manager-settled', all(
+                row['calls'] == 1 and row['elapsed'] > row['recorded'][0]['at']
+                and row['supervision']['result'] == row['supervision']['manager_result'] == 'success'
+                and row['supervision']['scope_timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
+                for row in rows)
+                and absent['recorded'] == [dict(at=10.5, calls=0)] and absent['calls'] == 1
+                and absent['elapsed'] - 10.5 == C.SETTLE_SECONDS
+                and absent['supervision']['result'] == 'success'
+                and absent['supervision']['cause'] is None
+                and absent['supervision']['manager_result'] is None
+                and absent['supervision']['scope_timestamps'] == {}
+                and absent['supervision']['manager_result_absent_reason'] == 'terminal_scope_result_unreadable',
+                dict(rows=rows, absent=absent))
 
         with region('containment/oom-after-final-populated-sample'):
             row = reap_sequence([gone], start=start, code=0, exit_at=10.5, late_oom=True)

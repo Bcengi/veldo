@@ -220,9 +220,14 @@ the reviewer.
 2026-10-05, exit notification during manager reloads (fix-0204-exit-notified):
 a successful pidfd exit and a kernel-empty group before the installed activation
 runtime deadline establish ordinary exit when no stop occurred and a readable
-final kernel counter excludes OOM. The
-receiver records that exit without a synchronous manager query. Unread manager
-results remain absent. Signals, missing activation evidence, OOM, cleanup stops,
+final kernel counter excludes OOM. The receiver commits that exit first, then
+still calls conclude within its existing five-second limit before releasing the
+retained scope, as required by VELDO-0148. It adds the terminal manager result and
+scope timestamps to the same supervision record before reporting completion.
+If that bounded query cannot read a terminal result, the kernel-recorded exit
+and effective success remain; manager_result is absent, scope_timestamps is empty,
+and manager_result_absent_reason is terminal_scope_result_unreadable.
+Signals, missing activation evidence, OOM, cleanup stops,
 unreadable OOM counters, and groups emptying at or after the cap retain manager settlement and existing
 cause precedence. The 0.75 second latency bound and zero idle wakes are unchanged.
 A deterministic delayed-manager row and three registered mutations protect this

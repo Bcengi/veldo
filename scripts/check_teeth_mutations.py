@@ -3131,6 +3131,10 @@ def cases():
             '        result = group.conclude() if group is not None and empty and not kernel_exit else None\n',
             '        result = group.conclude() if group is not None and empty else None\n',
             'exit-independent-of-manager')
+    contain('containment-clean-exit-drops-conclude', 'control_launch.py',
+            '        result = group.conclude()\n',
+            '        result = None  # defect: never read the clean exit manager result\n',
+            'exit-manager-settled')
     contain('containment-empty-after-cap-skips-manager', 'control_launch.py',
             'and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline\n',
             'and adapter_exit_monotonic is not None and adapter_exit_monotonic < runtime_deadline\n',

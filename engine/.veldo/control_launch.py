@@ -1189,6 +1189,15 @@ class Receiver:
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
         termination = self._reap(worker, contract, carry, process=process, contract_digest=contract_digest)
+        try:
+            self._finish(termination, contract, contract_digest, process, remote)
+        finally:
+            if self._exit_group is not None:
+                self._exit_group.close()
+                self._exit_group = None
+
+    def _finish(self, termination, contract, contract_digest, process, remote):
+        dispatch_id = contract['dispatch_id']
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
@@ -1226,7 +1235,21 @@ class Receiver:
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
                              execution_record=self.committed)
+        # Kernel evidence commits the exit first; settlement still reads the retained scope.
+        self._conclude_exit()
         self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision, 'record': self._ended()})
+
+    def _conclude_exit(self):
+        group = self._exit_group
+        if group is None:
+            return
+        result = group.conclude()
+        if result in (None, 'unknown'):
+            self.supervision.update(manager_result=None, scope_timestamps={},
+                                    manager_result_absent_reason='terminal_scope_result_unreadable')
+        else:
+            self.supervision.update(result=result, manager_result=result,
+                                    scope_timestamps=getattr(group, 'timestamps', {}))
 
     def _login(self, contract, adapter):
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
@@ -1970,9 +1993,8 @@ class Receiver:
             # The last populated read can observe an OOM after its memory.events sample.
             group.sample_memory()
         # A successful adapter and an empty group before the installed runtime
-        # deadline are kernel evidence of ordinary exit. With no stop or OOM,
-        # waiting for the shared manager adds no authority and delays recording
-        # that exit during reloads. Leave its unread result explicitly absent.
+        # deadline are kernel evidence of ordinary exit. Commit that exit before
+        # waiting for the manager, then read its terminal result while retained.
         kernel_exit = (group is not None and empty and code == 0 and cause is None
                        and stop.cause is None and active > 0 and runtime is not None
                        and adapter_exit_monotonic is not None and emptied[1] < runtime_deadline
@@ -1980,6 +2002,8 @@ class Receiver:
                        and getattr(group, 'oom_kill', 0) == 0)
         result = group.conclude() if group is not None and empty and not kernel_exit else None
         manager_result = result
+        if kernel_exit:
+            result = 'success'
         # systemd-run may report a shell-style 128 + signal exit, as well as a negative signal.
         signaled = code is not None and (code < 0 or 128 < code <= 192)
         stop_times = [step['monotonic'] for step in (stop.steps if stop is not None else [])
@@ -2021,7 +2045,8 @@ class Receiver:
                             'oom_kill': getattr(group, 'oom_kill', 0), 'deadline': contract['deadline'],
                             'group': group.report() if group is not None else None,
                             'heartbeat': watch.summary() if watch is not None else None}
-        if group is not None and empty:
+        self._exit_group = group if kernel_exit else None
+        if group is not None and empty and not kernel_exit:
             group.close()
         feeder.join(timeout=5)
         worker.stdout.close()
