@@ -605,7 +605,7 @@ work:
     spec: VELDO-0059
     title: Installed full factory journey with real workers and enforcement
     feature_refs: [F3]
-    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187, VELDO-0188, VELDO-0189]
+    depends_on: [VELDO-0037, VELDO-0043, VELDO-0045, VELDO-0047, VELDO-0049, VELDO-0050, VELDO-0051, VELDO-0052, VELDO-0053, VELDO-0054, VELDO-0057, VELDO-0058, VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0069, VELDO-0073, VELDO-0075, VELDO-0076, VELDO-0077, VELDO-0078, VELDO-0079, VELDO-0085, VELDO-0088, VELDO-0089, VELDO-0090, VELDO-0091, VELDO-0108, VELDO-0124, VELDO-0125, VELDO-0126, VELDO-0127, VELDO-0128, VELDO-0129, VELDO-0130, VELDO-0131, VELDO-0132, VELDO-0140, VELDO-0141, VELDO-0142, VELDO-0143, VELDO-0144, VELDO-0145, VELDO-0146, VELDO-0147, VELDO-0148, VELDO-0149, VELDO-0150, VELDO-0151, VELDO-0152, VELDO-0153, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0157, VELDO-0158, VELDO-0159, VELDO-0160, VELDO-0161, VELDO-0162, VELDO-0163, VELDO-0164, VELDO-0165, VELDO-0166, VELDO-0167, VELDO-0168, VELDO-0169, VELDO-0170, VELDO-0171, VELDO-0172, VELDO-0173, VELDO-0174, VELDO-0175, VELDO-0176, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0180, VELDO-0181, VELDO-0182, VELDO-0183, VELDO-0184, VELDO-0185, VELDO-0186, VELDO-0187, VELDO-0188, VELDO-0189, VELDO-0205]
     order: 16059
     release: 1
     stage: 6
@@ -1407,6 +1407,14 @@ work:
     order: 15169
     release: 1
     stage: 5
+  - item: W152
+    spec: VELDO-0205
+    title: Every repository the factory serves gets its own working PM services on the one shared store connection, each command judged, written and shown only by the services of the repository it names, and the owner's Telegram requests and replies reach the right repository through the one bot, each message naming its repository when the factory serves more than one
+    feature_refs: [F7, F5]
+    depends_on: [VELDO-0035, VELDO-0037, VELDO-0064, VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0073, VELDO-0078, VELDO-0079, VELDO-0088, VELDO-0089, VELDO-0126, VELDO-0149, VELDO-0152, VELDO-0154, VELDO-0171]
+    order: 15190
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1781,6 +1789,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W147 | VELDO-0187 | 1 | 5; conversation turns captured into claude-mem |
 | W148 | VELDO-0188 | 1 | 5; a Line for every project at run time |
 | W149 | VELDO-0189 | 1 | 5; setup upgrades an earlier installation, built before VELDO-0171 |
+| W152 | VELDO-0205 | 1 | 5; PM services and Telegram for every served repository |
 
 ## Related baseline and follow-up disposition
 
@@ -2071,3 +2080,9 @@ before its first switch and checks the count and a sample of 20 after each switc
 the owner's assistant's myday switch run the same check. VELDO-0171, VELDO-0182 and VELDO-0183 are back to
 draft for the owner's re-mark. W44 (VELDO-0059) depends on VELDO-0189 too. The graph stays acyclic and
 stage-ordered.
+
+2026-10-04: within revision 4, one new item and no function cut. W152's VELDO-0205 gives every served
+repository its own PM services (allocation, snapshot, teams, inbox, backlog, grooming) on the one shared
+store connection, keyed by repository, and routes the owner's Telegram requests and replies through the one
+bot to the repository they address, which the VELDO-0088 fix found missing (invalid_registration:pm_services
+for a second repository's line). W44 (VELDO-0059) depends on it. The graph stays acyclic and stage-ordered.
