@@ -208,13 +208,18 @@ def _serve(conn, receiver):
                           if isinstance(cid, str) and cid.startswith(claim_id(repository, ''))), None)
             if judge is None:
                 raise S.StoreRefused('invalid_input:repository', 'no claim service of this repository is on this connection')
-            handoffs.append({'operation': 'claim_operation', 'repository': judge.ids['repository_uuid']})
+            _handed(handoffs, 'claim_operation', judge)
             return judge.registration['claim_operation']['transaction_transition'](conn, params, before)
 
         conn.command_registry['claim_operation'] = dict(receiver.registration['claim_operation'],
                                                         transaction_transition=transaction_transition, repositories=served,
                                                         handoffs=handoffs)
     served[receiver.ids['repository_uuid']] = receiver
+
+
+def _handed(handoffs, operation, judge):
+    """Record that `operation` was handed to `judge`, naming the repository it went to (VELDO-0205)."""
+    handoffs.append({'operation': operation, 'repository': judge.ids['repository_uuid']})
 
 
 class Receiver:
