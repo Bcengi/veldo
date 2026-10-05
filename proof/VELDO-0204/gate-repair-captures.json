@@ -1,0 +1,20 @@
+{
+ "implementation_base": "149203fe",
+ "procedure": "proof/VELDO-0127/live.py, real subscription profiles, four serial runs per engine",
+ "claude_model": "claude-haiku-4-5-20251001",
+ "codex_model": "gpt-6-astra",
+ "claude_completed": 4,
+ "codex_completed": 4,
+ "evidence_problems": 0,
+ "credential_scan": {
+  "method": "Search both captures for all strings of at least 16 characters from both supplied login JSON files and the repository secret scanner's known credential patterns; values are never printed or retained",
+  "findings": 0,
+  "entropy_note": "The general scanner reports 4 Claude and 53 Codex entropy candidates, identical in count to the prior capture. This is not a claim of zero general entropy findings."
+ },
+ "suite": "86_veldo_0127_agent_configuration",
+ "passed": 53,
+ "failed": 0,
+ "suite_seconds": 37.35,
+ "exit_status": 2,
+ "scope": "Partial selftest; exit 2 is the repository's partial-run contract. Full gate is reserved for reviewer."
+}
