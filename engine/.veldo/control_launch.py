@@ -1188,6 +1188,9 @@ class Receiver:
         graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
+        # Set per dispatch before reaping, so the cleanup below never reads a stale or missing group
+        # when the reap itself raises.
+        self._exit_group = None
         termination = self._reap(worker, contract, carry, process=process, contract_digest=contract_digest)
         try:
             self._finish(termination, contract, contract_digest, process, remote)
