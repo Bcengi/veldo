@@ -1,0 +1,87 @@
+{
+  "kind": "selected-suite runtime measurements, not gate or passed unit evidence",
+  "implementation_commit": "3bd30ecef3e1f11af7aabf03d89aed29e3401e03",
+  "baseline_commit": "f0ad451b2890c99610442aef87a15500e5ccf9ed",
+  "python": "3.12.3",
+  "timing_method": "Sequential /usr/bin/time around python3 scripts/selftest.py with the named suite selector; seconds include interpreter and shared checks. cProfile measured separately.",
+  "before_wall_seconds": [
+    83.37,
+    82.85,
+    82.9
+  ],
+  "after_wall_seconds": [
+    45.97,
+    46.02,
+    45.52
+  ],
+  "target_seconds": 40,
+  "target_met": false,
+  "median_reduction_percent": 44.55,
+  "main_comparison": {
+    "commit": "4869db20f6f2453064a680209a99e703c279d051",
+    "wall_seconds": 66.09,
+    "temporary_detached_worktree_removed": true,
+    "result": "The combined 0203/0204 branch was about 17 seconds slower than main before these changes. The two specifications were not timed separately."
+  },
+  "profile": {
+    "method": "VELDO_SUITE_PROFILE uses cProfile; VELDO_ROW_TIMINGS measures work between row observations",
+    "profiled_before_wall_seconds": 147.52,
+    "parent_module_executions": 127413,
+    "parent_subprocess_run_calls": 2939,
+    "findings": [
+      "Repeated bytecode decoding and module graph construction within each setup invocation.",
+      "The two new owner configuration modules imported the full API authority just for its lock check.",
+      "Engine census repeatedly walked unchanged syntax trees.",
+      "Real subprocess starts and crypto remain; no CLI fake, capture or format assertion was bypassed."
+    ],
+    "note": "Profiler overhead is excluded from the three-run before/after comparison. Threaded cumulative times overlap."
+  },
+  "assertion_audit": {
+    "behavior_rows": 33,
+    "shared_checks": 26,
+    "unchanged_check_and_expect_call_sites": 139,
+    "all_original_call_expressions_identical": true,
+    "authority_lock_function_ast_identical": true,
+    "engine_and_repository_copies_identical": true
+  },
+  "selected_suites": {
+    "86_veldo_0189_engine_upgrade": {
+      "summary": "selftest (PARTIAL, 1 of 150 suites): 59 passed, 0 failed in 45.93s",
+      "wall_seconds": 46.01,
+      "exit_code": 2
+    },
+    "96_veldo_0204_reservation_policies": {
+      "summary": "selftest (PARTIAL, 1 of 150 suites): 45 passed, 0 failed in 9.55s",
+      "wall_seconds": 9.64,
+      "exit_code": 2
+    },
+    "95_veldo_0203_owner_revisions": {
+      "summary": "selftest (PARTIAL, 1 of 150 suites): 62 passed, 0 failed in 5.28s",
+      "wall_seconds": 5.36,
+      "exit_code": 2
+    },
+    "82_veldo_0172_live_formats": {
+      "summary": "selftest (PARTIAL, 1 of 150 suites): 30 passed, 0 failed in 1.24s",
+      "wall_seconds": 1.29,
+      "exit_code": 2
+    },
+    "50_git_environment": {
+      "summary": "selftest (PARTIAL, 1 of 150 suites): 30 passed, 0 failed in 2.30s",
+      "wall_seconds": 2.35,
+      "exit_code": 2
+    }
+  },
+  "other_checks": {
+    "validate": {
+      "exit_code": 0
+    },
+    "git-boundary": {
+      "exit_code": 0
+    }
+  },
+  "limitations": [
+    "The 40-second target remains unmet.",
+    "These partial runs are not a gate pass. The full gate and mutation checks were reserved to the reviewer.",
+    "The shorthand suite selector 50 was refused; the requested suite then passed as 50_git_environment."
+  ]
+}

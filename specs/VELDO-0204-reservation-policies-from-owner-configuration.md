@@ -334,3 +334,10 @@ The shared test runtime also reaps services on pidfd exit events with the same d
 module construction and pure census computation it defers cyclic collection, restoring its prior
 state in finally blocks before setup continues; this avoids repeatedly tracing live temporary graphs.
 The suite still starts and kills real processes and runs every original assertion.
+
+2026-10-05, selected verification: before 83.37, 82.85 and 82.90 seconds; after 45.97, 46.02
+and 45.52 seconds. Main 4869db20 took 66.09 seconds in a temporary detached worktree, now removed.
+All 33 upgrade rows and 26 shared checks remain; every original check and expect expression is
+AST-identical. The five requested suites, validate all and the Git boundary check pass their selected
+checks. The 40-second target remains unmet; no full gate or mutation pass is claimed. The measurement
+record names the implementation commit and preserves this limitation for review.
