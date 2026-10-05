@@ -1,0 +1,458 @@
+{
+  "deadline_guard_mutant": {
+    "exit_code": 1,
+    "failed": 1,
+    "failed_rows": [
+      "VELDO-0040 containment/exit-independent-of-manager"
+    ],
+    "log_sha256": "a8fdf58e7dc1403a8e64916e61ffd868f9da312ca97f344e0034915ef8b8492d",
+    "name": "containment-empty-after-cap-skips-manager",
+    "passed": 82,
+    "seconds": 10.77,
+    "source_sha256": "e2e76da31159aa7ee13c53805efd57c7f181760007520c5a18059968ef63aae6",
+    "suite": "63_veldo_0040_containment",
+    "suite_sha256": "6ca058805a98c2bdcf0a6078763b2a75ce0c340ed92f0c8c8334d9da33f90da3"
+  },
+  "guard_check_commit": "ea171efb",
+  "implementation_commit": "c0c2c976",
+  "initial_selected_suites": {
+    "63_veldo_0040_containment": {
+      "exit_code": 2,
+      "failed": 0,
+      "failed_rows": [],
+      "log_sha256": "a1a74f58443ae700ae96906ccde86777b1098179fecd4b026b8050f0c25bbc2d",
+      "passed": 83,
+      "seconds": 10.59
+    },
+    "86_veldo_0148_re_land": {
+      "exit_code": 2,
+      "failed": 0,
+      "failed_rows": [],
+      "log_sha256": "7b50f0c7e29ad552d810597cc8100a7db68e78f30a6d96feeaec9004b5003915",
+      "passed": 51,
+      "seconds": 43.87,
+      "suite_sha256": "9841cc1fb019b67cab8edb5f4e7d940456020c4c7f06ebf133a3f00c15d5f98f"
+    }
+  },
+  "limitations": [
+    "Selected suites return 2 by design and do not certify the repository gate.",
+    "The owner prohibits both mutation drivers and the full gate. Finding 40 inventory execution remains for the reviewer; the new drop-conclude mutant and the existing empty-after-cap mutant were individually executed here."
+  ],
+  "mutant": {
+    "change": "Replace the deferred clean-exit conclude call with None in both production copies.",
+    "exit_code": 1,
+    "failed": 1,
+    "failed_rows": [
+      "VELDO-0040 containment/exit-manager-settled"
+    ],
+    "log_sha256": "55fe97dae41fc10a958dac51f2d2d1163a90b844ebaaa3982e649f339cbde34d",
+    "name": "containment-clean-exit-drops-conclude",
+    "passed": 82,
+    "seconds": 10.66,
+    "source_sha256": "41c764cf1e8ba47ae43e97f58b7ff191df03b1cd9afcf558d4c65d04459be01f",
+    "sources": {
+      ".veldo/control_launch.py": {
+        "baseline_sha256": "fe5862375bf27bb46615bdcb794b16c0ba529be5153e185a0b126594ef873b25",
+        "mutant_sha256": "41c764cf1e8ba47ae43e97f58b7ff191df03b1cd9afcf558d4c65d04459be01f"
+      },
+      "engine/.veldo/control_launch.py": {
+        "baseline_sha256": "fe5862375bf27bb46615bdcb794b16c0ba529be5153e185a0b126594ef873b25",
+        "mutant_sha256": "41c764cf1e8ba47ae43e97f58b7ff191df03b1cd9afcf558d4c65d04459be01f"
+      }
+    },
+    "suite": "63_veldo_0040_containment",
+    "suite_sha256": "6ca058805a98c2bdcf0a6078763b2a75ce0c340ed92f0c8c8334d9da33f90da3"
+  },
+  "mutation_primary_anchors": [
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-resolved-exit-hides-cap",
+      "row": "manager-cap-after-adapter-exit"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-exit-waits-for-manager",
+      "row": "exit-independent-of-manager"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-clean-exit-drops-conclude",
+      "row": "exit-manager-settled"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-empty-after-cap-skips-manager",
+      "row": "exit-independent-of-manager"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-unreadable-memory-skips-manager",
+      "row": "exit-independent-of-manager"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-result-before-settled",
+      "row": "conclude-settles"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-adapter-stop-time-dropped",
+      "row": "empty-shell-signal-after-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-adapter-signal-guard-dropped",
+      "row": "empty-failure-after-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-ordinary-after-cap-is-exit",
+      "row": "empty-ordinary-after-cap-unknown"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-final-memory-sample-dropped",
+      "row": "oom-after-final-populated-sample"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-recorded-runtime-ignored",
+      "row": "recorded-runtime-after-collection"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-not-found-is-success",
+      "row": "not-found-unknown"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-normal-exit-unknown",
+      "row": "normal-exit-before-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-recorded-cap-overrides-explicit",
+      "row": "recorded-cap-explicit-precedence"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-start-activation-lost",
+      "row": "start-evidence"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-oom-evidence-lost",
+      "row": "retained-oom-before-cleanup"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-unreadable-result-silent",
+      "row": "conclude-unknown"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-launch-outside-group",
+      "row": "dedicated-group"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-wrapper-leaves-group",
+      "row": "dedicated-group"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-shared-group",
+      "row": "dedicated-group"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-unknown-setting-ignored",
+      "row": "unqualified-profile-refused"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-kind-unchecked",
+      "row": "unqualified-profile-refused"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-profile-after-acceptance",
+      "row": "unqualified-profile-refused"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-runtime-cap-ignored",
+      "row": "runtime-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-receiver-runtime-cap-ignored",
+      "row": "receiver-runtime-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-runtime-cap-one-second-late",
+      "row": "runtime-cap"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-memory-cap-ignored",
+      "row": "caps-installed"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-cpu-cap-ignored",
+      "row": "caps-installed"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-file-limit-ignored",
+      "row": "caps-installed"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-concurrency-uncounted",
+      "row": "caps-installed"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-required-setting-optional",
+      "row": "required-settings-refused"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-zero-seconds-accepted",
+      "row": "required-settings-refused"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-stop-only-parent",
+      "row": "stop-escalation"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-terminate-without-grace",
+      "row": "stop-escalation"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-kill-without-grace",
+      "row": "stop-escalation"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-no-cooperative-step",
+      "row": "cooperative-stop"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-exit-polled",
+      "row": "exit-notified"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-exit-leaves-descendants",
+      "row": "ordinary-exit"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_containment.py": 1,
+        "engine/.veldo/control_containment.py": 1
+      },
+      "module": "control_containment.py",
+      "name": "containment-retire-without-looking",
+      "row": "retire-after-empty"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/control_launch.py": 1,
+        "engine/.veldo/control_launch.py": 1
+      },
+      "module": "control_launch.py",
+      "name": "containment-group-not-reported",
+      "row": "observations"
+    },
+    {
+      "anchor_counts": {
+        ".veldo/init_scaffold.py": 1,
+        "engine/.veldo/init_scaffold.py": 1
+      },
+      "module": "init_scaffold.py",
+      "name": "containment-not-installed",
+      "row": "installed-assets"
+    }
+  ],
+  "selected_suites": {
+    "63_veldo_0040_containment": {
+      "exit_code": 2,
+      "failed": 0,
+      "failed_rows": [],
+      "log_sha256": "7d01b5fdbc42b72fd26865c777a552f637b16af3ce40dea475797b4d7e206082",
+      "passed": 83,
+      "seconds": 10.76,
+      "source_sha256": "fe5862375bf27bb46615bdcb794b16c0ba529be5153e185a0b126594ef873b25",
+      "suite_sha256": "6ca058805a98c2bdcf0a6078763b2a75ce0c340ed92f0c8c8334d9da33f90da3"
+    },
+    "86_veldo_0148_re_land": {
+      "exit_code": 2,
+      "failed": 0,
+      "failed_rows": [],
+      "log_sha256": "7b50f0c7e29ad552d810597cc8100a7db68e78f30a6d96feeaec9004b5003915",
+      "passed": 51,
+      "seconds": 43.87,
+      "suite_sha256": "9841cc1fb019b67cab8edb5f4e7d940456020c4c7f06ebf133a3f00c15d5f98f"
+    }
+  }
+}

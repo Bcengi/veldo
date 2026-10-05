@@ -1,6 +1,17 @@
 {
-  "cause": "The pidfd notification is prompt. The subsequent synchronous Group.conclude systemctl query waits for the shared user manager during reloads, delaying the durable exit record.",
+  "cause": "The original synchronous manager query delayed exit recording during reloads; its first fast path then skipped the query and lost terminal scope evidence.",
   "cleanup_observed": {
+    "final_unit_observation_sha256": "749d5059fc21f5d8c547fa31b4c29c4c7c2edcf963651c63a93ed3d33c97de7a",
+    "preexisting_0148_active_since": "2026-10-04 or early 2026-10-05, before this run began at 16:57 UTC",
+    "preexisting_0148_observation_sha256": "46bb06b0935f189170169fc9bc685f9f3005157c5294b95d9e84587b4d2504ca",
+    "preexisting_0148_slices_left_untouched": [
+      "v1480a907a46.slice",
+      "v14818721725.slice",
+      "v14846ecd2f7.slice",
+      "v148748b83bd.slice",
+      "v148c62e6301.slice",
+      "v148e8841812.slice"
+    ],
     "preexisting_slice_observation_sha256": "706ceed93260cf374d957948910edc247be4944315bc48fd2dc72311500fc7a1",
     "preexisting_slices_active_since": "2026-10-02",
     "preexisting_slices_left_untouched": [
@@ -10,6 +21,7 @@
     "scope_load_units": 0,
     "suite_shm_directories": 0,
     "task_created_suite_slices": 0,
+    "task_scratch_directories": 0,
     "temporary_replay_directories": 0
   },
   "evidence": {
@@ -141,19 +153,57 @@
           0
         ]
       }
+    },
+    "exit-notified-settled-reloads.json": {
+      "input_digest": "c8b80a227ee9c293c5f61506aa159487f9f1e439a3ab52fe49d4a2323dc59472",
+      "sha256": "8f72e8c79204196355798514a4e90d55051380ab3135d401e32484ac6e6000da",
+      "snapshot_head": "c0c2c97619edb77903d75750f3f61e6fa600316b",
+      "summary": {
+        "latency": {
+          "max": 0.009,
+          "min": 0.004,
+          "p50": 0.005,
+          "p95": 0.006
+        },
+        "manager_absent_with_reason": 0,
+        "manager_successes": 40,
+        "passed": 40,
+        "reload_covered_exits": 40,
+        "scopes_created": 10740,
+        "suite_passed": 40,
+        "total": 40,
+        "wakes": [
+          0
+        ]
+      }
+    },
+    "exit-notified-settlement-checks.json": {
+      "individually_tested_mutants": 2,
+      "rejected": 2,
+      "selected_suites": {
+        "63_veldo_0040_containment": {
+          "failed": 0,
+          "passed": 83
+        },
+        "86_veldo_0148_re_land": {
+          "failed": 0,
+          "passed": 51
+        }
+      },
+      "sha256": "36073c620dd5e0adafa47b8770d4f451aeb3c9d0dc516de35e0a0e157468b323"
     }
   },
-  "fix": "Use successful adapter exit, kernel-empty group before the installed activation deadline, no stop, and a readable final zero OOM counter as ordinary-exit evidence. Keep unread manager results absent. Retain manager settlement for ambiguous exits.",
-  "implementation_commit": "01778c04",
+  "fix": "Commit a kernel-proven clean exit first, then call conclude within the existing five-second limit while the scope is retained. Enrich the same supervision record before final completion. An unread terminal result preserves the kernel exit and records absent manager fields with terminal_scope_result_unreadable.",
+  "implementation_commit": "c0c2c97619edb77903d75750f3f61e6fa600316b",
   "limitations": [
-    "The explicit one-suite-at-a-time rule prevented the requested parallel-suite mix. Transient-scope churn reproduces shared-manager interference but does not claim the exact full gate workload.",
-    "The explicit prohibition on mutation-driver execution takes precedence over the later request to run finding 40. All 40 anchors were statically checked; rejection of the full inventory remains for the reviewer.",
-    "The full gate was not run."
+    "The owner requires sequential selected suites and prohibits the full gate and both mutation drivers. The full finding 40 mutation inventory remains for the reviewer.",
+    "Transient-scope churn and reloads reproduce shared-manager interference without claiming the full gate workload.",
+    "Replay source digests identify its snapshot. Afterwards, the same suite strengthened the existing deadline guard to require manager settlement before early recording for ambiguous exits; final selected-suite and mutant results are recorded separately."
   ],
   "method": {
     "cleanup": "Temporary snapshots, homes, logs and traces are removed by TemporaryDirectory; suite fixtures stop their own slices and remove their own shm directories.",
     "latency_precision": "Per-run row latency is rounded to milliseconds; the unchanged assertion uses original unrounded timestamps.",
-    "post_fix_cohorts": "One 80-run cohort exercised scope churn and manager reloads simultaneously, with the suite still sequential. It is not two separate 80-run cohorts.",
+    "post_fix_cohorts": "One 40-run sequential cohort under simultaneous scope churn and manager reloads. The earlier 80-run fast-path evidence is historical and retained under prior_fast_path and evidence.",
     "reloads": "A joined thread issues synchronous daemon-reload calls around the idle worker release until its exit row completes. The idle wake window precedes these reloads.",
     "scope_load": "15 joined foreground workers repeatedly run transient systemd scopes, each containing sleep 0.5. Every subprocess is waited for.",
     "snapshot": "Uses check_gate_mutations read_inputs, snapshot and fixed_env helpers without invoking a mutation driver. Production bytes in all before cohorts match 7aca8f15. Diagnostics time pidfd notification, manager queries and scope close.",
@@ -162,55 +212,93 @@
   "post_fix_stress": {
     "all_final_oom_counters_readable": true,
     "all_reload_commands_succeeded": true,
-    "final_manager_queries": 0,
+    "final_manager_queries": 40,
     "latency": {
-      "max": 0.007,
+      "max": 0.009,
       "min": 0.004,
       "p50": 0.005,
       "p95": 0.006
     },
-    "passed": 80,
-    "reload_covered_exits": 80,
+    "manager_absent_with_reason": 0,
+    "manager_successes": 40,
+    "max_final_manager_query_seconds": 2.5929316049441695,
+    "max_unrounded_latency_seconds": 0.009495735168457031,
+    "passed": 40,
+    "reload_commands": 80,
+    "reload_covered_exits": 40,
     "scope_load_errors": 0,
-    "scopes_created": 21420,
+    "scopes_created": 10740,
     "simultaneous_scope_workers": 15,
-    "suite_passed": 80,
-    "total": 80,
+    "suite_passed": 40,
+    "total": 40,
     "wakes": [
       0
     ]
   },
-  "regression": {
-    "current_suite_passed": 56,
-    "failed_rows": [
-      "containment/exit-independent-of-manager"
-    ],
-    "guard_manager_calls": [
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1
-    ],
-    "historical_receiver": "7aca8f15",
-    "manager_calls": [
-      1,
-      1
-    ],
-    "manager_delay_seconds": [
-      1.0,
-      5.0
-    ],
-    "mutation_driver_executed": false,
-    "new_mutants": 3,
-    "registered_finding_40_mutants": 40
+  "prior_fast_path": {
+    "fix": "Use successful adapter exit, kernel-empty group before the installed activation deadline, no stop, and a readable final zero OOM counter as ordinary-exit evidence. Keep unread manager results absent. Retain manager settlement for ambiguous exits.",
+    "implementation_commit": "01778c04",
+    "post_fix_stress": {
+      "all_final_oom_counters_readable": true,
+      "all_reload_commands_succeeded": true,
+      "final_manager_queries": 0,
+      "latency": {
+        "max": 0.007,
+        "min": 0.004,
+        "p50": 0.005,
+        "p95": 0.006
+      },
+      "passed": 80,
+      "reload_covered_exits": 80,
+      "scope_load_errors": 0,
+      "scopes_created": 21420,
+      "simultaneous_scope_workers": 15,
+      "suite_passed": 80,
+      "total": 80,
+      "wakes": [
+        0
+      ]
+    },
+    "regression": {
+      "current_suite_passed": 56,
+      "failed_rows": [
+        "containment/exit-independent-of-manager"
+      ],
+      "guard_manager_calls": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "historical_receiver": "7aca8f15",
+      "manager_calls": [
+        1,
+        1
+      ],
+      "manager_delay_seconds": [
+        1.0,
+        5.0
+      ],
+      "mutation_driver_executed": false,
+      "new_mutants": 3,
+      "registered_finding_40_mutants": 40
+    }
   },
-  "replay_sha256": "acb587d6a24bd7b59a257d762c455bab4e13aa56d2329b1d5fed80a67ab139f6",
+  "regression": {
+    "details": "exit-notified-settlement-checks.json",
+    "manager_timeout_preserves_kernel_exit": true,
+    "manager_timeout_seconds": 5,
+    "mutation_driver_executed": false,
+    "new_mutants": 1,
+    "registered_finding_40_mutants": 41
+  },
+  "replay_sha256": "aee10b436829974dd8e79311577b98ec6d74eb459116031e54f37e6922e4ff22",
   "specification": "VELDO-0040 AC3",
-  "status": "Scoped proof complete; full gate and mutation inventory execution reserved for reviewer",
+  "status": "Scoped proof passed; full gate and finding 40 mutation inventory execution remain for the reviewer.",
   "unchanged_assertions": [
     "state is exited",
     "receiver_wakes == 0 over at least 1.5 seconds",
