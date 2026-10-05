@@ -7,6 +7,7 @@ All children inherit a fixed environment, no user Python site, and disabled byte
 """
 import argparse
 import collections
+import concurrent.futures
 import hashlib
 import importlib.util
 import json
@@ -278,8 +279,134 @@ def validate_result(record, case):
         raise Refused('driver_error', str(error)) from error
 
 
+class SuiteResources:
+    """Admission belongs to the coordinator, not a semaphore blocking a worker.
+
+    Positive slot demands share a resource; 'exclusive' reserves its whole configured
+    capacity. A waiting exclusive job bars later users of that resource, so it cannot
+    starve, while unrelated jobs can pass it and fill every available worker slot.
+    Reservations cover the process lifetime, including baseline/noop and teardown.
+    """
+    def __init__(self, manifest, overrides=None):
+        self.capacity = dict(manifest.get('resource_capacities', {}))
+        for name, slots in (overrides or {}).items():
+            if name not in self.capacity:
+                raise Refused('invalid_resource_requirement', 'unknown capacity: ' + name)
+            self.capacity[name] = slots
+        if any(not isinstance(name, str) or not name or type(slots) is not int or slots <= 0
+               for name, slots in self.capacity.items()):
+            raise Refused('invalid_resource_requirement', 'capacities must be positive integers')
+        self.requirements = {}
+        for suite in manifest['suites']:
+            name = suite['file']
+            if name in self.requirements:
+                raise Refused('invalid_resource_requirement', 'duplicate suite: ' + name)
+            demand = suite.get('resources', {})
+            if not isinstance(demand, dict):
+                raise Refused('invalid_resource_requirement', name + ': resources must be an object')
+            resolved = {}
+            for resource, slots in demand.items():
+                if resource not in self.capacity:
+                    raise Refused('invalid_resource_requirement', name + ': unknown resource ' + resource)
+                if slots == 'exclusive':
+                    slots = self.capacity[resource]
+                if type(slots) is not int or slots <= 0 or slots > self.capacity[resource]:
+                    raise Refused('invalid_resource_requirement', name + ': impossible demand ' + resource)
+                resolved[resource] = slots
+            self.requirements[name] = resolved
+        self.used = dict.fromkeys(self.capacity, 0)
+        self.peak = dict(self.used)
+        self.held = {}
+
+    @classmethod
+    def from_root(cls, root, overrides=None):
+        return cls(json.loads((root / 'scripts/suites/manifest.json').read_text()), overrides)
+
+    def demand(self, job):
+        suite = job['case']['suite']
+        if suite not in self.requirements:
+            raise Refused('invalid_resource_requirement', 'undeclared suite: ' + suite)
+        return self.requirements[suite]
+
+    def select(self, pending):
+        barred = set()
+        for index, (_name, job) in enumerate(pending):
+            demand = self.demand(job)
+            if (not barred.intersection(demand) and
+                    all(self.used[r] + n <= self.capacity[r] for r, n in demand.items())):
+                return index
+            barred.update(demand)
+        return None
+
+    def acquire(self, name, job):
+        demand = self.demand(job)
+        if name in self.held or any(self.used[r] + n > self.capacity[r] for r, n in demand.items()):
+            raise Refused('invalid_resource_requirement', 'overcommitted reservation: ' + name)
+        self.held[name] = demand
+        for resource, slots in demand.items():
+            self.used[resource] += slots
+            self.peak[resource] = max(self.peak[resource], self.used[resource])
+
+    def release(self, name):
+        for resource, slots in self.held.pop(name).items():
+            self.used[resource] -= slots
+
+    def clear(self):
+        for name in list(self.held):
+            self.release(name)
+
+    def run_futures(self, jobs, submit, limit):
+        """The standalone driver uses the same reservations outside its thread pool."""
+        pending, active, results = list(jobs.items()), {}, {}
+        for _name, job in pending:
+            self.demand(job)
+        try:
+            while pending or active:
+                while pending and len(active) < limit:
+                    index = self.select(pending)
+                    if index is None:
+                        break
+                    name, job = pending.pop(index)
+                    self.acquire(name, job)
+                    try:
+                        active[submit(job)] = name
+                    except BaseException:
+                        self.release(name)
+                        raise
+                if not active:
+                    raise Refused('invalid_resource_requirement', 'no runnable pending job')
+                done, _ = concurrent.futures.wait(active, return_when=concurrent.futures.FIRST_COMPLETED)
+                for future in done:
+                    name = active.pop(future)
+                    self.release(name)
+                    results[name] = future.result()
+            return results
+        finally:
+            # A failing future cannot release reservations still used by other threads.
+            concurrent.futures.wait(active)
+            self.clear()
+
+    def summary(self):
+        return {'capacities': self.capacity, 'peak_slots': self.peak, 'remaining_slots': self.used}
+
+
+def resource_capacities(arguments):
+    capacities = {}
+    for argument in arguments:
+        try:
+            name, value = argument.split('=', 1)
+            slots = int(value)
+            if not name or slots <= 0 or name in capacities:
+                raise ValueError()
+        except ValueError as error:
+            raise argparse.ArgumentTypeError('resource capacity must be unique NAME=POSITIVE_INTEGER') from error
+        capacities[name] = slots
+    return capacities
+
+
 class Workers:
-    def __init__(self, deadline):
+    def __init__(self, deadline, resources=None):
+        self.resources = resources
         self.deadline = deadline
         self.active = {}
         self.invocations = 0
@@ -304,15 +431,25 @@ class Workers:
             out.close()
             err.close()
         self.active.clear()
+        if self.resources is not None:
+            self.resources.clear()
 
     def run(self, jobs, directory, root):
+        if self.resources is None:
+            self.resources = SuiteResources.from_root(root)
         pending = list(jobs.items())
+        # Validate every job before launching any, including ones behind blocked jobs.
+        for _name, job in pending:
+            self.resources.demand(job)
         results = {}
         try:
             while pending or self.active:
                 self.check()
                 while pending and len(self.active) < PARALLEL:
-                    name, job = pending.pop(0)
+                    index = self.resources.select(pending)
+                    if index is None:
+                        break
+                    name, job = pending.pop(index)
                     home = directory / str(self.invocations)
                     home.mkdir()
                     bindir = home / 'bin'
@@ -321,11 +458,18 @@ class Workers:
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
                     out, err = (open(home / f, 'w+b') for f in ('stdout', 'stderr'))
-                    proc = subprocess.Popen([sys.executable, '-B', '-s',
-                                             str(root / 'scripts/check_gate_mutations.py'),
-                                             '--worker', str(jobpath)], cwd=root,
-                                            env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
-                                            stdout=out, stderr=err, start_new_session=True)
+                    self.resources.acquire(name, job)
+                    try:
+                        proc = subprocess.Popen([sys.executable, '-B', '-s',
+                                                 str(root / 'scripts/check_gate_mutations.py'),
+                                                 '--worker', str(jobpath)], cwd=root,
+                                                env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
+                                                stdout=out, stderr=err, start_new_session=True)
+                    except BaseException:
+                        out.close()
+                        err.close()
+                        self.resources.release(name)
+                        raise
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
@@ -344,6 +488,7 @@ class Workers:
                     out.close()
                     err.close()
                     del self.active[name]
+                    self.resources.release(name)
                     self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
                     if proc.returncode != 0:
                         raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
@@ -392,7 +537,7 @@ def snapshot(root, destination, files, head):
         path.chmod(mode)
 
 
-def run_stage(root=ROOT):
+def run_stage(root=ROOT, capacities=None):
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline)
@@ -436,6 +581,7 @@ def run_stage(root=ROOT):
                 group = control_group(case)
                 for mode in ('baseline', 'noop'):
                     controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
+            workers.resources = SuiteResources.from_root(frozen, capacities)
             control_results = workers.run(controls, directory, frozen)
             mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
                                           for c in cases}, directory, frozen)
@@ -489,6 +635,9 @@ def run_stage(root=ROOT):
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]
+        if workers.resources is not None:
+            receipt['resources'] = workers.resources.summary()
+        receipt['parallel_workers'] = PARALLEL
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
     return receipt
@@ -497,11 +646,12 @@ def run_stage(root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
+    parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     args = parser.parse_args()
     if args.worker:
         print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
-    receipt = run_stage()
+    receipt = run_stage(capacities=resource_capacities(args.resource_capacity))
     print(json.dumps(receipt, sort_keys=True), flush=True)
     print('mutations: {status} registered={registered} executed={executed} '
           'rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)

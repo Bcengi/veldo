@@ -11,6 +11,7 @@ import contextlib
 import difflib
 import hashlib
 import io
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -10580,6 +10581,7 @@ def main():
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
+    parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     parser.add_argument('--jobs', type=int, default=min(8, os.cpu_count() or 1),
                         help='mutant runs in parallel (the honest run is once per suite)')
     args = parser.parse_args()
@@ -10620,13 +10622,19 @@ def main():
         first = {}
         for case in selected:
             first.setdefault(case['suite'], case)
+        spec = importlib.util.spec_from_file_location('mutation_admission', ROOT / 'scripts/check_gate_mutations.py')
+        admission = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(admission)
+        resources = admission.SuiteResources.from_root(ROOT, admission.resource_capacities(args.resource_capacity))
+        pending = [('honest:' + suite, {'case': case, 'path': None}) for suite, case in first.items()]
+        pending += [('mutant:' + case['name'], {'case': case, 'path': prepared[case['name']]['mutant']})
+                    for case in selected]
         with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
-            honest_runs = {suite: pool.submit(run, case) for suite, case in first.items()}
-            broken_runs = {case['name']: pool.submit(run, case, prepared[case['name']]['mutant'])
-                           for case in selected}
+            observed = resources.run_futures(dict(pending),
+                lambda job: pool.submit(run, job['case'], job['path']), max(1, args.jobs))
             for case in selected:
-                honest = honest_runs[case['suite']].result()
-                broken = broken_runs[case['name']].result()
+                honest = observed['honest:' + case['suite']]
+                broken = observed['mutant:' + case['name']]
                 assert not honest['failed_rows'], honest
                 assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
                 for label in case['rows']:
@@ -10636,7 +10644,7 @@ def main():
                 print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
                                   'baseline': 'green', 'assertions': honest['count'],
                                   'red_rows': broken['failed_rows']}), flush=True)
-    print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines}))
+    print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines, 'resources': resources.summary()}))
 
 
 if __name__ == '__main__':

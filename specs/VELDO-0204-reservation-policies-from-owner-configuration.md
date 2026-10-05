@@ -363,3 +363,10 @@ proofs with the existing lead procedure, and scan for credentials before committ
 The owner's execution restriction reserves the full gate and both mutation drivers
 for the reviewer. Concurrent suite-63 measurements need clarification of that same
 restriction; do not claim unexecuted load or mutant qualification.
+
+The implemented resource declaration uses integer shared slots and an exclusive
+reservation for suite 63, preventing both concurrent copies and overlapping
+authority reloads from sibling suites. Both mutation entry points enforce the same
+admission contract. proof/VELDO-0204/gate-repair.md distinguishes the measured
+serial baseline and regression controls from the owner's reserved concurrent and
+mutation qualification. No product timing or acceptance bound is changed.

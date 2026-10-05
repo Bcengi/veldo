@@ -1,0 +1,58 @@
+{
+ "selected_suites": [
+  {
+   "suite": "63",
+   "passed": 83,
+   "failed": 0,
+   "seconds": 7.0
+  },
+  {
+   "suite": "0127",
+   "passed": 53,
+   "failed": 0,
+   "seconds": 37.35
+  },
+  {
+   "suite": "0189",
+   "passed": 59,
+   "failed": 0,
+   "seconds": 42.97
+  },
+  {
+   "suite": "resources",
+   "passed": 35,
+   "failed": 0,
+   "seconds": 0.11
+  },
+  {
+   "suite": "13",
+   "passed": 3530,
+   "failed": 0,
+   "seconds": 68.93
+  },
+  {
+   "suite": "69",
+   "passed": 42,
+   "failed": 0,
+   "seconds": 16.24
+  },
+  {
+   "suite": "70",
+   "passed": 57,
+   "failed": 0,
+   "seconds": 6.44
+  }
+ ],
+ "mutation_inventory": 2494,
+ "suite63_mutants": 41,
+ "suite63_control_workers": 6,
+ "parallel_worker_capacity": 16,
+ "manager_declared_suites": 19,
+ "manager_declared_cases": 558,
+ "exclusive_suite63_capacity": 1,
+ "moved_anchors": 0,
+ "full_gate": "not run, reserved for reviewer",
+ "mutation_stage": "not run, reserved for reviewer",
+ "finding40": "not run, reserved for reviewer",
+ "concurrent_failure_curve": "not run, restricted by one-suite-at-a-time instruction"
+}

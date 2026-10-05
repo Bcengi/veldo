@@ -1,0 +1,17 @@
+{
+ "concurrent_suite63": 1,
+ "wall_seconds": 7.130761998239905,
+ "suite_exit": 2,
+ "failed_rows": [],
+ "scope": "One permitted selected suite. The manager is sampled while the suite child is alive. No concurrent-level reproduction or mutation stage was run.",
+ "manager": {
+  "samples": 68,
+  "min_response_seconds": 0.002879283856600523,
+  "median_response_seconds": 0.0036024078726768494,
+  "p95_response_seconds": 0.004484118893742561,
+  "max_response_seconds": 0.009510056115686893,
+  "max_jobs": 0,
+  "errors": 0
+ },
+ "pending": "Concurrency levels 2, 4, 8 and 16, stage baselines and finding 40 mutants are reserved for the reviewer under the explicit execution prohibition. No saturation measurement or tuned capacity is claimed."
+}

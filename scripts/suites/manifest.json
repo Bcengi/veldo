@@ -670,7 +670,10 @@
     "62_veldo_0039_dispatch"
    ],
    "regions": "Dispatch contracts before launch, launch results under the original identity and bound observations",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and real receiver and worker processes. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and real receiver and worker processes. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "63_veldo_0040_containment",
@@ -679,7 +682,10 @@
     "63_veldo_0040_containment"
    ],
    "regions": "Each Linux worker in its dispatch's own systemd scope and cgroup under the trusted wrapper, declared caps installed and holding, whole-group stop escalation and OS-notified exit before retirement, activation-based receiver cap during manager reloads, kernel-confirmed ordinary exit without manager latency, deterministic manager result precedence and bounded settlement",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the owner's systemd user manager (transient scopes in slices of the run's own, stopped at its end) and real receiver, wrapper, worker and descendant processes. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the owner's systemd user manager (transient scopes in slices of the run's own, stopped at its end) and real receiver, wrapper, worker and descendant processes. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": "exclusive"
+   }
   },
   {
    "name": "63_veldo_0066_attribution",
@@ -697,7 +703,10 @@
     "63_veldo_0049_floor"
    ],
    "regions": "Enrolled build acceptance, independent review, finding dispositions and handoff through the authority's transitions, with materialized status projections",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0035 materialization and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0035 materialization and real receiver, builder and reviewer processes. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "64_veldo_0050_proof",
@@ -706,7 +715,10 @@
     "64_veldo_0050_proof"
    ],
    "regions": "Proof accepted as immutable evidence before a build is offered, complete contextual validation, observed gate checks and event ownership",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, a scaffolded enrolled Git repository running its own canonical gate, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "65_veldo_0132_workflow",
@@ -733,7 +745,10 @@
     "66_veldo_0042_clones"
    ],
    "regions": "Isolated worker clones at the accepted commit, per-repository pinned read-only object caches with named attachments only, a confined worker and consumer denied every protected target while real engines keep their capabilities, and pin release only after the clone's workers, consumers and containment groups end",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, four real Git repositories with per-repository object caches, real git init/fetch/checkout/gc, real confined worker and consumer processes, the installed claude and codex CLIs confined with a temporary HOME and pointed at a local listener that answers nothing (a missing CLI fails its row by name), and the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end). Writes only temporary fixtures, in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, four real Git repositories with per-repository object caches, real git init/fetch/checkout/gc, real confined worker and consumer processes, the installed claude and codex CLIs confined with a temporary HOME and pointed at a local listener that answers nothing (a missing CLI fails its row by name), and the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end). Writes only temporary fixtures, in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "66_veldo_0047_authority",
@@ -742,7 +757,10 @@
     "66_veldo_0047_authority"
    ],
    "regions": "Authority service installation with a fixed executable, protected configuration and this host's receiver profile, key directory placement, one instance under the store's stable lock, signed IPC commands committed to the configured store, and named refusal with nothing started while the service is absent",
-   "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "67_veldo_0041_heartbeat",
@@ -751,7 +769,10 @@
     "67_veldo_0041_heartbeat"
    ],
    "regions": "The trusted wrapper's heartbeat while a model call is blocked, in a session of its own and on a channel the engine does not hold, claim renewal on each heartbeat and the missed-heartbeat stop, an accepted stop's bounded escalation over the whole group, and a retirement that follows actual termination, keeps each open obligation, is retried by the runner once an obligation is completed and releases the slot once",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "66_veldo_0051_events",
@@ -805,7 +826,10 @@
     "67_veldo_0135_offers"
    ],
    "regions": "Enrolled work offered from its floor record at every floor state, the work loop's no-reclaim and claim-then-recheck over that record, one enrolled unit through the ordinary loop to landing, unenrolled status-line behavior unchanged, and the offer observations",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition behind the claim client, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal and review signatures, an enrolled Git repository with a real gate script and proof files, a bare trunk, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition behind the claim client, the VELDO-0049 floor authority and real receiver, builder and reviewer processes. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "68_veldo_0136_hints",
@@ -877,7 +901,10 @@
     "71_veldo_0076_projects"
    ],
    "regions": "Project activation by the enrolled owner's real signed command binding owner, charter, one execution repository, an applicable authority policy and a finite coordination budget, with each omitted field, missing authority and every unbounded budget refused; pause and cancel stopping the frontier's offers and every dispatch of the project through the eligibility Gate while running work gets the host's ordinary stop and history and landed receipts stay; completion refused by name while an objective, assignment, governing decision, dispatch or reservation of the project is open",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and decision settlement signatures, the VELDO-0064 inbox, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0052 Gate and the frontier over spec files, the VELDO-0039 runner with real receiver and fixture worker processes in systemd containment groups, a real Git source repository, and a reader in another process. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and decision settlement signatures, the VELDO-0064 inbox, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0052 Gate and the frontier over spec files, the VELDO-0039 runner with real receiver and fixture worker processes in systemd containment groups, a real Git source repository, and a reader in another process. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "71_veldo_0138_channel_service",
@@ -1012,7 +1039,10 @@
     "78_veldo_0060_claude_adapter"
    ],
    "regions": "The Claude Code production adapter: the lifecycle operations of its installed registration (launch, acceptance, observation streaming, stop, exit and artifact return) driven through the VELDO-0039 Runner and receiver in a VELDO-0042 isolated clone; the engine launched from the pinned copy of its qualified version under the factory state root with the version's qualified flags and DISABLE_AUTOUPDATER, a changed digest, an unknown version, a link, a missing copy, no state root and a configured updater refused by name before acceptance with nothing spawned or reserved, and the pin copying only the qualified bytes; the shipped 2.1.281 qualification record checked against the tables extracted from the binary; the artifact of each live normal, nonzero, signal and error-result exit and of perturbed stream bytes (a missing terminal record, malformed lines, a result without usage), a zero exit without its result never a completion and missing usage retained; an ordinary stop reaching the worker and its session's descendant, recorded on its original invocation, a descendant that left the session keeping the dispatch from being recorded as ended; the exit record binding the artifact's verdict and digest, and the floor refusing to accept a build whose dispatch exited 0 without its terminal record; the local Linux contained launch of both engines, Claude Code and Codex, through the one receiver path (bind, transient scope in the run's own slice, Landlock clone entrance, pinned exec, cooperative and forced stop, a descendant that outlives the group's SIGTERM keeping the dispatch from being recorded ended until the kill, artifact and exit record); initial, retry and follow-on invocations checked and reserved before launch, available, exhausted, unknown and rate-limited allowance, and the worker stopped at its cap; every fake line and argv checked against the binary's own tables",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, a VELDO-0042 clone confined with Landlock, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, printing lines in the CLI's own stream format and started with the binary's own options (proof/VELDO-0062/cli-formats.json, proof/VELDO-0060/cli-options.json); no real engine runs, no login and no credential. Most launches use the wrapper without a containment group; the contained rows run both engines in VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, and the floor row uses VELDO-0049's FloorAuthority. Writes only temporary fixtures in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, a VELDO-0042 clone confined with Landlock, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, printing lines in the CLI's own stream format and started with the binary's own options (proof/VELDO-0062/cli-formats.json, proof/VELDO-0060/cli-options.json); no real engine runs, no login and no credential. Most launches use the wrapper without a containment group; the contained rows run both engines in VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, and the floor row uses VELDO-0049's FloorAuthority. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "79_veldo_0061_codex_adapter",
@@ -1021,7 +1051,10 @@
     "79_veldo_0061_codex_adapter"
    ],
    "regions": "The Codex adapter qualified on Linux: its registered lifecycle (accept, launch, observe, stop, exit, artifacts) driven through the trusted runner in a clone; the installed Codex 0.154.0 vendor binary launched pinned (exec --json --help, no model); a changed digest, a newer version, a link, the package manager's link and other flags each refused before acceptance with zero spawns; the qualification record the production writer makes of the binary; terminal output decoded into an artifact document (result, missing result, malformed output, missing usage, failed turn, nonzero and signal exits) whose verdict is the invocation's outcome and the slot's; cooperative, forced and descendant stops through the containment group with the original invocation cancelled and retained; initial, retry and follow-on invocations reserved before spawn, refusals for an exhausted unit cap, unknown allowance and a reported usage limit with zero spawns, the worker stopped at its token cap; the fake Codex lines checked against the tables extracted from the binary",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authority, VELDO-0052's Gate, VELDO-0031 claims, a Git source bound in the store and a VELDO-0042 clone per dispatch, the VELDO-0039 Runner and receiver processes, VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, the installed Codex vendor binary (help only) and a fake Codex vendor package. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authority, VELDO-0052's Gate, VELDO-0031 claims, a Git source bound in the store and a VELDO-0042 clone per dispatch, the VELDO-0039 Runner and receiver processes, VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, the installed Codex vendor binary (help only) and a fake Codex vendor package. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "80_veldo_0155_claude_baseline",
@@ -1030,7 +1063,10 @@
     "80_veldo_0155_claude_baseline"
    ],
    "regions": "Every Claude Code run on the everything-off baseline, behind the paid-API guard and the environment strip, driven through the VELDO-0039 Runner and receiver on the local Linux contained launch: the pinned 2.1.281 copy started with its qualified flags and then exactly the baseline (no setting source, the run's generated --settings file turning every hook off and --mcp-config file listing no server, strict MCP, slash commands off, CLAUDE_CODE_DISABLE_CLAUDE_MDS and CLAUDE_CODE_DISABLE_AUTO_MEMORY), a version whose record does not list the baseline refused before acceptance, and one row per planted item of the profile and the clone (settings, MCP servers and the login's claude.ai connectors, skills and the bundled ones, instruction files, auto memory, hooks) read from the init event and the debug log; the paid-API names planted in the caller's environment absent from the engine's, an account's own subscription token present as configured and an unreadable token file refused; a run whose init reports each apiKeySource other than none stopped by name before its first turn and the none runs completing; an Anthropic profile reachable through HOME or XDG_CONFIG_HOME refused before acceptance; the SSH agent, session bus and Git tokens stripped by the wrapper, the engine's own empty runtime directory, and the receiver's systemd tools still reaching the user manager",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, loading only what the binary's own gates allow (proof/VELDO-0155/claude-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, loading only what the binary's own gates allow (proof/VELDO-0155/claude-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "81_veldo_0156_codex_baseline",
@@ -1039,7 +1075,10 @@
     "81_veldo_0156_codex_baseline"
    ],
    "regions": "Every Codex run on the everything-off baseline, behind the paid-API guard and the environment strip, driven through the VELDO-0039 Runner and receiver on the local Linux contained launch: the pinned vendor binary started with its qualified flags and then exactly the baseline (--ignore-user-config, --ignore-rules, and the generated configuration as -c overrides: project_doc_max_bytes 0, forced_login_method chatgpt, the file credentials store, no hook), a binary whose record does not list the baseline refused before acceptance, and one row per planted item of the profile and the clone (the user configuration, rules, the project document, a hook) read from the engine's effective configuration and what it loaded; OPENAI_API_KEY and CODEX_API_KEY planted in the caller's environment absent from the engine's; runs on no login and on an API-key login refused by name before acceptance through the binary's own login status, the ChatGPT profile's run taking its first turn on the login read from its file, and with the adapter's stop off the engine itself refusing the API-key login because the ChatGPT method is forced; the SSH agent, session bus and Git tokens stripped by the wrapper, the engine's own empty runtime directory, and the receiver's systemd tools still reaching the user manager",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, loading only what the binary's own gates allow (proof/VELDO-0156/codex-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, loading only what the binary's own gates allow (proof/VELDO-0156/codex-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "82_veldo_0144_mcp_catalog",
@@ -1057,7 +1096,10 @@
     "82_veldo_0141_execution_record"
    ],
    "regions": "Every worker run's execution record, driven through the VELDO-0039 Runner and receiver on the local Linux contained launch for a Claude Code and a Codex worker whose unit calls tools, runs a command that writes to its error stream, fails a command and edits a file in its clone: every line each engine printed on its output and its error stream kept in order after the wrapper's identity line, gapless and timed, compared with the engine's own copy; the Claude Code run carrying --verbose, --include-partial-messages and --forward-subagent-text through the qualified baseline, so a subagent's text and the partial messages are in the record; the VELDO-0130 API serving the record live from the first cursor after each record hint, from a Last-Event-ID and a middle cursor, and after the run with the exit record's committed count and digest, the served lines equal to the kept ones field for field; a member outside the run's project, a session ended mid-run, an unknown run and a cursor past the end refused by name, a record not matching its commitment refused; the record call carried over the service socket; a planted resolver's low-entropy value printed alone, inside a command's output, in the error stream and joined to a high-entropy span replaced whole before the scanner runs, the account's subscription token replaced as a resolved value, a known-pattern token redacted by the scanner, each line's redaction field naming exactly the kinds replaced, a word no resolver named kept, and nothing of any of them served; the fakes' lines checked against the binaries' own tables",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, memberships enrolled through control_membership's signed commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes (one started through a driver that adds a planted resolver to control_launch.RESOLVERS), the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), the VELDO-0130 ControlApi and ApiAuthority with passkeys registered and signed in through its ceremonies using openssl, control_client_api's hint socket and service authority, with a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes (proof/VELDO-0062/cli-formats.json, proof/VELDO-0141/stream-formats.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, memberships enrolled through control_membership's signed commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes (one started through a driver that adds a planted resolver to control_launch.RESOLVERS), the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), the VELDO-0130 ControlApi and ApiAuthority with passkeys registered and signed in through its ceremonies using openssl, control_client_api's hint socket and service authority, with a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes (proof/VELDO-0062/cli-formats.json, proof/VELDO-0141/stream-formats.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "82_veldo_0085_decomposition",
@@ -1075,7 +1117,10 @@
     "82_veldo_0129_worker_wiring"
    ],
    "regions": "Installed build and independent review through qualified engine adapters, Runner, reservations and proof authority.",
-   "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls."
+   "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "82_veldo_0165_launch_hygiene",
@@ -1129,7 +1174,10 @@
     "85_veldo_0158_credential_delivery"
    ],
    "regions": "Each Linux run's MCP credentials, driven through the VELDO-0039 Runner and receiver on the local Linux contained launch for a Claude Code and a Codex worker whose dispatch configuration selects catalog revisions saved through the VELDO-0144 catalog route, with credentials set through its credential route: the values resolved from the keystore just before the spawn, Claude Code's generated MCP configuration holding them in the run's private 0700 directory under the factory state root and removed with the run, Codex's mcp_servers table naming them through env_vars and bearer_token_env_var while its engine environment carries them, every process of the account read from /proc while each run holds with no value on any command line and only the run's own processes holding one in an environment, each server given its own credential alone, and no value in the packet, the contracts, the journal, the store or the receiver's reports; the keystore locked, unreachable and a reference resolving to nothing each refusing the launch as credential_unavailable:<id> before any engine process, while a run needing no credential launches in the locked state; each resolved value printed alone, inside a command's output and on the error stream replaced by the mcp_credential marker in the execution record, and a value resolved for other runs kept as printed by a run that never resolved it; the fakes' lines checked against the binaries' own tables",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command and the API edge through control_channel_enrollment's, the VELDO-0130 ControlApi and ApiAuthority with a passkey registered and signed in through its ceremonies using openssl and the API edge's generated key signing its assertions, the VELDO-0144 catalog and credential commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), a generated fake secret-tool first on every PATH the suite and the receiver use (the real keyring is never reached), a fixture stdio MCP server, a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command and the API edge through control_channel_enrollment's, the VELDO-0130 ControlApi and ApiAuthority with a passkey registered and signed in through its ceremonies using openssl and the API edge's generated key signing its assertions, the VELDO-0144 catalog and credential commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), a generated fake secret-tool first on every PATH the suite and the receiver use (the real keyring is never reached), a fixture stdio MCP server, a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "86_veldo_0148_re_land",
@@ -1138,7 +1186,10 @@
     "86_veldo_0148_re_land"
    ],
    "regions": "A land refused because another factory moved main, re-landed by the factory loop inside the installed authority service: a publication refused as stale-subject (the trunk moved before the executor's listing) ending its original land dispatch with no new attempt and followed by exactly one new land dispatch that takes a new watermark, re-merges the same build, runs the gate again and lands by a new compare-and-swap, the review kept on the unchanged evidence commit; a re-merge that conflicts sending the unit back to its builder as a new build told to merge the new main, whose review is offered once it ends; every trunk update a fast-forward and every publication leased on its own land's watermark; a lease lost between the listing and the push to a trunk that does not contain the candidate recorded as a refused publication (trunk-moved), its tip fetched into the publication clone, and re-landed; one whose tip contains the candidate kept unknown at its push URL with no new attempt; a unit requiring an approval asked once for a fresh grant bound to the re-merged tree, the old grant refused by name with the trunk unchanged, and his grant landing it; the land station's configuration refused by name when malformed; synchronous installed loop passes and real receiver pipe events drive state assertions independently of the land wake, which is separately asserted to start the immediate next pass without a timer. Real contained wrapper probes distinguish stopped report timeout, expired startup budget and wrapper exit before the report, with an outer timeout asserted per row.",
-   "requires_note": "Only shared ROOT and expect. Real Git (a scaffolded repository with its canonical gate, a disposable bare remote with its reflog, the enrolled, builder, publication and colleague clones, a pre-push hook of the publication clone armed for one push), the SQLite store with OpenSSH signatures, VELDO-0076 projects, VELDO-0031 claims, VELDO-0036 reservations, VELDO-0039 dispatches with real child processes, VELDO-0050 proof, the VELDO-0049 floor, the VELDO-0028 effect executor, the lander, VELDO-0058's installed gate, VELDO-0057's publication and receipt, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), the Runner and launch receiver processes, the trusted wrapper and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential."
+   "requires_note": "Only shared ROOT and expect. Real Git (a scaffolded repository with its canonical gate, a disposable bare remote with its reflog, the enrolled, builder, publication and colleague clones, a pre-push hook of the publication clone armed for one push), the SQLite store with OpenSSH signatures, VELDO-0076 projects, VELDO-0031 claims, VELDO-0036 reservations, VELDO-0039 dispatches with real child processes, VELDO-0050 proof, the VELDO-0049 floor, the VELDO-0028 effect executor, the lander, VELDO-0058's installed gate, VELDO-0057's publication and receipt, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), the Runner and launch receiver processes, the trusted wrapper and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "86_veldo_0127_agent_configuration",
@@ -1147,7 +1198,10 @@
     "86_veldo_0127_agent_configuration"
    ],
    "regions": "Immutable accepted roles, bundled catalog overrides for unchanged Codex models, exact direct and Code Mode effective tool comparison including resource readers only with selected MCP servers, bound dispatch revisions, launch capability equality and pending live captures.",
-   "requires_note": "Shared ROOT and expect only. Production signed store, role and MCP catalog writers, credentials, Runner, receiver and both engine adapters. Generated VELDO-0172 fake engines and temporary profiles."
+   "requires_note": "Shared ROOT and expect only. Production signed store, role and MCP catalog writers, credentials, Runner, receiver and both engine adapters. Generated VELDO-0172 fake engines and temporary profiles.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "83_veldo_0166_usage_windows",
@@ -1246,7 +1300,10 @@
     "87_veldo_0170_receiver_trust"
    ],
    "regions": "VELDO-0170 receiver configuration and setup re-run",
-   "requires_note": "Uses only ROOT and expect, generated keys, real setup and settlement writers, and loopback stand-ins."
+   "requires_note": "Uses only ROOT and expect, generated keys, real setup and settlement writers, and loopback stand-ins.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "91_veldo_0151_specialists",
@@ -1301,6 +1358,19 @@
    ],
    "regions": "Reservation policies provisioned from owner configuration, offline under the setup lock and in each factory loop pass.",
    "requires_note": "Only ROOT and expect. Real setup through VELDO-0088's production-setup fixture, generated SSH keys, production writers, and control_service's loop in process on the locked store. Protocol workers only: no fake engine or model."
+  },
+  {
+   "name": "97_veldo_0204_gate_resources",
+   "file": "97_veldo_0204_gate_resources.py",
+   "requires": [
+    "97_veldo_0204_gate_resources"
+   ],
+   "regions": "Gate repair: resource admission and temporary fixture ownership.",
+   "requires_note": "Only ROOT and expect. Controlled child completion and faults in the real fixture owner functions; no mutation drive."
   }
- ]
+ ],
+ "resource_capacities": {
+  "systemd_user_manager": 16
+ },
+ "resource_note": "Mutation admission: positive integer slots or exclusive. Suite 63 needs an undisturbed manager for its existing hard notification bounds. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots."
 }

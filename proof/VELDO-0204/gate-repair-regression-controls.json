@@ -1,0 +1,23 @@
+[
+ {
+  "control": "admission",
+  "exit_status": 1,
+  "failed_rows": [
+   "  SELFTEST FAIL: VELDO-0204 gate/resources-workers: baseline, noop and mutants all reserve before spawn; the actual coordinator keeps 16 unrelated slots busy and releases every reservation"
+  ]
+ },
+ {
+  "control": "matrix-cleanup",
+  "exit_status": 1,
+  "failed_rows": [
+   "  SELFTEST FAIL: VELDO-0204 gate/temporary-fixtures: matrix cells and self-edit probes leave no directories after construction failure, execution failure, refusal or success"
+  ]
+ },
+ {
+  "control": "candidate-cleanup",
+  "exit_status": 1,
+  "failed_rows": [
+   "  SELFTEST FAIL: VELDO-0204 gate/candidate-cleanup: direct landing fixtures discard candidates on success and when each stage or the between-stage hook raises"
+  ]
+ }
+]

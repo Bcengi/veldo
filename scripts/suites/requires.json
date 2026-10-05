@@ -517,6 +517,9 @@
   ],
   "96_veldo_0204_reservation_policies": [
    "96_veldo_0204_reservation_policies"
+  ],
+  "97_veldo_0204_gate_resources": [
+   "97_veldo_0204_gate_resources"
   ]
  }
 }

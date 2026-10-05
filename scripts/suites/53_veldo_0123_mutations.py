@@ -54,6 +54,8 @@ def import_gate(path):
 
 def fixture(root, source, driver_source=None):
     (root / 'scripts/suites').mkdir(parents=True)
+    (root / 'scripts/suites/manifest.json').write_text(__import__('json').dumps({
+        'suites': [{'file': 'fixture.py'}, {'file': 'fixture_kind.py'}]}))
     (root / '.veldo').mkdir()
     (root / '.veldo/git_process.py').write_bytes((source.parent.parent / '.veldo/git_process.py').read_bytes())
     (root / 'proof').mkdir()
@@ -619,7 +621,7 @@ if 'expect' in globals():
     # Drive at a count that is not the host's own, so a literal equal to the host count cannot pass.
     _m123_saved_parallel = _m123_gate.PARALLEL
     _m123_gate.PARALLEL = 3
-    _m123_jobs = {'j%d' % i: {'case': {'driver': 'synthetic'}, 'mode': 'baseline'}
+    _m123_jobs = {'j%d' % i: {'case': {'driver': 'synthetic', 'suite': '01_warp_0101_reviewer_notes.py'}, 'mode': 'baseline'}
                   for i in range(_m123_gate.PARALLEL + 4)}
     _m123_gate.subprocess.Popen = _m123_fake_popen
     try:
