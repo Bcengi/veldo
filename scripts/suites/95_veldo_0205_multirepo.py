@@ -17,11 +17,36 @@ def _v205_suite():
     import json
     import os
     from pathlib import Path
+    import shutil
     import sqlite3
     import subprocess
     import tempfile
     import time
     import traceback
+
+    # The production copies both parts run: each is laid over a copy of .veldo, so a module that loads
+    # its siblings by its own path finds them beside it.
+    PRODUCTION = {
+        'control_alias.py': ROOT / ".veldo" / "control_alias.py",
+        'control_readset.py': ROOT / ".veldo" / "control_readset.py",
+        'control_team.py': ROOT / ".veldo" / "control_team.py",
+        'control_team_routes.py': ROOT / ".veldo" / "control_team_routes.py",
+        'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
+        'control_claim.py': ROOT / ".veldo" / "control_claim.py",
+        'control_backlog.py': ROOT / ".veldo" / "control_backlog.py",
+        'control_decomposition.py': ROOT / ".veldo" / "control_decomposition.py",
+        'control_grooming.py': ROOT / ".veldo" / "control_grooming.py",
+        'control_intake.py': ROOT / ".veldo" / "control_intake.py",
+        'control_intake_routes.py': ROOT / ".veldo" / "control_intake_routes.py",
+        'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
+        'control_channel_ingress.py': ROOT / ".veldo" / "control_channel_ingress.py",
+        'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
+        'control_channel_attribution.py': ROOT / ".veldo" / "control_channel_attribution.py",
+        'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
+        'control_signer_answers.py': ROOT / ".veldo" / "control_signer_answers.py",
+        'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
+    }
 
     names = ('pm/two-lines', 'pm/same-repository-twice', 'pm/unserved-repository', 'lock/not-the-authority',
              'pm/cross-repository', 'pm/views', 'pm/observed',
@@ -66,7 +91,7 @@ def _v205_suite():
     def pm_part():
         helper = load('v205_v88_fixture', proof / 'VELDO-0088/fixture.py')
         X = load('v205_pm_fixture', proof / 'VELDO-0205/pm_fixture.py')
-        with helper.fixture(ROOT, {}, cycle_budget=5) as f:
+        with helper.fixture(ROOT, PRODUCTION, cycle_budget=5) as f:
             x = X.extend(f, ROOT, load)
             S, conn, sign, mods = f['S'], f['conn'], f['journal_sign'], f['mods']
             A, B, ids, ids_b = x['A'], x['B'], f['ids'], x['ids_b']
@@ -446,12 +471,6 @@ def _v205_suite():
     def telegram_part():
         H = load('v205_v73', ROOT / 'scripts/suites/support/v73_authority.py')
         T = load('v205_telegram_fixture', proof / 'VELDO-0205/telegram_fixture.py')
-        organs = ROOT / '.veldo'
-        SC = load('v205_channel', organs / 'control_service_channel.py')
-        V = load('v205_presentation', organs / 'control_channel_presentation.py')
-        IN = load('v205_t_intake', organs / 'control_intake.py')
-        RT = load('v205_routes', organs / 'control_intake_routes.py')
-        PM = load('v205_t_pm', organs / 'control_workflow_cycle_pm.py')
         bot = {'id': 8205000001, 'is_bot': True, 'first_name': 'Veldo', 'username': 'veldo205_bot'}
         owner = {'id': T.OWNER_CHAT, 'is_bot': False, 'first_name': 'Owner'}
         url, api, stop = H.stand_in({'bot205': bot})
@@ -459,6 +478,18 @@ def _v205_suite():
         with contextlib.ExitStack() as stack:
             stack.callback(stop)
             base = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix='v205-', dir=fast)))
+            organs = base / 'organs'
+            organs.mkdir()
+            for source in sorted((ROOT / '.veldo').glob('*.py')):
+                shutil.copyfile(source, organs / source.name)
+            shutil.copytree(ROOT / '.veldo' / 'runtime', organs / 'runtime')
+            for name, source in PRODUCTION.items():
+                shutil.copyfile(source, organs / name)
+            SC = load('v205_channel', organs / 'control_service_channel.py')
+            V = load('v205_presentation', organs / 'control_channel_presentation.py')
+            IN = load('v205_t_intake', organs / 'control_intake.py')
+            RT = load('v205_routes', organs / 'control_intake_routes.py')
+            PM = load('v205_t_pm', organs / 'control_workflow_cycle_pm.py')
             f = T.build(base / 'authority', organs, url, 'bot205')
             A, B = T.A, T.B
             labels = {A: 'Repository: importer (0a0a0a0a)', B: 'Repository: billing (0b0b0b0b)'}
