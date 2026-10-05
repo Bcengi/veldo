@@ -244,30 +244,32 @@ def _v58_suite():
             accepts = __import__('inspect').signature(LD.GitLandOps.__init__).parameters
             extra = {'observations': observations} if 'observations' in accepts else {}
             ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER, **extra)
-            out = {'trunk_before': remote_tip()}
-            out['sync'] = ops.sync_main()
-            out['reconcile'] = ops.reconcile(unit)
-            record = ops.record() or {}
-            workspace = record.get('workspace')
-            out['before'] = snapshot(workspace)
-            out['gate'] = ops.gate()
-            out['after'] = snapshot(workspace)
-            out['record'] = ops.record()
-            out['finalize'] = []
-            if out['gate'].get('ok'):
-                if between is not None:
-                    between(ops, out)
-                out['finalize'].append(ops.finalize(unit))
-            out['record'] = ops.record()
-            out['trunk_after'] = remote_tip()
-            reference = ((out['record'] or {}).get('gate') or {}).get('observation') or {}
             try:
-                out['observation'] = json.loads(Path(reference['path']).read_text())
-            except (KeyError, OSError, ValueError, TypeError):
-                out['observation'] = {}
-            out['workspace'] = workspace
-            ops.discard()
-            return out
+                out = {'trunk_before': remote_tip()}
+                out['sync'] = ops.sync_main()
+                out['reconcile'] = ops.reconcile(unit)
+                record = ops.record() or {}
+                workspace = record.get('workspace')
+                out['before'] = snapshot(workspace)
+                out['gate'] = ops.gate()
+                out['after'] = snapshot(workspace)
+                out['record'] = ops.record()
+                out['finalize'] = []
+                if out['gate'].get('ok'):
+                    if between is not None:
+                        between(ops, out)
+                    out['finalize'].append(ops.finalize(unit))
+                out['record'] = ops.record()
+                out['trunk_after'] = remote_tip()
+                reference = ((out['record'] or {}).get('gate') or {}).get('observation') or {}
+                try:
+                    out['observation'] = json.loads(Path(reference['path']).read_text())
+                except (KeyError, OSError, ValueError, TypeError):
+                    out['observation'] = {}
+                out['workspace'] = workspace
+                return out
+            finally:
+                ops.discard()
 
         def refusal(result):
             return (result or {}).get('refusal')

@@ -7324,24 +7324,24 @@ _W12_TWINS = {
     "flip": ('expect("beta", 1 == 1)', 'expect("beta", 1 == 2)', 1),
     "swap": (_W12_ANCHOR, 'expect("delta", True)\n', 1),
 }
-_w12_tinydir = tempfile.mkdtemp(prefix="veldo0712-tiny")
-_w12_base_path = Path(_w12_tinydir) / "base.py"
-_w12_base_path.write_text(_W12_TINY)
-_w12_subs_applied = {}
-_w12_twin_caps = {}
-_w12_base_cap = _w12_L.capture(_w12_base_path)
-_w12_base_sums = _w12_base_cap.reconcile()
-_w12_base_summary = _w12_base_cap.reconcile_summary()
-_w12_base_again = _w12_L.capture(_w12_base_path)
-_w12_base_again.reconcile()
-for _w12_name, (_w12_find, _w12_repl, _w12_want) in _W12_TWINS.items():
-    _w12_p = Path(_w12_tinydir) / ("%s.py" % _w12_name)
-    _w12_subs_applied[_w12_name] = (_W12_TINY.count(_w12_find), _w12_want)
-    _w12_p.write_text(_W12_TINY.replace(_w12_find, _w12_repl))
-    _w12_c = _w12_L.capture(_w12_p)
-    _w12_c.reconcile()
-    _w12_twin_caps[_w12_name] = _w12_c
-_w12_diffs = {k: _w12_L.compare(_w12_base_cap, c) for k, c in _w12_twin_caps.items()}
+with tempfile.TemporaryDirectory(prefix="veldo0712-tiny") as _w12_tinydir:
+    _w12_base_path = Path(_w12_tinydir) / "base.py"
+    _w12_base_path.write_text(_W12_TINY)
+    _w12_subs_applied = {}
+    _w12_twin_caps = {}
+    _w12_base_cap = _w12_L.capture(_w12_base_path)
+    _w12_base_sums = _w12_base_cap.reconcile()
+    _w12_base_summary = _w12_base_cap.reconcile_summary()
+    _w12_base_again = _w12_L.capture(_w12_base_path)
+    _w12_base_again.reconcile()
+    for _w12_name, (_w12_find, _w12_repl, _w12_want) in _W12_TWINS.items():
+        _w12_p = Path(_w12_tinydir) / ("%s.py" % _w12_name)
+        _w12_subs_applied[_w12_name] = (_W12_TINY.count(_w12_find), _w12_want)
+        _w12_p.write_text(_W12_TINY.replace(_w12_find, _w12_repl))
+        _w12_c = _w12_L.capture(_w12_p)
+        _w12_c.reconcile()
+        _w12_twin_caps[_w12_name] = _w12_c
+    _w12_diffs = {k: _w12_L.compare(_w12_base_cap, c) for k, c in _w12_twin_caps.items()}
 
 expect("WARP-0712 AC5 the label instrument RECONCILES against the subject's own arithmetic, "
        "which is its completeness argument and not a claim: the recorded per-label counter "
@@ -7401,17 +7401,17 @@ expect("WARP-0712 AC5 MULTIPLICITY AND OUTCOME, the two dimensions a SET of labe
 _w12_eq_seen = {}
 _w12_eq_bad = []
 for _w12_v in sorted(_w12_E.VARIANTS):
-    _w12_d = tempfile.mkdtemp(prefix="veldo0712-eq-%s-" % _w12_v)
-    _w12_mp, _w12_counts = _w12_E.build_fixture_tree(_w12_d, _w12_v)
-    try:
-        _w12_rep = _w12_E.run(_w12_mp, orders=("reverse",), timeout=180)
-        _w12_got = frozenset(_w12_rep["defect_names"])
-    except _w12_E.EquivRefusal as _w12_re_:
-        _w12_got = frozenset(["REFUSED:" + _w12_re_.code])
-    _w12_eq_seen[_w12_v] = _w12_got
-    if _w12_got != frozenset(_w12_E.expected_defects(_w12_v)):
-        _w12_eq_bad.append((_w12_v, sorted(_w12_got),
-                            sorted(_w12_E.expected_defects(_w12_v))))
+    with tempfile.TemporaryDirectory(prefix="veldo0712-eq-%s-" % _w12_v) as _w12_d:
+        _w12_mp, _w12_counts = _w12_E.build_fixture_tree(_w12_d, _w12_v)
+        try:
+            _w12_rep = _w12_E.run(_w12_mp, orders=("reverse",), timeout=180)
+            _w12_got = frozenset(_w12_rep["defect_names"])
+        except _w12_E.EquivRefusal as _w12_re_:
+            _w12_got = frozenset(["REFUSED:" + _w12_re_.code])
+        _w12_eq_seen[_w12_v] = _w12_got
+        if _w12_got != frozenset(_w12_E.expected_defects(_w12_v)):
+            _w12_eq_bad.append((_w12_v, sorted(_w12_got),
+                                sorted(_w12_E.expected_defects(_w12_v))))
 
 expect("WARP-0712 AC4 the standalone-and-aggregate harness is driven over a fixture tree "
        "shaped exactly like the decomposition will be - a thin dispatcher, a manifest, one "
@@ -7513,15 +7513,15 @@ print("selftest: %d passed, %d failed" % (PASS, FAIL))
 
 
 def _w12_probe_selfedit(L):
-    d = tempfile.mkdtemp(prefix="veldo0712-selfedit")
-    p = Path(d) / "edits.py"
-    p.write_text(_W12_SELFEDIT)
-    try:
-        cap = L.capture(p)
-        cap.reconcile()
-    except L.LabelRefusal as e:
-        return frozenset([e.code])
-    return frozenset()
+    with tempfile.TemporaryDirectory(prefix="veldo0712-selfedit") as d:
+        p = Path(d) / "edits.py"
+        p.write_text(_W12_SELFEDIT)
+        try:
+            cap = L.capture(p)
+            cap.reconcile()
+        except L.LabelRefusal as e:
+            return frozenset([e.code])
+        return frozenset()
 
 
 # Matrix A fixtures: name -> (probe, the names the pristine instrument must report)
@@ -7643,14 +7643,14 @@ def _w12_cell_B(job):
     guard, variant = job
     subs = _W12_MUT_B[guard] if guard else ()
     mod, counts = _w12_fresh("suite_equiv", subs)
-    d = tempfile.mkdtemp(prefix="veldo0712-mb-")
-    mp, _ = mod.build_fixture_tree(d, variant)
-    try:
-        rep = mod.run(mp, orders=("reverse",), timeout=180)
-        got = frozenset(rep["defect_names"]) - frozenset([_W12_SENTINEL])
-    except mod.EquivRefusal as e:
-        got = frozenset(["REFUSED:" + e.code])
-    return guard, variant, got, tuple(counts)
+    with tempfile.TemporaryDirectory(prefix="veldo0712-mb-") as d:
+        mp, _ = mod.build_fixture_tree(d, variant)
+        try:
+            rep = mod.run(mp, orders=("reverse",), timeout=180)
+            got = frozenset(rep["defect_names"]) - frozenset([_W12_SENTINEL])
+        except mod.EquivRefusal as e:
+            got = frozenset(["REFUSED:" + e.code])
+        return guard, variant, got, tuple(counts)
 
 
 _w12_B_jobs = [(g, v) for g in list(_W12_MUT_B) for v in sorted(_w12_E.VARIANTS)]
@@ -7761,25 +7761,25 @@ print("selftest: %d passed, %d failed" % (PASS, FAIL))
 '''
 _w12_monos = {"clean": _W12_MONO_CLEAN, "cross": _W12_MONO_CROSS,
               "silent": _W12_MONO_SILENT, "order": _W12_MONO_ORDER}
-_w12_mono_dir = tempfile.mkdtemp(prefix="veldo0712-mono")
-_w12_mono_out = {}
-for _w12_k, _w12_text in _w12_monos.items():
-    _w12_mp = Path(_w12_mono_dir) / ("%s.py" % _w12_k)
-    _w12_mp.write_text(_w12_text)
-    _w12_sl = _w12_S.Slicer(str(_w12_mp))
-    _w12_fc = _w12_L.capture(_w12_mp, select=_w12_sl.full_spec(), tag="mono-" + _w12_k)
-    _w12_fc.reconcile()
-    _w12_at, _w12_un = _w12_S._attribute(_w12_fc.records, _w12_sl)
-    _w12_al = _w12_S.run_alone(_w12_sl, _w12_at, workers=0, verbose=False)
-    _w12_binders = _w12_sl.binders()
-    _w12_cl = _w12_S.run_closures(
-        _w12_sl, _w12_at, [r["region"] for r in _w12_al if r["outcome"] != "CLEAN"],
-        workers=0, verbose=False)
-    _w12_perm = _w12_S.run_permutation(
-        _w12_sl, _w12_fc.profile(), list(reversed(_w12_sl.content_regions())), "reverse")
-    _w12_mono_out[_w12_k] = {"alone": _w12_al, "closures": _w12_cl, "perm": _w12_perm,
-                             "unattributed": _w12_un, "binders": _w12_binders,
-                             "regions": _w12_sl.content_regions()}
+with tempfile.TemporaryDirectory(prefix="veldo0712-mono") as _w12_mono_dir:
+    _w12_mono_out = {}
+    for _w12_k, _w12_text in _w12_monos.items():
+        _w12_mp = Path(_w12_mono_dir) / ("%s.py" % _w12_k)
+        _w12_mp.write_text(_w12_text)
+        _w12_sl = _w12_S.Slicer(str(_w12_mp))
+        _w12_fc = _w12_L.capture(_w12_mp, select=_w12_sl.full_spec(), tag="mono-" + _w12_k)
+        _w12_fc.reconcile()
+        _w12_at, _w12_un = _w12_S._attribute(_w12_fc.records, _w12_sl)
+        _w12_al = _w12_S.run_alone(_w12_sl, _w12_at, workers=0, verbose=False)
+        _w12_binders = _w12_sl.binders()
+        _w12_cl = _w12_S.run_closures(
+            _w12_sl, _w12_at, [r["region"] for r in _w12_al if r["outcome"] != "CLEAN"],
+            workers=0, verbose=False)
+        _w12_perm = _w12_S.run_permutation(
+            _w12_sl, _w12_fc.profile(), list(reversed(_w12_sl.content_regions())), "reverse")
+        _w12_mono_out[_w12_k] = {"alone": _w12_al, "closures": _w12_cl, "perm": _w12_perm,
+                                 "unattributed": _w12_un, "binders": _w12_binders,
+                                 "regions": _w12_sl.content_regions()}
 
 _w12_mo = _w12_mono_out
 expect("WARP-0712 AC3 THE SILENT CASE IS PROVEN REACHABLE, which is what makes the real "

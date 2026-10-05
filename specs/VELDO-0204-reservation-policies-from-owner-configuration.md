@@ -34,6 +34,14 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/check_gate_mutations.py"
+  - "scripts/suites/04_run_status_reader_veldo.py"
+  - "scripts/suites/13_warp_0623_codified_live.py"
+  - "scripts/suites/53_veldo_0123_mutations.py"
+  - "scripts/suites/69_veldo_0058_gate_output.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
+  - "proof/VELDO-0127/claude-live.json"
+  - "proof/VELDO-0127/codex-live.json"
   - "specs/VELDO-0204-reservation-policies-from-owner-configuration.md"
   - "specs/index.md"
   - "proof/VELDO-0204/*"
@@ -341,3 +349,17 @@ All 33 upgrade rows and 26 shared checks remain; every original check and expect
 AST-identical. The five requested suites, validate all and the Git boundary check pass their selected
 checks. The 40-second target remains unmet; no full gate or mutation pass is claimed. The measurement
 record names the implementation commit and preserves this limitation for review.
+
+
+2026-10-05, owner-authorized gate repair on build-veldo-0204: the ready scope includes
+the shared systemd user manager used by mutation workers and the gate's temporary
+fixture ownership. Declare resource demand in the suite manifest and bound admission
+without occupying worker slots for waiting cases; retain all row assertions, deadlines,
+mutation cases and baseline/noop controls. Capacity is positive and configurable, and
+invalid or unsatisfiable declarations fail closed. Record capacity and peak use.
+Temporary fixture trees must be removed on success, refusals and exceptions, with
+regressions that exercise cleanup. Recapture the digest-bound VELDO-0127 subscription
+proofs with the existing lead procedure, and scan for credentials before committing.
+The owner's execution restriction reserves the full gate and both mutation drivers
+for the reviewer. Concurrent suite-63 measurements need clarification of that same
+restriction; do not claim unexecuted load or mutant qualification.

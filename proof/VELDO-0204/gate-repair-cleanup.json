@@ -1,0 +1,12 @@
+{
+ "cause": "Suite 13 used unowned mkdtemp for tiny, equivalence, self-edit, matrix and monolith fixtures. Suite 70 called GitLandOps stages directly but never discarded its candidate. Suites 4 and 69 discarded only on normal return. Production Lander.land already has finally/discard.",
+ "changes": "TemporaryDirectory around every suite-13 allocation; contextmanager/finally for the direct-stage candidate fixtures.",
+ "assertions": "All existing check/expect calls and assert statements in the four edited fixture suites are AST-identical as multisets.",
+ "selected_runs": [
+  {"suite": "13_warp_0623_codified_live", "passed": 3530, "failed": 0, "seconds": 68.93, "target_directories_left": 0},
+  {"suite": "70_veldo_0057_landing", "passed": 57, "failed": 0, "seconds": 6.44, "candidate_directories_left": 0},
+  {"suite": "69_veldo_0058_gate_output", "passed": 42, "failed": 0, "seconds": 16.24}
+ ],
+ "ownership_check": "Suites 13 and 70 each ran with TMPDIR set to a fresh TemporaryDirectory. After the child exited, a recursive census found zero directories with the reported prefixes. The outer owner then removed its whole root.",
+ "scope": "Partial suites only, each exits 2 by repository contract. No gate or mutation-stage claim. Pre-existing host leftovers were not removed."
+}

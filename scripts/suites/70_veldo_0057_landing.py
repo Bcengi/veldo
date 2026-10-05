@@ -377,20 +377,23 @@ def _v57_suite():
             unit = {'spec': sid, 'dispatch': dispatch or 'dispatch/%s/land-1' % sid}
             ops = LD.GitLandOps(caller, builds[sid]['branch'], trunk='main', remote=remote_name, push=push,
                                 identity=LANDER, policy=authority_policy, domain=DOMAIN, repository=REPOSITORY, **extra)
-            out = {'unit': unit, 'ops': ops}
-            out['sync'] = ops.sync_main()
-            out['reconcile'] = ops.reconcile(unit)
-            out['gate'] = ops.gate()
-            out['record'] = ops.record() or {}
-            if out['gate'].get('ok'):
-                if between is not None:
-                    between(ops, out)
-                out['finalize'] = outcome_of(lambda: ops.finalize(unit))
-            else:
-                out['finalize'] = {'ok': False, 'stage': 'gate'}
-            out['after'] = ops.record() or {}
-            out['landing'] = (out['finalize'] or {}).get('landing') or {}
-            return out
+            try:
+                out = {'unit': unit, 'ops': ops}
+                out['sync'] = ops.sync_main()
+                out['reconcile'] = ops.reconcile(unit)
+                out['gate'] = ops.gate()
+                out['record'] = ops.record() or {}
+                if out['gate'].get('ok'):
+                    if between is not None:
+                        between(ops, out)
+                    out['finalize'] = outcome_of(lambda: ops.finalize(unit))
+                else:
+                    out['finalize'] = {'ok': False, 'stage': 'gate'}
+                out['after'] = ops.record() or {}
+                out['landing'] = (out['finalize'] or {}).get('landing') or {}
+                return out
+            finally:
+                ops.discard()
 
         def summary(out):
             return {k: out.get(k) for k in ('sync', 'reconcile', 'gate')} | {
