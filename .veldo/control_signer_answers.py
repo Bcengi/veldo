@@ -207,7 +207,12 @@ def _judge(state, config, request, identity, entry, now, diagnostic):
     if request.get('edge_key_id') != identity or a['edge_key_id'] != identity or a['edge_principal'] != entry['principal']:
         raise Refused('edge-mismatch', 'the assertion names another edge')
     ids = config.get('authority_ids') if isinstance(config.get('authority_ids'), dict) else {}
-    if any(not _text(ids.get(f)) or a[f] != ids[f] for f in IDS):
+    # VELDO-0205: one authority serves several repositories of its domain and store through one bot; an
+    # answer names the configured repository or the one whose request it answers (assignment:<repository>:).
+    own = dict(ids, repository_uuid=a['repository_uuid']) if (
+        _text(a.get('repository_uuid')) and isinstance(a.get('request_id'), str)
+        and a['request_id'].startswith('assignment:%s:' % a['repository_uuid'])) else ids
+    if any(not _text(own.get(f)) or not _text(ids.get(f)) or a[f] != own[f] for f in IDS):
         raise Refused('wrong-authority', 'the assertion names another authority')
     # Canonical evidence, then the actor it establishes.
     record, evidence_version, message = _evidence(state, a['attribution'])

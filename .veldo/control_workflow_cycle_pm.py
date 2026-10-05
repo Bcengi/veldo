@@ -572,8 +572,8 @@ def from_line(line):
             problem = organ('control_api_authority').authority_problem(lock, conn)
             if problem is not None:
                 raise Refused(problem, 'PM services register only on a connection the authority\'s process opened')
-    if any(line.repository in ((service.conn.command_registry.get(operation) or {}).get('repositories') or {})
-           for operation in (CT.OPERATION, organ('control_backlog').OPERATION, 'accept_snapshot')):
+    # A line's build ends with its snapshot authority (ProjectCycles), which nothing else registers there.
+    if line.repository in ((service.conn.command_registry.get('accept_snapshot') or {}).get('repositories') or {}):
         raise Refused('invalid_registration:pm_services', 'this repository\'s PM services are on this connection')
     served = getattr(ingress, 'served', None)
     if served is not None and line.repository not in served:

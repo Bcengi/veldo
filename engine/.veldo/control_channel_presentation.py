@@ -709,7 +709,7 @@ def _hint_transition(params, before):
     if phase == 'intent':
         hint, marks = params.get('hint'), params.get('hinted')
         if (current is not None or not isinstance(hint, dict) or hint.get('hint_id') != hid
-                or hint.get('outcome') != 'pending' or not isinstance(marks, list) or not marks
+                or hint.get('outcome') != 'pending' or not isinstance(marks, list) or (not marks and not hint.get('notice'))
                 or len(marks) != len(hint.get('requests') or [])):
             raise ValueError('a hint is kept once, pending, with the mark of each request it names')
         changes = {hid: {'kind': HINT_KIND, 'data': hint}}
@@ -1407,6 +1407,9 @@ class Presenter:
                 'requests': [{'request_id': r['request_id'], 'request_version': r['request_version'],
                               'presentation_id': r['presentation_id'], 'presentation_version': r['presentation_version'],
                               'message_ids': list(r['message_ids'])} for r in named]}
+        if notice is not None:
+            # VELDO-0205: what intake told the owner, which may name no waiting request.
+            hint['notice'] = notice
         try:
             self._commit(HINT_OPERATION, dict(phase='intent', hint_id=hid, hint=hint, hinted=marks),
                          dict({hid: 0}, **{k: 0 for k in marks}), command_id=hid + ':intent')
