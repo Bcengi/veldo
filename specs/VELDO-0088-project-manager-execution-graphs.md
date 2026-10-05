@@ -14,6 +14,7 @@ depends_on: [VELDO-0035, VELDO-0043, VELDO-0045, VELDO-0060, VELDO-0061, VELDO-0
 placement: [contracts, loop, fleet, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - ".veldo/control_factory_setup.py"
   - "engine/.veldo/control_factory_setup.py"
   - "engine/.veldo/request.py"
@@ -202,6 +203,7 @@ Current authorization, independent engineering review, enforceable pre-call spen
 tested-tree landing remain mandatory at the boundaries this concern consumes.
 
 ## History
+- 2026-10-05: suite 93 (VELDO-0152 intake routes) joins this footprint: the ingress grooming fix gives its in-store ingress stand-in conn=conn, the store connection it already shares, as the real ingress always does; no assertion changed.
 
 2026-09-22, PLAN-0019 revision 3, Release 1 stage 4: the owner narrowed this work under
 Telegram 28848 (function now, robustness/recovery later), with Mac retained by 28852 and
