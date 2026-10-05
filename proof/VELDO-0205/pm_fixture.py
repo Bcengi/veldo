@@ -114,7 +114,11 @@ def service(x, f, lock=None):
     conn = SV.S.open_store(str(f['db']))
     svc = SV.Service(dict(x['config']), conn)
     svc.lock = lock
-    svc.channel, refusal = SV.CH.open_channel(str(x['ingress_config']), repositories=sorted(x['sources']), lock=svc.lock)
+    try:
+        svc.channel, refusal = SV.CH.open_channel(str(x['ingress_config']), repositories=sorted(x['sources']), lock=svc.lock)
+    except TypeError:
+        # The code before VELDO-0205 opens the configuration's one repository's ingress.
+        svc.channel, refusal = SV.CH.open_channel(str(x['ingress_config']))
     factory = SV.FactoryLoop(svc, {'repositories': {}})
     lines = {}
     for repository in sorted(x['sources']):

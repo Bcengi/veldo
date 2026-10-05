@@ -200,7 +200,9 @@ def build(base, organs, origin, token):
 
     def open_request(ingress, repository, alias, project, brief):
         """Signed terms, the inbox request, its framing: the request id, in `repository`'s own services."""
-        inbox, presenter, settlement = ingress.served[repository]
+        # The code before VELDO-0205 keeps the configuration's one repository's services.
+        inbox, presenter, settlement = ((getattr(ingress, 'served', None) or {}).get(repository)
+                                        or (ingress.inbox, ingress.presenter, ingress.settlement))
         own = dict(ids, repository_uuid=repository)
         target = {'kind': 'backlog_item', 'ref': 'backlog:%s' % alias,
                   'digest': 'sha256:' + hashlib.sha256(alias.encode()).hexdigest()}
