@@ -77,7 +77,7 @@
   },
   ".veldo/control_claim.py": {
    "at_commit": "91e92d4642bd79e6e5b3649bfe1ca57ad886d4c80ea5a9cf13e554d06f20c74d",
-   "now": "519d02dc3d9416b0049470c4d8027da8dfe1715ad78c45f098468747d80c001f"
+   "now": "b105b1fad7a599c4b06f19fe7e5bd5ddbfa1b12b257907ad04424a7ab3f05910"
   },
   ".veldo/control_decomposition.py": {
    "at_commit": "74bbb63ef97fc8d6a2783fd64ec74805bf2b93720d345690a89b1d1f840ea792",
@@ -101,7 +101,7 @@
   },
   ".veldo/control_request_settlement.py": {
    "at_commit": "3ce0c70fef51c39126af5b6357e60d15e8bb46062e5cc561b73821e8d071016b",
-   "now": "5c2b55a14e4f77a84d61fe12d568f236633180b700d7058536d283b58868f67e"
+   "now": "87475d6c06985cd52cf446026faa85775cda328dd0e56ac4beaa625ec3d90cd5"
   },
   ".veldo/control_service.py": {
    "at_commit": "84c94fba147a29d6d9192c1128d7cf1ee1e2c27d585553f54a42c9fd6bea2e66",
@@ -184,7 +184,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 8.165,
+ "seconds": 5.652,
  "spec_id": "VELDO-0205",
  "suite": "scripts/suites/95_veldo_0205_multirepo.py",
  "tree": "git archive 01734c5992b65c0326e326dae1497a9266d84dec, unchanged; the current suite file run against it"
