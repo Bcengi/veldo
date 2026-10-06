@@ -150,8 +150,9 @@ are errors; 1/true/yes/on and 0/false/no/off are accepted case-insensitively.
 
 Every mutation worker installs Linux Landlock ABI 3 or newer before loading driver code.
 Children inherit the restriction: only the frozen tree, /usr, /lib, /lib64, /etc and device
-null/random inputs are readable, and only private worker scratch is writable. /proc and caller
-home are not exposed. Cache placement under allowed runtime paths is refused. Unsupported hosts
+null/random inputs are readable. Fresh legacy workers additionally read /proc/mounts and
+read /sys and read/write /dev/shm and /run/user/<uid> for existing fixture compatibility; reusable workers do not receive these
+exceptions. Caller home and the rest of /proc are not exposed. Cache placement under allowed runtime paths is refused. Unsupported hosts
 fail closed. Runtime profiles must cover Python, its stdlib, git and the shell; reviewed profiles
 remain responsible for transitive tools, libc, configuration and non-file determinism until
 VELDO-0207 enforces the declared runtime set. Kernel and approved coordinator code are trusted;

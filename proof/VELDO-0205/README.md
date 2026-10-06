@@ -104,3 +104,12 @@ Only worker environment values participate in the key. Bash syntax checks passed
 The protected-path amendment requires owner approval of the final commit and proof.
 Linux Landlock ABI 3 is required; no unsandboxed fallback. The coordinator account
 and kernel remain trusted, as specified in the amended contract.
+
+The first VELDO-0207 trace exposed legacy fixture dependencies on /proc/mounts,
+/sys, /dev/shm and /run/user/<uid>. Fresh workers now receive those narrowly named
+compatibility roots, and store placement in /run and /sys is also refused.
+Declared reusable workers receive none of those exceptions. Suite 98 was rerun:
+54 passed, zero failed (1.51 seconds). Production host-service compatibility is
+still subject to the reviewer's fresh full gate; the sample traces record failures
+rather than treating an aborted baseline as qualified. Cache isolation remains
+covered by the direct worker and child tests.

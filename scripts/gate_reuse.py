@@ -67,7 +67,7 @@ class Store:
                 return
             # Worker runtime trees must never contain coordinator credentials.
             if any(self.directory == Path(p).resolve() or Path(p).resolve() in self.directory.parents
-                   for p in ('/usr', '/lib', '/lib64', '/etc', '/dev', '/proc')):
+                   for p in ('/usr', '/lib', '/lib64', '/etc', '/dev', '/proc', '/run', '/sys')):
                 return
             self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
             self._private(self.directory, directory=True)

@@ -13,7 +13,7 @@ READ = (1 << 0) | (1 << 2) | (1 << 3)
 WRITE = sum(1 << n for n in (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
 
 
-def restrict(root, scratch, runtime=RUNTIME):
+def restrict(root, scratch, runtime=RUNTIME, *, legacy=True):
     libc = ctypes.CDLL(None, use_errno=True)
     def call(number, *args):
         result = libc.syscall(number, *args)
@@ -31,7 +31,10 @@ def restrict(root, scratch, runtime=RUNTIME):
     rules = Ruleset(READ | WRITE)
     fd = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
     try:
-        for path, access in [(root, READ), (scratch, READ | WRITE),
+        compatibility = [('/proc/mounts', READ), ('/sys', READ),
+                         ('/dev/shm', READ | WRITE),
+                         ('/run/user/' + str(os.getuid()), READ | WRITE)] if legacy else []
+        for path, access in [(root, READ), (scratch, READ | WRITE), *compatibility,
                              *((p, READ) for p in runtime),
                              ('/dev/null', (1 << 1) | (1 << 2)),
                              ('/dev/urandom', 1 << 2)]:
