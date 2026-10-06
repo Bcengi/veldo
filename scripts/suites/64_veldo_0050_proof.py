@@ -24,7 +24,9 @@ def _v50_suite():
     import shutil
     import subprocess
     import sys
+    import signal
     import tempfile
+    import threading
     import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
@@ -122,17 +124,12 @@ def _v50_suite():
             'import os, pathlib, signal, subprocess, sys',
             "sources = sorted(pathlib.Path('src').glob('*.py'))",
             "if any('KILL = True' in p.read_text() for p in sources):",
-            '    # The gate is stopped before it prints any result: verify.sh is found among the ancestors.',
-            '    pid = os.getppid()',
-            '    for _ in range(8):',
-            "        command = subprocess.run(['ps', '-o', 'command=', '-p', str(pid)], capture_output=True, text=True).stdout",
-            "        if 'scripts/verify.sh' in command:",
-            '            os.kill(pid, signal.SIGKILL)',
-            '            break',
-            "        parent = subprocess.run(['ps', '-o', 'ppid=', '-p', str(pid)], capture_output=True, text=True).stdout.strip()",
-            '        if not parent.isdigit():',
-            '            break',
-            '        pid = int(parent)',
+            '    # The gate is stopped before it prints any result, by the suite\'s watcher (gate_killer):',
+            '    # this check runs confined (VELDO-0208), where /proc and signals outside the domain are',
+            '    # denied, so it only waits. Never stopped, it passes and the gate goes green, which reds',
+            '    # the row rather than letting it pass.',
+            '    import time',
+            '    time.sleep(120)',
             '    sys.exit(0)',
             "bad = [p.name for p in sources if 'OK = True' not in p.read_text()]",
             "print('red: ' + ', '.join(bad) if bad else 'green')",
@@ -371,6 +368,50 @@ sys.stdout.flush()
                                                     observe=proof_events.append))
         proofs = proofs[1] if proofs[0] == 'ok' else None
 
+        def gate_killer(stop):
+            """SIGKILL the verify.sh running the fixture's unit check in the work tree, then the check
+            itself, so the gate ends before it prints any result and its pipes close."""
+            def cmdline(pid):
+                try:
+                    return Path('/proc/%d/cmdline' % pid).read_bytes().replace(b'\0', b' ').decode(errors='replace')
+                except OSError:
+                    return ''
+
+            def parent(pid):
+                try:
+                    return int(Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[1])
+                except (OSError, IndexError, ValueError):
+                    return 0
+
+            def running_check():
+                # The confined check: the process the sandbox forked and exec'd, whose parent is the
+                # launcher (whose own argv also names the check, as do the processes above it).
+                for entry in os.listdir('/proc'):
+                    if (entry.isdigit() and 'check.py' in cmdline(int(entry))
+                            and 'agent_sandbox.py' not in cmdline(int(entry))
+                            and 'agent_sandbox.py' in cmdline(parent(int(entry)))):
+                        return int(entry)
+                return None
+
+            while not stop.is_set():
+                pid = running_check()
+                chain = [pid] if pid else []
+                while chain and len(chain) < 10 and parent(chain[-1]) > 1:
+                    chain.append(parent(chain[-1]))
+                    if 'scripts/verify.sh' in cmdline(chain[-1]):
+                        break
+                # A subshell of the gate carries the gate's own argv: climb to the outermost one.
+                while chain and 'scripts/verify.sh' in cmdline(chain[-1]) \
+                        and 'scripts/verify.sh' in cmdline(parent(chain[-1])):
+                    chain.append(parent(chain[-1]))
+                if chain and 'scripts/verify.sh' in cmdline(chain[-1]):
+                    # The gate first, so it prints nothing more; then everything under it.
+                    for victim in reversed(chain):
+                        with contextlib.suppress(OSError):
+                            os.kill(victim, signal.SIGKILL)
+                    return
+                time.sleep(0.05)
+
         class BuildLoop(EX.LiveLoop):
             """The executor's own reference loop over the real repository: its gate, proof assembly,
             validation, acceptance and events are LiveLoop's, unchanged. Only the delegated steps are
@@ -382,6 +423,20 @@ sys.stdout.flush()
                 super().__init__(root=str(work), proofs=proofs if store else None)
                 self.mode, self.generation, self.holder = mode, generation, holder
                 self.launched, self.commits, self.reviews = [], [], []
+
+            def gate(self):
+                """LiveLoop's gate, unchanged. In kill mode a watcher outside the confinement stops it
+                once the fixture's unit check is running, as the check itself no longer can."""
+                if self.mode != 'kill':
+                    return super().gate()
+                stop = threading.Event()
+                watcher = threading.Thread(target=gate_killer, args=(stop,), daemon=True)
+                watcher.start()
+                try:
+                    return super().gate()
+                finally:
+                    stop.set()
+                    watcher.join(timeout=10)
 
             def build(self, spec, calls=None):
                 launch = runner.submit(spec['id'], 'build', holder=self.holder, source=str(work), revision='HEAD',
