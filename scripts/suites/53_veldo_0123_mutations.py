@@ -319,8 +319,11 @@ if 'expect' in globals():
     _m123_made = []
 
     class _m123_Workers(_m123_budget.Workers):
-        def __init__(self, deadline):
-            super().__init__(deadline)
+        # The double takes exactly what the real constructor takes, by forwarding to it. A fixed
+        # (self, deadline) copy drifted when Workers gained 'parallel' (VELDO-0204) and crashed this
+        # suite with a TypeError instead of measuring the cap; forwarding cannot drift.
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             _m123_made.append(self)
 
     def _m123_stop_after_arm(root):
@@ -348,6 +351,7 @@ if 'expect' in globals():
            'whichever is larger, scaled to the workers the stage runs (at 8 or more workers: 10 -> 120, 116 -> 232, '
            '300 -> 600; four times that per case at 2, never less than the 8-worker figure at 16)',
            _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
+           and [_m123_w.parallel for _m123_w in _m123_made] == [2, 2, 2]
            and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
            and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 600.0])
 
