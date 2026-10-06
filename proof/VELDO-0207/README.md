@@ -25,7 +25,7 @@ drivers, no Git history and no link to the original checkout. Baseline and no-op
 scoped to that case's snapshot. Snapshots are built at launch and removed at completion or
 failure, bounding disk use by active workers; worker projection and content hashes are memoized
 within the coordinator. Landlock is inherited by descendants. A coordinator-owned strace
-log, outside writable worker scratch, makes an undeclared open fail even when the suite catches
+log, outside writable worker scratch, makes an undeclared file or metadata probe fail even when the suite catches
 the error or a child attempts the read. Successful startup reads are also checked against the
 runtime closure; site initialization is disabled and coordinator CPU discovery is skipped in
 these workers. Already mapped native libraries, including libc and the loader, must be keyed.
@@ -71,14 +71,15 @@ open counts and will reduce the potential reuse benefit unless reviewed declarat
 
 ## Savings estimate and present behavior
 
-For a warm development cache, model a typical code commit as an edit to one of the 19 distinct
-sampled production module paths. Its median observed reach is 18/30: 40% of cases could be reused
-under equal case cost. Weighting by the traced baseline durations instead gives about 10% of time
-saved. Applied only as a rough scenario to the owner's 69-minute mutation-stage figure, that is
-about 7 to 28 minutes before keying/lookup overhead. This is a conditional estimate, not a measured
-speedup: failed baselines, strace overhead, different mutant costs and conservative declarations
-limit extrapolation. Changes to universal helpers save zero; unrelated-file commits can reuse
-all qualified cases. Required force-fresh landing gates always save zero by policy.
+The original open-only traces support about 10% time-weighted savings as an optimistic
+upper bound for single-module edits, before keying and lookup costs. They have 21 of 30
+unclean baselines and 19 core files read by every case (including validate.py and policy.yaml).
+They are not a measured gate speedup: failed observations, tracer overhead, different mutant
+costs, metadata probes and conservative directory declarations all limit extrapolation.
+Churn in shared inputs dominates reuse economics. Part C permits authenticated landing reuse;
+an explicit force-fresh run still saves zero. Specs/docs/proof edits can reuse only qualified
+cases whose declarations exclude those changed files. Changes to a universal shared file
+invalidate every case.
 
 Enabled production savings in this branch are ZERO. All 30 committed declarations are proposals
 with reviewed false, not fabricated qualifications. Twenty-eight carry baseline-only proposals;
@@ -135,3 +136,8 @@ scratch. Complete host-service compatibility still needs the owner's fresh gate.
    landing stamp from the checkout that verified the merged tree. No stamp/event byproducts from
    this development checkout belong in its implementation commits. Remove the owner's temporary
    logs after retaining the required proof.
+
+## Independent-review correction follow-up
+
+See [the review correction report](../VELDO-0207/review-fixes.md) for the fixes, planted-defect
+tests, full-call-family measurement, savings assessment and deployment limits.

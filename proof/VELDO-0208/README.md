@@ -66,11 +66,19 @@ path on stderr. The orchestrator removes it after every descendant has ended. To
 plugins or hooks needing additional state require a reviewed config adjustment and a wrapped
 CLI smoke test; neither real CLI was invoked during these unit fixtures.
 
-Git metadata inside the implementing checkout remains writable. Shared Git metadata outside
-a linked worktree is deliberately read-only, since modifying shared objects/refs could alter
-trusted source outside the candidate. Agents that must commit need an independent checkout;
-otherwise the unconfined orchestrator performs Git persistence. This launcher does not change
-this development worktree's Git layout or any other branch/worktree.
+The launcher now supports commits in linked worktrees. It grants the worktree's own gitdir,
+the shared object store, and the parent directories of its branch ref and reflog. Common
+configuration, hooks, other worktree gitdirs and protected working files remain read-only.
+Git needs sibling lock files; Landlock consequently makes sibling loose refs in those two
+directories writable too. Use a dedicated branch namespace to narrow that grant. Shared
+objects/refs are now candidate-controlled: do not install or execute trusted machinery from
+that mutable Git store. The authority's protected on-disk working files remain denied writes.
+The real confined-commit fixture also probes the store/key, runners and landing machinery.
+
+Both launchers now deny network socket creation and connections as well as Unix services.
+This closes service escapes but prevents a live CLI from directly calling its remote model
+API. A narrowly scoped model transport would require a separate reviewed design. The local
+commit and denial tests are not a successful live Codex/Claude smoke test.
 
 ## Rollout trust boundary and remaining fresh full gate
 
@@ -96,3 +104,8 @@ this development worktree's Git layout or any other branch/worktree.
    speedups. Obtain independent review and exact commit/proof-bound owner approval for the
    protected paths. Generate the real proof manifest, stamp and event from the merged-tree
    verification checkout. No local stamp or events byproducts belong in these commits.
+
+## Independent-review correction follow-up
+
+See [the review correction report](../VELDO-0207/review-fixes.md) for the fixes, planted-defect
+tests, full-call-family measurement, savings assessment and deployment limits.

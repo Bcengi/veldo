@@ -38,12 +38,12 @@
   "assertion_failures": 12,
   "trace_seconds": 194.622,
   "median_sampled_module_reach": 18,
-  "equal_case_savings_model": 0.4,
   "baseline_weighted_savings_model": 0.09965985345952666,
   "limitations": [
     "baseline-only, including incomplete baselines",
     "trace overhead included",
     "not a production warm-stage measurement",
     "proposals are not reviewed; enabled production reuse is zero"
-  ]
+  ],
+  "savings_interpretation": "About 10% time-weighted is an optimistic upper bound for single-module edits, measured on open() traces only, with 21 of 30 unclean baselines and 19 universal core files."
 }

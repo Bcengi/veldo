@@ -1,0 +1,42 @@
+{
+  "kind": "targeted-local-evidence-only",
+  "implementation_commit": "10acd901ba10e5d51470629a5db4c13dd21522b1",
+  "tests": [
+    {
+      "command": "python3 scripts/selftest.py --suite 98_veldo_0205_reuse",
+      "passed_with_prerequisites": 54,
+      "failed": 0,
+      "seconds": 1.41,
+      "expected_partial_exit": 2
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 99_veldo_0207_case_reuse",
+      "passed_with_prerequisites": 115,
+      "failed": 0,
+      "seconds": 7.65,
+      "expected_partial_exit": 2
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 100_veldo_0208_landing_reuse",
+      "passed_with_prerequisites": 105,
+      "failed": 0,
+      "seconds": 1.51,
+      "expected_partial_exit": 2
+    }
+  ],
+  "sha256": {
+    "scripts/agent_sandbox.py": "054d6f84418ed0b05d9cdb83a55f9593969f6117cc2612f867faaeb24a9e4d00",
+    "scripts/mutation_sandbox.py": "e8401d426b08bb35f92711d6efaedf0223c5ab87281061e3ddd6d9c14d654f54",
+    "scripts/case_trace.py": "e84a834e5c92d030b7abf83b361783b226b4f71e383e8306cbf24b1dafb2c388",
+    "scripts/case_inputs.py": "383fc304e6340d77355fad0b52966ba5831e8c336376588f4d3a1d7a81a64a1a",
+    "scripts/case_reuse.py": "dfaab1d86c4494eaff1786e8621d56367517f5dce3e77cdf83a67a7bf120d0bf",
+    "scripts/check_gate_mutations.py": "da1e3c5f29dc7e6acf59e574d3dd118930f5ff68553ad6b10d14537d9ca59bfe",
+    "scripts/gate_reuse.py": "210a11cc896f96f92a45f61c279e0e469f28f93286917fb3a9dc85f75f15e4b7",
+    "scripts/propose_case_inputs.py": "6843c1297973b78f57cc47ba850845a4737512381678f6e1dd65bb998a1bb544",
+    "engine/.veldo/control_verification.py": "6d3aea86ecc188fec1a87177ebaa086fd44375e011a8432f66e2125c4f714990",
+    "engine/.veldo/reuse_evidence.py": "e65e769a330cfd90c9ec443c85fedd478c65cbce4e13376ab496870c6a37972c",
+    "engine/scripts/veldo-guard.sh": "d54c136384af17d8f8450486db3c40409a705e95a1fa567800022af65d4aacba"
+  },
+  "full_gate_run": false,
+  "mutation_stage_run": false
+}
