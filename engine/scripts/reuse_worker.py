@@ -5,10 +5,12 @@ The parent creates the job and observes this child's output and exit. Candidate
 receipts are never ingested by the coordinator. All candidate imports and execs
 happen after the reviewed authority sandbox has installed its kernel boundary.
 """
+import fcntl
 import importlib.util
 import json
 import os
 from pathlib import Path
+import stat
 import sys
 
 
@@ -26,17 +28,22 @@ def main():
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
         print(json.dumps(gate.inventory_local(root)))
         return
-    job = json.loads(Path(sys.argv[3]).read_text())
+    # argv: worker ROOT LEDGER_FD JOB. The ledger descriptor is the coordinator's append-only
+    # channel; the file it names lies outside this worker's write grants.
+    ledger, jobpath = int(sys.argv[3]), Path(sys.argv[4])
+    if not stat.S_ISREG(os.fstat(ledger).st_mode) or not fcntl.fcntl(ledger, fcntl.F_GETFL) & os.O_APPEND:
+        raise ValueError('ownership channel must be an append-only regular file descriptor')
+    job = json.loads(jobpath.read_text())
     boundary = load(authority / 'scripts/agent_sandbox.py')
     sandbox = load(authority / 'scripts/mutation_sandbox.py')
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.ROOT = root
     ownership = load(authority / 'scripts/mutation_ownership.py')
-    boundary.close_descriptors([])
+    boundary.close_descriptors([], keep=(ledger,))
     # Ownership is persisted from the authority copy before any candidate code runs, so the
-    # coordinator can reap this worker's allocations even after SIGKILL. The ledger opens after
-    # descriptors are closed and lives in the worker's own writable home.
-    ownership.Tracker(Path(sys.argv[3]).parent).install()
+    # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
+    # append to the same channel, so the coordinator validates every entry before acting.
+    ownership.Tracker(jobpath.parent, ledger).install()
     # Never load the candidate's sandbox or worker driver, even for fresh cases.
     grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
     grants += [(Path(p).resolve(), boundary.READ)

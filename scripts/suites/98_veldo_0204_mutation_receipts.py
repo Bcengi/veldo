@@ -85,7 +85,7 @@ def _v204_mutation_receipts():
                     self.returncode = -9
                 children.pop(self.pid, None)
                 return self.returncode
-        def cleanup(home):
+        def cleanup(home, ledger):
             cleaned.append(str(home))
             cleaned_while_held.append(bool(pool.held))
             if fault == 'cleanup' and len(cleaned) == 4:
@@ -212,8 +212,8 @@ def _v204_mutation_receipts():
         ('lost-failure', "receipt['invalid_results'].extend(failed_workers)", 'pass', 'empty'),
         ('zero-seconds', "sum(o['elapsed'] for o in workers.outcomes if o['driver'] == driver)", '0.0', None),
         ('empty-not-executed', "o['mode'] == 'mutant' and o['returncode'] is not None", 'False', 'empty'),
-        ('release-before-cleanup', "record['cleanup'] = ownership.cleanup(self.homes[name])",
-         "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name])", None),
+        ('release-before-cleanup', "record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])",
+         "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])", None),
         ('queued-deadline', 'self.active[name] = (proc, out, err, time.monotonic())',
          'self.active[name] = (proc, out, err, 1.0)', None),
         ('release-failed-cleanup', "if record.get('error') != 'worker_cleanup_error':", 'if True:', 'cleanup'),
@@ -234,17 +234,22 @@ def _v204_mutation_receipts():
         owner = types.ModuleType('v204_ownership')
         exec(compile(text, '<ownership>', 'exec'), owner.__dict__)
         with tempfile.TemporaryDirectory(prefix='v204-ownership-') as directory:
-            home = Path(directory)
+            # The coordinator's directory holds the ledger; the worker's home is beneath it.
+            home = Path(directory) / 'home'
+            home.mkdir()
+            ledger = Path(directory) / 'ownership.jsonl'
             external = home / 'external'
             external.mkdir()
-            service = home / 'veldo-authority-1234.service'
+            units = Path(directory) / 'units'
+            units.mkdir()
+            service = units / 'veldo-authority-1234.service'
             service.write_text('fixture')
             unrelated = home / 'untouched'
             unrelated.mkdir()
             with contextlib.ExitStack() as stack:
                 hooks = []
                 stack.enter_context(patch.object(owner.sys, 'addaudithook', hooks.append))
-                tracker = owner.Tracker(home).install()
+                tracker = owner.Tracker(home, os.open(ledger, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)).install()
                 try:
                     hooks[0]('tempfile.mkdtemp', (str(external),))
                     json.dumps({'profile': {'kind': 'linux-systemd', 'slice': 'veldo1234.slice',
@@ -255,33 +260,33 @@ def _v204_mutation_receipts():
                                       'w', os.O_CREAT | os.O_WRONLY))
                 finally:
                     tracker.close()
-            entries = [json.loads(line) for line in tracker.path.read_text().splitlines()]
+            entries = [json.loads(line) for line in ledger.read_text().splitlines()]
             assert ['slice', 'veldo1234.slice'] in entries
             assert ['slice', 'veldo9999.slice'] not in entries
             assert any(k == 'service' for k, v in entries)
             # Redirect the recorded service file into this test's own tree. Never
             # create or stop a real manager unit during these controlled checks.
-            tracker.path.write_text(''.join(json.dumps([k, str(service) if k == 'service' else v]) + '\n'
-                                            for k, v in entries))
+            ledger.write_text(''.join(json.dumps([k, str(service) if k == 'service' else v]) + '\n'
+                                      for k, v in entries))
             calls = []
             def run(argv, **kwargs):
                 calls.append(argv)
                 return types.SimpleNamespace(returncode=0, stderr='',
                     stdout='ActiveState=inactive\nActiveState=inactive\n')
             try:
-                owner.cleanup(home, run=lambda *a, **kw: types.SimpleNamespace(
+                owner.cleanup(home, ledger, runtime=units, run=lambda *a, **kw: types.SimpleNamespace(
                     returncode=1, stderr='manager unreachable', stdout='ActiveState=inactive\n'))
             except RuntimeError:
                 pass
             else:
                 raise AssertionError('partial manager response accepted')
             assert service.exists() and external.exists()
-            result = owner.cleanup(home, run=run)
+            result = owner.cleanup(home, ledger, run=run, runtime=units)
             assert result['units'] == ['veldo-authority-1234.service', 'veldo1234.slice']
             assert not service.exists() and not external.exists() and unrelated.exists()
             assert [c[2] for c in calls] == ['stop', 'show', 'reset-failed', 'daemon-reload']
             # The ledger survives cleanup for receipts, and reaping is idempotent.
-            owner.cleanup(home, run=run)
+            owner.cleanup(home, ledger, run=run, runtime=units)
         return True
     expect('VELDO-0204 stall/ownership: persist exact resources before use; reap only owned units and '
            'trees, retain them on incomplete manager evidence, and permit repeated cleanup', ownership_check(owner_source))
@@ -294,18 +299,19 @@ def _v204_mutation_receipts():
         exec(compile(text, '<ownership>', 'exec'), owner.__dict__)
         with tempfile.TemporaryDirectory(prefix='v204-transparent-') as directory:
             home = Path(directory)
+            ledger = home / 'ownership.jsonl'
             deep = {'kind': 'linux-systemd', 'slice': 'veldo5000.slice', 'lock': str(home / 'lock')}
             for _ in range(5000):
                 deep = [deep]
             with patch.object(owner.sys, 'addaudithook', lambda hook: None):
-                tracker = owner.Tracker(home).install()
+                tracker = owner.Tracker(home, os.open(ledger, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)).install()
                 try:
                     encoded = json.dumps(deep)
                 except RecursionError:
                     return False
                 finally:
                     tracker.close()
-            entries = [json.loads(line) for line in tracker.path.read_text().splitlines()]
+            entries = [json.loads(line) for line in ledger.read_text().splitlines()]
             return encoded == json.dumps(deep) and ['slice', 'veldo5000.slice'] in entries
     expect('VELDO-0204 stall/ownership-transparent: the tracker encodes and observes a value nested '
            '5000 deep, as the plain encoder does, so a suite behaves the same inside a mutation worker',
@@ -322,33 +328,38 @@ def _v204_mutation_receipts():
                '                self._walk(child, seen)\n\n'
                '    def install(self):')))
 
-    # Cross a real process boundary: the audit hook must persist a /dev/shm
-    # allocation before SIGKILL, without relying on Python finally/atexit.
+    # Cross a real process boundary: the audit hook must persist an allocation in the
+    # worker's home before SIGKILL, through the inherited coordinator ledger descriptor,
+    # without relying on Python finally/atexit.
     import subprocess
     import sys
     import time
     owner = types.ModuleType('v204_real_ownership')
     exec(compile(owner_source, '<ownership>', 'exec'), owner.__dict__)
     with tempfile.TemporaryDirectory(prefix='v204-killed-owner-') as directory:
-        home = Path(directory)
+        home = Path(directory) / 'home'
+        home.mkdir()
+        ledger = Path(directory) / 'ownership.jsonl'
         program = """
 import importlib.util, json, pathlib, sys, tempfile, time
 spec = importlib.util.spec_from_file_location('owner', sys.argv[1])
 owner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(owner)
 home = pathlib.Path(sys.argv[2])
-tracker = owner.Tracker(home).install()
-fast = '/dev/shm' if pathlib.Path('/dev/shm').is_dir() else None
-tree = pathlib.Path(tempfile.mkdtemp(prefix='v204-killed-tree-', dir=fast))
+tracker = owner.Tracker(home, int(sys.argv[3])).install()
+tree = pathlib.Path(tempfile.mkdtemp(prefix='v204-killed-tree-', dir=home / 'nested'))
 (tree / 'file').write_text('owned')
 tree.chmod(0o500)
 (home / 'ready').write_text(str(tree))
 time.sleep(30)
 """
+        (home / 'nested').mkdir()
+        channel = os.open(ledger, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
         with open(home / 'stdout', 'wb') as out, open(home / 'stderr', 'wb') as err:
             child = subprocess.Popen([sys.executable, '-B', '-c', program,
-                                      str(ROOT / 'scripts/mutation_ownership.py'), str(home)],
-                                     stdout=out, stderr=err)
+                                      str(ROOT / 'scripts/mutation_ownership.py'), str(home), str(channel)],
+                                     stdout=out, stderr=err, pass_fds=(channel,))
+            os.close(channel)
             try:
                 deadline = time.monotonic() + 5
                 while not (home / 'ready').exists() and child.poll() is None and time.monotonic() < deadline:
@@ -358,9 +369,9 @@ time.sleep(30)
             finally:
                 child.kill()
                 child.wait(timeout=5)
-                reaped = owner.cleanup(home)
-        expect('VELDO-0204 stall/killed-owner: the real audit ledger survives SIGKILL and reaps '
-               'a read-only temporary tree outside TMPDIR', child.returncode == -9
+                reaped = owner.cleanup(home, ledger)
+        expect('VELDO-0204 stall/killed-owner: the coordinator-held audit ledger survives SIGKILL and '
+               'reaps a read-only temporary tree in the worker home', child.returncode == -9
                and reaped['directories'] == 1 and not tree.exists())
     for name, old, new in (
         ('slice-unrecorded', "self.record('slice', value['slice'])", 'pass'),

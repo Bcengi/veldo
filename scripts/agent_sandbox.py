@@ -214,7 +214,7 @@ def grants_for(config, authority, worktree, scratch):
     return grants, [store, *protected]
 
 
-def close_descriptors(protected):
+def close_descriptors(protected, keep=()):
     for fd in (0, 1, 2):
         try:
             info = os.fstat(fd)
@@ -228,7 +228,7 @@ def close_descriptors(protected):
                 raise ValueError('standard descriptor exposes a protected path')
     # Close the actual open set, including descriptors above a lowered rlimit.
     for name in os.listdir('/proc/self/fd'):
-        if int(name) >= 3:
+        if int(name) >= 3 and int(name) not in keep:
             try:
                 os.close(int(name))
             except OSError:

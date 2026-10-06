@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
-protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
+protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
 footprint:
   - ".veldo/candidate_git.py"
   - "engine/.veldo/candidate_git.py"
@@ -22,6 +22,7 @@ footprint:
   - "scripts/mutation_observer.py"
   - "scripts/gate_candidate.py"
   - "scripts/reuse_worker.py"
+  - "scripts/mutation_ownership.py"
   - "scripts/check_gate_mutations.py"
   - "engine/scripts/verify.sh"
   - "scripts/agent_sandbox.py"
@@ -42,6 +43,7 @@ footprint:
   - ".veldo/policy.yaml"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/99_veldo_0205_reuse.py"
+  - "scripts/suites/98_veldo_0204_mutation_receipts.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0205-mutation-result-reuse.md"
@@ -198,3 +200,15 @@ successful Landlock restriction syscall, after authority bootstrap imports and b
 candidate execution. Missing boundary evidence is red, and all later accesses (including
 failed probes and descendants) remain checked against the declared closure. Bootstrap
 code is covered by the authority engine digest; candidate code cannot opt out of tracing.
+
+## Review correction contract, 2026-10-06 (second review)
+
+Worker ownership: the coordinator creates each worker's ownership ledger in its own directory,
+outside every worker grant, and the worker inherits only an append descriptor to it. Candidate
+code shares the worker process, so every ledger line is a claim. Cleanup acts only on entries of
+the exact shapes the Tracker produces for that worker: a directory strictly beneath that worker's
+home after resolving links, a veldo-authority-<hex>.service file directly in
+/run/user/<uid>/systemd/user, or a slice matching the Tracker pattern. It reaps those, and any other
+entry turns the stage red (worker_cleanup_error) without being acted on. Suite 101 plants an outside
+directory, an arbitrary service file and an arbitrary slice through real workers under the real
+coordinator. It also plants a ledger in the old in-home location, which is never read.

@@ -433,6 +433,7 @@ class Workers:
         self.peak = 0
         self.jobs = {}
         self.homes = {}
+        self.ledgers = {}
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -493,7 +494,7 @@ class Workers:
                           stderr_tail=stderr.decode(errors='replace')[-2000:])
         try:
             ownership = load(ROOT / 'scripts/mutation_ownership.py')
-            record['cleanup'] = ownership.cleanup(self.homes[name])
+            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])
         except Exception as cleanup_error:
             error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
             record.update(error=error.code, detail=error.detail)
@@ -558,12 +559,18 @@ class Workers:
                     out, err = (open(directory / (str(self.invocations) + '-' + f), 'w+b')
                                 for f in ('stdout', 'stderr'))
                     self.resources.acquire(name, job)
+                    # The ownership ledger is this coordinator's file, beside the home and outside
+                    # every worker grant; the worker only inherits an append descriptor to it.
+                    self.ledgers[name] = directory / ('ownership-' + str(self.invocations) + '.jsonl')
+                    ledger = None
                     try:
+                        ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
+                                         | os.O_APPEND | os.O_CLOEXEC, 0o600)
                         worker_root = Path(job.get('snapshot_root', root))
                         argv = [sys.executable, '-I', '-S', '-B',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(ROOT / 'scripts/reuse_worker.py'),
-                                'worker', str(worker_root), str(jobpath)]
+                                'worker', str(worker_root), str(ledger), str(jobpath)]
                         if 'snapshot_root' in job:
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
@@ -572,7 +579,7 @@ class Workers:
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
-                                                start_new_session=True)
+                                                pass_fds=(ledger,), start_new_session=True)
                     except BaseException as error:
                         out.close()
                         err.close()
@@ -584,6 +591,9 @@ class Workers:
                         if isinstance(error, Exception):
                             raise Refused('worker_launch_error', name + ': ' + str(error)) from error
                         raise
+                    finally:
+                        if ledger is not None:
+                            os.close(ledger)
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
                     self.peak = max(self.peak, len(self.active))
@@ -860,12 +870,9 @@ def main():
     parser.add_argument('--worker-log-dir', type=Path)
     args = parser.parse_args()
     if args.worker:
-        ownership = load(ROOT / 'scripts/mutation_ownership.py')
-        tracker = ownership.Tracker(args.worker.parent).install()
-        try:
-            print(json.dumps(worker(json.loads(args.worker.read_text()))))
-        finally:
-            tracker.close()
+        # Developer entry only: no coordinator launches it, so it keeps no ownership ledger.
+        # Gate workers start from reuse_worker.py, which reports to the coordinator's ledger.
+        print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.

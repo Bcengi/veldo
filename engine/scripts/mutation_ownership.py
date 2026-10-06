@@ -3,6 +3,11 @@
 The worker observes temporary allocations, serialized containment profiles and unit
 file creation. The coordinator reaps those resources even after SIGKILL. No global
 prefix sweep: only paths and units recorded by this worker may be removed.
+
+The ledger is the coordinator's file, outside every worker write grant. The worker
+holds only an append descriptor to it, and candidate code shares that process, so
+every line is a claim, not a fact: cleanup() acts only on entries of the exact shapes
+the Tracker can produce for that worker and turns anything else into an error.
 """
 import json
 import os
@@ -12,16 +17,23 @@ import shutil
 import subprocess
 import sys
 
+SLICE = re.compile(r'(?:v|veldo)[A-Za-z0-9]+\.slice')
+SERVICE = re.compile(r'veldo-authority-[0-9a-f]+\.service')
+
+
+def unit_directory():
+    return Path('/run/user/%d/systemd/user' % os.getuid())
+
 
 class Tracker:
-    def __init__(self, home):
+    def __init__(self, home, fd):
+        # fd appends to the coordinator's ledger; the worker cannot open or name that file.
         self.home = Path(home).resolve()
-        self.path = self.home / 'ownership.jsonl'
         self.directories = {str(self.home)}
         self.seen = set()
         self.enabled = True
         self.encode = json.JSONEncoder.iterencode
-        self.fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        self.fd = fd
 
     def record(self, kind, value):
         pair = (kind, str(value))
@@ -54,7 +66,7 @@ class Tracker:
             if isinstance(value, dict):
                 if (value.get('kind') == 'linux-systemd' and self.owned(value.get('lock'))
                         and isinstance(value.get('slice'), str)
-                        and re.fullmatch(r'(?:v|veldo)[A-Za-z0-9]+\.slice', value['slice'])):
+                        and SLICE.fullmatch(value['slice'])):
                     self.record('slice', value['slice'])
                 stack.extend(value.values())
             elif isinstance(value, (list, tuple)):
@@ -71,8 +83,7 @@ class Tracker:
             path, mode, flags = args
             if isinstance(path, (str, bytes)) and flags & (os.O_CREAT | os.O_TRUNC):
                 path = Path(os.fsdecode(path)).absolute()
-                runtime = Path('/run/user/%d/systemd/user' % os.getuid())
-                if path.parent == runtime and re.fullmatch(r'veldo-authority-[0-9a-f]+\.service', path.name):
+                if path.parent == unit_directory() and SERVICE.fullmatch(path.name):
                     self.record('service', str(path))
 
     def install(self):
@@ -102,11 +113,42 @@ def remove_tree(path):
         shutil.rmtree(path, onexc=writable)
 
 
-def cleanup(home, run=subprocess.run):
-    ledger = Path(home) / 'ownership.jsonl'
+def admitted(home, ledger, runtime=None):
+    """Split the ledger into entries the Tracker can produce for the worker at `home` and the rest:
+    a directory strictly beneath that home (after resolving links), a veldo-authority-<hex>.service
+    file directly in the user unit directory, or a slice of the Tracker's own pattern."""
+    home = Path(home).resolve()
+    runtime = unit_directory() if runtime is None else Path(runtime)
+    accepted, rejected = [], []
+    for line in Path(ledger).read_text(errors='replace').splitlines():
+        try:
+            kind, value = json.loads(line)
+            if not isinstance(kind, str) or not isinstance(value, str):
+                raise ValueError(line)
+            path = Path(value)
+            plain = path.is_absolute() and os.path.normpath(value) == value
+            if kind == 'directory' and plain:
+                resolved = path.resolve()
+                if resolved != home and resolved.is_relative_to(home):
+                    accepted.append((kind, str(resolved)))
+                    continue
+            elif kind == 'service' and plain and path.parent == runtime and SERVICE.fullmatch(path.name):
+                accepted.append((kind, value))
+                continue
+            elif kind == 'slice' and SLICE.fullmatch(value):
+                accepted.append((kind, value))
+                continue
+        except (TypeError, ValueError, OSError):
+            pass
+        rejected.append(line[:200])
+    return accepted, rejected
+
+
+def cleanup(home, ledger, run=subprocess.run, runtime=None):
+    ledger = Path(ledger)
     if not ledger.exists():
         return {'units': [], 'directories': 0}
-    entries = [json.loads(line) for line in ledger.read_text().splitlines()]
+    entries, rejected = admitted(home, ledger, runtime)
     directories = [v for k, v in entries if k == 'directory']
     services = [Path(v) for k, v in entries if k == 'service']
     units = sorted({v for k, v in entries if k == 'slice'} | {p.name for p in services})
@@ -132,4 +174,7 @@ def cleanup(home, run=subprocess.run):
             raise RuntimeError('worker unit reload failed: ' + answer.stderr)
     for path in reversed(directories):
         remove_tree(path)
+    if rejected:
+        # Reap what this worker can own, then stay red: a forged entry is never acted on.
+        raise RuntimeError('ownership ledger names resources outside this worker: ' + '; '.join(rejected[:5]))
     return {'units': units, 'directories': len(directories)}

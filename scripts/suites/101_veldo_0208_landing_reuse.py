@@ -334,15 +334,22 @@ for name in sys.argv[1:]:
             module='subject.py', old='good', new='bad')
         tracer = load('scripts/case_trace.py')
         observed = {}
+        def worker_argv(job):
+            # The coordinator's ownership channel: an append descriptor to a file outside the home.
+            channel = os.open(job.with_suffix('.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+            return [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
+                    'worker', str(worker_root), str(channel), str(job)], channel
         for mode in ('baseline', 'noop', 'mutant'):
             scratch = worker_home / mode; scratch.mkdir()
             job = top / (mode + '-job.json')
             job.write_text(json.dumps(dict(case=controlled_case, mode=mode)))
             trace = top / (mode + '.trace')
-            argv = [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
-                    'worker', str(worker_root), str(job)]
-            process = confined_run(tracer.command(trace, argv), cwd=worker_root,
-                env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20)
+            argv, channel = worker_argv(job)
+            try:
+                process = confined_run(tracer.command(trace, argv), cwd=worker_root, pass_fds=(channel,),
+                    env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20)
+            finally:
+                os.close(channel)
             expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
                    process.returncode == 0 and not escaped.exists())
             if process.returncode == 0:
@@ -357,8 +364,12 @@ for name in sys.argv[1:]:
         worker_suite.write_text('from pathlib import Path\nPath(' +
             repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
         job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
-        denied_worker = confined_run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
-                                      capture_output=True, text=True, timeout=20)
+        argv, channel = worker_argv(job)
+        try:
+            denied_worker = confined_run(argv, cwd=worker_root, env=gate.fixed_env(scratch), pass_fds=(channel,),
+                                          capture_output=True, text=True, timeout=20)
+        finally:
+            os.close(channel)
         expect('VELDO-0208 candidate/worker-key-access-errors-never-kills: ' + denied_worker.stderr[-300:],
                denied_worker.returncode != 0 and 'PermissionError' in denied_worker.stderr)
         fake_trace = top / 'forged.trace'
@@ -379,6 +390,60 @@ for name in sys.argv[1:]:
         else:
             trace_refused = False
         expect('VELDO-0208 candidate/trace-still-rejects-undeclared-probes', trace_refused)
+
+        # The unconfined coordinator reaps what a worker owns. Its ledger is the coordinator's file,
+        # outside every worker grant; a confined candidate suite reaches it only through the inherited
+        # append descriptor, so each planted line is a claim. Real authority workers run these suites
+        # under the real coordinator (Workers.run); systemctl is recorded, never invoked.
+        import time
+        ledger_root = top / 'ledger-input'
+        (ledger_root / 'scripts/suites').mkdir(parents=True); (ledger_root / '.veldo').mkdir()
+        shutil.copyfile(worker_root / 'scripts/suites/shared.py', ledger_root / 'scripts/suites/shared.py')
+        (ledger_root / '.veldo/subject.py').write_text('good')
+        victims = top / 'ledger-victims'; victims.mkdir()
+        (victims / 'keep').write_text('outside')
+        victim_service = victims / 'victim.service'; victim_service.write_text('[Unit]\n')
+        class Pool:
+            def demand(self, job): pass
+            def select(self, pending): return 0
+            def acquire(self, name, job): pass
+            def release(self, name): pass
+        def drive_ledger(body):
+            (ledger_root / 'scripts/suites/fixture.py').write_text(
+                'import json, os, sys, tempfile\n' + body + 'expect("fixture target", True)\n')
+            calls = []
+            def systemctl(argv, **kwargs):
+                calls.append(argv)
+                return subprocess.CompletedProcess(argv, 0, '', '')
+            with tempfile.TemporaryDirectory(prefix='ledger-coordinator-') as coordinator:
+                workers = gate.Workers(time.monotonic() + 60, resources=Pool(), parallel=1)
+                with patch.object(subprocess, 'run', systemctl):
+                    try:
+                        workers.run({'ledger': dict(case=controlled_case, mode='baseline')},
+                                    Path(coordinator), ledger_root)
+                    except gate.Refused as error:
+                        code = error.code
+                    else:
+                        code = None
+            outside_intact = ((victims / 'keep').read_text() == 'outside'
+                              and victim_service.read_text() == '[Unit]\n')
+            return code, calls, (workers.outcomes or [{}])[-1], outside_intact
+        def forge(kind, value):
+            return 'os.write(int(sys.argv[3]), (json.dumps([%r, %r]) + "\\n").encode())\n' % (kind, value)
+        code, calls, outcome, intact = drive_ledger('tempfile.mkdtemp()\n')
+        expect('VELDO-0208 ownership/own-temporary-tree-reaped: ' + str(outcome.get('detail')),
+               code is None and outcome.get('cleanup') == {'units': [], 'directories': 1} and calls == [])
+        for kind, value in (('directory', str(victims)), ('service', str(victim_service)),
+                            ('slice', 'user.slice')):
+            code, calls, outcome, intact = drive_ledger(forge(kind, value))
+            expect('VELDO-0208 ownership/forged-' + kind + '-red-and-untouched: ' + str(outcome.get('detail')),
+                   code == 'worker_cleanup_error' and 'outside this worker' in outcome.get('detail', '')
+                   and calls == [] and intact)
+        code, calls, outcome, intact = drive_ledger(
+            'open(os.path.join(os.environ["TMPDIR"], "ownership.jsonl"), "w").write('
+            'json.dumps(["directory", %r]) + "\\n")\n' % str(victims))
+        expect('VELDO-0208 ownership/home-ledger-never-read: ' + str(outcome.get('detail')),
+               code is None and calls == [] and intact)
         git_at(worker_root, 'init', '-q')
         definition = {k: v for k, v in controlled_case.items() if k not in ('driver', 'identity')}
         for driver in gate.DRIVERS:
