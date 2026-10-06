@@ -25,7 +25,8 @@ def _v204_mutation_receipts():
         # Only registry/input seams and the OS process boundary are replaced. The
         # production admission, completion, validation and receipt paths all run.
         cases = [dict(identity=name, name=name, finding=204, driver=gate.DRIVERS[0],
-                      suite='controlled.py', module='controlled.py', rows=['target'])
+                      suite='controlled.py', module='controlled.py', rows=['target'],
+                      old='before', new='after')
                  for name in (('first', 'second', 'third') if concurrent else ('first', 'second'))]
         pool = gate.SuiteResources({'resource_capacities': {'manager': 3 if concurrent else 1}, 'suites': [
             {'file': 'controlled.py', 'resources': {'manager': 1}}]})
@@ -92,15 +93,18 @@ def _v204_mutation_receipts():
             return dict(units=[], directories=0)
         with tempfile.TemporaryDirectory(prefix='v204-receipts-') as directory:
             root = Path(directory)
+            def snapshot(_root, frozen, *_args):
+                (frozen / '.veldo').mkdir(parents=True)
+                (frozen / '.veldo/controlled.py').write_text('before\n')
             with contextlib.ExitStack() as stack:
                 overrides = {
                     'Workers': RecordingWorkers,
                     'inventory': lambda root: cases + ([dict(cases[0], identity='other-driver',
                         driver=gate.DRIVERS[1])] if entry == 'teeth' else []),
                     'read_inputs': lambda root: {'scripts/check_gate_mutations.py': (0o644, source.encode())},
-                    'git': lambda *a: 'head', 'snapshot': lambda *a: None,
+                    'git': lambda *a: 'head', 'snapshot': snapshot,
                     'inputs_unchanged': lambda *a: True, 'budget_for': lambda *a: 10000,
-                    'load': lambda *a: types.SimpleNamespace(cleanup=cleanup),
+                    'load': lambda *a: types.SimpleNamespace(cleanup=cleanup, mutate=teeth.mutate),
                 }
                 for key, value in overrides.items():
                     stack.enter_context(patch.object(gate, key, value))
@@ -111,7 +115,12 @@ def _v204_mutation_receipts():
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: clock.__setitem__(0, clock[0] + .1)))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: None))
                 stack.enter_context(patch.object(teeth, '_coordinator', lambda: gate))
-                receipt = (teeth.run_stage(root, jobs=3) if entry == 'teeth' else gate.run_stage(root))
+                receipt = (teeth.run_stage(root, jobs=3, diff_dir=root / 'diffs')
+                           if entry == 'teeth' else gate.run_stage(root))
+                if entry == 'teeth':
+                    assert (root / 'diffs/first.diff').read_text() == (
+                        '--- a/.veldo/controlled.py\n+++ b/.veldo/controlled.py\n'
+                        '@@ -1 +1 @@\n-before\n+after\n')
         return receipt, pool, cleaned_while_held, children, handles, workers
 
     def check(gate, fault=None, entry='gate'):

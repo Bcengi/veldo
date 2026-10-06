@@ -13,7 +13,7 @@
     "exit_code": 2,
     "summary": [
       "  97_veldo_0204_gate_resources                     9 passed    0.15s",
-      "selftest (PARTIAL, 1 of 152 suites): 35 passed, 0 failed in 0.15s"
+      "selftest (PARTIAL, 1 of 152 suites): 35 passed, 0 failed in 0.16s"
     ],
     "scope": "partial; not a gate pass"
   }

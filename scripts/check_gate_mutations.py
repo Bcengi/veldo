@@ -637,11 +637,12 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
             if diff_dir is not None:
                 destination = Path(diff_dir)
                 destination.mkdir(parents=True, exist_ok=True)
+                owner = load(frozen / 'scripts/check_teeth_mutations.py')
                 for case in cases:
                     base = 'scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')
                     relative = str(Path(base) / case['module'])
                     before = (frozen / relative).read_text()
-                    after = load(frozen / 'scripts' / case['driver']).mutate(before, case)
+                    after = owner.mutate(before, case)
                     (destination / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
                         before.splitlines(keepends=True), after.splitlines(keepends=True), n=0,
                         fromfile='a/' + relative, tofile='b/' + relative)))
