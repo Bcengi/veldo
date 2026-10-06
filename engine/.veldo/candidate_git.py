@@ -1,8 +1,8 @@
 """Authority-owned Git boundary. Inspect a linked marker without invoking Git first."""
 import argparse
+import importlib.util
 import os
 from pathlib import Path
-import subprocess
 import sys
 
 
@@ -55,33 +55,34 @@ def validate(root, expected_common=None):
     return directory, common
 
 
-def environment(common, source=None):
-    env = {k: v for k, v in (os.environ if source is None else source).items()
-           if not k.startswith('GIT_')}
-    env.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_SYSTEM='/dev/null',
-               GIT_CONFIG_GLOBAL='/dev/null', GIT_NO_REPLACE_OBJECTS='1',
-               GIT_TERMINAL_PROMPT='0', GIT_COMMON_DIR=str(common))
-    return env
+def _load_git_process():
+    """The repository's one Git subprocess boundary, beside this module: it strips every inherited
+    GIT_* variable and disables system and global configuration, as this guard requires."""
+    spec = importlib.util.spec_from_file_location('candidate_git_process',
+                                                  Path(__file__).with_name('git_process.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run(root, args, expected_common=None, **kwargs):
     directory, common = validate(root, expected_common)
-    env = environment(common, kwargs.pop('env', None))
-    # Explicit paths pin discovery even if the writable marker changes after validation.
-    command = ['/usr/bin/git', '--git-dir=' + str(directory), '--work-tree=' + str(Path(root).resolve()),
-               '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false', *args]
-    return subprocess.run(command, cwd=root, env=env, **kwargs)
+    _git_process = _load_git_process()
+    # Explicit paths pin discovery even if the writable marker changes after validation, and the
+    # validated common directory is pinned in the environment.
+    return _git_process.run(['/usr/bin/git', '--git-dir=' + str(directory),
+                             '--work-tree=' + str(Path(root).resolve()), '-c', 'core.hooksPath=/dev/null',
+                             '-c', 'core.fsmonitor=false', *args], cwd=root, common_dir=common, **kwargs)
 
 
 def clone(root, destination, expected_common=None, **kwargs):
     # Git takes a pinned work tree as the clone's own, so a clone cannot go through run(). The source
     # is the validated common directory, never the writable marker read a second time.
     _, common = validate(root, expected_common)
-    env = environment(common, kwargs.pop('env', None))
-    del env['GIT_COMMON_DIR']
-    command = ['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
-               'clone', '-q', '--no-checkout', '--no-hardlinks', '--', str(common), str(destination)]
-    return subprocess.run(command, env=env, **kwargs)
+    _git_process = _load_git_process()
+    return _git_process.run(['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+                             'clone', '-q', '--no-checkout', '--no-hardlinks', '--', str(common),
+                             str(destination)], **kwargs)
 
 
 def main():

@@ -78,13 +78,23 @@ def clean_env(env=None, identity=None, profile="isolated"):
     return result
 
 
+# The one pinned binary a caller may name instead of PATH's git: the authority's candidate Git
+# guard (candidate_git.py) runs exactly this file so a candidate cannot place another git first.
+PINNED_GIT = "/usr/bin/git"
+
+
 def _options(args, kwargs):
-    if isinstance(args, (str, bytes)) or not args or args[0] != "git":
+    if isinstance(args, (str, bytes)) or not args or args[0] not in ("git", PINNED_GIT):
         raise ValueError("the Git boundary accepts a git argument vector only")
     if kwargs.get("shell"):
         raise ValueError("the Git boundary does not invoke a shell")
+    common_dir = kwargs.pop("common_dir", None)
     kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None),
                               kwargs.pop("profile", "isolated"))
+    # A common directory the caller has already validated is pinned after the cleaning, which
+    # strips every inherited GIT_* variable, so only this explicit value can select one.
+    if common_dir is not None:
+        kwargs["env"]["GIT_COMMON_DIR"] = str(common_dir)
     return kwargs
 
 
