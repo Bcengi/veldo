@@ -345,7 +345,8 @@ class RunScope:
         return 1 if failed else 0
 
     def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
-                             veldo_version=None, tree=None):
+                             veldo_version=None, tree=None, force_fresh=False, reused=None,
+                             reuse_evidence=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
         that file in shell and this has no production caller yet, deliberately.
 
@@ -361,11 +362,21 @@ class RunScope:
         veldo_version did. "clean", a count of dirty paths, or None when git could not answer -
         and None is a real value rather than a missing one, because an unanswered question and a
         clean tree invite opposite conclusions. The record used to name only the commit, which
-        after a gate-then-commit is systematically a state it had not verified."""
+        after a gate-then-commit is systematically a state it had not verified.
+
+        force_fresh and reused are the freshness fields scripts/reuse_stamp.py hands the gate
+        (VELDO-0208: "Both reused and force_fresh are mandatory on stamps and events"). reused is
+        {"unit": 0, "mutation": <count>}, or the gate's fallback with mutation None when no valid
+        receipt existed. reuse_evidence is present only when a reused result had to be
+        authenticated, exactly as reuse_stamp.fields adds it only then."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
-        return {"commit": commit, "status": status, "at": at,
-                "checks_run": checks_run, "checks_na": checks_na,
-                "veldo_version": veldo_version, "tree": tree}
+        payload = {"commit": commit, "status": status, "at": at,
+                   "checks_run": checks_run, "checks_na": checks_na,
+                   "veldo_version": veldo_version, "tree": tree, "force_fresh": force_fresh,
+                   "reused": reused if reused is not None else {"mutation": None, "unit": 0}}
+        if reuse_evidence is not None:
+            payload["reuse_evidence"] = reuse_evidence
+        return payload
 
     def unit_evidence_check(self, failed):
         """The `checks` entry a proof artifact carries for the unit slot, which is what
