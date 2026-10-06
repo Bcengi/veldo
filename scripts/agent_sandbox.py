@@ -95,6 +95,11 @@ def ipc_filter(libc):
     # socket(AF_UNIX, ...) refused; socketpair is local to this process tree.
     code += [(0x15, 0, 3, 41), (0x20, 0, 0, 16), (0x15, 0, 1, 1), (0x06, 0, 0, deny),
              (0x20, 0, 0, 0)]
+    # Standard descriptors can be terminals opened before confinement. Do not
+    # let a child inject input into the orchestrator's terminal through them.
+    code += [(0x15, 0, 5, 16), (0x20, 0, 0, 24), (0x15, 0, 1, 0x5412),
+             (0x06, 0, 0, deny), (0x15, 0, 1, 0x541c), (0x06, 0, 0, deny),
+             (0x20, 0, 0, 0)]
     # Close IPC, namespace, mount, ptrace and asynchronous syscall alternatives.
     # chmod is intentionally available for normal build/Git use: it cannot grant
     # file-content access denied by Landlock. Metadata secrecy is not claimed.
@@ -190,18 +195,24 @@ def launch(config_path, worktree, command):
             raise ValueError('invalid private state seed')
         source = Path(source).expanduser()
         if source.is_file():
+            if beneath(source.resolve(strict=True), store):
+                raise ValueError('private state seed exposes the reuse store')
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, destination)
             destination.chmod(0o600)
     for name in ('.codex', '.claude', 'tmp'):
         (scratch / name).mkdir(exist_ok=True)
     env = dict(os.environ, HOME=str(scratch), CODEX_HOME=str(scratch / '.codex'),
-               CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'))
+               CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'),
+               VELDO_AGENT_CONFIG=str(config_path),
+               XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
+               XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'))
     for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
                  'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK'):
         env.pop(name, None)
     close_descriptors(protected)
     landlock(grants)
+    print('agent sandbox: private state ' + str(scratch), file=sys.stderr, flush=True)
     os.chdir(worktree)
     os.execvpe(command[0], command, env)
 

@@ -1,0 +1,27 @@
+{
+  "spec": "VELDO-0208",
+  "kind": "local observations only - not gate proof",
+  "command": "python3 scripts/selftest.py --suite 100_veldo_0208_landing_reuse",
+  "exit_code": 2,
+  "summary": "selftest (PARTIAL, 1 of 154 suites): 83 passed, 0 failed in 1.13s",
+  "suite_passed": 57,
+  "shared_passed": 26,
+  "failed": 0,
+  "full_gate_run": false,
+  "mutation_stage_run": false,
+  "real_cli_smoke_test_run": false,
+  "source_sha256": {
+    "scripts/agent_sandbox.py": "a70f0626cc64ac7405b4ce21f4a5889f485e41902e53f841ef7db59cd2d23824",
+    "scripts/agent_sandbox.json": "bf0b112fb6bf9a8180bbeb3514e482879017f00864ce9375ec8bb398e7198a50",
+    "scripts/gate_reuse.py": "2e567571a1863b0212650661b49e8c287d4dcb887cd44b916af9fcad6d2bfd21",
+    "scripts/case_inputs.py": "58b8d0f4b8bfd422a0540929c91d7408ed04330261d641422a91dc87bbcc6865",
+    "scripts/case_reuse.py": "828c6c6d9f4d965962243f51a156dc68bba6c7436f5790e9ad388ca7f4ad4ae7",
+    "scripts/mutation_reuse.py": "228ec430aa22e0fcde36c4da3b27431f57288e97fc6c470f1ef616da5f6ce88a",
+    "scripts/reuse_stamp.py": "70d07846c838eabd31fd8c69251155fc1e07042309e299efa1a012204b9ebb1d",
+    "scripts/verify.sh": "f8bd4ed85fa7af8d1a1527fd24807f940d619794efb7fc56465f46a6ec137558",
+    "engine/.veldo/reuse_evidence.py": "15eaf8397e7b249e04b5e4fa567ed4b7417bfc8955875e76ebe46621a3e5bb0d",
+    "engine/.veldo/control_verification.py": "fe187d818a26b1e7ed71ea1b1c719ff784d439c7e6ff69adfd836575cb5ef3a1",
+    "engine/scripts/veldo-guard.sh": "96d8d1f551d568e9c0fd68c82a3dbe638940142f2fa47f2b097783ac1abcebe7",
+    "scripts/suites/100_veldo_0208_landing_reuse.py": "925158cec60a8f4467de88172f22bf4602737f5eee54bc17765143c53322ae2f"
+  }
+}

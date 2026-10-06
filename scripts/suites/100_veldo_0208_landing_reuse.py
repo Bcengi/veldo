@@ -20,6 +20,7 @@ def _v208_landing_reuse():
 
     E = load('.veldo/reuse_evidence.py')
     R = load('scripts/gate_reuse.py')
+    C = load('scripts/case_reuse.py')
     landing = load('engine/.veldo/control_verification.py')
     gate = load('scripts/check_gate_mutations.py')
     sys.path.insert(0, str(ROOT / 'scripts'))
@@ -45,7 +46,7 @@ def _v208_landing_reuse():
                    '--config', str(config), '--worktree', str(worktree), '--']
         probe = worktree / 'probe.py'
         # Each sub-process runs sequentially, and checks actual kernel denials.
-        probe.write_text('''import errno, json, os, pathlib, socket, subprocess, sys
+        probe.write_text('''import errno, fcntl, json, os, pathlib, socket, subprocess, sys
 store, runner, authority, inherited = map(pathlib.Path, sys.argv[1:])
 results = {}
 def denied(name, operation):
@@ -69,6 +70,7 @@ denied('symlink-key-read', lambda: pathlib.Path('key-link').read_bytes())
 denied('symlink-key-write', lambda: pathlib.Path('key-link').write_text('forged'))
 denied('hardlink-key', lambda: os.link(store / 'authentication.key', 'key-hardlink'))
 denied('unix-service', lambda: socket.socket(socket.AF_UNIX))
+denied('terminal-injection', lambda: fcntl.ioctl(0, 0x5412, b'x'))
 for name, code in [
  ('child-read', 'from pathlib import Path; Path(' + repr(str(store / 'authentication.key')) + ').read_bytes()'),
  ('child-plant', 'from pathlib import Path; Path(' + repr(str(store / 'child.json')) + ').write_text("forged")'),
@@ -93,7 +95,7 @@ print(json.dumps(results))
         findings = json.loads(result.stdout) if result.returncode == 0 else {}
         for name in ('store-read', 'key-read', 'key-write', 'plant-record', 'replace-store',
                      'runner-write', 'runner-replace', 'authority-write', 'inherited-fd',
-                     'symlink-key-read', 'symlink-key-write', 'hardlink-key', 'unix-service',
+                     'symlink-key-read', 'symlink-key-write', 'hardlink-key', 'unix-service', 'terminal-injection',
                      'child-read', 'child-plant', 'child-runner', 'own-worktree', 'private-home'):
             expect('VELDO-0208 sandbox/' + name, findings.get(name) is True)
         expect('VELDO-0208 sandbox/store-and-runner-intact',
@@ -116,24 +118,63 @@ sys.exit(m.main())
             capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 sandbox/unavailable-refuses-before-exec', result.returncode == 2
                and 'Landlock unavailable' in result.stderr and not marker.exists())
+        obsolete = unavailable.replace('return -1', 'return 5')
+        result = subprocess.run([sys.executable, '-I', '-S', '-c', obsolete,
+            str(ROOT / 'scripts/agent_sandbox.py'), '--config', str(config), '--worktree', str(worktree),
+            '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
+            capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 sandbox/old-abi-refuses-before-exec', result.returncode == 2
+               and 'needs Landlock ABI 6' in result.stderr and not marker.exists())
         bad_policy = dict(policy, write_roots=[str(top)])
         bad_config = top / 'bad-config.json'; bad_config.write_text(json.dumps(bad_policy))
         bad = command[:]; bad[bad.index(str(config))] = str(bad_config)
         result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 sandbox/unsafe-config-refuses',
                result.returncode == 2 and 'unsafe writable path' in result.stderr)
+        credential = top / 'credential-link'
+        credential.symlink_to(storepath / 'authentication.key')
+        bad_policy = dict(policy, seed_files={str(credential): '.codex/auth.json'})
+        bad_config.write_text(json.dumps(bad_policy))
+        result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 sandbox/credential-alias-cannot-copy-key',
+               result.returncode == 2 and 'seed exposes the reuse store' in result.stderr)
 
         case = dict(identity='check_teeth_mutations.py:fixture', name='fixture',
-                    driver='check_teeth_mutations.py', rows=['target'])
+                    driver='check_teeth_mutations.py', rows=['target'], suite='fixture.py',
+                    module='subject.py', old='good', new='bad')
+        files = {name: ((ROOT / name).stat().st_mode & 0o777, (ROOT / name).read_bytes())
+                 for name in (*C.I.MANDATORY, *C.I.DRIVERS)}
+        files['scripts/suites/fixture.py'] = (0o644, b'# Controlled observations; no suite process.\n')
+        files['.veldo/subject.py'] = (0o644, b'good\n')
+        files[C.I.DECLARATIONS] = (0o644, E.canonical({'schema': 'veldo.case-inputs/v1',
+            'toolchains': {case['driver']: {'paths': ['/usr'], 'reviewed': True}},
+            'cases': {case['identity']: {'files': [], 'reviewed': True, 'non_file_inputs': 'none',
+                                       'rationale': 'Controlled file-only unit fixture.'}}}))
+        def session(source):
+            with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}):
+                return C.Session(worktree, source, [case], 'a' * 40, {}, environment={},
+                                 cache_directory=storepath)
+        current = session(files)
         observation = lambda ok: {'observations': [['fixture target', ok]], 'count': 1,
                                   'row_names': ['fixture target'], 'failed_rows': [] if ok else ['fixture target']}
-        key = R.digest('declared per-case fixture inputs')
+        key = current.keys[case['identity']]
         record = {'schema': gate.SCHEMA, 'case': case, 'fixture_version': gate.FIXTURE_VERSION,
                   'input_digest': key, 'replacement_count': 1, 'old_digest': 'a', 'new_digest': 'b',
                   'baseline': observation(True), 'noop': observation(True),
                   'mutant': observation(False), 'elapsed': 0.1}
         expect('VELDO-0208 provenance/gate-writes-authenticated-record',
-               store.put(key, record) and store.get(key) == record)
+               current.publish(case, record, gate.validate_result) and store.get(key) == record
+               and session(files).lookup(case, gate.validate_result) == record)
+        changed = dict(files); changed['.veldo/subject.py'] = (0o644, b'changed input\n')
+        moved = session(changed)
+        expect('VELDO-0208 landing/changed-declared-input-misses',
+               moved.keys[case['identity']] != key and moved.lookup(case, gate.validate_result) is None)
+        with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}):
+            forced = C.Session(worktree, files, [case], 'a' * 40, {},
+                environment={'VELDO_GATE_FORCE_FRESH': '1'}, cache_directory=storepath)
+        expect('VELDO-0208 landing/force-fresh-bypasses-store', forced.store is None
+               and forced.lookup(case, gate.validate_result) is None
+               and not forced.publish(case, record, gate.validate_result))
         path = storepath / (key + '.json'); raw = path.read_bytes()
         payload = json.loads(raw)['payload']
         expect('VELDO-0208 provenance/signed-outside-domain', payload['provenance'] == E.PROVENANCE)
@@ -170,6 +211,11 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                 'post_run': {'equal': True, 'state': {}},
                 'outputs': {'last_verify': stamp, 'gate_event': dict(stamp, type='gate.passed')}}
             expect('VELDO-0208 landing/fleet-accepts-gate-records', not landing.judge(sample))
+            for document in ('last_verify', 'gate_event'):
+                altered = copy.deepcopy(sample)
+                altered['outputs'][document]['reuse_evidence'] = {}
+                expect('VELDO-0208 landing/fleet-checks-' + document,
+                       'missing_evidence:gate/authenticated_reuse_required' in landing.judge(altered))
             alterations = [dict(reuse_evidence={}), dict(commit='c' * 40),
                           dict(reused={'unit': 0, 'mutation': 2}), dict(force_fresh=True)]
             for n, change in enumerate(alterations):
@@ -213,14 +259,16 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                 'commit', '--allow-empty', '-qm', 'Fixture')
             actual = git('rev-parse', 'HEAD')
             valid = dict(commit=actual, status='green', **reducer.fields(receipt, False, actual))
-            for name, candidate, refused in [('valid', valid, False),
-                    ('no-provenance', dict(valid, reuse_evidence={}), True)]:
-                (fixture / '.veldo/last_verify').write_text(json.dumps(candidate))
-                result = subprocess.run(['bash', str(ROOT / 'scripts/veldo-guard.sh')],
-                    input=json.dumps({'tool_input': {'command': 'git merge topic'}}), text=True,
-                    capture_output=True, timeout=20, env=dict(env, CLAUDE_PROJECT_DIR=str(fixture)))
-                expect('VELDO-0208 landing/real-guard-' + name,
-                       ('Landing requires authenticated' in result.stderr) is refused and result.returncode == 2)
+            for guard in ('scripts/veldo-guard.sh', 'engine/scripts/veldo-guard.sh',
+                          'packs/claude/scripts/veldo-guard.sh'):
+                for name, candidate, refused in [('valid', valid, False),
+                        ('no-provenance', dict(valid, reuse_evidence={}), True)]:
+                    (fixture / '.veldo/last_verify').write_text(json.dumps(candidate))
+                    result = subprocess.run(['bash', str(ROOT / guard)],
+                        input=json.dumps({'tool_input': {'command': 'git merge topic'}}), text=True,
+                        capture_output=True, timeout=20, env=dict(env, CLAUDE_PROJECT_DIR=str(fixture)))
+                    expect('VELDO-0208 landing/real-guard-' + guard + '-' + name,
+                           ('Landing requires authenticated' in result.stderr) is refused and result.returncode == 2)
         expect('VELDO-0208 landing/canonical-copies-match', all(
             (ROOT / a).read_bytes() == (ROOT / b).read_bytes() for a, b in (
                 ('engine/.veldo/reuse_evidence.py', '.veldo/reuse_evidence.py'),
