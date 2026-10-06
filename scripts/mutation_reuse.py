@@ -38,7 +38,13 @@ def truthy(value):
 
 
 def required_runtime(environment):
-    return [Path(sys.executable).resolve(), Path(sysconfig.get_path('stdlib')).resolve(),
+    # Libraries already mapped before Landlock are inputs too (notably libc and the loader).
+    mapped = set()
+    for line in Path('/proc/self/maps').read_text().splitlines():
+        fields = line.split()
+        if len(fields) >= 6 and fields[-1].startswith('/') and '.so' in fields[-1]:
+            mapped.add(Path(fields[-1]).resolve())
+    return sorted(mapped) + [Path(sys.executable).resolve(), Path(sysconfig.get_path('stdlib')).resolve(),
             Path(shutil.which('git', path=environment.get('PATH', '/usr/bin:/bin'))).resolve(),
             Path(shutil.which('sh', path=environment.get('PATH', '/usr/bin:/bin'))).resolve()]
 

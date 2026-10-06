@@ -60,7 +60,8 @@ def fixture(root, source, driver_source=None):
     (root / '.veldo/git_process.py').write_bytes((source.parent.parent / '.veldo/git_process.py').read_bytes())
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
-    for helper in ('gate_reuse.py', 'mutation_reuse.py'):
+    for helper in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py', 'case_inputs.py',
+                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py'):
         (root / 'scripts' / helper).write_bytes((source.parent / helper).read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
         # Keep the real materializer while replacing only the disposable registry/worker.
@@ -167,7 +168,7 @@ def qualification(module, repository, selected=None):
                     ok &= run()['status'] == 'failed'
                     path.write_text(body)
                 # The live selftest rejects a missing/disabled required stage declaration.
-                declaration = 'CHECK_extra="required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py"'
+                declaration = """CHECK_extra='required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py --receipt "$VELDO_REUSE_RECEIPT"'"""
                 ok &= declaration in (repository / 'scripts/verify.sh').read_text()
                 (root / 'scripts/check_gate_mutations.py').unlink()
                 absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20)

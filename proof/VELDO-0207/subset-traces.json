@@ -1,0 +1,2640 @@
+[
+  {
+    "files": [
+      ".veldo/architecture.yaml",
+      ".veldo/control_client.py",
+      ".veldo/control_enrollment.py",
+      ".veldo/git_process.py",
+      ".veldo/policy.yaml",
+      ".veldo/yamlish.py",
+      "scripts/check_teeth_mutations.py",
+      "scripts/mutation_sandbox.py",
+      "scripts/propose_case_inputs.py",
+      "scripts/suites/47_veldo_0107_ipc.py",
+      "scripts/suites/shared.py",
+      "scripts/suites/support/v107_authority_runner.py",
+      "specs/TEMPLATE.md",
+      "specs/VELDO-0001-every-criterion-declares-its-own-falsification.md",
+      "specs/VELDO-0002-recorded-work-state-surviving-a-dead-session.md",
+      "specs/VELDO-0003-a-work-source-for-work-that-is-not-construction.md",
+      "specs/VELDO-0004-the-promise-corpus.md",
+      "specs/VELDO-0005-declared-and-shipped-disagree.md",
+      "specs/VELDO-0006-budget-continuity-on-the-operators-path.md",
+      "specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md",
+      "specs/VELDO-0008-veldo-version-from-one-declaration.md",
+      "specs/VELDO-0009-init-stamps-the-version-it-laid-down.md",
+      "specs/VELDO-0010-evidence-names-the-version-that-produced-it.md",
+      "specs/VELDO-0011-release-contract-and-registry.md",
+      "specs/VELDO-0012-behaviour-floor-contract.md",
+      "specs/VELDO-0013-a-declared-falsification-is-driven-and-recorded.md",
+      "specs/VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md",
+      "specs/VELDO-0015-liveness-stands-down-on-clock-disagreement.md",
+      "specs/VELDO-0016-policy-boundaries.md",
+      "specs/VELDO-0017-entity-lifecycle-contracts.md",
+      "specs/VELDO-0018-release-floor-contracts.md",
+      "specs/VELDO-0019-combined-graph-contracts.md",
+      "specs/VELDO-0020-signing-authority-contracts.md",
+      "specs/VELDO-0021-completion-eligibility-contracts.md",
+      "specs/VELDO-0022-section-2-admission-contracts.md",
+      "specs/VELDO-0023-journaled-commands.md",
+      "specs/VELDO-0024-signed-git-replication.md",
+      "specs/VELDO-0025-membership-and-delegation.md",
+      "specs/VELDO-0026-authorization-rechecks.md",
+      "specs/VELDO-0027-protected-signing.md",
+      "specs/VELDO-0028-protected-effects.md",
+      "specs/VELDO-0029-repository-enrollment.md",
+      "specs/VELDO-0030-authority-generation-fencing.md",
+      "specs/VELDO-0031-authority-backed-claims.md",
+      "specs/VELDO-0032-clock-task-reporting.md",
+      "specs/VELDO-0033-clock-refusal-propagation.md",
+      "specs/VELDO-0034-clock-status-display.md",
+      "specs/VELDO-0035-authoritative-snapshots.md",
+      "specs/VELDO-0036-capacity-and-spend-reservations.md",
+      "specs/VELDO-0037-specification-alias-publication.md",
+      "specs/VELDO-0038-effect-recovery-commands.md",
+      "specs/VELDO-0039-durable-dispatch-acceptance.md",
+      "specs/VELDO-0040-process-containment.md",
+      "specs/VELDO-0041-heartbeat-and-retirement.md",
+      "specs/VELDO-0042-isolated-worker-clones.md",
+      "specs/VELDO-0043-replaceable-langgraph-adapter.md",
+      "specs/VELDO-0044-checkpoint-isolation.md",
+      "specs/VELDO-0045-isolated-runtime-distribution.md",
+      "specs/VELDO-0046-durable-notification-delivery.md",
+      "specs/VELDO-0047-authority-service-lifecycle.md",
+      "specs/VELDO-0048-integrity-and-replica-restoration.md",
+      "specs/VELDO-0049-authoritative-floor-transitions.md",
+      "specs/VELDO-0050-durable-contextual-proof.md",
+      "specs/VELDO-0051-journal-event-publication.md",
+      "specs/VELDO-0052-shared-floor-eligibility.md",
+      "specs/VELDO-0053-architecture-entry-refusals.md",
+      "specs/VELDO-0054-floor-decision-dependencies.md",
+      "specs/VELDO-0055-release-regression-receipts.md",
+      "specs/VELDO-0056-disposable-landing-candidates.md",
+      "specs/VELDO-0057-exact-tip-completion.md",
+      "specs/VELDO-0058-isolated-gate-observations.md",
+      "specs/VELDO-0059-installed-floor-slice.md",
+      "specs/VELDO-0060-claude-code-adapter-qualification.md",
+      "specs/VELDO-0061-codex-adapter-qualification.md",
+      "specs/VELDO-0062-provider-credentials-and-usage.md",
+      "specs/VELDO-0063-production-governor-lifecycle.md",
+      "specs/VELDO-0064-assignment-inbox-projections.md",
+      "specs/VELDO-0065-versioned-channel-presentations.md",
+      "specs/VELDO-0066-canonical-channel-attribution.md",
+      "specs/VELDO-0067-restricted-channel-edges.md",
+      "specs/VELDO-0068-atomic-cross-channel-settlement.md",
+      "specs/VELDO-0069-governing-decision-bindings.md",
+      "specs/VELDO-0070-independent-decision-review.md",
+      "specs/VELDO-0071-governing-assumptions-tripwires.md",
+      "specs/VELDO-0072-tracker-projection-history-repair.md",
+      "specs/VELDO-0073-channel-ingress-activation.md",
+      "specs/VELDO-0074-interrupted-channel-decisions.md",
+      "specs/VELDO-0075-andon-delivery-resumption.md",
+      "specs/VELDO-0076-project-ownership-charter-lifecycle.md",
+      "specs/VELDO-0077-objective-acceptance-outcome-assessment.md",
+      "specs/VELDO-0078-backlog-lifecycle-priority-execution.md",
+      "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md",
+      "specs/VELDO-0080-work-class-dispatch-defect-reproduction.md",
+      "specs/VELDO-0081-quarantine-inspection-taint-execution.md",
+      "specs/VELDO-0082-standing-maintenance-compliance-occurrences.md",
+      "specs/VELDO-0083-security-emergency-incident-containment.md",
+      "specs/VELDO-0084-readmission-scope-admission-debt.md",
+      "specs/VELDO-0085-decomposition-concurrent-publication.md",
+      "specs/VELDO-0086-release-execution-ownership-contributions.md",
+      "specs/VELDO-0087-project-dependency-invalidation-traceability.md",
+      "specs/VELDO-0088-project-manager-execution-graphs.md",
+      "specs/VELDO-0089-versioned-team-configuration.md",
+      "specs/VELDO-0090-capability-bound-specialist-selection.md",
+      "specs/VELDO-0091-budgeted-requirements-elaboration.md",
+      "specs/VELDO-0092-typed-proposals-authorization-validation.md",
+      "specs/VELDO-0093-project-cycle-serialization-checkpoint-recovery.md",
+      "specs/VELDO-0094-every-pack-installation-floor-slice.md",
+      "specs/VELDO-0095-historical-migration-atomic-cutover.md",
+      "specs/VELDO-0096-clone-principal-adoption-qualification.md",
+      "specs/VELDO-0097-operational-recovery-scope-revocation-lost-ack.md",
+      "specs/VELDO-0098-rollback-coordinated-release-qualification.md",
+      "specs/VELDO-0099-worktree-git-shape.md",
+      "specs/VELDO-0100-landlock-write-confinement.md",
+      "specs/VELDO-0101-review-saves-reproductions.md",
+      "specs/VELDO-0102-capsule-runner.md",
+      "specs/VELDO-0103-fresh-assessor-run.md",
+      "specs/VELDO-0104-proof-check-refuses-unvalidated-fixes.md",
+      "specs/VELDO-0105-fix-validation-start-line.md",
+      "specs/VELDO-0106-policy-read-exactly-as-written.md",
+      "specs/VELDO-0107-local-authenticated-ipc-routing.md",
+      "specs/VELDO-0108-ssh-command-relay.md",
+      "specs/VELDO-0109-authority-unavailable.md",
+      "specs/VELDO-0110-one-document-reader.md",
+      "specs/VELDO-0111-process-and-listener-census.md",
+      "specs/VELDO-0112-registered-client-fixture.md",
+      "specs/VELDO-0113-no-client-auto-starts-authority.md",
+      "specs/VELDO-0114-relay-has-no-listener.md",
+      "specs/VELDO-0115-real-authority-store-fixture.md",
+      "specs/VELDO-0116-unavailable-registered-client-matrix.md",
+      "specs/VELDO-0117-authority-domain-store-uniqueness.md",
+      "specs/VELDO-0118-grammar-generated-oracle-fixture.md",
+      "specs/VELDO-0119-shared-reader-grammar-agreement.md",
+      "specs/VELDO-0120-policy-grammar-agreement.md",
+      "specs/VELDO-0121-relay-transport-failure-interleavings.md",
+      "specs/VELDO-0122-unavailable-calls-have-no-transient-writes.md",
+      "specs/VELDO-0123-mutation-drivers-in-every-gate.md",
+      "specs/VELDO-0124-macos-worker-profile.md",
+      "specs/VELDO-0125-mac-relay-capability-routing.md",
+      "specs/VELDO-0126-message-objective-intake.md",
+      "specs/VELDO-0127-agent-capability-configuration.md",
+      "specs/VELDO-0128-telegram-journal-reporting.md",
+      "specs/VELDO-0129-live-build-review-adapter-wiring.md",
+      "specs/VELDO-0130-authenticated-factory-api.md",
+      "specs/VELDO-0131-factory-phone-desktop-ui.md",
+      "specs/VELDO-0132-versioned-workflow-definition.md",
+      "specs/VELDO-0133-disposition-of-declined-and-canceled-work.md",
+      "specs/VELDO-0134-architecture-acceptance-record.md",
+      "specs/VELDO-0135-enrolled-work-offered-from-floor-state.md",
+      "specs/VELDO-0136-owner-told-to-reply-to-the-request.md",
+      "specs/VELDO-0137-policy-check-digest-revisions.md",
+      "specs/VELDO-0138-authority-service-runs-telegram-ingress.md",
+      "specs/VELDO-0139-factory-setup-on-a-host.md",
+      "specs/VELDO-0140-standing-answer-delegation.md",
+      "specs/VELDO-0141-live-execution-record.md",
+      "specs/VELDO-0142-git-identities-and-identity-profile.md",
+      "specs/VELDO-0143-repository-from-chat.md",
+      "specs/VELDO-0144-mcp-catalog-and-os-keystore.md",
+      "specs/VELDO-0145-ui-shell-run-terminal-decisions.md",
+      "specs/VELDO-0146-several-unit-work-and-the-second-pm-cycle.md",
+      "specs/VELDO-0147-mac-legs-of-the-linux-first-qualifications.md",
+      "specs/VELDO-0148-re-land-when-the-trunk-moved.md",
+      "specs/VELDO-0149-project-activation-on-an-adopted-repository.md",
+      "specs/VELDO-0150-objective-accepted-by-the-owners-own-message.md",
+      "specs/VELDO-0151-specialist-roles-with-capability-configurations.md",
+      "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md",
+      "specs/VELDO-0153-identity-push-profile-and-remote-owner.md",
+      "specs/VELDO-0154-factory-loop-in-the-authority-service.md",
+      "specs/VELDO-0155-claude-code-run-baseline-and-guards.md",
+      "specs/VELDO-0156-codex-run-baseline-and-guards.md",
+      "specs/VELDO-0157-items-loaded-when-assigned.md",
+      "specs/VELDO-0158-credentials-delivered-to-a-linux-run.md",
+      "specs/VELDO-0159-mcp-server-and-credential-form.md",
+      "specs/VELDO-0160-account-pool-and-the-account-limit.md",
+      "specs/VELDO-0161-repository-adoption-without-restart.md",
+      "specs/VELDO-0162-capability-configuration-and-team-routes.md",
+      "specs/VELDO-0163-role-and-team-form.md",
+      "specs/VELDO-0164-api-reads-scoped-to-the-readers-projects.md",
+      "specs/VELDO-0165-engine-launch-hygiene.md",
+      "specs/VELDO-0166-every-usage-window-metered.md",
+      "specs/VELDO-0167-setup-writes-the-record-configuration.md",
+      "specs/VELDO-0168-telegram-text-shown-as-written.md",
+      "specs/VELDO-0169-stopped-project-checks-where-work-is-taken.md",
+      "specs/VELDO-0170-receiver-configuration-without-host-trust.md",
+      "specs/VELDO-0171-setup-lays-down-the-api.md",
+      "specs/VELDO-0172-engine-formats-match-the-live-clis.md",
+      "specs/VELDO-0173-full-tool-registry-at-launch.md",
+      "specs/VELDO-0174-conversation-record-and-turns.md",
+      "specs/VELDO-0175-conversations-started-and-continued-from-telegram-and-the-ui.md",
+      "specs/VELDO-0176-conversation-history-kept-by-the-factory.md",
+      "specs/VELDO-0177-conversation-workspace-and-tools.md",
+      "specs/VELDO-0178-conversation-api-and-turn-records.md",
+      "specs/VELDO-0179-conversation-screens.md",
+      "specs/VELDO-0180-conversation-into-a-project.md",
+      "specs/VELDO-0181-conversation-decisions-and-owner-authority.md",
+      "specs/VELDO-0182-one-memory-store-for-every-run.md",
+      "specs/VELDO-0183-memory-servers-in-the-catalog.md",
+      "specs/VELDO-0184-file-memory-handed-to-every-run.md",
+      "specs/VELDO-0185-setup-lays-down-the-dispatch-configuration.md",
+      "specs/VELDO-0186-setup-installs-engines-and-runtime-assets.md",
+      "specs/VELDO-0187-conversation-turns-captured-into-claude-mem.md",
+      "specs/VELDO-0188-a-line-for-every-project-at-run-time.md",
+      "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md",
+      "specs/VELDO-0203-owner-signed-revision-commands.md",
+      "specs/VELDO-0204-reservation-policies-from-owner-configuration.md",
+      "specs/VELDO-0205-mutation-result-reuse.md",
+      "specs/VELDO-0206-suite-result-reuse.md",
+      "specs/VELDO-0207-declared-case-reuse.md",
+      "specs/WARP-0100-adopt-veldo.md",
+      "specs/WARP-0101-plan-contract.md",
+      "specs/WARP-0102-plan-skill-and-lanes.md",
+      "specs/WARP-0103-run-plan-integration.md",
+      "specs/WARP-0104-regression-mechanics.md",
+      "specs/WARP-0105-web-journey-runner.md",
+      "specs/WARP-0106-design-token-lint-and-baselines.md",
+      "specs/WARP-0107-android-runner.md",
+      "specs/WARP-0108-event-envelope-and-metrics.md",
+      "specs/WARP-0109-core-loop-closure.md",
+      "specs/WARP-0110-server-side-gate-wiring.md",
+      "specs/WARP-0111-planning-layer-docs.md",
+      "specs/WARP-0112-dogfood-companion-home.md",
+      "specs/WARP-0113-review-findings-hardening.md",
+      "specs/WARP-0114-approval-range-binding.md",
+      "specs/WARP-0201-home-aggregation.md",
+      "specs/WARP-0202-active-trip-selection.md",
+      "specs/WARP-0203-owner-scope-empty-grace.md",
+      "specs/WARP-0204-derived-content.md",
+      "specs/WARP-0301-http-api-runner.md",
+      "specs/WARP-0302-auth-authorization-runner.md",
+      "specs/WARP-0303-db-migration-runner.md",
+      "specs/WARP-0304-performance-load-runner.md",
+      "specs/WARP-0305-llm-eval-runner.md",
+      "specs/WARP-0306-cli-process-runner.md",
+      "specs/WARP-0307-integration-contract-runner.md",
+      "specs/WARP-0308-ios-mobile-runner.md",
+      "specs/WARP-0309-suite-catalog.md",
+      "specs/WARP-0310-agent-loop-runner.md",
+      "specs/WARP-0311-contract-schema-runner.md",
+      "specs/WARP-0312-streaming-runner.md",
+      "specs/WARP-0313-process-lifecycle-runner.md",
+      "specs/WARP-0314-config-schema-runner.md",
+      "specs/WARP-0315-security-guard-runner.md",
+      "specs/WARP-0316-plugin-load-runner.md",
+      "specs/WARP-0317-sandbox-isolation-runner.md",
+      "specs/WARP-0318-mcp-server-client-runner.md",
+      "specs/WARP-0319-terminal-tui-runner.md",
+      "specs/WARP-0320-static-guardrail-runner.md",
+      "specs/WARP-0401-executor.md",
+      "specs/WARP-0402-veldo-init-scaffold.md",
+      "specs/WARP-0403-lessons-store.md",
+      "specs/WARP-0404-metrics-dashboard.md",
+      "specs/WARP-0405-cost-token-budget-governance.md",
+      "specs/WARP-0406-ephemeral-env-provisioning.md",
+      "specs/WARP-0407-release-rollback-automation.md",
+      "specs/WARP-0410-release-veldo-two-point-zero.md",
+      "specs/WARP-0411-runner-anti-vacuity-hardening.md",
+      "specs/WARP-0501-run-registry.md",
+      "specs/WARP-0502-run-wrapper.md",
+      "specs/WARP-0503-status-reader.md",
+      "specs/WARP-0504-status-server.md",
+      "specs/WARP-0505-run-interaction.md",
+      "specs/WARP-0506-chat-surface.md",
+      "specs/WARP-0507-release-run-lens.md",
+      "specs/WARP-0601-tracker-routing.md",
+      "specs/WARP-0602-routing-enforcement.md",
+      "specs/WARP-0603-tracker-seam.md",
+      "specs/WARP-0604-jira-intake.md",
+      "specs/WARP-0605-spec-mirror.md",
+      "specs/WARP-0606-epic-mirror.md",
+      "specs/WARP-0607-confluence-intake.md",
+      "specs/WARP-0608-tracker-conformance.md",
+      "specs/WARP-0609-release-tracker.md",
+      "specs/WARP-0610-tracker-docs-made-true.md",
+      "specs/WARP-0611-tracker-operator-guide.md",
+      "specs/WARP-0612-jira-init-board-bootstrap.md",
+      "specs/WARP-0613-jira-snapshot-current-state-reconcile.md",
+      "specs/WARP-0614-fenced-agent-identity.md",
+      "specs/WARP-0615-human-touchpoint-request-record.md",
+      "specs/WARP-0616-authorization-module.md",
+      "specs/WARP-0617-outbound-decision-projection.md",
+      "specs/WARP-0618-request-telegram-doorbell.md",
+      "specs/WARP-0619-request-inbound-reconcile.md",
+      "specs/WARP-0620-live-sandbox-proof.md",
+      "specs/WARP-0621-risky-action-execution-binding.md",
+      "specs/WARP-0622-conformance-no-bypass-release.md",
+      "specs/WARP-0623-live-provisioner-name-collision.md",
+      "specs/WARP-0624-machine-actor-structural.md",
+      "specs/WARP-0625-live-changelog-reader.md",
+      "specs/WARP-0626-shadow-check-covers-the-class.md",
+      "specs/WARP-0701-claim-ledger.md",
+      "specs/WARP-0702-claimable-frontier.md",
+      "specs/WARP-0703-work-loop.md",
+      "specs/WARP-0704-serialized-lander.md",
+      "specs/WARP-0705-env-provisioning.md",
+      "specs/WARP-0706-token-governor.md",
+      "specs/WARP-0707-fleet-launcher.md",
+      "specs/WARP-0708-release-veldo-fleet.md",
+      "specs/WARP-0709-readme-comprehensive.md",
+      "specs/WARP-0710-claim-race-hardening.md",
+      "specs/WARP-0711-lint-one-interpreter.md",
+      "specs/WARP-0712-suite-decomposition.md",
+      "specs/WARP-0713-mobile-runner-injected-clock.md",
+      "specs/WARP-0714-compute-once.md",
+      "specs/WARP-0715-process-fixture-windows.md",
+      "specs/WARP-0716-enumerate-suite-crossing-state.md",
+      "specs/WARP-0717-subset-runner.md",
+      "specs/WARP-0718-credential-supply-codified.md",
+      "specs/WARP-0719-quorum-degrades-loudly.md",
+      "specs/WARP-0720-approver-registry-declared.md",
+      "specs/WARP-0722-review-events-derived-not-appended.md",
+      "specs/WARP-0723-reserved-envelope-keys-refused.md",
+      "specs/WARP-0724-frontier-honours-declared-dependencies.md",
+      "specs/WARP-0725-entitlement-is-the-projections-domain.md",
+      "specs/WARP-0726-withheld-reports-every-refusal.md",
+      "specs/WARP-0727-one-enumeration-for-the-domain-and-the-validated-set.md",
+      "specs/WARP-0728-keyed-bytes-are-the-validated-bytes.md",
+      "specs/WARP-0729-footprint-globs-must-match-a-path.md",
+      "specs/WARP-0730-verdict-authority-leaves-the-agent.md",
+      "specs/WARP-0731-delete-the-forgery-guard-machinery.md",
+      "specs/WARP-0732-blocking-findings-stop-the-merge.md",
+      "specs/WARP-0733-spend-recording.md",
+      "specs/WARP-0734-no-undeclared-orphan-specs.md",
+      "specs/WARP-0735-docs-area-in-the-architecture-contract.md",
+      "specs/WARP-0801-pack-engine.md",
+      "specs/WARP-0802-claude-pack.md",
+      "specs/WARP-0803-cursor-pack.md",
+      "specs/WARP-0804-codex-pack.md",
+      "specs/WARP-0805-copilot-pack.md",
+      "specs/WARP-0806-antigravity-pack.md",
+      "specs/WARP-0807-opencode-pack.md",
+      "specs/WARP-0808-aider-pack.md",
+      "specs/WARP-0809-cross-pack-conformance.md",
+      "specs/WARP-0810-release-multitool-packs.md",
+      "specs/WARP-0901-real-dispatcher.md",
+      "specs/WARP-0902-worker-spawner-accounts.md",
+      "specs/WARP-0903-per-account-governor-resume.md",
+      "specs/WARP-0904-veldo-cli.md",
+      "specs/WARP-0905-ship-fleet-in-engine.md",
+      "specs/WARP-0906-docs-made-true.md",
+      "specs/WARP-0907-fleet-supervisor.md",
+      "specs/WARP-0908-release-fleet-distribution.md",
+      "specs/WARP-0909-clean-context-dispatch-loop.md",
+      "specs/WARP-1001-eligibility-model-and-agent-user.md",
+      "specs/WARP-1002-inbound-bridge-draft-stage.md",
+      "specs/WARP-1003-promote-gate.md",
+      "specs/WARP-1004-reassign-and-artifact-links.md",
+      "specs/WARP-1005-live-mirror-runner.md",
+      "specs/WARP-1006-live-epic-child-creation.md",
+      "specs/WARP-1007-doc-to-plan-generator.md",
+      "specs/WARP-1008-release-tracker-driven-fleet.md",
+      "specs/WARP-1009-docs-and-state-made-true.md",
+      "specs/WARP-1010-real-in-session-worker-spawner.md",
+      "specs/WARP-1011-refine-footprint-tier-boundary-crossing.md",
+      "specs/WARP-1012-restore-validate-under-budget.md",
+      "specs/WARP-1101-architecture-contract-and-validator.md",
+      "specs/WARP-1102-gate-shape-enforcement.md",
+      "specs/WARP-1103-placement-and-footprint.md",
+      "specs/WARP-1104-shape-fit-review-dimension.md",
+      "specs/WARP-1105-foundational-decision-record.md",
+      "specs/WARP-1106-adversarial-decision-review.md",
+      "specs/WARP-1107-decision-tripwires.md",
+      "specs/WARP-1108-entropy-metrics.md",
+      "specs/WARP-1109-restoration-spec-generation.md",
+      "specs/WARP-1110-release-architecture-maintainability.md",
+      "specs/WARP-1201-incident-and-remedy-contracts.md",
+      "specs/WARP-1202-the-evidence-plane-access-physics.md",
+      "specs/WARP-1203-the-intent-corpus-at-runtime.md",
+      "specs/WARP-1204-the-responder-investigation-loop.md",
+      "specs/WARP-1205-the-action-whitelist.md",
+      "specs/WARP-1206-the-execution-organ.md",
+      "specs/WARP-1207-the-two-key-rule.md",
+      "specs/WARP-1208-incident-as-intent-and-reconciliation.md",
+      "specs/WARP-1209-diagnosability-gated.md",
+      "specs/WARP-1210-the-support-numbers.md",
+      "specs/WARP-1211-production-support-release.md",
+      "specs/WARP-1212-two-key-freshness-fail-closed.md",
+      "specs/WARP-1301-secret-reference-seam.md",
+      "specs/WARP-1302-absolute-secret-scan.md",
+      "specs/WARP-1303-context-secret-free.md",
+      "specs/WARP-1304-per-task-credentials.md",
+      "specs/WARP-1305-untrusted-input-isolation.md",
+      "specs/WARP-1306-supply-chain-policy.md",
+      "specs/WARP-1307-generated-infrastructure-least-privilege.md",
+      "specs/WARP-1308-signed-attributable-commits.md",
+      "specs/WARP-1309-security-review-dimension.md",
+      "specs/WARP-1310-honest-migration.md",
+      "specs/WARP-1311-security-by-design-release.md",
+      "specs/WARP-1401-toe-ground-truth-corpus.md",
+      "specs/WARP-1402-estimate-record-and-structural-proxy.md",
+      "specs/WARP-1403-sizing-pass.md",
+      "specs/WARP-1404-historical-analogy.md",
+      "specs/WARP-1405-reconciliation-and-estimator-accuracy.md",
+      "specs/WARP-1406-normalization-stable-planning-unit.md",
+      "specs/WARP-1407-judgment-load-second-axis.md",
+      "specs/WARP-1408-budget-rollup-dollars-and-pacing.md",
+      "specs/WARP-1409-cost-to-change-per-area.md",
+      "specs/WARP-1501-substrate-declarations.md",
+      "specs/WARP-1502-infrastructure-change-type.md",
+      "specs/WARP-1503-cost-in-the-proof.md",
+      "specs/WARP-1504-destructive-action-floor.md",
+      "specs/WARP-1505-promotion-pipeline.md",
+      "specs/WARP-1506-drift-tripwires.md",
+      "specs/WARP-1507-ephemeral-environments.md",
+      "specs/WARP-1508-substrate-release.md",
+      "specs/WARP-1701-naming-contract-and-residual-check.md",
+      "specs/WARP-1704-publication-pipeline.md",
+      "specs/WARP-1711-history-dependent-proofs-in-a-flattened-repository.md",
+      "specs/index.md"
+    ],
+    "absent": [],
+    "modes": [
+      {
+        "mode": "baseline",
+        "exit": 0,
+        "seconds": 1.317,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                true
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [],
+            "failed_details": [],
+            "targets": {
+              "ipc/signature-covers/schema": [
+                true
+              ],
+              "ipc/signature-covers/workspace": [
+                true
+              ],
+              "ipc/signature-covers/domain_uuid": [
+                true
+              ],
+              "ipc/signature-covers/store_uuid": [
+                true
+              ],
+              "ipc/signature-covers/repository_uuid": [
+                true
+              ],
+              "ipc/signature-covers/repository_root_commit": [
+                true
+              ],
+              "ipc/signature-covers/clone_uuid": [
+                true
+              ],
+              "ipc/signature-covers/binding_digest": [
+                true
+              ],
+              "ipc/signature-covers/authority_generation": [
+                true
+              ]
+            }
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d"
+        }
+      },
+      {
+        "mode": "noop",
+        "exit": 0,
+        "seconds": 1.316,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                true
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [],
+            "failed_details": [],
+            "targets": {
+              "ipc/signature-covers/schema": [
+                true
+              ],
+              "ipc/signature-covers/workspace": [
+                true
+              ],
+              "ipc/signature-covers/domain_uuid": [
+                true
+              ],
+              "ipc/signature-covers/store_uuid": [
+                true
+              ],
+              "ipc/signature-covers/repository_uuid": [
+                true
+              ],
+              "ipc/signature-covers/repository_root_commit": [
+                true
+              ],
+              "ipc/signature-covers/clone_uuid": [
+                true
+              ],
+              "ipc/signature-covers/binding_digest": [
+                true
+              ],
+              "ipc/signature-covers/authority_generation": [
+                true
+              ]
+            }
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d"
+        }
+      },
+      {
+        "mode": "mutant",
+        "exit": 0,
+        "seconds": 1.317,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                false
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace"
+            ],
+            "failed_details": [
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                "signed_bytes, build_request and REQUEST_FIELDS contain exactly the same fields except the signature"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ]
+            ],
+            "targets": {
+              "ipc/signature-covers/schema": [
+                false
+              ],
+              "ipc/signature-covers/workspace": [
+                false
+              ],
+              "ipc/signature-covers/domain_uuid": [
+                false
+              ],
+              "ipc/signature-covers/store_uuid": [
+                false
+              ],
+              "ipc/signature-covers/repository_uuid": [
+                false
+              ],
+              "ipc/signature-covers/repository_root_commit": [
+                false
+              ],
+              "ipc/signature-covers/clone_uuid": [
+                false
+              ],
+              "ipc/signature-covers/binding_digest": [
+                false
+              ],
+              "ipc/signature-covers/authority_generation": [
+                false
+              ]
+            }
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "fe9188f92b9d4de8dfee00fea4e082a0a00c0276f8cb0f95cfc844c3ab33cda7"
+        }
+      }
+    ],
+    "identity": "check_teeth_mutations.py:command-only"
+  },
+  {
+    "files": [
+      ".veldo/architecture.yaml",
+      ".veldo/control_client.py",
+      ".veldo/control_enrollment.py",
+      ".veldo/git_process.py",
+      ".veldo/policy.yaml",
+      ".veldo/yamlish.py",
+      "scripts/check_review_mutations.py",
+      "scripts/check_teeth_mutations.py",
+      "scripts/mutation_sandbox.py",
+      "scripts/propose_case_inputs.py",
+      "scripts/suites/47_veldo_0107_ipc.py",
+      "scripts/suites/shared.py",
+      "scripts/suites/support/v107_authority_runner.py",
+      "specs/TEMPLATE.md",
+      "specs/VELDO-0001-every-criterion-declares-its-own-falsification.md",
+      "specs/VELDO-0002-recorded-work-state-surviving-a-dead-session.md",
+      "specs/VELDO-0003-a-work-source-for-work-that-is-not-construction.md",
+      "specs/VELDO-0004-the-promise-corpus.md",
+      "specs/VELDO-0005-declared-and-shipped-disagree.md",
+      "specs/VELDO-0006-budget-continuity-on-the-operators-path.md",
+      "specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md",
+      "specs/VELDO-0008-veldo-version-from-one-declaration.md",
+      "specs/VELDO-0009-init-stamps-the-version-it-laid-down.md",
+      "specs/VELDO-0010-evidence-names-the-version-that-produced-it.md",
+      "specs/VELDO-0011-release-contract-and-registry.md",
+      "specs/VELDO-0012-behaviour-floor-contract.md",
+      "specs/VELDO-0013-a-declared-falsification-is-driven-and-recorded.md",
+      "specs/VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md",
+      "specs/VELDO-0015-liveness-stands-down-on-clock-disagreement.md",
+      "specs/VELDO-0016-policy-boundaries.md",
+      "specs/VELDO-0017-entity-lifecycle-contracts.md",
+      "specs/VELDO-0018-release-floor-contracts.md",
+      "specs/VELDO-0019-combined-graph-contracts.md",
+      "specs/VELDO-0020-signing-authority-contracts.md",
+      "specs/VELDO-0021-completion-eligibility-contracts.md",
+      "specs/VELDO-0022-section-2-admission-contracts.md",
+      "specs/VELDO-0023-journaled-commands.md",
+      "specs/VELDO-0024-signed-git-replication.md",
+      "specs/VELDO-0025-membership-and-delegation.md",
+      "specs/VELDO-0026-authorization-rechecks.md",
+      "specs/VELDO-0027-protected-signing.md",
+      "specs/VELDO-0028-protected-effects.md",
+      "specs/VELDO-0029-repository-enrollment.md",
+      "specs/VELDO-0030-authority-generation-fencing.md",
+      "specs/VELDO-0031-authority-backed-claims.md",
+      "specs/VELDO-0032-clock-task-reporting.md",
+      "specs/VELDO-0033-clock-refusal-propagation.md",
+      "specs/VELDO-0034-clock-status-display.md",
+      "specs/VELDO-0035-authoritative-snapshots.md",
+      "specs/VELDO-0036-capacity-and-spend-reservations.md",
+      "specs/VELDO-0037-specification-alias-publication.md",
+      "specs/VELDO-0038-effect-recovery-commands.md",
+      "specs/VELDO-0039-durable-dispatch-acceptance.md",
+      "specs/VELDO-0040-process-containment.md",
+      "specs/VELDO-0041-heartbeat-and-retirement.md",
+      "specs/VELDO-0042-isolated-worker-clones.md",
+      "specs/VELDO-0043-replaceable-langgraph-adapter.md",
+      "specs/VELDO-0044-checkpoint-isolation.md",
+      "specs/VELDO-0045-isolated-runtime-distribution.md",
+      "specs/VELDO-0046-durable-notification-delivery.md",
+      "specs/VELDO-0047-authority-service-lifecycle.md",
+      "specs/VELDO-0048-integrity-and-replica-restoration.md",
+      "specs/VELDO-0049-authoritative-floor-transitions.md",
+      "specs/VELDO-0050-durable-contextual-proof.md",
+      "specs/VELDO-0051-journal-event-publication.md",
+      "specs/VELDO-0052-shared-floor-eligibility.md",
+      "specs/VELDO-0053-architecture-entry-refusals.md",
+      "specs/VELDO-0054-floor-decision-dependencies.md",
+      "specs/VELDO-0055-release-regression-receipts.md",
+      "specs/VELDO-0056-disposable-landing-candidates.md",
+      "specs/VELDO-0057-exact-tip-completion.md",
+      "specs/VELDO-0058-isolated-gate-observations.md",
+      "specs/VELDO-0059-installed-floor-slice.md",
+      "specs/VELDO-0060-claude-code-adapter-qualification.md",
+      "specs/VELDO-0061-codex-adapter-qualification.md",
+      "specs/VELDO-0062-provider-credentials-and-usage.md",
+      "specs/VELDO-0063-production-governor-lifecycle.md",
+      "specs/VELDO-0064-assignment-inbox-projections.md",
+      "specs/VELDO-0065-versioned-channel-presentations.md",
+      "specs/VELDO-0066-canonical-channel-attribution.md",
+      "specs/VELDO-0067-restricted-channel-edges.md",
+      "specs/VELDO-0068-atomic-cross-channel-settlement.md",
+      "specs/VELDO-0069-governing-decision-bindings.md",
+      "specs/VELDO-0070-independent-decision-review.md",
+      "specs/VELDO-0071-governing-assumptions-tripwires.md",
+      "specs/VELDO-0072-tracker-projection-history-repair.md",
+      "specs/VELDO-0073-channel-ingress-activation.md",
+      "specs/VELDO-0074-interrupted-channel-decisions.md",
+      "specs/VELDO-0075-andon-delivery-resumption.md",
+      "specs/VELDO-0076-project-ownership-charter-lifecycle.md",
+      "specs/VELDO-0077-objective-acceptance-outcome-assessment.md",
+      "specs/VELDO-0078-backlog-lifecycle-priority-execution.md",
+      "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md",
+      "specs/VELDO-0080-work-class-dispatch-defect-reproduction.md",
+      "specs/VELDO-0081-quarantine-inspection-taint-execution.md",
+      "specs/VELDO-0082-standing-maintenance-compliance-occurrences.md",
+      "specs/VELDO-0083-security-emergency-incident-containment.md",
+      "specs/VELDO-0084-readmission-scope-admission-debt.md",
+      "specs/VELDO-0085-decomposition-concurrent-publication.md",
+      "specs/VELDO-0086-release-execution-ownership-contributions.md",
+      "specs/VELDO-0087-project-dependency-invalidation-traceability.md",
+      "specs/VELDO-0088-project-manager-execution-graphs.md",
+      "specs/VELDO-0089-versioned-team-configuration.md",
+      "specs/VELDO-0090-capability-bound-specialist-selection.md",
+      "specs/VELDO-0091-budgeted-requirements-elaboration.md",
+      "specs/VELDO-0092-typed-proposals-authorization-validation.md",
+      "specs/VELDO-0093-project-cycle-serialization-checkpoint-recovery.md",
+      "specs/VELDO-0094-every-pack-installation-floor-slice.md",
+      "specs/VELDO-0095-historical-migration-atomic-cutover.md",
+      "specs/VELDO-0096-clone-principal-adoption-qualification.md",
+      "specs/VELDO-0097-operational-recovery-scope-revocation-lost-ack.md",
+      "specs/VELDO-0098-rollback-coordinated-release-qualification.md",
+      "specs/VELDO-0099-worktree-git-shape.md",
+      "specs/VELDO-0100-landlock-write-confinement.md",
+      "specs/VELDO-0101-review-saves-reproductions.md",
+      "specs/VELDO-0102-capsule-runner.md",
+      "specs/VELDO-0103-fresh-assessor-run.md",
+      "specs/VELDO-0104-proof-check-refuses-unvalidated-fixes.md",
+      "specs/VELDO-0105-fix-validation-start-line.md",
+      "specs/VELDO-0106-policy-read-exactly-as-written.md",
+      "specs/VELDO-0107-local-authenticated-ipc-routing.md",
+      "specs/VELDO-0108-ssh-command-relay.md",
+      "specs/VELDO-0109-authority-unavailable.md",
+      "specs/VELDO-0110-one-document-reader.md",
+      "specs/VELDO-0111-process-and-listener-census.md",
+      "specs/VELDO-0112-registered-client-fixture.md",
+      "specs/VELDO-0113-no-client-auto-starts-authority.md",
+      "specs/VELDO-0114-relay-has-no-listener.md",
+      "specs/VELDO-0115-real-authority-store-fixture.md",
+      "specs/VELDO-0116-unavailable-registered-client-matrix.md",
+      "specs/VELDO-0117-authority-domain-store-uniqueness.md",
+      "specs/VELDO-0118-grammar-generated-oracle-fixture.md",
+      "specs/VELDO-0119-shared-reader-grammar-agreement.md",
+      "specs/VELDO-0120-policy-grammar-agreement.md",
+      "specs/VELDO-0121-relay-transport-failure-interleavings.md",
+      "specs/VELDO-0122-unavailable-calls-have-no-transient-writes.md",
+      "specs/VELDO-0123-mutation-drivers-in-every-gate.md",
+      "specs/VELDO-0124-macos-worker-profile.md",
+      "specs/VELDO-0125-mac-relay-capability-routing.md",
+      "specs/VELDO-0126-message-objective-intake.md",
+      "specs/VELDO-0127-agent-capability-configuration.md",
+      "specs/VELDO-0128-telegram-journal-reporting.md",
+      "specs/VELDO-0129-live-build-review-adapter-wiring.md",
+      "specs/VELDO-0130-authenticated-factory-api.md",
+      "specs/VELDO-0131-factory-phone-desktop-ui.md",
+      "specs/VELDO-0132-versioned-workflow-definition.md",
+      "specs/VELDO-0133-disposition-of-declined-and-canceled-work.md",
+      "specs/VELDO-0134-architecture-acceptance-record.md",
+      "specs/VELDO-0135-enrolled-work-offered-from-floor-state.md",
+      "specs/VELDO-0136-owner-told-to-reply-to-the-request.md",
+      "specs/VELDO-0137-policy-check-digest-revisions.md",
+      "specs/VELDO-0138-authority-service-runs-telegram-ingress.md",
+      "specs/VELDO-0139-factory-setup-on-a-host.md",
+      "specs/VELDO-0140-standing-answer-delegation.md",
+      "specs/VELDO-0141-live-execution-record.md",
+      "specs/VELDO-0142-git-identities-and-identity-profile.md",
+      "specs/VELDO-0143-repository-from-chat.md",
+      "specs/VELDO-0144-mcp-catalog-and-os-keystore.md",
+      "specs/VELDO-0145-ui-shell-run-terminal-decisions.md",
+      "specs/VELDO-0146-several-unit-work-and-the-second-pm-cycle.md",
+      "specs/VELDO-0147-mac-legs-of-the-linux-first-qualifications.md",
+      "specs/VELDO-0148-re-land-when-the-trunk-moved.md",
+      "specs/VELDO-0149-project-activation-on-an-adopted-repository.md",
+      "specs/VELDO-0150-objective-accepted-by-the-owners-own-message.md",
+      "specs/VELDO-0151-specialist-roles-with-capability-configurations.md",
+      "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md",
+      "specs/VELDO-0153-identity-push-profile-and-remote-owner.md",
+      "specs/VELDO-0154-factory-loop-in-the-authority-service.md",
+      "specs/VELDO-0155-claude-code-run-baseline-and-guards.md",
+      "specs/VELDO-0156-codex-run-baseline-and-guards.md",
+      "specs/VELDO-0157-items-loaded-when-assigned.md",
+      "specs/VELDO-0158-credentials-delivered-to-a-linux-run.md",
+      "specs/VELDO-0159-mcp-server-and-credential-form.md",
+      "specs/VELDO-0160-account-pool-and-the-account-limit.md",
+      "specs/VELDO-0161-repository-adoption-without-restart.md",
+      "specs/VELDO-0162-capability-configuration-and-team-routes.md",
+      "specs/VELDO-0163-role-and-team-form.md",
+      "specs/VELDO-0164-api-reads-scoped-to-the-readers-projects.md",
+      "specs/VELDO-0165-engine-launch-hygiene.md",
+      "specs/VELDO-0166-every-usage-window-metered.md",
+      "specs/VELDO-0167-setup-writes-the-record-configuration.md",
+      "specs/VELDO-0168-telegram-text-shown-as-written.md",
+      "specs/VELDO-0169-stopped-project-checks-where-work-is-taken.md",
+      "specs/VELDO-0170-receiver-configuration-without-host-trust.md",
+      "specs/VELDO-0171-setup-lays-down-the-api.md",
+      "specs/VELDO-0172-engine-formats-match-the-live-clis.md",
+      "specs/VELDO-0173-full-tool-registry-at-launch.md",
+      "specs/VELDO-0174-conversation-record-and-turns.md",
+      "specs/VELDO-0175-conversations-started-and-continued-from-telegram-and-the-ui.md",
+      "specs/VELDO-0176-conversation-history-kept-by-the-factory.md",
+      "specs/VELDO-0177-conversation-workspace-and-tools.md",
+      "specs/VELDO-0178-conversation-api-and-turn-records.md",
+      "specs/VELDO-0179-conversation-screens.md",
+      "specs/VELDO-0180-conversation-into-a-project.md",
+      "specs/VELDO-0181-conversation-decisions-and-owner-authority.md",
+      "specs/VELDO-0182-one-memory-store-for-every-run.md",
+      "specs/VELDO-0183-memory-servers-in-the-catalog.md",
+      "specs/VELDO-0184-file-memory-handed-to-every-run.md",
+      "specs/VELDO-0185-setup-lays-down-the-dispatch-configuration.md",
+      "specs/VELDO-0186-setup-installs-engines-and-runtime-assets.md",
+      "specs/VELDO-0187-conversation-turns-captured-into-claude-mem.md",
+      "specs/VELDO-0188-a-line-for-every-project-at-run-time.md",
+      "specs/VELDO-0189-setup-upgrades-an-earlier-installation.md",
+      "specs/VELDO-0203-owner-signed-revision-commands.md",
+      "specs/VELDO-0204-reservation-policies-from-owner-configuration.md",
+      "specs/VELDO-0205-mutation-result-reuse.md",
+      "specs/VELDO-0206-suite-result-reuse.md",
+      "specs/VELDO-0207-declared-case-reuse.md",
+      "specs/WARP-0100-adopt-veldo.md",
+      "specs/WARP-0101-plan-contract.md",
+      "specs/WARP-0102-plan-skill-and-lanes.md",
+      "specs/WARP-0103-run-plan-integration.md",
+      "specs/WARP-0104-regression-mechanics.md",
+      "specs/WARP-0105-web-journey-runner.md",
+      "specs/WARP-0106-design-token-lint-and-baselines.md",
+      "specs/WARP-0107-android-runner.md",
+      "specs/WARP-0108-event-envelope-and-metrics.md",
+      "specs/WARP-0109-core-loop-closure.md",
+      "specs/WARP-0110-server-side-gate-wiring.md",
+      "specs/WARP-0111-planning-layer-docs.md",
+      "specs/WARP-0112-dogfood-companion-home.md",
+      "specs/WARP-0113-review-findings-hardening.md",
+      "specs/WARP-0114-approval-range-binding.md",
+      "specs/WARP-0201-home-aggregation.md",
+      "specs/WARP-0202-active-trip-selection.md",
+      "specs/WARP-0203-owner-scope-empty-grace.md",
+      "specs/WARP-0204-derived-content.md",
+      "specs/WARP-0301-http-api-runner.md",
+      "specs/WARP-0302-auth-authorization-runner.md",
+      "specs/WARP-0303-db-migration-runner.md",
+      "specs/WARP-0304-performance-load-runner.md",
+      "specs/WARP-0305-llm-eval-runner.md",
+      "specs/WARP-0306-cli-process-runner.md",
+      "specs/WARP-0307-integration-contract-runner.md",
+      "specs/WARP-0308-ios-mobile-runner.md",
+      "specs/WARP-0309-suite-catalog.md",
+      "specs/WARP-0310-agent-loop-runner.md",
+      "specs/WARP-0311-contract-schema-runner.md",
+      "specs/WARP-0312-streaming-runner.md",
+      "specs/WARP-0313-process-lifecycle-runner.md",
+      "specs/WARP-0314-config-schema-runner.md",
+      "specs/WARP-0315-security-guard-runner.md",
+      "specs/WARP-0316-plugin-load-runner.md",
+      "specs/WARP-0317-sandbox-isolation-runner.md",
+      "specs/WARP-0318-mcp-server-client-runner.md",
+      "specs/WARP-0319-terminal-tui-runner.md",
+      "specs/WARP-0320-static-guardrail-runner.md",
+      "specs/WARP-0401-executor.md",
+      "specs/WARP-0402-veldo-init-scaffold.md",
+      "specs/WARP-0403-lessons-store.md",
+      "specs/WARP-0404-metrics-dashboard.md",
+      "specs/WARP-0405-cost-token-budget-governance.md",
+      "specs/WARP-0406-ephemeral-env-provisioning.md",
+      "specs/WARP-0407-release-rollback-automation.md",
+      "specs/WARP-0410-release-veldo-two-point-zero.md",
+      "specs/WARP-0411-runner-anti-vacuity-hardening.md",
+      "specs/WARP-0501-run-registry.md",
+      "specs/WARP-0502-run-wrapper.md",
+      "specs/WARP-0503-status-reader.md",
+      "specs/WARP-0504-status-server.md",
+      "specs/WARP-0505-run-interaction.md",
+      "specs/WARP-0506-chat-surface.md",
+      "specs/WARP-0507-release-run-lens.md",
+      "specs/WARP-0601-tracker-routing.md",
+      "specs/WARP-0602-routing-enforcement.md",
+      "specs/WARP-0603-tracker-seam.md",
+      "specs/WARP-0604-jira-intake.md",
+      "specs/WARP-0605-spec-mirror.md",
+      "specs/WARP-0606-epic-mirror.md",
+      "specs/WARP-0607-confluence-intake.md",
+      "specs/WARP-0608-tracker-conformance.md",
+      "specs/WARP-0609-release-tracker.md",
+      "specs/WARP-0610-tracker-docs-made-true.md",
+      "specs/WARP-0611-tracker-operator-guide.md",
+      "specs/WARP-0612-jira-init-board-bootstrap.md",
+      "specs/WARP-0613-jira-snapshot-current-state-reconcile.md",
+      "specs/WARP-0614-fenced-agent-identity.md",
+      "specs/WARP-0615-human-touchpoint-request-record.md",
+      "specs/WARP-0616-authorization-module.md",
+      "specs/WARP-0617-outbound-decision-projection.md",
+      "specs/WARP-0618-request-telegram-doorbell.md",
+      "specs/WARP-0619-request-inbound-reconcile.md",
+      "specs/WARP-0620-live-sandbox-proof.md",
+      "specs/WARP-0621-risky-action-execution-binding.md",
+      "specs/WARP-0622-conformance-no-bypass-release.md",
+      "specs/WARP-0623-live-provisioner-name-collision.md",
+      "specs/WARP-0624-machine-actor-structural.md",
+      "specs/WARP-0625-live-changelog-reader.md",
+      "specs/WARP-0626-shadow-check-covers-the-class.md",
+      "specs/WARP-0701-claim-ledger.md",
+      "specs/WARP-0702-claimable-frontier.md",
+      "specs/WARP-0703-work-loop.md",
+      "specs/WARP-0704-serialized-lander.md",
+      "specs/WARP-0705-env-provisioning.md",
+      "specs/WARP-0706-token-governor.md",
+      "specs/WARP-0707-fleet-launcher.md",
+      "specs/WARP-0708-release-veldo-fleet.md",
+      "specs/WARP-0709-readme-comprehensive.md",
+      "specs/WARP-0710-claim-race-hardening.md",
+      "specs/WARP-0711-lint-one-interpreter.md",
+      "specs/WARP-0712-suite-decomposition.md",
+      "specs/WARP-0713-mobile-runner-injected-clock.md",
+      "specs/WARP-0714-compute-once.md",
+      "specs/WARP-0715-process-fixture-windows.md",
+      "specs/WARP-0716-enumerate-suite-crossing-state.md",
+      "specs/WARP-0717-subset-runner.md",
+      "specs/WARP-0718-credential-supply-codified.md",
+      "specs/WARP-0719-quorum-degrades-loudly.md",
+      "specs/WARP-0720-approver-registry-declared.md",
+      "specs/WARP-0722-review-events-derived-not-appended.md",
+      "specs/WARP-0723-reserved-envelope-keys-refused.md",
+      "specs/WARP-0724-frontier-honours-declared-dependencies.md",
+      "specs/WARP-0725-entitlement-is-the-projections-domain.md",
+      "specs/WARP-0726-withheld-reports-every-refusal.md",
+      "specs/WARP-0727-one-enumeration-for-the-domain-and-the-validated-set.md",
+      "specs/WARP-0728-keyed-bytes-are-the-validated-bytes.md",
+      "specs/WARP-0729-footprint-globs-must-match-a-path.md",
+      "specs/WARP-0730-verdict-authority-leaves-the-agent.md",
+      "specs/WARP-0731-delete-the-forgery-guard-machinery.md",
+      "specs/WARP-0732-blocking-findings-stop-the-merge.md",
+      "specs/WARP-0733-spend-recording.md",
+      "specs/WARP-0734-no-undeclared-orphan-specs.md",
+      "specs/WARP-0735-docs-area-in-the-architecture-contract.md",
+      "specs/WARP-0801-pack-engine.md",
+      "specs/WARP-0802-claude-pack.md",
+      "specs/WARP-0803-cursor-pack.md",
+      "specs/WARP-0804-codex-pack.md",
+      "specs/WARP-0805-copilot-pack.md",
+      "specs/WARP-0806-antigravity-pack.md",
+      "specs/WARP-0807-opencode-pack.md",
+      "specs/WARP-0808-aider-pack.md",
+      "specs/WARP-0809-cross-pack-conformance.md",
+      "specs/WARP-0810-release-multitool-packs.md",
+      "specs/WARP-0901-real-dispatcher.md",
+      "specs/WARP-0902-worker-spawner-accounts.md",
+      "specs/WARP-0903-per-account-governor-resume.md",
+      "specs/WARP-0904-veldo-cli.md",
+      "specs/WARP-0905-ship-fleet-in-engine.md",
+      "specs/WARP-0906-docs-made-true.md",
+      "specs/WARP-0907-fleet-supervisor.md",
+      "specs/WARP-0908-release-fleet-distribution.md",
+      "specs/WARP-0909-clean-context-dispatch-loop.md",
+      "specs/WARP-1001-eligibility-model-and-agent-user.md",
+      "specs/WARP-1002-inbound-bridge-draft-stage.md",
+      "specs/WARP-1003-promote-gate.md",
+      "specs/WARP-1004-reassign-and-artifact-links.md",
+      "specs/WARP-1005-live-mirror-runner.md",
+      "specs/WARP-1006-live-epic-child-creation.md",
+      "specs/WARP-1007-doc-to-plan-generator.md",
+      "specs/WARP-1008-release-tracker-driven-fleet.md",
+      "specs/WARP-1009-docs-and-state-made-true.md",
+      "specs/WARP-1010-real-in-session-worker-spawner.md",
+      "specs/WARP-1011-refine-footprint-tier-boundary-crossing.md",
+      "specs/WARP-1012-restore-validate-under-budget.md",
+      "specs/WARP-1101-architecture-contract-and-validator.md",
+      "specs/WARP-1102-gate-shape-enforcement.md",
+      "specs/WARP-1103-placement-and-footprint.md",
+      "specs/WARP-1104-shape-fit-review-dimension.md",
+      "specs/WARP-1105-foundational-decision-record.md",
+      "specs/WARP-1106-adversarial-decision-review.md",
+      "specs/WARP-1107-decision-tripwires.md",
+      "specs/WARP-1108-entropy-metrics.md",
+      "specs/WARP-1109-restoration-spec-generation.md",
+      "specs/WARP-1110-release-architecture-maintainability.md",
+      "specs/WARP-1201-incident-and-remedy-contracts.md",
+      "specs/WARP-1202-the-evidence-plane-access-physics.md",
+      "specs/WARP-1203-the-intent-corpus-at-runtime.md",
+      "specs/WARP-1204-the-responder-investigation-loop.md",
+      "specs/WARP-1205-the-action-whitelist.md",
+      "specs/WARP-1206-the-execution-organ.md",
+      "specs/WARP-1207-the-two-key-rule.md",
+      "specs/WARP-1208-incident-as-intent-and-reconciliation.md",
+      "specs/WARP-1209-diagnosability-gated.md",
+      "specs/WARP-1210-the-support-numbers.md",
+      "specs/WARP-1211-production-support-release.md",
+      "specs/WARP-1212-two-key-freshness-fail-closed.md",
+      "specs/WARP-1301-secret-reference-seam.md",
+      "specs/WARP-1302-absolute-secret-scan.md",
+      "specs/WARP-1303-context-secret-free.md",
+      "specs/WARP-1304-per-task-credentials.md",
+      "specs/WARP-1305-untrusted-input-isolation.md",
+      "specs/WARP-1306-supply-chain-policy.md",
+      "specs/WARP-1307-generated-infrastructure-least-privilege.md",
+      "specs/WARP-1308-signed-attributable-commits.md",
+      "specs/WARP-1309-security-review-dimension.md",
+      "specs/WARP-1310-honest-migration.md",
+      "specs/WARP-1311-security-by-design-release.md",
+      "specs/WARP-1401-toe-ground-truth-corpus.md",
+      "specs/WARP-1402-estimate-record-and-structural-proxy.md",
+      "specs/WARP-1403-sizing-pass.md",
+      "specs/WARP-1404-historical-analogy.md",
+      "specs/WARP-1405-reconciliation-and-estimator-accuracy.md",
+      "specs/WARP-1406-normalization-stable-planning-unit.md",
+      "specs/WARP-1407-judgment-load-second-axis.md",
+      "specs/WARP-1408-budget-rollup-dollars-and-pacing.md",
+      "specs/WARP-1409-cost-to-change-per-area.md",
+      "specs/WARP-1501-substrate-declarations.md",
+      "specs/WARP-1502-infrastructure-change-type.md",
+      "specs/WARP-1503-cost-in-the-proof.md",
+      "specs/WARP-1504-destructive-action-floor.md",
+      "specs/WARP-1505-promotion-pipeline.md",
+      "specs/WARP-1506-drift-tripwires.md",
+      "specs/WARP-1507-ephemeral-environments.md",
+      "specs/WARP-1508-substrate-release.md",
+      "specs/WARP-1701-naming-contract-and-residual-check.md",
+      "specs/WARP-1704-publication-pipeline.md",
+      "specs/WARP-1711-history-dependent-proofs-in-a-flattened-repository.md",
+      "specs/index.md"
+    ],
+    "absent": [],
+    "modes": [
+      {
+        "mode": "baseline",
+        "exit": 0,
+        "seconds": 1.317,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                true
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [],
+            "failed_details": [],
+            "targets": {
+              "ipc/transport-and-command-are-checked-separately": [
+                true
+              ]
+            },
+            "case": "14",
+            "row": "ipc/transport-and-command-are-checked-separately",
+            "matched": 1,
+            "passed": true
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d"
+        }
+      },
+      {
+        "mode": "noop",
+        "exit": 0,
+        "seconds": 1.317,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                true
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [],
+            "failed_details": [],
+            "targets": {
+              "ipc/transport-and-command-are-checked-separately": [
+                true
+              ]
+            },
+            "case": "14",
+            "row": "ipc/transport-and-command-are-checked-separately",
+            "matched": 1,
+            "passed": true
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d"
+        }
+      },
+      {
+        "mode": "mutant",
+        "exit": 0,
+        "seconds": 1.316,
+        "observation": {
+          "observation": {
+            "count": 49,
+            "observations": [
+              [
+                "good spec accepted",
+                true
+              ],
+              [
+                "spec without criteria rejected",
+                true
+              ],
+              [
+                "unknown evidence kind rejected",
+                true
+              ],
+              [
+                "bad status rejected",
+                true
+              ],
+              [
+                "invented proof criterion rejected",
+                true
+              ],
+              [
+                "missing proof criterion rejected",
+                true
+              ],
+              [
+                "absent required evidence rejected",
+                true
+              ],
+              [
+                "passed-without-evidence rejected",
+                true
+              ],
+              [
+                "bad verdict value rejected",
+                true
+              ],
+              [
+                "good plan accepted",
+                true
+              ],
+              [
+                "plan dependency cycle rejected",
+                true
+              ],
+              [
+                "dangling dependency rejected",
+                true
+              ],
+              [
+                "unknown outcome ref rejected",
+                true
+              ],
+              [
+                "unknown feature ref rejected",
+                true
+              ],
+              [
+                "undeclared depends_on rejected",
+                true
+              ],
+              [
+                "ready without approval rejected",
+                true
+              ],
+              [
+                "decision without blocks rejected",
+                true
+              ],
+              [
+                "decision blocking unknown spec rejected",
+                true
+              ],
+              [
+                "duplicate work spec rejected",
+                true
+              ],
+              [
+                "bad release mode rejected",
+                true
+              ],
+              [
+                "mirror mismatch rejected",
+                true
+              ],
+              [
+                "correct mirror accepted",
+                true
+              ],
+              [
+                "spec binding to wrong plan rejected",
+                true
+              ],
+              [
+                "spec claiming missing work item rejected",
+                true
+              ],
+              [
+                "spec plan without work rejected",
+                true
+              ],
+              [
+                "correct spec binding accepted",
+                true
+              ],
+              [
+                "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-fields-match-request",
+                true
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                false
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                false
+              ],
+              [
+                "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+                true
+              ],
+              [
+                "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+                true
+              ],
+              [
+                "enrollment/clone-uuid-is-required-and-signed",
+                true
+              ],
+              [
+                "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+                true
+              ],
+              [
+                "ipc/authority-passes-generation-floor-to-enrollment",
+                true
+              ],
+              [
+                "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+                true
+              ],
+              [
+                "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+                true
+              ],
+              [
+                "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+                true
+              ],
+              [
+                "ipc/inspection-preserves-an-authority-refusal",
+                true
+              ],
+              [
+                "ipc/concurrent-last-seen-writers-use-distinct-temporary-files",
+                true
+              ]
+            ],
+            "row_names": [
+              "good spec accepted",
+              "spec without criteria rejected",
+              "unknown evidence kind rejected",
+              "bad status rejected",
+              "invented proof criterion rejected",
+              "missing proof criterion rejected",
+              "absent required evidence rejected",
+              "passed-without-evidence rejected",
+              "bad verdict value rejected",
+              "good plan accepted",
+              "plan dependency cycle rejected",
+              "dangling dependency rejected",
+              "unknown outcome ref rejected",
+              "unknown feature ref rejected",
+              "undeclared depends_on rejected",
+              "ready without approval rejected",
+              "decision without blocks rejected",
+              "decision blocking unknown spec rejected",
+              "duplicate work spec rejected",
+              "bad release mode rejected",
+              "mirror mismatch rejected",
+              "correct mirror accepted",
+              "spec binding to wrong plan rejected",
+              "spec claiming missing work item rejected",
+              "spec plan without work rejected",
+              "correct spec binding accepted",
+              "VELDO-0107 AC1 ipc/the-coordinate-comes-from-the-request",
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-fields-match-request",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace",
+              "VELDO-0107 AC3 ipc/the-socket-follows-the-binding",
+              "VELDO-0107 control ipc/copying-is-not-what-changes-it",
+              "enrollment/clone-uuid-is-required-and-signed",
+              "ipc/signed-request-cannot-survive-repository-replacement-and-reenrollment",
+              "ipc/authority-passes-generation-floor-to-enrollment",
+              "ipc/malformed-field-types-are-refusals-not-verifier-exceptions",
+              "ipc/stalled-unauthenticated-client-does-not-block-the-next-request",
+              "ipc/empty-timed-out-and-reset-responses-return-the-stale-answer",
+              "ipc/inspection-preserves-an-authority-refusal",
+              "ipc/concurrent-last-seen-writers-use-distinct-temporary-files"
+            ],
+            "failed_rows": [
+              "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+              "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+              "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+              "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/command",
+              "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+              "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/schema",
+              "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+              "VELDO-0107 AC2 ipc/signature-covers/workspace"
+            ],
+            "failed_details": [
+              [
+                "VELDO-0107 AC2 ipc/transport-and-command-are-checked-separately",
+                "over a REAL connection the uid the module uses is the one the KERNEL reports through SO_PEERCRED and equals this process's own, and the socket is 0600 inside a 0700 directory. Against the same real authority object: a valid request is accepted; a valid peer carrying a broken signature is refused as command_signature_invalid with no side effect; a foreign uid is refused as peer_not_authorized even though its signature is perfect; and a uid the platform will not report is refused as peer_identity_unavailable rather than passed, because a check that is unavailable must not become a check that succeeded. HONEST LIMIT, and it is why the claim is split: this design has ONE account by intent, so there is no second uid to connect from and the foreign-uid rule is exercised by handing the real rule a foreign uid rather than by a real foreign connection. DRIVEN: a copy without the peer comparison accepts the foreign uid"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/authority_generation",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/binding_digest",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/clone_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/command",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/domain_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_root_commit",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/repository_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/schema",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/store_uuid",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ],
+              [
+                "VELDO-0107 AC2 ipc/signature-covers/workspace",
+                "changing only this field without re-signing refuses as command_signature_invalid with no application; the identical request re-signed is accepted by the same judge and enrollment fixture"
+              ]
+            ],
+            "targets": {
+              "ipc/transport-and-command-are-checked-separately": [
+                false
+              ]
+            },
+            "case": "14",
+            "row": "ipc/transport-and-command-are-checked-separately",
+            "matched": 1,
+            "passed": false
+          },
+          "replacement_count": 1,
+          "old_digest": "40fc40ce193a955a5c5ecec994d7b5f40860b4d97546d6aa85a98e9bcd4c1e0d",
+          "new_digest": "1ce82e7566ecedbbe962d3275c13494b074a3de7d73db54c5b83e71bca008c4b"
+        }
+      }
+    ],
+    "identity": "check_review_mutations.py:14"
+  }
+]

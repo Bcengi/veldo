@@ -1,0 +1,13 @@
+{
+  "phase": "Initial measurement completed before implementing per-case reuse",
+  "cases": 30,
+  "drivers": 2,
+  "source_files": {
+    "min": 20,
+    "median": 24.0,
+    "max": 363
+  },
+  "clean_baselines": 3,
+  "seconds": 16.564,
+  "limitation": "Initial detailed trace aggregate was overwritten by the compatibility rerun. These values preserve the observed console summary; aborted baselines are lower bounds, not complete dependency closures."
+}

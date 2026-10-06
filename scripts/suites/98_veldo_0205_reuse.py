@@ -99,7 +99,8 @@ def _v205_reuse():
         namespace['fixture'](fixture_root, ROOT / 'scripts/check_gate_mutations.py')
         expect('VELDO-0205 reuse/legacy-fixture-dependencies: old fresh-stage fixtures carry new helpers',
                all((fixture_root / 'scripts' / name).is_file()
-                   for name in ('gate_reuse.py', 'mutation_reuse.py')))
+                   for name in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py',
+                                'case_inputs.py', 'case_reuse.py', 'case_trace.py', 'reuse_stamp.py')))
 
         def session(source=files, definitions=cases, **kwargs):
             return reuse.Session(root, source, definitions, kwargs.pop('head', 'head'),

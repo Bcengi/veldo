@@ -1376,6 +1376,15 @@
    ],
    "regions": "Authenticated mutation reuse, closed keys and coordinator receipts.",
    "requires_note": "Only ROOT and expect. Real cache and keys with controlled coordinator workers. No mutation processes, gate or fan-out."
+  },
+  {
+   "name": "99_veldo_0207_case_reuse",
+   "file": "99_veldo_0207_case_reuse.py",
+   "requires": [
+    "99_veldo_0207_case_reuse"
+   ],
+   "regions": "Per-case declared mutation inputs and sandbox enforcement.",
+   "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out."
   }
  ],
  "resource_capacities": {

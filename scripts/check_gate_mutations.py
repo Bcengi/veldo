@@ -79,7 +79,7 @@ def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self
     return max(2, min(16, int(cpus)))
 
 
-PARALLEL = worker_count()
+PARALLEL = 1 if '--worker' in sys.argv else worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
@@ -412,6 +412,7 @@ class Workers:
         self.resources = resources
         self.deadline = deadline
         self.active = {}
+        self.owned_snapshots = {}
         self.invocations = 0
         self.attempted = set()
         self.driver_spans = {}
@@ -424,6 +425,11 @@ class Workers:
         if time.monotonic() - started >= WORKER_BUDGET:
             raise Refused('mutation_budget_exceeded', name + ': worker deadline')
 
+    def release_snapshot(self, name):
+        path = self.owned_snapshots.pop(name, None)
+        if path is not None and path.exists():
+            shutil.rmtree(path)
+
     def cleanup(self):
         for proc, _, _, _ in self.active.values():
             try:
@@ -435,12 +441,15 @@ class Workers:
             out.close()
             err.close()
         self.active.clear()
+        for name in list(self.owned_snapshots):
+            self.release_snapshot(name)
         if self.resources is not None:
             self.resources.clear()
 
     def run(self, jobs, directory, root):
         if self.resources is None:
             self.resources = SuiteResources.from_root(root)
+        jobs = {name: dict(job) for name, job in jobs.items()}
         pending = list(jobs.items())
         # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
@@ -459,14 +468,23 @@ class Workers:
                     bindir = home / 'bin'
                     bindir.mkdir()
                     (bindir / 'python3').symlink_to(sys.executable)
+                    if job.get('declared_case'):
+                        self.owned_snapshots[name] = directory / 'cases' / str(self.invocations)
+                        job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
                     out, err = (open(home / f, 'w+b') for f in ('stdout', 'stderr'))
                     self.resources.acquire(name, job)
                     try:
-                        proc = subprocess.Popen([sys.executable, '-B', '-s',
-                                                 str(root / 'scripts/check_gate_mutations.py'),
-                                                 '--worker', str(jobpath)], cwd=root,
+                        worker_root = Path(job.get('snapshot_root', root))
+                        argv = [sys.executable, '-B', '-s',
+                                str(worker_root / 'scripts/check_gate_mutations.py'),
+                                '--worker', str(jobpath)]
+                        if 'snapshot_root' in job:
+                            argv.insert(1, '-S')  # no unkeyed system site initialization
+                            tracer = load(ROOT / 'scripts/case_trace.py')
+                            argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
+                        proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
                                                 stdout=out, stderr=err, start_new_session=True)
                     except BaseException:
@@ -495,10 +513,18 @@ class Workers:
                     del self.active[name]
                     self.resources.release(name)
                     self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
+                    if 'snapshot_root' in jobs[name]:
+                        # Trace is outside the worker's writable home. Check before trusting output.
+                        trace = Path(out.name).parent
+                        tracer.check(directory / ('trace-' + trace.name),
+                                     jobs[name]['snapshot_root'], jobs[name]['declared_files'],
+                                     jobs[name].get('declared_absent', []),
+                                     runtime=jobs[name]['runtime_paths'], scratch=trace)
                     if proc.returncode != 0:
                         raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
                     try:
                         results[name] = {'result': json.loads(stdout), 'elapsed': time.monotonic() - started}
+                        self.release_snapshot(name)
                     except ValueError as error:
                         raise Refused('driver_error', name + ': invalid worker JSON') from error
                 if self.active:
@@ -510,7 +536,11 @@ class Workers:
 
 
 def worker(job):
-    load(ROOT / 'scripts/mutation_sandbox.py').restrict(ROOT, Path(os.environ['TMPDIR']))
+    sandbox = load(ROOT / 'scripts/mutation_sandbox.py')
+    if 'runtime_paths' in job:
+        sandbox.restrict(ROOT, Path(os.environ['TMPDIR']), job['runtime_paths'], legacy=False)
+    else:
+        sandbox.restrict(ROOT, Path(os.environ['TMPDIR']))
     case = job['case']
     driver = load(ROOT / 'scripts' / case['driver'])
     owner = load(ROOT / 'scripts/check_teeth_mutations.py')
@@ -575,7 +605,7 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
-        reuse_module = load(ROOT / 'scripts/mutation_reuse.py')
+        reuse_module = load(ROOT / 'scripts/case_reuse.py')
         reuse = reuse_module.Session(root, files, cases, head,
             {'fixture_version': FIXTURE_VERSION, 'capacities': capacities,
              'worker_environment': fixed_env('<private-worker-home>')}, force_fresh=force_fresh)
@@ -597,22 +627,30 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             # Registries executed again from the frozen bytes: an enumeration race is red.
             if inventory(frozen) != cases:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
+            workers.case_reuse = reuse
+            prepared_cases = {c['identity']: {'declared_case': True} for c in fresh
+                              if c['identity'] in getattr(reuse, 'snapshots', {})}
+            def group_for(case):
+                return case['identity'] if prepared_cases.get(case['identity']) else control_group(case)
             controls = {}
             for case in fresh:
-                group = control_group(case)
+                group = group_for(case)
                 for mode in ('baseline', 'noop'):
-                    controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
+                    controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode,
+                                     **prepared_cases.get(case['identity'], {})})
             workers.resources = SuiteResources.from_root(frozen, capacities)
             control_results = workers.run(controls, directory, frozen)
-            mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
+            mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant',
+                                                        **prepared_cases.get(c['identity'], {})}
                                           for c in fresh}, directory, frozen)
             for case in fresh:
                 identity = case['identity']
-                group = control_group(case)
+                group = group_for(case)
                 prepared = mutant_results[identity]['result']
                 record = {'schema': SCHEMA, 'case': case,
                           'fixture_version': FIXTURE_VERSION,
-                          'input_digest': reuse.base_digest,
+                          'input_digest': (reuse.input_digest(case) if hasattr(reuse, 'input_digest')
+                                           else reuse.base_digest),
                           **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
                           'baseline': control_results[group + ':baseline']['result']['observation'],
                           'noop': control_results[group + ':noop']['result']['observation'],
@@ -683,6 +721,8 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             summary['wall_seconds'] = span[1] - span[0]
         if workers.resources is not None:
             receipt['resources'] = workers.resources.summary()
+        receipt['reuse_integrity_errors'] = (list(reuse.store.integrity_errors)
+                                             if reuse is not None and reuse.store else [])
         receipt['parallel_workers'] = PARALLEL
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started

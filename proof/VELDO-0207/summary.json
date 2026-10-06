@@ -1,0 +1,49 @@
+{
+  "sample_size": 30,
+  "drivers": {
+    "check_teeth_mutations.py": 25,
+    "check_review_mutations.py": 5
+  },
+  "unique_suites": 28,
+  "unique_modules": 20,
+  "source_files": {
+    "min": 21,
+    "median": 240.5,
+    "max": 502,
+    "union": 1074
+  },
+  "universal_files": [
+    ".veldo/arch.py",
+    ".veldo/architecture.yaml",
+    ".veldo/contract_loader.py",
+    ".veldo/control_event_vocabulary.py",
+    ".veldo/fix_validation.py",
+    ".veldo/fix_validation_record.py",
+    ".veldo/git_process.py",
+    ".veldo/observability.py",
+    ".veldo/policy.yaml",
+    ".veldo/policy_check.py",
+    ".veldo/tracker.py",
+    ".veldo/validate.py",
+    ".veldo/validate_checks.py",
+    ".veldo/verdict_corpus.py",
+    ".veldo/yamlish.py",
+    "scripts/check_gate_mutations.py",
+    "scripts/check_teeth_mutations.py",
+    "scripts/mutation_sandbox.py",
+    "scripts/suites/shared.py"
+  ],
+  "clean_baselines": 9,
+  "worker_errors": 9,
+  "assertion_failures": 12,
+  "trace_seconds": 194.622,
+  "median_sampled_module_reach": 18,
+  "equal_case_savings_model": 0.4,
+  "baseline_weighted_savings_model": 0.09965985345952666,
+  "limitations": [
+    "baseline-only, including incomplete baselines",
+    "trace overhead included",
+    "not a production warm-stage measurement",
+    "proposals are not reviewed; enabled production reuse is zero"
+  ]
+}

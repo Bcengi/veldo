@@ -14,6 +14,12 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
+  - {path: "scripts/check_gate_mutations.py", floor: high}
+  - {path: "scripts/case_inputs.py", floor: high}
+  - {path: "scripts/case_trace.py", floor: high}
+  - {path: "scripts/case_reuse.py", floor: high}
+  - {path: "scripts/propose_case_inputs.py", floor: high}
+  - {path: "scripts/mutation_case_inputs.json", floor: high}
   - {path: "scripts/mutation_reuse_profiles.json", floor: high}
   - {path: "scripts/mutation_reuse.py", floor: high}
   - {path: "scripts/gate_reuse.py", floor: high}
