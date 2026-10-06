@@ -73,8 +73,10 @@ def _v56_suite():
                 if label not in emitted:
                     check(label, False)
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
-    with tempfile.TemporaryDirectory(prefix="v56-", dir=fast) as directory:
+    # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
+    # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
+    # none of its own files.
+    with tempfile.TemporaryDirectory(prefix="v56-") as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)

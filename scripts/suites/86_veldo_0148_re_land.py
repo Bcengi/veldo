@@ -101,8 +101,10 @@ def _v148_suite():
     # Bounds only stop stuck child I/O. No shared scenario deadline or polling cadence
     # decides whether a state has been reached: the installed loop is stepped below.
     CHILD_WAIT = 600
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
-    base = Path(tempfile.mkdtemp(prefix='v148-', dir=fast))
+    # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
+    # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
+    # none of its own files.
+    base = Path(tempfile.mkdtemp(prefix='v148-'))
     run_id = os.urandom(4).hex()
     connections, service = [], None
     loop = None

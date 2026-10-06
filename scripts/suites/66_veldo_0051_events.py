@@ -55,7 +55,6 @@ def _v51_suite():
         spec.loader.exec_module(module)
         return module
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
     emitted, raised, regions, observed = set(), [], [], {}
 
     def check(label, condition):
@@ -91,7 +90,10 @@ def _v51_suite():
     def raw(path):
         return Path(path).read_bytes() if Path(path).exists() else b''
 
-    with tempfile.TemporaryDirectory(prefix='v51-', dir=fast) as directory:
+    # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
+    # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
+    # none of its own files.
+    with tempfile.TemporaryDirectory(prefix='v51-') as directory:
         base = Path(directory)
         tree = base / 'installed'
         mods = tree / '.veldo'
