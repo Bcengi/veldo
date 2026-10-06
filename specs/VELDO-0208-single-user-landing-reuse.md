@@ -43,6 +43,7 @@ footprint:
   - ".veldo/policy.yaml"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/99_veldo_0205_reuse.py"
+  - "scripts/suites/100_veldo_0207_case_reuse.py"
   - "scripts/suites/98_veldo_0204_mutation_receipts.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -216,3 +217,10 @@ coordinator. It also plants a ledger in the old in-home location, which is never
 Developer diff directory: the case directory, module and name joined into --diff-dir paths come
 from the candidate registry. Each passes safe_name, and a name must be a single component. A
 traversing part is incomplete_inventory before anything is written. Suite 98 plants each part.
+
+Publication race: two gates with the same declared inputs can both miss and both publish. The
+stored record drops the observers' free-text failure details, so equivalent runs publish identical
+bytes. When different bytes already exist, an authenticated record that passes the stage's own
+result validation for this case and input digest is kept. Only an existing record that fails that
+validation (or a store-level write with no validation supplied) is a conflict. Suite 99 drives
+identical bytes, a kept earlier valid record and a poisoned invalid one.

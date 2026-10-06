@@ -164,8 +164,12 @@ expect('fixture target', namespace['value'] == 1)
                           mutant=pair['mutant']['observation'],
                           old_digest=pair['mutant']['old_digest'], new_digest=pair['mutant']['new_digest'])
             current.store = R.Store(parent / 'cache', root)
-            return (current.publish(case, actual, gate.validate_result)
-                    and current.lookup(case, gate.validate_result) == actual
+            # The store keeps the observations without their free-text failure details.
+            stored = dict(actual, **{mode: {k: v for k, v in actual[mode].items() if k != 'failed_details'}
+                                     for mode in ('baseline', 'noop', 'mutant')})
+            return ('failed_details' in actual['mutant']
+                    and current.publish(case, actual, gate.validate_result)
+                    and current.lookup(case, gate.validate_result) == stored
                     and not workers.owned_snapshots
                     and all(not (parent/'cases'/str(n)).exists() for n in range(workers.invocations)))
         expect('VELDO-0207 case/sandbox-valid-worker', run_worker(files, 'valid'))

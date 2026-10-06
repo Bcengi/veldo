@@ -238,6 +238,42 @@ def _v205_reuse():
         expect('VELDO-0205 reuse/deadline-stays-red: cache fallback cannot swallow the stage alarm',
                deadlines == ['mutation_budget_exceeded'] * 2)
 
+        # Two gates with the same inputs both miss and both publish. Their failure text differs
+        # (temporary paths); the stored bytes do not, and an earlier valid record always wins.
+        # Only an existing record the stage's own validation rejects is a conflict.
+        def detailed(where):
+            value = dict(killed(cases[0]), input_digest=session(cache_directory=base / 'race-cache').base_digest)
+            value['mutant'] = dict(value['mutant'], failed_details=[['fixture target', 'saw ' + where]])
+            return value
+        first, second = session(cache_directory=base / 'race-cache'), session(cache_directory=base / 'race-cache')
+        race_key = first.keys[cases[0]['identity']]
+        race_path = base / 'race-cache' / (race_key + '.json')
+        def race_bytes():
+            return race_path.read_bytes() if race_path.exists() else None
+        published = first.publish(cases[0], detailed('/tmp/run-one'), gate.validate_result)
+        stored = race_bytes() or b''
+        repeated = second.publish(cases[0], detailed('/tmp/run-two'), gate.validate_result)
+        identical = (published and repeated and race_bytes() == stored and b'run-one' not in stored
+                     and not second.store.integrity_errors and not race_path.with_suffix('.json.conflict').exists())
+        # A valid record whose bytes differ (written before details were dropped) still wins.
+        race_path.unlink(missing_ok=True)
+        first.store.put(race_key, detailed('/tmp/legacy'))
+        legacy = race_bytes()
+        kept = (second.publish(cases[0], detailed('/tmp/run-three'), gate.validate_result)
+                and legacy is not None and race_bytes() == legacy and not second.store.integrity_errors
+                and not race_path.with_suffix('.json.conflict').exists()
+                and second.lookup(cases[0], gate.validate_result) is not None)
+        # An authenticated record the stage would reject is still a conflict, and stays one.
+        race_path.unlink(missing_ok=True)
+        race_path.with_suffix('.json.conflict').unlink(missing_ok=True)
+        first.store.put(race_key, {'planted': 'not a mutation result'})
+        third = session(cache_directory=base / 'race-cache')
+        third.publish(cases[0], detailed('/tmp/run-four'), gate.validate_result)
+        poisoned = (third.store.integrity_errors == [race_key + '.json']
+                    and race_path.with_suffix('.json.conflict').exists())
+        expect('VELDO-0208 reuse/valid-record-wins-publish-race: identical=%s kept=%s poisoned=%s'
+               % (identical, kept, poisoned), identical and kept and poisoned)
+
         stage_cache = base / 'stage-cache'
         calls = []
         real_session = reuse.Session

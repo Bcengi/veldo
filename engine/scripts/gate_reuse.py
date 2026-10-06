@@ -94,7 +94,7 @@ class Store:
         if not kind(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
             raise ValueError('cache path must be private and owned')
 
-    def _publish(self, target, body, key_creation=False):
+    def _publish(self, target, body, key_creation=False, existing_valid=None):
         fd, name = tempfile.mkstemp(prefix='.pending-', dir=self.directory)
         try:
             with os.fdopen(fd, 'wb') as stream:
@@ -104,7 +104,10 @@ class Store:
             try:
                 os.link(name, target)
             except FileExistsError:
-                if not key_creation and target.read_bytes() != body:
+                # A valid record already present wins: an equivalent run publishing different
+                # bytes is not a conflict. Only an existing record that fails validation is.
+                if (not key_creation and target.read_bytes() != body
+                        and not (existing_valid is not None and existing_valid())):
                     self.integrity_errors.append(target.name)
                     # Poisoned identities stay misses until explicitly removed.
                     (self.directory / (target.name + '.conflict')).touch(mode=0o600)
@@ -126,7 +129,10 @@ class Store:
         except (OSError, ValueError, TypeError, KeyError):
             return None
 
-    def put(self, key, result):
+    def put(self, key, result, accept=None):
+        """Publish `result` once. An existing authenticated record that `accept` (the stage's own
+        result validation) admits is kept; any other differing record, or any differing record
+        when no validation is supplied, is a conflict."""
         if self.secret is None:
             return False
         try:
@@ -139,7 +145,10 @@ class Store:
                            authority=E.authority_identity())
             document = dict(payload=payload,
                             mac=hmac.new(self.secret, canonical(payload), hashlib.sha256).hexdigest())
-            self._publish(self._path(key), canonical(document))
+            def existing_valid():
+                existing = self.get(key)
+                return accept is not None and existing is not None and accept(existing)
+            self._publish(self._path(key), canonical(document), existing_valid=existing_valid)
             return True
         except (OSError, ValueError, TypeError):
             return False

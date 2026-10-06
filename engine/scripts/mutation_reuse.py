@@ -155,7 +155,19 @@ class Session:
             validate(record, case)
             if record.get('input_digest') != self.base_digest:
                 return False
-            return self.store.put(key, record)
+            # Free-text failure details (paths, messages) never enter the stored record, so
+            # two valid runs of the same inputs publish identical bytes.
+            stored = dict(record, **{mode: {k: v for k, v in record[mode].items() if k != 'failed_details'}
+                                     for mode in ('baseline', 'noop', 'mutant')})
+            validate(stored, case)
+
+            def accept(existing):
+                try:
+                    validate(existing, case)
+                except Exception:
+                    return False
+                return existing.get('input_digest') == self.base_digest
+            return self.store.put(key, stored, accept)
         except Exception as error:
             if getattr(error, 'code', None) == 'mutation_budget_exceeded':
                 raise
