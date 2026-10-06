@@ -12,10 +12,6 @@
 set -u
 # The script and all security helpers come from the authority installation.
 VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
-if [ -z "${VELDO_EXPECTED_GIT_COMMON:-}" ]; then
-  VELDO_EXPECTED_GIT_COMMON=$(python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --authority-common) || exit 1
-fi
-export VELDO_EXPECTED_GIT_COMMON
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
@@ -77,10 +73,21 @@ if [ -n "$VELDO_REFUSE" ]; then
   exit 1
 fi
 
-# Refuse marker redirection before any candidate code or repository Git command.
-if ! python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" --validate-only; then
-  echo "GATE: RED (candidate Git boundary refused)"
-  exit 1
+# Refuse marker redirection before any candidate code or repository Git command. A checkout with
+# no Git marker at all has nothing to redirect: the guard refuses every Git query there, so the
+# stamp records no-git. A marker is checked against the authority's own shared gitdir.
+if [ -e .git ] || [ -L .git ]; then
+  if [ -z "${VELDO_EXPECTED_GIT_COMMON:-}" ]; then
+    if ! VELDO_EXPECTED_GIT_COMMON=$(python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --authority-common); then
+      echo "GATE: RED (authority Git directory unavailable)"
+      exit 1
+    fi
+  fi
+  export VELDO_EXPECTED_GIT_COMMON
+  if ! python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" --validate-only; then
+    echo "GATE: RED (candidate Git boundary refused)"
+    exit 1
+  fi
 fi
 
 # ---- the validation catalog: declare EVERY item (see header) ---------------
