@@ -2227,7 +2227,9 @@ else:
 _v22_verify_rels = _v22_engine_copies("scripts/verify.sh", "scripts/verify.sh")
 _v22_verify_texts = {rel: (ROOT / rel).read_text() for rel in _v22_verify_rels
                      if (ROOT / rel).is_file()}
-_v22_call = "python3 .veldo/events.py reconcile-verdicts"
+# VELDO-0208 runs the gate's own machinery from the authority installation, never from the
+# candidate tree, so the call the gate makes is the authority copy under -I -S.
+_v22_call = 'python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts'
 
 
 def _v22_stage_block(text):
