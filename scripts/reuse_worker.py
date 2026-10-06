@@ -33,9 +33,11 @@ def main():
     owner.ROOT = root
     boundary.close_descriptors([])
     # Never load the candidate's sandbox or worker driver, even for fresh cases.
-    sandbox.restrict(root, Path(os.environ['TMPDIR']), job.get('runtime_paths', sandbox.RUNTIME),
-                     legacy=False)
-    boundary.ipc_filter(__import__('ctypes').CDLL(None, use_errno=True))
+    grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
+    grants += [(Path(p).resolve(), boundary.READ)
+               for p in job.get('runtime_paths', sandbox.RUNTIME) if Path(p).exists()]
+    grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
+    boundary.landlock(grants, profile='worker')
     case = job['case']
     prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=root)
     mutant = prepared['mutant']

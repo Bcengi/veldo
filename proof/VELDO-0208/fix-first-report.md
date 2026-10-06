@@ -57,3 +57,25 @@ GIT_NO_REPLACE_OBJECTS=1 and GIT_TERMINAL_PROMPT=0, pins GIT_COMMON_DIR and uses
 Do not validate then run a separate bare git command: the helper pins discovery
 paths for the actual command. Shared ref/object grants expose sibling refs and
 objects; authority storage must stay outside all agent-readable gitdirs.
+
+## Profiles, private files, cleanup and installed engine
+
+Agent/gate profile: Landlock file allowlist, Unix service sockets and IPC escape
+routes denied, TCP/TLS allowed. Worker profile: same scope plus full network/socket
+denial. A real loopback listener accepts the agent-profile connection; the worker
+cannot connect. Both refuse user-bus access. Defaults grant system paths, the
+worktree, authority files, private scratch and optional CLI executable directories.
+No broad home or /tmp grants remain. Original SSH/CLI secrets and v1/v2 stores
+stay outside those grants. Only agent runs receive selected CLI credential copies.
+
+A trusted supervisor owns scratch cleanup, including validation/kernel refusals,
+and removes it after killing remaining children in the process group. The engine
+ships its config and the complete boundary, and init scaffolding includes them.
+The worker's authority bootstrap is loaded before confinement; candidate execution
+is traced starting at the observed Landlock boundary. Missing boundary evidence
+and undeclared post-boundary probes fail closed.
+
+Latest targeted pass at this step: 128 passed, 0 failed (partial exit 2). Tests
+include real controlled baseline/noop/mutant workers, a replaced candidate driver,
+worker key-read denial, signed wrong-authority records/receipts, default engine
+config discovery, private-file denial and refusal cleanup. No mutation stage ran.

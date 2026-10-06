@@ -10,6 +10,7 @@ def _v208_landing_reuse():
     import subprocess
     import sys
     import tempfile
+    import socket
     from unittest.mock import patch
 
     def load(relative):
@@ -44,7 +45,7 @@ def _v208_landing_reuse():
         store = R.Store(storepath, worktree)
         config = top / 'config.json'
         policy = {'schema': 'veldo.agent-sandbox/v1', 'store': str(storepath),
-                  'read_roots': ['/usr', '/lib', '/lib64', '/etc', str(top), str(ROOT)],
+                  'read_roots': json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())['read_roots'],
                   'write_roots': ['{worktree}', '{scratch}'], 'deny_write': [str(runner)],
                   'seed_files': {}}
         config.write_text(json.dumps(policy))
@@ -80,8 +81,11 @@ def connect_service(path):
  with socket.socket(socket.AF_UNIX) as client: client.connect(path)
 denied('user-bus', lambda: connect_service('/run/user/' + str(os.getuid()) + '/bus'))
 denied('systemd-private', lambda: connect_service('/run/user/' + str(os.getuid()) + '/systemd/private'))
-denied('network-ipv4', lambda: socket.socket(socket.AF_INET))
-denied('network-ipv6', lambda: socket.socket(socket.AF_INET6))
+with socket.create_connection(('127.0.0.1', int(os.environ['VELDO_TEST_PORT'])), timeout=2):
+ results['network-ipv4'] = True
+with socket.socket(socket.AF_INET6): results['network-ipv6'] = True
+for name in ('ssh', 'v1-store', 'v1-key', 'codex-auth', 'claude-credentials'):
+ denied('private-' + name, lambda name=name: pathlib.Path(os.environ['VELDO_TEST_PRIVATE'], name).read_bytes())
 denied('terminal-injection', lambda: fcntl.ioctl(0, 0x5412, b'x'))
 for name, code in [
  ('child-read', 'from pathlib import Path; Path(' + repr(str(store / 'authentication.key')) + ').read_bytes()'),
@@ -120,12 +124,18 @@ print(json.dumps(results))
         expect('VELDO-0208 candidate/authority-launches-worker',
                "str(ROOT / 'scripts/reuse_worker.py')" in worker_source
                and "str(worker_root / 'scripts/check_gate_mutations.py')" not in worker_source)
+        listener = socket.socket(); listener.bind(('127.0.0.1', 0)); listener.listen(4)
+        private_home = top / 'private-home'; private_home.mkdir()
+        for name in ('ssh', 'v1-store', 'v1-key', 'codex-auth', 'claude-credentials'):
+            (private_home / name).write_text('private fixture')
+        network_env = dict(os.environ, VELDO_TEST_PORT=str(listener.getsockname()[1]),
+                           VELDO_TEST_PRIVATE=str(private_home))
         keyfd = os.open(storepath / 'authentication.key', os.O_RDWR)
         before = (storepath / 'authentication.key').read_bytes()
         try:
             result = subprocess.run(command + [sys.executable, '-I', '-S', str(probe), str(storepath),
                 str(runner), str(ROOT / 'scripts/agent_sandbox.py'), str(keyfd)],
-                pass_fds=(keyfd,), capture_output=True, text=True, timeout=20)
+                pass_fds=(keyfd,), capture_output=True, text=True, timeout=20, env=network_env)
         finally:
             os.close(keyfd)
         expect('VELDO-0208 sandbox/launcher-starts: ' + result.stderr[-400:], result.returncode == 0)
@@ -133,12 +143,33 @@ print(json.dumps(results))
         for name in ('store-read', 'key-read', 'key-write', 'plant-record', 'replace-store',
                      'runner-write', 'runner-replace', 'authority-write', 'inherited-fd',
                      'symlink-key-read', 'symlink-key-write', 'hardlink-key', 'unix-service', 'user-bus', 'systemd-private',
-                     'network-ipv4', 'network-ipv6', 'terminal-injection',
+                     'network-ipv4', 'network-ipv6', 'private-ssh', 'private-v1-store', 'private-v1-key',
+                     'private-codex-auth', 'private-claude-credentials', 'terminal-injection',
                      'child-read', 'child-plant', 'child-runner', 'own-worktree', 'private-home'):
             expect('VELDO-0208 sandbox/' + name, findings.get(name) is True)
         expect('VELDO-0208 sandbox/store-and-runner-intact',
                (storepath / 'authentication.key').read_bytes() == before
                and runner.read_text() == 'trusted runner' and not (storepath / 'planted.json').exists())
+        worker_network = """import ctypes, importlib.util, pathlib, socket, sys
+spec = importlib.util.spec_from_file_location('boundary', sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+m.landlock([(pathlib.Path(p).resolve(), m.READ) for p in ('/usr','/lib','/lib64','/etc')], profile='worker')
+for family, address in [(socket.AF_INET, ('127.0.0.1', int(sys.argv[2]))),
+                        (socket.AF_UNIX, '/run/user/' + str(__import__('os').getuid()) + '/bus')]:
+ try:
+  with socket.socket(family) as client: client.connect(address)
+ except PermissionError: pass
+ else: raise AssertionError('worker connected to service')
+"""
+        worker_result = subprocess.run([sys.executable, '-I', '-S', '-c', worker_network,
+            str(ROOT / 'scripts/agent_sandbox.py'), str(listener.getsockname()[1])],
+            capture_output=True, text=True, timeout=20)
+        listener.close()
+        expect('VELDO-0208 profiles/worker-denies-tcp-and-user-bus: ' + worker_result.stderr[-300:],
+               worker_result.returncode == 0)
+        defaults = json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())
+        expect('VELDO-0208 sandbox/default-no-broad-home-or-tmp',
+               '~' not in defaults['read_roots'] and '/tmp' not in defaults['read_roots'])
         # Kernel failure is injected at the syscall boundary, before exec. No root needed.
         unavailable = '''import importlib.util, sys
 spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
@@ -173,7 +204,10 @@ sys.exit(m.main())
         credential.symlink_to(storepath / 'authentication.key')
         bad_policy = dict(policy, seed_files={str(credential): '.codex/auth.json'})
         bad_config.write_text(json.dumps(bad_policy))
-        result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
+        scratch_parent = top / 'scratch-owner'; scratch_parent.mkdir()
+        result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20,
+                                env=dict(os.environ, TMPDIR=str(scratch_parent)))
+        expect('VELDO-0208 sandbox/refusal-cleans-scratch', not list(scratch_parent.iterdir()))
         expect('VELDO-0208 sandbox/credential-alias-cannot-copy-key',
                result.returncode == 2 and 'seed exposes the reuse store' in result.stderr)
 
@@ -257,6 +291,77 @@ for name in sys.argv[1:]:
                and 'expected shared gitdir' in refused.stderr
                and 'expected shared gitdir' in refused_agent.stderr and not escaped.exists())
         (linked / '.git').write_text(original_marker)
+
+        # Small controlled workers only: never run the mutation stage or its drivers.
+        worker_root = top / 'worker-input'; worker_home = top / 'worker-home'
+        (worker_root / 'scripts/suites').mkdir(parents=True)
+        (worker_root / '.veldo').mkdir(); worker_home.mkdir()
+        (worker_root / 'scripts/suites/shared.py').write_text(
+            'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
+            'def expect(name, condition): pass\n')
+        worker_suite = worker_root / 'scripts/suites/fixture.py'
+        worker_suite.write_text('value = (ROOT / ".veldo" / "subject.py").read_text()\n'
+                               'expect("fixture target", value == "good")\n')
+        (worker_root / '.veldo/subject.py').write_text('good')
+        # An executable candidate driver would claim all mutants killed. It must never run.
+        (worker_root / 'scripts/check_gate_mutations.py').write_text(
+            'from pathlib import Path\nPath(' + repr(str(escaped)) + ').touch()\n'
+            'print("forged killed record")\n')
+        controlled_case = dict(identity='check_teeth_mutations.py:controlled', name='controlled',
+            driver='check_teeth_mutations.py', suite='fixture.py', rows=['target'],
+            module='subject.py', old='good', new='bad')
+        tracer = load('scripts/case_trace.py')
+        observed = {}
+        for mode in ('baseline', 'noop', 'mutant'):
+            scratch = worker_home / mode; scratch.mkdir()
+            job = top / (mode + '-job.json')
+            job.write_text(json.dumps(dict(case=controlled_case, mode=mode)))
+            trace = top / (mode + '.trace')
+            argv = [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
+                    'worker', str(worker_root), str(job)]
+            process = subprocess.run(tracer.command(trace, argv), cwd=worker_root,
+                env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20)
+            expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
+                   process.returncode == 0 and not escaped.exists())
+            if process.returncode == 0:
+                observed[mode] = json.loads(process.stdout)
+                tracer.check(trace, worker_root, ['scripts/suites/shared.py', 'scripts/suites/fixture.py',
+                    '.veldo/subject.py'], runtime=('/usr', '/lib', '/lib64', '/etc'), scratch=scratch,
+                    after_confinement=True)
+        expect('VELDO-0208 candidate/authority-observes-kill', len(observed) == 3
+               and observed['baseline']['observation']['failed_rows'] == []
+               and observed['noop']['observation']['failed_rows'] == []
+               and observed['mutant']['observation']['failed_rows'] == ['fixture target'])
+        worker_suite.write_text('from pathlib import Path\nPath(' +
+            repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
+        job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
+        denied_worker = subprocess.run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
+                                      capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 candidate/worker-key-access-errors-never-kills: ' + denied_worker.stderr[-300:],
+               denied_worker.returncode != 0 and 'PermissionError' in denied_worker.stderr)
+        fake_trace = top / 'forged.trace'
+        fake_trace.write_text('1 openat(AT_FDCWD, "/stolen-key", O_RDONLY) = 3</stolen-key>\n')
+        try:
+            list(tracer.accesses(fake_trace, after_confinement=True))
+        except ValueError:
+            trace_refused = True
+        else:
+            trace_refused = False
+        expect('VELDO-0208 candidate/trace-missing-boundary-refused', trace_refused)
+        fake_trace.write_text('1 landlock_restrict_self(3, 0) = 0\n'
+                             '1 openat(AT_FDCWD, "/stolen-key", O_RDONLY) = -1 EACCES\n')
+        try:
+            tracer.check(fake_trace, worker_root, [], scratch=worker_home, after_confinement=True)
+        except ValueError:
+            trace_refused = True
+        else:
+            trace_refused = False
+        expect('VELDO-0208 candidate/trace-still-rejects-undeclared-probes', trace_refused)
+        with patch.dict(os.environ, {}, clear=True):
+            engine_evidence = load('engine/.veldo/reuse_evidence.py')
+            default_path, _ = engine_evidence.configuration()
+        expect('VELDO-0208 engine/default-config-shipped',
+               default_path == ROOT / 'engine/scripts/agent_sandbox.json')
 
         case = dict(identity='check_teeth_mutations.py:fixture', name='fixture',
                     driver='check_teeth_mutations.py', rows=['target'], suite='fixture.py',
@@ -412,6 +517,8 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                            ('Landing requires authenticated' in result.stderr) is refused and result.returncode == 2)
         expect('VELDO-0208 landing/canonical-copies-match', all(
             (ROOT / a).read_bytes() == (ROOT / b).read_bytes() for a, b in (
+                ('engine/scripts/agent_sandbox.json', 'scripts/agent_sandbox.json'),
+                ('engine/scripts/agent_sandbox.py', 'scripts/agent_sandbox.py'),
                 ('engine/.veldo/reuse_evidence.py', '.veldo/reuse_evidence.py'),
                 ('engine/.veldo/control_verification.py', '.veldo/control_verification.py'),
                 ('engine/scripts/veldo-guard.sh', 'scripts/veldo-guard.sh'),

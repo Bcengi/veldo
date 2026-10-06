@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import signal
 import stat
 import sys
 import tempfile
@@ -33,7 +34,11 @@ def beneath(path, root):
     return path == root or root in path.parents
 
 
-def landlock(grants):
+def landlock(grants, profile="agent"):
+    spec = importlib.util.spec_from_file_location('mutation_sandbox',
+                                                  Path(__file__).with_name('mutation_sandbox.py'))
+    boundary = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(boundary)
     libc = ctypes.CDLL(None, use_errno=True)
 
     def call(number, *args):
@@ -72,11 +77,8 @@ def landlock(grants):
         call(446, fd, 0)
     finally:
         os.close(fd)
-    spec = importlib.util.spec_from_file_location('mutation_sandbox',
-                                                  Path(__file__).with_name('mutation_sandbox.py'))
-    boundary = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(boundary)
-    boundary.network_filter(libc)
+    if profile == 'worker':
+        boundary.network_filter(libc)
     ipc_filter(libc)
 
 
@@ -84,7 +86,7 @@ def ipc_filter(libc):
     """Block pathname Unix service escapes too (Landlock ABI 6 scopes abstract ones).
 
     Do not expose inherited sockets or io_uring as alternate syscall dispatch.
-    The common network filter also denies TCP/TLS and inherited socket dispatch.
+    Agent TCP/TLS is allowed; only workers install the full network filter.
     """
     class Filter(ctypes.Structure):
         _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
@@ -168,6 +170,9 @@ def grants_for(config, authority, worktree, scratch):
     if not worktree.is_dir() or worktree == scratch:
         raise ValueError('worktree must be a separate existing directory')
     blocked = [store, Path('/proc'), Path('/run'), Path('/sys'), Path('/dev')]
+    blocked += [Path(p).expanduser().resolve() for p in config.get('deny_read', [])]
+    if any(beneath(store, p) for p in (authority, worktree, scratch)):
+        raise ValueError('authority storage must be outside candidate and authority trees')
     grants = []
 
     def read(path):
@@ -182,14 +187,28 @@ def grants_for(config, authority, worktree, scratch):
         else:
             grants.append((path, READ))
 
-    for path in config['read_roots']:
+    for path in [*config['read_roots'], '{worktree}', '{authority}', '{scratch}']:
         read(expand(path))
+    for value in config.get('optional_read_roots', []):
+        path = Path(value).expanduser()
+        if path.exists():
+            read(path.resolve(strict=True))
     grants += [(p, READ | WRITE) for p in writes]
     # Git persistence is the sole exception beneath the authority's .git.
     # Its working files, config, hooks and other worktree gitdirs stay read-only.
-    if '{worktree}' in config['write_roots']:
-        grants += git_grants(worktree, [store, *(p for p in protected if p != authority)],
-                             config.get('git_common_dir'))
+    if (worktree / '.git').exists():
+        spec = importlib.util.spec_from_file_location('candidate_git',
+            authority / '.veldo/candidate_git.py')
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        _, common = guard.validate(worktree, os.environ.get('VELDO_EXPECTED_GIT_COMMON') or
+                                   config.get('git_common_dir') or guard.common_directory(authority))
+        if beneath(store, common):
+            raise ValueError('authority storage must be outside agent-readable gitdirs')
+        read(common)
+        if '{worktree}' in config['write_roots']:
+            grants += git_grants(worktree, [store, *(p for p in protected if p != authority)],
+                                 os.environ.get('VELDO_EXPECTED_GIT_COMMON') or config.get('git_common_dir'))
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)),
                (Path('/dev/urandom'), 1 << 2), (Path('/dev/random'), 1 << 2)]
     return grants, [store, *protected]
@@ -217,6 +236,11 @@ def close_descriptors(protected):
 
 
 def launch(config_path, worktree, command, profile="agent"):
+    with tempfile.TemporaryDirectory(prefix='veldo-agent-') as temporary:
+        return prepared_launch(config_path, worktree, command, profile, Path(temporary))
+
+
+def prepared_launch(config_path, worktree, command, profile, scratch):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -224,13 +248,10 @@ def launch(config_path, worktree, command, profile="agent"):
     store = Path(config['store'])
     store.mkdir(mode=0o700, parents=True, exist_ok=True)
     policy.private(store, directory=True)
-    scratch = Path(tempfile.mkdtemp(prefix='veldo-agent-'))
-    # Scratch persists for this process tree; the owner removes it after the run.
-    # There is no unconfined supervisor waiting on agent-controlled cleanup code.
     if profile == 'gate':
-        config = dict(config, write_roots=['{scratch}'])
+        config = dict(config, write_roots=['{scratch}'], seed_files={})
     grants, protected = grants_for(config, authority, worktree, scratch)
-    grants += [(worktree, READ), (authority, READ), (scratch, READ | WRITE)]
+
     protected += [config_path, Path(policy.__file__).resolve()]
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
         raise ValueError('launcher, configuration and authority must be outside the worktree')
@@ -255,11 +276,27 @@ def launch(config_path, worktree, command, profile="agent"):
     for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
                  'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK'):
         env.pop(name, None)
-    close_descriptors(protected)
-    landlock(grants)
-    print('agent sandbox: private state ' + str(scratch), file=sys.stderr, flush=True)
-    os.chdir(worktree)
-    os.execvpe(command[0], command, env)
+    pid = os.fork()
+    if pid:
+        try:
+            _, status = os.waitpid(pid, 0)
+        finally:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
+    # Only this child executes candidate/agent code. The parent only waits and
+    # removes its own scratch using symlink-safe stdlib cleanup.
+    try:
+        os.setsid()
+        close_descriptors(protected)
+        landlock(grants)
+        os.chdir(worktree)
+        os.execvpe(command[0], command, env)
+    except BaseException as error:
+        print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
+        os._exit(2)
 
 
 def main():
@@ -273,7 +310,7 @@ def main():
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        launch(args.config, args.worktree, command, args.profile)
+        return launch(args.config, args.worktree, command, args.profile)
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr)
         return 2

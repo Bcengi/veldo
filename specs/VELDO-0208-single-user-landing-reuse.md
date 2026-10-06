@@ -15,6 +15,10 @@ footprint:
   - "engine/.veldo/candidate_git.py"
   - "engine/scripts/*.py"
   - "engine/scripts/agent_sandbox.json"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
+  - "scripts/case_trace.py"
+  - "scripts/mutation_sandbox.py"
   - "scripts/mutation_observer.py"
   - "scripts/gate_candidate.py"
   - "scripts/reuse_worker.py"
@@ -121,8 +125,11 @@ unnecessary devices; IPC restrictions prevent asking a same-user service to esca
 The authority checkout, runner scripts, their configuration and installed tools are read-only.
 Changes inside an agent worktree are proposals, consumed by the trusted orchestrator only
 after review. The orchestrator must not execute candidate launcher or verification code as
-trusted machinery before that review. The launcher denies network sockets as well as local service sockets. Live CLIs needing
-remote model APIs need a separately reviewed, narrowly scoped transport; none is provided here.
+trusted machinery before that review. The agent/gate profile permits TCP/TLS, including
+remote Codex and Claude model APIs. It denies AF_UNIX service sockets (including the
+user bus and systemd private socket), inherited socket descriptors, abstract cross-domain
+sockets and io_uring alternatives. The worker profile additionally denies all network
+sockets and socket dispatch. Agent network access is necessary for normal CLI operation.
 
 The owner wires the command prefix into myday's codex_work.sh and claude_work.sh after review.
 Those external files are not edited here. This checkout is not retroactively confined.
@@ -171,12 +178,23 @@ that exposure. Shared objects and refs are candidate-controlled data, not truste
 never install trusted verification code from that mutable object store. The authority's
 working files, common Git configuration/hooks, other worktree gitdirs, store/key and external
 runners remain denied writes. This does not change this checkout's Git layout. Private scratch
-contains copied credentials; the trusted orchestrator removes it after all descendants end.
+contains selected copied CLI credentials. A trusted supervisor waits for the confined
+child, terminates its remaining process group and removes scratch on success or refusal.
+The default grants contain no broad home or /tmp read. CLI executable directories are
+optional read roots; original credentials, .ssh and all ~/.cache/veldo stores remain denied.
+The CLI receives only its selected credential/config copies in private scratch; gate
+commands receive no CLI credential copies.
 
 ## Review correction contract, 2026-10-06
 
 The landing environment explicitly selects authenticated reuse by default and preserves a
 requested force-fresh mode. Both reused and force_fresh are mandatory on stamps and events.
-Both sandboxes deny Unix service connections and network, including preopened sockets and
-io_uring alternatives. Suite 100 plants missing fields, service-socket attempts and denied
+Both profiles deny Unix service connections, preopened socket descriptors and io_uring
+alternatives. Only mutant workers deny TCP/TLS; agent network connections are allowed. Suite 100 plants missing fields, service-socket attempts and denied
 writes, and drives a real commit in a disposable linked worktree through the launcher.
+
+Authority startup loads no candidate Python. Worker file tracing begins at the observed
+successful Landlock restriction syscall, after authority bootstrap imports and before any
+candidate execution. Missing boundary evidence is red, and all later accesses (including
+failed probes and descendants) remain checked against the declared closure. Bootstrap
+code is covered by the authority engine digest; candidate code cannot opt out of tracing.

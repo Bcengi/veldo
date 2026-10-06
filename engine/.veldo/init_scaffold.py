@@ -454,6 +454,10 @@ _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-q
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
 
+# VELDO-0208: the complete authority confinement and reuse identity travels with the gate.
+_REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py']
+_FILES += _REUSE_AUTHORITY
+
 # Files that must be executable in the scaffolded repository.
 _EXECUTABLE = {
     "scripts/verify.sh",
@@ -524,6 +528,8 @@ def required_substrate():
     """The relative paths a VELDO-ready repository must carry. Pure accessor."""
     return list(REQUIRED_SUBSTRATE)
 
+
+REQUIRED_SUBSTRATE += _REUSE_AUTHORITY
 
 def missing_substrate(target):
     """The required substrate paths absent under target, in declared order."""

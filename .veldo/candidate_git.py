@@ -32,6 +32,9 @@ def validate(root, expected_common=None):
     if marker.is_symlink():
         raise ValueError('candidate .git must not be a symlink')
     if marker.is_dir():
+        expected = expected_common or os.environ.get('VELDO_EXPECTED_GIT_COMMON')
+        if expected is not None and marker.resolve() != Path(expected).resolve():
+            raise ValueError('candidate .git redirects outside expected shared gitdir')
         return marker, marker
     if not marker.is_file():
         raise ValueError('candidate Git marker is absent')
@@ -72,12 +75,18 @@ def run(root, args, expected_common=None, **kwargs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', required=True)
+    parser.add_argument('--root')
+    parser.add_argument('--authority-common', action='store_true')
     parser.add_argument('--expected-common')
     parser.add_argument('--validate-only', action='store_true')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     try:
+        if args.authority_common:
+            print(common_directory(Path(__file__).resolve().parents[1]))
+            return 0
+        if not args.root:
+            raise ValueError('--root is required')
         if args.validate_only:
             validate(args.root, args.expected_common)
             return 0

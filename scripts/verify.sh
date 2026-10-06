@@ -12,6 +12,10 @@
 set -u
 # The script and all security helpers come from the authority installation.
 VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+if [ -z "${VELDO_EXPECTED_GIT_COMMON:-}" ]; then
+  VELDO_EXPECTED_GIT_COMMON=$(python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --authority-common) || exit 1
+fi
+export VELDO_EXPECTED_GIT_COMMON
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }

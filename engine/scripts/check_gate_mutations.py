@@ -140,11 +140,14 @@ def confined_command(root, command):
             '--root', str(root), '--', *command]
 
 
-def inventory(root):
+def inventory(root, expected_common=None):
     # Registry imports are candidate execution too. Only data crosses this pipe.
+    env = dict(os.environ)
+    if expected_common is not None:
+        env['VELDO_EXPECTED_GIT_COMMON'] = str(expected_common)
     result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
         str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
-        capture_output=True, text=True, timeout=WORKER_BUDGET)
+        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env)
     if result.returncode:
         raise Refused('candidate_execution_denied', result.stderr[-2000:])
     return json.loads(result.stdout)
@@ -483,12 +486,11 @@ class Workers:
                     self.resources.acquire(name, job)
                     try:
                         worker_root = Path(job.get('snapshot_root', root))
-                        argv = [sys.executable, '-B', '-s',
+                        argv = [sys.executable, '-I', '-S', '-B',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(ROOT / 'scripts/reuse_worker.py'),
                                 'worker', str(worker_root), str(jobpath)]
                         if 'snapshot_root' in job:
-                            argv.insert(1, '-S')  # no unkeyed system site initialization
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
                         proc = subprocess.Popen(argv, cwd=worker_root,
@@ -528,7 +530,7 @@ class Workers:
                                      jobs[name].get('declared_absent', []),
                                      runtime=jobs[name]['runtime_paths'], scratch=trace,
                                      directories=jobs[name].get('declared_directories', []),
-                                     runtime_absent=jobs[name].get('runtime_absent', []))
+                                     runtime_absent=jobs[name].get('runtime_absent', []), after_confinement=True)
                     if proc.returncode != 0:
                         raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
                     try:
@@ -634,7 +636,7 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             frozen = directory / 'input'
             snapshot(root, frozen, files, head)
             # Registries executed again from the frozen bytes: an enumeration race is red.
-            if inventory(frozen) != cases:
+            if inventory(frozen, expected_common=frozen / '.git') != cases:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
             workers.case_reuse = reuse
             prepared_cases = {c['identity']: {'declared_case': True} for c in fresh

@@ -16,7 +16,7 @@ FD_READS = {'fstat', 'fstatfs', 'getdents', 'getdents64', 'fchdir'}
 def command(trace, argv):
     # file includes metadata probes, even failed ones. getdents is not in file.
     return ['/usr/bin/strace', '-f', '-qq', '-yy', '-s', '65535',
-            '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir',
+            '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
             '-o', str(trace), *argv]
 
 
@@ -36,7 +36,7 @@ def syscall_lines(trace):
         raise ValueError('incomplete file-read trace')
 
 
-def accesses(trace, *, cwd=None):
+def accesses(trace, *, cwd=None, after_confinement=False):
     """Yield (absolute path, content/metadata/listing, success) for every probe.
 
     FD annotations resolve *at calls and getdents. Track cwd for older path syscalls
@@ -44,12 +44,19 @@ def accesses(trace, *, cwd=None):
     """
     initial = Path(cwd or Path.cwd()).absolute()
     directories = {}
+    confined = not after_confinement
     for line in syscall_lines(trace):
         match = CALL.search(line)
         if not match:
             continue
         pid = line.split(None, 1)[0]
         call, arguments, result = match.groups()
+        if not confined:
+            # Only authority bootstrap runs before this boundary. Never skip
+            # candidate accesses or a later, candidate-installed ruleset.
+            if call == 'landlock_restrict_self' and result.strip() == '0':
+                confined = True
+            continue
         current = directories.setdefault(pid, initial)
         success = not result.startswith('-1 ')
         if call in ('fork', 'vfork', 'clone', 'clone3') and success:
@@ -119,6 +126,8 @@ def accesses(trace, *, cwd=None):
         if call in ('chdir', 'fchdir') and success:
             directories[pid] = path
         yield path, kind, success
+    if not confined:
+        raise ValueError('missing authority worker confinement boundary')
 
 
 def opened_paths(trace, *, successful=False, cwd=None):
@@ -135,7 +144,7 @@ def reads(trace, root):
             yield str(path.relative_to(root)), directory
 
 
-def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directories=(), runtime_absent=()):
+def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directories=(), runtime_absent=(), after_confinement=False):
     root = Path(root).absolute()
     allowed = set(declared) | set(absent)
     parents = {'.'}
@@ -145,7 +154,7 @@ def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directo
     if scratch is not None:
         grants.append(Path(scratch).resolve())
     devices = {Path('/dev/null'), Path('/dev/urandom')}
-    for path, kind, success in accesses(trace, cwd=root):
+    for path, kind, success in accesses(trace, cwd=root, after_confinement=after_confinement):
         resolved = path.resolve()
         if resolved == root or root in resolved.parents:
             path = resolved
