@@ -1,0 +1,12 @@
+{
+  "bytes": 80148189,
+  "cases": 2494,
+  "files": 5573,
+  "input_digest": "d80bac4c4b02d3e02a526c73dab965e8d6af7ce6aee0fc933d2a425ca3306836",
+  "note": "One full production admission/key pass; unqualified cases have null keys. No workers.",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "qualified": 0,
+  "seconds": 0.5464421631768346,
+  "scope": "Single working-tree admission/key pass during implementation; no production runtime closures are qualified.",
+  "limitation": "Zero reusable keys. This measures repository hashing and all-case admission, not external runtime hashing or warm-gate savings."
+}
