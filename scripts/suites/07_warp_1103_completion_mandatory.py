@@ -1265,9 +1265,10 @@ expect("WARP-1102 AC8: .veldo/capabilities.yaml is byte-identical root vs engine
        and (ROOT / ".veldo/capabilities.yaml").read_bytes() == (ROOT / "engine/.veldo/capabilities.yaml").read_bytes())
 expect("WARP-1102 AC8: the shape_gate_enforcement capability is declared mechanical",
        bool(re.search(r"(?m)^\s{2}shape_gate_enforcement:\s*\{status:\s*mechanical\b", (ROOT / ".veldo/capabilities.yaml").read_text())))
+# The call runs through the authority launcher, as every candidate command in the gate does (VELDO-0208).
 expect("WARP-1102 AC8: verify.sh (and its engine twin) gain only the thin call into the non-protected module",
-       "if ! python3 .veldo/shape_gate.py; then FAIL=1; fi" in (ROOT / "scripts/verify.sh").read_text()
-       and "if ! python3 .veldo/shape_gate.py; then FAIL=1; fi" in (ROOT / "engine/scripts/verify.sh").read_text())
+       "if ! veldo_candidate python3 .veldo/shape_gate.py; then FAIL=1; fi" in (ROOT / "scripts/verify.sh").read_text()
+       and "if ! veldo_candidate python3 .veldo/shape_gate.py; then FAIL=1; fi" in (ROOT / "engine/scripts/verify.sh").read_text())
 expect("WARP-1102 AC8: veldo-guard.sh, policy.yaml, and policy_check.py are NOT touched (no shape-gate reference)",
        "shape_gate" not in (ROOT / "scripts/veldo-guard.sh").read_text()
        and "shape_gate" not in (ROOT / ".veldo/policy.yaml").read_text()
