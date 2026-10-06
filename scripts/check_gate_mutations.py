@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repository-only mutation gate. Every registered case executes fresh on every invocation.
+"""Repository-only mutation gate. Every registered case has validated, input-bound evidence.
 
 Workers see a frozen copy of the working tree Git does not ignore, never gate receipts.
 The source tree is read twice to reject races. Git history is cloned at the measured HEAD.
@@ -119,10 +119,13 @@ def inventory(root):
         path = root / 'scripts' / driver
         if not path.is_file():
             raise Refused('incomplete_inventory', driver)
-        definitions = load(path).cases()
+        driver_module = load(path)
+        definitions = driver_module.cases()
         if not definitions:
             raise Refused('incomplete_inventory', driver + ': empty registry')
         for case in definitions:
+            if hasattr(driver_module, 'reuse_definition'):
+                driver_module.reuse_definition(case, definitions)
             case = dict(case, driver=driver, identity=driver + ':' + case['name'])
             if not case['rows'] or case['old'] == case['new']:
                 raise Refused('incomplete_inventory', case['identity'])
@@ -410,6 +413,7 @@ class Workers:
         self.deadline = deadline
         self.active = {}
         self.invocations = 0
+        self.attempted = set()
         self.driver_spans = {}
 
     def check(self):
@@ -472,6 +476,7 @@ class Workers:
                         raise
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
+                    self.attempted.add(name)
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
                 for name, (proc, out, err, started) in list(self.active.items()):
                     self.check_worker(name, started)
@@ -537,13 +542,14 @@ def snapshot(root, destination, files, head):
         path.chmod(mode)
 
 
-def run_stage(root=ROOT, capacities=None):
+def run_stage(root=ROOT, capacities=None, force_fresh=False):
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline)
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
-               'registered': 0, 'executed': 0,
+               'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
+    cases, reuse = [], None
     previous = signal.getsignal(signal.SIGALRM)
 
     def timeout(signum, frame):
@@ -562,13 +568,27 @@ def run_stage(root=ROOT, capacities=None):
         for driver in DRIVERS:
             own = [c for c in cases if c['driver'] == driver]
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
-                                           'worker_seconds': 0.0}
+                                           'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
         files = read_inputs(root)
         head = git(root, 'rev-parse', 'HEAD')
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
+        reuse_module = load(ROOT / 'scripts/mutation_reuse.py')
+        reuse = reuse_module.Session(root, files, cases, head,
+            {'fixture_version': FIXTURE_VERSION, 'capacities': capacities,
+             'worker_environment': fixed_env('<private-worker-home>')}, force_fresh=force_fresh)
+        receipt['force_fresh'] = reuse.forced
+        receipt['reuse_qualified'] = sum(key is not None for key in reuse.keys.values())
         results = {}
+        fresh = []
+        for case in cases:
+            record = reuse.lookup(case, validate_result)
+            if record is None:
+                fresh.append(case)
+            else:
+                results[case['identity']] = record
+                receipt['results'].append(reuse.evidence(case, record, True))
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
             frozen = directory / 'input'
@@ -577,20 +597,21 @@ def run_stage(root=ROOT, capacities=None):
             if inventory(frozen) != cases:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
             controls = {}
-            for case in cases:
+            for case in fresh:
                 group = control_group(case)
                 for mode in ('baseline', 'noop'):
                     controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
             workers.resources = SuiteResources.from_root(frozen, capacities)
             control_results = workers.run(controls, directory, frozen)
             mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
-                                          for c in cases}, directory, frozen)
-            for case in cases:
+                                          for c in fresh}, directory, frozen)
+            for case in fresh:
                 identity = case['identity']
                 group = control_group(case)
                 prepared = mutant_results[identity]['result']
                 record = {'schema': SCHEMA, 'case': case,
                           'fixture_version': FIXTURE_VERSION,
+                          'input_digest': reuse.base_digest,
                           **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
                           'baseline': control_results[group + ':baseline']['result']['observation'],
                           'noop': control_results[group + ':noop']['result']['observation'],
@@ -602,12 +623,15 @@ def run_stage(root=ROOT, capacities=None):
                     receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
                     continue
                 results[identity] = record
+                receipt['results'].append(reuse.evidence(case, record, False))
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
             # Reject changes to the checked inputs during execution.
             if not inputs_unchanged(root, files, head):
                 raise Refused('driver_error', 'inputs changed during stage')
+            if not reuse.unchanged():
+                raise Refused('driver_error', 'runtime inputs changed during stage')
             workers.check()
             if set(results) != {c['identity'] for c in cases}:
                 raise Refused('incomplete_inventory', 'registered/result identities differ')
@@ -615,12 +639,12 @@ def run_stage(root=ROOT, capacities=None):
                 identity = case['identity']
                 record = results[identity]
                 validate_result(record, case)
-                receipt['executed'] += 1
-                receipt['rejected'] += 1
-                receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
-                receipt['results'].append(record)
+                if identity not in reuse.hits:
+                    receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
         workers.check()
         receipt['status'] = 'passed'
+        for case in fresh:
+            reuse.publish(case, results[case['identity']], validate_result)
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
         receipt['error'] = getattr(error, 'code', 'driver_error')
@@ -632,6 +656,26 @@ def run_stage(root=ROOT, capacities=None):
         finally:
             # Restore the caller's handler even when cleanup itself fails.
             signal.signal(signal.SIGALRM, previous)
+        completed = {r['case']['identity'] for r in receipt['results']}
+        receipt['case_receipts'] = []
+        for case in cases:
+            identity = case.get('identity')
+            if identity is None:
+                continue
+            hit = reuse is not None and identity in reuse.hits
+            attempted = identity in workers.attempted
+            receipt['executed'] += int(attempted)
+            receipt['reused'] += int(hit)
+            receipt['rejected'] += int(identity in completed)
+            summary = receipt['drivers'].get(case['driver'])
+            if summary is not None:
+                summary['executed'] += int(attempted)
+                summary['reused'] += int(hit)
+            receipt['case_receipts'].append({
+                'identity': identity, 'key': reuse.keys[identity] if reuse else None,
+                'source': 'reused' if hit else ('fresh' if attempted else 'pending'),
+                'reason': reuse.reasons[identity] if reuse else 'setup_failed',
+                'validated': identity in completed})
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]
@@ -654,7 +698,7 @@ def main():
     receipt = run_stage(capacities=resource_capacities(args.resource_capacity))
     print(json.dumps(receipt, sort_keys=True), flush=True)
     print('mutations: {status} registered={registered} executed={executed} '
-          'rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
+          'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
     return 0 if receipt['status'] == 'passed' else 1
 
 

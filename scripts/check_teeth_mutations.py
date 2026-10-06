@@ -10575,6 +10575,16 @@ def worker(case, mutant=None):
                         for label in case['rows']}}
 
 
+def reuse_definition(case, definitions=None):
+    """Return a current exact registry member, never a caller's weakened definition."""
+    registry = cases() if definitions is None else definitions
+    expected = next((value for value in registry if value['name'] == case['name']), None)
+    supplied = {key: value for key, value in case.items() if key not in ('driver', 'identity')}
+    if expected is None or supplied != expected:
+        raise ValueError('reuse case differs from driver registry')
+    return expected
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--finding', type=int, choices=sorted({case['finding'] for case in cases()}))

@@ -87,6 +87,9 @@ CHECK_performance="na:no performance thresholds declared"
 CHECK_coverage="na:no coverage floor declared"
 CHECK_packaging="required:python3 scripts/check_install_and_run.py"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
+# VELDO-0205: mutation receipts distinguish fresh and reused results.
+# Landing and release operators must set VELDO_GATE_FORCE_FRESH=1.
+# The suite stage stays fresh until VELDO-0206 is implemented.
 CHECK_extra="required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system

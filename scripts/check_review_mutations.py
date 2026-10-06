@@ -50,6 +50,16 @@ def worker(case, mutant):
                 matched=len(matches), passed=matches == [True])
 
 
+def reuse_definition(case, definitions=None):
+    """Return a current exact registry member, never a caller's weakened definition."""
+    registry = cases() if definitions is None else definitions
+    expected = next((value for value in registry if value['name'] == case['name']), None)
+    supplied = {key: value for key, value in case.items() if key not in ('driver', 'identity')}
+    if expected is None or supplied != expected:
+        raise ValueError('reuse case differs from driver registry')
+    return expected
+
+
 def main():
     from check_teeth_mutations import materialize
     if len(sys.argv) > 1:

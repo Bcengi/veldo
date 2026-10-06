@@ -60,6 +60,8 @@ def fixture(root, source, driver_source=None):
     (root / '.veldo/git_process.py').write_bytes((source.parent.parent / '.veldo/git_process.py').read_bytes())
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
+    for helper in ('gate_reuse.py', 'mutation_reuse.py'):
+        (root / 'scripts' / helper).write_bytes((source.parent / helper).read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
         # Keep the real materializer while replacing only the disposable registry/worker.
         owner = (source.parent / 'check_teeth_mutations.py').read_text() if driver == 'check_teeth_mutations.py' else ''

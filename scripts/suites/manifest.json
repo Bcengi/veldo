@@ -1367,6 +1367,15 @@
    ],
    "regions": "Gate repair: resource admission and temporary fixture ownership.",
    "requires_note": "Only ROOT and expect. Controlled child completion and faults in the real fixture owner functions; no mutation drive."
+  },
+  {
+   "name": "98_veldo_0205_reuse",
+   "file": "98_veldo_0205_reuse.py",
+   "requires": [
+    "98_veldo_0205_reuse"
+   ],
+   "regions": "Authenticated mutation reuse, closed keys and coordinator receipts.",
+   "requires_note": "Only ROOT and expect. Real cache and keys with controlled coordinator workers. No mutation processes, gate or fan-out."
   }
  ],
  "resource_capacities": {

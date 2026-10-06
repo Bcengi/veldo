@@ -1,0 +1,5 @@
+{
+  "schema": "veldo.mutation-closures/v1",
+  "note": "No production external-input closure has yet been qualified. Unknown cases run fresh. See VELDO-0205; never certify from repository hashes alone.",
+  "profiles": {}
+}
