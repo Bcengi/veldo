@@ -567,9 +567,12 @@ class Workers:
                         if 'snapshot_root' in job:
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
+                        # A worker reads its job from its file, never from the coordinator's
+                        # stdin, which may be a socket the worker's boundary would refuse.
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
-                                                stdout=out, stderr=err, start_new_session=True)
+                                                stdin=subprocess.DEVNULL, stdout=out, stderr=err,
+                                                start_new_session=True)
                     except BaseException as error:
                         out.close()
                         err.close()
