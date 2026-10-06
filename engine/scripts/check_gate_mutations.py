@@ -729,9 +729,16 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 destination.mkdir(parents=True, exist_ok=True)
                 # The authority's own materializer: candidate driver code never runs here.
                 owner = load(ROOT / 'scripts/mutation_observer.py')
+                safe = reuse_module.I.safe_name
                 for case in cases:
-                    base = 'scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')
-                    relative = str(Path(base) / case['module'])
+                    # Every path part comes from the candidate's registry: none may leave its root.
+                    try:
+                        base = 'scripts/fixtures' if case.get('fixture') else safe(case.get('dir', '.veldo'))
+                        relative = str(Path(base) / safe(case['module']))
+                        if Path(safe(case['name'])).name != case['name']:
+                            raise ValueError('invalid case name: ' + case['name'])
+                    except ValueError as error:
+                        raise Refused('incomplete_inventory', str(error)) from error
                     before = (frozen / relative).read_text()
                     after = owner.mutate(before, case)
                     (destination / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(

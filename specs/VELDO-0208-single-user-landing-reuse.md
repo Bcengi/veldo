@@ -212,3 +212,7 @@ home after resolving links, a veldo-authority-<hex>.service file directly in
 entry turns the stage red (worker_cleanup_error) without being acted on. Suite 101 plants an outside
 directory, an arbitrary service file and an arbitrary slice through real workers under the real
 coordinator. It also plants a ledger in the old in-home location, which is never read.
+
+Developer diff directory: the case directory, module and name joined into --diff-dir paths come
+from the candidate registry. Each passes safe_name, and a name must be a single component. A
+traversing part is incomplete_inventory before anything is written. Suite 98 plants each part.

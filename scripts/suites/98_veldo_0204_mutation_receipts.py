@@ -21,13 +21,14 @@ def _v204_mutation_receipts():
         exec(compile(text, obj.__file__, 'exec'), obj.__dict__)
         return obj
 
-    def exercise(gate, fault=None, concurrent=False, entry='gate'):
+    def exercise(gate, fault=None, concurrent=False, entry='gate', edit=None):
         # Only registry/input seams and the OS process boundary are replaced. The
         # production admission, completion, validation and receipt paths all run.
         cases = [dict(identity=name, name=name, finding=204, driver=gate.DRIVERS[0],
                       suite='controlled.py', module='controlled.py', rows=['target'],
                       old='before', new='after')
                  for name in (('first', 'second', 'third') if concurrent else ('first', 'second'))]
+        cases[0].update(edit or {})
         pool = gate.SuiteResources({'resource_capacities': {'manager': 3 if concurrent else 1}, 'suites': [
             {'file': 'controlled.py', 'resources': {'manager': 1}}]})
         clock, children, cleaned, launched, handles = [1.0], {}, [], {}, []
@@ -122,7 +123,11 @@ def _v204_mutation_receipts():
                 # Every Git query is a double here; the trusted directory is still named.
                 receipt = (teeth.run_stage(root, root / '.git', jobs=3, diff_dir=root / 'diffs')
                            if entry == 'teeth' else gate.run_stage(root, root / '.git'))
-                if entry == 'teeth':
+                if edit is not None:
+                    # Nothing reaches the filesystem beside or above the diff directory.
+                    written = sorted(str(p.relative_to(root)) for p in root.rglob('*.diff'))
+                    receipt = dict(receipt, written=written)
+                elif entry == 'teeth':
                     assert (root / 'diffs/first.diff').read_text() == (
                         '--- a/.veldo/controlled.py\n+++ b/.veldo/controlled.py\n'
                         '@@ -1 +1 @@\n-before\n+after\n')
@@ -168,6 +173,12 @@ def _v204_mutation_receipts():
         assert {o['error'] for o in r['invalid_results']} == {'driver_error', 'worker_cancelled'}
         assert not children and not pool.held and all(h.closed for h in handles) and all(held)
         return True
+    # The developer diff directory joins registry-supplied parts: each one passes safe_name first.
+    for field, value in (('name', '../escaped'), ('dir', '../outside'), ('module', '../controlled.py')):
+        receipt = exercise(module(), entry='teeth', edit={field: value})[0]
+        expect('VELDO-0208 diff-dir/' + field + '-traversal-refused: ' + str(receipt.get('detail')),
+               receipt['status'] == 'failed' and receipt['error'] == 'incomplete_inventory'
+               and 'invalid' in receipt['detail'] and receipt['written'] == [])
     for entry in ('gate', 'teeth'):
         expect('VELDO-0204 stall/' + entry + '-siblings: a failed worker retains completed work and '
                'accounts for every cancelled sibling after reaping it', siblings(module(), entry))
