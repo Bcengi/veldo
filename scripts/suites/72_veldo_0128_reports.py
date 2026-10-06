@@ -379,13 +379,16 @@ def _v128_checks(base):
             return process
 
         green_dir, red_dir = base / 'verifier-green', base / 'verifier-red'
+        # VELDO-0208: "Both reused and force_fresh are mandatory on stamps and events"; the green stub
+        # writes the freshness fields the gate writes on a fresh run.
         for where, ok in ((green_dir, True), (red_dir, False)):
             (where / 'scripts').mkdir(parents=True)
             (where / 'scripts' / 'verify.sh').write_text('\n'.join([
                 '#!/bin/bash', '# veldo-gate-interface: candidate-sink/v1', 'CHECK_unit="required:true"', 'ORDER="unit"',
                 'candidate="$2"; sink="$4"', 'commit=$(git -C "$candidate" rev-parse HEAD)', 'echo "== unit"',
-                ('echo "   unit: pass"; printf \'{"commit":"%s","status":"green"}\' "$commit" > "$sink/last_verify"; '
-                 'printf \'{"type":"gate.passed","commit":"%s","producer":"verify.sh"}\\n\' "$commit" >> "$sink/events.jsonl"; '
+                'fresh=\'"force_fresh":false,"reused":{"unit":0,"mutation":0}\'',
+                ('echo "   unit: pass"; printf \'{"commit":"%s","status":"green",%s}\' "$commit" "$fresh" > "$sink/last_verify"; '
+                 'printf \'{"type":"gate.passed","commit":"%s","producer":"verify.sh",%s}\\n\' "$commit" "$fresh" >> "$sink/events.jsonl"; '
                  'echo "GATE: GREEN ($commit)"; exit 0') if ok else
                 'echo "   unit: FAIL"; echo "GATE: RED ($commit)"; exit 1', '']))
 
