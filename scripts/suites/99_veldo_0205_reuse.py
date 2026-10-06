@@ -382,8 +382,17 @@ def _v205_reuse():
             expect('VELDO-0205 reuse/' + label + '-negative: planted coordinator regression is detected',
                    value['status'] == 'passed' and not criterion(value))
         text = (ROOT / 'scripts/verify.sh').read_text()
+        # The stage is declared required and runs from the authority installation only: exactly one
+        # live line invokes a mutation driver, and it is the authority coordinator over this root.
+        import re
+        invocations = [line.strip() for line in text.splitlines()
+                       if re.search(r'check_(gate|teeth|review)_mutations\.py', line)
+                       and not line.lstrip().startswith('#')]
         expect('VELDO-0205 reuse/gate-wiring: both drivers remain required through the coordinator',
-               'python3 -B scripts/check_gate_mutations.py' in text
+               [line for line in text.splitlines() if line.startswith('CHECK_mutation=')]
+               == ['CHECK_mutation="required:authority mutation stage"']
+               and invocations == ['python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
+                                   '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"']
                and 'VELDO_GATE_FORCE_FRESH=1' in text
                and gate.DRIVERS == ('check_teeth_mutations.py', 'check_review_mutations.py'))
 
