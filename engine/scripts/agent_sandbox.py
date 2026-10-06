@@ -3,6 +3,11 @@
 
 Invoke with python3 -I -S from a reviewed authority checkout, never the candidate.
 No daemon, alternate uid, root helper, or unsandboxed fallback is used.
+
+An agent's Git worktree belongs to the agent's own repository, never the shared one:
+`prepare` creates it (private objects, the shared store a read-only alternate, a branch
+under refs/heads/agent/<id>/), and `integrate` fetches that namespace into the shared
+repository with transfer.fsckObjects, re-hashing every object.
 """
 import argparse
 import ctypes
@@ -11,9 +16,11 @@ import importlib.util
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import signal
 import stat
+import subprocess
 import sys
 import tempfile
 
@@ -120,37 +127,102 @@ def ipc_filter(libc):
         raise OSError(ctypes.get_errno(), 'agent sandbox IPC filter unavailable')
 
 
-def git_grants(worktree, protected, expected_common=None):
-    """Grant linked-worktree persistence without writing common config or hooks."""
-    marker = worktree / '.git'
-    if not marker.is_file():
-        return []
-    if marker.is_symlink():
-        raise ValueError('worktree Git marker must not be a symlink')
-    spec = importlib.util.spec_from_file_location('candidate_git',
-        Path(__file__).resolve().parents[1] / '.veldo/candidate_git.py')
+AGENT_ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]*')
+
+
+def candidate_git(authority=None):
+    authority = authority or Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location('candidate_git', authority / '.veldo/candidate_git.py')
     guard = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(guard)
-    gitdir, common = guard.validate(worktree, expected_common)
+    return guard
+
+
+def branch_parts(reference):
+    """(agent id, branch name) of refs/heads/agent/<id>/<name>, or a ValueError."""
+    parts = reference.split('/')
+    if (len(parts) < 5 or parts[:3] != ['refs', 'heads', 'agent'] or not AGENT_ID.fullmatch(parts[3])
+            or any(part in ('', '.', '..') or part.endswith('.lock') or part.startswith('.')
+                   for part in parts[4:]) or any(c in reference for c in '\n\\ ~^:?*[')):
+        raise ValueError('agent branch must be refs/heads/agent/<id>/<name>: ' + reference)
+    return parts[3], '/'.join(parts[4:])
+
+
+def git_grants(gitdir, private, shared, protected):
+    """Commit persistence for a linked worktree of the agent's own repository.
+
+    The agent writes its worktree gitdir, its private object store and its own ref namespace
+    refs/heads/agent/<id>/ only. The shared repository, including its object store, is read-only
+    (at most an alternate of the private store), and every other ref of the private repository
+    (refs/heads/main among them), its config and its hooks stay read-only too. Agent work reaches
+    the shared repository only through integrate(), a fetch that re-hashes every object.
+    """
+    if beneath(private, shared) or beneath(shared, private):
+        raise ValueError('agent repository must not share the authority object store')
     head = (gitdir / 'HEAD').read_text().strip()
-    if not head.startswith('ref: refs/heads/'):
+    if not head.startswith('ref: '):
         raise ValueError('agent worktree needs a branch')
-    reference = head[5:]
-    if any(part in ('', '.', '..') for part in reference.split('/')) or '\n' in reference:
-        raise ValueError('invalid worktree branch')
-    # Git locks require creating a sibling .lock and renaming it over the branch.
-    # Landlock grants directories, so sibling loose refs in these two directories
-    # share this write grant. Use a dedicated branch namespace to minimize it.
-    grants = [(gitdir, READ | WRITE), (common / 'objects', READ | WRITE)]
-    for relative in (reference, 'logs/' + reference):
-        target = common / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        grants.append((target.parent, READ | WRITE))
+    agent, _ = branch_parts(head[5:])
+    objects = private / 'objects'
+    alternates = objects / 'info/alternates'
+    if alternates.is_symlink() or (objects / 'info').is_symlink():
+        raise ValueError('agent object alternates must not be a link')
+    for line in (alternates.read_text().splitlines() if alternates.exists() else []):
+        line = line.strip()
+        if line and not line.startswith('#') and (objects / line).resolve() != (shared / 'objects').resolve():
+            raise ValueError('agent object alternates may name only the shared object store')
+    namespace = 'refs/heads/agent/' + agent
+    grants = [(gitdir, READ | WRITE), (objects, READ | WRITE)]
+    for relative in (namespace, 'logs/' + namespace):
+        target = private / relative
+        target.mkdir(parents=True, exist_ok=True)
+        grants.append((target, READ | WRITE))
     for path, _ in grants:
-        if (path.resolve() != path or path.is_symlink()
+        if (path.resolve() != path or path.is_symlink() or beneath(path, shared)
                 or any(beneath(path, p) or beneath(p, path) for p in protected)):
             raise ValueError('Git write grant overlaps protected path: ' + str(path))
     return grants
+
+
+def git_run(argv):
+    authority = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location('git_process', authority / '.veldo/git_process.py')
+    process = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(process)
+    result = process.run(['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+                          *argv], capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=600)
+    if result.returncode:
+        raise RuntimeError(' '.join(['git', *argv[:4]]) + ' failed: ' + result.stderr.strip()[-400:])
+    return result.stdout.strip()
+
+
+def prepare(shared, private, worktree, agent, name, start):
+    """Create the agent's own bare repository (objects private, the shared store its read-only
+    alternate) and a linked worktree on refs/heads/agent/<agent>/<name> at the shared `start`."""
+    shared, private, worktree = Path(shared).resolve(strict=True), Path(private).absolute(), Path(worktree).absolute()
+    branch_parts('refs/heads/agent/%s/%s' % (agent, name))
+    if private.exists() or worktree.exists():
+        raise ValueError('agent repository and worktree must be new paths')
+    if beneath(private.resolve(), shared) or beneath(shared, private.resolve()):
+        raise ValueError('agent repository must be outside the shared repository')
+    commit = git_run(['--git-dir=' + str(shared), 'rev-parse', '--verify', '--end-of-options', start + '^{commit}'])
+    git_run(['init', '-q', '--bare', str(private)])
+    (private / 'objects/info/alternates').write_text(str(shared / 'objects') + '\n')
+    git_run(['--git-dir=' + str(private), 'worktree', 'add', '-q', '-b', 'agent/%s/%s' % (agent, name),
+             str(worktree), commit])
+    return commit
+
+
+def integrate(shared, private, agent):
+    """Bring refs/heads/agent/<agent>/* of the agent repository into the shared one. The fetch runs
+    with transfer.fsckObjects, so every object it receives is re-hashed and checked; the private
+    store's bytes never enter the shared store any other way, and no other shared ref moves."""
+    if not AGENT_ID.fullmatch(agent):
+        raise ValueError('invalid agent id')
+    namespace = 'refs/heads/agent/%s/*' % agent
+    git_run(['--git-dir=' + str(Path(shared).resolve(strict=True)), '-c', 'transfer.fsckObjects=true',
+             'fetch', '-q', '--no-tags', '--no-write-fetch-head', '--', str(Path(private).resolve(strict=True)),
+             '+%s:%s' % (namespace, namespace)])
 
 
 def grants_for(config, authority, worktree, scratch):
@@ -194,21 +266,31 @@ def grants_for(config, authority, worktree, scratch):
         if path.exists():
             read(path.resolve(strict=True))
     grants += [(p, READ | WRITE) for p in writes]
-    # Git persistence is the sole exception beneath the authority's .git.
-    # Its working files, config, hooks and other worktree gitdirs stay read-only.
-    if (worktree / '.git').exists():
-        spec = importlib.util.spec_from_file_location('candidate_git',
-            authority / '.veldo/candidate_git.py')
-        guard = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(guard)
-        _, common = guard.validate(worktree, os.environ.get('VELDO_EXPECTED_GIT_COMMON') or
-                                   config.get('git_common_dir') or guard.common_directory(authority))
-        if beneath(store, common):
-            raise ValueError('authority storage must be outside agent-readable gitdirs')
-        read(common)
+    # The shared repository is read-only in every profile. An agent worktree must be a linked
+    # worktree of the agent's own repository, named by the orchestrator (VELDO_EXPECTED_GIT_COMMON),
+    # never derived from the worktree's writable marker; only that repository takes its writes.
+    marker = worktree / '.git'
+    if marker.exists() or marker.is_symlink():
+        guard = candidate_git(authority)
+        shared = Path(config.get('git_common_dir') or guard.common_directory(authority)).resolve(strict=True)
+        expected = os.environ.get('VELDO_EXPECTED_GIT_COMMON')
         if '{worktree}' in config['write_roots']:
-            grants += git_grants(worktree, [store, *(p for p in protected if p != authority)],
-                                 os.environ.get('VELDO_EXPECTED_GIT_COMMON') or config.get('git_common_dir'))
+            if not expected:
+                raise ValueError('an agent worktree needs its private agent repository (VELDO_EXPECTED_GIT_COMMON)')
+            gitdir, private = guard.validate(worktree, expected)
+            if gitdir == private:
+                raise ValueError('agent worktree must be a linked worktree of a private agent repository')
+            if any(beneath(private, w) or beneath(w, private) for w in writes):
+                raise ValueError('agent repository must be outside every writable root')
+            commons = [private, shared]
+        else:
+            commons = [guard.validate(worktree, expected or shared)[1]]
+        for common in commons:
+            if beneath(store, common):
+                raise ValueError('authority storage must be outside agent-readable gitdirs')
+            read(common)
+        if '{worktree}' in config['write_roots']:
+            grants += git_grants(gitdir, private, shared, [store, *(p for p in protected if p != authority)])
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)),
                (Path('/dev/urandom'), 1 << 2), (Path('/dev/random'), 1 << 2)]
     return grants, [store, *protected]
@@ -299,7 +381,31 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
         os._exit(2)
 
 
+def repository_main(action, argv):
+    parser = argparse.ArgumentParser(prog='agent_sandbox.py ' + action,
+                                     description=(prepare if action == 'prepare' else integrate).__doc__)
+    parser.add_argument('--shared', required=True, help='the shared (authority) Git common directory')
+    parser.add_argument('--private', required=True, help="the agent's own bare repository")
+    parser.add_argument('--agent', required=True)
+    if action == 'prepare':
+        parser.add_argument('--worktree', required=True)
+        parser.add_argument('--branch', required=True, help='name under refs/heads/agent/<agent>/')
+        parser.add_argument('--start', required=True, help='shared revision the branch starts at')
+    args = parser.parse_args(argv)
+    try:
+        if action == 'prepare':
+            print(prepare(args.shared, args.private, args.worktree, args.agent, args.branch, args.start))
+        else:
+            integrate(args.shared, args.private, args.agent)
+        return 0
+    except (OSError, ValueError, RuntimeError) as error:
+        print('agent repository refused: ' + str(error), file=sys.stderr)
+        return 2
+
+
 def main():
+    if sys.argv[1:2] in (['prepare'], ['integrate']):
+        return repository_main(sys.argv[1], sys.argv[2:])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profile', choices=('agent', 'gate'), default='agent')

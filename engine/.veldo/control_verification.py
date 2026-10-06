@@ -53,7 +53,6 @@ _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
 import hashlib
 import importlib.util
-import io
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -61,7 +60,6 @@ import re
 import stat
 import subprocess
 import sys
-import tarfile
 import time
 import uuid
 
@@ -229,29 +227,109 @@ def _safe(name):
     return bool(parts) and not PurePosixPath(name).is_absolute() and ".." not in parts
 
 
+def _verified_objects(repo, oids, algorithm):
+    """{oid: (kind, bytes)} for each named object, each re-hashed against its own name. The object
+    store maps names to content and is not trusted to do so honestly: a pack an agent planted can
+    remap an existing id to other bytes. Such an object fails here and refuses the installation;
+    its bytes are never installed."""
+    oids = sorted(set(oids))
+    try:
+        result = _candidate_git().run(repo, ("cat-file", "--batch"), capture_output=True,
+                                      input="".join(oid + "\n" for oid in oids).encode(), timeout=GIT_SECONDS)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        raise Refused("unavailable_service:git/cat-file", type(error).__name__)
+    if result.returncode:
+        raise Refused("unavailable_service:git/cat-file",
+                      result.stderr.decode("utf-8", "replace").strip().splitlines()[:1])
+    out, at, found = result.stdout, 0, {}
+    for oid in oids:
+        end = out.find(b"\n", at)
+        header = out[at:end].split(b" ") if end >= 0 else []
+        if len(header) != 3 or header[0] != oid.encode() or not header[2].isdigit():
+            raise Refused("invalid_input:installation/object", oid)
+        kind, size = header[1], int(header[2])
+        body = out[end + 1:end + 1 + size]
+        if len(body) != size or out[end + 1 + size:end + 2 + size] != b"\n":
+            raise Refused("invalid_input:installation/object", oid)
+        if hashlib.new(algorithm, kind + b" %d\0" % size + body).hexdigest() != oid:
+            raise Refused("invalid_input:installation/object-hash", oid)
+        found[oid] = (kind.decode(), body)
+        at = end + 2 + size
+    return found
+
+
+def _tree_entries(body, width):
+    entries, at = [], 0
+    while at < len(body):
+        space = body.find(b" ", at)
+        nul = body.find(b"\0", space + 1)
+        if space < 0 or nul < 0 or nul + 1 + width > len(body):
+            raise Refused("invalid_input:installation/tree", "truncated tree")
+        name = body[space + 1:nul].decode("utf-8", "surrogateescape")
+        if "/" in name or name in ("", ".", ".."):
+            raise Refused("invalid_input:installation/path", name)
+        entries.append((body[at:space].decode(), name, body[nul + 1:nul + 1 + width].hex()))
+        at = nul + 1 + width
+    return entries
+
+
 def installation_at(repo, commit, directory):
     """Lay down the verifier and the policy modules of the trusted `commit` of `repo`, from Git
-    objects, in `directory` (a new directory). Returns {root, source}."""
+    objects, in `directory` (a new directory). Returns {root, source}.
+
+    Every object is verified from the commit down (commit, trees, blobs) by hashing its bytes
+    against the id that names it, so what is installed is exactly the trusted commit's content
+    whatever else a writer of the object store planted. A full object id is taken as the trusted
+    commit itself; any other name is resolved through the repository's refs, which the caller
+    therefore trusts."""
     directory = Path(directory)
-    listed = _git(repo, "ls-tree", "--name-only", commit, "--", GATE_PATH).stdout.decode().strip()
-    if listed != GATE_PATH:
-        raise Refused("missing_authority:verifier/absent", "%s has no %s" % (str(commit)[:12], GATE_PATH))
-    archive = _git(repo, "archive", "--format=tar", commit, "--", *INSTALLED_PATHS).stdout
+    algorithm = _git(repo, "rev-parse", "--show-object-format").stdout.decode().strip()
+    if algorithm not in ("sha1", "sha256"):
+        raise Refused("invalid_input:installation/object-format", algorithm)
+    width = hashlib.new(algorithm).digest_size
+    commit = str(commit)
+    if not re.fullmatch("[0-9a-f]{%d}" % (2 * width), commit):
+        commit = _git(repo, "rev-parse", "--verify", "--end-of-options",
+                      commit + "^{commit}").stdout.decode().strip()
+    kind, body = _verified_objects(repo, [commit], algorithm)[commit]
+    first = body.split(b"\n", 1)[0]
+    if kind != "commit" or not re.fullmatch(rb"tree [0-9a-f]{%d}" % (2 * width), first):
+        raise Refused("invalid_input:installation/commit", commit[:12])
+    files, level = {}, {first[5:].decode(): [""]}
+    while level:
+        found = _verified_objects(repo, list(level), algorithm)
+        deeper = {}
+        for tree, prefixes in level.items():
+            kind, body = found[tree]
+            if kind != "tree":
+                raise Refused("invalid_input:installation/tree", tree)
+            for mode, name, child in _tree_entries(body, width):
+                for prefix in prefixes:
+                    path = prefix + name
+                    if not prefix and name not in INSTALLED_PATHS:
+                        continue
+                    if mode == "40000":
+                        deeper.setdefault(child, []).append(path + "/")
+                    elif mode in ("100644", "100755"):
+                        files[path] = (mode, child)
+                    # Links and submodules are not installed, as the archive extraction never did.
+        level = deeper
+    if GATE_PATH not in files:
+        raise Refused("missing_authority:verifier/absent", "%s has no %s" % (commit[:12], GATE_PATH))
+    blobs = _verified_objects(repo, [oid for _, oid in files.values()], algorithm)
     directory.mkdir(parents=True)
-    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-        for member in tar.getmembers():
-            if not _safe(member.name):
-                raise Refused("invalid_input:installation/path", member.name)
-            target = directory / member.name
-            if member.isdir():
-                target.mkdir(parents=True, exist_ok=True)
-            elif member.isfile():
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(tar.extractfile(member).read())
-                target.chmod(0o755 if member.mode & 0o111 else 0o644)
+    for path in sorted(files):
+        mode, oid = files[path]
+        kind, body = blobs[oid]
+        if kind != "blob" or not _safe(path):
+            raise Refused("invalid_input:installation/path", path)
+        target = directory / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+        target.chmod(0o755 if mode == "100755" else 0o644)
     (directory / '.veldo/authority_git_common').write_text(
         str(_candidate_git().common_directory(repo)) + '\n')
-    return {"root": str(directory), "source": "commit:" + str(commit)}
+    return {"root": str(directory), "source": "commit:" + commit}
 
 
 def _installation(installation):

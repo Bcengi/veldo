@@ -223,45 +223,178 @@ sys.exit(m.main())
         expect('VELDO-0208 sandbox/credential-alias-cannot-copy-key',
                result.returncode == 2 and 'seed exposes the reuse store' in result.stderr)
 
-        # The orchestrator uses linked worktrees: commit through the actual launcher.
+        # Agents never write the shared repository: each works in a linked worktree of its own bare
+        # repository (objects private, the shared store a read-only alternate), may move only
+        # refs/heads/agent/<id>/..., and its work enters the shared repository only through a fetch
+        # that re-hashes every object. Commit through the actual launcher.
         main = top / 'git-main'
         linked = top / 'git-agent'
         def git_at(path, *args):
             return subprocess.check_output(['/usr/bin/git', '-C', str(path),
                 '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', *args],
                 stderr=subprocess.PIPE).decode().strip()
+        def plant_remap(gitdir, victim, forged):
+            """Plant a pack in `gitdir` whose index names the existing object `victim` but whose
+            bytes are `forged`: the store then answers `victim` with other content."""
+            def git_dir(*args, data=None):
+                return subprocess.run(['/usr/bin/git', '--git-dir=' + str(gitdir), *args], input=data,
+                                      capture_output=True, check=True).stdout
+            replacement = git_dir('hash-object', '-w', '--stdin', data=forged).decode().strip()
+            with tempfile.TemporaryDirectory(prefix='remap-') as scratch:
+                name = git_dir('pack-objects', '-q', str(Path(scratch) / 'pack'),
+                               data=(replacement + '\n').encode()).decode().strip()
+                index = bytearray((Path(scratch) / ('pack-' + name + '.idx')).read_bytes())
+                assert index[:8] == b'\xfftOc\x00\x00\x00\x02' and int.from_bytes(index[1028:1032], 'big') == 1
+                first = bytes.fromhex(victim)
+                for byte in range(256):
+                    index[8 + 4 * byte:12 + 4 * byte] = int(byte >= first[0]).to_bytes(4, 'big')
+                index[1032:1032 + len(first)] = first
+                (Path(scratch) / ('pack-' + name + '.idx')).chmod(0o644)
+                (Path(scratch) / ('pack-' + name + '.idx')).write_bytes(bytes(index))
+                for part in Path(scratch).iterdir():
+                    shutil.copyfile(part, gitdir / 'objects/pack' / part.name)
+            loose = gitdir / 'objects' / replacement[:2] / replacement[2:]
+            loose.unlink(missing_ok=True)
+            return git_dir('cat-file', 'blob', victim) == forged
         main.mkdir()
         git_at(main, 'init', '-q', '-b', 'main')
         (main / 'file').write_text('original')
         git_at(main, 'add', 'file'); git_at(main, 'commit', '-qm', 'Initial fixture')
         original_head = git_at(main, 'rev-parse', 'HEAD')
-        git_at(main, 'worktree', 'add', '-q', '-b', 'agent', str(linked))
+        git_at(main, 'worktree', 'add', '-q', '-b', 'linked', str(linked))
         other = top / 'git-other'
         git_at(main, 'worktree', 'add', '-q', '-b', 'other', str(other))
         policy['git_common_dir'] = str(main / '.git')
         config.write_text(json.dumps(policy))
-        linked_command = command[:]
-        linked_command[linked_command.index(str(worktree))] = str(linked)
-        script = """import errno, pathlib, subprocess, sys
+        sandbox = load('scripts/agent_sandbox.py')
+        private, agent_tree = top / 'agent-a1.git', top / 'agent-a1'
+        sandbox.prepare(main / '.git', private, agent_tree, 'a1', 'task', 'main')
+        agent_env = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(private))
+        agent_command = command[:]
+        agent_command[agent_command.index(str(worktree))] = str(agent_tree)
+        def shared_state():
+            return (sorted(str(p.relative_to(main / '.git')) for p in (main / '.git/objects').rglob('*')),
+                    git_at(main, 'for-each-ref', '--format=%(refname) %(objectname)'),
+                    (main / '.git/packed-refs').read_bytes() if (main / '.git/packed-refs').exists() else None)
+        shared_before = shared_state()
+        script = """import errno, json, os, pathlib, subprocess, sys
 pathlib.Path('file').write_text('agent edit')
 subprocess.run(['git', 'add', 'file'], check=True)
 subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
                 'commit', '-qm', 'Confined worktree commit'], check=True)
-for name in sys.argv[1:]:
+results = {}
+for name in sys.argv[2:]:
  try: pathlib.Path(name).write_text('forged')
- except OSError as error: assert error.errno in (errno.EACCES, errno.EPERM)
- else: raise AssertionError('wrote protected path: ' + name)
+ except OSError as error: results[name] = error.errno in (errno.EACCES, errno.EPERM)
+ else: results[name] = False
+head = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+moved = subprocess.run(['git', 'update-ref', 'refs/heads/main', head], capture_output=True, text=True)
+results['update-ref-main'] = moved.returncode != 0
+other = subprocess.run(['git', 'branch', 'agent/a2/foreign', head], capture_output=True, text=True)
+results['other-agent-namespace'] = other.returncode != 0
+shared = subprocess.run(['git', 'hash-object', '-w', '--stdin'], input='planted', capture_output=True,
+                        text=True, env=dict(os.environ, GIT_OBJECT_DIRECTORY=sys.argv[1]))
+results['shared-object-write'] = shared.returncode != 0
+own = subprocess.run(['git', 'branch', 'agent/a1/second', head], capture_output=True, text=True)
+results['own-namespace-branch'] = own.returncode == 0
+print(json.dumps(results))
 """
-        result = confined_run(linked_command + [sys.executable, '-I', '-S', '-c', script,
-            str(storepath/'authentication.key'), str(runner), str(ROOT/'scripts/agent_sandbox.py'),
+        protected_writes = [str(storepath/'authentication.key'), str(runner), str(ROOT/'scripts/agent_sandbox.py'),
             str(ROOT/'scripts/check_gate_mutations.py'), str(ROOT/'.veldo/control_verification.py'),
             str(main/'.git/config'), str(main/'.git/HEAD'), str(main/'.git/hooks/planted'),
-            str(main/'file'), str(main/'.git/worktrees/git-other/index')],
-                                capture_output=True, text=True, timeout=20)
-        expect('VELDO-0208 sandbox/linked-worktree-commit: ' + result.stderr[-600:],
-               result.returncode == 0 and git_at(linked, 'rev-parse', 'HEAD') != original_head
-               and git_at(main, 'rev-parse', 'HEAD') == original_head)
-
+            str(main/'file'), str(main/'.git/worktrees/git-other/index'), str(main/'.git/refs/heads/main'),
+            str(main/'.git/refs/heads/planted'), str(main/'.git/objects/planted'),
+            str(main/'.git/objects/pack/pack-planted.idx'), str(private/'refs/heads/main'),
+            str(private/'refs/heads/agent/planted'), str(private/'config'), str(private/'packed-refs'),
+            str(private/'HEAD'), str(private/'hooks/pre-commit')]
+        result = confined_run(agent_command + [sys.executable, '-I', '-S', '-c', script,
+            str(main / '.git/objects'), *protected_writes], capture_output=True, text=True, timeout=30, env=agent_env)
+        attempts = json.loads(result.stdout) if result.returncode == 0 else {}
+        agent_head = git_at(agent_tree, 'rev-parse', 'HEAD')
+        expect('VELDO-0208 sandbox/agent-repository-commit: ' + result.stderr[-600:],
+               result.returncode == 0 and agent_head != original_head
+               and git_at(main, 'rev-parse', 'refs/heads/main') == original_head
+               and git_at(agent_tree, 'symbolic-ref', 'HEAD') == 'refs/heads/agent/a1/task'
+               and attempts.get('own-namespace-branch') is True)
+        expect('VELDO-0208 git/agent-main-ref-write-refused: ' + json.dumps(attempts),
+               attempts.get('update-ref-main') is True
+               and not (private / 'refs/heads/main').exists()
+               and attempts.get('other-agent-namespace') is True)
+        expect('VELDO-0208 git/agent-protected-and-shared-writes-refused: ' + json.dumps(attempts),
+               all(attempts.get(name) is True for name in protected_writes)
+               and attempts.get('shared-object-write') is True and shared_state() == shared_before)
+        # Integration is a fetch with transfer.fsckObjects into the agent's namespace only.
+        sandbox.integrate(main / '.git', private, 'a1')
+        expect('VELDO-0208 git/integrate-fetches-agent-namespace',
+               git_at(main, 'rev-parse', 'refs/heads/agent/a1/task') == agent_head
+               and git_at(main, 'rev-parse', 'refs/heads/main') == original_head
+               and git_at(main, 'cat-file', '-p', agent_head + ':file') == 'agent edit')
+        # A forged object in the private store (an id remapped to other bytes) never enters the
+        # shared store: the fetch re-hashes it, so integration fails and no shared ref moves.
+        (agent_tree / 'file').write_text('second edit')
+        git_at(agent_tree, 'commit', '-qam', 'Second agent commit')
+        second_head = git_at(agent_tree, 'rev-parse', 'HEAD')
+        blob = git_at(agent_tree, 'rev-parse', 'HEAD:file')
+        remapped = plant_remap(private, blob, b'forged bytes\n')
+        (private / 'objects' / blob[:2] / blob[2:]).unlink()
+        try:
+            sandbox.integrate(main / '.git', private, 'a1')
+        except RuntimeError:
+            fetch_refused = True
+        else:
+            fetch_refused = False
+        expect('VELDO-0208 git/integrate-rehashes-remapped-object',
+               remapped and fetch_refused and git_at(main, 'rev-parse', 'refs/heads/agent/a1/task') == agent_head
+               and subprocess.run(['/usr/bin/git', '-C', str(main), 'cat-file', '-e', blob],
+                                  capture_output=True).returncode != 0
+               and subprocess.run(['/usr/bin/git', '-C', str(main), 'cat-file', '-e', second_head],
+                                  capture_output=True).returncode != 0)
+        # The launcher refuses an agent worktree whose writes would reach the shared repository or
+        # leave the agent namespace, before the command runs.
+        # The probe writes into the worktree it starts in, which a started agent always may.
+        start_probe = [sys.executable, '-c', 'open("agent-started", "w").close()']
+        linked_command = command[:]
+        linked_command[linked_command.index(str(worktree))] = str(linked)
+        git_at(private, 'worktree', 'add', '-q', '-b', 'feature', str(top / 'agent-feature'), original_head)
+        feature_command = command[:]
+        feature_command[feature_command.index(str(worktree))] = str(top / 'agent-feature')
+        for name, tree, argv, env, message in (
+                ('shared-worktree', linked, linked_command,
+                 dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(main / '.git')), 'must not share the authority object store'),
+                ('unnamed-repository', linked, linked_command, dict(os.environ), 'private agent repository'),
+                ('branch-outside-namespace', top / 'agent-feature', feature_command, agent_env,
+                 'refs/heads/agent/<id>/<name>')):
+            refused = confined_run(argv + start_probe, capture_output=True, text=True, timeout=20, env=env)
+            expect('VELDO-0208 git/agent-start-refused-' + name + ': ' + refused.stderr[-300:],
+                   refused.returncode == 2 and message in refused.stderr and not (tree / 'agent-started').exists())
+        # The trusted verifier installation re-hashes every object from the trusted commit down: a
+        # planted pack that remaps verify.sh's existing id to other bytes is never installed.
+        trusted = top / 'trusted-repo'
+        (trusted / 'scripts').mkdir(parents=True); (trusted / '.veldo').mkdir()
+        (trusted / 'scripts/verify.sh').write_text('#!/bin/sh\necho trusted\n')
+        (trusted / '.veldo/policy_check.py').write_text('TRUSTED = True\n')
+        git_at(trusted, 'init', '-q', '-b', 'main'); git_at(trusted, 'add', '.')
+        git_at(trusted, 'commit', '-qm', 'Trusted verifier')
+        trusted_commit = git_at(trusted, 'rev-parse', 'HEAD')
+        verifier_blob = git_at(trusted, 'rev-parse', 'HEAD:scripts/verify.sh')
+        forged_verifier = b'#!/bin/sh\necho forged\n'
+        verifier_remapped = plant_remap(trusted / '.git', verifier_blob, forged_verifier)
+        def install(module, name):
+            try:
+                module.installation_at(trusted, trusted_commit, top / name)
+            except module.Refused as error:
+                return error.code
+            return (top / name / 'scripts/verify.sh').read_bytes()
+        landing_source = (ROOT / 'engine/.veldo/control_verification.py').read_text()
+        check = 'if hashlib.new(algorithm, kind + b" %d\\0" % size + body).hexdigest() != oid:'
+        unchecked = type(landing)('unchecked_control_verification')
+        unchecked.__file__ = landing.__file__
+        exec(compile(landing_source.replace(check, 'if False:'), landing.__file__, 'exec'), unchecked.__dict__)
+        expect('VELDO-0208 install/planted-remap-not-installed',
+               verifier_remapped and install(landing, 'installed') == 'invalid_input:installation/object-hash'
+               and not (top / 'installed/scripts/verify.sh').exists()
+               and landing_source.count(check) == 1
+               and install(unchecked, 'unchecked') == forged_verifier)
         # Both plausible redirect metadata and hostile ambient Git config are planted.
         guard = load('.veldo/candidate_git.py')
         planted_hook = linked / 'git-escape.sh'
@@ -296,8 +429,8 @@ for name in sys.argv[1:]:
         refused = subprocess.run([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
             '--root', str(linked), '--expected-common', str(main / '.git'), '--', 'status'],
             capture_output=True, text=True, timeout=20)
-        refused_agent = confined_run(linked_command + ['/usr/bin/true'],
-                                      capture_output=True, text=True, timeout=20)
+        refused_agent = confined_run(linked_command + ['/usr/bin/true'], capture_output=True, text=True,
+                                      timeout=20, env=dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(main / '.git')))
         expect('VELDO-0208 git/redirect-refused-before-git-or-agent',
                refused.returncode == refused_agent.returncode == 2
                and 'expected shared gitdir' in refused.stderr

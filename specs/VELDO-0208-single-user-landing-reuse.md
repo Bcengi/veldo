@@ -151,11 +151,19 @@ configuration, set core.hooksPath=/dev/null and core.fsmonitor=false, and pin gi
 work-tree and common-dir after validation. External runners must use this same boundary
 before their status queries (exact invocation in the follow-up report).
 
-The agent retains writable index/HEAD/logs for its own linked worktree, shared objects,
-and its branch ref/log parent directories; shared config and hooks remain read-only.
-Directory grants expose sibling loose refs and shared objects to reads and some writes.
-Trusted authority storage must therefore live outside every gitdir the agent can read.
-These grants are not isolation between mutually hostile branches in a shared object store.
+An agent never writes the shared repository. Each agent works in a linked worktree of its own
+bare repository: its objects are private and the shared object store is at most a read-only
+alternate. The orchestrator names that repository (VELDO_EXPECTED_GIT_COMMON); it is never
+derived from the worktree's writable marker. The agent may write its worktree gitdir, its private
+object store and refs/heads/agent/<id>/ (with the matching reflog directory) only. Every other ref
+of its repository, including refs/heads/main, and that repository's config and hooks stay
+read-only. The launcher refuses to start an agent in a worktree of the shared repository, one with
+no named private repository, or one whose branch is outside refs/heads/agent/<id>/.
+`agent_sandbox.py prepare` creates the layout. Agent work enters the shared repository only through
+`agent_sandbox.py integrate`, a fetch of refs/heads/agent/<id>/* with transfer.fsckObjects=true,
+so every received object is re-hashed. The gate then runs on the integrated branch from the shared
+repository, or on the agent worktree with VELDO_EXPECTED_GIT_COMMON naming the agent repository.
+Trusted authority storage still lives outside every gitdir the agent can read.
 
 ## Build and evidence limits
 
@@ -174,11 +182,11 @@ blocks pathname Unix services and asynchronous syscall alternatives; Landlock sc
 and abstract Unix sockets and restricts ptrace across domains. See the Linux kernel's
 [Landlock documentation](https://www.kernel.org/doc/html/v6.16/userspace-api/landlock.html).
 
-Worktree Git persistence also grants the worktree's own gitdir, shared objects and the parent
-directories of its branch ref and reflog. Git needs sibling .lock files, so Landlock necessarily
-grants sibling loose refs in those directories as well. A dedicated branch namespace narrows
-that exposure. Shared objects and refs are candidate-controlled data, not trusted machinery:
-never install trusted verification code from that mutable object store. The authority's
+Worktree Git persistence grants the worktree's own gitdir, the private object store and the
+agent's own namespace directories. Git's sibling .lock files therefore stay inside that namespace.
+The trusted verifier installation (control_verification.installation_at) does not trust any object
+store to map ids to content. It re-hashes every object from the trusted commit down and refuses on
+any mismatch, so a planted pack that remaps an existing id is never installed. The authority's
 working files, common Git configuration/hooks, other worktree gitdirs, store/key and external
 runners remain denied writes. This does not change this checkout's Git layout. Private scratch
 contains selected copied CLI credentials. A trusted supervisor waits for the confined
@@ -224,3 +232,11 @@ bytes. When different bytes already exist, an authenticated record that passes t
 result validation for this case and input digest is kept. Only an existing record that fails that
 validation (or a store-level write with no validation supplied) is a conflict. Suite 99 drives
 identical bytes, a kept earlier valid record and a poisoned invalid one.
+
+Agent Git isolation: see Git boundary. Suite 101 commits through the launcher in a prepared
+private repository, and checks that writes to refs/heads/main, another agent's namespace, the
+shared object store, shared refs and private config are refused. It integrates through the fsck
+fetch, and shows that a remapped object in the private store fails integration without moving a
+shared ref. It refuses start for a shared worktree, an unnamed repository and an out-of-namespace
+branch. It also plants a pack remapping the verifier's blob id and shows installation refuses it,
+while the same installer without the hash check would install the forged bytes.
