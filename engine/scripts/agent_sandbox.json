@@ -1,0 +1,19 @@
+{
+  "schema": "veldo.agent-sandbox/v1",
+  "store": "~/.cache/veldo/gate-reuse-v2",
+  "read_roots": ["/usr", "/lib", "/lib64", "/bin", "/sbin", "/etc", "~", "/tmp"],
+  "write_roots": ["{worktree}", "{scratch}"],
+  "deny_write": [
+    "{authority}",
+    "/home/dmitry/projects/myday/scripts/codex_work.sh",
+    "/home/dmitry/projects/myday/scripts/claude_work.sh"
+  ],
+  "seed_files": {
+    "~/.codex/auth.json": ".codex/auth.json",
+    "~/.codex/config.toml": ".codex/config.toml",
+    "~/.claude/.credentials.json": ".claude/.credentials.json",
+    "~/.claude/settings.json": ".claude/settings.json",
+    "~/.claude.json": ".claude.json",
+    "~/.gitconfig": ".gitconfig"
+  }
+}

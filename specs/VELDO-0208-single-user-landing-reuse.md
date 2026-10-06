@@ -11,6 +11,9 @@ depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
 protected_paths: ["scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
 footprint:
+  - "engine/scripts/*.py"
+  - "engine/scripts/agent_sandbox.json"
+  - "scripts/mutation_observer.py"
   - "scripts/gate_candidate.py"
   - "scripts/reuse_worker.py"
   - "scripts/check_gate_mutations.py"
@@ -58,10 +61,10 @@ acceptance_criteria:
     falsified_by: Grant store access or start an agent after confinement fails; sandbox rows fail.
   - id: AC2
     text: >
-      Claim: Reusable records authenticate provenance from a gate outside the agent domain.
+      Claim: Reusable records authenticate publication by the authority-checkout reuse stage.
       Set: gate-written records, edited records, validly signed records missing provenance and a
-      confined writer. Completeness: actual store access probes precede publication, and HMAC
-      covers provenance and the per-case input key. Test provenance rows without root.
+      confined writer. Completeness: only the authority stage launches and observes workers; its engine digest
+      enters case keys and authenticated records and receipts, checked by landing. Test provenance rows without root.
     falsified_by: Accept a record without authenticated non-agent provenance; provenance rows fail.
   - id: AC3
     text: >
@@ -97,6 +100,15 @@ Workers start with authority bootstrap/driver code and install confinement befor
 executing candidate suites. The coordinator's receipt is outside candidate write grants.
 An unconfined owner can write records; HMAC is not a defense against that owner.
 The store probe is only a kernel access check, not evidence of code identity.
+
+Provenance is the authority engine digest over the shipped reuse coordinator, worker,
+observer, confinement, configuration and signing modules. It enters per-case keys,
+record HMACs and landing receipt HMACs. Landing recomputes its own authority identity;
+a valid signature from another engine is insufficient. Changes invalidate reuse.
+This proves publication by machinery with the matching authority under the confinement
+assumption, not that assertions are adequate or the unconfined owner is honest.
+The generic mutation observer ships with the engine; candidate driver code is used
+only for confined registry enumeration, never as the authority worker entry.
 
 One reviewed JSON config supplies the store (including authentication.key), read roots,
 writable roots and protected runner paths. The launcher fails closed on missing paths,

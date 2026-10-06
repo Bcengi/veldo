@@ -11,8 +11,8 @@ import pwd
 from pathlib import Path
 import stat
 
-PROVENANCE = 'gate-outside-agent-domain/v1'
-SCHEMA = 'veldo.reuse/v2'
+PROVENANCE = 'authority-reuse-stage/v2'
+SCHEMA = 'veldo.reuse/v3'
 
 
 def canonical(value):
@@ -22,6 +22,16 @@ def canonical(value):
 
 def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
+
+
+# Only reviewed authority files enter this identity; never a candidate-supplied ID.
+AUTHORITY_FILES = ('scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/agent_sandbox.json', '.veldo/reuse_evidence.py', '.veldo/git_process.py')
+
+
+def authority_identity():
+    root = Path(__file__).resolve().parents[1]
+    return digest({name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+                   for name in AUTHORITY_FILES})
 
 
 def configuration(path=None):
@@ -100,8 +110,10 @@ def record(directory, key, secret):
     if raw != canonical(envelope):
         raise ValueError('noncanonical reuse record')
     payload = authenticated(envelope, secret)
-    if (set(payload) != {'schema', 'key', 'result', 'provenance'} or payload['schema'] != SCHEMA
-            or payload['key'] != key or payload['provenance'] != PROVENANCE):
+    if (set(payload) != {'schema', 'key', 'result', 'provenance', 'authority'} or payload['schema'] != SCHEMA
+            or payload['key'] != key or payload['provenance'] != PROVENANCE
+                or payload['authority'] != authority_identity()
+            or payload['authority'] != authority_identity()):
         raise ValueError('missing non-agent gate provenance')
     return payload['result']
 
@@ -126,9 +138,10 @@ def landing_problem(document):
         directory = Path(config['store'])
         secret = probe(directory)
         payload = authenticated(document['reuse_evidence'], secret)
-        if (set(payload) != {'schema', 'provenance', 'commit', 'force_fresh', 'reused', 'records'}
+        if (set(payload) != {'schema', 'provenance', 'authority', 'commit', 'force_fresh', 'reused', 'records'}
                 or payload['schema'] != 'veldo.landing-reuse/v1'
                 or payload['provenance'] != PROVENANCE
+                or payload['authority'] != authority_identity()
                 or payload['commit'] != document['commit'] or payload['force_fresh'] is not force
                 or payload['reused'] != counts or len(payload['records']) != counts['mutation']):
             raise ValueError('landing reuse binding differs')

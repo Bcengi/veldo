@@ -253,6 +253,14 @@ for name in sys.argv[1:]:
         path = storepath / (key + '.json'); raw = path.read_bytes()
         payload = json.loads(raw)['payload']
         expect('VELDO-0208 provenance/signed-outside-domain', payload['provenance'] == E.PROVENANCE)
+        wrong_authority = dict(payload, authority='0' * 64)
+        path.write_bytes(E.canonical(E.sign(wrong_authority, store.secret)))
+        expect('VELDO-0208 provenance/signed-other-authority-refused', store.get(key) is None)
+        path.write_bytes(raw)
+        with patch.object(C.R.E, 'authority_identity', return_value='0' * 64):
+            other_authority = session(files)
+        expect('VELDO-0208 provenance/authority-is-in-case-key',
+               other_authority.keys[case['identity']] != key)
         legacy = dict(payload); legacy.pop('provenance')
         path.write_bytes(E.canonical(E.sign(legacy, store.secret)))
         expect('VELDO-0208 provenance/signed-missing-provenance-refused', store.get(key) is None)
@@ -278,6 +286,10 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             fields = reducer.fields(receipt, False, commit)
             stamp = dict(commit=commit, status='green', **fields)
             expect('VELDO-0208 landing/authenticated-declared-record-accepted', E.landing_problem(stamp) is None)
+            forged_authority = dict(fields['reuse_evidence']['payload'], authority='0' * 64)
+            expect('VELDO-0208 landing/signed-other-authority-refused', E.landing_problem(
+                dict(stamp, reuse_evidence=E.sign(forged_authority, store.secret))) is not None)
+
             stdout = '== unit\n   unit: pass\nGATE: GREEN (' + commit + ')'
             sample = {'schema': 'veldo.gate_observation/v1', 'commit': commit, 'stdout': stdout,
                 'stdout_digest': landing.digest(stdout.encode()), 'exit': 0, 'terminal': stdout.splitlines()[-1],
