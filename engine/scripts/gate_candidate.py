@@ -15,9 +15,13 @@ def main():
     authority = Path(__file__).resolve().parents[1]
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     config = os.environ.get('VELDO_AGENT_CONFIG', str(authority / 'scripts/agent_sandbox.json'))
+    # Candidate commands read nothing from the caller. Their stdin is /dev/null, so a caller whose
+    # own stdin is a socket (a harness or a service) neither hands it across the boundary nor has
+    # every check refused for it; a socket on stdout or stderr is still refused by the launcher.
     result = subprocess.run([sys.executable, '-I', '-S',
         str(authority / 'scripts/agent_sandbox.py'), '--profile', 'gate',
-        '--config', config, '--worktree', args.root, '--', *command], close_fds=True)
+        '--config', config, '--worktree', args.root, '--', *command], close_fds=True,
+        stdin=subprocess.DEVNULL)
     if result.returncode:
         print('candidate execution failed in store-denied domain (publication forbidden)', file=sys.stderr)
     return result.returncode
