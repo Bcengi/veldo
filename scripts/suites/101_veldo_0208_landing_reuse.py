@@ -13,6 +13,13 @@ def _v208_landing_reuse():
     import socket
     from unittest.mock import patch
 
+    def confined_run(*args, **kwargs):
+        """Start the launcher or a worker directly, as the authority does: with /dev/null for stdin
+        unless a row names another. The boundary refuses a socket on a standard descriptor, so a row
+        must not depend on what stdin the suite itself was started with."""
+        kwargs.setdefault('stdin', subprocess.DEVNULL)
+        return subprocess.run(*args, **kwargs)
+
     def load(relative):
         spec = importlib.util.spec_from_file_location(Path(relative).stem, ROOT / relative)
         module = importlib.util.module_from_spec(spec)
@@ -132,12 +139,17 @@ print(json.dumps(results))
                            VELDO_TEST_PRIVATE=str(private_home))
         keyfd = os.open(storepath / 'authentication.key', os.O_RDWR)
         before = (storepath / 'authentication.key').read_bytes()
+        # The probe's stdin is a real terminal, so terminal-injection always tries TIOCSTI on one.
+        terminal, terminal_peer = os.openpty()
         try:
-            result = subprocess.run(command + [sys.executable, '-I', '-S', str(probe), str(storepath),
+            result = confined_run(command + [sys.executable, '-I', '-S', str(probe), str(storepath),
                 str(runner), str(ROOT / 'scripts/agent_sandbox.py'), str(keyfd)],
-                pass_fds=(keyfd,), capture_output=True, text=True, timeout=20, env=network_env)
+                pass_fds=(keyfd,), stdin=terminal_peer, capture_output=True, text=True, timeout=20,
+                env=network_env)
         finally:
             os.close(keyfd)
+            os.close(terminal)
+            os.close(terminal_peer)
         expect('VELDO-0208 sandbox/launcher-starts: ' + result.stderr[-400:], result.returncode == 0)
         findings = json.loads(result.stdout) if result.returncode == 0 else {}
         for name in ('store-read', 'key-read', 'key-write', 'plant-record', 'replace-store',
@@ -181,14 +193,14 @@ sys.argv = [sys.argv[1], *sys.argv[2:]]
 sys.exit(m.main())
 '''
         marker = worktree / 'must-not-start'
-        result = subprocess.run([sys.executable, '-I', '-S', '-c', unavailable,
+        result = confined_run([sys.executable, '-I', '-S', '-c', unavailable,
             str(ROOT / 'scripts/agent_sandbox.py'), '--config', str(config), '--worktree', str(worktree),
             '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
             capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 sandbox/unavailable-refuses-before-exec', result.returncode == 2
                and 'Landlock unavailable' in result.stderr and not marker.exists())
         obsolete = unavailable.replace('return -1', 'return 5')
-        result = subprocess.run([sys.executable, '-I', '-S', '-c', obsolete,
+        result = confined_run([sys.executable, '-I', '-S', '-c', obsolete,
             str(ROOT / 'scripts/agent_sandbox.py'), '--config', str(config), '--worktree', str(worktree),
             '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
             capture_output=True, text=True, timeout=20)
@@ -197,7 +209,7 @@ sys.exit(m.main())
         bad_policy = dict(policy, write_roots=[str(top)])
         bad_config = top / 'bad-config.json'; bad_config.write_text(json.dumps(bad_policy))
         bad = command[:]; bad[bad.index(str(config))] = str(bad_config)
-        result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
+        result = confined_run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 sandbox/unsafe-config-refuses',
                result.returncode == 2 and 'unsafe writable path' in result.stderr)
         credential = top / 'credential-link'
@@ -205,7 +217,7 @@ sys.exit(m.main())
         bad_policy = dict(policy, seed_files={str(credential): '.codex/auth.json'})
         bad_config.write_text(json.dumps(bad_policy))
         scratch_parent = top / 'scratch-owner'; scratch_parent.mkdir()
-        result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20,
+        result = confined_run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20,
                                 env=dict(os.environ, TMPDIR=str(scratch_parent)))
         expect('VELDO-0208 sandbox/refusal-cleans-scratch', not list(scratch_parent.iterdir()))
         expect('VELDO-0208 sandbox/credential-alias-cannot-copy-key',
@@ -240,7 +252,7 @@ for name in sys.argv[1:]:
  except OSError as error: assert error.errno in (errno.EACCES, errno.EPERM)
  else: raise AssertionError('wrote protected path: ' + name)
 """
-        result = subprocess.run(linked_command + [sys.executable, '-I', '-S', '-c', script,
+        result = confined_run(linked_command + [sys.executable, '-I', '-S', '-c', script,
             str(storepath/'authentication.key'), str(runner), str(ROOT/'scripts/agent_sandbox.py'),
             str(ROOT/'scripts/check_gate_mutations.py'), str(ROOT/'.veldo/control_verification.py'),
             str(main/'.git/config'), str(main/'.git/HEAD'), str(main/'.git/hooks/planted'),
@@ -284,7 +296,7 @@ for name in sys.argv[1:]:
         refused = subprocess.run([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
             '--root', str(linked), '--expected-common', str(main / '.git'), '--', 'status'],
             capture_output=True, text=True, timeout=20)
-        refused_agent = subprocess.run(linked_command + ['/usr/bin/true'],
+        refused_agent = confined_run(linked_command + ['/usr/bin/true'],
                                       capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 git/redirect-refused-before-git-or-agent',
                refused.returncode == refused_agent.returncode == 2
@@ -329,7 +341,7 @@ for name in sys.argv[1:]:
             trace = top / (mode + '.trace')
             argv = [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
                     'worker', str(worker_root), str(job)]
-            process = subprocess.run(tracer.command(trace, argv), cwd=worker_root,
+            process = confined_run(tracer.command(trace, argv), cwd=worker_root,
                 env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20)
             expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
                    process.returncode == 0 and not escaped.exists())
@@ -345,7 +357,7 @@ for name in sys.argv[1:]:
         worker_suite.write_text('from pathlib import Path\nPath(' +
             repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
         job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
-        denied_worker = subprocess.run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
+        denied_worker = confined_run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
                                       capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 candidate/worker-key-access-errors-never-kills: ' + denied_worker.stderr[-300:],
                denied_worker.returncode != 0 and 'PermissionError' in denied_worker.stderr)
@@ -480,7 +492,7 @@ os.environ.pop('VELDO_AGENT_SANDBOX', None)
 s = m.Store(sys.argv[2], pathlib.Path.cwd())
 assert s.secret is None and not s.put('a' * 64, {'planted': True})
 '''
-        result = subprocess.run(command + [sys.executable, '-I', '-S', '-c', writer,
+        result = confined_run(command + [sys.executable, '-I', '-S', '-c', writer,
             str(ROOT / 'scripts/gate_reuse.py'), str(storepath)],
             capture_output=True, text=True, env=env, timeout=20)
         expect('VELDO-0208 provenance/confined-gate-cannot-sign: ' + result.stderr[-300:],
