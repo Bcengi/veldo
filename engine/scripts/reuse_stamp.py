@@ -57,7 +57,17 @@ def fields(receipt, force, commit=None):
     return answer
 
 
+def not_run(force):
+    """A gate whose mutation stage was declared na: or waived: ran no case and has no receipt:
+    nothing was reused, and the freshness request is still reported."""
+    return {'force_fresh': force, 'reused': {'unit': 0, 'mutation': 0}}
+
+
 if __name__ == '__main__':
-    with open(sys.argv[1]) as stream:
-        receipt = json.load(stream)
-    print(json.dumps(fields(receipt, truthy(sys.argv[2]), sys.argv[3]), separators=(',', ':'))[1:-1])
+    if sys.argv[1] == '--not-run':
+        answer = not_run(truthy(sys.argv[2]))
+    else:
+        with open(sys.argv[1]) as stream:
+            receipt = json.load(stream)
+        answer = fields(receipt, truthy(sys.argv[2]), sys.argv[3])
+    print(json.dumps(answer, separators=(',', ':'))[1:-1])

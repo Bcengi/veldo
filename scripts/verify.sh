@@ -144,7 +144,7 @@ ORDER="format lint types unit integration contract journeys ui_states accessibil
 token_lint visual_baselines build dependency_audit licenses security migration \
 generated docs performance coverage packaging deploy_dry_run extra mutation"
 
-FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0
+FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
 for name in $ORDER; do
   var="CHECK_${name}"
@@ -157,6 +157,7 @@ for name in $ORDER; do
     required:*)
       cmd="${decl#required:}"
       echo "== ${name}"
+      if [ "$name" = mutation ]; then MUTATION_RAN=1; fi
       if { if [ "$name" = mutation ]; then
         python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" --root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"
       else veldo_candidate bash -c "$cmd"; fi; }; then
@@ -287,7 +288,10 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
+# The receipt exists only when the mutation stage ran. Declared na: or waived:, it ran no case,
+# so nothing was reused and there is no receipt to read; a stage that ran still needs a valid one.
+if [ "$MUTATION_RAN" = 1 ]; then REUSE_SOURCE="$VELDO_REUSE_RECEIPT"; else REUSE_SOURCE=--not-run; fi
+REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOURCE" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
   FAIL=1; STATUS=red; EVENT=gate.failed
   REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
 }
