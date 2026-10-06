@@ -147,3 +147,10 @@ Its review found the cgroup quota read only at the mount root (a host scope or s
 giving 16 workers a 2-CPU budget and a false red) and undriven; the quota is now the smallest cpu.max on
 the process's own cgroup and every parent, driven over a temporary cgroup tree; and since 8 -> 16 workers
 measured about 1.5x rather than 2x, the budget never drops below its 8-worker figure.
+
+2026-10-06: Amended by VELDO-0205 under Dmitry's Telegram 31900 approval of Telegram 31622.
+The 2026-09-22 reuse removal (Telegram 28800, measured 13.8 seconds) is reversed because the owner
+now reports about 69 minutes for about 2,490 mutants. AC1 and the intent permit exact complete-input,
+authenticated killed-result reuse with honest counts. Unknown closures execute fresh. AC2 remains
+unchanged, and AC4 qualification plus canonical landing and release gates remain force fresh.
+See VELDO-0205 for the precise amendment, protected-path approval requirement and closure boundary.
