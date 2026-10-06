@@ -356,6 +356,12 @@ def judge(observation):
         problems.append("missing_evidence:gate/stamp")
     if event.get("commit") != commit or event.get("type") != "gate.passed":
         problems.append("missing_evidence:gate/event")
+    for document in (stamp, event):
+        if 'reused' in document or 'force_fresh' in document:
+            counts = document.get('reused')
+            if (document.get('force_fresh') is not True or not isinstance(counts, dict)
+                    or not counts or any(type(n) is not int or n != 0 for n in counts.values())):
+                problems.append("missing_evidence:gate/fresh_required")
     return problems
 
 

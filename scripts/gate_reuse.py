@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import stat
 import tempfile
+import warnings
 
 SCHEMA = 'veldo.reuse/v1'
 
@@ -24,7 +25,10 @@ def tree_identity(path):
     path = Path(path)
     result = {}
 
+    visited = set()
+
     def visit(current, name):
+        visited.add(current.absolute())
         info = current.lstat()
         mode = stat.S_IMODE(info.st_mode)
         if stat.S_ISREG(info.st_mode):
@@ -33,6 +37,12 @@ def tree_identity(path):
             value = 'directory'
             for child in sorted(current.iterdir()):
                 visit(child, name + '/' + child.name)
+        elif stat.S_ISLNK(info.st_mode):
+            target = current.resolve(strict=True)
+            # Directory back-links are represented by the already visited target path.
+            value = ['symlink', os.readlink(current), str(target)]
+            if target not in visited:
+                visit(target, name + '/@target')
         else:
             raise ValueError('unclosed runtime input: ' + str(current))
         result[name] = [mode, value]
@@ -49,17 +59,22 @@ class Store:
     def __init__(self, directory, repository):
         self.directory = None
         self.secret = None
+        self.integrity_errors = []
         try:
             self.directory = Path(directory).expanduser().resolve()
             root = Path(repository).resolve()
             if self.directory == root or root in self.directory.parents:
+                return
+            # Worker runtime trees must never contain coordinator credentials.
+            if any(self.directory == Path(p).resolve() or Path(p).resolve() in self.directory.parents
+                   for p in ('/usr', '/lib', '/lib64', '/etc', '/dev', '/proc')):
                 return
             self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
             self._private(self.directory, directory=True)
             keypath = self.directory / 'authentication.key'
             secret = os.urandom(32)
             # Publish only complete keys. Concurrent creators use the winning key.
-            self._publish(keypath, secret)
+            self._publish(keypath, secret, key_creation=True)
             self._private(keypath)
             self.secret = keypath.read_bytes()
             if len(self.secret) != 32:
@@ -74,7 +89,7 @@ class Store:
         if not kind(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
             raise ValueError('cache path must be private and owned')
 
-    def _publish(self, target, body):
+    def _publish(self, target, body, key_creation=False):
         fd, name = tempfile.mkstemp(prefix='.pending-', dir=self.directory)
         try:
             with os.fdopen(fd, 'wb') as stream:
@@ -84,7 +99,12 @@ class Store:
             try:
                 os.link(name, target)
             except FileExistsError:
-                pass
+                if not key_creation and target.read_bytes() != body:
+                    self.integrity_errors.append(target.name)
+                    # Poisoned identities stay misses until explicitly removed.
+                    (self.directory / (target.name + '.conflict')).touch(mode=0o600)
+                    warnings.warn('reuse integrity failure: conflicting record ' + target.name)
+                    raise ValueError('conflicting cache record')
         finally:
             os.unlink(name)
 
@@ -98,6 +118,8 @@ class Store:
             return None
         try:
             path = self._path(key)
+            if (self.directory / (path.name + '.conflict')).exists():
+                return None
             self._private(path)
             if path.stat().st_size > 32 * 1024 * 1024:
                 return None

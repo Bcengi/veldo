@@ -510,6 +510,7 @@ class Workers:
 
 
 def worker(job):
+    load(ROOT / 'scripts/mutation_sandbox.py').restrict(ROOT, Path(os.environ['TMPDIR']))
     case = job['case']
     driver = load(ROOT / 'scripts' / case['driver'])
     owner = load(ROOT / 'scripts/check_teeth_mutations.py')
@@ -691,12 +692,15 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
+    parser.add_argument('--receipt', type=Path)
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     args = parser.parse_args()
     if args.worker:
         print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
     receipt = run_stage(capacities=resource_capacities(args.resource_capacity))
+    if args.receipt:
+        args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)
     print('mutations: {status} registered={registered} executed={executed} '
           'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)

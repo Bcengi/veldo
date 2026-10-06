@@ -10,6 +10,8 @@ import os
 from pathlib import Path
 import platform
 import sys
+import sysconfig
+import shutil
 
 _spec = importlib.util.spec_from_file_location('gate_reuse', Path(__file__).with_name('gate_reuse.py'))
 R = importlib.util.module_from_spec(_spec)
@@ -26,6 +28,21 @@ def qualification_digest(files):
     return R.digest({name: value for name, value in input_identity(files).items() if name != PROFILE})
 
 
+def truthy(value):
+    value = str(value).strip().lower()
+    if value in ('1', 'true', 'yes', 'on'):
+        return True
+    if value in ('0', 'false', 'no', 'off', ''):
+        return False
+    raise ValueError('unknown VELDO_GATE_FORCE_FRESH value: ' + value)
+
+
+def required_runtime(environment):
+    return [Path(sys.executable).resolve(), Path(sysconfig.get_path('stdlib')).resolve(),
+            Path(shutil.which('git', path=environment.get('PATH', '/usr/bin:/bin'))).resolve(),
+            Path(shutil.which('sh', path=environment.get('PATH', '/usr/bin:/bin'))).resolve()]
+
+
 def runtime_identity(paths, environment):
     """The profile must cover libraries, tool dependencies and configuration, not just binaries."""
     executable = Path(sys.executable).resolve()
@@ -35,8 +52,9 @@ def runtime_identity(paths, environment):
         if not path.is_absolute() or '..' in path.parts:
             raise ValueError('runtime paths must be absolute')
         trees[str(path)] = R.tree_identity(path)
-    if not any(executable == Path(p) or Path(p) in executable.parents for p in trees):
-        raise ValueError('interpreter is outside the closure')
+    for required in required_runtime(environment):
+        if not any(required == Path(p).resolve() or Path(p).resolve() in required.parents for p in trees):
+            raise ValueError('runtime dependency is outside the closure: ' + str(required))
     return {'trees': trees, 'executable': str(executable), 'python': sys.version,
             'implementation': sys.implementation.name, 'cache_tag': sys.implementation.cache_tag,
             'platform': list(platform.uname()), 'environment': R.digest(dict(environment))}
@@ -46,8 +64,10 @@ class Session:
     def __init__(self, root, files, cases, head, configuration, *, force_fresh=False,
                  environment=None, cache_directory=None):
         self.root, self.files = Path(root), files
-        self.environment = dict(os.environ if environment is None else environment)
-        self.forced = force_fresh or self.environment.get('VELDO_GATE_FORCE_FRESH') == '1'
+        controls = os.environ if environment is None else environment
+        self.environment = dict(configuration.get('worker_environment', {}) if environment is None else environment)
+        parsed_force = truthy(controls.get('VELDO_GATE_FORCE_FRESH', '0'))
+        self.forced = force_fresh or parsed_force
         self.keys, self.reasons, self.hits = {}, {}, {}
         self.runtime_checks = {}
         self.runtime_digests = {}
@@ -90,9 +110,9 @@ class Session:
             except (KeyError, ValueError, TypeError, OSError):
                 continue
         if any(self.keys.values()):
-            directory = cache_directory or self.environment.get('VELDO_GATE_CACHE')
+            directory = cache_directory or controls.get('VELDO_GATE_CACHE')
             if not directory:
-                directory = Path(self.environment.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'veldo/gate-reuse-v1'
+                directory = Path(controls.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'veldo/gate-reuse-v1'
             self.store = R.Store(directory, root)
 
     def lookup(self, case, validate):

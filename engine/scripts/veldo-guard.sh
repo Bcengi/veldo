@@ -68,6 +68,20 @@ if [ "$V_STATUS" != "green" ] || ! ok_commit "$V_COMMIT"; then
   exit 2
 fi
 
+# Reuse-aware stamps are development evidence; landing needs a fresh gate.
+if ! python3 -c '
+import json
+s = json.load(open(".veldo/last_verify"))
+if "reused" in s or "force_fresh" in s:
+    c = s.get("reused")
+    if (s.get("force_fresh") is not True or not isinstance(c, dict) or not c
+            or any(type(n) is not int or n != 0 for n in c.values())):
+        raise SystemExit(1)
+'; then
+  echo "VELDO guard: blocked. Landing requires force_fresh and zero reused results." >&2
+  exit 2
+fi
+
 # Guard 2: a proof manifest must exist for exactly this commit.
 # THROUGH THE ONE CORPUS ENUMERATION (WARP-0727), not a shell glob. `proof/*/manifest.json`
 # here was a FOURTH implementation of one set, after the projection, the contract validator and

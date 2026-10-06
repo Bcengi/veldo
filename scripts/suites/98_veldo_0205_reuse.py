@@ -83,6 +83,7 @@ def _v205_reuse():
                                     'runtime_paths': runtime_paths} for c in definitions}}))
             return source
 
+        reuse.required_runtime = lambda environment: [Path(sys.executable).resolve(), runtime]
         files = qualified(files)
         cache = base / 'cache'
 
@@ -141,7 +142,7 @@ def _v205_reuse():
             changes.append(session().keys[cases[0]['identity']])
             (runtime / 'added').unlink()
             (runtime / 'link').symlink_to(tool)
-            ok &= session().keys[cases[0]['identity']] is None
+            changes.append(session().keys[cases[0]['identity']])
             (runtime / 'link').unlink()
             missing = dict(files)
             del missing[reuse.PROFILE]
@@ -392,3 +393,121 @@ if os.environ.get('VELDO_REUSE_MEASURE') == '1':
         'cases': len(_v205_cases), 'qualified': sum(key is not None for key in _v205_session.keys.values()),
         'input_digest': _v205_session.base_digest, 'python': sys.version,
         'note': 'One full production admission/key pass; unqualified cases have null keys. No workers.'}, sort_keys=True))
+
+
+def _v205_review_repairs():
+    import importlib.util
+    import subprocess
+    import tempfile
+    import sys
+    import json
+    from pathlib import Path
+    def load(name):
+        spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / (name + '.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    reuse = load('mutation_reuse')
+    truth = [reuse.truthy(v) for v in ('1', 'TRUE', 'yes', 'On', '0', 'False', 'no', 'off')]
+    try:
+        reuse.truthy('sometimes')
+    except ValueError:
+        unknown = True
+    else:
+        unknown = False
+    expect('VELDO-0205 repair/force-values', truth == [True]*4 + [False]*4 and unknown)
+    try:
+        reuse.runtime_identity([sys.executable], {})
+    except ValueError:
+        incomplete = True
+    else:
+        incomplete = False
+    expect('VELDO-0205 repair/stdlib-and-tools-required', incomplete)
+    with tempfile.TemporaryDirectory(prefix='reuse-boundary-') as tmp:
+        top = Path(tmp)
+        root, scratch = top / 'root', top / 'scratch'
+        root.mkdir(); scratch.mkdir()
+        store = reuse.R.Store(top / 'private', root)
+        key = reuse.R.digest('collision')
+        assert store.put(key, {'first': True})
+        expect('VELDO-0205 repair/collision-is-integrity-miss',
+               not store.put(key, {'second': True}) and store.get(key) is None and store.integrity_errors)
+        sandbox = ROOT / 'scripts/mutation_sandbox.py'
+        script = '''import importlib.util, pathlib, subprocess, sys
+spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
+s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)
+s.restrict(sys.argv[2], sys.argv[3])
+p = pathlib.Path(sys.argv[4])
+try:
+ p.read_bytes()
+except PermissionError:
+ pass
+else:
+ raise AssertionError('worker read key')
+child = subprocess.run(['/usr/bin/cat', str(p)], capture_output=True)
+assert child.returncode != 0 and b'Permission denied' in child.stderr
+try:
+ p.write_bytes(b'changed')
+except PermissionError:
+ pass
+else:
+ raise AssertionError('worker wrote key')
+pathlib.Path(sys.argv[3], 'allowed').write_text('ok')
+'''
+        result = subprocess.run([sys.executable, '-B', '-c', script, str(sandbox), str(root),
+                                 str(scratch), str(top / 'private/authentication.key')],
+                                capture_output=True, text=True, timeout=15)
+        expect('VELDO-0205 repair/worker-and-child-cannot-access-store: ' + result.stderr[-300:],
+               result.returncode == 0 and (scratch / 'allowed').read_text() == 'ok')
+    import copy
+    spec = importlib.util.spec_from_file_location('landing', ROOT / 'engine/.veldo/control_verification.py')
+    landing = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(landing)
+    commit = 'a' * 40
+    stdout = '== unit\n   unit: pass\nGATE: GREEN (' + commit + ')'
+    stamp = {'commit': commit, 'status': 'green', 'force_fresh': True,
+             'reused': {'unit': 0, 'mutation': 0}}
+    observation = {'schema': 'veldo.gate_observation/v1', 'commit': commit, 'stdout': stdout,
+                   'stdout_digest': landing.digest(stdout.encode()), 'exit': 0,
+                   'terminal': stdout.splitlines()[-1],
+                   'catalog': {'required': ['unit'], 'results': {'unit': 'pass'}},
+                   'candidate': {'commit': commit, 'tree': 'b'*40, 'binds_refs': False, 'state': {}},
+                   'post_run': {'equal': True, 'state': {}},
+                   'outputs': {'last_verify': stamp,
+                               'gate_event': dict(stamp, type='gate.passed')}}
+    good = not landing.judge(observation)
+    for document in ('last_verify', 'gate_event'):
+        for counts, forced in [({'mutation': 1}, True), ({'mutation': 0}, False),
+                               ({'mutation': '0'}, True), ({}, True)]:
+            bad = copy.deepcopy(observation)
+            bad['outputs'][document].update(reused=counts, force_fresh=forced)
+            good &= 'missing_evidence:gate/fresh_required' in landing.judge(bad)
+    expect('VELDO-0205 repair/landing-refuses-reuse', good)
+    with tempfile.TemporaryDirectory(prefix='reuse-guard-') as tmp:
+        root = Path(tmp)
+        (root / '.veldo').mkdir()
+        def git(*args):
+            return subprocess.check_output(['git', '-C', str(root), *args], stderr=subprocess.PIPE).decode().strip()
+        git('init', '-q'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid',
+                              'commit', '--allow-empty', '-qm', 'Fixture')
+        stamp['commit'] = git('rev-parse', 'HEAD')
+        decisions = []
+        for reused in (1, 0):
+            stamp['reused']['mutation'] = reused
+            (root / '.veldo/last_verify').write_text(json.dumps(stamp))
+            env = dict(os.environ, CLAUDE_PROJECT_DIR=str(root), PYTHONOPTIMIZE='1')
+            env.pop('VELDO_EMERGENCY', None)
+            result = subprocess.run(['bash', str(ROOT / 'scripts/veldo-guard.sh')],
+                input=json.dumps({'tool_input': {'command': 'git merge topic'}}),
+                text=True, capture_output=True, env=env, timeout=15)
+            decisions.append('Landing requires force_fresh' in result.stderr)
+        expect('VELDO-0205 repair/real-guard-rejects-reused-stamp', decisions == [True, False])
+    import sys
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    reducer = load('reuse_stamp')
+    expect('VELDO-0205 repair/stamp-receipt-counts',
+           reducer.fields({'status': 'passed', 'force_fresh': False, 'reused': 7}, False)
+           == {'force_fresh': False, 'reused': {'unit': 0, 'mutation': 7}})
+
+
+_v205_review_repairs()

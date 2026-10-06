@@ -9,8 +9,15 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0123]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh"]
+protected_paths: ["scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", ".veldo/policy.yaml", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/mutation_reuse_profiles.json", "scripts/mutation_sandbox.py", "scripts/reuse_stamp.py", "engine/.veldo/control_verification.py", ".veldo/control_verification.py"]
 footprint:
+  - "scripts/veldo-guard.sh"
+  - "engine/scripts/veldo-guard.sh"
+  - ".veldo/policy.yaml"
+  - "scripts/mutation_sandbox.py"
+  - "scripts/reuse_stamp.py"
+  - "engine/.veldo/control_verification.py"
+  - ".veldo/control_verification.py"
   - "scripts/verify.sh"
   - "scripts/check_gate_mutations.py"
   - "scripts/check_teeth_mutations.py"
@@ -100,9 +107,8 @@ file trees and tools, and explain why generated paths, clocks, randomness and se
 change the asserted observations. Profiles pin the reviewed repository input digest and exact case
 identity; any code edit invalidates that qualification. There is no automatic certification from
 an observed read trace, file extension, or a suite claiming to be deterministic. No profile means
-fresh execution. Runtime trees are recursively content hashed with names and modes; symlinks,
-unreadable inputs and special files refuse reuse. All ambient environment values are hashed, never
-printed. Profiles and the reuse implementation are also part of every result key.
+fresh execution. Runtime trees are recursively content hashed with names and modes; symlinks include link text and resolved target identity;
+unreadable inputs and special files refuse reuse. Only the fixed worker environment values are hashed, never printed. Profiles and the reuse implementation are also part of every result key.
 
 The first implementation may leave unqualified production cases fresh. Qualification must be
 reported explicitly, with no implied speedup for those cases. A follow-up can narrow closures only
@@ -133,3 +139,23 @@ Only suite 98 and its targeted unit fixtures run during this build, sequentially
 the force-fresh full gate and existing mutation qualifications after the other checkout finishes.
 No gate stamp or events byproduct is committed. Required language syntax such as front-matter
 delimiters and command flags retains its ordinary ASCII spelling; prose uses single ASCII hyphens.
+
+## Review repair authorized by owner, 2026-10-06
+
+The protected paths listed above are prepared for exact-commit owner approval before landing.
+Gate stamps and events carry force_fresh and per-stage reused counts; both the fleet verifier
+and push guard reject reuse-aware evidence unless forced fresh with all counts zero. Legacy
+adopter stamps without reuse metadata retain their existing behavior. Unknown force-fresh values
+are errors; 1/true/yes/on and 0/false/no/off are accepted case-insensitively.
+
+Every mutation worker installs Linux Landlock ABI 3 or newer before loading driver code.
+Children inherit the restriction: only the frozen tree, /usr, /lib, /lib64, /etc and device
+null/random inputs are readable, and only private worker scratch is writable. /proc and caller
+home are not exposed. Cache placement under allowed runtime paths is refused. Unsupported hosts
+fail closed. Runtime profiles must cover Python, its stdlib, git and the shell; reviewed profiles
+remain responsible for transitive tools, libc, configuration and non-file determinism until
+VELDO-0207 enforces the declared runtime set. Kernel and approved coordinator code are trusted;
+an arbitrary hostile process running as the coordinator uid outside this sandbox can still
+steal its key or forge evidence. HMAC is not an owner-account security boundary. Mutants inside
+the sandbox cannot open the store or key even if they guess the path. Conflicting publication
+poisons the identity, reports an integrity failure and never silently preserves a winning record.

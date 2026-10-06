@@ -32,7 +32,7 @@ executes the old fixture constructor and its small Git setup, but never executes
 
 | Criterion | Local behavioral evidence |
 | --- | --- |
-| AC1 | reuse/exact-closure changes every repository file's content and mode, adds and deletes files, changes case, head, config, environment, interpreter and tool identities, and tests runtime tree additions and symlink refusal. Omitting content hashing is a driven negative control. |
+| AC1 | reuse/exact-closure changes every repository file's content and mode, adds and deletes files, changes case, head, config, environment, interpreter and tool identities, and tests runtime tree additions and symlink identity. Omitting content hashing is a driven negative control. |
 | AC2 | reuse/authenticated-kills drives missing, edited, truncated, wrongly keyed, recomputed-checksum and signed-but-invalid records, bad baselines, survivors and timeouts. Bypassing authentication is a driven negative control. Store errors and repository-local stores cannot produce hits. |
 | AC3 | reuse/receipt-counts and reuse/mixed-counts check both drivers with cold, warm and mixed receipts; reuse/stale-cannot-pass and reuse/changed-input-cannot-pass prove fresh survivors stay red. Setup failures, worker crashes, input races and counting regressions are driven. |
 | AC4 | reuse/fresh-policy tests the environment switch and explicit coordinator argument, bypassing reads and writes. Ignoring force fresh is a driven negative control. Gate wiring remains required and deadline exceptions remain red. |
@@ -68,7 +68,7 @@ absolute runtime_paths covering every external file tree and tool dependency, no
 to none, and a reviewed rationale proving that variable host state cannot affect the observations.
 The profile file is excluded only from its own qualification digest to avoid self-reference; it
 is included in every result key. Every other snapshot file is pinned. A changed file invalidates
-the qualification. Runtime paths must include the resolved interpreter; symlinks and special files
+the qualification. Runtime paths must include the resolved interpreter; symlinks include link text and resolved target identity; special files
 are refused. The declaration must include dynamic libraries, import paths, tool configuration and
 all other dependencies, not merely the interpreter executable. A profile is a reviewed contract,
 not an automatically inferred read trace. Do not fill the empty registry without that review.
@@ -90,3 +90,17 @@ no-op jobs remain separately counted in worker_invocations. This preserves hones
 Telegram 31900 approves the design in Telegram 31622 and reverses Telegram 28800's earlier reuse
 removal. It is not represented here as approval of an implementation commit. Nothing was pushed,
 merged, self-approved or changed in another worktree. Gate byproducts are excluded from commits.
+
+## Part A review repair, 2026-10-06
+
+Suite 98: 54 passed, zero failed (1.52 seconds). This is partial local evidence,
+not a gate pass. Direct tests invoke the real fleet judge, the real shell guard
+(with Python optimization enabled), the stamp receipt reducer, and a Landlock
+child with a descendant process. Reused stamps/events are rejected; worker and
+child reads and writes of a known coordinator key path are denied. Colliding
+record contents poison that key and issue an integrity warning. Runtime admission
+requires stdlib, git and shell coverage; force-fresh parsing rejects unknown values.
+Only worker environment values participate in the key. Bash syntax checks passed.
+The protected-path amendment requires owner approval of the final commit and proof.
+Linux Landlock ABI 3 is required; no unsandboxed fallback. The coordinator account
+and kernel remain trusted, as specified in the amended contract.

@@ -14,6 +14,13 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
+  - {path: "scripts/mutation_reuse_profiles.json", floor: high}
+  - {path: "scripts/mutation_reuse.py", floor: high}
+  - {path: "scripts/gate_reuse.py", floor: high}
+  - {path: "scripts/mutation_sandbox.py", floor: high}
+  - {path: "scripts/reuse_stamp.py", floor: high}
+  - {path: "engine/.veldo/control_verification.py", floor: high}
+  - {path: ".veldo/control_verification.py", floor: high}
   # The enforcement core: this repository ships the templates every adopting
   # repository trusts. Weakening the gate, the guard, or the policy here
   # propagates everywhere, so those exact files are the protected surface.
@@ -73,7 +80,8 @@ merge_rule: >
   auto-merge; every required approval is recorded, unexpired, and bound to
   this commit; and the change is classified reversible. If the trunk moved
   since the gate ran, the gate re-runs on the merged result before the merge
-  completes.
+  completes. Reuse-aware stamps and events must declare force_fresh true and
+  zero reused results in every stage; development reuse cannot authorize landing.
   NO VERDICT CLAUSE (WARP-0730). The rule used to also require a pass verdict
   with zero blocking findings. A verdict is an artifact the agent can write,
   so that clause asked an agent to certify itself and cost nine build rounds

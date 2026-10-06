@@ -90,7 +90,10 @@ CHECK_deploy_dry_run="na:no automated deployment path yet"
 # VELDO-0205: mutation receipts distinguish fresh and reused results.
 # Landing and release operators must set VELDO_GATE_FORCE_FRESH=1.
 # The suite stage stays fresh until VELDO-0206 is implemented.
-CHECK_extra="required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py"
+VELDO_REUSE_RECEIPT=$(mktemp)
+export VELDO_REUSE_RECEIPT
+trap 'rm -f "$VELDO_REUSE_RECEIPT"' EXIT
+CHECK_extra='required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py --receipt "$VELDO_REUSE_RECEIPT"'
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system
 # negative self-test, docs enforces the standing hygiene rules, generated
@@ -255,11 +258,15 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN")
+REUSE_JSON=$(python3 -B scripts/reuse_stamp.py "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}") || {
+  FAIL=1; STATUS=red; EVENT=gate.failed
+  REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
+}
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify
