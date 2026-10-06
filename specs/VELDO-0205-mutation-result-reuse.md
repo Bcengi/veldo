@@ -11,6 +11,7 @@ depends_on: [VELDO-0123]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", ".veldo/policy.yaml", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/mutation_reuse_profiles.json", "scripts/mutation_sandbox.py", "scripts/reuse_stamp.py", "engine/.veldo/control_verification.py", ".veldo/control_verification.py"]
 footprint:
+  - "packs/claude/scripts/veldo-guard.sh"
   - "scripts/veldo-guard.sh"
   - "engine/scripts/veldo-guard.sh"
   - ".veldo/policy.yaml"
@@ -160,3 +161,8 @@ an arbitrary hostile process running as the coordinator uid outside this sandbox
 steal its key or forge evidence. HMAC is not an owner-account security boundary. Mutants inside
 the sandbox cannot open the store or key even if they guess the path. Conflicting publication
 poisons the identity, reports an integrity failure and never silently preserves a winning record.
+
+The Claude pack carries one concrete guard copy; it is synchronized with the engine
+alongside the home-repository copy. VELDO-0207 supersedes production whole-tree
+qualification with declared per-case snapshots. The v1 implementation remains for
+its qualification fixtures, but the gate now admits only the new declaration format.
