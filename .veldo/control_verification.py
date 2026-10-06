@@ -122,11 +122,15 @@ def inside(path, root):
     return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
 
 
+def _candidate_git():
+    return _sibling("candidate_git", "candidate_git.py")
+
+
 def _git(repo, *args, ok=(0,)):
     try:
-        result = _git_process.run(["git", "-C", str(repo), *args], capture_output=True,
+        result = _candidate_git().run(repo, args, capture_output=True,
                                   stdin=subprocess.DEVNULL, timeout=GIT_SECONDS)
-    except (OSError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         raise Refused("unavailable_service:git/" + args[0], type(error).__name__)
     if result.returncode not in ok:
         raise Refused("unavailable_service:git/" + args[0],
@@ -245,6 +249,8 @@ def installation_at(repo, commit, directory):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(tar.extractfile(member).read())
                 target.chmod(0o755 if member.mode & 0o111 else 0o644)
+    (directory / '.veldo/authority_git_common').write_text(
+        str(_candidate_git().common_directory(repo)) + '\n')
     return {"root": str(directory), "source": "commit:" + str(commit)}
 
 

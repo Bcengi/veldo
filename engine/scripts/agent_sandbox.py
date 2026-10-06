@@ -118,21 +118,18 @@ def ipc_filter(libc):
         raise OSError(ctypes.get_errno(), 'agent sandbox IPC filter unavailable')
 
 
-def git_grants(worktree, protected):
+def git_grants(worktree, protected, expected_common=None):
     """Grant linked-worktree persistence without writing common config or hooks."""
     marker = worktree / '.git'
     if not marker.is_file():
         return []
     if marker.is_symlink():
         raise ValueError('worktree Git marker must not be a symlink')
-    line = marker.read_text().strip()
-    if not line.startswith('gitdir: '):
-        raise ValueError('invalid worktree Git marker')
-    gitdir = (worktree / line[8:]).resolve(strict=True)
-    common = (gitdir / (gitdir / 'commondir').read_text().strip()).resolve(strict=True)
-    if (gitdir.parent != common / 'worktrees'
-            or Path((gitdir / 'gitdir').read_text().strip()).resolve() != marker):
-        raise ValueError('Git directory does not belong to this worktree')
+    spec = importlib.util.spec_from_file_location('candidate_git',
+        Path(__file__).resolve().parents[1] / '.veldo/candidate_git.py')
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+    gitdir, common = guard.validate(worktree, expected_common)
     head = (gitdir / 'HEAD').read_text().strip()
     if not head.startswith('ref: refs/heads/'):
         raise ValueError('agent worktree needs a branch')
@@ -191,7 +188,8 @@ def grants_for(config, authority, worktree, scratch):
     # Git persistence is the sole exception beneath the authority's .git.
     # Its working files, config, hooks and other worktree gitdirs stay read-only.
     if '{worktree}' in config['write_roots']:
-        grants += git_grants(worktree, [store, *(p for p in protected if p != authority)])
+        grants += git_grants(worktree, [store, *(p for p in protected if p != authority)],
+                             config.get('git_common_dir'))
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)),
                (Path('/dev/urandom'), 1 << 2), (Path('/dev/random'), 1 << 2)]
     return grants, [store, *protected]

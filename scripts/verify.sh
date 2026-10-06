@@ -12,6 +12,9 @@
 set -u
 # The script and all security helpers come from the authority installation.
 VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+git() {
+  python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
+}
 veldo_candidate() {
   python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
@@ -66,7 +69,13 @@ else
 fi
 if [ -n "$VELDO_REFUSE" ]; then
   echo "== gate output: REFUSED - $VELDO_REFUSE; no check ran and nothing was written"
-  echo "GATE: RED ($(git rev-parse --verify HEAD 2>/dev/null || echo "no-git"))"
+  echo "GATE: RED (candidate refused)"
+  exit 1
+fi
+
+# Refuse marker redirection before any candidate code or repository Git command.
+if ! python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" --validate-only; then
+  echo "GATE: RED (candidate Git boundary refused)"
   exit 1
 fi
 

@@ -11,6 +11,8 @@ depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
 protected_paths: ["scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
 footprint:
+  - ".veldo/candidate_git.py"
+  - "engine/.veldo/candidate_git.py"
   - "engine/scripts/*.py"
   - "engine/scripts/agent_sandbox.json"
   - "scripts/mutation_observer.py"
@@ -127,6 +129,23 @@ Those external files are not edited here. This checkout is not retroactively con
 Existing agent sessions must finish and the owner must rotate exposed signing keys before reuse
 is trusted. The default v2 store is a new rollout namespace, not an upgrade of the old v1 key. Old records without provenance
 are misses and must be removed by the owner or left to run fresh; they are never upgraded.
+
+## Git boundary
+
+Before any Git command on a candidate, the authority checks its .git marker without
+running Git. Linked markers must resolve under the expected shared gitdir/worktrees,
+with matching commondir and backlink. The expected directory comes from the authority,
+never from the candidate. Installed authorities retain the original trusted directory.
+All orchestrator Git queries strip inherited GIT_* settings, disable global/system
+configuration, set core.hooksPath=/dev/null and core.fsmonitor=false, and pin git-dir,
+work-tree and common-dir after validation. External runners must use this same boundary
+before their status queries (exact invocation in the follow-up report).
+
+The agent retains writable index/HEAD/logs for its own linked worktree, shared objects,
+and its branch ref/log parent directories; shared config and hooks remain read-only.
+Directory grants expose sibling loose refs and shared objects to reads and some writes.
+Trusted authority storage must therefore live outside every gitdir the agent can read.
+These grants are not isolation between mutually hostile branches in a shared object store.
 
 ## Build and evidence limits
 

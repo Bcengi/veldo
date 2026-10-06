@@ -192,6 +192,8 @@ sys.exit(m.main())
         git_at(main, 'worktree', 'add', '-q', '-b', 'agent', str(linked))
         other = top / 'git-other'
         git_at(main, 'worktree', 'add', '-q', '-b', 'other', str(other))
+        policy['git_common_dir'] = str(main / '.git')
+        config.write_text(json.dumps(policy))
         linked_command = command[:]
         linked_command[linked_command.index(str(worktree))] = str(linked)
         script = """import errno, pathlib, subprocess, sys
@@ -213,6 +215,48 @@ for name in sys.argv[1:]:
         expect('VELDO-0208 sandbox/linked-worktree-commit: ' + result.stderr[-600:],
                result.returncode == 0 and git_at(linked, 'rev-parse', 'HEAD') != original_head
                and git_at(main, 'rev-parse', 'HEAD') == original_head)
+
+        # Both plausible redirect metadata and hostile ambient Git config are planted.
+        guard = load('.veldo/candidate_git.py')
+        planted_hook = linked / 'git-escape.sh'
+        escaped = top / 'git-escaped'
+        planted_hook.write_text('#!/bin/sh\ntouch ' + str(escaped) + '\n')
+        planted_hook.chmod(0o755)
+        git_at(main, 'config', 'core.fsmonitor', str(planted_hook))
+        hooks = linked / 'evil-hooks'; hooks.mkdir()
+        shutil.copyfile(planted_hook, hooks / 'pre-commit'); (hooks / 'pre-commit').chmod(0o755)
+        git_at(main, 'config', 'core.hooksPath', str(hooks))
+        poisoned = dict(os.environ, GIT_CONFIG_COUNT='2',
+            GIT_CONFIG_KEY_0='core.fsmonitor', GIT_CONFIG_VALUE_0=str(planted_hook),
+            GIT_CONFIG_KEY_1='core.hooksPath', GIT_CONFIG_VALUE_1=str(hooks),
+            GIT_CONFIG_PARAMETERS="'core.fsmonitor=" + str(planted_hook) + "'")
+        check = guard.run(linked, ['status', '--porcelain'], main / '.git',
+                          env=poisoned, capture_output=True)
+        committed = guard.run(linked, ['-c', 'user.name=Fixture', '-c',
+            'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'Guard fixture'],
+            main / '.git', env=poisoned, capture_output=True)
+        expect('VELDO-0208 git/config-hooks-and-fsmonitor-disabled',
+               check.returncode == committed.returncode == 0 and not escaped.exists())
+        git_at(main, 'config', '--unset', 'core.fsmonitor')
+        git_at(main, 'config', '--unset', 'core.hooksPath')
+        original_marker = (linked / '.git').read_text()
+        fake_common = linked / 'fake-common'; fake = fake_common / 'worktrees/fake'
+        fake.mkdir(parents=True)
+        (fake / 'gitdir').write_text(str(linked / '.git'))
+        (fake / 'commondir').write_text('../..')
+        (fake / 'HEAD').write_text('ref: refs/heads/agent\n')
+        (fake / 'config').write_text('[core]\nfsmonitor = ' + str(planted_hook) + '\n')
+        (linked / '.git').write_text('gitdir: ' + str(fake) + '\n')
+        refused = subprocess.run([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
+            '--root', str(linked), '--expected-common', str(main / '.git'), '--', 'status'],
+            capture_output=True, text=True, timeout=20)
+        refused_agent = subprocess.run(linked_command + ['/usr/bin/true'],
+                                      capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 git/redirect-refused-before-git-or-agent',
+               refused.returncode == refused_agent.returncode == 2
+               and 'expected shared gitdir' in refused.stderr
+               and 'expected shared gitdir' in refused_agent.stderr and not escaped.exists())
+        (linked / '.git').write_text(original_marker)
 
         case = dict(identity='check_teeth_mutations.py:fixture', name='fixture',
                     driver='check_teeth_mutations.py', rows=['target'], suite='fixture.py',

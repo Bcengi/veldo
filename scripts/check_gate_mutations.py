@@ -179,21 +179,11 @@ def command(args, env, with_stderr=False):
 
 # Git's shared environment boundary runs inside our owned group. The outer process
 # keeps setup descendants killable even if the shared subprocess.run call hangs.
-GIT_BRIDGE = """import importlib.util, subprocess, sys
-spec = importlib.util.spec_from_file_location('git_process', sys.argv[1])
-_git_process = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(_git_process)
-result = _git_process.run(['git', *sys.argv[2:]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-sys.stdout.buffer.write(result.stdout)
-sys.stderr.buffer.write(result.stderr)
-sys.exit(result.returncode)
-"""
-
-
 def git_bytes(root, *args, with_stderr=False):
-    return command([sys.executable, '-B', '-s', '-c', GIT_BRIDGE,
-                    str(ROOT / '.veldo/git_process.py'), '-C', str(root), *args],
-                   fixed_env('/nonexistent'), with_stderr=with_stderr)
+    return command([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
+                    '--root', str(root), '--', *args],
+                   dict(fixed_env('/nonexistent'), **{k: v for k, v in os.environ.items()
+                        if k == 'VELDO_EXPECTED_GIT_COMMON'}), with_stderr=with_stderr)
 
 
 def git(root, *args):
