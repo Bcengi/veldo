@@ -10,6 +10,12 @@
 # a decision someone made, never an omission nobody noticed. Secret detection
 # runs always; VELDO contract validation runs always and is red if unavailable.
 set -u
+# The script and all security helpers come from the authority installation.
+VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+veldo_candidate() {
+  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+}
+
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
 # installation verifies a landing candidate: this script is the installed copy, every check runs in
 # <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
@@ -93,7 +99,8 @@ CHECK_deploy_dry_run="na:no automated deployment path yet"
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
 trap 'rm -f "$VELDO_REUSE_RECEIPT"' EXIT
-CHECK_extra='required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py --receipt "$VELDO_REUSE_RECEIPT"'
+CHECK_extra='required:bash scripts/check_template_sync.sh'
+CHECK_mutation='required:authority mutation stage'
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system
 # negative self-test, docs enforces the standing hygiene rules, generated
@@ -115,7 +122,7 @@ CHECK_extra='required:bash scripts/check_template_sync.sh && python3 -B scripts/
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
 token_lint visual_baselines build dependency_audit licenses security migration \
-generated docs performance coverage packaging deploy_dry_run extra"
+generated docs performance coverage packaging deploy_dry_run extra mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0
 TODAY=$(date -u +%Y-%m-%d)
@@ -130,7 +137,9 @@ for name in $ORDER; do
     required:*)
       cmd="${decl#required:}"
       echo "== ${name}"
-      if bash -c "$cmd"; then
+      if { if [ "$name" = mutation ]; then
+        python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" --root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"
+      else veldo_candidate bash -c "$cmd"; fi; }; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else
         echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))
@@ -150,7 +159,7 @@ for name in $ORDER; do
     *)
       # legacy plain command = treat as required
       echo "== ${name}"
-      if bash -c "$decl"; then
+      if veldo_candidate bash -c "$decl"; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else
         echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))
@@ -170,7 +179,7 @@ fi
 
 echo "== veldo contracts (built-in: fails closed if unavailable)"
 if command -v python3 >/dev/null && [ -f .veldo/validate.py ]; then
-  if python3 .veldo/validate.py all; then
+  if veldo_candidate python3 .veldo/validate.py all; then
     echo "   contracts: pass"
   else
     echo "   contracts: FAIL"; FAIL=1
@@ -181,7 +190,7 @@ else
 fi
 
 echo "== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)"
-if ! python3 .veldo/shape_gate.py; then FAIL=1; fi
+if ! veldo_candidate python3 .veldo/shape_gate.py; then FAIL=1; fi
 
 # Review observability (built-in): DERIVE the verdict.recorded event of every committed
 # verdict artifact. It lives here, in the stage that always runs, because the thing it
@@ -208,7 +217,7 @@ if [ "$VELDO_OUT" != ".veldo" ]; then
   fi
   set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
 fi
-python3 .veldo/events.py reconcile-verdicts "$@" || \
+python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
   { if ! command -v python3 >/dev/null 2>&1; then \
       echo "   review events: reconciliation unavailable (no python3 on PATH) - by design not a gate failure"; \
     elif [ ! -f .veldo/events.py ]; then \
@@ -230,7 +239,7 @@ if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVE
 # VELDO-0010. The exit status is checked first, and the value must still LOOK like a version, because
 # a shape test survives any future change to what that script prints.
 VELDO_VERSION=""
-if _veldo_v=$(python3 .veldo/version.py 2>/dev/null); then
+if _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
   _veldo_v=$(printf '%s' "$_veldo_v" | awk '{print $1}')
   case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
 fi
@@ -258,7 +267,7 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-REUSE_JSON=$(python3 -B scripts/reuse_stamp.py "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
+REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
   FAIL=1; STATUS=red; EVENT=gate.failed
   REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
 }

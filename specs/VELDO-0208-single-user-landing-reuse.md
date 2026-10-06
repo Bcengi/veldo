@@ -11,6 +11,10 @@ depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
 protected_paths: ["scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
 footprint:
+  - "scripts/gate_candidate.py"
+  - "scripts/reuse_worker.py"
+  - "scripts/check_gate_mutations.py"
+  - "engine/scripts/verify.sh"
   - "scripts/agent_sandbox.py"
   - "scripts/agent_sandbox.json"
   - "scripts/gate_reuse.py"
@@ -82,13 +86,17 @@ The merged tree still requires a complete gate and honest fresh/reused counts.
 
 ## Trust boundary and deployment
 
-The threat is an implementing Codex or Claude process launched by the owner's orchestrator
-editing records, stealing the signing key or replacing trusted reuse/landing code or runners.
-Every implementing process tree must start through the reviewed launcher from the authority
-checkout, outside its own editable worktree. The owner and the orchestrator session itself are
-unconfined and trusted, as are the kernel and installed system tools. An unconfined owner can
-write records; HMAC is not a defense against that owner. The store probe demonstrates absence
-of the configured agent restrictions, not absence of every possible Landlock domain.
+Trusted: the owner, orchestrator, kernel/system tools, and the reuse stage loaded from
+an authority checkout or its installed engine snapshot. Untrusted: everything executed
+from a candidate tree, including suites, registries, drivers and worker entry points.
+The gate routes candidate commands through the authority launcher before execution.
+Registry enumeration runs confined. The authority coordinator launches each worker,
+observes its exit and output, validates baseline/noop/mutant observations, and alone
+performs lookup and publication. It never accepts a candidate-produced stage receipt.
+Workers start with authority bootstrap/driver code and install confinement before
+executing candidate suites. The coordinator's receipt is outside candidate write grants.
+An unconfined owner can write records; HMAC is not a defense against that owner.
+The store probe is only a kernel access check, not evidence of code identity.
 
 One reviewed JSON config supplies the store (including authentication.key), read roots,
 writable roots and protected runner paths. The launcher fails closed on missing paths,

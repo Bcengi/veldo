@@ -95,6 +95,31 @@ results['own-worktree'] = pathlib.Path('edited').read_text() == 'allowed'
 results['private-home'] = pathlib.Path(os.environ['HOME'], 'private-state').read_text() == 'allowed'
 print(json.dumps(results))
 ''')
+        # A newly planted candidate suite imports its own reuse code and attempts
+        # publication through the exact authority entry used by the gate catalog.
+        import shutil
+        (worktree / 'scripts').mkdir()
+        (worktree / '.veldo').mkdir()
+        for relative in ('scripts/case_reuse.py', 'scripts/mutation_reuse.py',
+                         'scripts/gate_reuse.py', 'scripts/case_inputs.py', '.veldo/reuse_evidence.py'):
+            shutil.copyfile(ROOT / relative, worktree / relative)
+        planted = worktree / 'scripts/planted_suite.py'
+        planted.write_text("import case_reuse, pathlib\n"
+            "store = case_reuse.R.Store(" + repr(str(storepath)) + ", pathlib.Path.cwd())\n"
+            "assert store.put('f' * 64, {'mutant': 'killed'}), 'store publication denied'\n")
+        planted_result = subprocess.run([sys.executable, '-I', '-S',
+            str(ROOT / 'scripts/gate_candidate.py'), '--root', str(worktree), '--',
+            sys.executable, str(planted)], env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)),
+            capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 candidate/planted-suite-publication-red',
+               planted_result.returncode != 0 and 'store publication denied' in planted_result.stderr
+               and 'store-denied domain' in planted_result.stderr
+               and not (storepath / ('f' * 64 + '.json')).exists())
+        # Replacing the worker entry cannot run before the authority installs confinement.
+        worker_source = (ROOT / 'scripts/check_gate_mutations.py').read_text()
+        expect('VELDO-0208 candidate/authority-launches-worker',
+               "str(ROOT / 'scripts/reuse_worker.py')" in worker_source
+               and "str(worker_root / 'scripts/check_gate_mutations.py')" not in worker_source)
         keyfd = os.open(storepath / 'authentication.key', os.O_RDWR)
         before = (storepath / 'authentication.key').read_bytes()
         try:

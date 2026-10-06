@@ -3,8 +3,14 @@ import json
 import importlib.util
 from pathlib import Path
 import sys
-from mutation_reuse import truthy
-from gate_reuse import E
+def load(name):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+truthy = load('mutation_reuse').truthy
+E = load('gate_reuse').E
 
 
 def fields(receipt, force, commit=None):

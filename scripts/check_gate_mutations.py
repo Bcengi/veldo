@@ -113,7 +113,7 @@ def load(path):
     return module
 
 
-def inventory(root):
+def inventory_local(root):
     result = []
     for driver in DRIVERS:
         path = root / 'scripts' / driver
@@ -133,6 +133,21 @@ def inventory(root):
     if len({c['identity'] for c in result}) != len(result):
         raise Refused('incomplete_inventory', 'duplicate case')
     return result
+
+
+def confined_command(root, command):
+    return [sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_candidate.py'),
+            '--root', str(root), '--', *command]
+
+
+def inventory(root):
+    # Registry imports are candidate execution too. Only data crosses this pipe.
+    result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
+        str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
+        capture_output=True, text=True, timeout=WORKER_BUDGET)
+    if result.returncode:
+        raise Refused('candidate_execution_denied', result.stderr[-2000:])
+    return json.loads(result.stdout)
 
 
 def fixed_env(home, binpath='/usr/bin:/bin'):
@@ -473,14 +488,15 @@ class Workers:
                         job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
-                    out, err = (open(home / f, 'w+b') for f in ('stdout', 'stderr'))
+                    out, err = (open(directory / (str(self.invocations) + '-' + f), 'w+b')
+                                for f in ('stdout', 'stderr'))
                     self.resources.acquire(name, job)
                     try:
                         worker_root = Path(job.get('snapshot_root', root))
                         argv = [sys.executable, '-B', '-s',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
-                                str(worker_root / 'scripts/check_gate_mutations.py'),
-                                '--worker', str(jobpath)]
+                                str(ROOT / 'scripts/reuse_worker.py'),
+                                'worker', str(worker_root), str(jobpath)]
                         if 'snapshot_root' in job:
                             argv.insert(1, '-S')  # no unkeyed system site initialization
                             tracer = load(ROOT / 'scripts/case_trace.py')
@@ -516,7 +532,7 @@ class Workers:
                     self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
                     if 'snapshot_root' in jobs[name]:
                         # Trace is outside the worker's writable home. Check before trusting output.
-                        trace = Path(out.name).parent
+                        trace = directory / Path(out.name).name.split('-', 1)[0]
                         tracer.check(directory / ('trace-' + trace.name),
                                      jobs[name]['snapshot_root'], jobs[name]['declared_files'],
                                      jobs[name].get('declared_absent', []),
@@ -738,13 +754,14 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
+    parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--receipt', type=Path)
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     args = parser.parse_args()
     if args.worker:
         print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
-    receipt = run_stage(capacities=resource_capacities(args.resource_capacity))
+    receipt = run_stage(root=args.root, capacities=resource_capacities(args.resource_capacity))
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)

@@ -10,6 +10,12 @@
 # a decision someone made, never an omission nobody noticed. Secret detection
 # runs always; VELDO contract validation runs always and is red if unavailable.
 set -u
+# The script and all security helpers come from the authority installation.
+VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+veldo_candidate() {
+  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+}
+
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
 # installation verifies a landing candidate: this script is the installed copy, every check runs in
 # <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
@@ -111,7 +117,7 @@ for name in $ORDER; do
     required:*)
       cmd="${decl#required:}"
       echo "== ${name}"
-      if bash -c "$cmd"; then
+      if veldo_candidate bash -c "$cmd"; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else
         echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))
@@ -131,7 +137,7 @@ for name in $ORDER; do
     *)
       # legacy plain command = treat as required
       echo "== ${name}"
-      if bash -c "$decl"; then
+      if veldo_candidate bash -c "$decl"; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else
         echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))
@@ -151,7 +157,7 @@ fi
 
 echo "== veldo contracts (built-in: fails closed if unavailable)"
 if command -v python3 >/dev/null && [ -f .veldo/validate.py ]; then
-  if python3 .veldo/validate.py all; then
+  if veldo_candidate python3 .veldo/validate.py all; then
     echo "   contracts: pass"
   else
     echo "   contracts: FAIL"; FAIL=1
@@ -162,7 +168,7 @@ else
 fi
 
 echo "== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)"
-if ! python3 .veldo/shape_gate.py; then FAIL=1; fi
+if ! veldo_candidate python3 .veldo/shape_gate.py; then FAIL=1; fi
 
 # Review observability (built-in): DERIVE the verdict.recorded event of every committed
 # verdict artifact. It lives here, in the stage that always runs, because the thing it
@@ -189,7 +195,7 @@ if [ "$VELDO_OUT" != ".veldo" ]; then
   fi
   set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
 fi
-python3 .veldo/events.py reconcile-verdicts "$@" || \
+python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
   { if ! command -v python3 >/dev/null 2>&1; then \
       echo "   review events: reconciliation unavailable (no python3 on PATH) - by design not a gate failure"; \
     elif [ ! -f .veldo/events.py ]; then \
@@ -211,7 +217,7 @@ if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVE
 # VELDO-0010. The exit status is checked first, and the value must still LOOK like a version, because
 # a shape test survives any future change to what that script prints.
 VELDO_VERSION=""
-if _veldo_v=$(python3 .veldo/version.py 2>/dev/null); then
+if _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
   _veldo_v=$(printf '%s' "$_veldo_v" | awk '{print $1}')
   case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
 fi

@@ -190,7 +190,8 @@ def grants_for(config, authority, worktree, scratch):
     grants += [(p, READ | WRITE) for p in writes]
     # Git persistence is the sole exception beneath the authority's .git.
     # Its working files, config, hooks and other worktree gitdirs stay read-only.
-    grants += git_grants(worktree, [store, *(p for p in protected if p != authority)])
+    if '{worktree}' in config['write_roots']:
+        grants += git_grants(worktree, [store, *(p for p in protected if p != authority)])
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)),
                (Path('/dev/urandom'), 1 << 2), (Path('/dev/random'), 1 << 2)]
     return grants, [store, *protected]
@@ -217,7 +218,7 @@ def close_descriptors(protected):
                 pass
 
 
-def launch(config_path, worktree, command):
+def launch(config_path, worktree, command, profile="agent"):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -228,9 +229,12 @@ def launch(config_path, worktree, command):
     scratch = Path(tempfile.mkdtemp(prefix='veldo-agent-'))
     # Scratch persists for this process tree; the owner removes it after the run.
     # There is no unconfined supervisor waiting on agent-controlled cleanup code.
+    if profile == 'gate':
+        config = dict(config, write_roots=['{scratch}'])
     grants, protected = grants_for(config, authority, worktree, scratch)
+    grants += [(worktree, READ), (authority, READ), (scratch, READ | WRITE)]
     protected += [config_path, Path(policy.__file__).resolve()]
-    if any(beneath(p, worktree) for p in protected):
+    if profile == "agent" and any(beneath(p, worktree) for p in protected):
         raise ValueError('launcher, configuration and authority must be outside the worktree')
     for source, relative in config.get('seed_files', {}).items():
         destination = scratch / relative
@@ -263,6 +267,7 @@ def launch(config_path, worktree, command):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', required=True)
+    parser.add_argument('--profile', choices=('agent', 'gate'), default='agent')
     parser.add_argument('--worktree', required=True)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -270,7 +275,7 @@ def main():
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        launch(args.config, args.worktree, command)
+        launch(args.config, args.worktree, command, args.profile)
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr)
         return 2

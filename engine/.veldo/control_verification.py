@@ -73,7 +73,7 @@ POLICY_SOURCE = "policy.yaml"
 # trusted installation's policy_check.py, in a separate process of this module's own), declared so the
 # authority service's installation, whose land station loads this module, reads it as no module of its own.
 EXTERNAL_LOADERS = ("_policy_main",)
-INSTALLED_PATHS = (GATE_PATH, ".veldo")
+INSTALLED_PATHS = ("scripts", ".veldo")
 # The line an installed verifier carries when it knows candidate mode. A verifier without it would
 # ignore the arguments and verify the directory it lives in, so it is refused, never run.
 INTERFACE = "# veldo-gate-interface: candidate-sink/v1"
