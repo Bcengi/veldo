@@ -258,11 +258,18 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d}' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN")
+# This generic catalog has no reuse stage: report zero reuse explicitly.
+VELDO_FORCE_JSON=false
+case "${VELDO_GATE_FORCE_FRESH:-0}" in
+  1|true|yes|on) VELDO_FORCE_JSON=true ;;
+  0|false|no|off|"") : ;;
+  *) FAIL=1; STATUS=red; EVENT=gate.failed ;;
+esac
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,"force_fresh":%s,"reused":{"unit":0,"mutation":0}}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN" "$VELDO_FORCE_JSON")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,"force_fresh":%s,"reused":{"unit":0,"mutation":0}}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$VELDO_FORCE_JSON" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify

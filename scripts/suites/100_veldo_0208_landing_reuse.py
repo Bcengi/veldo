@@ -290,6 +290,16 @@ for name in sys.argv[1:]:
                refused.returncode == refused_agent.returncode == 2
                and 'expected shared gitdir' in refused.stderr
                and 'expected shared gitdir' in refused_agent.stderr and not escaped.exists())
+        (linked / '.git').unlink()
+        (linked / '.git').mkdir()
+        try:
+            guard.validate(linked, main / '.git')
+        except ValueError:
+            directory_refused = True
+        else:
+            directory_refused = False
+        expect('VELDO-0208 git/embedded-directory-cannot-replace-linked-marker', directory_refused)
+        (linked / '.git').rmdir()
         (linked / '.git').write_text(original_marker)
 
         # Small controlled workers only: never run the mutation stage or its drivers.
@@ -357,6 +367,29 @@ for name in sys.argv[1:]:
         else:
             trace_refused = False
         expect('VELDO-0208 candidate/trace-still-rejects-undeclared-probes', trace_refused)
+        git_at(worker_root, 'init', '-q')
+        definition = {k: v for k, v in controlled_case.items() if k not in ('driver', 'identity')}
+        for driver in gate.DRIVERS:
+            (worker_root / 'scripts' / driver).write_text('def cases(): return ' + repr([definition]) + '\n')
+        with patch.dict(os.environ, {'VELDO_AGENT_CONFIG': str(config)}):
+            inventory = gate.inventory(worker_root, expected_common=worker_root / '.git')
+        expect('VELDO-0208 candidate/frozen-registry-confined', len(inventory) == 2)
+        (worker_root / 'scripts' / gate.DRIVERS[0]).write_text(
+            'from pathlib import Path\nPath(' + repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
+        with patch.dict(os.environ, {'VELDO_AGENT_CONFIG': str(config)}):
+            try:
+                gate.inventory(worker_root, expected_common=worker_root / '.git')
+            except gate.Refused as error:
+                refused_registry = error.code == 'candidate_execution_denied' and 'PermissionError' in error.detail
+            else:
+                refused_registry = False
+        expect('VELDO-0208 candidate/planted-registry-red', refused_registry)
+        scaffold = load('engine/.veldo/init_scaffold.py')
+        expect('VELDO-0208 engine/scaffold-includes-boundary',
+               set(E.AUTHORITY_FILES) <= set(scaffold._FILES))
+        catalog = load('.veldo/control_proof.py').catalog((ROOT / 'scripts/verify.sh').read_text())
+        expect('VELDO-0208 gate/catalog-includes-authority-stage',
+               {'extra', 'mutation'} <= set(catalog['required']))
         with patch.dict(os.environ, {}, clear=True):
             engine_evidence = load('engine/.veldo/reuse_evidence.py')
             default_path, _ = engine_evidence.configuration()
@@ -386,6 +419,31 @@ for name in sys.argv[1:]:
                   'input_digest': key, 'replacement_count': 1, 'old_digest': 'a', 'new_digest': 'b',
                   'baseline': observation(True), 'noop': observation(True),
                   'mutant': observation(False), 'elapsed': 0.1}
+        # Reproduce the review attack with the exact controlled Session key, not
+        # just an arbitrary record name. Runtime is fixed fixture data on both sides.
+        for relative in E.AUTHORITY_FILES:
+            destination = worktree / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, destination)
+        attack_input = worktree / 'attack-input.json'
+        attack_input.write_text(json.dumps(dict(
+            files={name: [mode, body.hex()] for name, (mode, body) in files.items()},
+            case=case, key=key, record=record, store=str(storepath))))
+        planted.write_text("import case_reuse as C, json\nfrom pathlib import Path\n"
+            "data = json.loads(Path('attack-input.json').read_text())\n"
+            "files = {n: (m, bytes.fromhex(b)) for n, (m,b) in data['files'].items()}\n"
+            "C.M.runtime_identity = lambda *args: {'fixture': 'runtime-v1'}\n"
+            "s = C.Session(Path.cwd(), files, [data['case']], 'a' * 40, {}, environment={}, "
+            "cache_directory=data['store'])\n"
+            "key = s.keys[data['case']['identity']]\n"
+            "assert key == data['key'], 'case key differs'\n"
+            "assert s.store.put(key, data['record']), 'real-key publication denied'\n")
+        attack = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_candidate.py'),
+            '--root', str(worktree), '--', sys.executable, str(planted)],
+            env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)), capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 candidate/real-session-key-planting-red',
+               attack.returncode != 0 and 'real-key publication denied' in attack.stderr
+               and 'store-denied domain' in attack.stderr and not (storepath / (key + '.json')).exists())
         expect('VELDO-0208 provenance/gate-writes-authenticated-record',
                current.publish(case, record, gate.validate_result) and store.get(key) == record
                and session(files).lookup(case, gate.validate_result) == record)
@@ -515,6 +573,18 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                         capture_output=True, timeout=20, env=dict(env, CLAUDE_PROJECT_DIR=str(fixture)))
                     expect('VELDO-0208 landing/real-guard-' + guard + '-' + name,
                            ('Landing requires authenticated' in result.stderr) is refused and result.returncode == 2)
+        # Exercise only the stamp writer function, never a gate/catalog command.
+        template = (ROOT / 'engine/scripts/verify.sh').read_text()
+        stamp_function = template[template.index('veldo_write_stamp() {'):].split('\n}', 1)[0] + '\n}'
+        for force in ('false', 'true'):
+            stamp_path = top / 'engine-stamp.json'
+            program = ('COMMIT=' + 'a' * 40 + '\nSTATUS=green\nTS=fixture\nRAN=1\nNA=0\n'
+                'VERSION_JSON=null\nTREE_JSON=null\nVELDO_FORCE_JSON=' + force + '\n'
+                + stamp_function + '\nveldo_write_stamp "$1"\n')
+            written = subprocess.run(['bash', '-c', program, 'fixture', str(stamp_path)],
+                                     capture_output=True, text=True, timeout=20)
+            expect('VELDO-0208 engine/stamp-declares-zero-reuse-' + force,
+                   written.returncode == 0 and E.landing_problem(json.loads(stamp_path.read_text())) is None)
         expect('VELDO-0208 landing/canonical-copies-match', all(
             (ROOT / a).read_bytes() == (ROOT / b).read_bytes() for a, b in (
                 ('engine/scripts/agent_sandbox.json', 'scripts/agent_sandbox.json'),

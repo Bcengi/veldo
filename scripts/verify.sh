@@ -112,8 +112,8 @@ CHECK_deploy_dry_run="na:no automated deployment path yet"
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
 trap 'rm -f "$VELDO_REUSE_RECEIPT"' EXIT
-CHECK_extra='required:bash scripts/check_template_sync.sh'
-CHECK_mutation='required:authority mutation stage'
+CHECK_extra="required:bash scripts/check_template_sync.sh"
+CHECK_mutation="required:authority mutation stage"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system
 # negative self-test, docs enforces the standing hygiene rules, generated

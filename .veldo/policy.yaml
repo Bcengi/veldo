@@ -14,6 +14,24 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
+  - {path: "scripts/gate_candidate.py", floor: high}
+  - {path: "scripts/reuse_worker.py", floor: high}
+  - {path: "scripts/mutation_observer.py", floor: high}
+  - {path: ".veldo/candidate_git.py", floor: high}
+  - {path: "engine/.veldo/candidate_git.py", floor: high}
+  - {path: "engine/scripts/agent_sandbox.py", floor: high}
+  - {path: "engine/scripts/agent_sandbox.json", floor: high}
+  - {path: "engine/scripts/mutation_sandbox.py", floor: high}
+  - {path: "engine/scripts/gate_candidate.py", floor: high}
+  - {path: "engine/scripts/reuse_worker.py", floor: high}
+  - {path: "engine/scripts/mutation_observer.py", floor: high}
+  - {path: "engine/scripts/check_gate_mutations.py", floor: high}
+  - {path: "engine/scripts/case_reuse.py", floor: high}
+  - {path: "engine/scripts/case_inputs.py", floor: high}
+  - {path: "engine/scripts/case_trace.py", floor: high}
+  - {path: "engine/scripts/mutation_reuse.py", floor: high}
+  - {path: "engine/scripts/gate_reuse.py", floor: high}
+  - {path: "engine/scripts/reuse_stamp.py", floor: high}
   - {path: "scripts/agent_sandbox.py", floor: high}
   - {path: "scripts/agent_sandbox.json", floor: high}
   - {path: "engine/.veldo/reuse_evidence.py", floor: high}

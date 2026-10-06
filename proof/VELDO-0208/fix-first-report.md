@@ -79,3 +79,52 @@ Latest targeted pass at this step: 128 passed, 0 failed (partial exit 2). Tests
 include real controlled baseline/noop/mutant workers, a replaced candidate driver,
 worker key-read denial, signed wrong-authority records/receipts, default engine
 config discovery, private-file denial and refusal cleanup. No mutation stage ran.
+
+## Final targeted result and commits
+
+Final command: `python3 scripts/selftest.py --suite 100_veldo_0208_landing_reuse`.
+Result: 136 passed, 0 failed in 2.29 seconds; 110 assertions belong to suite 100,
+with 26 shared setup assertions. Exit 2 is the dispatcher's deliberate partial-run
+exit. This is diagnostic test output, not full-gate evidence or a landing stamp.
+Whitespace validation (`git diff --check`) also passed.
+
+Additional planted cases compute the controlled Session's exact per-case key and
+try to publish a killed record from a candidate suite, import a key-reading
+candidate registry, and replace a linked marker with an embedded Git directory.
+All are refused. Controlled workers prove baseline/noop success and an observed
+mutant failure while a replaced candidate driver is ignored. The engine stamp
+writer emits explicit zero-reuse fields; only that function was exercised, never
+the engine gate. Template pairing and init inclusion are checked in suite 100.
+
+Implementation commits, all on build-gate-reuse:
+
+- b313212b - Confine candidate gate execution behind authority reuse coordination.
+- a776f9ea - Bind reuse keys and authenticated evidence to authority engine identity.
+- 86da92a6 - Reject candidate Git redirects and pin guarded Git execution.
+- 41962333 - Separate agent networking from workers and narrow private file access.
+- The final commit containing this report adds the exact-key planting, registry,
+  catalog, embedded-Git-directory and engine-stamp regression checks, and protects
+  the newly introduced authority paths in policy.
+
+## External deployment and fresh full gate still required
+
+For launcher invocations, the owner must configure git_common_dir to the builder's
+expected shared gitdir. For gate invocations from a separately installed authority,
+set VELDO_EXPECTED_GIT_COMMON to that trusted expected directory. Neither value may
+come from the candidate's .git marker. The gate otherwise derives it from its own
+authority checkout or trusted installation metadata. This intentionally refuses
+an unexpected Git layout instead of discovering authority from candidate bytes.
+
+Use the exact guarded Git commands above in codex_work.sh and claude_work.sh.
+Deploy the reviewed launcher/engine from authority storage outside the agent's
+mutable shared Git object store; finish existing unconfined agent sessions and
+rotate previously exposed signing keys. This checkout was not retroactively
+confined, and no external runner was changed.
+
+The reviewer still needs the fresh complete gate on the merged tree, all other
+suites, mutation qualifications/stages, generated/template checks and independent
+review of these security changes. Full-gate compatibility, including suites that
+need local services, is unproven here; any confinement failure must stay red.
+The reviewer lands the real stamp from that checkout. No full gate, mutation
+stage, push, merge, fabricated proof, self-approval or gate byproduct commit was
+performed in this run.
