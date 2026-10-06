@@ -246,7 +246,7 @@ def qualification(module, repository, selected=None):
                 worker = module.Workers(_m123_time.monotonic() + 0.4)
                 started = _m123_time.monotonic()
                 timed_out = False
-                case = module.inventory(root)[0]
+                case = module.inventory(root, expected_common=root / '.git')[0]
                 try:
                     worker.run({'hung': {'case': case, 'mode': 'baseline'}}, _m123_Path(temp), root)
                 except module.Refused as error:
