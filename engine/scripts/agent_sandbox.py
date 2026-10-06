@@ -187,12 +187,12 @@ def git_grants(gitdir, private, shared, protected):
 def git_run(argv):
     authority = Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location('git_process', authority / '.veldo/git_process.py')
-    process = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(process)
-    result = process.run(['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
-                          *argv], capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=600)
+    _git_process = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(_git_process)
+    result = _git_process.run(['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+                               *argv], capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=600)
     if result.returncode:
-        raise RuntimeError(' '.join(['git', *argv[:4]]) + ' failed: ' + result.stderr.strip()[-400:])
+        raise RuntimeError('git ' + ' '.join(argv[:4]) + ' failed: ' + result.stderr.strip()[-400:])
     return result.stdout.strip()
 
 
