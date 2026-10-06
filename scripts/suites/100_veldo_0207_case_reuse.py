@@ -271,16 +271,21 @@ print(json.dumps(results))
         # Controlled coordinator proves v2 digests, grouped controls and exact receipts.
         active = [dict(files)]
         class Workers:
-            def __init__(self, *args):
-                self.invocations = 0; self.attempted = set(); self.driver_spans = {}; self.resources = None
+            def __init__(self, *args, **kwargs):
+                self.invocations = 0; self.driver_spans = {}; self.resources = None
+                self.parallel = 1; self.active = {}; self.outcomes = []; self.peak = 0
             def check(self): pass
-            def cleanup(self): pass
-            def run(self, jobs, directory, frozen):
+            def cleanup(self, on_result=None): return []
+            def run(self, jobs, directory, frozen, on_result=None):
                 results = {}
                 for name, job in jobs.items():
-                    self.invocations += 1; self.attempted.add(name)
+                    self.invocations += 1
+                    self.outcomes.append(dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                                              elapsed=.1, returncode=0))
                     results[name] = {'elapsed': .1, 'result': {'observation': observation(job['mode'] != 'mutant'),
                         'replacement_count': 1, 'old_digest': 'old', 'new_digest': 'new'}}
+                    if on_result is not None:
+                        on_result(name, results[name])
                 return results
         # Clean a poisoned fixture record, never repair external production cache data.
         path.unlink()

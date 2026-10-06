@@ -31,7 +31,12 @@ def main():
     sandbox = load(authority / 'scripts/mutation_sandbox.py')
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.ROOT = root
+    ownership = load(authority / 'scripts/mutation_ownership.py')
     boundary.close_descriptors([])
+    # Ownership is persisted from the authority copy before any candidate code runs, so the
+    # coordinator can reap this worker's allocations even after SIGKILL. The ledger opens after
+    # descriptors are closed and lives in the worker's own writable home.
+    ownership.Tracker(Path(sys.argv[3]).parent).install()
     # Never load the candidate's sandbox or worker driver, even for fresh cases.
     grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
     grants += [(Path(p).resolve(), boundary.READ)

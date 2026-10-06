@@ -7,6 +7,7 @@ import copy
 import http.server
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -30,7 +31,13 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
         with st['lock']:
             st['next'] += 1
             st['tick'] += 1
-            m = {'message_id': st['next'], 'from': dict(sender), 'chat': dict(chat), 'date': 1791300000 + st['tick'],
+            # The platform date is the clock when the message is sent, as Telegram stamps it. Intake
+            # authorizes a sender as a member at that date (VELDO-0126), and this fixture enrolls its
+            # members at time.time(), so a fixed date became "sent before enrollment" once the wall
+            # clock passed it (1791300000, 2026-10-06 15:20 UTC). Rounded up so a message sent in the
+            # enrollment's second is not dated before it; strictly increasing, as the fixed ticks were.
+            st['date'] = max(math.ceil(time.time()), st.get('date', 0) + 1)
+            m = {'message_id': st['next'], 'from': dict(sender), 'chat': dict(chat), 'date': st['date'],
                  'text': text}
             if reply_to is not None and (chat['id'], reply_to) in st['messages']:
                 held = st['messages'][(chat['id'], reply_to)]

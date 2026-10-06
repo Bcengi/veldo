@@ -8,6 +8,7 @@ All children inherit a fixed environment, no user Python site, and disabled byte
 import argparse
 import collections
 import concurrent.futures
+import difflib
 import hashlib
 import importlib.util
 import json
@@ -416,14 +417,18 @@ def resource_capacities(arguments):
 
 
 class Workers:
-    def __init__(self, deadline, resources=None):
+    def __init__(self, deadline, resources=None, parallel=None):
         self.resources = resources
         self.deadline = deadline
+        self.parallel = PARALLEL if parallel is None else max(1, parallel)
         self.active = {}
         self.owned_snapshots = {}
         self.invocations = 0
-        self.attempted = set()
         self.driver_spans = {}
+        self.outcomes = []
+        self.peak = 0
+        self.jobs = {}
+        self.homes = {}
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -438,26 +443,90 @@ class Workers:
         if path is not None and path.exists():
             shutil.rmtree(path)
 
-    def cleanup(self):
-        for proc, _, _, _ in self.active.values():
+    def finish(self, name, error=None):
+        proc, out, err, started = self.active[name]
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=5)
+        out.seek(0)
+        err.seek(0)
+        stdout, stderr = out.read(), err.read()
+        out.close()
+        err.close()
+        elapsed = time.monotonic() - started
+        job = self.jobs[name]
+        home = self.homes[name]
+        record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                      elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
+                      output_directory=str(home),
+                      stdout_bytes=len(stdout), stderr_bytes=len(stderr))
+        result = None
+        if error is None and 'snapshot_root' in job:
+            # Trace is outside the worker's writable home. Check before trusting output.
             try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        for proc, out, err, _ in self.active.values():
-            proc.wait(timeout=5)
-            out.close()
-            err.close()
-        self.active.clear()
+                load(ROOT / 'scripts/case_trace.py').check(
+                    home.parent / ('trace-' + home.name), job['snapshot_root'], job['declared_files'],
+                    job.get('declared_absent', []), runtime=job['runtime_paths'], scratch=home,
+                    directories=job.get('declared_directories', []),
+                    runtime_absent=job.get('runtime_absent', []), after_confinement=True)
+            except ValueError as trace_error:
+                error = trace_error
+        if error is None:
+            if proc.returncode:
+                error = Refused('driver_error', name + ': worker exit ' + str(proc.returncode))
+            else:
+                try:
+                    result = json.loads(stdout)
+                    if not isinstance(result, dict):
+                        raise ValueError('worker result must be an object')
+                except ValueError:
+                    error = Refused('driver_error', name + ': invalid or empty worker JSON')
+        if error is not None:
+            record.update(error=getattr(error, 'code', 'driver_error'), detail=getattr(error, 'detail', str(error)),
+                          stdout_tail=stdout.decode(errors='replace')[-2000:],
+                          stderr_tail=stderr.decode(errors='replace')[-2000:])
+        try:
+            ownership = load(ROOT / 'scripts/mutation_ownership.py')
+            record['cleanup'] = ownership.cleanup(self.homes[name])
+        except Exception as cleanup_error:
+            error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
+            record.update(error=error.code, detail=error.detail)
+        record['elapsed'] = time.monotonic() - started
+        self.outcomes.append(record)
+        self.driver_spans[job['case']['driver']][1] = time.monotonic()
+        del self.active[name]
+        self.release_snapshot(name)
+        if record.get('error') != 'worker_cleanup_error':
+            self.resources.release(name)
+        if error is not None:
+            raise error
+        return {'result': result, 'elapsed': elapsed}
+
+    def cleanup(self, on_result=None):
+        # Reap and account for every sibling, even after the first failure.
+        errors = []
+        for name in list(self.active):
+            try:
+                proc = self.active[name][0]
+                error = (Refused('worker_cancelled', 'stage stopped before worker completed')
+                         if proc.poll() is None else None)
+                completed = self.finish(name, error)
+                if on_result is not None:
+                    on_result(name, completed)
+            except (Refused, ValueError) as error:
+                errors.append(error)
+        # Snapshots prepared for workers that never launched are owned here too.
         for name in list(self.owned_snapshots):
             self.release_snapshot(name)
-        if self.resources is not None:
-            self.resources.clear()
+        return errors
 
-    def run(self, jobs, directory, root):
+    def run(self, jobs, directory, root, on_result=None):
         if self.resources is None:
             self.resources = SuiteResources.from_root(root)
         jobs = {name: dict(job) for name, job in jobs.items()}
+        self.jobs.update(jobs)
         pending = list(jobs.items())
         # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
@@ -466,13 +535,14 @@ class Workers:
         try:
             while pending or self.active:
                 self.check()
-                while pending and len(self.active) < PARALLEL:
+                while pending and len(self.active) < self.parallel:
                     index = self.resources.select(pending)
                     if index is None:
                         break
                     name, job = pending.pop(index)
                     home = directory / str(self.invocations)
                     home.mkdir()
+                    self.homes[name] = home
                     bindir = home / 'bin'
                     bindir.mkdir()
                     (bindir / 'python3').symlink_to(sys.executable)
@@ -496,54 +566,37 @@ class Workers:
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
                                                 stdout=out, stderr=err, start_new_session=True)
-                    except BaseException:
+                    except BaseException as error:
                         out.close()
                         err.close()
                         self.resources.release(name)
+                        self.outcomes.append(dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                                                  elapsed=0.0, returncode=None, error='worker_launch_error',
+                                                  detail=str(error), stdout_bytes=0, stderr_bytes=0,
+                                                  pid=None, output_directory=str(home)))
+                        if isinstance(error, Exception):
+                            raise Refused('worker_launch_error', name + ': ' + str(error)) from error
                         raise
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
-                    self.attempted.add(name)
+                    self.peak = max(self.peak, len(self.active))
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
                 for name, (proc, out, err, started) in list(self.active.items()):
-                    self.check_worker(name, started)
                     if proc.poll() is None:
+                        try:
+                            self.check_worker(name, started)
+                        except Refused as error:
+                            self.finish(name, error)
                         continue
-                    # A completed parent cannot leave grandchildren holding resources.
-                    try:
-                        os.killpg(proc.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    out.seek(0)
-                    err.seek(0)
-                    stdout, stderr = out.read(), err.read()
-                    out.close()
-                    err.close()
-                    del self.active[name]
-                    self.resources.release(name)
-                    self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
-                    if 'snapshot_root' in jobs[name]:
-                        # Trace is outside the worker's writable home. Check before trusting output.
-                        trace = directory / Path(out.name).name.split('-', 1)[0]
-                        tracer.check(directory / ('trace-' + trace.name),
-                                     jobs[name]['snapshot_root'], jobs[name]['declared_files'],
-                                     jobs[name].get('declared_absent', []),
-                                     runtime=jobs[name]['runtime_paths'], scratch=trace,
-                                     directories=jobs[name].get('declared_directories', []),
-                                     runtime_absent=jobs[name].get('runtime_absent', []), after_confinement=True)
-                    if proc.returncode != 0:
-                        raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
-                    try:
-                        results[name] = {'result': json.loads(stdout), 'elapsed': time.monotonic() - started}
-                        self.release_snapshot(name)
-                    except ValueError as error:
-                        raise Refused('driver_error', name + ': invalid worker JSON') from error
+                    results[name] = self.finish(name)
+                    if on_result is not None:
+                        on_result(name, results[name])
                 if self.active:
                     time.sleep(0.02)
             self.check()
             return results
         finally:
-            self.cleanup()
+            self.cleanup(on_result)
 
 
 def worker(job):
@@ -584,10 +637,13 @@ def snapshot(root, destination, files, head):
         path.chmod(mode)
 
 
-def run_stage(root=ROOT, capacities=None, force_fresh=False):
+
+
+def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None,
+              drivers=None, parallel=None, diff_dir=None, force_fresh=False):
     started = time.monotonic()
     deadline = started + BUDGET
-    workers = Workers(deadline)
+    workers = Workers(deadline, parallel=parallel)
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
@@ -601,9 +657,15 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
     # Enumeration itself runs under the floor; the full cap is armed once the count is known.
     signal.setitimer(signal.ITIMER_REAL, BUDGET)
     try:
-        cases = inventory(root)
+        full_inventory = inventory(root)
+        cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
+                 and (not drivers or c['driver'] in drivers)
+                 and (not names or c['name'] in names)]
+        if not cases or (names and set(names) - {c['name'] for c in cases}):
+            raise Refused('incomplete_inventory', 'empty or unknown subset')
+        receipt['scope'] = 'selected' if findings or names or drivers else 'full'
         receipt['registered'] = len(cases)
-        budget = budget_for(len(cases), PARALLEL)
+        budget = budget_for(len(full_inventory), workers.parallel)
         receipt['budget_seconds'] = budget
         workers.deadline = started + budget
         signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
@@ -636,8 +698,21 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             frozen = directory / 'input'
             snapshot(root, frozen, files, head)
             # Registries executed again from the frozen bytes: an enumeration race is red.
-            if inventory(frozen, expected_common=frozen / '.git') != cases:
+            if inventory(frozen, expected_common=frozen / '.git') != full_inventory:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
+            if diff_dir is not None:
+                destination = Path(diff_dir)
+                destination.mkdir(parents=True, exist_ok=True)
+                # The authority's own materializer: candidate driver code never runs here.
+                owner = load(ROOT / 'scripts/mutation_observer.py')
+                for case in cases:
+                    base = 'scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')
+                    relative = str(Path(base) / case['module'])
+                    before = (frozen / relative).read_text()
+                    after = owner.mutate(before, case)
+                    (destination / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
+                        before.splitlines(keepends=True), after.splitlines(keepends=True), n=0,
+                        fromfile='a/' + relative, tofile='b/' + relative)))
             workers.case_reuse = reuse
             prepared_cases = {c['identity']: {'declared_case': True} for c in fresh
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
@@ -650,30 +725,40 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
                     controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode,
                                      **prepared_cases.get(case['identity'], {})})
             workers.resources = SuiteResources.from_root(frozen, capacities)
+            if log_dir is not None:
+                log_dir = Path(log_dir).resolve()
+                log_dir.mkdir(parents=True, exist_ok=False)
+                directory = log_dir
             control_results = workers.run(controls, directory, frozen)
-            mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant',
-                                                        **prepared_cases.get(c['identity'], {})}
-                                          for c in fresh}, directory, frozen)
-            for case in fresh:
-                identity = case['identity']
+            by_identity = {c['identity']: c for c in fresh}
+
+            def collect(identity, completed):
+                # Each mutant is judged as its worker completes, so a later failure or
+                # timeout cannot discard results that were already produced.
+                case = by_identity[identity]
                 group = group_for(case)
-                prepared = mutant_results[identity]['result']
-                record = {'schema': SCHEMA, 'case': case,
-                          'fixture_version': FIXTURE_VERSION,
-                          'input_digest': (reuse.input_digest(case) if hasattr(reuse, 'input_digest')
-                                           else reuse.base_digest),
-                          **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
-                          'baseline': control_results[group + ':baseline']['result']['observation'],
-                          'noop': control_results[group + ':noop']['result']['observation'],
-                          'mutant': prepared['observation']}
+                prepared = completed['result']
                 try:
+                    record = {'schema': SCHEMA, 'case': case,
+                              'fixture_version': FIXTURE_VERSION,
+                              'input_digest': (reuse.input_digest(case) if hasattr(reuse, 'input_digest')
+                                               else reuse.base_digest),
+                              **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
+                              'baseline': control_results[group + ':baseline']['result']['observation'],
+                              'noop': control_results[group + ':noop']['result']['observation'],
+                              'mutant': prepared['observation']}
                     validate_result(record, case)
-                except Refused as error:
-                    receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
-                    continue
+                except (Refused, KeyError, TypeError) as error:
+                    receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
+                                                           detail=str(error)))
+                    return
                 results[identity] = record
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
-                                               elapsed=mutant_results[identity]['elapsed']))
+                                               elapsed=completed['elapsed']))
+
+            workers.run({c['identity']: {'case': c, 'mode': 'mutant',
+                                         **prepared_cases.get(c['identity'], {})}
+                         for c in fresh}, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -686,11 +771,7 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             if set(results) != {c['identity'] for c in cases}:
                 raise Refused('incomplete_inventory', 'registered/result identities differ')
             for case in cases:
-                identity = case['identity']
-                record = results[identity]
-                validate_result(record, case)
-                if identity not in reuse.hits:
-                    receipt['drivers'][case['driver']]['worker_seconds'] += mutant_results[identity]['elapsed']
+                validate_result(results[case['identity']], case)
         workers.check()
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
@@ -710,6 +791,14 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
         finally:
             # Restore the caller's handler even when cleanup itself fails.
             signal.signal(signal.SIGALRM, previous)
+        receipt['worker_outcomes'] = workers.outcomes
+        failed_workers = [o for o in workers.outcomes if 'error' in o]
+        receipt['invalid_results'].extend(failed_workers)
+        # A launched mutant with no usable output is still an execution, never a
+        # rejection. Launch errors are attempts only (returncode is None). A reused
+        # case launches no worker, so it is never counted as executed.
+        launched = {o['name'] for o in workers.outcomes
+                    if o['mode'] == 'mutant' and o['returncode'] is not None}
         completed = {r['case']['identity'] for r in receipt['results']}
         receipt['case_receipts'] = []
         for case in cases:
@@ -717,7 +806,7 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
             if identity is None:
                 continue
             hit = reuse is not None and identity in reuse.hits
-            attempted = identity in workers.attempted
+            attempted = identity in launched
             receipt['executed'] += int(attempted)
             receipt['reused'] += int(hit)
             receipt['rejected'] += int(identity in completed)
@@ -733,11 +822,14 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]
+            summary['worker_seconds'] = sum(o['elapsed'] for o in workers.outcomes if o['driver'] == driver)
         if workers.resources is not None:
             receipt['resources'] = workers.resources.summary()
         receipt['reuse_integrity_errors'] = (list(reuse.store.integrity_errors)
                                              if reuse is not None and reuse.store else [])
-        receipt['parallel_workers'] = PARALLEL
+        receipt['peak_workers'] = workers.peak
+        receipt['surviving_workers'] = len(workers.active)
+        receipt['parallel_workers'] = workers.parallel
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
     return receipt
@@ -749,11 +841,20 @@ def main():
     parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--receipt', type=Path)
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
+    parser.add_argument('--finding', type=int, action='append')
+    parser.add_argument('--case', action='append', dest='names')
+    parser.add_argument('--worker-log-dir', type=Path)
     args = parser.parse_args()
     if args.worker:
-        print(json.dumps(worker(json.loads(args.worker.read_text()))))
+        ownership = load(ROOT / 'scripts/mutation_ownership.py')
+        tracker = ownership.Tracker(args.worker.parent).install()
+        try:
+            print(json.dumps(worker(json.loads(args.worker.read_text()))))
+        finally:
+            tracker.close()
         return 0
-    receipt = run_stage(root=args.root, capacities=resource_capacities(args.resource_capacity))
+    receipt = run_stage(root=args.root, capacities=resource_capacities(args.resource_capacity),
+                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir)
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)

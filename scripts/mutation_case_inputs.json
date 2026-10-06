@@ -3720,7 +3720,7 @@
         "scripts/suites/95_veldo_0203_owner_revisions.py",
         "scripts/suites/96_veldo_0204_reservation_policies.py",
         "scripts/suites/97_veldo_0204_gate_resources.py",
-        "scripts/suites/98_veldo_0205_reuse.py",
+        "scripts/suites/99_veldo_0205_reuse.py",
         "scripts/suites/shared.py"
       ],
       "absent": [],

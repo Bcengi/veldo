@@ -6,9 +6,7 @@ missing rows and process failures are errors, never successful mutation detectio
 """
 import argparse
 import ast
-import concurrent.futures
 import contextlib
-import difflib
 import hashlib
 import io
 import importlib.util
@@ -16,9 +14,7 @@ import json
 import os
 from pathlib import Path
 import shutil
-import subprocess
 import sys
-import tempfile
 
 sys.dont_write_bytecode = True
 
@@ -10585,77 +10581,47 @@ def reuse_definition(case, definitions=None):
     return expected
 
 
+def _coordinator():
+    spec = importlib.util.spec_from_file_location('mutation_coordinator', ROOT / 'scripts/check_gate_mutations.py')
+    coordinator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(coordinator)
+    return coordinator
+
+
+def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None,
+              jobs=None, diff_dir=None):
+    """Use the gate's process ownership, per-child accounting and launch deadlines."""
+    return _coordinator().run_stage(root, capacities=capacities, findings=findings, names=names,
+                                   log_dir=log_dir, drivers=['check_teeth_mutations.py'],
+                                   parallel=jobs, diff_dir=diff_dir)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--finding', type=int, choices=sorted({case['finding'] for case in cases()}))
+    parser.add_argument('--case', action='append', dest='names', help='select an exact case name; repeatable')
+    parser.add_argument('--worker-log-dir', type=Path)
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     parser.add_argument('--jobs', type=int, default=min(8, os.cpu_count() or 1),
-                        help='mutant runs in parallel (the honest run is once per suite)')
+                        help='maximum concurrent workers, subject to resource admission')
     args = parser.parse_args()
-    selected = [c for c in cases() if args.finding is None or c['finding'] == args.finding]
     if args.worker:
+        selected = [c for c in cases() if args.finding is None or c['finding'] == args.finding]
         case = next(c for c in selected if c['name'] == args.worker)
         print(json.dumps(worker(case, args.mutant)))
-        return
-    def run(case, path=None):
-        command = [sys.executable, __file__, '--worker', case['name']]
-        if path:
-            command += ['--mutant', str(path)]
-        proc = subprocess.run(command, capture_output=True, text=True, timeout=case.get('timeout', 120))
-        if proc.returncode:
-            raise RuntimeError(f"{case['name']} did not complete its assertions: {proc.stderr}")
-        return json.loads(proc.stdout)
-
-    def targets(observed, case):
-        return {label: [ok for name, ok in observed['observations'] if name.split()[-1] == label]
-                for label in case['rows']}
-
-    baselines = {}
-    with tempfile.TemporaryDirectory(prefix='teeth-mutants-') as directory:
-        prepared = {}
-        for case in selected:
-            prepared[case['name']] = materialize(case, 'mutant', Path(directory) / case['name'])
-            if args.diff_dir:
-                source = prepared[case['name']]['source'].read_text()
-                changed = mutate(source, case)
-                relative = str(prepared[case['name']]['source'].relative_to(ROOT))
-                args.diff_dir.mkdir(parents=True, exist_ok=True)
-                (args.diff_dir / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
-                    source.splitlines(keepends=True), changed.splitlines(keepends=True), n=0,
-                    fromfile='a/' + relative, tofile='b/' + relative)))
-        # The honest run of a suite does not depend on the mutant, so each suite runs honestly ONCE
-        # and every case of it is judged against that run; the mutant runs are independent and run
-        # in parallel. Each case's own targets are taken from the shared observations.
-        first = {}
-        for case in selected:
-            first.setdefault(case['suite'], case)
-        spec = importlib.util.spec_from_file_location('mutation_admission', ROOT / 'scripts/check_gate_mutations.py')
-        admission = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(admission)
-        resources = admission.SuiteResources.from_root(ROOT, admission.resource_capacities(args.resource_capacity))
-        pending = [('honest:' + suite, {'case': case, 'path': None}) for suite, case in first.items()]
-        pending += [('mutant:' + case['name'], {'case': case, 'path': prepared[case['name']]['mutant']})
-                    for case in selected]
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
-            observed = resources.run_futures(dict(pending),
-                lambda job: pool.submit(run, job['case'], job['path']), max(1, args.jobs))
-            for case in selected:
-                honest = observed['honest:' + case['suite']]
-                broken = observed['mutant:' + case['name']]
-                assert not honest['failed_rows'], honest
-                assert set(honest['row_names']) <= set(broken['row_names']), (honest, broken)
-                for label in case['rows']:
-                    assert targets(honest, case)[label] == [True], (case['name'], label, honest['failed_rows'])
-                    assert targets(broken, case)[label] == [False], (case['name'], label, broken['failed_rows'])
-                baselines[case['suite']] = honest['count']
-                print(json.dumps({'finding': case['finding'], 'mutation': case['name'],
-                                  'baseline': 'green', 'assertions': honest['count'],
-                                  'red_rows': broken['failed_rows']}), flush=True)
-    print(json.dumps({'mutations_rejected': len(selected), 'green_suites': baselines, 'resources': resources.summary()}))
+        return 0
+    receipt = run_stage(capacities=_coordinator().resource_capacities(args.resource_capacity),
+                        findings=[args.finding] if args.finding is not None else None,
+                        names=args.names, log_dir=args.worker_log_dir, jobs=max(1, args.jobs),
+                        diff_dir=args.diff_dir)
+    print(json.dumps(receipt, sort_keys=True), flush=True)
+    print('mutations: {status} registered={registered} executed={executed} '
+          'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
+    return 0 if receipt['status'] == 'passed' else 1
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

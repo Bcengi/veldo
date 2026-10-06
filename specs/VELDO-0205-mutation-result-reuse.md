@@ -26,7 +26,7 @@ footprint:
   - "scripts/gate_reuse.py"
   - "scripts/mutation_reuse.py"
   - "scripts/mutation_reuse_profiles.json"
-  - "scripts/suites/98_veldo_0205_reuse.py"
+  - "scripts/suites/99_veldo_0205_reuse.py"
   - "scripts/suites/53_veldo_0123_mutations.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

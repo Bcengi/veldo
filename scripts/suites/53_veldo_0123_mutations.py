@@ -61,7 +61,7 @@ def fixture(root, source, driver_source=None):
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
     for helper in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py', 'case_inputs.py',
-                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py'):
+                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py', 'mutation_ownership.py'):
         (root / 'scripts' / helper).write_bytes((source.parent / helper).read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
         # Keep the real materializer while replacing only the disposable registry/worker.
@@ -321,8 +321,11 @@ if 'expect' in globals():
     _m123_made = []
 
     class _m123_Workers(_m123_budget.Workers):
-        def __init__(self, deadline):
-            super().__init__(deadline)
+        # The double takes exactly what the real constructor takes, by forwarding to it. A fixed
+        # (self, deadline) copy drifted when Workers gained 'parallel' (VELDO-0204) and crashed this
+        # suite with a TypeError instead of measuring the cap; forwarding cannot drift.
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             _m123_made.append(self)
 
     def _m123_stop_after_arm(root):
@@ -350,6 +353,7 @@ if 'expect' in globals():
            'whichever is larger, scaled to the workers the stage runs (at 8 or more workers: 10 -> 120, 116 -> 232, '
            '300 -> 600; four times that per case at 2, never less than the 8-worker figure at 16)',
            _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
+           and [_m123_w.parallel for _m123_w in _m123_made] == [2, 2, 2]
            and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
            and [_m123_budget.budget_for(300, w) for w in (2, 16)] == [2400.0, 600.0])
 

@@ -249,27 +249,37 @@ def _v205_reuse():
             return value
 
         class ControlledWorkers:
-            def __init__(self, deadline):
+            # The coordinator's worker protocol: per-worker outcomes and on_result as each
+            # worker completes, so receipts are counted from what actually launched.
+            def __init__(self, deadline, parallel=None):
                 self.deadline = deadline
+                self.parallel = 1
                 self.resources = None
                 self.driver_spans = {}
                 self.invocations = 0
-                self.attempted = set()
+                self.active = {}
+                self.outcomes = []
+                self.peak = 0
             def check(self):
                 pass
-            def cleanup(self):
-                pass
-            def run(self, jobs, directory, frozen):
+            def cleanup(self, on_result=None):
+                return []
+            def run(self, jobs, directory, frozen, on_result=None):
                 results = {}
                 for name, job in jobs.items():
-                    self.attempted.add(name)
                     self.invocations += 1
                     calls.append((name, job['mode']))
+                    outcome = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                                   elapsed=0.1, returncode=0)
+                    self.outcomes.append(outcome)
                     if failure[0] and job['mode'] == 'mutant':
+                        outcome.update(returncode=1, error='driver_error', detail='controlled worker crash')
                         raise gate.Refused('driver_error', 'controlled worker crash')
                     results[name] = {'result': dict(observation=observation(
                         job['mode'] != 'mutant' or survivor[0]), replacement_count=1,
                         old_digest='a', new_digest='b'), 'elapsed': 0.1}
+                    if on_result is not None:
+                        on_result(name, results[name])
                 return results
 
         with patch.object(gate, 'inventory', return_value=[{'driver': 'synthetic'}]), \

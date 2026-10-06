@@ -1,0 +1,28 @@
+{
+  "error": null,
+  "wall_seconds": 17.75058045377955,
+  "invocations": 1,
+  "returned": 1,
+  "workers": [
+    {
+      "job": "baseline",
+      "case": "authority-key-placement-worker-writable-ignored",
+      "pid": 3900341,
+      "returncode": 0,
+      "stdout_bytes": 5987,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-serial/0"
+    }
+  ],
+  "resources": {
+    "capacities": {
+      "systemd_user_manager": 16
+    },
+    "peak_slots": {
+      "systemd_user_manager": 1
+    },
+    "remaining_slots": {
+      "systemd_user_manager": 0
+    }
+  }
+}

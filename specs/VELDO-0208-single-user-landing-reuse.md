@@ -40,8 +40,8 @@ footprint:
   - "engine/.veldo/reuse_evidence.py"
   - ".veldo/reuse_evidence.py"
   - ".veldo/policy.yaml"
-  - "scripts/suites/100_veldo_0208_landing_reuse.py"
-  - "scripts/suites/98_veldo_0205_reuse.py"
+  - "scripts/suites/101_veldo_0208_landing_reuse.py"
+  - "scripts/suites/99_veldo_0205_reuse.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0205-mutation-result-reuse.md"
@@ -156,7 +156,7 @@ These grants are not isolation between mutually hostile branches in a shared obj
 
 ## Build and evidence limits
 
-Only suite 100_veldo_0208_landing_reuse is run for this specification, sequentially in the
+Only suite 101_veldo_0208_landing_reuse is run for this specification, sequentially in the
 foreground. It may call controlled fixture workers but never the mutation stage. The reviewer
 runs the fresh full gate, prior suites and mutation qualifications and lands the real stamp.
 No fabricated full-gate proof, review or exact-commit protected-path approval is recorded here.

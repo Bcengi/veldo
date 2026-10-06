@@ -759,7 +759,7 @@
    "regions": "Authority service installation with a fixed executable, protected configuration and this host's receiver profile, key directory placement, one instance under the store's stable lock, signed IPC commands committed to the configured store, and named refusal with nothing started while the service is absent",
    "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures.",
    "resources": {
-    "systemd_user_manager": 1
+    "systemd_user_manager": "exclusive"
    }
   },
   {
@@ -1369,28 +1369,37 @@
    "requires_note": "Only ROOT and expect. Controlled child completion and faults in the real fixture owner functions; no mutation drive."
   },
   {
-   "name": "98_veldo_0205_reuse",
-   "file": "98_veldo_0205_reuse.py",
+   "name": "98_veldo_0204_mutation_receipts",
+   "file": "98_veldo_0204_mutation_receipts.py",
    "requires": [
-    "98_veldo_0205_reuse"
+    "98_veldo_0204_mutation_receipts"
+   ],
+   "regions": "Mutation stall repair: partial receipts, worker deadlines, cleanup and planted defects.",
+   "requires_note": "Only ROOT and expect. Controlled coordinator children and manager responses; no mutation driver execution."
+  },
+  {
+   "name": "99_veldo_0205_reuse",
+   "file": "99_veldo_0205_reuse.py",
+   "requires": [
+    "99_veldo_0205_reuse"
    ],
    "regions": "Authenticated mutation reuse, closed keys and coordinator receipts.",
    "requires_note": "Only ROOT and expect. Real cache and keys with controlled coordinator workers. No mutation processes, gate or fan-out."
   },
   {
-   "name": "99_veldo_0207_case_reuse",
-   "file": "99_veldo_0207_case_reuse.py",
+   "name": "100_veldo_0207_case_reuse",
+   "file": "100_veldo_0207_case_reuse.py",
    "requires": [
-    "99_veldo_0207_case_reuse"
+    "100_veldo_0207_case_reuse"
    ],
    "regions": "Per-case declared mutation inputs and sandbox enforcement.",
    "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out."
   },
   {
-   "name": "100_veldo_0208_landing_reuse",
-   "file": "100_veldo_0208_landing_reuse.py",
+   "name": "101_veldo_0208_landing_reuse",
+   "file": "101_veldo_0208_landing_reuse.py",
    "requires": [
-    "100_veldo_0208_landing_reuse"
+    "101_veldo_0208_landing_reuse"
    ],
    "regions": "Single-user agent confinement and authenticated landing reuse.",
    "requires_note": "Only ROOT, V and expect; foreground child fixtures, sequential, no mutation stage."
@@ -1399,5 +1408,5 @@
  "resource_capacities": {
   "systemd_user_manager": 16
  },
- "resource_note": "Mutation admission: positive integer slots or exclusive. Suite 63 needs an undisturbed manager for its existing hard notification bounds. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots."
+ "resource_note": "Mutation admission: positive integer slots or exclusive. Suites 63 and 66 need an undisturbed manager for notification bounds and authority service lifecycle checks. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots."
 }

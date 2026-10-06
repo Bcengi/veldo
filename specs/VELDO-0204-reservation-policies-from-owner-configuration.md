@@ -370,3 +370,18 @@ authority reloads from sibling suites. Both mutation entry points enforce the sa
 admission contract. proof/VELDO-0204/gate-repair.md distinguishes the measured
 serial baseline and regression controls from the owner's reserved concurrent and
 mutation qualification. No product timing or acceptance bound is changed.
+
+2026-10-06, owner-authorized mutation stall repair on fix-0204-mutation-stall:
+reproduce a bounded subset with per-worker outcomes; retain completed work and
+explicit failures in failed receipts; qualify shared-manager admission against the
+observed timeout; keep deadlines tied to launch; own external units and temporary
+fixtures through teardown before releasing reservations. Add planted-defect checks
+to suite 97 and retain small and larger subset evidence. The footprint additionally
+includes scripts/mutation_ownership.py, scripts/suites/71_veldo_0076_projects.py,
+scripts/suites/66_veldo_0047_authority.py and proof/VELDO-0204/mutation-stall/*.
+Continuation restriction: run only suite 97 and the new planted-defect suite 98,
+one at a time through selftest.py --suite. Neither mutation driver may be executed
+in this run, including subsets. The owner runs both qualification subsets and the
+next full gate separately. No green full gate is claimed by this repair. The
+footprint also includes scripts/suites/98_veldo_0204_mutation_receipts.py and
+scripts/suites/requires.json for the focused regression suite.

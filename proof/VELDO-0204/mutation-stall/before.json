@@ -1,0 +1,235 @@
+{
+  "error": "mutation_budget_exceeded: 66_veldo_0047_authority.py:services/veldo-authority.service:False:baseline: worker deadline",
+  "wall_seconds": 120.03801850881428,
+  "invocations": 24,
+  "returned": 0,
+  "workers": [
+    {
+      "job": "baseline",
+      "case": "authority-key-placement-worker-writable-ignored",
+      "pid": 3876470,
+      "returncode": 0,
+      "stdout_bytes": 5987,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/0"
+    },
+    {
+      "job": "noop",
+      "case": "authority-key-placement-worker-writable-ignored",
+      "pid": 3876471,
+      "returncode": 0,
+      "stdout_bytes": 5987,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/1"
+    },
+    {
+      "job": "baseline",
+      "case": "authority-unit-starts-at-login",
+      "pid": 3876472,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/2"
+    },
+    {
+      "job": "noop",
+      "case": "authority-unit-starts-at-login",
+      "pid": 3876473,
+      "returncode": 0,
+      "stdout_bytes": 5993,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/3"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-placement-worker-writable-ignored",
+      "pid": 3876474,
+      "returncode": 0,
+      "stdout_bytes": 6646,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/4"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-placement-mode-ignored",
+      "pid": 3876475,
+      "returncode": 0,
+      "stdout_bytes": 6650,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/5"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-placement-link-followed",
+      "pid": 3876476,
+      "returncode": 0,
+      "stdout_bytes": 6637,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/6"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-existence-judged-alone",
+      "pid": 3876477,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/7"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-absent-not-located",
+      "pid": 3876478,
+      "returncode": 0,
+      "stdout_bytes": 6067,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/8"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-guidance-names-the-parent",
+      "pid": 3876479,
+      "returncode": 0,
+      "stdout_bytes": 6075,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/9"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-guidance-includes-the-ancestor",
+      "pid": 3876480,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/10"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-guidance-changes-the-mode",
+      "pid": 3876481,
+      "returncode": 0,
+      "stdout_bytes": 6124,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/11"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-directory-made-absolute",
+      "pid": 3876482,
+      "returncode": 0,
+      "stdout_bytes": 6049,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/12"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-key-relative-not-refused",
+      "pid": 3876483,
+      "returncode": 0,
+      "stdout_bytes": 6595,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/13"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-receiver-profile-omitted",
+      "pid": 3876484,
+      "returncode": 0,
+      "stdout_bytes": 6116,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/14"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-profile-not-qualified",
+      "pid": 3876485,
+      "returncode": 0,
+      "stdout_bytes": 6063,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/15"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-config-readable",
+      "pid": 3883267,
+      "returncode": 0,
+      "stdout_bytes": 6380,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/16"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-install-starts-it",
+      "pid": 3883270,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/17"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-runs-the-source-copy",
+      "pid": 3883271,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/18"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-unit-starts-at-login",
+      "pid": 3883272,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/19"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-closure-listed-by-hand",
+      "pid": 3888680,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/20"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-closure-omits-the-validator",
+      "pid": 3888969,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/21"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-closure-ignores-loader-helpers",
+      "pid": 3890697,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/22"
+    },
+    {
+      "job": "mutant",
+      "case": "authority-closure-unresolved-installed",
+      "pid": 3890698,
+      "returncode": -9,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "directory": "/tmp/mutation-stall-before/23"
+    }
+  ],
+  "resources": {
+    "capacities": {
+      "systemd_user_manager": 16
+    },
+    "peak_slots": {
+      "systemd_user_manager": 16
+    },
+    "remaining_slots": {
+      "systemd_user_manager": 0
+    }
+  }
+}
