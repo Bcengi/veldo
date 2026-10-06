@@ -288,6 +288,12 @@ _VP_GATES = ("scripts/verify.sh", "engine/scripts/verify.sh")
 # one it read would fail the negative control rather than pass it by coincidence.
 _VP_STUB_VERSION = "9.9.9"
 
+_vp_re_spec = importlib.util.spec_from_file_location(
+    "vp_reuse_evidence", ROOT / ".veldo" / "reuse_evidence.py")
+_vp_re_mod = importlib.util.module_from_spec(_vp_re_spec)
+_vp_re_spec.loader.exec_module(_vp_re_mod)
+_VP_AUTHORITY_FILES = _vp_re_mod.AUTHORITY_FILES
+
 _vp_rs_spec = importlib.util.spec_from_file_location(
     "vp_run_scope", ROOT / "scripts" / "run_scope.py")
 _VP_RS = importlib.util.module_from_spec(_vp_rs_spec)
@@ -309,6 +315,14 @@ def _vp_run_gate(gate_rel, declare_version):
         _vp_shutil.copy2(ROOT / gate_rel, base / "scripts" / "verify.sh")
         _vp_shutil.copy2(ROOT / ".veldo" / "version.py", base / ".veldo" / "version.py")
         git_fixture_dependency(base / ".veldo" / "version.py")
+        # VELDO-0208: the gate runs every candidate command, the version read included, through
+        # the authority launcher, and the throwaway tree IS the authority installation of the gate
+        # copied into it. So it carries that installation's boundary files from the same home as
+        # the gate under test; without them the version cannot be read and null is correct.
+        _vp_home = ROOT / gate_rel.rsplit("scripts/verify.sh", 1)[0]
+        for _vp_rel in _VP_AUTHORITY_FILES:
+            (base / _vp_rel).parent.mkdir(parents=True, exist_ok=True)
+            _vp_shutil.copy2(_vp_home / _vp_rel, base / _vp_rel)
         if declare_version is not None:
             (base / ".claude-plugin").mkdir(parents=True)
             (base / ".claude-plugin" / "marketplace.json").write_text(json.dumps(
