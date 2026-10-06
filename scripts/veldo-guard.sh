@@ -68,17 +68,22 @@ if [ "$V_STATUS" != "green" ] || ! ok_commit "$V_COMMIT"; then
   exit 2
 fi
 
-# Reuse-aware stamps are development evidence; landing needs a fresh gate.
-if ! python3 -c '
-import json
-s = json.load(open(".veldo/last_verify"))
-if "reused" in s or "force_fresh" in s:
-    c = s.get("reused")
-    if (s.get("force_fresh") is not True or not isinstance(c, dict) or not c
-            or any(type(n) is not int or n != 0 for n in c.values())):
+# Positive reuse must carry authenticated non-agent records bound to this commit.
+if ! python3 -I -c '
+import importlib.util, json, pathlib, sys
+stamp = json.load(open(".veldo/last_verify"))
+if "reused" in stamp or "force_fresh" in stamp:
+    base = pathlib.Path(sys.argv[1]).resolve().parents[1]
+    source = base / ".veldo/reuse_evidence.py"
+    if not source.is_file():
+        source = base.parent.parent / "engine/.veldo/reuse_evidence.py"
+    spec = importlib.util.spec_from_file_location("reuse_evidence", source)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if module.landing_problem(stamp):
         raise SystemExit(1)
-'; then
-  echo "VELDO guard: blocked. Landing requires force_fresh and zero reused results." >&2
+' "${BASH_SOURCE[0]}"; then
+  echo "VELDO guard: blocked. Landing requires authenticated non-agent reuse evidence or zero reused results." >&2
   exit 2
 fi
 

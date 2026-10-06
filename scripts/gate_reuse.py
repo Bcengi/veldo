@@ -1,5 +1,6 @@
 """Content identities and a private, authenticated, append-only result store."""
 import hashlib
+import importlib.util
 import hmac
 import json
 import os
@@ -8,7 +9,11 @@ import stat
 import tempfile
 import warnings
 
-SCHEMA = 'veldo.reuse/v1'
+_spec = importlib.util.spec_from_file_location('reuse_evidence',
+    Path(__file__).resolve().parents[1] / '.veldo/reuse_evidence.py')
+E = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(E)
+SCHEMA = E.SCHEMA
 
 
 def canonical(value):
@@ -53,8 +58,8 @@ def tree_identity(path):
 class Store:
     """A record cannot be forged by editing its data or recomputing a plain checksum.
 
-    The key stays separate from records. Code executing as this uid can steal it and is
-    outside the authentication boundary. I/O failures are always cache misses.
+    The key stays separate from records. Agent domains cannot read or write it;
+    the unconfined owner and orchestrator are trusted. I/O errors are misses.
     """
     def __init__(self, directory, repository):
         self.directory = None
@@ -76,7 +81,7 @@ class Store:
             # Publish only complete keys. Concurrent creators use the winning key.
             self._publish(keypath, secret, key_creation=True)
             self._private(keypath)
-            self.secret = keypath.read_bytes()
+            self.secret = E.probe(self.directory)
             if len(self.secret) != 32:
                 self.secret = None
         except (OSError, ValueError, TypeError, RuntimeError):
@@ -117,23 +122,7 @@ class Store:
         if self.secret is None:
             return None
         try:
-            path = self._path(key)
-            if (self.directory / (path.name + '.conflict')).exists():
-                return None
-            self._private(path)
-            if path.stat().st_size > 32 * 1024 * 1024:
-                return None
-            raw = path.read_bytes()
-            document = json.loads(raw)
-            if raw != canonical(document) or set(document) != {'payload', 'mac'}:
-                return None
-            payload = document['payload']
-            expected = hmac.new(self.secret, canonical(payload), hashlib.sha256).hexdigest()
-            if not hmac.compare_digest(expected, document['mac']):
-                return None
-            if set(payload) != {'schema', 'key', 'result'} or payload['schema'] != SCHEMA or payload['key'] != key:
-                return None
-            return payload['result']
+            return E.record(self.directory, key, self.secret)
         except (OSError, ValueError, TypeError, KeyError):
             return None
 
@@ -141,7 +130,9 @@ class Store:
         if self.secret is None:
             return False
         try:
-            payload = dict(schema=SCHEMA, key=key, result=result)
+            if E.probe(self.directory) != self.secret:
+                return False
+            payload = dict(schema=SCHEMA, key=key, result=result, provenance=E.PROVENANCE)
             document = dict(payload=payload,
                             mac=hmac.new(self.secret, canonical(payload), hashlib.sha256).hexdigest())
             self._publish(self._path(key), canonical(document))

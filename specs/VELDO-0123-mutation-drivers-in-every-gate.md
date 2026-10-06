@@ -152,5 +152,11 @@ measured about 1.5x rather than 2x, the budget never drops below its 8-worker fi
 The 2026-09-22 reuse removal (Telegram 28800, measured 13.8 seconds) is reversed because the owner
 now reports about 69 minutes for about 2,490 mutants. AC1 and the intent permit exact complete-input,
 authenticated killed-result reuse with honest counts. Unknown closures execute fresh. AC2 remains
-unchanged, and AC4 qualification plus canonical landing and release gates remain force fresh.
+unchanged, and AC4 qualification remains force fresh. VELDO-0208 subsequently permits landing
+and release reuse only with authenticated non-agent provenance and matching declared case keys.
 See VELDO-0205 for the precise amendment, protected-path approval requirement and closure boundary.
+
+2026-10-06, VELDO-0208: owner Telegram 31911 and 31916 replace fresh-only landing with
+single-user implementing-agent confinement and authenticated non-agent gate records. Every
+registered case still needs a validated result; reuse counts remain explicit. The owner and
+unconfined orchestrator are trusted. There is no separate account, service or root requirement.

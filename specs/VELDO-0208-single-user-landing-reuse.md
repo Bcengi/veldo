@@ -104,7 +104,8 @@ not expose an alternate unconfined command runner to agents.
 
 The owner wires the command prefix into myday's codex_work.sh and claude_work.sh after review.
 Those external files are not edited here. This checkout is not retroactively confined.
-Existing agent sessions must finish before reuse is trusted. Old records without provenance
+Existing agent sessions must finish and the owner must rotate exposed signing keys before reuse
+is trusted. The default v2 store is a new rollout namespace, not an upgrade of the old v1 key. Old records without provenance
 are misses and must be removed by the owner or left to run fresh; they are never upgraded.
 
 ## Build and evidence limits
@@ -113,3 +114,20 @@ Only suite 100_veldo_0208_landing_reuse is run for this specification, sequentia
 foreground. It may call controlled fixture workers but never the mutation stage. The reviewer
 runs the fresh full gate, prior suites and mutation qualifications and lands the real stamp.
 No fabricated full-gate proof, review or exact-commit protected-path approval is recorded here.
+
+## Kernel and workflow limits
+
+The launcher requires x86_64 Linux with Landlock ABI 6 or newer plus unprivileged seccomp.
+Both are available on the build host (Landlock ABI 8). Other hosts refuse to start; there is
+no unsandboxed fallback. Landlock restricts file content and directory operations, not stat
+metadata or chmod. Changing a mode cannot override the content restrictions. The IPC filter
+blocks pathname Unix services and asynchronous syscall alternatives; Landlock scopes signals
+and abstract Unix sockets and restricts ptrace across domains. See the Linux kernel's
+[Landlock documentation](https://www.kernel.org/doc/html/v6.16/userspace-api/landlock.html).
+
+Only the worktree and per-run scratch are writable. Shared Git metadata outside a linked
+worktree remains read-only: use an independent checkout when the agent must commit, or let
+the unconfined orchestrator perform the Git persistence step. This prevents shared Git object
+or ref edits from substituting code in the trusted authority checkout. The launcher does not
+change this development worktree's Git layout. Private scratch contains copied credentials;
+the trusted orchestrator removes that scratch after the whole agent process tree has ended.

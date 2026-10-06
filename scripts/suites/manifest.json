@@ -1385,6 +1385,15 @@
    ],
    "regions": "Per-case declared mutation inputs and sandbox enforcement.",
    "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out."
+  },
+  {
+   "name": "100_veldo_0208_landing_reuse",
+   "file": "100_veldo_0208_landing_reuse.py",
+   "requires": [
+    "100_veldo_0208_landing_reuse"
+   ],
+   "regions": "Single-user agent confinement and authenticated landing reuse.",
+   "requires_note": "Only ROOT, V and expect; foreground child fixtures, sequential, no mutation stage."
   }
  ],
  "resource_capacities": {

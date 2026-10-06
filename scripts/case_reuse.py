@@ -74,7 +74,7 @@ class Session(M.Session):
             controls = os.environ if environment is None else environment
             directory = cache_directory or controls.get('VELDO_GATE_CACHE')
             if not directory:
-                directory = Path(controls.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'veldo/gate-reuse-v1'
+                directory = R.E.configuration()[1]['store']
             self.store = R.Store(directory, root)
 
     def input_digest(self, case):

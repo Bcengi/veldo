@@ -68,7 +68,7 @@ acceptance_criteria:
       case/store exercises real authenticated records; no fresh survivor becomes a pass.
     falsified_by: Publish a result with a different case input digest; case/store must fail.
 required_evidence: [unit, integration]
-rollback: Revert per-case reuse and its declarations together; force-fresh remains available and landing always requires it.
+rollback: Revert per-case reuse and its declarations together; force-fresh remains available; VELDO-0208 governs authenticated landing reuse.
 ---
 
 ## Design and authority

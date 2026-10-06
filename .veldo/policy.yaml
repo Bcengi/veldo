@@ -14,6 +14,10 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
+  - {path: "scripts/agent_sandbox.py", floor: high}
+  - {path: "scripts/agent_sandbox.json", floor: high}
+  - {path: "engine/.veldo/reuse_evidence.py", floor: high}
+  - {path: ".veldo/reuse_evidence.py", floor: high}
   - {path: "scripts/check_gate_mutations.py", floor: high}
   - {path: "scripts/case_inputs.py", floor: high}
   - {path: "scripts/case_trace.py", floor: high}
@@ -86,8 +90,9 @@ merge_rule: >
   auto-merge; every required approval is recorded, unexpired, and bound to
   this commit; and the change is classified reversible. If the trunk moved
   since the gate ran, the gate re-runs on the merged result before the merge
-  completes. Reuse-aware stamps and events must declare force_fresh true and
-  zero reused results in every stage; development reuse cannot authorize landing.
+  completes. Reuse-aware stamps and events must declare honest counts. Positive mutation reuse
+  requires authenticated non-agent provenance and per-case declared input keys bound
+  to the gated commit under VELDO-0208. Force-fresh requires zero reused results.
   NO VERDICT CLAUSE (WARP-0730). The rule used to also require a pass verdict
   with zero blocking findings. A verdict is an artifact the agent can write,
   so that clause asked an agent to certify itself and cost nine build rounds

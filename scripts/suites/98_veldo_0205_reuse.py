@@ -478,11 +478,11 @@ pathlib.Path(sys.argv[3], 'allowed').write_text('ok')
                                'gate_event': dict(stamp, type='gate.passed')}}
     good = not landing.judge(observation)
     for document in ('last_verify', 'gate_event'):
-        for counts, forced in [({'mutation': 1}, True), ({'mutation': 0}, False),
+        for counts, forced in [({'mutation': 1}, True), ({'mutation': 1}, False),
                                ({'mutation': '0'}, True), ({}, True)]:
             bad = copy.deepcopy(observation)
             bad['outputs'][document].update(reused=counts, force_fresh=forced)
-            good &= 'missing_evidence:gate/fresh_required' in landing.judge(bad)
+            good &= 'missing_evidence:gate/authenticated_reuse_required' in landing.judge(bad)
     expect('VELDO-0205 repair/landing-refuses-reuse', good)
     with tempfile.TemporaryDirectory(prefix='reuse-guard-') as tmp:
         root = Path(tmp)
@@ -501,14 +501,14 @@ pathlib.Path(sys.argv[3], 'allowed').write_text('ok')
             result = subprocess.run(['bash', str(ROOT / 'scripts/veldo-guard.sh')],
                 input=json.dumps({'tool_input': {'command': 'git merge topic'}}),
                 text=True, capture_output=True, env=env, timeout=15)
-            decisions.append('Landing requires force_fresh' in result.stderr)
+            decisions.append('Landing requires authenticated' in result.stderr)
         expect('VELDO-0205 repair/real-guard-rejects-reused-stamp', decisions == [True, False])
     import sys
     sys.path.insert(0, str(ROOT / 'scripts'))
     reducer = load('reuse_stamp')
     expect('VELDO-0205 repair/stamp-receipt-counts',
-           reducer.fields({'status': 'passed', 'force_fresh': False, 'reused': 7}, False)
-           == {'force_fresh': False, 'reused': {'unit': 0, 'mutation': 7}})
+           reducer.fields({'status': 'passed', 'force_fresh': False, 'reused': 0}, False)
+           == {'force_fresh': False, 'reused': {'unit': 0, 'mutation': 0}})
 
 
 _v205_review_repairs()

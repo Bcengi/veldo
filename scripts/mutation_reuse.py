@@ -118,7 +118,7 @@ class Session:
         if any(self.keys.values()):
             directory = cache_directory or controls.get('VELDO_GATE_CACHE')
             if not directory:
-                directory = Path(controls.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'veldo/gate-reuse-v1'
+                directory = R.E.configuration()[1]['store']
             self.store = R.Store(directory, root)
 
     def lookup(self, case, validate):

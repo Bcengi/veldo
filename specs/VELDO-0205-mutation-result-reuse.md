@@ -75,7 +75,7 @@ acceptance_criteria:
       Claim: Reuse is visible and explicitly bypassable in the canonical repository gate.
       Set: the repository gate, both driver identities and the force-fresh environment control.
       Completeness: VELDO_GATE_FORCE_FRESH=1 bypasses reads and writes; canonical landing and release
-      verification require that setting. The ordinary suite stage remains entirely fresh pending
+      verification may instead use VELDO-0208 authenticated non-agent provenance and declared case keys. The ordinary suite stage remains entirely fresh pending
       VELDO-0206. Test actual coordinator behavior and gate wiring in reuse/fresh-policy, without
       running the full gate during this build. Measure one complete repository key pass separately.
     falsified_by: Ignore the force-fresh control; reuse/fresh-policy must turn false.
@@ -121,9 +121,10 @@ and controlled coordinator workers; they do not claim a production suite has a c
 The owner instruction authorizes preparing scripts/verify.sh on this branch. Policy assigns high
 risk and requires separate human approval bound to the exact final implementation commit and
 proof before landing. Telegram 31900 authorizes the design, not a fabricated commit-bound approval.
-No self-approval, push or merge is performed here. Landing and release gates must run with
-VELDO_GATE_FORCE_FRESH=1; ordinary development gates may reuse qualified results. This is a new
-explicit conservative policy, not a relaxation of the merged-tree verification requirement.
+No self-approval, push or merge is performed here. VELDO-0208 amends the initial fresh-only
+landing policy: landing and release gates may reuse authenticated non-agent records with
+matching VELDO-0207 declared case keys. VELDO_GATE_FORCE_FRESH=1 still forces fresh execution.
+The merged-tree verification requirement remains in force.
 
 ## What the reviewer judges
 
@@ -145,7 +146,8 @@ delimiters and command flags retains its ordinary ASCII spelling; prose uses sin
 
 The protected paths listed above are prepared for exact-commit owner approval before landing.
 Gate stamps and events carry force_fresh and per-stage reused counts; both the fleet verifier
-and push guard reject reuse-aware evidence unless forced fresh with all counts zero. Legacy
+and push guard now accept positive reuse only through the VELDO-0208 authenticated landing
+contract. Forced-fresh evidence still requires all counts zero. Legacy
 adopter stamps without reuse metadata retain their existing behavior. Unknown force-fresh values
 are errors; 1/true/yes/on and 0/false/no/off are accepted case-insensitively.
 
@@ -166,3 +168,13 @@ The Claude pack carries one concrete guard copy; it is synchronized with the eng
 alongside the home-repository copy. VELDO-0207 supersedes production whole-tree
 qualification with declared per-case snapshots. The v1 implementation remains for
 its qualification fixtures, but the gate now admits only the new declaration format.
+
+## VELDO-0208 single-user landing amendment
+
+Owner Telegram 31911 and 31916 authorize landing reuse with no separate OS user or root step.
+Implementing Codex and Claude process trees start in the reviewed Landlock launcher; its one
+configuration denies store/key access and writes to trusted machinery and runner scripts.
+The owner and orchestrator remain trusted and unconfined. Authenticated records include gate
+provenance established by actual access to the path denied to agents. Landing checks signed
+record references, declared case keys, counts and the gated commit. Rollout retires old exposed
+keys and unconfined agent sessions before enabling reuse. See VELDO-0208 for tests and deployment.

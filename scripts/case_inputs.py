@@ -6,7 +6,7 @@ from pathlib import Path
 
 DECLARATIONS = 'scripts/mutation_case_inputs.json'
 DRIVERS = ('scripts/check_teeth_mutations.py', 'scripts/check_review_mutations.py')
-MANDATORY = ('scripts/check_gate_mutations.py', 'scripts/mutation_sandbox.py',
+MANDATORY = ('.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/check_gate_mutations.py', 'scripts/mutation_sandbox.py',
              'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/case_reuse.py',
              'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/suites/shared.py')
 

@@ -258,7 +258,7 @@ if _veldo_dirty=$(git status --porcelain 2>/dev/null); then
 else
   TREE_JSON=null
 fi
-REUSE_JSON=$(python3 -B scripts/reuse_stamp.py "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}") || {
+REUSE_JSON=$(python3 -B scripts/reuse_stamp.py "$VELDO_REUSE_RECEIPT" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
   FAIL=1; STATUS=red; EVENT=gate.failed
   REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
 }
