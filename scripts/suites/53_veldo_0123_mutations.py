@@ -52,7 +52,14 @@ def import_gate(path):
     return module
 
 
+def owned_common(root):
+    """The Git common directory of a repository this suite just created, resolved from its marker
+    by the authority's guarded helper. The creator names it; the gate never guesses it."""
+    return import_gate(ROOT / '.veldo/candidate_git.py').common_directory(root)
+
+
 def fixture(root, source, driver_source=None):
+    """Build the fixture repository and return its own Git common directory."""
     (root / 'scripts/suites').mkdir(parents=True)
     (root / 'scripts/suites/manifest.json').write_text(__import__('json').dumps({
         'suites': [{'file': 'fixture.py'}, {'file': 'fixture_kind.py'}]}))
@@ -76,6 +83,7 @@ def fixture(root, source, driver_source=None):
                GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')
     for args in (['init', '-q'], ['add', '.'], ['commit', '-qm', 'fixture']):
         _m123_sp.run(['git', '-C', str(root), *args], env=env, check=True, capture_output=True)
+    return owned_common(root)
 
 
 def register_fixture_case(root, repository):
@@ -125,10 +133,10 @@ def qualification(module, repository, selected=None):
             continue
         with _m123_tmp.TemporaryDirectory(prefix='v123-') as temp:
             root = _m123_Path(temp) / 'repo'
-            fixture(root, source)
+            common = fixture(root, source)
             detail = []
             def run():
-                result = module.run_stage(root)
+                result = module.run_stage(root, common)
                 detail.append(result if result['status'] != 'passed' else {k: result.get(k) for k in
                                ('status', 'error', 'executed', 'registered',
                                 'worker_invocations', 'elapsed', 'input_digest')})
@@ -142,7 +150,7 @@ def qualification(module, repository, selected=None):
                       and set(first['drivers']) == set(module.DRIVERS)
                       and first['executed'] == second['executed'] == 2
                       and first['worker_invocations'] == second['worker_invocations'] == 4
-                      and module.git(root, 'status', '--porcelain') == ''
+                      and module.git(root, common, 'status', '--porcelain') == ''
                       and not list(root.rglob('__pycache__')))
                 driver_path = root / 'scripts/check_teeth_mutations.py'
                 driver_source = driver_path.read_text()
@@ -246,7 +254,7 @@ def qualification(module, repository, selected=None):
                 worker = module.Workers(_m123_time.monotonic() + 0.4)
                 started = _m123_time.monotonic()
                 timed_out = False
-                case = module.inventory(root, expected_common=root / '.git')[0]
+                case = module.inventory(root, common)[0]
                 try:
                     worker.run({'hung': {'case': case, 'mode': 'baseline'}}, _m123_Path(temp), root)
                 except module.Refused as error:
@@ -328,7 +336,7 @@ if 'expect' in globals():
             super().__init__(*args, **kwargs)
             _m123_made.append(self)
 
-    def _m123_stop_after_arm(root):
+    def _m123_stop_after_arm(root, expected_common):
         _m123_seen.append((_m123_made[-1].deadline - _m123_time.monotonic(),
                            _m123_signal.getitimer(_m123_signal.ITIMER_REAL)[0]))
         raise _m123_budget.Refused('driver_error', 'stop after the cap is armed')
@@ -340,8 +348,9 @@ if 'expect' in globals():
         _m123_budget.read_inputs = _m123_stop_after_arm
         _m123_budget.Workers = _m123_Workers
         for _m123_count in (10, 116, 300):
-            _m123_budget.inventory = lambda root, n=_m123_count: [{'driver': 'synthetic'}] * n
-            _m123_caps[_m123_count] = _m123_budget.run_stage(ROOT).get('budget_seconds')
+            _m123_budget.inventory = lambda root, common, n=_m123_count: [{'driver': 'synthetic'}] * n
+            _m123_caps[_m123_count] = _m123_budget.run_stage(
+                ROOT, _m123_budget.common_directory(ROOT)).get('budget_seconds')
     finally:
         _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
         _m123_budget.PARALLEL = _m123_budget_parallel
@@ -373,6 +382,7 @@ if 'expect' in globals():
                      check=True, capture_output=True, env=_m123_genv)
 
     _m123_git('init', '-q')
+    _m123_repo_common = owned_common(_m123_repo)
     for _m123_rel, _m123_text in (('bin/veldo', 'front door\n'), ('specs/S.md', 'spec\n'),
                                   ('.veldo/kept.py', 'kept\n'), ('.veldo/last_verify', '{}\n'),
                                   ('gone.txt', 'deleted later\n'), ('.gitignore', 'ignored.txt\n'),
@@ -391,7 +401,7 @@ if 'expect' in globals():
     (_m123_repo / 'plans/__pycache__').mkdir()
     (_m123_repo / 'plans/__pycache__/new.cpython-312.pyc').write_bytes(b'bytecode')
     try:
-        _m123_read = _m123_gate.read_inputs(_m123_repo)
+        _m123_read = _m123_gate.read_inputs(_m123_repo, _m123_repo_common)
     except Exception as _m123_error:                   # a closure that dies is red, never a crash
         _m123_read = {'raised': (0, repr(_m123_error).encode())}
     _m123_closure = sorted(_m123_read)
@@ -406,7 +416,7 @@ if 'expect' in globals():
            and _m123_read['bin/veldo'][0] == 0o755 and _m123_read['specs/S.md'][0] & 0o111 == 0)
     (_m123_repo / 'plans/link').symlink_to('new.md')
     try:
-        _m123_gate.read_inputs(_m123_repo)
+        _m123_gate.read_inputs(_m123_repo, _m123_repo_common)
         _m123_link = 'accepted'
     except _m123_gate.Refused as _m123_error:
         _m123_link = _m123_error.code
@@ -416,7 +426,7 @@ if 'expect' in globals():
 
     def _m123_refusal():
         try:
-            _m123_gate.read_inputs(_m123_repo)
+            _m123_gate.read_inputs(_m123_repo, _m123_repo_common)
             return 'accepted'
         except _m123_gate.Refused as _m123_error:
             return _m123_error.code + ': ' + _m123_error.detail.split(':')[0]
@@ -498,7 +508,7 @@ if 'expect' in globals():
     _m123_alias = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-alias-')) / 'root'
     _m123_alias.symlink_to(_m123_repo)
     try:
-        _m123_via_link = _m123_gate.read_inputs(_m123_alias)
+        _m123_via_link = _m123_gate.read_inputs(_m123_alias, _m123_repo_common)
     except Exception as _m123_error:
         _m123_via_link = {'raised': (0, repr(_m123_error).encode())}
 
@@ -506,10 +516,10 @@ if 'expect' in globals():
     # same mode, same content, and nothing else outside .git.
     _m123_dest = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-snapshot-')) / 'frozen'
     try:
-        _m123_files = _m123_gate.read_inputs(_m123_repo)
+        _m123_files = _m123_gate.read_inputs(_m123_repo, _m123_repo_common)
         _m123_head = _m123_sp.run(['git', '-C', str(_m123_repo), 'rev-parse', 'HEAD'], check=True,
                                   capture_output=True, text=True, env=_m123_genv).stdout.strip()
-        _m123_gate.snapshot(_m123_repo, _m123_dest, _m123_files, _m123_head)
+        _m123_gate.snapshot(_m123_repo, _m123_repo_common, _m123_dest, _m123_files, _m123_head)
         _m123_walked = {p.relative_to(_m123_dest).as_posix(): (p.stat().st_mode & 0o777, p.read_bytes())
                         for p in _m123_dest.rglob('*')
                         if p.is_file() and '.git' not in p.relative_to(_m123_dest).parts}
@@ -529,27 +539,28 @@ if 'expect' in globals():
     _m123_race = _m123_Path(_m123_tmp.mkdtemp(prefix='m123-race-'))
     try:
         _m123_sp.run(['git', 'init', '-q', str(_m123_race)], check=True, capture_output=True, env=_m123_genv)
+        _m123_race_common = owned_common(_m123_race)
         (_m123_race / 'f.txt').write_text('one\n')
         _m123_rgit = ['git', '-C', str(_m123_race), '-c', 'user.name=F', '-c', 'user.email=f@example.invalid']
         _m123_sp.run(_m123_rgit + ['add', '-A'], check=True, capture_output=True, env=_m123_genv)
         _m123_sp.run(_m123_rgit + ['commit', '-qm', 'r'], check=True, capture_output=True, env=_m123_genv)
-        _m123_rfiles = _m123_gate.read_inputs(_m123_race)
-        _m123_rhead = _m123_gate.git(_m123_race, 'rev-parse', 'HEAD')
-        _m123_same = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_rfiles = _m123_gate.read_inputs(_m123_race, _m123_race_common)
+        _m123_rhead = _m123_gate.git(_m123_race, _m123_race_common, 'rev-parse', 'HEAD')
+        _m123_same = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
         (_m123_race / 'f.txt').write_text('TWO\n')
-        _m123_body = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_body = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
         (_m123_race / 'f.txt').write_text('one\n')
         _m123_mode0 = (_m123_race / 'f.txt').stat().st_mode & 0o777
         (_m123_race / 'f.txt').chmod(0o755 if _m123_mode0 != 0o755 else 0o700)
-        _m123_mode = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_mode = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
         (_m123_race / 'f.txt').chmod(_m123_mode0)
         (_m123_race / 'new.txt').write_text('added\n')
-        _m123_added = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_added = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
         (_m123_race / 'new.txt').unlink()
-        _m123_restored = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_restored = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
         _m123_sp.run(_m123_rgit + ['commit', '-q', '--allow-empty', '-m', 'moved'], check=True,
                      capture_output=True, env=_m123_genv)
-        _m123_commit = _m123_gate.inputs_unchanged(_m123_race, _m123_rfiles, _m123_rhead)
+        _m123_commit = _m123_gate.inputs_unchanged(_m123_race, _m123_race_common, _m123_rfiles, _m123_rhead)
     except Exception as _m123_error:
         _m123_same, _m123_body, _m123_mode, _m123_added, _m123_commit = False, True, True, True, True
         _m123_restored = False
@@ -569,9 +580,10 @@ if 'expect' in globals():
                     "    source = Path(mutant)",
                     "    if mutant:\n        (Path(%r) / 'late.txt').write_text('written by a worker mid-stage')\n"
                     "    source = Path(mutant)" % str(_m123_root), 1)
-            fixture(_m123_root, ROOT / 'scripts/check_gate_mutations.py', _m123_driver)
+            _m123_common = fixture(_m123_root, ROOT / 'scripts/check_gate_mutations.py', _m123_driver)
             try:
-                _m123_r = import_gate(_m123_root / 'scripts/check_gate_mutations.py').run_stage(_m123_root)
+                _m123_r = import_gate(_m123_root / 'scripts/check_gate_mutations.py').run_stage(
+                    _m123_root, _m123_common)
                 _m123_e2e[_m123_touch] = (_m123_r.get('status'), _m123_r.get('detail'))
             except Exception as _m123_error:
                 _m123_e2e[_m123_touch] = ('raised', repr(_m123_error))

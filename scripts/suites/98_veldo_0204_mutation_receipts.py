@@ -94,15 +94,15 @@ def _v204_mutation_receipts():
         real_load = gate.load
         with tempfile.TemporaryDirectory(prefix='v204-receipts-') as directory:
             root = Path(directory)
-            def snapshot(_root, frozen, *_args):
+            def snapshot(_root, _common, frozen, *_args):
                 (frozen / '.veldo').mkdir(parents=True)
                 (frozen / '.veldo/controlled.py').write_text('before\n')
             with contextlib.ExitStack() as stack:
                 overrides = {
                     'Workers': RecordingWorkers,
-                    'inventory': lambda root, **_: cases + ([dict(cases[0], identity='other-driver',
+                    'inventory': lambda root, expected_common: cases + ([dict(cases[0], identity='other-driver',
                         driver=gate.DRIVERS[1])] if entry == 'teeth' else []),
-                    'read_inputs': lambda root: {'scripts/check_gate_mutations.py': (0o644, source.encode())},
+                    'read_inputs': lambda root, expected_common: {'scripts/check_gate_mutations.py': (0o644, source.encode())},
                     'git': lambda *a: 'head', 'snapshot': snapshot,
                     'inputs_unchanged': lambda *a: True, 'budget_for': lambda *a: 10000,
                     # The real reuse session runs: these controlled cases declare no inputs,
@@ -119,8 +119,9 @@ def _v204_mutation_receipts():
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: clock.__setitem__(0, clock[0] + .1)))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: None))
                 stack.enter_context(patch.object(teeth, '_coordinator', lambda: gate))
-                receipt = (teeth.run_stage(root, jobs=3, diff_dir=root / 'diffs')
-                           if entry == 'teeth' else gate.run_stage(root))
+                # Every Git query is a double here; the trusted directory is still named.
+                receipt = (teeth.run_stage(root, root / '.git', jobs=3, diff_dir=root / 'diffs')
+                           if entry == 'teeth' else gate.run_stage(root, root / '.git'))
                 if entry == 'teeth':
                     assert (root / 'diffs/first.diff').read_text() == (
                         '--- a/.veldo/controlled.py\n+++ b/.veldo/controlled.py\n'

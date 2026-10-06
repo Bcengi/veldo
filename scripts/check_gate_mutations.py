@@ -141,11 +141,16 @@ def confined_command(root, command):
             '--root', str(root), '--', *command]
 
 
-def inventory(root, expected_common=None):
+def common_directory(root):
+    """The Git common directory of a repository the caller itself owns (the authority checkout, or
+    a repository the caller just created), resolved from its marker by the guarded helper without
+    running Git. Whoever owns a repository names this; nothing defaults it."""
+    return load(ROOT / '.veldo/candidate_git.py').common_directory(root)
+
+
+def inventory(root, expected_common):
     # Registry imports are candidate execution too. Only data crosses this pipe.
-    env = dict(os.environ)
-    if expected_common is not None:
-        env['VELDO_EXPECTED_GIT_COMMON'] = str(expected_common)
+    env = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(expected_common))
     result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
         str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
         capture_output=True, text=True, timeout=WORKER_BUDGET, env=env)
@@ -183,18 +188,17 @@ def command(args, env, with_stderr=False):
 
 # Git's shared environment boundary runs inside our owned group. The outer process
 # keeps setup descendants killable even if the shared subprocess.run call hangs.
-def git_bytes(root, *args, with_stderr=False):
+def git_bytes(root, expected_common, *args, with_stderr=False):
     return command([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
-                    '--root', str(root), '--', *args],
-                   dict(fixed_env('/nonexistent'), **{k: v for k, v in os.environ.items()
-                        if k == 'VELDO_EXPECTED_GIT_COMMON'}), with_stderr=with_stderr)
+                    '--root', str(root), '--expected-common', str(expected_common), '--', *args],
+                   fixed_env('/nonexistent'), with_stderr=with_stderr)
 
 
-def git(root, *args):
-    return git_bytes(root, *args).decode().strip()
+def git(root, expected_common, *args):
+    return git_bytes(root, expected_common, *args).decode().strip()
 
 
-def read_inputs(root):
+def read_inputs(root, expected_common):
     """THE INPUT CLOSURE: every file of the working tree Git does not ignore, tracked or untracked,
     minus deleted files, bytecode caches and the gate's own outputs. Ignore rules are what Git applies
     to this repository with no global configuration: .gitignore, info/exclude and a core.excludesFile
@@ -205,7 +209,7 @@ def read_inputs(root):
     list of directories left out the front door bin/veldo, and a row that runs it passed in the
     checkout and failed in every baseline in the snapshot. Names are read as raw bytes (NUL
     separated, decoded with the file system encoding), so no name is trimmed or undecodable."""
-    listed, warned = git_bytes(root, 'ls-files', '-z', '--cached', '--others', '--exclude-standard',
+    listed, warned = git_bytes(root, expected_common, 'ls-files', '-z', '--cached', '--others', '--exclude-standard',
                                with_stderr=True)
     if warned.strip():
         # Git lists what it could read and only WARNS about a directory it could not open, so such
@@ -242,11 +246,11 @@ def read_inputs(root):
     return files
 
 
-def inputs_unchanged(root, files, head):
+def inputs_unchanged(root, expected_common, files, head):
     """THE RACE CHECK: read the inputs AGAIN and compare with the first read, by content, mode and
     name, and the commit, so a change during the stage can never pass as the tree that was run."""
-    return (file_identity(read_inputs(root)) == file_identity(files)
-            and git(root, 'rev-parse', 'HEAD') == head)
+    return (file_identity(read_inputs(root, expected_common)) == file_identity(files)
+            and git(root, expected_common, 'rev-parse', 'HEAD') == head)
 
 
 def file_identity(files):
@@ -619,9 +623,11 @@ def control_group(case):
     return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True))
 
 
-def snapshot(root, destination, files, head):
-    git(root, 'clone', '-q', '--no-checkout', '--no-hardlinks', str(root), str(destination))
-    git(destination, 'checkout', '-q', '--detach', head)
+def snapshot(root, expected_common, destination, files, head):
+    git(root, expected_common, 'clone', '-q', '--no-checkout', '--no-hardlinks', str(root), str(destination))
+    # The clone is this stage's own repository: it names the common directory it just created.
+    common = common_directory(destination)
+    git(destination, common, 'checkout', '-q', '--detach', head)
     # Git exists only for corpus/history queries; excluded outputs cannot be read by workers.
     for child in destination.iterdir():
         if child.name == '.git':
@@ -635,12 +641,15 @@ def snapshot(root, destination, files, head):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(body)
         path.chmod(mode)
+    return common
 
 
 
 
-def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None,
+def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               drivers=None, parallel=None, diff_dir=None, force_fresh=False):
+    """expected_common is the trusted Git common directory of root, named by the caller that owns
+    root: the authority's own for the gate, a fixture's own for the fixture's creator."""
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline, parallel=parallel)
@@ -657,7 +666,7 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
     # Enumeration itself runs under the floor; the full cap is armed once the count is known.
     signal.setitimer(signal.ITIMER_REAL, BUDGET)
     try:
-        full_inventory = inventory(root)
+        full_inventory = inventory(root, expected_common)
         cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
                  and (not drivers or c['driver'] in drivers)
                  and (not names or c['name'] in names)]
@@ -673,8 +682,8 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
             own = [c for c in cases if c['driver'] == driver]
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
                                            'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
-        files = read_inputs(root)
-        head = git(root, 'rev-parse', 'HEAD')
+        files = read_inputs(root, expected_common)
+        head = git(root, expected_common, 'rev-parse', 'HEAD')
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
@@ -696,9 +705,9 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
             frozen = directory / 'input'
-            snapshot(root, frozen, files, head)
+            frozen_common = snapshot(root, expected_common, frozen, files, head)
             # Registries executed again from the frozen bytes: an enumeration race is red.
-            if inventory(frozen, expected_common=frozen / '.git') != full_inventory:
+            if inventory(frozen, frozen_common) != full_inventory:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
             if diff_dir is not None:
                 destination = Path(diff_dir)
@@ -763,7 +772,7 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
             # Reject changes to the checked inputs during execution.
-            if not inputs_unchanged(root, files, head):
+            if not inputs_unchanged(root, expected_common, files, head):
                 raise Refused('driver_error', 'inputs changed during stage')
             if not reuse.unchanged():
                 raise Refused('driver_error', 'runtime inputs changed during stage')
@@ -853,7 +862,9 @@ def main():
         finally:
             tracker.close()
         return 0
-    receipt = run_stage(root=args.root, capacities=resource_capacities(args.resource_capacity),
+    # The gate names the authority checkout's own common directory; a candidate root is a linked
+    # worktree of it, and its marker is checked against that directory before any Git runs.
+    receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names, log_dir=args.worker_log_dir)
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))

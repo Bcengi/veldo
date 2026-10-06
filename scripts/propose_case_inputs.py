@@ -130,7 +130,7 @@ def main():
     if not (args.case or args.all or args.from_measurement):
         parser.error('choose --case, --all or --from-measurement; no implicit registry drive')
     gate = load_gate()
-    registry = {c['identity']: c for c in gate.inventory(ROOT)}
+    registry = {c['identity']: c for c in gate.inventory(ROOT, gate.common_directory(ROOT))}
     document = {'schema': 'veldo.case-inputs/v1', 'cases': {}, 'toolchains': {}}
     report = []
     measured = None

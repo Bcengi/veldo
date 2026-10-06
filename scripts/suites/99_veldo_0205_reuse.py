@@ -284,7 +284,7 @@ def _v205_reuse():
 
         with patch.object(gate, 'inventory', return_value=[{'driver': 'synthetic'}]), \
              patch.object(gate, 'read_inputs', side_effect=gate.Refused('driver_error', 'controlled setup stop')):
-            setup_failed = gate.run_stage(root)
+            setup_failed = gate.run_stage(root, root / '.git')
         expect('VELDO-0205 reuse/setup-error-receipt: incomplete setup returns a failed receipt',
                setup_failed['status'] == 'failed' and setup_failed['executed'] == setup_failed['reused'] == 0)
 
@@ -295,14 +295,14 @@ def _v205_reuse():
         def run(force=False):
             with patch.object(gate, 'Workers', ControlledWorkers), \
                  patch.object(gate, 'inventory', return_value=cases), \
-                 patch.object(gate, 'read_inputs', side_effect=lambda root: active_files[0]), \
+                 patch.object(gate, 'read_inputs', side_effect=lambda root, common: active_files[0]), \
                  patch.object(gate, 'git', return_value='head'), \
                  patch.object(gate, 'snapshot'), \
                  patch.object(gate, 'inputs_unchanged', side_effect=lambda *args: not race[0]), \
                  patch.object(gate, 'load', return_value=reuse), \
                  patch.object(gate.SuiteResources, 'from_root', return_value=Resources()), \
                  patch.object(reuse, 'Session', side_effect=stage_session):
-                return gate.run_stage(root, force_fresh=force)
+                return gate.run_stage(root, root / '.git', force_fresh=force)
 
         cold = run()
         warm = run()
@@ -395,11 +395,12 @@ if os.environ.get('VELDO_REUSE_MEASURE') == '1':
     _v205_spec = importlib.util.spec_from_file_location('reuse_measure_gate', ROOT / 'scripts/check_gate_mutations.py')
     _v205_gate = importlib.util.module_from_spec(_v205_spec)
     _v205_spec.loader.exec_module(_v205_gate)
-    _v205_files = _v205_gate.read_inputs(ROOT)
-    _v205_cases = _v205_gate.inventory(ROOT)
+    _v205_common = _v205_gate.common_directory(ROOT)
+    _v205_files = _v205_gate.read_inputs(ROOT, _v205_common)
+    _v205_cases = _v205_gate.inventory(ROOT, _v205_common)
     _v205_reuse = _v205_gate.load(ROOT / 'scripts/mutation_reuse.py')
     _v205_session = _v205_reuse.Session(ROOT, _v205_files, _v205_cases,
-        _v205_gate.git(ROOT, 'rev-parse', 'HEAD'), {'fixture_version': _v205_gate.FIXTURE_VERSION})
+        _v205_gate.git(ROOT, _v205_common, 'rev-parse', 'HEAD'), {'fixture_version': _v205_gate.FIXTURE_VERSION})
     print('reuse-key-measurement: ' + json.dumps({
         'seconds': _v205_time.monotonic() - _v205_started,
         'files': len(_v205_files), 'bytes': sum(len(body) for _, body in _v205_files.values()),

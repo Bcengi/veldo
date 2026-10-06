@@ -10588,10 +10588,10 @@ def _coordinator():
     return coordinator
 
 
-def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None,
+def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               jobs=None, diff_dir=None):
     """Use the gate's process ownership, per-child accounting and launch deadlines."""
-    return _coordinator().run_stage(root, capacities=capacities, findings=findings, names=names,
+    return _coordinator().run_stage(root, expected_common, capacities=capacities, findings=findings, names=names,
                                    log_dir=log_dir, drivers=['check_teeth_mutations.py'],
                                    parallel=jobs, diff_dir=diff_dir)
 
@@ -10613,7 +10613,10 @@ def main():
         case = next(c for c in selected if c['name'] == args.worker)
         print(json.dumps(worker(case, args.mutant)))
         return 0
-    receipt = run_stage(capacities=_coordinator().resource_capacities(args.resource_capacity),
+    coordinator = _coordinator()
+    # This checkout owns itself, so it names its own Git common directory.
+    receipt = run_stage(ROOT, coordinator.common_directory(ROOT),
+                        capacities=coordinator.resource_capacities(args.resource_capacity),
                         findings=[args.finding] if args.finding is not None else None,
                         names=args.names, log_dir=args.worker_log_dir, jobs=max(1, args.jobs),
                         diff_dir=args.diff_dir)

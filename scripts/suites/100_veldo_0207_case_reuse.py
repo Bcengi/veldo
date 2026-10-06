@@ -294,7 +294,7 @@ print(json.dumps(results))
             def construct(*args, **kwargs):
                 return real_session(*args, **kwargs, cache_directory=top/'stage-cache')
             with patch.object(gate, 'inventory', return_value=cases), \
-                 patch.object(gate, 'read_inputs', side_effect=lambda root: active[0]), \
+                 patch.object(gate, 'read_inputs', side_effect=lambda root, common: active[0]), \
                  patch.object(gate, 'git', return_value='head'), \
                  patch.object(gate, 'snapshot'), patch.object(gate, 'inputs_unchanged', return_value=True), \
                  patch.object(gate, 'Workers', Workers), patch.object(gate, 'load', return_value=C), \
@@ -302,7 +302,7 @@ print(json.dumps(results))
                  patch.object(gate.SuiteResources, 'from_root', return_value=gate.SuiteResources({'suites':[{'file':'test.py'}, {'file':'other_test.py'}]})), \
                  patch.object(C.M, 'runtime_identity', side_effect=runtime), \
                  patch.object(C, 'Session', side_effect=construct):
-                return gate.run_stage(root)
+                return gate.run_stage(root, root / '.git')
         cold, warm = run_stage(), run_stage()
         repeated = run_stage(miss=True)
         expect('VELDO-0207 case/deterministic-concurrent-publication',
