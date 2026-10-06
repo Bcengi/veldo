@@ -20,29 +20,36 @@ ROWS = ['gate/both-mutation-drivers-are-required', 'gate/mutation-results-have-t
         'gate/mutation-stage-budget-is-enforced', 'gate/removed-teeth-redden-the-gate',
         'gate/fixture-cases-execute-named-targets']
 
-FIXTURE_DRIVER = '''from pathlib import Path
-ROOT = Path(__file__).resolve().parent.parent
-
+# A driver is candidate code used only for confined registry enumeration; workers run the
+# authority's mutation observer over the suite (VELDO-0208). So the driver is a registry, and the
+# behaviours the stage must survive (a crash, a hang, a weakened assertion) live in the suite.
+FIXTURE_DRIVER = '''
 def cases():
     return [dict(name='fixture', finding=1, suite='fixture.py', module='fixture.py',
                  old='answer = True', new='answer = False', rows=['fixture/teeth'])]
-
-def worker(case, mutant=None):
-    if mutant and (ROOT / 'scripts/crash').exists():
-        raise RuntimeError('controlled worker crash')
-    if (ROOT / 'scripts/hang').exists():
-        import subprocess, sys, time
-        child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])
-        (ROOT / 'child.pid').write_text(str(child.pid))
-        time.sleep(30)
-    source = Path(mutant).read_text() if mutant else (ROOT / '.veldo/fixture.py').read_text()
-    passed = 'answer = True' in source
-    if 'True' == (ROOT / 'scripts/suites/fixture.py').read_text():
-        passed = True
-    rows = [['fixture/teeth', passed], ['fixture/control', True]]
-    return dict(observations=rows, count=2, row_names=[r[0] for r in rows],
-                failed_rows=[n for n, ok in rows if not ok])
 '''
+
+FIXTURE_SHARED = '''from pathlib import Path
+ROOT = Path(__file__).resolve().parents[2]
+def expect(name, condition):
+    assert condition, name
+'''
+
+# The observer points the anchor at the no-op or mutant copy, so `module` differs from the
+# unreplaced path exactly when a copy is under test. The hung worker records its child where it
+# may write: its own TMPDIR, which is the worker's home.
+FIXTURE_SUITE = '''module = ROOT / ".veldo" / "fixture.py"
+if module != ROOT / '.veldo/fixture.py' and (ROOT / 'scripts/crash').exists():
+    raise RuntimeError('controlled worker crash')
+if (ROOT / 'scripts/hang').exists():
+    import os, subprocess, sys, time
+    child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])
+    (Path(os.environ['TMPDIR']) / 'child.pid').write_text(str(child.pid))
+    time.sleep(30)
+expect('fixture/teeth', 'answer = True' in module.read_text())
+expect('fixture/control', True)
+'''
+FIXTURE_TEETH = "'answer = True' in module.read_text()"
 
 
 def import_gate(path):
@@ -58,25 +65,29 @@ def owned_common(root):
     return import_gate(ROOT / '.veldo/candidate_git.py').common_directory(root)
 
 
-def fixture(root, source, driver_source=None):
+def fixture(root, source, driver_source=None, suite_source=None):
     """Build the fixture repository and return its own Git common directory."""
     (root / 'scripts/suites').mkdir(parents=True)
     (root / 'scripts/suites/manifest.json').write_text(__import__('json').dumps({
         'suites': [{'file': 'fixture.py'}, {'file': 'fixture_kind.py'}]}))
     (root / '.veldo').mkdir()
-    (root / '.veldo/git_process.py').write_bytes((source.parent.parent / '.veldo/git_process.py').read_bytes())
+    # The fixture is its own authority when its gate runs, so it carries the authority machinery.
+    for helper in ('candidate_git.py', 'reuse_evidence.py', 'git_process.py'):
+        (root / '.veldo' / helper).write_bytes((source.parent.parent / '.veldo' / helper).read_bytes())
     (root / 'proof').mkdir()
     (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
     for helper in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py', 'case_inputs.py',
-                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py', 'mutation_ownership.py'):
+                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py', 'mutation_ownership.py',
+                   'gate_candidate.py', 'agent_sandbox.py', 'agent_sandbox.json', 'reuse_worker.py',
+                   'mutation_observer.py'):
         (root / 'scripts' / helper).write_bytes((source.parent / helper).read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
-        # Keep the real materializer while replacing only the disposable registry/worker.
+        # Keep the real materializer while replacing only the disposable registry.
         owner = (source.parent / 'check_teeth_mutations.py').read_text() if driver == 'check_teeth_mutations.py' else ''
         (root / 'scripts' / driver).write_text(owner + '\n' + (driver_source or FIXTURE_DRIVER))
     for path, content in {'.veldo/fixture.py': 'answer = True',
-                          'scripts/suites/fixture.py': 'condition',
-                          'scripts/suites/shared.py': '# shared'}.items():
+                          'scripts/suites/fixture.py': suite_source or FIXTURE_SUITE,
+                          'scripts/suites/shared.py': FIXTURE_SHARED}.items():
         (root / path).write_text(content)
     env = dict(_m123_os.environ, GIT_AUTHOR_NAME='fixture', GIT_AUTHOR_EMAIL='fixture@example.test',
                GIT_COMMITTER_NAME='fixture', GIT_COMMITTER_EMAIL='fixture@example.test',
@@ -99,9 +110,7 @@ def register_fixture_case(root, repository):
     (base / 'fixture.py').write_bytes(b'# fixture bytes\r\nanswer = True\r\n')
     (base / 'sibling.txt').write_text('sibling retained')
     (base / 'nested/control.txt').write_text('nested retained')
-    (root / 'scripts/suites/shared.py').write_text(
-        'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
-        'def expect(name, condition):\n    assert condition, name\n')
+    (root / 'scripts/suites/shared.py').write_text(FIXTURE_SHARED)
     (root / 'scripts/suites/fixture_kind.py').write_text('''base = ROOT / "scripts" / "fixtures"
 expect('fixture/named-target', 'answer = True' in (base / 'fixture.py').read_text())
 expect('fixture/sibling', (base / 'sibling.txt').read_text() == 'sibling retained')
@@ -110,11 +119,27 @@ expect('fixture/nested', (base / 'nested/control.txt').read_text() == 'nested re
     return case
 
 
+MUTATION_DECLARATION = 'CHECK_mutation="required:authority mutation stage"'
+MUTATION_INVOCATION = ('python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
+                       '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"')
+
+
+def wiring(gate_source):
+    """The stage is declared required, invoked exactly once by its exact authority line, and no
+    other line invokes any copy of the coordinator or the teeth driver."""
+    import re
+    lines = gate_source.read_text().splitlines()
+    declared = [line for line in lines if line.startswith('CHECK_mutation=')]
+    calls = [line for line in lines
+             if re.search(r'check_(gate|teeth)_mutations\.py', line) and not line.lstrip().startswith('#')]
+    return declared == [MUTATION_DECLARATION] and [line.strip() for line in calls] == [MUTATION_INVOCATION]
+
+
 def gate_exit(root, gate_source):
     """Run the actual stage through the canonical catalog; unrelated checks stand down."""
     import re
     text = gate_source.read_text()
-    text = re.sub(r'^CHECK_(?!extra=)(\w+)=.*$', r'CHECK_\1="na:isolated wiring fixture"',
+    text = re.sub(r'^CHECK_(?!extra=|mutation=)(\w+)=.*$', r'CHECK_\1="na:isolated wiring fixture"',
                   text, flags=re.M)
     (root / 'scripts/verify.sh').write_text(text)
     (root / 'scripts/check_template_sync.sh').write_text('exit 0\n')
@@ -165,19 +190,22 @@ def qualification(module, repository, selected=None):
                 driver_path.write_text(driver_source)
                 ok &= gate_exit(root, repository / 'scripts/verify.sh') == 0
                 for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
+                    # A driver is required for its registry: one that cannot enumerate is red.
                     path = root / 'scripts' / driver
                     body = path.read_text()
-                    path.write_text(body.replace("if mutant and (ROOT / 'scripts/crash').exists():", 'if True:'))
-                    failed = run()
+                    broken = body.replace(FIXTURE_DRIVER, FIXTURE_DRIVER.replace(
+                        'def cases():\n', "def cases():\n    raise RuntimeError('controlled registry failure')\n"))
+                    path.write_text(broken)
+                    failed = run() if broken != body else {'status': 'not broken'}
                     ok &= failed['status'] == 'failed'
                     ok &= gate_exit(root, repository / 'scripts/verify.sh') != 0
                     path.write_text(body)
                     path.unlink()
                     ok &= run()['status'] == 'failed'
                     path.write_text(body)
-                # The live selftest rejects a missing/disabled required stage declaration.
-                declaration = """CHECK_extra='required:bash scripts/check_template_sync.sh && python3 -B scripts/check_gate_mutations.py --receipt "$VELDO_REUSE_RECEIPT"'"""
-                ok &= declaration in (repository / 'scripts/verify.sh').read_text()
+                # The live gate declares the stage required and runs it from the authority only
+                # (VELDO-0208: the gate never runs a candidate copy of its own machinery).
+                ok &= wiring(repository / 'scripts/verify.sh')
                 (root / 'scripts/check_gate_mutations.py').unlink()
                 absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20)
                 ok &= absent.returncode != 0
@@ -260,7 +288,7 @@ def qualification(module, repository, selected=None):
                 except module.Refused as error:
                     timed_out = error.code == 'mutation_budget_exceeded'
                 child_dead = False
-                pidfile = root / 'child.pid'
+                pidfile = worker.homes['hung'] / 'child.pid' if 'hung' in worker.homes else root / 'absent'
                 if pidfile.exists():
                     pid = int(pidfile.read_text())
                     status = _m123_Path('/proc') / str(pid) / 'stat'
@@ -279,7 +307,8 @@ def qualification(module, repository, selected=None):
                 first = run()
                 second = run()
                 baseline_exit = gate_exit(root, repository / 'scripts/verify.sh')
-                (root / 'scripts/suites/fixture.py').write_text('True')
+                suite = root / 'scripts/suites/fixture.py'
+                suite.write_text(suite.read_text().replace(FIXTURE_TEETH, 'True'))
                 weakened = run()
                 answers[row] = bool(first['status'] == second['status'] == 'passed'
                     and weakened['status'] == 'failed' and weakened.get('error') == 'mutation_survived'
@@ -566,24 +595,26 @@ if 'expect' in globals():
         _m123_restored = False
     finally:
         _m123_sp.run(['rm', '-rf', str(_m123_race)], check=True)
-    # END TO END: the real run_stage over the suite's fixture, once clean and once with a worker that
-    # writes into the ORIGINAL checkout while it runs a mutant. Only a stage that re-reads the tree
-    # after its workers ran, compares it with its first read, and refuses on a difference is red
+    # END TO END: the real run_stage over the suite's fixture, once clean and once with the ORIGINAL
+    # checkout written while the mutant workers run. Workers are confined to read their snapshot, so
+    # the write comes from beside them, as any concurrent writer would. Only a stage that re-reads the
+    # tree after its workers ran, compares it with its first read, and refuses on a difference is red
     # there; a dead, misplaced or self-comparing check passes the clean run AND the changed one.
     _m123_e2e = {}
     for _m123_touch in (False, True):
         with _m123_tmp.TemporaryDirectory(prefix='m123-e2e-') as _m123_t:
             _m123_root = _m123_Path(_m123_t) / 'repo'
-            _m123_driver = FIXTURE_DRIVER
+            _m123_common = fixture(_m123_root, ROOT / 'scripts/check_gate_mutations.py')
+            _m123_stage = import_gate(_m123_root / 'scripts/check_gate_mutations.py')
             if _m123_touch:
-                _m123_driver = FIXTURE_DRIVER.replace(
-                    "    source = Path(mutant)",
-                    "    if mutant:\n        (Path(%r) / 'late.txt').write_text('written by a worker mid-stage')\n"
-                    "    source = Path(mutant)" % str(_m123_root), 1)
-            _m123_common = fixture(_m123_root, ROOT / 'scripts/check_gate_mutations.py', _m123_driver)
+                class _m123_LateWriter(_m123_stage.Workers):
+                    def run(self, jobs, directory, root, on_result=None, _late=_m123_root / 'late.txt'):
+                        if any(job['mode'] == 'mutant' for job in jobs.values()):
+                            _late.write_text('written while the mutant workers run')
+                        return super().run(jobs, directory, root, on_result)
+                _m123_stage.Workers = _m123_LateWriter
             try:
-                _m123_r = import_gate(_m123_root / 'scripts/check_gate_mutations.py').run_stage(
-                    _m123_root, _m123_common)
+                _m123_r = _m123_stage.run_stage(_m123_root, _m123_common)
                 _m123_e2e[_m123_touch] = (_m123_r.get('status'), _m123_r.get('detail'))
             except Exception as _m123_error:
                 _m123_e2e[_m123_touch] = ('raised', repr(_m123_error))

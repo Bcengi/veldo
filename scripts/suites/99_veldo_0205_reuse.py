@@ -91,10 +91,13 @@ def _v205_reuse():
         import ast
         import subprocess
         fixture_source = (ROOT / 'scripts/suites/53_veldo_0123_mutations.py').read_text()
-        fixture_function = next(node for node in ast.parse(fixture_source).body
-                                if isinstance(node, ast.FunctionDef) and node.name == 'fixture')
-        namespace = {'_m123_os': os, '_m123_sp': subprocess, 'FIXTURE_DRIVER': '# controlled'}
-        exec(compile(ast.Module(body=[fixture_function], type_ignores=[]), 'fixture_constructor', 'exec'), namespace)
+        fixture_functions = [node for node in ast.parse(fixture_source).body
+                             if isinstance(node, ast.FunctionDef)
+                             and node.name in ('fixture', 'owned_common', 'import_gate')]
+        namespace = {'_m123_os': os, '_m123_sp': subprocess, '_m123_ilu': importlib.util, 'ROOT': ROOT,
+                     'FIXTURE_DRIVER': '# controlled', 'FIXTURE_SUITE': '# controlled',
+                     'FIXTURE_SHARED': '# controlled'}
+        exec(compile(ast.Module(body=fixture_functions, type_ignores=[]), 'fixture_constructor', 'exec'), namespace)
         fixture_root = base / 'compatibility-fixture'
         namespace['fixture'](fixture_root, ROOT / 'scripts/check_gate_mutations.py')
         expect('VELDO-0205 reuse/legacy-fixture-dependencies: old fresh-stage fixtures carry new helpers',
