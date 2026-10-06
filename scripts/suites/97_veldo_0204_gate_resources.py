@@ -29,7 +29,7 @@ def _v204_gate_resources():
     expect('VELDO-0204 gate/manager-declaration: containment reserves the whole manager, including '
            'against authority reloads and other real engine scopes',
            protected == {manager: real.capacity[manager]}
-           and real.demand({'case': {'suite': '66_veldo_0047_authority.py'}}) == {manager: 1}
+           and real.demand({'case': {'suite': '66_veldo_0047_authority.py'}}) == {manager: real.capacity[manager]}
            and real.demand({'case': {'suite': '86_veldo_0127_agent_configuration.py'}}) == {manager: 1})
 
     pool = gate.SuiteResources(manifest)
@@ -102,8 +102,9 @@ def _v204_gate_resources():
                 return self.returncode
             def wait(self, timeout=None):
                 live.pop(self.pid, None)
-                self.returncode = 0
-                return 0
+                if self.returncode is None:
+                    self.returncode = -9
+                return self.returncode
         def timeout(*args):
             raise gate.Refused('mutation_budget_exceeded', 'controlled deadline')
         error, result = None, {}

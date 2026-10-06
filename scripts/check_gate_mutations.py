@@ -411,6 +411,10 @@ class Workers:
         self.active = {}
         self.invocations = 0
         self.driver_spans = {}
+        self.outcomes = []
+        self.peak = 0
+        self.jobs = {}
+        self.homes = {}
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -420,25 +424,69 @@ class Workers:
         if time.monotonic() - started >= WORKER_BUDGET:
             raise Refused('mutation_budget_exceeded', name + ': worker deadline')
 
-    def cleanup(self):
-        for proc, _, _, _ in self.active.values():
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        for proc, out, err, _ in self.active.values():
-            proc.wait(timeout=5)
-            out.close()
-            err.close()
-        self.active.clear()
-        if self.resources is not None:
-            self.resources.clear()
+    def finish(self, name, error=None):
+        proc, out, err, started = self.active[name]
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=5)
+        out.seek(0)
+        err.seek(0)
+        stdout, stderr = out.read(), err.read()
+        out.close()
+        err.close()
+        elapsed = time.monotonic() - started
+        job = self.jobs[name]
+        record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                      elapsed=elapsed, returncode=proc.returncode,
+                      stdout_bytes=len(stdout), stderr_bytes=len(stderr))
+        result = None
+        if error is None:
+            if proc.returncode:
+                error = Refused('driver_error', name + ': worker exit ' + str(proc.returncode))
+            else:
+                try:
+                    result = json.loads(stdout)
+                    if not isinstance(result, dict):
+                        raise ValueError('worker result must be an object')
+                except ValueError:
+                    error = Refused('driver_error', name + ': invalid or empty worker JSON')
+        if error is not None:
+            record.update(error=error.code, detail=error.detail,
+                          stdout_tail=stdout.decode(errors='replace')[-2000:],
+                          stderr_tail=stderr.decode(errors='replace')[-2000:])
+        try:
+            ownership = load(ROOT / 'scripts/mutation_ownership.py')
+            record['cleanup'] = ownership.cleanup(self.homes[name])
+        except Exception as cleanup_error:
+            error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
+            record.update(error=error.code, detail=error.detail)
+        record['elapsed'] = time.monotonic() - started
+        self.outcomes.append(record)
+        self.driver_spans[job['case']['driver']][1] = time.monotonic()
+        del self.active[name]
+        if record.get('error') != 'worker_cleanup_error':
+            self.resources.release(name)
+        if error is not None:
+            raise error
+        return {'result': result, 'elapsed': elapsed}
 
-    def run(self, jobs, directory, root):
+    def cleanup(self):
+        # Reap and account for every sibling, even after the first failure.
+        errors = []
+        for name in list(self.active):
+            try:
+                self.finish(name, Refused('worker_cancelled', 'stage stopped before worker completed'))
+            except Refused as error:
+                errors.append(error)
+        return errors
+
+    def run(self, jobs, directory, root, on_result=None):
         if self.resources is None:
             self.resources = SuiteResources.from_root(root)
+        self.jobs.update(jobs)
         pending = list(jobs.items())
-        # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
             self.resources.demand(job)
         results = {}
@@ -452,6 +500,7 @@ class Workers:
                     name, job = pending.pop(index)
                     home = directory / str(self.invocations)
                     home.mkdir()
+                    self.homes[name] = home
                     bindir = home / 'bin'
                     bindir.mkdir()
                     (bindir / 'python3').symlink_to(sys.executable)
@@ -465,37 +514,30 @@ class Workers:
                                                  '--worker', str(jobpath)], cwd=root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
                                                 stdout=out, stderr=err, start_new_session=True)
-                    except BaseException:
+                    except BaseException as error:
                         out.close()
                         err.close()
                         self.resources.release(name)
+                        self.outcomes.append(dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                                                  elapsed=0.0, returncode=None, error='worker_launch_error',
+                                                  detail=str(error), stdout_bytes=0, stderr_bytes=0))
+                        if isinstance(error, Exception):
+                            raise Refused('worker_launch_error', name + ': ' + str(error)) from error
                         raise
                     self.active[name] = (proc, out, err, time.monotonic())
                     self.invocations += 1
+                    self.peak = max(self.peak, len(self.active))
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
                 for name, (proc, out, err, started) in list(self.active.items()):
-                    self.check_worker(name, started)
                     if proc.poll() is None:
+                        try:
+                            self.check_worker(name, started)
+                        except Refused as error:
+                            self.finish(name, error)
                         continue
-                    # A completed parent cannot leave grandchildren holding resources.
-                    try:
-                        os.killpg(proc.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    out.seek(0)
-                    err.seek(0)
-                    stdout, stderr = out.read(), err.read()
-                    out.close()
-                    err.close()
-                    del self.active[name]
-                    self.resources.release(name)
-                    self.driver_spans[jobs[name]['case']['driver']][1] = time.monotonic()
-                    if proc.returncode != 0:
-                        raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
-                    try:
-                        results[name] = {'result': json.loads(stdout), 'elapsed': time.monotonic() - started}
-                    except ValueError as error:
-                        raise Refused('driver_error', name + ': invalid worker JSON') from error
+                    results[name] = self.finish(name)
+                    if on_result is not None:
+                        on_result(name, results[name])
                 if self.active:
                     time.sleep(0.02)
             self.check()
@@ -537,7 +579,7 @@ def snapshot(root, destination, files, head):
         path.chmod(mode)
 
 
-def run_stage(root=ROOT, capacities=None):
+def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None):
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline)
@@ -553,9 +595,14 @@ def run_stage(root=ROOT, capacities=None):
     # Enumeration itself runs under the floor; the full cap is armed once the count is known.
     signal.setitimer(signal.ITIMER_REAL, BUDGET)
     try:
-        cases = inventory(root)
+        full_inventory = inventory(root)
+        cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
+                 and (not names or c['name'] in names)]
+        if not cases or (names and set(names) - {c['name'] for c in cases}):
+            raise Refused('incomplete_inventory', 'empty or unknown subset')
+        receipt['scope'] = 'selected' if findings or names else 'full'
         receipt['registered'] = len(cases)
-        budget = budget_for(len(cases), PARALLEL)
+        budget = budget_for(len(full_inventory), PARALLEL)
         receipt['budget_seconds'] = budget
         workers.deadline = started + budget
         signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
@@ -574,7 +621,7 @@ def run_stage(root=ROOT, capacities=None):
             frozen = directory / 'input'
             snapshot(root, frozen, files, head)
             # Registries executed again from the frozen bytes: an enumeration race is red.
-            if inventory(frozen) != cases:
+            if inventory(frozen) != full_inventory:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
             controls = {}
             for case in cases:
@@ -582,26 +629,36 @@ def run_stage(root=ROOT, capacities=None):
                 for mode in ('baseline', 'noop'):
                     controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode})
             workers.resources = SuiteResources.from_root(frozen, capacities)
+            if log_dir is not None:
+                log_dir = Path(log_dir).resolve()
+                log_dir.mkdir(parents=True, exist_ok=False)
+                directory = log_dir
             control_results = workers.run(controls, directory, frozen)
-            mutant_results = workers.run({c['identity']: {'case': c, 'mode': 'mutant'}
-                                          for c in cases}, directory, frozen)
-            for case in cases:
-                identity = case['identity']
+            by_identity = {c['identity']: c for c in cases}
+
+            def collect(identity, completed):
+                case = by_identity[identity]
                 group = control_group(case)
-                prepared = mutant_results[identity]['result']
-                record = {'schema': SCHEMA, 'case': case,
-                          'fixture_version': FIXTURE_VERSION,
-                          **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
-                          'baseline': control_results[group + ':baseline']['result']['observation'],
-                          'noop': control_results[group + ':noop']['result']['observation'],
-                          'mutant': prepared['observation'],
-                          'elapsed': mutant_results[identity]['elapsed']}
+                prepared = completed['result']
+                receipt['executed'] += 1
                 try:
+                    record = {'schema': SCHEMA, 'case': case,
+                              'fixture_version': FIXTURE_VERSION,
+                              **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
+                              'baseline': control_results[group + ':baseline']['result']['observation'],
+                              'noop': control_results[group + ':noop']['result']['observation'],
+                              'mutant': prepared['observation'], 'elapsed': completed['elapsed']}
                     validate_result(record, case)
-                except Refused as error:
-                    receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
-                    continue
+                except (Refused, KeyError, TypeError) as error:
+                    receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
+                                                           detail=str(error)))
+                    return
                 results[identity] = record
+                receipt['rejected'] += 1
+                receipt['results'].append(record)
+
+            workers.run({c['identity']: {'case': c, 'mode': 'mutant'} for c in cases},
+                        directory, frozen, on_result=collect)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -611,14 +668,6 @@ def run_stage(root=ROOT, capacities=None):
             workers.check()
             if set(results) != {c['identity'] for c in cases}:
                 raise Refused('incomplete_inventory', 'registered/result identities differ')
-            for case in cases:
-                identity = case['identity']
-                record = results[identity]
-                validate_result(record, case)
-                receipt['executed'] += 1
-                receipt['rejected'] += 1
-                receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
-                receipt['results'].append(record)
         workers.check()
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
@@ -637,6 +686,17 @@ def run_stage(root=ROOT, capacities=None):
             summary['wall_seconds'] = span[1] - span[0]
         if workers.resources is not None:
             receipt['resources'] = workers.resources.summary()
+        receipt['worker_outcomes'] = workers.outcomes
+        failed_workers = [o for o in workers.outcomes if 'error' in o]
+        receipt['invalid_results'].extend(failed_workers)
+        # A launched mutant with no usable output is still an execution, never a
+        # rejection. Launch errors are attempts only (returncode is None).
+        receipt['executed'] += sum(o['mode'] == 'mutant' and o['returncode'] is not None
+                                   for o in failed_workers)
+        for driver, summary in receipt['drivers'].items():
+            summary['worker_seconds'] = sum(o['elapsed'] for o in workers.outcomes if o['driver'] == driver)
+        receipt['peak_workers'] = workers.peak
+        receipt['surviving_workers'] = len(workers.active)
         receipt['parallel_workers'] = PARALLEL
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
@@ -647,11 +707,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
+    parser.add_argument('--finding', type=int, action='append')
+    parser.add_argument('--case', action='append', dest='names')
+    parser.add_argument('--worker-log-dir', type=Path)
     args = parser.parse_args()
     if args.worker:
-        print(json.dumps(worker(json.loads(args.worker.read_text()))))
+        ownership = load(ROOT / 'scripts/mutation_ownership.py')
+        tracker = ownership.Tracker(args.worker.parent).install()
+        try:
+            print(json.dumps(worker(json.loads(args.worker.read_text()))))
+        finally:
+            tracker.close()
         return 0
-    receipt = run_stage(capacities=resource_capacities(args.resource_capacity))
+    receipt = run_stage(capacities=resource_capacities(args.resource_capacity),
+                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir)
     print(json.dumps(receipt, sort_keys=True), flush=True)
     print('mutations: {status} registered={registered} executed={executed} '
           'rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)

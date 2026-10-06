@@ -242,10 +242,11 @@ sys.stdout.flush()
             receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                          enrollment_signers=str(receiver_enrollment_signers))))
             receiver_host_trust.chmod(0o600)
+            fixture_slice = 'v76s%s.slice' % os.urandom(4).hex()
             config.write_text(json.dumps({'host_trust': str(receiver_host_trust),
                 'store': str(db), 'journal_key': str(keys / 'journal'), 'principal': 'launch-receiver',
                 'workspace': str(base / 'work'),
-                'profile': {'kind': 'linux-systemd', 'slice': 'v76s%s.slice' % os.urandom(4).hex(),
+                'profile': {'kind': 'linux-systemd', 'slice': fixture_slice,
                             'lock': str(base / 'containment.lock'), 'concurrency': 16, 'runtime_seconds': 600,
                             'memory_bytes': 1 << 30, 'cpu_percent': 400, 'file_bytes': 1 << 30},
                 'domain': DOMAIN, 'repository': REPO, 'authority_generation': 1,
@@ -946,6 +947,10 @@ c.close()
                     if child.poll() is None:
                         child.kill()
                         child.wait()
+            if 'fixture_slice' in locals():
+                subprocess.run(['systemctl', '--user', 'stop', fixture_slice],
+                               env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()),
+                               capture_output=True, timeout=30)
             for conn in connections:
                 with contextlib.suppress(Exception):
                     conn.close()

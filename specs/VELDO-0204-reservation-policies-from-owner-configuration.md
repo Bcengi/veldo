@@ -379,5 +379,9 @@ fixtures through teardown before releasing reservations. Add planted-defect chec
 to suite 97 and retain small and larger subset evidence. The footprint additionally
 includes scripts/mutation_ownership.py, scripts/suites/71_veldo_0076_projects.py,
 scripts/suites/66_veldo_0047_authority.py and proof/VELDO-0204/mutation-stall/*.
-Only selected suites and bounded mutation subsets are authorized here; the owner
-runs the next full gate separately. No green full gate is claimed by this repair.
+Continuation restriction: run only suite 97 and the new planted-defect suite 98,
+one at a time through selftest.py --suite. Neither mutation driver may be executed
+in this run, including subsets. The owner runs both qualification subsets and the
+next full gate separately. No green full gate is claimed by this repair. The
+footprint also includes scripts/suites/98_veldo_0204_mutation_receipts.py and
+scripts/suites/requires.json for the focused regression suite.
