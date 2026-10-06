@@ -73,12 +73,24 @@ def run(root, args, expected_common=None, **kwargs):
     return subprocess.run(command, cwd=root, env=env, **kwargs)
 
 
+def clone(root, destination, expected_common=None, **kwargs):
+    # Git takes a pinned work tree as the clone's own, so a clone cannot go through run(). The source
+    # is the validated common directory, never the writable marker read a second time.
+    _, common = validate(root, expected_common)
+    env = environment(common, kwargs.pop('env', None))
+    del env['GIT_COMMON_DIR']
+    command = ['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+               'clone', '-q', '--no-checkout', '--no-hardlinks', '--', str(common), str(destination)]
+    return subprocess.run(command, env=env, **kwargs)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root')
     parser.add_argument('--authority-common', action='store_true')
     parser.add_argument('--expected-common')
     parser.add_argument('--validate-only', action='store_true')
+    parser.add_argument('--clone-to')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     try:
@@ -90,6 +102,8 @@ def main():
         if args.validate_only:
             validate(args.root, args.expected_common)
             return 0
+        if args.clone_to:
+            return clone(args.root, args.clone_to, args.expected_common).returncode
         command = args.args[1:] if args.args[:1] == ['--'] else args.args
         return run(args.root, command, args.expected_common).returncode
     except (OSError, ValueError) as error:

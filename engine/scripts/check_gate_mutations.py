@@ -624,7 +624,9 @@ def control_group(case):
 
 
 def snapshot(root, expected_common, destination, files, head):
-    git(root, expected_common, 'clone', '-q', '--no-checkout', '--no-hardlinks', str(root), str(destination))
+    command([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'), '--root', str(root),
+             '--expected-common', str(expected_common), '--clone-to', str(destination)],
+            fixed_env('/nonexistent'))
     # The clone is this stage's own repository: it names the common directory it just created.
     common = common_directory(destination)
     git(destination, common, 'checkout', '-q', '--detach', head)
