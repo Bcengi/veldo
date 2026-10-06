@@ -28,6 +28,12 @@ def _v208_landing_reuse():
         reducer = load('scripts/reuse_stamp.py')
     finally:
         sys.path.pop(0)
+    with patch.dict(os.environ, {}, clear=True):
+        expect('VELDO-0208 landing/explicit-default-mode',
+               landing.gate_env().get('VELDO_GATE_FORCE_FRESH') == '0')
+    with patch.dict(os.environ, {'VELDO_GATE_FORCE_FRESH': '1'}):
+        expect('VELDO-0208 landing/explicit-force-mode',
+               landing.gate_env()['VELDO_GATE_FORCE_FRESH'] == '1')
     expect('VELDO-0208 spec/ready-contract',
            V.check_spec(ROOT / 'specs/VELDO-0208-single-user-landing-reuse.md') == 0)
     with tempfile.TemporaryDirectory(prefix='landing-reuse-') as temporary:
@@ -216,6 +222,13 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                 altered['outputs'][document]['reuse_evidence'] = {}
                 expect('VELDO-0208 landing/fleet-checks-' + document,
                        'missing_evidence:gate/authenticated_reuse_required' in landing.judge(altered))
+            for missing in (('reused',), ('force_fresh',), ('reused', 'force_fresh')):
+                for document in ('last_verify', 'gate_event'):
+                    altered = copy.deepcopy(sample)
+                    for field in missing:
+                        altered['outputs'][document].pop(field)
+                    expect('VELDO-0208 landing/missing-fields-' + document + str(missing),
+                           bool(landing.judge(altered)))
             alterations = [dict(reuse_evidence={}), dict(commit='c' * 40),
                           dict(reused={'unit': 0, 'mutation': 2}), dict(force_fresh=True)]
             for n, change in enumerate(alterations):
@@ -262,7 +275,10 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             for guard in ('scripts/veldo-guard.sh', 'engine/scripts/veldo-guard.sh',
                           'packs/claude/scripts/veldo-guard.sh'):
                 for name, candidate, refused in [('valid', valid, False),
-                        ('no-provenance', dict(valid, reuse_evidence={}), True)]:
+                        ('no-provenance', dict(valid, reuse_evidence={}), True),
+                        ('missing-both', {'commit': actual, 'status': 'green'}, True),
+                        ('missing-force', {k:v for k,v in valid.items() if k != 'force_fresh'}, True),
+                        ('missing-reused', {k:v for k,v in valid.items() if k != 'reused'}, True)]:
                     (fixture / '.veldo/last_verify').write_text(json.dumps(candidate))
                     result = subprocess.run(['bash', str(ROOT / guard)],
                         input=json.dumps({'tool_input': {'command': 'git merge topic'}}), text=True,

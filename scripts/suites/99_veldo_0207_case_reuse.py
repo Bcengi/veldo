@@ -207,7 +207,7 @@ expect('fixture target', namespace['value'] == 1)
                 return results
         # Clean a poisoned fixture record, never repair external production cache data.
         path.unlink()
-        def run_stage():
+        def run_stage(miss=False):
             real_session = C.Session
             def construct(*args, **kwargs):
                 return real_session(*args, **kwargs, cache_directory=top/'stage-cache')
@@ -216,11 +216,30 @@ expect('fixture target', namespace['value'] == 1)
                  patch.object(gate, 'git', return_value='head'), \
                  patch.object(gate, 'snapshot'), patch.object(gate, 'inputs_unchanged', return_value=True), \
                  patch.object(gate, 'Workers', Workers), patch.object(gate, 'load', return_value=C), \
+                 (patch.object(C.Session, 'lookup', return_value=None) if miss else patch.object(gate, 'PARALLEL', 1)), \
                  patch.object(gate.SuiteResources, 'from_root', return_value=gate.SuiteResources({'suites':[{'file':'test.py'}, {'file':'other_test.py'}]})), \
                  patch.object(C.M, 'runtime_identity', side_effect=runtime), \
                  patch.object(C, 'Session', side_effect=construct):
                 return gate.run_stage(root)
         cold, warm = run_stage(), run_stage()
+        repeated = run_stage(miss=True)
+        expect('VELDO-0207 case/deterministic-concurrent-publication',
+               repeated['status'] == 'passed' and not repeated.get('reuse_integrity_errors')
+               and all('elapsed' not in R.Store(top/'stage-cache', root).get(r['reuse_key'])
+                       for r in repeated['results']))
+        conflict_store = R.Store(top/'stage-cache', root)
+        conflict_key = repeated['results'][0]['reuse_key']
+        conflict_path = top/'stage-cache'/(conflict_key + '.json')
+        conflict_path.unlink()
+        conflict_store.put(conflict_key, {'planted': 'different content'})
+        conflict = run_stage(miss=True)
+        expect('VELDO-0207 case/content-conflict-turns-stage-red',
+               conflict['status'] == 'failed' and conflict['error'] == 'reuse_integrity_conflict'
+               and 'conflicting cache record' in conflict['detail'])
+        conflict_path.unlink()
+        (top/'stage-cache'/(conflict_key + '.json.conflict')).unlink()
+
+        run_stage(miss=True)
         active[0]['.veldo/subject.py'] = (0o644, b'value = 2\n')
         mixed = run_stage()
         expect('VELDO-0207 case/receipts',

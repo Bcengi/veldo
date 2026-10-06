@@ -107,14 +107,12 @@ def record(directory, key, secret):
 
 
 def landing_problem(document):
-    """Legacy stamps stand down; positive reuse requires signed case references.
+    """Every stamp declares freshness; positive reuse requires signed case references.
 
     Keys are declared-input digests in VELDO-0207. The trusted stage checks the
     current inputs; the signed receipt binds those keys and counts to its commit.
     Rechecking here never trusts a boolean asserting that authentication passed.
     """
-    if 'reused' not in document and 'force_fresh' not in document:
-        return None
     try:
         counts, force = document['reused'], document['force_fresh']
         if (type(force) is not bool or not isinstance(counts, dict) or not counts

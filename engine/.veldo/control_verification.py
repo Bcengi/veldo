@@ -257,7 +257,11 @@ def _installation(installation):
 def gate_env():
     """The gate's environment: no inherited Git knob can select another repository (the isolated
     Git profile), and no Python process writes bytecode into the candidate."""
-    return dict(_git_process.clean_env(profile="isolated"), PYTHONDONTWRITEBYTECODE="1")
+    env = dict(_git_process.clean_env(profile="isolated"), PYTHONDONTWRITEBYTECODE="1")
+    # Landing permits authenticated reuse; always select that policy explicitly.
+    # Preserve an operator's force-fresh override, including supported truthy forms.
+    env["VELDO_GATE_FORCE_FRESH"] = env.get("VELDO_GATE_FORCE_FRESH") or "0"
+    return env
 
 
 # The observation.

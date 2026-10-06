@@ -654,15 +654,15 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
                           **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')},
                           'baseline': control_results[group + ':baseline']['result']['observation'],
                           'noop': control_results[group + ':noop']['result']['observation'],
-                          'mutant': prepared['observation'],
-                          'elapsed': mutant_results[identity]['elapsed']}
+                          'mutant': prepared['observation']}
                 try:
                     validate_result(record, case)
                 except Refused as error:
                     receipt['invalid_results'].append(dict(record, error=error.code, detail=error.detail))
                     continue
                 results[identity] = record
-                receipt['results'].append(reuse.evidence(case, record, False))
+                receipt['results'].append(dict(reuse.evidence(case, record, False),
+                                               elapsed=mutant_results[identity]['elapsed']))
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -679,10 +679,13 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
                 record = results[identity]
                 validate_result(record, case)
                 if identity not in reuse.hits:
-                    receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
+                    receipt['drivers'][case['driver']]['worker_seconds'] += mutant_results[identity]['elapsed']
         workers.check()
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
+        if reuse.store and reuse.store.integrity_errors:
+            raise Refused('reuse_integrity_conflict', 'conflicting cache record: ' +
+                          ', '.join(reuse.store.integrity_errors))
         workers.check()
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.

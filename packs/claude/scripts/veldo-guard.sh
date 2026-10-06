@@ -72,16 +72,15 @@ fi
 if ! python3 -I -c '
 import importlib.util, json, pathlib, sys
 stamp = json.load(open(".veldo/last_verify"))
-if "reused" in stamp or "force_fresh" in stamp:
-    base = pathlib.Path(sys.argv[1]).resolve().parents[1]
-    source = base / ".veldo/reuse_evidence.py"
-    if not source.is_file():
-        source = base.parent.parent / "engine/.veldo/reuse_evidence.py"
-    spec = importlib.util.spec_from_file_location("reuse_evidence", source)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    if module.landing_problem(stamp):
-        raise SystemExit(1)
+base = pathlib.Path(sys.argv[1]).resolve().parents[1]
+source = base / ".veldo/reuse_evidence.py"
+if not source.is_file():
+    source = base.parent.parent / "engine/.veldo/reuse_evidence.py"
+spec = importlib.util.spec_from_file_location("reuse_evidence", source)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+if module.landing_problem(stamp):
+    raise SystemExit(1)
 ' "${BASH_SOURCE[0]}"; then
   echo "VELDO guard: blocked. Landing requires authenticated non-agent reuse evidence or zero reused results." >&2
   exit 2
