@@ -39,21 +39,26 @@ class Tracker:
         except (TypeError, ValueError):
             return False
 
-    def observe(self, value, visited=None):
-        visited = set() if visited is None else visited
-        if id(value) in visited:
-            return
-        visited.add(id(value))
-        if isinstance(value, dict):
-            if (value.get('kind') == 'linux-systemd' and self.owned(value.get('lock'))
-                    and isinstance(value.get('slice'), str)
-                    and re.fullmatch(r'(?:v|veldo)[A-Za-z0-9]+\.slice', value['slice'])):
-                self.record('slice', value['slice'])
-            for child in value.values():
-                self.observe(child, visited)
-        elif isinstance(value, (list, tuple)):
-            for child in value:
-                self.observe(child, visited)
+    def observe(self, value):
+        # Walked with an explicit stack, never recursion: the observer runs inside every
+        # json encoding of the code under test, so it must accept any value the encoder
+        # accepts. A recursive walk raised RecursionError at Python's 1000-frame limit on a
+        # value the C encoder serializes fine (VELDO-0054's 5000-deep blocks row), which
+        # changed the suite's behaviour only inside mutation workers: an invalid baseline.
+        visited, stack = set(), [value]
+        while stack:
+            value = stack.pop()
+            if id(value) in visited:
+                continue
+            visited.add(id(value))
+            if isinstance(value, dict):
+                if (value.get('kind') == 'linux-systemd' and self.owned(value.get('lock'))
+                        and isinstance(value.get('slice'), str)
+                        and re.fullmatch(r'(?:v|veldo)[A-Za-z0-9]+\.slice', value['slice'])):
+                    self.record('slice', value['slice'])
+                stack.extend(value.values())
+            elif isinstance(value, (list, tuple)):
+                stack.extend(value)
 
     def audit(self, event, args):
         if not self.enabled:

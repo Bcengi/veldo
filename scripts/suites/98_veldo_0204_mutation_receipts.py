@@ -281,6 +281,42 @@ def _v204_mutation_receipts():
     expect('VELDO-0204 stall/ownership: persist exact resources before use; reap only owned units and '
            'trees, retain them on incomplete manager evidence, and permit repeated cleanup', ownership_check(owner_source))
 
+    def transparent_check(text):
+        # The tracker runs inside every json encoding a suite makes in a mutation worker, so it
+        # may not change what encodes: a value nested deeper than Python's recursion limit (the
+        # C encoder takes it) must still encode, and a profile at the bottom is still recorded.
+        owner = types.ModuleType('v204_transparent')
+        exec(compile(text, '<ownership>', 'exec'), owner.__dict__)
+        with tempfile.TemporaryDirectory(prefix='v204-transparent-') as directory:
+            home = Path(directory)
+            deep = {'kind': 'linux-systemd', 'slice': 'veldo5000.slice', 'lock': str(home / 'lock')}
+            for _ in range(5000):
+                deep = [deep]
+            with patch.object(owner.sys, 'addaudithook', lambda hook: None):
+                tracker = owner.Tracker(home).install()
+                try:
+                    encoded = json.dumps(deep)
+                except RecursionError:
+                    return False
+                finally:
+                    tracker.close()
+            entries = [json.loads(line) for line in tracker.path.read_text().splitlines()]
+            return encoded == json.dumps(deep) and ['slice', 'veldo5000.slice'] in entries
+    expect('VELDO-0204 stall/ownership-transparent: the tracker encodes and observes a value nested '
+           '5000 deep, as the plain encoder does, so a suite behaves the same inside a mutation worker',
+           transparent_check(owner_source))
+    expect('VELDO-0204 stall/ownership-transparent-planted-recursive-walk: the check rejects the '
+           'recursive observer that made VELDO-0054 an invalid baseline',
+           not transparent_check(owner_source.replace(
+               'visited, stack = set(), [value]',
+               'visited, stack = set(), []\n        self._walk(value, set())').replace(
+               '    def install(self):',
+               '    def _walk(self, value, seen):\n'
+               '        if isinstance(value, (list, tuple)):\n'
+               '            for child in value:\n'
+               '                self._walk(child, seen)\n\n'
+               '    def install(self):')))
+
     # Cross a real process boundary: the audit hook must persist a /dev/shm
     # allocation before SIGKILL, without relying on Python finally/atexit.
     import subprocess
