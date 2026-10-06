@@ -460,3 +460,63 @@ def suite_source():
     return "".join(_parts)
 
 
+
+
+# --- THE GATE DOMAIN, PARSED ONCE ---------------------------------------------------------------
+# WARP-1409 AC6, WARP-1402 AC5 and VELDO-0012 AC7 each assert a universal claim of the form "no
+# gate stage does X" over the set of files the gate reaches. That set is DERIVED from
+# scripts/verify.sh, never typed, and it is derived HERE, once: three copies of the parser drifted
+# apart the first time verify.sh changed shape (VELDO-0208 runs the gate's own machinery from the
+# authority installation), and two of them silently lost .veldo/events.py and the mutation stage.
+GATE_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
+# An invocation may carry interpreter flags and run the authority installation's copy
+# (python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py"): VELDO-0208 runs the gate's own machinery
+# from the authority, and that copy is the same repository path.
+GATE_RUN_RE = (r'(?:python3|bash|sh)(?:\s+-[A-Za-z]+)*\s+"?(?:\$VELDO_AUTHORITY/)?(%s)'
+               % GATE_PATH_RE)
+
+
+def gate_invokes(rel, root=None):
+    """What ONE gate file EXECUTES or LOADS: the shell commands it runs and the sibling modules it
+    hands to importlib. An EXECUTES/LOADS edge, deliberately not a MENTIONS edge - a comment naming
+    a path is not a gate dependency, and a closure built on mentions would drag half the repository
+    in and make every absence claim over it unfalsifiable in the other direction."""
+    import re as _re
+    p = Path(root or ROOT) / rel
+    if not p.is_file():
+        return set()
+    t = p.read_text()
+    out = set(_re.findall(GATE_RUN_RE, t))
+    for _grp in _re.findall(r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
+        _cand = "/".join(_re.findall(r'"([^"]+)"', _grp))
+        if _cand.endswith((".py", ".sh")):
+            out.add(_cand)
+    return {o for o in out if o != rel}
+
+
+def gate_domain(verify_text=None, root=None):
+    """The gate domain parsed out of verify.sh: (required, stages, closure, texts).
+
+    required: every catalog item DECLARED required, with the command it runs. An item the loop
+    runs on a dedicated branch (the mutation stage, whose declaration is a label and whose command
+    is the authority coordinator) is taken with the command on that branch.
+    stages: every repository path a required command names, plus every direct invocation in the
+    always-run body (contracts, shape gate, review events).
+    closure: stages closed transitively over gate_invokes. texts: the closure's file contents."""
+    import re as _re
+    root = Path(root or ROOT)
+    src = verify_text if verify_text is not None else (root / "scripts/verify.sh").read_text()
+    branches = dict(_re.findall(r'\[ "\$name" = (\w+) \]; then\s*\n\s*(.+)', src))
+    required = [(n, branches.get(n, c)) for n, c in _re.findall(
+        r'^CHECK_(\w+)="required:(.+)"$', src, _re.M)]
+    stages = sorted({p for _n, cmd in required for p in _re.findall(GATE_PATH_RE, cmd)}
+                    | set(_re.findall(GATE_RUN_RE, src)))
+    closure = set(stages)
+    frontier = list(stages)
+    while frontier:
+        for edge in gate_invokes(frontier.pop(), root):
+            if edge not in closure:
+                closure.add(edge)
+                frontier.append(edge)
+    texts = {f: (root / f).read_text() for f in sorted(closure) if (root / f).is_file()}
+    return required, stages, closure, texts

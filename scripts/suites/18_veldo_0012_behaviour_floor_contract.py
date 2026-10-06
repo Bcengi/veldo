@@ -1108,40 +1108,9 @@ expect("VELDO-0012 AC7 NEGATIVE CONTROL: the moment a floor EXISTS it fails clos
        _bf_run(_bf_floor([_bf_pin(status="load_bearing")]))[0] > 0
        and _bf_run(_BF_GOOD) == (0, ""))
 
-# THE DOMAIN IS DERIVED FROM scripts/verify.sh, NOT TYPED, in the shape WARP-1409's AC6 uses. A
-# universal claim over a hand-typed list is a claim about the list.
-_BF_VERIFY = (ROOT / "scripts/verify.sh").read_text()
-_BF_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
-_BF_RUN_RE = r"(?:python3|bash|sh)\s+(%s)" % _BF_PATH_RE
-_BF_REQUIRED = _bf_re.findall(r'^CHECK_(\w+)="required:(.+)"$', _BF_VERIFY, _bf_re.M)
-_BF_STAGES = sorted({p for _n, _c in _BF_REQUIRED for p in _bf_re.findall(_BF_PATH_RE, _c)}
-                    | set(_bf_re.findall(_BF_RUN_RE, _BF_VERIFY)))
-
-
-def _bf_invokes(rel):
-    """What ONE gate file EXECUTES or LOADS. An EXECUTES/LOADS edge, deliberately not a MENTIONS
-    edge: a closure built on mentions would drag half the repository in and make the absence claim
-    unfalsifiable in the other direction."""
-    p = ROOT / rel
-    if not p.is_file():
-        return set()
-    t = p.read_text()
-    out = set(_bf_re.findall(_BF_RUN_RE, t))
-    for _grp in _bf_re.findall(r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
-        _cand = "/".join(_bf_re.findall(r'"([^"]+)"', _grp))
-        if _cand.endswith((".py", ".sh")):
-            out.add(_cand)
-    return {o for o in out if o != rel}
-
-
-_BF_CLOSURE = set(_BF_STAGES)
-_bf_frontier = list(_BF_STAGES)
-while _bf_frontier:
-    for _bf_edge in _bf_invokes(_bf_frontier.pop()):
-        if _bf_edge not in _BF_CLOSURE:
-            _BF_CLOSURE.add(_bf_edge)
-            _bf_frontier.append(_bf_edge)
-_BF_TEXTS = {f: (ROOT / f).read_text() for f in sorted(_BF_CLOSURE) if (ROOT / f).is_file()}
+# THE DOMAIN IS DERIVED FROM scripts/verify.sh, NOT TYPED, by the parser WARP-1409's AC6 uses
+# (shared.py's gate_domain). A universal claim over a hand-typed list is a claim about the list.
+_BF_REQUIRED, _BF_STAGES, _BF_CLOSURE, _BF_TEXTS = gate_domain()
 
 expect("VELDO-0012 AC7: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for "
        "any claim of the form 'no gate stage does X'. Parsed out of scripts/verify.sh: every "

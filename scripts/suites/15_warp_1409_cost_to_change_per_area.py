@@ -1216,51 +1216,8 @@ expect("WARP-1409 AC7: THE MODULE STARTS NOTHING. Its source contains no spawn p
 # parsed out of the catalog and the always-run body, and then closed transitively over what each
 # member EXECUTES or LOADS, so a new stage or a new load edge enters the domain by itself.
 # -----------------------------------------------------------------------------------
-_W1409_VERIFY_SRC = (ROOT / "scripts/verify.sh").read_text()
-_W1409_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
-# An invocation may carry interpreter flags and run the authority installation's copy
-# (python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py"): VELDO-0208 runs the gate's own machinery
-# from the authority, and that copy is the same repository path.
-_W1409_RUN_RE = r'(?:python3|bash|sh)(?:\s+-[A-Za-z]+)*\s+"?(?:\$VELDO_AUTHORITY/)?(%s)' % _W1409_PATH_RE
-# Every catalog item DECLARED required, with the command it runs, plus every direct invocation in
-# the always-run body below the catalog (contracts, shape gate, review events). An item the loop
-# runs on a dedicated branch (the mutation stage, whose declaration is a label and whose command
-# is the authority coordinator) is taken with the command on that branch.
-_W1409_BRANCHES = dict(_w1409_re.findall(r'\[ "\$name" = (\w+) \]; then\s*\n\s*(.+)', _W1409_VERIFY_SRC))
-_W1409_REQUIRED = [(_n, _W1409_BRANCHES.get(_n, _c)) for _n, _c in _w1409_re.findall(
-    r'^CHECK_(\w+)="required:(.+)"$', _W1409_VERIFY_SRC, _w1409_re.M)]
-_W1409_STAGES = sorted(
-    {p for _n, _cmd in _W1409_REQUIRED for p in _w1409_re.findall(_W1409_PATH_RE, _cmd)}
-    | set(_w1409_re.findall(_W1409_RUN_RE, _W1409_VERIFY_SRC)))
-
-
-def _w1409_invokes(rel):
-    """What ONE gate file EXECUTES or LOADS: the shell commands it runs and the sibling modules it
-    hands to importlib. An EXECUTES/LOADS edge, deliberately not a MENTIONS edge - a comment naming
-    scripts/publish.py, or publish.py's own hold-back list of engine paths, is not a gate
-    dependency, and a closure built on mentions would drag half the repository in and make the
-    absence below unfalsifiable in the other direction."""
-    p = ROOT / rel
-    if not p.is_file():
-        return set()
-    t = p.read_text()
-    out = set(_w1409_re.findall(_W1409_RUN_RE, t))
-    for _grp in _w1409_re.findall(r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
-        _cand = "/".join(_w1409_re.findall(r'"([^"]+)"', _grp))
-        if _cand.endswith((".py", ".sh")):
-            out.add(_cand)
-    return {o for o in out if o != rel}
-
-
-_W1409_GATE_CLOSURE = set(_W1409_STAGES)
-_w1409_frontier = list(_W1409_STAGES)
-while _w1409_frontier:
-    for _w1409_edge in _w1409_invokes(_w1409_frontier.pop()):
-        if _w1409_edge not in _W1409_GATE_CLOSURE:
-            _W1409_GATE_CLOSURE.add(_w1409_edge)
-            _w1409_frontier.append(_w1409_edge)
-_W1409_GATE_TEXTS = {f: (ROOT / f).read_text() for f in sorted(_W1409_GATE_CLOSURE)
-                     if (ROOT / f).is_file()}
+# The parser is shared.py's gate_domain, the one copy WARP-1402 AC5 and VELDO-0012 AC7 read too.
+_W1409_REQUIRED, _W1409_STAGES, _W1409_GATE_CLOSURE, _W1409_GATE_TEXTS = gate_domain()
 
 expect("WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for "
        "any claim of the form 'no gate stage does X'. Parsed out of scripts/verify.sh: every "
@@ -1275,7 +1232,7 @@ expect("WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the p
        len(_W1409_REQUIRED) >= 6
        and {n for n, _c in _W1409_REQUIRED} >= {"lint", "unit", "security", "generated", "docs",
                                                 "extra", "mutation"}
-       and all(_w1409_re.findall(_W1409_PATH_RE, _cmd) for _n, _cmd in _W1409_REQUIRED)
+       and all(_w1409_re.findall(GATE_PATH_RE, _cmd) for _n, _cmd in _W1409_REQUIRED)
        and set(_W1409_STAGES) >= {"scripts/check_lint.sh", "scripts/selftest.py",
                                   "scripts/secret_inventory.py", "scripts/check_generated.sh",
                                   "scripts/check_docs.sh", "scripts/check_template_sync.sh",

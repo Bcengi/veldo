@@ -960,41 +960,8 @@ with tempfile.TemporaryDirectory() as _d:
     # and no file in it names this module or its records directory. The measurement that carries NG1
     # is the three-way check_spec pair above, which is behavioural and does not care how a path was
     # spelled.
-    _W1402_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
-    _W1402_RUN_RE = r"(?:python3|bash|sh)\s+(%s)" % _W1402_PATH_RE
-    _w1402_gate_text = (ROOT / "scripts/verify.sh").read_text()
-    _w1402_required = _w1402_re.findall(r'^CHECK_(\w+)="required:(.+)"$', _w1402_gate_text,
-                                        _w1402_re.M)
-    _w1402_stages = sorted(
-        {p for _n, _cmd in _w1402_required for p in _w1402_re.findall(_W1402_PATH_RE, _cmd)}
-        | set(_w1402_re.findall(_W1402_RUN_RE, _w1402_gate_text)))
-
-    def _w1402_gate_edges(rel):
-        """What ONE gate file EXECUTES or LOADS: the commands it shells and the sibling modules it
-        hands to importlib. An EXECUTES/LOADS edge and deliberately not a MENTIONS edge - a comment
-        naming a path is not a dependency, and a closure built on mentions would drag in half the
-        repository and make the absence below unfalsifiable in the other direction."""
-        p = ROOT / rel
-        if not p.is_file():
-            return set()
-        t = p.read_text()
-        out = set(_w1402_re.findall(_W1402_RUN_RE, t))
-        for _grp in _w1402_re.findall(
-                r'(?:ROOT|root|base|BASE)\s*/\s*((?:"[^"]+"\s*/\s*)*"[^"]+")', t):
-            _cand = "/".join(_w1402_re.findall(r'"([^"]+)"', _grp))
-            if _cand.endswith((".py", ".sh")):
-                out.add(_cand)
-        return {o for o in out if o != rel}
-
-    _w1402_domain = set(_w1402_stages)
-    _w1402_frontier = list(_w1402_stages)
-    while _w1402_frontier:
-        for _w1402_edge in _w1402_gate_edges(_w1402_frontier.pop()):
-            if _w1402_edge not in _w1402_domain:
-                _w1402_domain.add(_w1402_edge)
-                _w1402_frontier.append(_w1402_edge)
-    _w1402_domain_texts = {f: (ROOT / f).read_text() for f in sorted(_w1402_domain)
-                           if (ROOT / f).is_file()}
+    # The parser is shared.py's gate_domain, the one copy WARP-1409 AC6 reads too.
+    _w1402_required, _w1402_stages, _w1402_domain, _w1402_domain_texts = gate_domain()
     expect("WARP-1402 AC5: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the precondition for "
            "the claim below and the thing the two-file scan it replaces never had. Every slot "
            "scripts/verify.sh declares REQUIRED contributes at least one repository path, the "
@@ -1006,7 +973,7 @@ with tempfile.TemporaryDirectory() as _d:
            len(_w1402_required) >= 6
            and {n for n, _c in _w1402_required} >= {"lint", "unit", "security", "generated", "docs",
                                                     "extra"}
-           and all(_w1402_re.findall(_W1402_PATH_RE, _cmd) for _n, _cmd in _w1402_required)
+           and all(_w1402_re.findall(GATE_PATH_RE, _cmd) for _n, _cmd in _w1402_required)
            and set(_w1402_stages) >= {"scripts/check_lint.sh", "scripts/selftest.py",
                                       "scripts/secret_inventory.py", "scripts/check_generated.sh",
                                       "scripts/check_docs.sh", "scripts/check_template_sync.sh",
