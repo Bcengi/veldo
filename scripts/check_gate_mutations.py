@@ -8,6 +8,7 @@ All children inherit a fixed environment, no user Python site, and disabled byte
 import argparse
 import collections
 import concurrent.futures
+import difflib
 import hashlib
 import importlib.util
 import json
@@ -405,9 +406,10 @@ def resource_capacities(arguments):
 
 
 class Workers:
-    def __init__(self, deadline, resources=None):
+    def __init__(self, deadline, resources=None, parallel=None):
         self.resources = resources
         self.deadline = deadline
+        self.parallel = PARALLEL if parallel is None else max(1, parallel)
         self.active = {}
         self.invocations = 0
         self.driver_spans = {}
@@ -439,7 +441,8 @@ class Workers:
         elapsed = time.monotonic() - started
         job = self.jobs[name]
         record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
-                      elapsed=elapsed, returncode=proc.returncode,
+                      elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
+                      output_directory=str(self.homes[name]),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
         result = None
         if error is None:
@@ -472,12 +475,17 @@ class Workers:
             raise error
         return {'result': result, 'elapsed': elapsed}
 
-    def cleanup(self):
+    def cleanup(self, on_result=None):
         # Reap and account for every sibling, even after the first failure.
         errors = []
         for name in list(self.active):
             try:
-                self.finish(name, Refused('worker_cancelled', 'stage stopped before worker completed'))
+                proc = self.active[name][0]
+                error = (Refused('worker_cancelled', 'stage stopped before worker completed')
+                         if proc.poll() is None else None)
+                completed = self.finish(name, error)
+                if on_result is not None:
+                    on_result(name, completed)
             except Refused as error:
                 errors.append(error)
         return errors
@@ -493,7 +501,7 @@ class Workers:
         try:
             while pending or self.active:
                 self.check()
-                while pending and len(self.active) < PARALLEL:
+                while pending and len(self.active) < self.parallel:
                     index = self.resources.select(pending)
                     if index is None:
                         break
@@ -520,7 +528,8 @@ class Workers:
                         self.resources.release(name)
                         self.outcomes.append(dict(name=name, driver=job['case']['driver'], mode=job['mode'],
                                                   elapsed=0.0, returncode=None, error='worker_launch_error',
-                                                  detail=str(error), stdout_bytes=0, stderr_bytes=0))
+                                                  detail=str(error), stdout_bytes=0, stderr_bytes=0,
+                                                  pid=None, output_directory=str(home)))
                         if isinstance(error, Exception):
                             raise Refused('worker_launch_error', name + ': ' + str(error)) from error
                         raise
@@ -543,7 +552,7 @@ class Workers:
             self.check()
             return results
         finally:
-            self.cleanup()
+            self.cleanup(on_result)
 
 
 def worker(job):
@@ -579,10 +588,11 @@ def snapshot(root, destination, files, head):
         path.chmod(mode)
 
 
-def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None):
+def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=None,
+              drivers=None, parallel=None, diff_dir=None):
     started = time.monotonic()
     deadline = started + BUDGET
-    workers = Workers(deadline)
+    workers = Workers(deadline, parallel=parallel)
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
@@ -597,12 +607,13 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
     try:
         full_inventory = inventory(root)
         cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
+                 and (not drivers or c['driver'] in drivers)
                  and (not names or c['name'] in names)]
         if not cases or (names and set(names) - {c['name'] for c in cases}):
             raise Refused('incomplete_inventory', 'empty or unknown subset')
-        receipt['scope'] = 'selected' if findings or names else 'full'
+        receipt['scope'] = 'selected' if findings or names or drivers else 'full'
         receipt['registered'] = len(cases)
-        budget = budget_for(len(full_inventory), PARALLEL)
+        budget = budget_for(len(full_inventory), workers.parallel)
         receipt['budget_seconds'] = budget
         workers.deadline = started + budget
         signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
@@ -623,6 +634,17 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
             # Registries executed again from the frozen bytes: an enumeration race is red.
             if inventory(frozen) != full_inventory:
                 raise Refused('incomplete_inventory', 'registry changed while snapshotting')
+            if diff_dir is not None:
+                destination = Path(diff_dir)
+                destination.mkdir(parents=True, exist_ok=True)
+                for case in cases:
+                    base = 'scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')
+                    relative = str(Path(base) / case['module'])
+                    before = (frozen / relative).read_text()
+                    after = load(frozen / 'scripts' / case['driver']).mutate(before, case)
+                    (destination / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
+                        before.splitlines(keepends=True), after.splitlines(keepends=True), n=0,
+                        fromfile='a/' + relative, tofile='b/' + relative)))
             controls = {}
             for case in cases:
                 group = control_group(case)
@@ -697,7 +719,7 @@ def run_stage(root=ROOT, capacities=None, findings=None, names=None, log_dir=Non
             summary['worker_seconds'] = sum(o['elapsed'] for o in workers.outcomes if o['driver'] == driver)
         receipt['peak_workers'] = workers.peak
         receipt['surviving_workers'] = len(workers.active)
-        receipt['parallel_workers'] = PARALLEL
+        receipt['parallel_workers'] = workers.parallel
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
     return receipt

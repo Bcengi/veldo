@@ -11,6 +11,9 @@ def _v204_mutation_receipts():
     from unittest.mock import patch
 
     source = (ROOT / 'scripts/check_gate_mutations.py').read_text()
+    teeth = types.ModuleType('v204_teeth')
+    teeth.__file__ = str(ROOT / 'scripts/check_teeth_mutations.py')
+    exec(compile(Path(teeth.__file__).read_text(), teeth.__file__, 'exec'), teeth.__dict__)
 
     def module(text=source):
         obj = types.ModuleType('v204_coordinator')
@@ -18,14 +21,14 @@ def _v204_mutation_receipts():
         exec(compile(text, obj.__file__, 'exec'), obj.__dict__)
         return obj
 
-    def exercise(gate, fault=None):
+    def exercise(gate, fault=None, concurrent=False, entry='gate'):
         # Only registry/input seams and the OS process boundary are replaced. The
         # production admission, completion, validation and receipt paths all run.
         cases = [dict(identity=name, name=name, finding=204, driver=gate.DRIVERS[0],
                       suite='controlled.py', module='controlled.py', rows=['target'])
-                 for name in ('first', 'second')]
-        pool = gate.SuiteResources({'resource_capacities': {'manager': 1}, 'suites': [
-            {'file': 'controlled.py', 'resources': {'manager': 'exclusive'}}]})
+                 for name in (('first', 'second', 'third') if concurrent else ('first', 'second'))]
+        pool = gate.SuiteResources({'resource_capacities': {'manager': 3 if concurrent else 1}, 'suites': [
+            {'file': 'controlled.py', 'resources': {'manager': 1}}]})
         clock, children, cleaned, launched, handles = [1.0], {}, [], {}, []
         cleaned_while_held = []
         workers = []
@@ -45,7 +48,7 @@ def _v204_mutation_receipts():
                 if self.bad and fault == 'spawn':
                     raise OSError('planted exec refusal')
                 # Slow launch and queued admission must not consume worker time.
-                clock[0] += 130
+                clock[0] += .01 if concurrent else 130
                 self.pid = 1000000 + len(launched)
                 self.returncode = None
                 self.polls = 0
@@ -66,7 +69,11 @@ def _v204_mutation_receipts():
                     kwargs['stderr'].write(b'planted child error')
             def poll(self):
                 self.polls += 1
-                if self.bad and fault == 'deadline':
+                if concurrent and self.name == 'third' and fault != 'completed-sibling':
+                    return None
+                if concurrent and self.name == 'third' and fault == 'completed-sibling':
+                    self.returncode = 0
+                if self.bad and fault in ('deadline', 'completed-sibling'):
                     clock[0] += 121
                     return None
                 if self.polls > 1:
@@ -87,7 +94,9 @@ def _v204_mutation_receipts():
             root = Path(directory)
             with contextlib.ExitStack() as stack:
                 overrides = {
-                    'Workers': RecordingWorkers, 'inventory': lambda root: cases,
+                    'Workers': RecordingWorkers,
+                    'inventory': lambda root: cases + ([dict(cases[0], identity='other-driver',
+                        driver=gate.DRIVERS[1])] if entry == 'teeth' else []),
                     'read_inputs': lambda root: {'scripts/check_gate_mutations.py': (0o644, source.encode())},
                     'git': lambda *a: 'head', 'snapshot': lambda *a: None,
                     'inputs_unchanged': lambda *a: True, 'budget_for': lambda *a: 10000,
@@ -101,11 +110,12 @@ def _v204_mutation_receipts():
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: clock.__setitem__(0, clock[0] + .1)))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: None))
-                receipt = gate.run_stage(root)
+                stack.enter_context(patch.object(teeth, '_coordinator', lambda: gate))
+                receipt = (teeth.run_stage(root, jobs=3) if entry == 'teeth' else gate.run_stage(root))
         return receipt, pool, cleaned_while_held, children, handles, workers
 
-    def check(gate, fault=None):
-        r, pool, held, children, handles, workers = exercise(gate, fault)
+    def check(gate, fault=None, entry='gate'):
+        r, pool, held, children, handles, workers = exercise(gate, fault, entry=entry)
         assert not children and all(h.closed for h in handles)
         assert r['registered'] == 2 and r['surviving_workers'] == 0 and r['peak_workers'] == 1
         assert all(held) and held
@@ -130,9 +140,56 @@ def _v204_mutation_receipts():
         assert bool(pool.used['manager']) == (fault == 'cleanup')
         return True
 
-    for fault in (None, 'empty', 'nonobject', 'exit', 'spawn', 'deadline', 'cleanup'):
-        expect('VELDO-0204 stall/receipt-' + str(fault) + ': partial results and every failure retained; '
-               'cleanup precedes release and launch precedes the deadline', check(module(), fault))
+    for entry in ('gate', 'teeth'):
+        for fault in (None, 'empty', 'nonobject', 'exit', 'spawn', 'deadline', 'cleanup'):
+            expect('VELDO-0204 stall/' + entry + '-receipt-' + str(fault)
+                   + ': partial results and every failure retained; cleanup precedes release '
+                   'and launch precedes the deadline', check(module(), fault, entry))
+
+    def siblings(gate, entry='gate'):
+        r, pool, held, children, handles, workers = exercise(gate, 'exit', concurrent=True, entry=entry)
+        assert r['status'] == 'failed' and r['executed'] == 3 and r['rejected'] == 1
+        assert r['peak_workers'] == 3 and r['worker_invocations'] == 5
+        assert len(r['worker_outcomes']) == 5 and len(r['invalid_results']) == 2
+        assert {o['error'] for o in r['invalid_results']} == {'driver_error', 'worker_cancelled'}
+        assert not children and not pool.held and all(h.closed for h in handles) and all(held)
+        return True
+    for entry in ('gate', 'teeth'):
+        expect('VELDO-0204 stall/' + entry + '-siblings: a failed worker retains completed work and '
+               'accounts for every cancelled sibling after reaping it', siblings(module(), entry))
+    old = 'for name in list(self.active):'
+    assert source.count(old) == 1
+    try:
+        siblings(module(source.replace(old, 'for name in []:')))
+    except AssertionError:
+        detected = True
+    else:
+        detected = False
+    expect('VELDO-0204 stall/planted-unreaped-sibling: sibling cleanup cannot be omitted', detected)
+
+    def completed_siblings(gate, entry):
+        r, pool, held, children, handles, workers = exercise(
+            gate, 'completed-sibling', concurrent=True, entry=entry)
+        assert r['status'] == 'failed' and r['executed'] == 3 and r['rejected'] == 2
+        assert len(r['results']) == 2 and len(r['invalid_results']) == 1
+        assert r['invalid_results'][0]['error'] == 'mutation_budget_exceeded'
+        assert 'worker deadline' in r['invalid_results'][0]['detail']
+        assert not children and not pool.held and all(h.closed for h in handles)
+        return True
+    for entry in ('gate', 'teeth'):
+        expect('VELDO-0204 stall/' + entry + '-completed-siblings: a timeout retains successful '
+               'siblings even when they follow the failed child in polling order',
+               completed_siblings(module(), entry))
+        old = "if proc.poll() is None else None)"
+        assert source.count(old) == 1
+        try:
+            completed_siblings(module(source.replace(old, 'if True else None)')), entry)
+        except AssertionError:
+            detected = True
+        else:
+            detected = False
+        expect('VELDO-0204 stall/' + entry + '-planted-discarded-sibling: cleanup cannot classify '
+               'an already completed child as cancelled', detected)
 
     # Each falsifier rewrites an in-memory module only. No driver is invoked and
     # no mutation registry, suite source or working tree input is changed.
@@ -149,12 +206,14 @@ def _v204_mutation_receipts():
     ]
     for name, old, new, fault in defects:
         assert source.count(old) == 1, name
-        detected = False
-        try:
-            check(module(source.replace(old, new)), fault)
-        except (AssertionError, KeyError):
-            detected = True
-        expect('VELDO-0204 stall/planted-' + name + ': the regression rejects the broken coordinator', detected)
+        for entry in ('gate', 'teeth'):
+            detected = False
+            try:
+                check(module(source.replace(old, new)), fault, entry)
+            except (AssertionError, KeyError):
+                detected = True
+            expect('VELDO-0204 stall/' + entry + '-planted-' + name
+                   + ': the regression rejects the broken coordinator', detected)
 
     owner_source = (ROOT / 'scripts/mutation_ownership.py').read_text()
     def ownership_check(text):
@@ -212,6 +271,47 @@ def _v204_mutation_receipts():
         return True
     expect('VELDO-0204 stall/ownership: persist exact resources before use; reap only owned units and '
            'trees, retain them on incomplete manager evidence, and permit repeated cleanup', ownership_check(owner_source))
+
+    # Cross a real process boundary: the audit hook must persist a /dev/shm
+    # allocation before SIGKILL, without relying on Python finally/atexit.
+    import subprocess
+    import sys
+    import time
+    owner = types.ModuleType('v204_real_ownership')
+    exec(compile(owner_source, '<ownership>', 'exec'), owner.__dict__)
+    with tempfile.TemporaryDirectory(prefix='v204-killed-owner-') as directory:
+        home = Path(directory)
+        program = """
+import importlib.util, json, pathlib, sys, tempfile, time
+spec = importlib.util.spec_from_file_location('owner', sys.argv[1])
+owner = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(owner)
+home = pathlib.Path(sys.argv[2])
+tracker = owner.Tracker(home).install()
+fast = '/dev/shm' if pathlib.Path('/dev/shm').is_dir() else None
+tree = pathlib.Path(tempfile.mkdtemp(prefix='v204-killed-tree-', dir=fast))
+(tree / 'file').write_text('owned')
+tree.chmod(0o500)
+(home / 'ready').write_text(str(tree))
+time.sleep(30)
+"""
+        with open(home / 'stdout', 'wb') as out, open(home / 'stderr', 'wb') as err:
+            child = subprocess.Popen([sys.executable, '-B', '-c', program,
+                                      str(ROOT / 'scripts/mutation_ownership.py'), str(home)],
+                                     stdout=out, stderr=err)
+            try:
+                deadline = time.monotonic() + 5
+                while not (home / 'ready').exists() and child.poll() is None and time.monotonic() < deadline:
+                    time.sleep(.01)
+                assert (home / 'ready').exists(), (home / 'stderr').read_text()
+                tree = Path((home / 'ready').read_text())
+            finally:
+                child.kill()
+                child.wait(timeout=5)
+                reaped = owner.cleanup(home)
+        expect('VELDO-0204 stall/killed-owner: the real audit ledger survives SIGKILL and reaps '
+               'a read-only temporary tree outside TMPDIR', child.returncode == -9
+               and reaped['directories'] == 1 and not tree.exists())
     for name, old, new in (
         ('slice-unrecorded', "self.record('slice', value['slice'])", 'pass'),
         ('tree-leaked', 'remove_tree(path)', 'None'),
