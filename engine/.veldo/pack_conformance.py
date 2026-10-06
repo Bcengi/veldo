@@ -119,13 +119,15 @@ def _commit_all(dest, env):
 
 
 def _write_proven_evidence(dest, sha, repo_root):
-    """Lay down exactly the evidence a proven HEAD carries: a green last_verify bound to HEAD, a
-    proof manifest for HEAD, and a passing commit-bound verdict whose proof_digest matches the
-    manifest (the shape both the guard and policy_check require)."""
+    """Lay down exactly the evidence a proven HEAD carries: a green last_verify bound to HEAD that
+    declares its freshness as verify.sh writes it (fresh, nothing reused: VELDO-0208 makes reused and
+    force_fresh mandatory on stamps), a proof manifest for HEAD, and a passing commit-bound verdict
+    whose proof_digest matches the manifest (the shape both the guard and policy_check require)."""
     validate = _load_module(repo_root, "veldo_validate_c", ".veldo/validate.py")
     veldo = Path(dest) / ".veldo"
     veldo.mkdir(exist_ok=True)
-    (veldo / "last_verify").write_text(json.dumps({"commit": sha, "status": "green"}))
+    (veldo / "last_verify").write_text(json.dumps({"commit": sha, "status": "green", "force_fresh": False,
+                                                   "reused": {"unit": 0, "mutation": 0}}))
     pdir = Path(dest) / "proof" / "CONF-PROVEN"
     pdir.mkdir(parents=True, exist_ok=True)
     manifest = {
