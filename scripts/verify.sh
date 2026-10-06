@@ -88,7 +88,7 @@ CHECK_coverage="na:no coverage floor declared"
 CHECK_packaging="required:python3 scripts/check_install_and_run.py"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
 # VELDO-0205: mutation receipts distinguish fresh and reused results.
-# Landing and release operators must set VELDO_GATE_FORCE_FRESH=1.
+# Landing permits authenticated reuse; VELDO_GATE_FORCE_FRESH=1 explicitly bypasses it.
 # The suite stage stays fresh until VELDO-0206 is implemented.
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT

@@ -45,6 +45,9 @@ def selected(files, case, declaration):
     names = set(declaration['files']) | set(MANDATORY) | set(DRIVERS)
     names.add('scripts/suites/' + case['suite'])
     names.add(('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) + '/' + case['module'])
+    for directory in declaration.get('directories', []):
+        safe_name(directory)
+        names.update(name for name in files if Path(name).is_relative_to(directory))
     result = {}
     for name in sorted(names):
         safe_name(name)

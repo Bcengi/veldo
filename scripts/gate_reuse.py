@@ -130,6 +130,9 @@ class Store:
         if self.secret is None:
             return False
         try:
+            if self._path(key).with_suffix('.json.conflict').exists():
+                self.integrity_errors.append(self._path(key).name)
+                return False
             if E.probe(self.directory) != self.secret:
                 return False
             payload = dict(schema=SCHEMA, key=key, result=result, provenance=E.PROVENANCE)

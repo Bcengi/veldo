@@ -478,6 +478,7 @@ class Workers:
                     try:
                         worker_root = Path(job.get('snapshot_root', root))
                         argv = [sys.executable, '-B', '-s',
+                                '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(worker_root / 'scripts/check_gate_mutations.py'),
                                 '--worker', str(jobpath)]
                         if 'snapshot_root' in job:
@@ -519,7 +520,9 @@ class Workers:
                         tracer.check(directory / ('trace-' + trace.name),
                                      jobs[name]['snapshot_root'], jobs[name]['declared_files'],
                                      jobs[name].get('declared_absent', []),
-                                     runtime=jobs[name]['runtime_paths'], scratch=trace)
+                                     runtime=jobs[name]['runtime_paths'], scratch=trace,
+                                     directories=jobs[name].get('declared_directories', []),
+                                     runtime_absent=jobs[name].get('runtime_absent', []))
                     if proc.returncode != 0:
                         raise Refused('driver_error', name + ': ' + stderr.decode(errors='replace')[-2000:])
                     try:

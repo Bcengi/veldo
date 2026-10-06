@@ -25,6 +25,7 @@ class Session(M.Session):
         super().__init__(root, unqualified, cases, head, configuration, force_fresh=force_fresh,
                          environment=environment, cache_directory=cache_directory)
         self.snapshots, self.declarations, self.case_digests, self.runtimes = {}, {}, {}, {}
+        self.runtime_absent = {}
         try:
             document = json.loads(files[I.DECLARATIONS][1])
             if document['schema'] != 'veldo.case-inputs/v1':
@@ -48,6 +49,11 @@ class Session(M.Session):
                 if toolchain.get('reviewed') is not True:
                     raise ValueError('toolchain is not reviewed')
                 runtime = tuple(toolchain['paths'])
+                absent_runtime = tuple(toolchain.get('absent', []))
+                for path in absent_runtime:
+                    if not Path(path).is_absolute() or Path(path).exists() or Path(path).is_symlink():
+                        raise ValueError('expected absent runtime input: ' + path)
+                self.runtime_absent[name] = absent_runtime
                 # Runtime grants cannot expose the original repository, cache, or arbitrary homes.
                 for path in runtime:
                     resolved = Path(path).resolve()
@@ -77,6 +83,10 @@ class Session(M.Session):
                 directory = R.E.configuration()[1]['store']
             self.store = R.Store(directory, root)
 
+    def unchanged(self):
+        return (super().unchanged() and all(not Path(p).exists() and not Path(p).is_symlink()
+                for paths in self.runtime_absent.values() for p in paths))
+
     def input_digest(self, case):
         return self.case_digests[case['identity']]
 
@@ -102,6 +112,10 @@ class Session(M.Session):
             return {}
         destination = Path(parent) / R.digest(name)
         I.freeze(destination, self.snapshots[name])
+        for directory in self.declarations[name].get('directories', []):
+            (destination / I.safe_name(directory)).mkdir(parents=True, exist_ok=True)
         return {'snapshot_root': str(destination), 'runtime_paths': self.runtimes[name],
                 'declared_files': sorted(self.snapshots[name]),
-                'declared_absent': self.declarations[name].get('absent', [])}
+                'declared_absent': self.declarations[name].get('absent', []),
+                'declared_directories': self.declarations[name].get('directories', []),
+                'runtime_absent': self.runtime_absent[name]}

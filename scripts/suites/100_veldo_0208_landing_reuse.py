@@ -76,6 +76,12 @@ denied('symlink-key-read', lambda: pathlib.Path('key-link').read_bytes())
 denied('symlink-key-write', lambda: pathlib.Path('key-link').write_text('forged'))
 denied('hardlink-key', lambda: os.link(store / 'authentication.key', 'key-hardlink'))
 denied('unix-service', lambda: socket.socket(socket.AF_UNIX))
+def connect_service(path):
+ with socket.socket(socket.AF_UNIX) as client: client.connect(path)
+denied('user-bus', lambda: connect_service('/run/user/' + str(os.getuid()) + '/bus'))
+denied('systemd-private', lambda: connect_service('/run/user/' + str(os.getuid()) + '/systemd/private'))
+denied('network-ipv4', lambda: socket.socket(socket.AF_INET))
+denied('network-ipv6', lambda: socket.socket(socket.AF_INET6))
 denied('terminal-injection', lambda: fcntl.ioctl(0, 0x5412, b'x'))
 for name, code in [
  ('child-read', 'from pathlib import Path; Path(' + repr(str(store / 'authentication.key')) + ').read_bytes()'),
@@ -101,7 +107,8 @@ print(json.dumps(results))
         findings = json.loads(result.stdout) if result.returncode == 0 else {}
         for name in ('store-read', 'key-read', 'key-write', 'plant-record', 'replace-store',
                      'runner-write', 'runner-replace', 'authority-write', 'inherited-fd',
-                     'symlink-key-read', 'symlink-key-write', 'hardlink-key', 'unix-service', 'terminal-injection',
+                     'symlink-key-read', 'symlink-key-write', 'hardlink-key', 'unix-service', 'user-bus', 'systemd-private',
+                     'network-ipv4', 'network-ipv6', 'terminal-injection',
                      'child-read', 'child-plant', 'child-runner', 'own-worktree', 'private-home'):
             expect('VELDO-0208 sandbox/' + name, findings.get(name) is True)
         expect('VELDO-0208 sandbox/store-and-runner-intact',
@@ -144,6 +151,43 @@ sys.exit(m.main())
         result = subprocess.run(bad + ['/usr/bin/true'], capture_output=True, text=True, timeout=20)
         expect('VELDO-0208 sandbox/credential-alias-cannot-copy-key',
                result.returncode == 2 and 'seed exposes the reuse store' in result.stderr)
+
+        # The orchestrator uses linked worktrees: commit through the actual launcher.
+        main = top / 'git-main'
+        linked = top / 'git-agent'
+        def git_at(path, *args):
+            return subprocess.check_output(['/usr/bin/git', '-C', str(path),
+                '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', *args],
+                stderr=subprocess.PIPE).decode().strip()
+        main.mkdir()
+        git_at(main, 'init', '-q', '-b', 'main')
+        (main / 'file').write_text('original')
+        git_at(main, 'add', 'file'); git_at(main, 'commit', '-qm', 'Initial fixture')
+        original_head = git_at(main, 'rev-parse', 'HEAD')
+        git_at(main, 'worktree', 'add', '-q', '-b', 'agent', str(linked))
+        other = top / 'git-other'
+        git_at(main, 'worktree', 'add', '-q', '-b', 'other', str(other))
+        linked_command = command[:]
+        linked_command[linked_command.index(str(worktree))] = str(linked)
+        script = """import errno, pathlib, subprocess, sys
+pathlib.Path('file').write_text('agent edit')
+subprocess.run(['git', 'add', 'file'], check=True)
+subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                'commit', '-qm', 'Confined worktree commit'], check=True)
+for name in sys.argv[1:]:
+ try: pathlib.Path(name).write_text('forged')
+ except OSError as error: assert error.errno in (errno.EACCES, errno.EPERM)
+ else: raise AssertionError('wrote protected path: ' + name)
+"""
+        result = subprocess.run(linked_command + [sys.executable, '-I', '-S', '-c', script,
+            str(storepath/'authentication.key'), str(runner), str(ROOT/'scripts/agent_sandbox.py'),
+            str(ROOT/'scripts/check_gate_mutations.py'), str(ROOT/'.veldo/control_verification.py'),
+            str(main/'.git/config'), str(main/'.git/HEAD'), str(main/'.git/hooks/planted'),
+            str(main/'file'), str(main/'.git/worktrees/git-other/index')],
+                                capture_output=True, text=True, timeout=20)
+        expect('VELDO-0208 sandbox/linked-worktree-commit: ' + result.stderr[-600:],
+               result.returncode == 0 and git_at(linked, 'rev-parse', 'HEAD') != original_head
+               and git_at(main, 'rev-parse', 'HEAD') == original_head)
 
         case = dict(identity='check_teeth_mutations.py:fixture', name='fixture',
                     driver='check_teeth_mutations.py', rows=['target'], suite='fixture.py',

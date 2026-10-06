@@ -308,7 +308,8 @@ def _v205_reuse():
         (stage_cache / (broken_key + '.json')).write_bytes(b'corrupt')
         mixed = run()
         expect('VELDO-0205 reuse/mixed-counts: corruption causes one fresh case and retains the other hit',
-               mixed['status'] == 'passed' and (mixed['executed'], mixed['reused']) == (1, 1)
+               mixed['status'] == 'failed' and mixed['error'] == 'reuse_integrity_conflict'
+               and (mixed['executed'], mixed['reused']) == (1, 1)
                and mixed['drivers'][gate.DRIVERS[0]]['executed'] == 1
                and mixed['drivers'][gate.DRIVERS[1]]['reused'] == 1)
         survivor[0] = True
@@ -357,6 +358,7 @@ def _v205_reuse():
             exec(compile(source.replace(old, new), mutant.__file__, 'exec'), mutant.__dict__)
             # Remove the corrupt record and repopulate it through the production path.
             (stage_cache / (broken_key + '.json')).unlink(missing_ok=True)
+            (stage_cache / (broken_key + '.json.conflict')).unlink(missing_ok=True)
             run()
             original_gate = gate
             gate = mutant

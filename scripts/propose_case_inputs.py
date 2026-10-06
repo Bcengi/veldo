@@ -43,14 +43,16 @@ def probe(jobfile, auditfile):
 
 
 def trace_case(gate, case):
-    files, absent, runtime, modes = set(), set(), set(), []
+    files, absent, runtime, modes, directories = set(), set(), set(), [], set()
+    runtime_absent = set()
     for mode in ('baseline', 'noop', 'mutant'):
         with tempfile.TemporaryDirectory(prefix='veldo-case-proposal-') as temporary:
             directory = Path(temporary)
             job = directory / 'job.json'
             job.write_text(json.dumps({'case': case, 'mode': mode}))
             trace, audit = directory / 'trace', directory / 'audit'
-            argv = T.command(trace, [sys.executable, '-B', str(Path(__file__).resolve()),
+            argv = T.command(trace, [sys.executable, '-B', '-X',
+                                     'pycache_prefix=' + str(directory / 'bytecode'), str(Path(__file__).resolve()),
                                      '--probe', str(job), str(audit)])
             start = time.monotonic()
             with open(directory / 'stdout', 'w+b') as stdout, open(directory / 'stderr', 'w+b') as stderr:
@@ -72,7 +74,12 @@ def trace_case(gate, case):
                     row['observation'] = json.load(stdout)
                 except ValueError:
                     row['error'] = stderr.read().decode(errors='replace')[-1500:]
-            reads = set(T.opened_paths(trace))
+            accesses = list(T.accesses(trace, cwd=ROOT))
+            reads = {(p, kind == 'listing') for p, kind, success in accesses}
+            runtime_absent.update(str(p) for p, kind, success in accesses
+                                  if not success and not p.exists() and not p.is_relative_to(ROOT)
+                                  and any(p.is_relative_to(base) for base in
+                                          ('/usr', '/lib', '/lib64', '/etc', '/proc', '/sys')))
             for line in T.syscall_lines(trace):
                 if 'execve(' in line:
                     import ast
@@ -94,12 +101,17 @@ def trace_case(gate, case):
                     name = str(path.relative_to(ROOT))
                     if '.git' in path.parts or '__pycache__' in path.parts:
                         continue
+                    if is_directory and path.is_dir():
+                        directories.add(name)
+                        files.update(str(p.relative_to(ROOT)) for p in path.rglob('*')
+                                     if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts)
                     if path.is_file(): files.add(name)
                     elif not is_directory and not path.exists(): absent.add(name)
                 elif path.is_file() and any(path.is_relative_to(p) for p in ('/usr', '/lib', '/lib64', '/etc')):
                     runtime.add(str(path))
             modes.append(row)
-    return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes}, runtime
+    return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes, 'directories': sorted(directories),
+            'runtime_absent': sorted(runtime_absent)}, runtime
 
 
 def main():
@@ -132,11 +144,13 @@ def main():
         else:
             result, runtime = trace_case(gate, case)
         current = document['toolchains'].setdefault(case['driver'], {'paths': [], 'reviewed': False})
+        current['absent'] = sorted(set(current.get('absent', [])) | set(result.get('runtime_absent', [])))
         paths = set(current['paths']) | runtime | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}
         current['paths'] = sorted(p for p in paths if not any(p != parent and Path(p).is_relative_to(parent) for parent in paths))
         document['cases'][name] = {
             'files': sorted(set(result['files']) | set(I.MANDATORY) | set(I.DRIVERS)),
-            'absent': result.get('absent', []), 'reviewed': False,
+            'absent': result.get('absent', []), 'directories': result.get('directories', []),
+            'reviewed': False,
             'non_file_inputs': 'unreviewed', 'rationale': '',
             'trace_scope': 'baseline-only' if measured is not None else 'baseline-noop-mutant'}
         report.append(dict(result, identity=name))

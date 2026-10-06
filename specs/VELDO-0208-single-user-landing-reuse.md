@@ -99,8 +99,8 @@ unnecessary devices; IPC restrictions prevent asking a same-user service to esca
 The authority checkout, runner scripts, their configuration and installed tools are read-only.
 Changes inside an agent worktree are proposals, consumed by the trusted orchestrator only
 after review. The orchestrator must not execute candidate launcher or verification code as
-trusted machinery before that review. Network credentials and trusted network services must
-not expose an alternate unconfined command runner to agents.
+trusted machinery before that review. The launcher denies network sockets as well as local service sockets. Live CLIs needing
+remote model APIs need a separately reviewed, narrowly scoped transport; none is provided here.
 
 The owner wires the command prefix into myday's codex_work.sh and claude_work.sh after review.
 Those external files are not edited here. This checkout is not retroactively confined.
@@ -125,9 +125,19 @@ blocks pathname Unix services and asynchronous syscall alternatives; Landlock sc
 and abstract Unix sockets and restricts ptrace across domains. See the Linux kernel's
 [Landlock documentation](https://www.kernel.org/doc/html/v6.16/userspace-api/landlock.html).
 
-Only the worktree and per-run scratch are writable. Shared Git metadata outside a linked
-worktree remains read-only: use an independent checkout when the agent must commit, or let
-the unconfined orchestrator perform the Git persistence step. This prevents shared Git object
-or ref edits from substituting code in the trusted authority checkout. The launcher does not
-change this development worktree's Git layout. Private scratch contains copied credentials;
-the trusted orchestrator removes that scratch after the whole agent process tree has ended.
+Worktree Git persistence also grants the worktree's own gitdir, shared objects and the parent
+directories of its branch ref and reflog. Git needs sibling .lock files, so Landlock necessarily
+grants sibling loose refs in those directories as well. A dedicated branch namespace narrows
+that exposure. Shared objects and refs are candidate-controlled data, not trusted machinery:
+never install trusted verification code from that mutable object store. The authority's
+working files, common Git configuration/hooks, other worktree gitdirs, store/key and external
+runners remain denied writes. This does not change this checkout's Git layout. Private scratch
+contains copied credentials; the trusted orchestrator removes it after all descendants end.
+
+## Review correction contract, 2026-10-06
+
+The landing environment explicitly selects authenticated reuse by default and preserves a
+requested force-fresh mode. Both reused and force_fresh are mandatory on stamps and events.
+Both sandboxes deny Unix service connections and network, including preopened sockets and
+io_uring alternatives. Suite 100 plants missing fields, service-socket attempts and denied
+writes, and drives a real commit in a disposable linked worktree through the launcher.

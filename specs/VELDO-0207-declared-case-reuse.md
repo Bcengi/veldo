@@ -92,8 +92,8 @@ provenance only. Runtime identity covers the interpreter, stdlib, git, shell, li
 allowed tools/configuration; the worker's Landlock allowlist is exactly that runtime set.
 
 An external syscall trace belongs to the coordinator, outside writable worker scratch. It is
-checked before accepting worker output. It detects attempts to open absent undeclared repository
-files, including a child or a caught read error. Expected absent declarations are keyed too;
+checked before accepting worker output. It detects open, metadata, access, readlink and directory-listing probes of undeclared repository
+paths, including a child or a caught read error. Expected absent declarations are keyed too;
 adding such a file invalidates admission. Runtime changes invalidate all cases sharing that
 profile. Successful interpreter-startup reads are traced and checked as well; system site
 initialization is disabled in declared workers, and preloaded native libraries must be keyed. Snapshot and runtime bytes are checked again before publication. Unsupported tracing
@@ -102,8 +102,23 @@ that clock, random, network, mount or service dependencies are deterministic: de
 as proposals, and only reviewed file-only cases are admitted to reuse. Cases needing host
 services or repository history remain fresh until a separate explicit closure can enforce them.
 
-The Linux kernel, tracer and coordinator account are trusted. Landlock confines file contents;
+The Linux kernel, tracer and coordinator account are trusted. Landlock confines file contents and seccomp denies sockets/network;
 the tracer is the additional fail-loud boundary for absent reads. Non-file nondeterminism is
 explicitly outside a file-only qualification and requires review. The HMAC key is readable by
 the coordinator account, never by a confined worker. An arbitrary hostile process already
 running as the coordinator account outside the sandbox remains outside the threat model.
+
+## Review correction contract, 2026-10-06
+
+Metadata probes (including absent exists/is_file/stat/access/readlink) are inputs too.
+Directory listings require explicit directory declarations, keyed with their complete subtree.
+The proposer captures the same syscall family. Expected absent runtime paths are explicit,
+keyed, and checked again before publication. Forced runs enforce identical snapshot rules.
+Socket creation, connection, sending and io_uring are denied in workers and implementing
+agents; unsupported filtering refuses execution. Timings belong in receipts, never keyed
+records; conflicting content for one key makes the stage fail.
+
+The original open-only measurement has 21 of 30 unclean baselines and 19 universal shared
+files. About 10% time-weighted savings for single-module edits is an optimistic upper bound,
+not a measured speedup. The full-call-family sequential rerun and per-file reach are retained
+in proof/VELDO-0207; no failed baseline is a qualified declaration.

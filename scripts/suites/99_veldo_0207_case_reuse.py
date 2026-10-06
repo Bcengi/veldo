@@ -46,8 +46,9 @@ expect('fixture target', namespace['value'] == 1)
 ''')
         files['scripts/suites/other_test.py'] = (0o644, files['scripts/suites/test.py'][1].replace(b'subject.py', b'other.py'))
         declaration = {'schema': 'veldo.case-inputs/v1',
-                       'toolchains': {gate.DRIVERS[0]: {'paths': ['/usr', '/lib', '/lib64', '/etc'], 'reviewed': True}},
+                       'toolchains': {gate.DRIVERS[0]: {'paths': ['/usr', '/lib', '/lib64', '/etc'], 'absent': ['/proc/sys/crypto/fips_enabled'], 'reviewed': True}},
                        'cases': {c['identity']: {'files': ['shared-helper'], 'absent': ['optional'],
+                                                'directories': ['scripts'],
                                                 'reviewed': True, 'non_file_inputs': 'none',
                                                 'rationale': 'Controlled file-only test fixture.'} for c in cases}}
         files[I.DECLARATIONS] = (0o644, R.canonical(declaration))
@@ -81,6 +82,7 @@ expect('fixture target', namespace['value'] == 1)
                and session(definitions=altered).keys[other['identity']] == keys[other['identity']])
         third = dict(case, name='third', driver=gate.DRIVERS[1], identity=gate.DRIVERS[1]+':third')
         d = copy.deepcopy(declaration)
+        for entry in d['cases'].values(): entry['directories'] = []
         d['cases'][third['identity']] = copy.deepcopy(d['cases'][case['identity']])
         d['toolchains'][gate.DRIVERS[1]] = copy.deepcopy(d['toolchains'][gate.DRIVERS[0]])
         three_files = dict(files); three_files[I.DECLARATIONS] = (0o644, R.canonical(d))
@@ -129,8 +131,8 @@ expect('fixture target', namespace['value'] == 1)
                and not fresh.publish(case, record, gate.validate_result)
                and case['identity'] in fresh.snapshots)
 
-        def run_worker(source, suffix, expected_failure=False):
-            current = session(source)
+        def run_worker(source, suffix, expected_failure=False, force=False):
+            current = session(source, force=force)
             parent = top / suffix; parent.mkdir()
             job = dict(case=case, mode='baseline', **current.prepare(case, parent / 'cases'))
             frozen = Path(job['snapshot_root'])
@@ -144,7 +146,7 @@ expect('fixture target', namespace['value'] == 1)
                 try:
                     result = workers.run({'one': job}, parent, frozen)
                 except ValueError as error:
-                    if not expected_failure: print('case trace error:', str(error))
+                    if not expected_failure or 'undeclared input read' not in str(error): print('case trace error:', suffix, str(error))
                     return (expected_failure and 'undeclared input read' in str(error)
                             and not workers.owned_snapshots
                             and not (parent / 'cases' / '0').exists())
@@ -168,15 +170,90 @@ expect('fixture target', namespace['value'] == 1)
                     and all(not (parent/'cases'/str(n)).exists() for n in range(workers.invocations)))
         expect('VELDO-0207 case/sandbox-valid-worker', run_worker(files, 'valid'))
         for kind, read in [('python', "(ROOT / 'undeclared').read_text()"),
-                           ('child', "__import__('subprocess').run(['/usr/bin/cat', str(ROOT / 'undeclared')], capture_output=True)")]:
+                           ('child', "__import__('subprocess').run(['/usr/bin/cat', str(ROOT / 'undeclared')], capture_output=True)"),
+                           ('exists', "(ROOT / 'undeclared').exists()"),
+                           ('is-file', "(ROOT / 'undeclared').is_file()"),
+                           ('stat', "__import__('os').stat(ROOT / 'undeclared')"),
+                           ('lstat', "__import__('os').lstat(ROOT / 'undeclared')"),
+                           ('access', "__import__('os').access(ROOT / 'undeclared', 4)"),
+                           ('readlink', "__import__('os').readlink(ROOT / 'undeclared')"),
+                           ('listdir', "__import__('os').listdir(ROOT / '.veldo')"),
+                           ('scandir', "list(__import__('os').scandir(ROOT / '.veldo'))"),
+                           ('glob', "list(ROOT.glob('.veldo/*'))"),
+                           ('parent-traversal', "(ROOT / 'undeclared' / '..' / 'scripts' / 'case_trace.py').exists()"),
+                           ('scratch-alias', "alias = __import__('pathlib').Path(__import__('os').environ['TMPDIR']) / 'alias'; alias.symlink_to(ROOT); (alias / 'undeclared').exists(); alias.unlink()"),
+                           ('child-stat', "__import__('subprocess').run([__import__('sys').executable, '-B', '-S', '-c', 'import os; os.stat(' + repr(str(ROOT / 'undeclared')) + ')'], capture_output=True)")]:
             changed = dict(files)
             extra = '\ntry:\n    ' + read + '\nexcept OSError:\n    pass\n'
             changed['scripts/suites/test.py'] = (0o644, files['scripts/suites/test.py'][1] + extra.encode())
             expect('VELDO-0207 case/sandbox-caught-undeclared-' + kind,
                    run_worker(changed, kind, expected_failure=True))
+            expect('VELDO-0207 case/forced-caught-undeclared-' + kind,
+                   run_worker(changed, 'forced-' + kind, expected_failure=True, force=True))
+
+        # A declared directory includes every descendant in its key and snapshot.
+        expanded = dict(files); expanded['scripts/new-child'] = (0o644, b'new input')
+        expect('VELDO-0207 case/listed-directory-new-child-invalidates',
+               session(expanded).keys != keys
+               and 'scripts/new-child' in session(expanded).snapshots[case['identity']])
+        network = """import errno, importlib.util, json, os, socket, sys
+spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+sockets = [socket.socket(socket.AF_UNIX), socket.socket(socket.AF_UNIX), socket.socket()]
+m.restrict(sys.argv[2], sys.argv[2])
+results = []
+addresses = ['/run/user/' + str(os.getuid()) + '/bus',
+             '/run/user/' + str(os.getuid()) + '/systemd/private', ('127.0.0.1', 9)]
+for sock, address in zip(sockets, addresses):
+ try: sock.connect(address)
+ except OSError as error: results.append(error.errno in (errno.EPERM, errno.EACCES))
+ else: results.append(False)
+for family in (socket.AF_UNIX, socket.AF_INET, socket.AF_INET6):
+ try: socket.socket(family)
+ except OSError as error: results.append(error.errno == errno.EPERM)
+ else: results.append(False)
+print(json.dumps(results))
+"""
+        result = subprocess.run([sys.executable, '-I', '-S', '-c', network,
+                                 str(ROOT/'scripts/mutation_sandbox.py'), str(top)],
+                                capture_output=True, text=True, timeout=15)
+        expect('VELDO-0207 case/mutant-bus-systemd-network-denied',
+               result.returncode == 0 and json.loads(result.stdout) == [True] * 6)
+
+        broken_filter = network.replace(
+            'm.restrict(sys.argv[2], sys.argv[2])',
+            "libc = m.ctypes.CDLL(None, use_errno=True)\n"
+            "class Kernel:\n"
+            " def syscall(self, *args): return libc.syscall(*args)\n"
+            " def prctl(self, *args): return -1 if args[0] == 22 else libc.prctl(*args)\n"
+            "m.ctypes.CDLL = lambda *a, **k: Kernel()\n"
+            "m.restrict(sys.argv[2], sys.argv[2])")
+        result = subprocess.run([sys.executable, '-I', '-S', '-c', broken_filter,
+                                 str(ROOT/'scripts/mutation_sandbox.py'), str(top)],
+                                capture_output=True, text=True, timeout=15)
+        expect('VELDO-0207 case/unavailable-network-filter-fails-closed',
+               result.returncode != 0 and 'network filter unavailable' in result.stderr
+               and not result.stdout)
 
         # A read before sandbox installation is still refused by the independent tracer.
         T = load('case_trace')
+        for call in ('stat', 'lstat', 'statx', 'newfstatat', 'access', 'faccessat',
+                     'faccessat2', 'readlink', 'readlinkat'):
+            trace = top / ('metadata-' + call)
+            prefix = 'AT_FDCWD<' + str(root) + '>, ' if call in (
+                'statx', 'newfstatat', 'faccessat', 'faccessat2', 'readlinkat') else ''
+            trace.write_text('123 ' + call + '(' + prefix + '"' + str(root/'undeclared') +
+                             '", 0) = -1 ENOENT (No such file)\n')
+            try: T.check(trace, root, [])
+            except ValueError as error: refused = 'undeclared input' in str(error)
+            else: refused = False
+            expect('VELDO-0207 case/metadata-syscall-' + call, refused)
+        trace.write_text('123 getdents64(3<' + str(root) + '>, [], 100) = 0\n')
+        try: T.check(trace, root, ['subject.py'])
+        except ValueError as error: refused = 'undeclared input' in str(error)
+        else: refused = False
+        expect('VELDO-0207 case/getdents-parent-not-declared', refused)
+
         startup_input = top / 'startup-config'; startup_input.write_text('unkeyed input')
         scratch = top / 'startup-home'; scratch.mkdir()
         trace = top / 'startup.trace'
@@ -236,6 +313,10 @@ expect('fixture target', namespace['value'] == 1)
         expect('VELDO-0207 case/content-conflict-turns-stage-red',
                conflict['status'] == 'failed' and conflict['error'] == 'reuse_integrity_conflict'
                and 'conflicting cache record' in conflict['detail'])
+        repeated_conflict = run_stage(miss=True)
+        expect('VELDO-0207 case/poisoned-key-stays-red',
+               repeated_conflict['status'] == 'failed'
+               and repeated_conflict['error'] == 'reuse_integrity_conflict')
         conflict_path.unlink()
         (top/'stage-cache'/(conflict_key + '.json.conflict')).unlink()
 

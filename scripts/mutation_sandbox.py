@@ -6,6 +6,8 @@ Unsupported kernels fail closed; there is no unsandboxed fallback.
 """
 import ctypes
 import os
+import errno
+import platform
 from pathlib import Path
 
 RUNTIME = ('/usr', '/lib', '/lib64', '/etc')
@@ -20,6 +22,8 @@ def restrict(root, scratch, runtime=RUNTIME, *, legacy=True):
         if result < 0:
             raise OSError(ctypes.get_errno(), 'mutation sandbox unavailable')
         return result
+    if platform.machine() != 'x86_64':
+        raise RuntimeError('mutation sandbox supports reviewed x86_64 syscall numbers only')
     abi = call(444, 0, 0, 1)
     if abi < 3:
         raise RuntimeError('mutation sandbox needs Landlock ABI 3')
@@ -54,3 +58,32 @@ def restrict(root, scratch, runtime=RUNTIME, *, legacy=True):
         call(446, fd, 0)
     finally:
         os.close(fd)
+
+    network_filter(libc)
+
+
+def network_filter(libc):
+    """No service escape or network, including inherited sockets and io_uring.
+
+    Seccomp complements Landlock on kernels without network/abstract Unix scope.
+    Unknown architectures and unavailable filtering fail closed before worker exec.
+    """
+    class Filter(ctypes.Structure):
+        _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
+                    ('jf', ctypes.c_ubyte), ('k', ctypes.c_uint)]
+
+    class Program(ctypes.Structure):
+        _fields_ = [('length', ctypes.c_ushort), ('filter', ctypes.POINTER(Filter))]
+
+    deny = 0x50000 | errno.EPERM
+    code = [(0x20, 0, 0, 4), (0x15, 1, 0, 0xc000003e), (0x06, 0, 0, 0x80000000),
+            (0x20, 0, 0, 0), (0x35, 0, 1, 0x40000000), (0x06, 0, 0, deny)]
+    # socket, connect, bind, sendto/sendmsg/sendmmsg and asynchronous dispatch.
+    # socketpair remains local; sending through it is deliberately denied too.
+    for number in (41, 42, 44, 46, 49, 307, 425, 426, 427):
+        code += [(0x15, 0, 1, number), (0x06, 0, 0, deny)]
+    code += [(0x06, 0, 0, 0x7fff0000)]
+    filters = (Filter * len(code))(*(Filter(*item) for item in code))
+    program = Program(len(code), filters)
+    if libc.prctl(22, 2, ctypes.byref(program), 0, 0):
+        raise OSError(ctypes.get_errno(), 'sandbox network filter unavailable')

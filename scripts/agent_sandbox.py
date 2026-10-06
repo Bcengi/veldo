@@ -72,6 +72,11 @@ def landlock(grants):
         call(446, fd, 0)
     finally:
         os.close(fd)
+    spec = importlib.util.spec_from_file_location('mutation_sandbox',
+                                                  Path(__file__).with_name('mutation_sandbox.py'))
+    boundary = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(boundary)
+    boundary.network_filter(libc)
     ipc_filter(libc)
 
 
@@ -79,8 +84,7 @@ def ipc_filter(libc):
     """Block pathname Unix service escapes too (Landlock ABI 6 scopes abstract ones).
 
     Do not expose inherited sockets or io_uring as alternate syscall dispatch.
-    TCP/TLS used by the CLIs remains available; the trusted deployment must not
-    expose an unconfined command runner through those network credentials.
+    The common network filter also denies TCP/TLS and inherited socket dispatch.
     """
     class Filter(ctypes.Structure):
         _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
@@ -112,6 +116,42 @@ def ipc_filter(libc):
     program = Program(len(code), filters)
     if libc.prctl(22, 2, ctypes.byref(program), 0, 0):
         raise OSError(ctypes.get_errno(), 'agent sandbox IPC filter unavailable')
+
+
+def git_grants(worktree, protected):
+    """Grant linked-worktree persistence without writing common config or hooks."""
+    marker = worktree / '.git'
+    if not marker.is_file():
+        return []
+    if marker.is_symlink():
+        raise ValueError('worktree Git marker must not be a symlink')
+    line = marker.read_text().strip()
+    if not line.startswith('gitdir: '):
+        raise ValueError('invalid worktree Git marker')
+    gitdir = (worktree / line[8:]).resolve(strict=True)
+    common = (gitdir / (gitdir / 'commondir').read_text().strip()).resolve(strict=True)
+    if (gitdir.parent != common / 'worktrees'
+            or Path((gitdir / 'gitdir').read_text().strip()).resolve() != marker):
+        raise ValueError('Git directory does not belong to this worktree')
+    head = (gitdir / 'HEAD').read_text().strip()
+    if not head.startswith('ref: refs/heads/'):
+        raise ValueError('agent worktree needs a branch')
+    reference = head[5:]
+    if any(part in ('', '.', '..') for part in reference.split('/')) or '\n' in reference:
+        raise ValueError('invalid worktree branch')
+    # Git locks require creating a sibling .lock and renaming it over the branch.
+    # Landlock grants directories, so sibling loose refs in these two directories
+    # share this write grant. Use a dedicated branch namespace to minimize it.
+    grants = [(gitdir, READ | WRITE), (common / 'objects', READ | WRITE)]
+    for relative in (reference, 'logs/' + reference):
+        target = common / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        grants.append((target.parent, READ | WRITE))
+    for path, _ in grants:
+        if (path.resolve() != path or path.is_symlink()
+                or any(beneath(path, p) or beneath(p, path) for p in protected)):
+            raise ValueError('Git write grant overlaps protected path: ' + str(path))
+    return grants
 
 
 def grants_for(config, authority, worktree, scratch):
@@ -148,6 +188,9 @@ def grants_for(config, authority, worktree, scratch):
     for path in config['read_roots']:
         read(expand(path))
     grants += [(p, READ | WRITE) for p in writes]
+    # Git persistence is the sole exception beneath the authority's .git.
+    # Its working files, config, hooks and other worktree gitdirs stay read-only.
+    grants += git_grants(worktree, [store, *(p for p in protected if p != authority)])
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)),
                (Path('/dev/urandom'), 1 << 2), (Path('/dev/random'), 1 << 2)]
     return grants, [store, *protected]
