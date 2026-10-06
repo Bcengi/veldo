@@ -76,6 +76,7 @@ class Session:
                 if (profile['tree_digest'] != self.source_digest
                         or profile['case_digest'] != R.digest(case)
                         or profile['non_file_inputs'] != 'none'
+                        or not isinstance(profile['rationale'], str)
                         or not profile['rationale'].strip()
                         or not profile['runtime_paths']):
                     continue
@@ -103,7 +104,9 @@ class Session:
                 validate(record, case)
                 if record['input_digest'] != self.base_digest:
                     raise ValueError('record input identity differs')
-            except Exception:
+            except Exception as error:
+                if getattr(error, 'code', None) == 'mutation_budget_exceeded':
+                    raise
                 self.reasons[identity] = 'invalid_record'
             else:
                 self.hits[identity] = record
@@ -127,7 +130,9 @@ class Session:
             if record.get('input_digest') != self.base_digest:
                 return False
             return self.store.put(key, record)
-        except Exception:
+        except Exception as error:
+            if getattr(error, 'code', None) == 'mutation_budget_exceeded':
+                raise
             return False
 
     def evidence(self, case, record, reused):

@@ -86,6 +86,20 @@ def _v205_reuse():
         files = qualified(files)
         cache = base / 'cache'
 
+        # Exercise the existing fixture constructor without running its mutation stage.
+        import ast
+        import subprocess
+        fixture_source = (ROOT / 'scripts/suites/53_veldo_0123_mutations.py').read_text()
+        fixture_function = next(node for node in ast.parse(fixture_source).body
+                                if isinstance(node, ast.FunctionDef) and node.name == 'fixture')
+        namespace = {'_m123_os': os, '_m123_sp': subprocess, 'FIXTURE_DRIVER': '# controlled'}
+        exec(compile(ast.Module(body=[fixture_function], type_ignores=[]), 'fixture_constructor', 'exec'), namespace)
+        fixture_root = base / 'compatibility-fixture'
+        namespace['fixture'](fixture_root, ROOT / 'scripts/check_gate_mutations.py')
+        expect('VELDO-0205 reuse/legacy-fixture-dependencies: old fresh-stage fixtures carry new helpers',
+               all((fixture_root / 'scripts' / name).is_file()
+                   for name in ('gate_reuse.py', 'mutation_reuse.py')))
+
         def session(source=files, definitions=cases, **kwargs):
             return reuse.Session(root, source, definitions, kwargs.pop('head', 'head'),
                                  kwargs.pop('configuration', {'fixture_version': 1}),
@@ -134,6 +148,12 @@ def _v205_reuse():
             ok &= all(value is None for value in session(missing).keys.values())
             return bool(ok and all(value is not None and value != original for value in changes))
 
+        malformed = dict(files)
+        data = json.loads(files[reuse.PROFILE][1])
+        data['profiles'][cases[0]['identity']]['rationale'] = 12
+        malformed[reuse.PROFILE] = (0o644, R.canonical(data))
+        expect('VELDO-0205 reuse/malformed-closure-misses: incomplete qualification cannot authorize reuse',
+               session(malformed).keys[cases[0]['identity']] is None)
         expect('VELDO-0205 reuse/exact-closure: every input dimension misses; unchanged closure hits', key_checks())
         # A planted defect is executed, not merely described. Pinning and keying share this primitive.
         real_identity = reuse.input_identity
@@ -197,6 +217,21 @@ def _v205_reuse():
             unavailable = R.Store(base / 'unavailable-cache', root)
             expect('VELDO-0205 reuse/store-errors-miss: unavailable store never supplies a result',
                    unavailable.secret is None and unavailable.get('a' * 64) is None)
+
+        current = session(cache_directory=base / 'deadline-cache')
+        record = dict(killed(cases[0]), input_digest=current.base_digest)
+        current.publish(cases[0], record, gate.validate_result)
+        def expired(*args):
+            raise gate.Refused('mutation_budget_exceeded', 'controlled deadline')
+        deadlines = []
+        for operation in (lambda: current.lookup(cases[0], expired),
+                          lambda: current.publish(cases[0], record, expired)):
+            try:
+                operation()
+            except gate.Refused as error:
+                deadlines.append(error.code)
+        expect('VELDO-0205 reuse/deadline-stays-red: cache fallback cannot swallow the stage alarm',
+               deadlines == ['mutation_budget_exceeded'] * 2)
 
         stage_cache = base / 'stage-cache'
         calls = []

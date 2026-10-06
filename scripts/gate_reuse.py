@@ -47,9 +47,10 @@ class Store:
     outside the authentication boundary. I/O failures are always cache misses.
     """
     def __init__(self, directory, repository):
-        self.directory = Path(directory).expanduser().resolve()
+        self.directory = None
         self.secret = None
         try:
+            self.directory = Path(directory).expanduser().resolve()
             root = Path(repository).resolve()
             if self.directory == root or root in self.directory.parents:
                 return
@@ -63,7 +64,7 @@ class Store:
             self.secret = keypath.read_bytes()
             if len(self.secret) != 32:
                 self.secret = None
-        except (OSError, ValueError):
+        except (OSError, ValueError, TypeError, RuntimeError):
             self.secret = None
 
     @staticmethod

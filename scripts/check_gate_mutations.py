@@ -642,9 +642,10 @@ def run_stage(root=ROOT, capacities=None, force_fresh=False):
                 if identity not in reuse.hits:
                     receipt['drivers'][case['driver']]['worker_seconds'] += record['elapsed']
         workers.check()
-        receipt['status'] = 'passed'
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
+        workers.check()
+        receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
         receipt['error'] = getattr(error, 'code', 'driver_error')
