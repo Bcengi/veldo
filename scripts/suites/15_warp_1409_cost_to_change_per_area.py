@@ -1218,11 +1218,17 @@ expect("WARP-1409 AC7: THE MODULE STARTS NOTHING. Its source contains no spawn p
 # -----------------------------------------------------------------------------------
 _W1409_VERIFY_SRC = (ROOT / "scripts/verify.sh").read_text()
 _W1409_PATH_RE = r"(?:\.veldo|scripts)/[\w./-]+\.(?:py|sh)"
-_W1409_RUN_RE = r"(?:python3|bash|sh)\s+(%s)" % _W1409_PATH_RE
-# Every catalog item DECLARED required, with the command it declares, plus every direct
-# invocation in the always-run body below the catalog (contracts, shape gate, review events).
-_W1409_REQUIRED = _w1409_re.findall(r'^CHECK_(\w+)="required:(.+)"$', _W1409_VERIFY_SRC,
-                                    _w1409_re.M)
+# An invocation may carry interpreter flags and run the authority installation's copy
+# (python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py"): VELDO-0208 runs the gate's own machinery
+# from the authority, and that copy is the same repository path.
+_W1409_RUN_RE = r'(?:python3|bash|sh)(?:\s+-[A-Za-z]+)*\s+"?(?:\$VELDO_AUTHORITY/)?(%s)' % _W1409_PATH_RE
+# Every catalog item DECLARED required, with the command it runs, plus every direct invocation in
+# the always-run body below the catalog (contracts, shape gate, review events). An item the loop
+# runs on a dedicated branch (the mutation stage, whose declaration is a label and whose command
+# is the authority coordinator) is taken with the command on that branch.
+_W1409_BRANCHES = dict(_w1409_re.findall(r'\[ "\$name" = (\w+) \]; then\s*\n\s*(.+)', _W1409_VERIFY_SRC))
+_W1409_REQUIRED = [(_n, _W1409_BRANCHES.get(_n, _c)) for _n, _c in _w1409_re.findall(
+    r'^CHECK_(\w+)="required:(.+)"$', _W1409_VERIFY_SRC, _w1409_re.M)]
 _W1409_STAGES = sorted(
     {p for _n, _cmd in _W1409_REQUIRED for p in _w1409_re.findall(_W1409_PATH_RE, _cmd)}
     | set(_w1409_re.findall(_W1409_RUN_RE, _W1409_VERIFY_SRC)))
@@ -1268,11 +1274,12 @@ expect("WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the p
        "both edge forms (a shell invocation and an importlib load) are proven to work",
        len(_W1409_REQUIRED) >= 6
        and {n for n, _c in _W1409_REQUIRED} >= {"lint", "unit", "security", "generated", "docs",
-                                                "extra"}
+                                                "extra", "mutation"}
        and all(_w1409_re.findall(_W1409_PATH_RE, _cmd) for _n, _cmd in _W1409_REQUIRED)
        and set(_W1409_STAGES) >= {"scripts/check_lint.sh", "scripts/selftest.py",
                                   "scripts/secret_inventory.py", "scripts/check_generated.sh",
                                   "scripts/check_docs.sh", "scripts/check_template_sync.sh",
+                                  "scripts/check_gate_mutations.py",
                                   ".veldo/validate.py", ".veldo/shape_gate.py",
                                   ".veldo/events.py"}
        and _W1409_GATE_CLOSURE > set(_W1409_STAGES)
