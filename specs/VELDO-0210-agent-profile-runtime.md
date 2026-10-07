@@ -13,8 +13,12 @@ protected_paths: ["engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandb
 footprint:
   - "engine/scripts/agent_sandbox.py"
   - "engine/scripts/agent_sandbox.json"
+  - "engine/scripts/veldo_userns.c"
+  - "engine/scripts/veldo-userns.apparmor"
   - "scripts/agent_sandbox.py"
   - "scripts/agent_sandbox.json"
+  - "scripts/veldo_userns.c"
+  - "scripts/veldo-userns.apparmor"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/102_veldo_0210_agent_profile_runtime.py"
   - "scripts/suites/manifest.json"
@@ -27,15 +31,16 @@ observability:
   logs: >
     The launcher names on stderr each credential it wrote back, each changed credential it did not
     write back and why (not a JSON object, not a private regular file, its source changed during the
-    run), an unknown client, and each
-    stale scratch directory it could not remove.
+    run), an unknown client, each entry it removed from the agent's state and each it could not
+    check, and each stale scratch directory it could not remove.
   metrics: None beyond the run's exit status; a run stopped by a signal exits 128 plus its number.
   traces: Not applicable; the launcher keeps no state beyond the run.
   error_taxonomy: >
     An unknown client, a client place that is not an absolute directory, a client file outside the
     client's own state directory, a credential whose source lies in the store or a protected path,
-    or a PID namespace helper that is unusable or cannot create the namespace (the message names the
-    owner's setup command) refuses the start (exit 2) before any command runs.
+    or a namespace helper that is unusable, cannot create the namespace, leaves a capability or does
+    not report the tree's init ready within 60 seconds (the message names the owner's setup command)
+    refuses the start (exit 2) before any command runs.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -131,31 +136,56 @@ acceptance_criteria:
   - id: AC6
     text: >
       Claim: the agent and gate profiles run the confined tree in its own PID namespace with its own
-      procfs, so /proc inside shows only the sandbox's processes and no host process's command line.
-      The launcher's child joins a user namespace that the fixed helper
-      /usr/local/lib/veldo/veldo-unshare creates with only this account's uid and gid, each mapped to
-      itself, unshares the mount and PID namespaces inside it, and forks the namespace's init, which
-      mounts a fresh procfs read only over /proc and forks the agent, which confines itself (seccomp,
-      Landlock) and execs. The helper is never taken from the environment, the configuration or the
-      candidate; one that is absent, not a regular file, not owned by root, writable by anyone but
-      root (or in a directory that is), or a namespace that cannot be created refuses the start
-      (exit 2) naming the owner's one-time setup command; host /proc is never the fallback. A launcher
-      already in a PID namespace other than the host's whose procfs is /proc (nested in a sandbox
-      this launcher made) creates none. Set: the pids /proc lists inside, a host process started
-      with a marker argument read by pid and found by scanning, uid, gid and capabilities inside, the
-      owner of a file created inside, /proc's mount options, an orphan reaped by the init, a
-      descendant that left the agent's process group after the agent exits, the same for the gate
-      profile, and a missing, user-owned, user-writable and uncreatable helper. Completeness: every
-      launch goes through prepared_launch, whose child calls enter_namespaces before it forks the
-      init, and helper_problem is its only check of the helper. Test rows namespace/* in suite 102;
-      signals, cleanup and write-back keep their AC2 and AC4 rows.
+      procfs, so /proc inside shows only the sandbox's processes and no host process's command line,
+      and nothing in the tree holds or can get a capability or a user namespace. The launcher's child
+      executes the fixed, root-owned, statically built helper /usr/local/lib/veldo/veldo-userns
+      (scripts/veldo_userns.c) with the launcher's own path and a context descriptor; the helper
+      creates a user namespace mapping only this account's uid and gid, each to itself, then the
+      mount and PID namespaces, and forks the namespace's init, which mounts a fresh procfs read only
+      over /proc, drops every capability (bounding, ambient, effective, permitted, inheritable;
+      securebits locked) and sets no_new_privs before it executes python3 -I -S agent_sandbox.py
+      namespace-init. The host's AppArmor policy (scripts/veldo-userns.apparmor) lets only the helper
+      create a user namespace and runs whatever it executes under the child profile
+      veldo-userns-child, which denies every capability, every user namespace, mounts and profile
+      changes, and is inherited by every program executed below it. The init refuses to go on unless
+      it is PID 1 of a read-only fresh procfs, only the identity map exists, every capability set is
+      empty, no_new_privs is set and (with AppArmor) its label is veldo-userns-child in enforce mode;
+      it then reports ready and forks the agent, which confines itself (seccomp, Landlock) and execs.
+      The launcher refuses unless the init reports ready within 60 seconds and the helper's own
+      process holds no capability, and kills the tree first. The helper is never taken from the
+      environment, the configuration or the candidate; one that is absent, not a regular file,
+      set-user-ID or with file capabilities, not owned by root, writable by anyone but root (or in a
+      directory that is) refuses the start (exit 2) naming the owner's one-time setup command, as
+      does a host without the setup; host /proc is never the fallback. A launcher already inside a
+      tree the helper made (label veldo-userns-child in enforce mode, a PID namespace other than the
+      host's whose procfs is /proc, no capability) creates none, and its init is a child subreaper
+      that kills and reaps every remaining descendant when the agent ends; a container's or a
+      systemd PrivatePIDs namespace does not count. Set: the pids /proc lists inside, a host process
+      started with a marker argument read by pid and found by scanning, uid, gid, every capability
+      set, no_new_privs and the AppArmor label inside, a clone(CLONE_NEWUSER) by the agent, the owner
+      of a file created inside, /proc's mount options, an orphan reaped by the init, a descendant
+      that left the agent's process group after the agent exits, the same for the gate profile; the
+      helper source dropping everything after the procfs mount and before exec, its relays, its
+      reproducible static build and its refusals (arguments, entry point's name, path, owners); the
+      policy compiling and its child profile's denials; a container label and complain mode not
+      counting as nested; a subreaper ending a setsid descendant; the start and handoff waits timing
+      out; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
+      the helper, and every start on a host without the setup. Completeness: every launch goes
+      through prepared_launch, whose child executes the helper (or, nested, forks the init) and
+      whose parent waits in await_start; helper_problem is its only check of the helper and
+      namespace_problem the init's only check of its namespace. Test rows namespace/* in suite 102,
+      skipped with the launcher's reason where the setup has not been run; signals, cleanup and
+      write-back keep their AC2 and AC4 rows. The AppArmor part is proven on the host by the
+      owner's one-time self-test (agent_sandbox.py namespace-selftest), which needs the setup.
     falsified_by: >
-      Skip enter_namespaces or the procfs mount; namespace/proc-lists-only-sandbox-pids and
-      namespace/host-process-hidden-by-scan go red. Map root instead of the current user;
-      namespace/ids-equal-outside goes red. Drop helper_problem; namespace/user-writable-helper-refused
-      goes red.
+      Skip the procfs mount; namespace/proc-lists-only-sandbox-pids goes red. Map root instead of the
+      current user; namespace/ids-equal-outside goes red. Keep the bounding set; namespace/no-capability-in-any-set
+      goes red. Drop helper_problem; namespace/user-writable-helper-refused goes red. Let the child
+      profile allow userns; namespace/policy-child-denies-capabilities-and-user-namespaces and
+      namespace/no-user-namespace-for-the-agent go red. Count any private PID namespace as nested;
+      namespace/only-the-helpers-tree-counts-as-nested goes red.
 required_evidence: [unit]
-rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch.
+rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch. On the host, `sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns`.
 ---
 
 ## Intent
@@ -179,8 +209,11 @@ the resolver directory /run/systemd/resolve, read only; the selected client's cr
 are written back after a refresh instead of never; and the selected client's declared state
 entries in its configuration directory are writable, the only writes outside the worktree and
 scratch. It also amends VELDO-0208's "no root helper": the agent and gate profiles need the
-owner-installed, root-owned copy of unshare (not setuid, run as this account) to create their
-user namespace, owner decision Telegram 32539, installed 32542. Every other VELDO-0208 boundary is
+owner-installed, root-owned helper veldo-userns (built from this repository, not setuid, run as
+this account) and its AppArmor policy to create their namespaces, owner decision Telegram 32539.
+The first design (a root-owned copy of util-linux unshare under a profile flags=(unconfined)
+{userns}, installed 32542) let any program it ran keep user-namespace rights; the owner removed
+that profile (Telegram 32561-32562) and this design replaces it. Every other VELDO-0208 boundary is
 unchanged.
 
 ## Design
@@ -196,43 +229,128 @@ unchanged.
   fall through to DNS. Gate and worker profiles are unchanged apart from the shared /proc line they already had.
 - PID namespace (AC6, owner decision Telegram 32539 after the review found a host process's
   command line, a live tunnel token, readable through /proc). Unprivileged user namespaces are
-  blocked on the host (kernel.apparmor_restrict_unprivileged_userns=1, VELDO-0209); the AppArmor
-  profile veldo-unshare (flags=(unconfined), userns) lets only /usr/local/lib/veldo/veldo-unshare,
-  a root-owned copy of util-linux unshare, create one. The owner's one-time setup command, which the
-  refusal prints:
+  blocked on the host (kernel.apparmor_restrict_unprivileged_userns=1, VELDO-0209). The helper is a
+  purpose-built static C program, scripts/veldo_userns.c, installed root-owned (0755, not setuid)
+  at /usr/local/lib/veldo/veldo-userns. It takes exactly two arguments: the launcher's own path
+  (absolute, canonical, a regular file named agent_sandbox.py, owned by root or this account and
+  writable by no other account, in directories with the same property or root-owned and sticky;
+  group write is accepted only for the account's own primary group) and a descriptor number (or
+  `selftest`). It: sets PR_SET_PDEATHSIG; blocks TERM, INT, HUP and CHLD, noting which stops were
+  ignored when it started; creates a user namespace and writes setgroups deny and the uid and gid
+  maps `<id> <id> 1`; creates the mount and PID namespaces and makes every mount private; forks the
+  init. The init waits on a pipe until the parent has dropped its capabilities and closed its
+  descriptors, sets PR_SET_PDEATHSIG, mounts procfs on /proc read only (nosuid, nodev, noexec),
+  locks the securebits (noroot, no setuid fixup, keep caps, no ambient raise), drops the whole
+  bounding set, clears the ambient set, clears the effective, permitted and inheritable sets, sets
+  no_new_privs and executes `/usr/bin/python3 -I -S <launcher> namespace-init <descriptor>` with no
+  environment but LC_CTYPE. The parent drops the same, closes every descriptor above stderr,
+  relays TERM, INT and HUP (unless ignored at its start) to the init as SIGRTMIN, SIGRTMIN+1 and
+  SIGRTMIN+2, and exits with the init's status. Static, it has no dynamic loader, so LD_PRELOAD and
+  the like cannot run code with its rights.
+  The AppArmor policy, scripts/veldo-userns.apparmor, installed as /etc/apparmor.d/veldo-userns,
+  attaches veldo-userns to the helper's path with userns, the four capabilities it needs inside its
+  own namespace, the two mounts it makes, signals, and no tracing of it (so no process injects code
+  with its rights); the only program it may execute, /usr/bin/python3, transitions to the child
+  profile veldo-userns-child, as Ubuntu's bwrap-userns-restrict runs what bwrap starts under
+  unpriv_bwrap. The child profile allows files, network, Unix sockets, signals, tracing (the gate's
+  broker reads the agent's memory and descriptors) and IPC, denies every capability, every user
+  namespace, every mount and profile change, and every program executed below it inherits it
+  (ix). Nothing the helper runs can therefore create or use a user namespace with capabilities,
+  whatever it executes. The policy:
 
-  `sudo install -D -o root -g root -m 0755 /usr/bin/unshare /usr/local/lib/veldo/veldo-unshare && printf 'abi <abi/4.0>,\ninclude <tunables/global>\n\nprofile veldo-unshare /usr/local/lib/veldo/veldo-unshare flags=(unconfined) {\n  userns,\n}\n' | sudo tee /etc/apparmor.d/veldo-unshare >/dev/null && sudo apparmor_parser -r /etc/apparmor.d/veldo-unshare`
+  # AppArmor policy for the agent sandbox's namespace helper (VELDO-0210 AC6), installed by the
+  # owner's one-time setup as /etc/apparmor.d/veldo-userns.
+  #
+  # veldo-userns is the only program on the host this lets create a user namespace. It needs the
+  # capabilities below inside that namespace only, to map the account to itself, make the mount and
+  # PID namespaces and mount their procfs. Whatever it executes (only /usr/bin/python3) runs under
+  # veldo-userns-child, as Ubuntu's bwrap-userns-restrict runs what bwrap starts under unpriv_bwrap:
+  # no capability, no user namespace, no mount, no profile change, and every program that child
+  # executes inherits the same profile. So nothing the helper runs can create or use a user
+  # namespace with capabilities. No process may trace the helper, so no code runs with its rights.
 
-  The launcher's child (C) runs veldo-unshare with its user and map-current-user options and a holder that
-  reports ready and waits on its stdin, opens the holder's /proc/<pid>/ns/user, ends the holder and
-  joins that namespace (setns), checks its uid and gid are unchanged, then unshares the mount and
-  PID namespaces itself (it holds every capability in the namespace it joined) and makes its mounts
-  private. The helper creates only the user namespace: a PID namespace's pid_for_children is not
-  openable before its init exists. C's first child (G) is PID 1 of the new namespace: it mounts
-  procfs at /proc read only (nosuid, nodev, noexec) and checks /proc/self is 1, then forks the agent
-  (A), which takes its own process group, confines itself as before and execs. Landlock's /proc grant
-  binds the fresh procfs, so the host procfs beneath it is unreachable even by path. The command
-  runs with no capabilities: its uid in the namespace is not 0, so exec clears them, and no_new_privs
-  refuses file capabilities.
-  Signals: the launcher stops C's process group as before. C and G keep TERM, INT and HUP blocked
-  and take them with sigwaitinfo; C relays each it caught (never one the launcher inherited ignored)
-  to G as a real-time signal, and G forwards it to A's process group, so the agent gets each stop
-  once, even one that came before it existed. G discards the stop signals it receives directly. G
-  reaps every process of the namespace, and when A exits G exits with A's status; the kernel then
-  kills whatever is left in the namespace, including processes that left A's process group. C sets
-  PR_SET_PDEATHSIG (SIGKILL) and checks the launcher is still its parent; G sets it and polls C's
-  pidfd, so a launcher killed outright takes C, G and with G the whole namespace. A keeps its own
-  PR_SET_PDEATHSIG after confinement.
-  The gate profile's broker attaches to A by the pid the launcher sees: A reads it from the
-  launcher's procfs, which G opened before mounting the new one, and the handoff line carries it.
+  abi <abi/4.0>,
+  include <tunables/global>
+
+  profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=(attach_disconnected, mediate_deleted) {
+    userns,
+    capability sys_admin,
+    capability setuid,
+    capability setgid,
+    capability setpcap,
+    mount options=(rw, rprivate) -> /,
+    mount fstype=proc options=(ro, nosuid, nodev, noexec) proc -> /proc/,
+    file rwlkm /{**,},
+    signal,
+    ptrace (readby),
+    audit deny ptrace (tracedby),
+    /usr/bin/python3* px -> veldo-userns-child,
+  }
+
+  profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {
+    file rwlkm /{**,},
+    /** ix,
+    network,
+    unix,
+    signal,
+    ptrace,
+    mqueue,
+    io_uring,
+    dbus,
+    audit deny capability,
+    audit deny userns,
+    audit deny change_profile,
+    audit deny mount,
+    audit deny umount,
+    audit deny pivot_root,
+  }
+
+  The owner's one-time setup, run from the repository root, which every refusal prints with the
+  checkout's path; its last step is the self-test, which proves through the installed helper that
+  the namespace is as the init requires and that a program run through it cannot sethostname here or
+  in new user and UTS namespaces, cannot create a UTS or user namespace, and cannot bring up an
+  interface in new user and network namespaces, directly or through executed programs (util-linux
+  unshare, hostname, ip), and that the helper's own process holds no capability:
+
+  `d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$PWD"=. -o "$d/veldo-userns" scripts/veldo_userns.c && sudo install -D -o root -g root -m 0755 "$d/veldo-userns" /usr/local/lib/veldo/veldo-userns && sudo install -o root -g root -m 0644 scripts/veldo-userns.apparmor /etc/apparmor.d/veldo-userns && sudo apparmor_parser -r /etc/apparmor.d/veldo-userns && sudo rm -f /usr/local/lib/veldo/veldo-unshare && rm -r "$d" && python3 -I -S scripts/agent_sandbox.py namespace-selftest`
+
+  The launcher's child (C) blocks the stops, CHLD and the relay signals, sets each stop's
+  disposition to default when the launcher forwards it and to ignored when the launcher inherited
+  it ignored (the helper reads them across its exec), takes its own session, sets PR_SET_PDEATHSIG
+  and checks the launcher is its parent, holds its shared lock on the scratch, opens the launcher's
+  /proc (O_PATH) and pidfds of the launcher and of itself, writes the launch's context (worktree,
+  command, environment, grants, profile, protected paths, descriptors, signal mask, ids) to a memory
+  file and executes the helper with that descriptor. The init (G, PID 1) reads the context, checks
+  namespace_problem, checks through the pidfds that the launcher and the helper are alive, writes
+  one byte to the launcher's ready pipe and forks the agent (A), which takes its own process group,
+  reads the pid the launcher sees it by from the launcher's /proc (for the gate profile's broker),
+  confines itself as before and execs. Landlock's /proc grant binds the fresh procfs, so the host
+  procfs beneath it is unreachable even by path. The launcher waits for the ready byte at most 60
+  seconds (a stop meanwhile is forwarded to the group as before, which is killed GRACE_SECONDS
+  later), then reads the helper's /proc status: every capability set empty and no_new_privs set.
+  Otherwise it kills the group, writes back and cleans up, and refuses (exit 2) with the setup
+  command; a stop during the start still exits 128 plus its number. The gate profile's handoff read
+  in fork_brokered is bounded by the same 60 seconds.
+  Signals: the launcher stops C's process group as before. The helper and G keep TERM, INT and HUP
+  blocked and take them with sigwaitinfo; the helper relays each the launcher forwards to G as a
+  real-time signal, and G forwards it to A's process group, so the agent gets each stop once, even
+  one that came before it existed. G discards the stop signals it receives directly. G reaps every
+  process of the namespace, and when A exits G exits with A's status; the kernel then kills
+  whatever is left in the namespace, including processes that left A's process group. The helper
+  and G set PR_SET_PDEATHSIG and G checks the pidfds, so a launcher killed outright takes the
+  helper, G and with G the whole namespace. A keeps its own PR_SET_PDEATHSIG after confinement.
   Unix addresses, terminals and the bind helper are unchanged: the mount namespace is a copy, only
   /proc differs.
-  A launcher whose own process already runs in a PID namespace other than the host's (its
-  /proc/self/ns/pid is not the initial pid:[4026531836]) and whose /proc/self is its own pid (that
-  procfs is its namespace's) creates no namespace: its /proc already shows no host process. That is
-  a launcher nested in a sandbox this launcher made, as the gate's suites run, and the nested
-  launcher's tree sees the outer sandbox's processes. It uses no helper and checks none: inside
-  the user namespace root's files show as the overflow uid 65534.
+  A launcher already inside a tree the helper made creates no namespace (nested_namespace): its
+  AppArmor label is veldo-userns-child in enforce mode, which only an exec through the root-owned
+  helper gives and which no process can leave, its /proc/self/ns/pid is not the initial
+  pid:[4026531836], its /proc/self is its own pid, and it holds no capability. A container's or a
+  systemd PrivatePIDs namespace carries another label and does not count: there the launcher uses
+  the helper as on the host. The nested launcher's C forks G itself and relays as the helper does;
+  G is a child subreaper (PR_SET_CHILD_SUBREAPER), so a descendant that leaves the agent's session
+  is reaped by it, and when A exits G kills every remaining descendant (each child in
+  /proc/self/task/<pid>/children, then the ones that become its children) before it exits. The
+  nested tree sees the outer tree's processes, never the host's.
 - Clients. agent_sandbox.json gains `clients`. Each client names its places (an environment variable
   the runner may set, else a default under the account's home), its `credentials`, its `seed_files`
   and its `read_links`. The launcher's client option selects one (claude or codex); without it no
@@ -329,18 +447,30 @@ unchanged.
   updates, system skill installs) fail: those directories are outside the worktree.
 - engine/scripts/agent_sandbox.json is byte-identical with this repository's copy (template sync),
   so the reviewed project_read_roots entry ships to adopters; an absent root grants nothing.
-- A launcher nested in a sandbox (a PID namespace other than the host's whose procfs is /proc)
-  creates no namespace, so its tree sees the outer sandbox's processes, never the host's; a
-  launcher run inside some other container behaves the same and shows that container's processes.
-  In such a nested launch, processes that leave the agent's process group outlive the agent until
-  the outer namespace ends, and PR_SET_PDEATHSIG reaches the agent, not its descendants.
+- A launcher nested in a tree the helper made creates no namespace, so its tree sees the outer
+  tree's processes, never the host's. PR_SET_PDEATHSIG there reaches the agent and the init, whose
+  end kills the agent's remaining descendants; a launcher killed outright with SIGKILL kills that
+  init, and descendants of the nested agent then outlive it until the outer tree ends.
+- The helper's entry check (name, path, owners) is a guard on what it executes, not the boundary:
+  the account owns the launcher file and can change it. The boundary is that the helper drops every
+  capability and sets no_new_privs before it executes anything, and that the child profile denies
+  capabilities and user namespaces to whatever runs below it.
+- Another process of this account that runs unconfined outside every tree (the owner's own shell,
+  an unconfined CLI) holds every capability over the tree's user namespace, as the namespace's
+  owner, and could join it; nothing inside the tree can, and none of the tree's processes reaches
+  such a process.
+- AppArmor part unproven here: the policy compiles (apparmor_parser -Q) and the helper builds
+  reproducibly and refuses as specified, but loading the policy needs root; until the owner runs
+  the setup and its self-test passes, the rows of a running tree are skipped and every start
+  refuses.
 - Inside the namespace, files owned by any uid or gid other than this account's show as 65534
   (nobody, nogroup), and so do the account's supplementary groups; access is still decided by the
   real ids.
 - The host procfs stays mounted beneath the fresh one in the copied mount table: /proc/self/mounts
   lists it, the mount is locked to the namespace, and Landlock grants only the fresh one.
-- The setup needs the owner once, with sudo, per host; without it every agent and gate start
-  refuses.
+- The setup needs the owner once, with sudo, per host, and again after any change to
+  scripts/veldo_userns.c or scripts/veldo-userns.apparmor; without it every agent and gate start
+  refuses. The installed helper is the build the owner made, not the repository's current source.
 
 ## Out of scope
 
