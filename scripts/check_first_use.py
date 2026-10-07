@@ -89,7 +89,8 @@ import sys
 _SCRIPTS = os.path.dirname(os.path.realpath(__file__))
 sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIPTS]
 
-import json  # noqa: E402 - only after the script directory is gone
+import importlib.util  # noqa: E402 - only after the script directory is gone
+import json  # noqa: E402
 import shutil  # noqa: E402
 import stat  # noqa: E402
 import subprocess  # noqa: E402
@@ -98,6 +99,16 @@ import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def launcher_fds():
+    """pass_fds for the nested dispatcher, whose suites start gates: inside a tree the agent
+    launcher made, the tree's marker, without which their launchers are refused the namespace
+    (VELDO-0210 AC6); nothing elsewhere."""
+    spec = importlib.util.spec_from_file_location("veldo_agent_sandbox", ROOT / "scripts" / "agent_sandbox.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.launcher_fds()
 SELFTEST = ROOT / "scripts" / "selftest.py"
 SUITES = ROOT / "scripts" / "suites"
 EVENT_LOG = Path(".veldo") / "events.jsonl"
@@ -269,7 +280,7 @@ def _run_suite(tree, label):
     try:
         proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
                               capture_output=True, text=True, env=_child_env(),
-                              timeout=RUN_TIMEOUT_S)
+                              timeout=RUN_TIMEOUT_S, pass_fds=launcher_fds())
     except subprocess.TimeoutExpired:
         raise CannotAnswer("the %s run did not finish inside %ds" % (label, RUN_TIMEOUT_S))
     except OSError as e:

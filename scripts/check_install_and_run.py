@@ -84,6 +84,10 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# The agent launcher, for one thing: the marker a nested gate needs (_run).
+_sandbox_spec = _git_importlib.spec_from_file_location("veldo_agent_sandbox", ROOT / "scripts" / "agent_sandbox.py")
+_SANDBOX = _git_importlib.module_from_spec(_sandbox_spec)
+_sandbox_spec.loader.exec_module(_SANDBOX)
 
 PUBLISHER = "scripts/publish.py"
 PACKS_REL = "packs"
@@ -139,12 +143,15 @@ def composed_packs(pub_root):
 # THE ONE LAUNCHER. Every child this stage starts comes through here, which is what makes an
 # assertion about this call's keyword arguments an assertion about every child: no session is
 # detached, no shell is interposed, nothing is left running when the call returns.
+# Inside a tree the agent launcher made (the gate's), the adopter's gate is a nested launch: it is
+# handed the tree's marker, which Python would otherwise close (VELDO-0210 AC6).
 def _run(argv, cwd=None, timeout=900, env=None):
     if argv and str(argv[0]) == "git":
         return _git_process.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
                                 capture_output=True, text=True, timeout=timeout)
     return subprocess.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
-                          capture_output=True, text=True, timeout=timeout, env=env)
+                          capture_output=True, text=True, timeout=timeout, env=env,
+                          pass_fds=_SANDBOX.launcher_fds())
 
 
 def commit_tree(target):

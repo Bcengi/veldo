@@ -49,6 +49,7 @@ stamp and the gate event: it is visible on every run, never silent.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -122,7 +123,18 @@ def confined(root, command, env):
     """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it."""
     return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
                            str(root), '--', 'bash', '-c', command], env=env,
-                          stdin=subprocess.DEVNULL).returncode
+                          stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
+
+
+def _launcher_fds():
+    """Inside a tree the agent launcher made, the launcher this starts is nested and is handed the
+    tree's marker (VELDO-0210 AC6), as the launcher gate_candidate.py runs finds it; nothing
+    elsewhere."""
+    launcher = (HERE / 'gate_candidate.py').resolve().parent / 'agent_sandbox.py'
+    spec = importlib.util.spec_from_file_location('veldo_agent_sandbox', launcher)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.launcher_fds()
 
 
 # What verify.sh exports for its own launchers, never for candidate code. The confined launcher

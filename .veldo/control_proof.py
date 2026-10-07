@@ -262,6 +262,20 @@ def gate_results(output, names):
     return results, (last if last is not None and _TERMINAL.match(last) else None)
 
 
+def launcher_fds(root):
+    """pass_fds for a gate this process starts from `root`'s scripts/verify.sh: inside a tree the
+    agent launcher made, the tree's marker, as `root`'s own launcher finds and checks it
+    (agent_sandbox.launcher_fds), without which that gate's launcher is refused the namespace
+    (VELDO-0210 AC6); nothing elsewhere, or when `root` has no launcher."""
+    path = Path(root) / "scripts" / "agent_sandbox.py"
+    if not path.is_file():
+        return ()
+    spec = importlib.util.spec_from_file_location("veldo_launcher_marker", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.launcher_fds()
+
+
 def capture_gate(root):
     """Run the canonical gate once in `root` and return what was observed: the command, HEAD when it
     started, the digest and catalog of the gate script that ran, the exit status (None when the gate
@@ -276,7 +290,8 @@ def capture_gate(root):
     commit = head(root)
     started = time.time()
     try:
-        run = subprocess.run(list(GATE_COMMAND), capture_output=True, cwd=str(root))
+        run = subprocess.run(list(GATE_COMMAND), capture_output=True, cwd=str(root),
+                             pass_fds=launcher_fds(root))
         exit_code, out, err = run.returncode, run.stdout, run.stderr
     except OSError as error:
         exit_code, out, err = None, b"", str(error).encode()

@@ -196,8 +196,12 @@ def run_gate(dest):
                 ["commit", "-q", "-m", "Veldo"]):
         _git_process.run(["git", *cmd], cwd=str(dest), identity=("Dmitry Grinberg", "dimaimages@gmail.com"), check=True,
                        capture_output=True, text=True)
+    # Inside a tree the agent launcher made, the gate's launcher is nested and needs its marker.
+    sandbox_spec = importlib.util.spec_from_file_location("veldo_agent_sandbox", ROOT / "scripts" / "agent_sandbox.py")
+    sandbox = importlib.util.module_from_spec(sandbox_spec)
+    sandbox_spec.loader.exec_module(sandbox)
     r = subprocess.run(["bash", "scripts/verify.sh"], cwd=str(dest),
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, pass_fds=sandbox.launcher_fds())
     tail = [ln for ln in r.stdout.splitlines() if ln.startswith("GATE:")]
     return r.returncode, (tail[-1] if tail else "(no GATE line)"), r.stdout
 

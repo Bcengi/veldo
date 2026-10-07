@@ -151,9 +151,12 @@ def common_directory(root):
 def inventory(root, expected_common):
     # Registry imports are candidate execution too. Only data crosses this pipe.
     env = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(expected_common))
+    # Run inside a tree the agent launcher made (a suite of the gate's), the launcher this starts is
+    # nested and is handed the tree's marker (VELDO-0210 AC6).
     result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
         str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
-        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env)
+        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env,
+        pass_fds=load(ROOT / 'scripts/agent_sandbox.py').launcher_fds())
     if result.returncode:
         raise Refused('candidate_execution_denied', result.stderr[-2000:])
     return json.loads(result.stdout)
