@@ -985,10 +985,10 @@ print(json.dumps(seen))
         # account's configuration directory; nothing else of that directory is writable.
         # The folder Claude Code names for a working directory, as two real runs of Claude Code 2.1.290
         # named it (one past the 200-character cut, so its hash is checked too).
-        long_path = '/tmp/v210-slug/' + 'a.b_c-' * 40 + '/Ünï \U0001F600 x'
+        long_path = '/tmp/v210-slug/' + 'a.b_c-' * 40 + '/\u00dcn\u00ef \U0001F600 x'
         expect('VELDO-0210 state/project-folder-named-as-claude-names-it',
                S.claude_project(long_path) == '-tmp-v210-slug-' + 'a-b-c-' * 30 + 'a-b-c-lhhscs'
-               and S.claude_project('/tmp/v210-slug/Ünï \U0001F600.x_y') == '-tmp-v210-slug--n-----x-y'
+               and S.claude_project('/tmp/v210-slug/\u00dcn\u00ef \U0001F600.x_y') == '-tmp-v210-slug--n-----x-y'
                and S.claude_project('/home/u/projects/veldo-worktrees/agent-profile-runtime')
                == '-home-u-projects-veldo-worktrees-agent-profile-runtime')
         project = S.claude_project(worktree.resolve())
