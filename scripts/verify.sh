@@ -18,6 +18,18 @@ git() {
 veldo_candidate() {
   python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
+# THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07). A stage the
+# authority's scripts/gate_unconfined.json declares, with exactly its declared command, runs as two
+# named legs: confined (every suite but the listed ones) and unconfined (only the listed ones, which
+# need the systemd user manager or nested strace). Both legs and the list are printed on the stage
+# lines and recorded in the stamp and the gate event. The list is a protected file, read from the
+# authority, never from the candidate. With no list, every stage is confined, as before.
+veldo_stage() {
+  if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
+    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1" \
+      --record "$VELDO_LEGS_RECORD" -- "$2"
+  else veldo_candidate bash -c "$2"; fi
+}
 
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
 # installation verifies a landing candidate: this script is the installed copy, every check runs in
@@ -118,7 +130,8 @@ CHECK_deploy_dry_run="na:no automated deployment path yet"
 # The suite stage stays fresh until VELDO-0206 is implemented.
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
-trap 'rm -f "$VELDO_REUSE_RECEIPT"' EXIT
+VELDO_LEGS_RECORD=$(mktemp)
+trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh"
 CHECK_mutation="required:authority mutation stage"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
@@ -160,7 +173,7 @@ for name in $ORDER; do
       if [ "$name" = mutation ]; then MUTATION_RAN=1; fi
       if { if [ "$name" = mutation ]; then
         python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" --root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"
-      else veldo_candidate bash -c "$cmd"; fi; }; then
+      else veldo_stage "$name" "$cmd"; fi; }; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else
         echo "   ${name}: FAIL"; FAIL=1; RAN=$((RAN+1))
@@ -299,11 +312,22 @@ REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOU
     REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
   fi
 }
-EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s}' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON")
+# Which suites ran outside the confinement, by stage, and under which declaration. The field is
+# present exactly when an unconfined leg ran, as reuse_evidence is present only when reuse needed it;
+# a leg record that cannot be read is RED with the field null, never absent.
+UNCONFINED_FIELD=""
+if [ -s "$VELDO_LEGS_RECORD" ]; then
+  if _veldo_u=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --stamp "$VELDO_LEGS_RECORD"); then
+    UNCONFINED_FIELD=",\"unconfined\":$_veldo_u"
+  else
+    FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
+  fi
+fi
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify

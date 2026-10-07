@@ -47,6 +47,11 @@ protected_paths:
   - {path: "scripts/gate_reuse.py", floor: high}
   - {path: "scripts/mutation_sandbox.py", floor: high}
   - {path: "scripts/reuse_stamp.py", floor: high}
+  # VELDO-0208, owner decision Telegram 32403-32407 (2026-10-07): the suites the gate runs OUTSIDE
+  # its confinement, and the runner that reads that list. Adding a suite to it is this protected
+  # change, never a step an agent takes on its own behalf.
+  - {path: "scripts/gate_unconfined.json", floor: high}
+  - {path: "scripts/gate_legs.py", floor: high}
   - {path: "engine/.veldo/control_verification.py", floor: high}
   - {path: ".veldo/control_verification.py", floor: high}
   # The enforcement core: this repository ships the templates every adopting

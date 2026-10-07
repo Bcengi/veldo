@@ -1157,5 +1157,220 @@ print(json.dumps(r))
 
 
 
+def _v208_unconfined_leg():
+    """The unconfined leg (owner decision, Telegram 32403-32407, 2026-10-07): the suites the
+    authority's scripts/gate_unconfined.json lists run outside the confinement in a named leg, every
+    other suite stays confined even if it asks, and the list is a protected file. Driven through the
+    real leg runner, the real launcher and the real dispatcher over a fixture candidate whose suites
+    probe a directory outside the candidate: the confined leg cannot write there, the unconfined
+    leg can. Run by the gate's own confined leg, the fixture's unconfined leg is still inside the
+    outer domain, which grants that directory, so the observation holds in both places."""
+    import ast
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import re
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    spec = importlib.util.spec_from_file_location('gate_legs_under_test', ROOT / 'scripts/gate_legs.py')
+    L = importlib.util.module_from_spec(spec); spec.loader.exec_module(L)
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    try:
+        import run_scope as RSL
+    finally:
+        sys.path.pop(0)
+
+    # ---- the declared list: valid, each entry with its reason, and the stages verify.sh runs -----
+    document, digest = L.load()
+    listed = {e['suite']: e.get('rows') for e in document['suites']}
+    gate_text = (ROOT / 'scripts/verify.sh').read_text()
+    declared_commands = {name: re.search(r'^CHECK_%s="required:(.*)"$' % name, gate_text, re.M).group(1)
+                         for name in ('unit', 'integration')}
+    control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '67_0041', '67_0135', '71_0076',
+                     '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
+                     '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
+                     '91_0167', '92_0088', '93_0152', '94_0162', '96_0204']
+    manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
+    whole = sorted(n for n, rows in listed.items() if rows is None)
+    expected_whole = sorted([n for n in manifest for short in control_plane + ['65_0067']
+                             if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
+    expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
+           document['stages'] == declared_commands and len(expected_whole) == 30 and whole == expected_whole
+           and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
+                                                         '101_veldo_0208_landing_reuse': 'strace'}
+           and all(n in manifest for n in listed)
+           and all(len(e['reason']) > 30 for e in document['suites']))
+
+    # ---- the list is protected, read from the authority, and recorded in the stamp --------------
+    front = V.front_matter((ROOT / 'specs/VELDO-0208-single-user-landing-reuse.md').read_text(), 'VELDO-0208')
+    expect('VELDO-0208 unconfined-leg/list-is-protected',
+           {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(P.protected_patterns())
+           and {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
+    expect('VELDO-0208 unconfined-leg/list-read-from-the-authority',
+           L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'
+           and '[ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]' in gate_text
+           and 'python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1"' in gate_text
+           and 'else veldo_stage "$name" "$cmd"; fi' in gate_text)
+
+    # ---- which rows each leg owns ----------------------------------------------------------------
+    env = {'VELDO_GATE_UNCONFINED': 'whole,rowed:strace'}
+    table = {(leg, suite, rows): RSL.leg_runs(suite, rows, dict(env, VELDO_GATE_LEG=leg))
+             for leg in ('confined', 'unconfined') for suite in ('whole', 'rowed', 'asks')
+             for rows in (None, 'strace')}
+    try:
+        RSL.gate_leg({'VELDO_GATE_LEG': 'outside'})
+    except RSL.LegRefused:
+        bad_leg = True
+    else:
+        bad_leg = False
+    try:
+        RSL.gate_leg({'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_UNCONFINED': '../x'})
+    except RSL.LegRefused:
+        bad_entry = True
+    else:
+        bad_entry = False
+    expect('VELDO-0208 unconfined-leg/rows-each-leg-owns',
+           table == {('confined', 'whole', None): True, ('confined', 'whole', 'strace'): True,
+                     ('confined', 'rowed', None): True, ('confined', 'rowed', 'strace'): False,
+                     ('confined', 'asks', None): True, ('confined', 'asks', 'strace'): True,
+                     ('unconfined', 'whole', None): True, ('unconfined', 'whole', 'strace'): True,
+                     ('unconfined', 'rowed', None): False, ('unconfined', 'rowed', 'strace'): True,
+                     ('unconfined', 'asks', None): False, ('unconfined', 'asks', 'strace'): False}
+           and RSL.leg_runs('asks', 'strace', {}) and bad_leg and bad_entry)
+
+    # ---- a fixture candidate run through the real leg runner -------------------------------------
+    shared_source = (ROOT / 'scripts/suites/shared.py').read_text()
+    real_helpers = ''.join(ast.get_source_segment(shared_source, node) + '\n\n'
+                           for node in ast.parse(shared_source).body
+                           if isinstance(node, ast.FunctionDef) and node.name in ('suite_file', 'leg_runs'))
+    fixture_shared = ('import os\nimport sys\nfrom pathlib import Path\n'
+        'ROOT = Path(__file__).resolve().parents[2]\nsys.path.insert(0, str(ROOT / "scripts"))\n'
+        'PASS = FAIL = 0\nSCOPE = None\n' + real_helpers +
+        'def expect(name, condition):\n    global PASS, FAIL\n    PASS += bool(condition); FAIL += not condition\n'
+        'def report():\n    print(SCOPE.aggregate_line(PASS, FAIL)); return SCOPE.exit_code(FAIL)\n'
+        'def probe(label):\n    leg = os.environ.get("VELDO_GATE_LEG", "none")\n'
+        '    try:\n        (Path(os.environ["V208_PROBE_OUTSIDE"]) / (label + "." + leg)).write_text("x")\n'
+        '        outcome = "wrote"\n    except OSError:\n        outcome = "refused"\n'
+        '    print("V208-PROBE %s.%s %s" % (label, leg, outcome), flush=True)\n    expect(label, True)\n')
+    bodies = {'01_listed': 'probe("01_listed")\n',
+              '02_asks': 'if leg_runs("strace"):\n    probe("02_asks.strace")\nif leg_runs():\n    probe("02_asks")\n',
+              '03_rows': 'if leg_runs():\n    probe("03_rows")\nif leg_runs("strace"):\n    probe("03_rows.strace")\n'}
+    driver = ('import importlib.util, sys\n'
+              's = importlib.util.spec_from_file_location("gate_legs", sys.argv[1])\n'
+              'm = importlib.util.module_from_spec(s); s.loader.exec_module(m)\n'
+              'sys.exit(m.run_stage(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], path=sys.argv[6]))\n')
+    with tempfile.TemporaryDirectory(prefix='v208-legs-') as temporary:
+        top = Path(temporary)
+        candidate, outside = top / 'candidate', top / 'outside'
+        (candidate / 'scripts/suites').mkdir(parents=True); outside.mkdir()
+        for name in ('selftest.py', 'run_scope.py'):
+            shutil.copyfile(ROOT / 'scripts' / name, candidate / 'scripts' / name)
+        (candidate / 'scripts/suites/shared.py').write_text(fixture_shared)
+        for name, body in bodies.items():
+            (candidate / 'scripts/suites' / (name + '.py')).write_text(body)
+        (candidate / 'scripts/suites/manifest.json').write_text(json.dumps({
+            'schema': 'veldo.suites/v1', 'entry': 'selftest.py', 'shared': 'shared.py',
+            'suites': [{'name': n, 'file': n + '.py'} for n in bodies]}))
+        # The candidate asks for 02_asks in its own copy of the list; only the authority's counts.
+        asking = dict(document, suites=[{'suite': '02_asks', 'reason': 'the candidate asks to leave the domain'}])
+        (candidate / 'scripts/gate_unconfined.json').write_text(json.dumps(asking))
+        authority_list = top / 'gate_unconfined.json'
+        authority_list.write_text(json.dumps(dict(document, stages={'unit': 'python3 scripts/selftest.py'},
+            suites=[{'suite': '01_listed', 'reason': 'fixture: needs what the domain refuses'},
+                    {'suite': '03_rows', 'rows': 'strace', 'reason': 'fixture: rows that trace a worker'}])))
+
+        def stage(name, command, listing=authority_list, extra=None):
+            for marker in outside.iterdir():
+                marker.unlink()
+            record = top / ('record-' + name)
+            record.unlink(missing_ok=True)
+            result = subprocess.run([sys.executable, '-I', '-S', '-c', driver, str(ROOT / 'scripts/gate_legs.py'),
+                                     str(candidate), name, command, str(record), str(listing)],
+                                    capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                    env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **(extra or {})))
+            # The candidate tree is read-only in the gate domain, so each probe reports on stdout.
+            markers = dict(line.split()[1:3] for line in result.stdout.splitlines()
+                           if line.startswith('V208-PROBE '))
+            return result, markers, record
+
+        result, markers, record = stage('unit', 'python3 scripts/selftest.py')
+        output = result.stdout + result.stderr
+        expect('VELDO-0208 unconfined-leg/listed-suite-runs-unconfined-and-named: ' + output[-600:],
+               result.returncode == 0
+               and 'unit: UNCONFINED LEG - runs outside the confinement by owner decision' in output
+               and '2 entries: 01_listed, 03_rows:strace' in output
+               and 'unit: confined leg: pass' in output and 'unit: unconfined leg: pass' in output
+               and 'selftest leg unconfined:' in output and 'selftest leg confined:' in output
+               and markers.get('01_listed.unconfined') == 'wrote' and '01_listed.confined' not in markers)
+        expect('VELDO-0208 unconfined-leg/unlisted-suite-stays-confined-even-if-it-asks: ' + repr(markers),
+               markers.get('02_asks.confined') == 'refused' and markers.get('02_asks.strace.confined') == 'refused'
+               and not [m for m in markers if m.startswith('02_asks') and m.endswith('.unconfined')]
+               and not (outside / '02_asks.confined').exists())
+        expect('VELDO-0208 unconfined-leg/listed-rows-only-leave: ' + repr(markers),
+               markers.get('03_rows.confined') == 'refused' and markers.get('03_rows.strace.unconfined') == 'wrote'
+               and '03_rows.strace.confined' not in markers and '03_rows.unconfined' not in markers)
+        stamped = L.stamp(record)
+        # verify.sh's own stamp and event lines, executed over this record, an empty one and a
+        # corrupt one: the leg is in both records when it ran, absent when none ran, RED when unread.
+        stamp_block = gate_text[gate_text.index('UNCONFINED_FIELD=""'):]
+        stamp_block = stamp_block[:stamp_block.index('veldo_write_stamp() {')] + \
+            stamp_block[stamp_block.index('veldo_write_stamp() {'):].split('\n}', 1)[0] + '\n}\n'
+        def written(legs_record):
+            program = ('VELDO_AUTHORITY=' + str(ROOT) + '\nVELDO_LEGS_RECORD=' + str(legs_record) + '\n'
+                       'FAIL=0\nSTATUS=green\nEVENT=gate.passed\nCOMMIT=' + 'a' * 40 + '\nTS=fixture\nRAN=1\nNA=0\n'
+                       'VERSION_JSON=null\nTREE_JSON=null\nREUSE_JSON=\'"force_fresh":false,"reused":{"mutation":0,"unit":0}\'\n'
+                       + stamp_block + 'veldo_write_stamp "$1"\nprintf "%s\\n" "$EVENT_LINE" > "$2"\n')
+            outputs = top / 'written-stamp', top / 'written-event'
+            ran = subprocess.run(['bash', '-c', program, 'fixture', *map(str, outputs)],
+                                 capture_output=True, text=True, timeout=30)
+            return ran.returncode, [json.loads(o.read_text()) for o in outputs]
+        empty = top / 'empty-record'; empty.write_text('')
+        corrupt = top / 'corrupt-record'; corrupt.write_text('{"stage": "unit"\n')
+        with_leg, without_leg, unread = written(record), written(empty), written(corrupt)
+        expect('VELDO-0208 unconfined-leg/stamp-and-event-carry-the-leg: ' + repr((with_leg, without_leg, unread)),
+               all(code == 0 for code, _ in (with_leg, without_leg, unread))
+               and all(document['unconfined'] == stamped for document in with_leg[1])
+               and all(document['status' if 'status' in document else 'type'] in ('green', 'gate.passed')
+                       for document in with_leg[1])
+               and all('unconfined' not in document for document in without_leg[1])
+               and all(document['unconfined'] is None for document in unread[1])
+               and unread[1][0]['status'] == 'red' and unread[1][1]['type'] == 'gate.failed')
+        refused_stamp = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_legs.py'), '--stamp',
+                                        str(corrupt)], capture_output=True, text=True, timeout=30)
+        expect('VELDO-0208 unconfined-leg/stamp-names-the-leg: ' + repr(stamped),
+               stamped == {'declaration': 'sha256:' + __import__('hashlib').sha256(
+                               authority_list.read_bytes()).hexdigest(),
+                           'legs': {'unit': ['01_listed', '03_rows:strace']}}
+               and L.stamp(empty) == {} and L.stamp(top / 'never-written') == {}
+               and refused_stamp.returncode == 1 and refused_stamp.stdout.strip() == 'null'
+               and 'the gate is RED' in refused_stamp.stderr)
+
+        # A stage the list does not declare, or a command other than the declared one, is confined
+        # whole, and a caller's leg variables never reach it.
+        asked = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': '02_asks'}
+        other, other_markers, other_record = stage('integration', 'python3 scripts/selftest.py', extra=asked)
+        changed, changed_markers, changed_record = stage('unit', 'python3 scripts/selftest.py ', extra=asked)
+        expect('VELDO-0208 unconfined-leg/undeclared-stage-is-confined-whole: ' + repr((other_markers, changed_markers)),
+               other.returncode == 0 and changed.returncode == 0
+               and 'UNCONFINED' not in other.stdout + changed.stdout
+               and other_markers == changed_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
+                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
+               and not other_record.exists() and not changed_record.exists())
+
+        # An invalid list runs nothing at all, in either leg.
+        broken = top / 'broken.json'
+        broken.write_text(json.dumps(dict(json.loads(authority_list.read_text()),
+                                          suites=[{'suite': '01_listed', 'reason': ''}])))
+        invalid, invalid_markers, invalid_record = stage('unit', 'python3 scripts/selftest.py', listing=broken)
+        expect('VELDO-0208 unconfined-leg/invalid-list-runs-nothing: ' + invalid.stdout[-300:],
+               invalid.returncode == 1 and 'is invalid (01_listed has no reason)' in invalid.stdout
+               and invalid_markers == {} and not invalid_record.exists())
+
+
 if leg_runs():
     _v208_confined_stages()
+    _v208_unconfined_leg()
