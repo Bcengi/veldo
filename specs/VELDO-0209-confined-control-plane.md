@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0209
 title: Control-plane suites proven in a KVM guest the candidate cannot leave
-status: ready
+status: draft
 risk: high
 owner: dmitry
 human_approval: required
@@ -448,15 +448,3 @@ Every experiment ran under /tmp/v209-* and was removed afterwards; nothing was l
   child moves a subshell into domain/manager and execs `/usr/lib/systemd/systemd --user` with
   XDG_RUNTIME_DIR and SYSTEMD_UNIT_PATH in scratch. The pull-in probe writes the pid of an
   outside `sleep` into domain/pull/cgroup.procs.
-
-## History
-
-2026-10-06: written from the VELDO-0208 measurements. A draft: only the owner marks a specification ready.
-
-2026-10-07: approved by the owner, Dmitry Grinberg: Telegram 32398, "approve 0209" (02:43 UTC). His
-answers to the open decisions: the kit is Ubuntu's own kernel and modules packages for the host's
-release, fetched as the user with `apt-get download`, pinned by sha256 in the checked-in sandbox
-configuration and kept outside the repository; a build refuses an unpinned or mismatched kernel; 4 GiB,
-4 cpus and a per-stage limit set from measurement; integration's nested run stays in place in its own
-guest. Records: proof/VELDO-0209/approval-ready.json (the ready transition) and
-proof/VELDO-0209/approval-dmitry.json (the protected paths this specification declares).
