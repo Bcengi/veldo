@@ -192,8 +192,8 @@ scratch. Every other VELDO-0208 boundary is unchanged.
   from before the fork until the parent has registered its child, then forwarded to the confined
   group; a group still alive ten seconds later is killed. The launcher then writes back
   credentials, removes the scratch and exits 128 plus the signal number. The child sets
-  PR_SET_PDEATHSIG to SIGKILL before anything else and refuses the start if the launcher is
-  already gone, so a launcher killed outright never leaves its agent running.
+  PR_SET_PDEATHSIG to SIGKILL once confined, just before exec, and refuses the start if the
+  launcher is already gone, so a launcher killed outright never leaves its agent running.
 
 ## Accepted residuals
 

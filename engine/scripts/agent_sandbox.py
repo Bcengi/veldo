@@ -1457,10 +1457,6 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     try:
         if stop is not None:
             stop.in_child()
-        # A launcher killed outright takes its child with it (PR_SET_PDEATHSIG, kept across exec), so
-        # no agent runs on unsupervised; a launcher already gone refuses the start.
-        if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != launcher:
-            raise RuntimeError('the launcher is gone')
         signal.pthread_sigmask(signal.SIG_SETMASK, mask)
         os.setsid()
         # The confined command holds its own shared lock on the scratch for as long as it runs (and
@@ -1471,6 +1467,10 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         keep = [held, *(side.keep() if side else ())]
         close_descriptors(protected, keep=keep)
         mode = landlock(grants, profile, broker=side)
+        # A launcher killed outright takes its child with it (PR_SET_PDEATHSIG, kept across exec), so
+        # no agent runs on unsupervised; a launcher gone before this point refuses the start.
+        if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != launcher:
+            raise RuntimeError('the launcher is gone')
         env.pop(BROKERED, None)
         if mode != 'strict':
             env[BROKERED] = '1'
