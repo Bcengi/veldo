@@ -289,6 +289,108 @@ print(json.dumps(r))
                     pass
             return found
 
+        # namespace: the tree runs in its own PID namespace with its own procfs. Nested in the gate's,
+        # the rows check that this suite's own procfs is that namespace's, which hides the host from
+        # both.
+        own_namespace = os.readlink('/proc/self/ns/pid')
+        outer_ok = (nested and own_namespace != S.INITIAL_PID_NAMESPACE
+                    and 'agent_sandbox.py' in Path('/proc/1/cmdline').read_bytes().decode(errors='replace'))
+        marker = 'v210-host-sleeper-%d' % os.getpid()
+        sleeper = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', marker],
+                                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            for prefix, profile in (('', 'agent'), ('gate-', 'gate')):
+                owned = worktree / ('owned-by-' + profile)
+                escaped = 'v210-escaped-%s-%d' % (profile, os.getpid())
+                result = probe_run(['pids:pids:', 'scan:scan:' + marker,
+                                    'hide:by-pid:/proc/%d/cmdline' % sleeper.pid,
+                                    'hide:launcher-by-pid:/proc/%d/cmdline' % os.getpid(),
+                                    'ids:ids:', 'caps:caps:', 'procmount:proc-mount:', 'init:init:', 'ns:ns:',
+                                    'create:created:%s' % owned if profile == 'agent' else 'owner:created:owned',
+                                    'orphan:orphan:', 'escape:escape:' + escaped],
+                                   profile=profile)
+                found = results(result)
+                label = 'VELDO-0210 namespace/' + prefix
+                expect(label + 'launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
+                if nested:
+                    for name in ('proc-lists-only-sandbox-pids', 'host-process-hidden-by-pid',
+                                 'host-process-hidden-by-scan', 'launcher-hidden'):
+                        expect(label + name + ' (nested in the gate launcher\'s namespace): %s' % found,
+                               outer_ok and found.get('ns') == own_namespace)
+                else:
+                    expect(label + 'proc-lists-only-sandbox-pids: %s' % found,
+                           found.get('pids') == [1, 2] and 'agent_sandbox.py' in found.get('init', '')
+                           and found.get('ns') != S.INITIAL_PID_NAMESPACE)
+                    expect(label + 'host-process-hidden-by-pid: %s' % found.get('by-pid'), found.get('by-pid') is True)
+                    expect(label + 'host-process-hidden-by-scan: %s' % found.get('scan'), found.get('scan') == [])
+                    expect(label + 'launcher-hidden: %s' % found.get('launcher-by-pid'),
+                           found.get('launcher-by-pid') is True)
+                expect(label + 'ids-equal-outside: %s' % found.get('ids'),
+                       found.get('ids') == [os.getuid(), os.getgid(), os.getuid(), os.getgid()])
+                # The agent's file is seen from outside; the gate profile writes only its scratch, which
+                # is gone after the run, and the identity map shows its owner inside as outside.
+                info = owned.stat() if owned.exists() else None
+                expect(label + 'created-file-owned-by-user: %s' % found.get('created'),
+                       (found.get('created') is True and info is not None
+                        and (info.st_uid, info.st_gid) == (os.getuid(), os.getgid())) if profile == 'agent'
+                       else found.get('created') == [os.getuid(), os.getgid()])
+                expect(label + 'no-capabilities: %s' % found.get('caps'), found.get('caps') == ['0000000000000000'])
+                expect(label + 'proc-read-only: %s' % found.get('proc-mount'),
+                       len(found.get('proc-mount', [])) == 1 and 'ro' in found['proc-mount'][0].split(','))
+                expect(label + 'init-reaps-orphans', found.get('orphan') is True)
+                argv = [sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', escaped]
+                if nested:
+                    for pid in host_pids(argv):
+                        os.kill(pid, 9)
+                else:
+                    deadline = time.time() + 10
+                    while host_pids(argv) and time.time() < deadline:
+                        time.sleep(0.05)
+                    expect(label + 'descendant-outside-agent-group-ends-with-agent',
+                           found.get('escape') is True and host_pids(argv) == [])
+        finally:
+            sleeper.kill()
+            sleeper.wait()
+        # The helper is fixed and checked; an unusable one refuses the start with the setup command,
+        # never runs the tree with the host's /proc.
+        source = launcher.read_text()
+        import inspect
+        checked = inspect.getsource(S.helper_problem) + inspect.getsource(S.enter_namespaces)
+        expect('VELDO-0210 namespace/helper-path-fixed',
+               S.NAMESPACE_HELPER == Path('/usr/local/lib/veldo/veldo-unshare')
+               and source.count('NAMESPACE_HELPER = ') == 1 and 'environ' not in checked
+               and "'--map-current-user'" in checked)
+        expect('VELDO-0210 namespace/setup-command-in-spec',
+               S.NAMESPACE_SETUP in (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text())
+        start_marker = worktree / 'must-not-start'
+        start = [sys.executable, '-I', '-S', '-c', 'open(%r, "w").close()' % str(start_marker)]
+        writable = top / 'writable-helper'
+        writable.write_text('#!/bin/sh\nexec /usr/local/lib/veldo/veldo-unshare "$@"\n')
+        writable.chmod(0o777)
+        user_owned = top / 'user-owned-helper'
+        user_owned.write_text(writable.read_text())
+        user_owned.chmod(0o755)
+        linked_helper = top / 'linked-helper'
+        linked_helper.symlink_to('/usr/local/lib/veldo/veldo-unshare')
+        for name, helper, reason in (('missing-helper-refused', top / 'absent-helper', 'No such file'),
+                                     ('user-writable-helper-refused', writable, 'not owned by root'),
+                                     ('user-owned-helper-refused', user_owned, 'not owned by root'),
+                                     ('linked-helper-refused', linked_helper, 'not a regular file')):
+            start_marker.unlink(missing_ok=True)
+            refused = run(config, worktree, start, patch={'NAMESPACE_HELPER': str(helper)})
+            expect('VELDO-0210 namespace/%s: %s' % (name, refused.stderr[-300:]),
+                   refused.returncode == 2 and reason in refused.stderr and S.NAMESPACE_SETUP in refused.stderr
+                   and 'cannot create the PID namespace' in refused.stderr and not start_marker.exists())
+        if not nested:
+            # util-linux unshare itself is root-owned and sound, but the host's AppArmor profile lets
+            # only the helper's path create a user namespace: the namespace cannot be made.
+            start_marker.unlink(missing_ok=True)
+            refused = run(config, worktree, start, patch={'NAMESPACE_HELPER': '/usr/bin/unshare'})
+            expect('VELDO-0210 namespace/uncreatable-namespace-refused: %s' % refused.stderr[-300:],
+                   refused.returncode == 2 and '/usr/bin/unshare exited' in refused.stderr
+                   and S.NAMESPACE_SETUP in refused.stderr and not start_marker.exists())
+        start_marker.unlink(missing_ok=True)
+
         # credentials: copied in per client, a refresh written back atomically
         account, codex_home = top / 'account', top / 'codex-home'
         account.mkdir()
