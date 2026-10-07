@@ -71,9 +71,10 @@ def main():
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
     # Suites serve and dial Unix sockets in their scratch and drive terminals. This process stays
     # outside the domain as their broker (never running candidate code); the child confines itself.
+    # The network rule is the gate profile's own (VELDO-0208, owner decision Telegram 32421).
     sys.stdout.flush()
     sys.stderr.flush()
-    pid, side = boundary.fork_brokered([Path(os.environ['TMPDIR'])], network=False)
+    pid, side = boundary.fork_gate_domain([Path(os.environ['TMPDIR'])])
     if pid:
         try:
             _, status = os.waitpid(pid, 0)

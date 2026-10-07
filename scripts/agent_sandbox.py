@@ -45,15 +45,12 @@ def beneath(path, root):
 def landlock(grants, profile="agent", broker=None):
     """Confine this process and every descendant before candidate code runs.
 
-    broker is the child's Handoff from fork_brokered (gate and worker profiles). With it, the
+    broker is the child's Handoff from fork_gate_domain (gate and worker profiles). With it, the
     confined tree has Unix sockets and its own terminals, every operation that could reach
     outside the domain (connect, bind, addressed sends, TIOCGPTPEER) performed by the trusted
-    parent's Broker. Without it the strict IPC filter refuses Unix sockets outright.
+    parent's Broker. Without it the strict IPC filter refuses Unix sockets outright. The
+    network rule is the same for every profile: nothing below depends on the profile for it.
     """
-    spec = importlib.util.spec_from_file_location('mutation_sandbox',
-                                                  Path(__file__).with_name('mutation_sandbox.py'))
-    boundary = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(boundary)
     libc = ctypes.CDLL(None, use_errno=True)
 
     def call(number, *args):
@@ -104,9 +101,6 @@ def landlock(grants, profile="agent", broker=None):
         call(446, fd, 0)
     finally:
         os.close(fd)
-    if profile == 'worker':
-        # Brokered workers create Unix sockets only; the broker refuses every other address.
-        boundary.network_filter(libc, unix=mode != 'strict')
     return mode
 
 
@@ -123,7 +117,7 @@ def ipc_program(mediate=None):
     """Block pathname Unix service escapes too (Landlock ABI 6 scopes abstract ones).
 
     Do not expose inherited sockets or io_uring as alternate syscall dispatch.
-    Agent TCP/TLS is allowed; only workers install the full network filter.
+    TCP/TLS is allowed in every profile (agent, gate and mutation worker).
 
     mediate None is the strict filter: socket(AF_UNIX) is refused. Otherwise (SECCOMP_NOTIFY) Unix
     sockets may be created and every call that names an address or a terminal peer (connect,
@@ -261,6 +255,15 @@ def fork_brokered(roots, network):
         os.close(request_r)
         os.close(reply_w)
     return pid, broker
+
+
+def fork_gate_domain(roots):
+    """fork_brokered with the gate profile's network rule. The gate and every confined mutation
+    worker start their domain here, so they have one network rule and it cannot drift (VELDO-0208,
+    owner decision Telegram 32421): TCP/TLS pass the broker; a Unix address is performed only
+    beneath `roots`; ipc_program refuses inherited service sockets and io_uring, and the Landlock
+    scope abstract sockets, alike in both."""
+    return fork_brokered(roots, network=True)
 
 
 class Broker:
@@ -910,7 +913,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
         # Gate commands run this repository's own suites, which serve and dial Unix sockets and
         # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
         roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
-        pid, side = fork_brokered(roots, network=True)
+        pid, side = fork_gate_domain(roots)
     else:
         pid, side = os.fork(), None
     if pid:

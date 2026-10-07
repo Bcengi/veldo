@@ -62,15 +62,13 @@ def restrict(root, scratch, runtime=RUNTIME, *, legacy=True):
     network_filter(libc)
 
 
-def network_filter(libc, unix=False):
+def network_filter(libc):
     """No service escape or network, including inherited sockets and io_uring.
 
     Seccomp complements Landlock on kernels without network/abstract Unix scope.
     Unknown architectures and unavailable filtering fail closed before worker exec.
-
-    unix=True is for a worker whose Unix socket calls a broker mediates (agent_sandbox): only
-    socket() of any other family is refused here, and connect, bind and sends are left to the
-    broker's filter, which refuses every non-Unix address.
+    Authority mutation workers do not use this boundary: they take the gate profile's network
+    rule (agent_sandbox.fork_gate_domain).
     """
     class Filter(ctypes.Structure):
         _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
@@ -82,16 +80,9 @@ def network_filter(libc, unix=False):
     deny = 0x50000 | errno.EPERM
     code = [(0x20, 0, 0, 4), (0x15, 1, 0, 0xc000003e), (0x06, 0, 0, 0x80000000),
             (0x20, 0, 0, 0), (0x35, 0, 1, 0x40000000), (0x06, 0, 0, deny)]
-    if unix:
-        # socket() of any family but AF_UNIX, and asynchronous dispatch.
-        code += [(0x15, 0, 3, 41), (0x20, 0, 0, 16), (0x15, 1, 0, 1), (0x06, 0, 0, deny),
-                 (0x20, 0, 0, 0)]
-        numbers = (425, 426, 427)
-    else:
-        # socket, connect, bind, sendto/sendmsg/sendmmsg and asynchronous dispatch.
-        # socketpair remains local; sending through it is deliberately denied too.
-        numbers = (41, 42, 44, 46, 49, 307, 425, 426, 427)
-    for number in numbers:
+    # socket, connect, bind, sendto/sendmsg/sendmmsg and asynchronous dispatch.
+    # socketpair remains local; sending through it is deliberately denied too.
+    for number in (41, 42, 44, 46, 49, 307, 425, 426, 427):
         code += [(0x15, 0, 1, number), (0x06, 0, 0, deny)]
     code += [(0x06, 0, 0, 0x7fff0000)]
     filters = (Filter * len(code))(*(Filter(*item) for item in code))

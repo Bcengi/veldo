@@ -192,23 +192,7 @@ print(json.dumps(results))
         expect('VELDO-0208 sandbox/store-and-runner-intact',
                (storepath / 'authentication.key').read_bytes() == before
                and runner.read_text() == 'trusted runner' and not (storepath / 'planted.json').exists())
-        worker_network = """import ctypes, importlib.util, pathlib, socket, sys
-spec = importlib.util.spec_from_file_location('boundary', sys.argv[1])
-m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-m.landlock([(pathlib.Path(p).resolve(), m.READ) for p in ('/usr','/lib','/lib64','/etc')], profile='worker')
-for family, address in [(socket.AF_INET, ('127.0.0.1', int(sys.argv[2]))),
-                        (socket.AF_UNIX, '/run/user/' + str(__import__('os').getuid()) + '/bus')]:
- try:
-  with socket.socket(family) as client: client.connect(address)
- except PermissionError: pass
- else: raise AssertionError('worker connected to service')
-"""
-        worker_result = subprocess.run([sys.executable, '-I', '-S', '-c', worker_network,
-            str(ROOT / 'scripts/agent_sandbox.py'), str(listener.getsockname()[1])],
-            capture_output=True, text=True, timeout=20)
         listener.close()
-        expect('VELDO-0208 profiles/worker-denies-tcp-and-user-bus: ' + worker_result.stderr[-300:],
-               worker_result.returncode == 0)
         defaults = json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())
         expect('VELDO-0208 sandbox/default-no-broad-home-or-tmp',
                '~' not in defaults['read_roots'] and '/tmp' not in defaults['read_roots'])
@@ -1864,6 +1848,179 @@ def _v208_installed_tools():
 
 if leg_runs():
     _v208_installed_tools()
+
+
+def _v208_worker_network_rule():
+    """Mutation workers take exactly the gate profile's network rule (owner decision, Telegram 32421):
+    loopback TCP binds and connects; the user bus, the systemd private socket, an inherited socket,
+    abstract sockets and io_uring stay refused. The same probe runs in a real authority worker
+    (scripts/reuse_worker.py, as the coordinator starts it) and in the gate profile's launcher, and
+    the two must observe the same outcome for every operation."""
+    import fcntl
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import socket
+    import subprocess
+    import sys
+    import tempfile
+
+    probe = r'''import ctypes, errno, os, socket, stat
+def network_rule_probe(port, inherited, abstract, scratch):
+    r = {}
+    def outcome(name, operation):
+        try:
+            operation()
+        except OSError as error:
+            r[name] = errno.errorcode.get(error.errno, str(error.errno))
+        else:
+            r[name] = 'allowed'
+    def inherited_socket():
+        # First, before this probe opens any descriptor that could take the inherited number.
+        if not stat.S_ISSOCK(os.fstat(inherited).st_mode):
+            raise OSError(errno.EBADF, 'not the inherited socket')
+        os.write(inherited, b'x')
+    outcome('inherited-socket', inherited_socket)
+    def tcp_round_trip():
+        with socket.socket() as server:
+            server.bind(('127.0.0.1', 0))
+            server.listen(1)
+            with socket.create_connection(server.getsockname(), timeout=5) as client:
+                peer, _ = server.accept()
+                with peer:
+                    client.sendall(b'ping')
+                    peer.sendall(peer.recv(4).upper())
+                    if client.recv(4) != b'PING':
+                        raise OSError(errno.EIO, 'no round trip')
+    outcome('tcp-loopback-bind-and-connect', tcp_round_trip)
+    def tcp_outside():
+        with socket.create_connection(('127.0.0.1', port), timeout=5) as client:
+            client.sendall(b'x')
+    outcome('tcp-loopback-outside-listener', tcp_outside)
+    outcome('tcp-ipv6-socket', lambda: socket.socket(socket.AF_INET6).close())
+    def unix(path, how='connect'):
+        kind = socket.SOCK_DGRAM if how == 'sendto' else socket.SOCK_STREAM
+        with socket.socket(socket.AF_UNIX, kind) as s:
+            s.sendto(b'x', path) if how == 'sendto' else getattr(s, how)(path)
+    def unix_own():
+        path = os.path.join(scratch, 'network-rule.sock')
+        with socket.socket(socket.AF_UNIX) as server:
+            server.bind(path)
+            server.listen(1)
+            unix(path)
+    outcome('unix-own-scratch', unix_own)
+    run = '/run/user/%d/' % os.getuid()
+    outcome('user-bus', lambda: unix(run + 'bus'))
+    outcome('user-bus-sendto', lambda: unix(run + 'bus', 'sendto'))
+    outcome('systemd-private', lambda: unix(run + 'systemd/private'))
+    outcome('abstract-connect', lambda: unix('\0' + abstract))
+    outcome('abstract-bind', lambda: unix('\0' + abstract + '-bound', 'bind'))
+    libc = ctypes.CDLL(None, use_errno=True)
+    params = ctypes.create_string_buffer(120)
+    for name, number, args in (('io-uring-setup', 425, (4, ctypes.addressof(params))),
+                               ('io-uring-enter', 426, (-1, 0, 0, 0, 0, 0)),
+                               ('io-uring-register', 427, (-1, 0, 0, 0))):
+        def call(number=number, args=args):
+            if libc.syscall(ctypes.c_long(number), *(ctypes.c_long(a) for a in args)) < 0:
+                raise OSError(ctypes.get_errno(), 'io_uring')
+        outcome(name, call)
+    return r
+'''
+    spec = importlib.util.spec_from_file_location('v208_network_gate', ROOT / 'scripts/check_gate_mutations.py')
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    refused = {'user-bus', 'user-bus-sendto', 'systemd-private', 'abstract-connect', 'abstract-bind',
+               'io-uring-setup', 'io-uring-enter', 'io-uring-register'}
+    with tempfile.TemporaryDirectory(prefix='v208-network-') as temporary:
+        top = Path(temporary)
+        listener = socket.socket()
+        listener.bind(('127.0.0.1', 0))
+        listener.listen(8)
+        port = listener.getsockname()[1]
+        abstract = 'veldo-v208-network-%d' % os.getpid()
+        try:
+            # Outside every domain, so a refusal is the rule's and never a missing peer. Run inside
+            # the gate's domain this suite cannot bind one itself; the rows hold either way.
+            abstract_server = socket.socket(socket.AF_UNIX)
+            abstract_server.bind('\0' + abstract)
+            abstract_server.listen(1)
+        except OSError:
+            abstract_server = None
+        ours, theirs = socket.socketpair()
+        inherited = fcntl.fcntl(theirs.fileno(), fcntl.F_DUPFD, 200)
+        try:
+            # A real authority worker, as the coordinator starts it: its fixture suite runs the probe.
+            worker_root, worker_home, worker_suite, controlled_case, worker_argv = _v208_worker_fixture(
+                top, top / 'escaped')
+            (worker_root / 'scripts/suites/network_probe.py').write_text(probe)
+            worker_suite.write_text(
+                'import json, os\nfrom pathlib import Path\n'
+                'exec((ROOT / "scripts/suites/network_probe.py").read_text())\n'
+                'Path(os.environ["TMPDIR"], "network-rule.json").write_text(json.dumps(network_rule_probe('
+                + repr(port) + ', ' + repr(inherited) + ', ' + repr(abstract) + ', os.environ["TMPDIR"])))\n')
+            scratch = worker_home / 'network'
+            scratch.mkdir()
+            job = top / 'network-job.json'
+            job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
+            argv, channel = worker_argv(job)
+            try:
+                ran = subprocess.run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
+                                     pass_fds=(channel, inherited), stdin=subprocess.DEVNULL,
+                                     capture_output=True, text=True, timeout=60)
+            finally:
+                os.close(channel)
+            try:
+                worker = json.loads((scratch / 'network-rule.json').read_text())
+            except (OSError, ValueError):
+                worker = {}
+            # The gate profile's own launcher, with a configuration of this suite's.
+            worktree = top / 'gate-worktree'
+            worktree.mkdir()
+            config = top / 'gate-config.json'
+            config.write_text(json.dumps({
+                'schema': 'veldo.agent-sandbox/v1', 'store': str(top / 'store'),
+                'read_roots': json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())['read_roots'],
+                'write_roots': ['{worktree}', '{scratch}'], 'deny_write': [], 'seed_files': {}}))
+            code = probe + ('import json, os, sys\nprint(json.dumps(network_rule_probe(int(sys.argv[1]), '
+                            'int(sys.argv[2]), sys.argv[3], os.environ["TMPDIR"])))\n')
+            gated = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/agent_sandbox.py'),
+                                    '--profile', 'gate', '--config', str(config), '--worktree', str(worktree),
+                                    '--', sys.executable, '-I', '-S', '-c', code, str(port), str(inherited),
+                                    abstract], pass_fds=(inherited,), stdin=subprocess.DEVNULL,
+                                   capture_output=True, text=True, timeout=60)
+            try:
+                gate_rule = json.loads(gated.stdout.strip().splitlines()[-1])
+            except (ValueError, IndexError):
+                gate_rule = {}
+        finally:
+            os.close(inherited)
+            ours.close()
+            theirs.close()
+            listener.close()
+            if abstract_server is not None:
+                abstract_server.close()
+    expect('VELDO-0208 profiles/worker-binds-and-connects-loopback-tcp: ' + repr(worker)
+           + ' ' + ran.stderr[-300:],
+           worker.get('tcp-loopback-bind-and-connect') == 'allowed'
+           and worker.get('tcp-loopback-outside-listener') == 'allowed'
+           and worker.get('tcp-ipv6-socket') == 'allowed')
+    expect('VELDO-0208 profiles/worker-still-refuses-services: ' + repr(worker),
+           all(worker.get(name) in ('EPERM', 'EACCES') for name in refused)
+           and worker.get('inherited-socket') == 'EBADF')
+    worker_source = (ROOT / 'scripts/reuse_worker.py').read_text()
+    sandbox_source = (ROOT / 'scripts/agent_sandbox.py').read_text()
+    expect('VELDO-0208 profiles/worker-network-rule-is-gate-rule: ' + repr((worker, gate_rule))
+           + ' ' + gated.stderr[-300:],
+           worker != {} and worker == gate_rule
+           and "pid, side = boundary.fork_gate_domain([Path(os.environ['TMPDIR'])])" in worker_source
+           and 'pid, side = fork_gate_domain(roots)' in sandbox_source
+           and sandbox_source.count('fork_brokered(') == 2 and 'network_filter' not in sandbox_source
+           and 'fork_brokered' not in worker_source)
+
+
+if leg_runs():
+    _v208_worker_network_rule()
 
 
 def _v208_mutation_leg():
