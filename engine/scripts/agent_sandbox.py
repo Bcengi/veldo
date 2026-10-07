@@ -1712,6 +1712,18 @@ def launch(config_path, worktree, command, profile="agent", client=None):
     return 128 + stop.number if stop.number else code
 
 
+def launcher_write_problem(grants):
+    """Why a run with these grants must not start, or None: the helper executes this file as the init
+    of every tree, before seccomp and Landlock (VELDO-0210 AC6), so no run may be granted any write
+    access to it or to a directory above it. The checkout running the launcher is the authority
+    checkout, which the confinement never grants writes to; this refuses a run that would."""
+    own = Path(__file__).resolve()
+    for path, access in grants:
+        if access & WRITE and beneath(own, path):
+            return 'the launcher %s lies inside %s, which this run may write' % (own, path)
+    return None
+
+
 def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
@@ -1759,6 +1771,9 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
                                  *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
     grants += [(real, READ | WRITE) for real, _ in state]
+    problem = launcher_write_problem(grants)
+    if problem:
+        raise ValueError(problem)
     for name in ('.codex', '.claude', 'tmp'):
         os.close(scratch_directory(scratch, [name]))
     # The client's installed plugins, marketplaces and skills (read only) and its persistent state

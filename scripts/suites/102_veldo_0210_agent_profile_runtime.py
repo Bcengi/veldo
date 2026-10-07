@@ -444,6 +444,19 @@ print(json.dumps(r))
                and source.count('NAMESPACE_HELPER = ') == 1 and 'environ' not in inspect.getsource(S.helper_problem)
                and 'os.execv(NAMESPACE_HELPER, [str(NAMESPACE_HELPER), str(Path(__file__).resolve()), str(carrier)])'
                in source)
+        # The helper executes the launcher's own file as every tree's init: a run granted any write to
+        # it, or to a directory above it, refuses to start, after every grant and before the fork.
+        own = Path(S.__file__).resolve()
+        expect('VELDO-0210 namespace/launcher-inside-a-writable-grant-refused',
+               S.launcher_write_problem([(own.parent, S.READ | S.WRITE)]) is not None
+               and S.launcher_write_problem([(own, 1 << 1)]) is not None
+               and S.launcher_write_problem([(Path('/'), S.READ | S.WRITE)]) is not None
+               and S.launcher_write_problem([(own.parent, S.READ), (own.parent / 'suites', S.READ | S.WRITE),
+                                             (Path('/dev/null'), (1 << 1) | (1 << 2))]) is None
+               and source.index('grants += [(real, READ | WRITE) for real, _ in state]')
+               < source.index('problem = launcher_write_problem(grants)')
+               < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)')
+               and source.count('launcher_write_problem(') == 2)
         spec_text = (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text()
         policy_text = (ROOT / 'scripts/veldo-userns.apparmor').read_text()
         expect('VELDO-0210 namespace/setup-command-and-policy-in-spec',

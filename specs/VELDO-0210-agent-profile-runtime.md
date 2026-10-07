@@ -178,7 +178,8 @@ acceptance_criteria:
       nested; the marker created before the helper and kept by the tree; a subreaper ending a setsid
       descendant; the start and handoff waits timing out; TERM, INT and HUP ending a start whose
       helper hangs, in both profiles; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
-      the helper, and every start on a host without the setup. Completeness: every launch goes
+      the helper, a run granted a write to the launcher's own file or above it, and every start on a
+      host without the setup. Completeness: every launch goes
       through prepared_launch, whose child executes the helper (or, nested, forks the init) and
       whose parent waits in await_start; helper_problem is its only check of the helper and
       namespace_problem the init's only check of its namespace. Test rows namespace/* in suite 102,
@@ -256,6 +257,16 @@ unchanged.
   relays TERM, INT and HUP (unless ignored at its start) to the init as SIGRTMIN, SIGRTMIN+1 and
   SIGRTMIN+2, and exits with the init's status. Static, it has no dynamic loader, so LD_PRELOAD and
   the like cannot run code with its rights.
+  Requirement: the checkout whose scripts/agent_sandbox.py runs the launcher is the authority
+  checkout, and no confined agent can ever write it. The helper executes that file as the init of
+  every tree, before seccomp and Landlock, so code an agent wrote there would run as the next
+  tree's init. The confinement already denies every write there (the authority and the launcher
+  are protected paths, and no writable root may hold or lie beneath one), and the launcher checks
+  it once more after every grant is final and before the fork (launcher_write_problem): a run that
+  would be granted any write access to its own agent_sandbox.py, or to a directory above it, in any
+  profile, refuses to start (exit 2). Even an edited launcher gains nothing beyond today's
+  unconfined account: the helper has dropped every capability and set no_new_privs before that
+  exec, and the stacked child profile denies capabilities and user namespaces below it.
   The AppArmor policy, scripts/veldo-userns.apparmor, installed as /etc/apparmor.d/veldo-userns,
   attaches veldo-userns to the helper's path with userns, the four capabilities it needs inside its
   own namespace, the two mounts it makes, signals, and no tracing of it (so no process injects code
@@ -496,9 +507,11 @@ unchanged.
   end kills the agent's remaining descendants; a launcher killed outright with SIGKILL kills that
   init, and descendants of the nested agent then outlive it until the outer tree ends.
 - The helper's entry check (name, path, owners) is a guard on what it executes, not the boundary:
-  the account owns the launcher file and can change it. The boundary is that the helper drops every
-  capability and sets no_new_privs before it executes anything, and that the child profile denies
-  capabilities and user namespaces to whatever runs below it.
+  the account owns the launcher file and can change it, and the helper accepts any agent_sandbox.py
+  the account owns, wherever it lies. The boundary is that the helper drops every capability and
+  sets no_new_privs before it executes anything, and that the stacked child profile denies
+  capabilities and user namespaces to whatever runs below it, so a launcher file someone edited
+  runs with nothing beyond what the unconfined account already has today.
 - Another process of this account that runs unconfined outside every tree (the owner's own shell,
   an unconfined CLI) holds every capability over the tree's user namespace, as the namespace's
   owner, and could join it; nothing inside the tree can, and none of the tree's processes reaches
