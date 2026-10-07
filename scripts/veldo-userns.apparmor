@@ -1,0 +1,46 @@
+# AppArmor policy for the agent sandbox's namespace helper (VELDO-0210 AC6), installed by the
+# owner's one-time setup as /etc/apparmor.d/veldo-userns.
+#
+# veldo-userns is the only program on the host this lets create a user namespace. It needs the
+# capabilities below inside that namespace only, to map the account to itself, make the mount and
+# PID namespaces and mount their procfs. Whatever it executes (only /usr/bin/python3) runs under
+# veldo-userns-child, as Ubuntu's bwrap-userns-restrict runs what bwrap starts under unpriv_bwrap:
+# no capability, no user namespace, no mount, no profile change, and every program that child
+# executes inherits the same profile. So nothing the helper runs can create or use a user
+# namespace with capabilities. No process may trace the helper, so no code runs with its rights.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=(attach_disconnected, mediate_deleted) {
+  userns,
+  capability sys_admin,
+  capability setuid,
+  capability setgid,
+  capability setpcap,
+  mount options=(rw, rprivate) -> /,
+  mount fstype=proc options=(ro, nosuid, nodev, noexec) proc -> /proc/,
+  file rwlkm /{**,},
+  signal,
+  ptrace (readby),
+  audit deny ptrace (tracedby),
+  /usr/bin/python3* px -> veldo-userns-child,
+}
+
+profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {
+  file rwlkm /{**,},
+  /** ix,
+  network,
+  unix,
+  signal,
+  ptrace,
+  mqueue,
+  io_uring,
+  dbus,
+  audit deny capability,
+  audit deny userns,
+  audit deny change_profile,
+  audit deny mount,
+  audit deny umount,
+  audit deny pivot_root,
+}
