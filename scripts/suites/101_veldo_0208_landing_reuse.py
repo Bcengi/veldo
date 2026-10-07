@@ -1022,9 +1022,10 @@ refused('addressed-sendmsg-service-refused',
         lambda: socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)[0].sendmsg([b'x'], [], 0, '/run/systemd/journal/socket'))
 def outside_environ():
     # The nearest ancestor outside this domain is the launcher's trusted parent: its environ must
-    # be refused (Landlock's ptrace scope), while ancestors inside the domain stay readable.
+    # be refused (Landlock's ptrace scope), while ancestors inside the domain stay readable. In the
+    # launcher's own PID namespace (VELDO-0210) that ancestor is the namespace's init, pid 1.
     pid = os.getppid()
-    while pid > 1:
+    while pid > 0:
         try:
             open('/proc/%d/environ' % pid, 'rb').read()
         except PermissionError:

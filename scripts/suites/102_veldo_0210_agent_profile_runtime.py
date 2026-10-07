@@ -378,6 +378,11 @@ print(json.dumps(r))
                                      ('linked-helper-refused', linked_helper, 'not a regular file')):
             start_marker.unlink(missing_ok=True)
             refused = run(config, worktree, start, patch={'NAMESPACE_HELPER': str(helper)})
+            if nested:
+                # A nested launcher uses no helper: whatever the constant names, it starts.
+                expect('VELDO-0210 namespace/%s (nested: no helper used): %s' % (name, refused.stderr[-300:]),
+                       refused.returncode == 0 and start_marker.exists())
+                continue
             expect('VELDO-0210 namespace/%s: %s' % (name, refused.stderr[-300:]),
                    refused.returncode == 2 and reason in refused.stderr and S.NAMESPACE_SETUP in refused.stderr
                    and 'cannot create the PID namespace' in refused.stderr and not start_marker.exists())

@@ -894,18 +894,20 @@ def private_pid_namespace():
 def enter_namespaces():
     """Move this single-threaded process into a user namespace where only this account's uid and gid
     are mapped, each to itself, and unshare the mount and PID namespaces inside it: its next child
-    is that PID namespace's init (VELDO-0210 AC6). Returns False, creating nothing, when the process
-    already runs in a private PID namespace. The user namespace comes from NAMESPACE_HELPER (the
-    host lets no other program create one); the helper must pass helper_problem, and an unusable
-    helper or a namespace that cannot be made raises with the owner's setup command."""
+    is that PID namespace's init (VELDO-0210 AC6). Returns False, creating nothing and using no
+    helper, when the process already runs in a private PID namespace (there root's files show as
+    the overflow uid, so no helper could pass the check anyway). The user namespace comes from
+    NAMESPACE_HELPER (the host lets no other program create one); the helper must pass
+    helper_problem, and an unusable helper or a namespace that cannot be made raises with the
+    owner's setup command."""
     def refuse(problem):
         return RuntimeError('cannot create the PID namespace (%s); the owner\'s one-time setup: %s'
                             % (problem, NAMESPACE_SETUP))
+    if private_pid_namespace():
+        return False
     problem = helper_problem(NAMESPACE_HELPER)
     if problem:
         raise refuse(problem)
-    if private_pid_namespace():
-        return False
     ids = os.getuid(), os.getgid()
     try:
         # The holder reports once the helper has made the namespace and written its maps, then waits

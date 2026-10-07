@@ -15,6 +15,7 @@ footprint:
   - "engine/scripts/agent_sandbox.json"
   - "scripts/agent_sandbox.py"
   - "scripts/agent_sandbox.json"
+  - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/102_veldo_0210_agent_profile_runtime.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -216,7 +217,8 @@ unchanged.
   /proc/self/ns/pid is not the initial pid:[4026531836]) and whose /proc/self is its own pid (that
   procfs is its namespace's) creates no namespace: its /proc already shows no host process. That is
   a launcher nested in a sandbox this launcher made, as the gate's suites run, and the nested
-  launcher's tree sees the outer sandbox's processes. The helper is checked in every case.
+  launcher's tree sees the outer sandbox's processes. It uses no helper and checks none: inside
+  the user namespace root's files show as the overflow uid 65534.
 - Clients. agent_sandbox.json gains `clients`. Each client names its places (an environment variable
   the runner may set, else a default under the account's home), its `credentials`, its `seed_files`
   and its `read_links`. The launcher's client option selects one (claude or codex); without it no
