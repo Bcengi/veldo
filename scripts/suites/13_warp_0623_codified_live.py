@@ -342,6 +342,119 @@ expect("WARP-0623 AC5: the live board provisioners and adapter remain repository
        and not (ROOT / "engine/.veldo/tracker_jira_live.py").exists()
        and (ROOT / ".veldo/tracker_intake.py").read_bytes()
        == (ROOT / "engine/.veldo/tracker_intake.py").read_bytes())
+# --- A HISTORICAL SPEC'S FOOTPRINT AGAINST THE PROTECTED SET IN FORCE FOR IT ---------------------
+# The dogfood rows in this file assert that a landed spec's footprint touched no protected path. The
+# set that answers that is the one in force WHEN THE SPEC WAS APPROVED, not today's: comparing against
+# today's policy turned two rows red the moment a later spec protected scripts/selftest.py, which
+# every one of these footprints names, although nothing about the historical specs had changed. So
+# the set is read from Git: the policy committed at the first revision in which the spec carries a
+# status at or beyond ready, through the gate's own reader. A later protection lands in a later commit
+# and cannot move that revision, so this stays correct however many files become protected later. In
+# a history that begins with the spec already ready (a flattened successor, or this repository's own
+# root) the set is the root's policy, which is the earliest the history can say and is never smaller
+# than the set the spec was approved against, so a real violation still shows.
+_HIST_ADVANCED = ("ready", "in_progress", "review", "proven", "shipped")
+
+
+def protected_in_force(spec_rel, root=ROOT):
+    """(commit, patterns): the first commit at which `spec_rel` carries a status at or beyond ready,
+    and the protected patterns of the policy committed there. Loud when the spec never reached ready
+    in this history or the policy is absent at that commit, never an empty set."""
+    def _git(*args):
+        return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
+                              check=True).stdout
+    for rev in _git("log", "--reverse", "--format=%H", "--", spec_rel).split():
+        status = re.search(r"^status:\s*(\S+)", _git("show", "%s:%s" % (rev, spec_rel)), re.M)
+        if status and status.group(1) in _HIST_ADVANCED:
+            break
+    else:
+        raise LookupError("%s never reached ready in this history" % spec_rel)
+    policy = _git("show", "%s:.veldo/policy.yaml" % rev)
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "policy.yaml").write_text(policy)
+        saved, P.POLICY = P.POLICY, Path(d) / "policy.yaml"
+        try:
+            return rev, P.protected_patterns()
+        finally:
+            P.POLICY = saved
+
+
+def footprint_protected_hits(fm, patterns, arch):
+    """Every (footprint glob, protected pattern) pair the glob matches, through the repository's one
+    glob compiler."""
+    globs = [g for g in fm.get("footprint") or [] if isinstance(g, str)]
+    return [(g, q) for g in globs for q in patterns if arch._glob_re(g).match(q)]
+
+
+# THE REGRESSION: a fixture history in which a spec becomes ready while the policy protects only
+# a.py, and a later commit protects b.py. A spec ready before that commit whose footprint names b.py
+# is clean against its own set and would be red against today's, which is the retroactive failure
+# this replaces; a spec whose footprint names a.py is caught; and a spec that became ready AFTER b.py
+# was protected and names it is caught too, so the row still has teeth for a later violation.
+_hist_arch, _ = V.load_repo_contract(repo_root=str(ROOT))
+
+
+def _hist_spec(name, status, footprint):
+    return ("---\nid: %s\nstatus: %s\nfootprint:\n%s---\n# %s\n"
+            % (name, status, "".join("  - %s\n" % f for f in footprint), name))
+
+
+def _hist_policy(paths):
+    return ("schema: veldo.policy/v1\nprotected_paths:\n"
+            + "".join('  - {path: "%s", floor: high}\n' % p for p in paths))
+
+
+_hist_policy_before = P.POLICY
+with tempfile.TemporaryDirectory() as _hist_d:
+    _hist_g = lambda *a: subprocess.run(["git", "-C", _hist_d, *a], capture_output=True,
+                                        text=True, check=True)
+    _hist_g("init", "-q", "-b", "main")
+    _hist_g("config", "user.email", "t@t")
+    _hist_g("config", "user.name", "t")
+    (Path(_hist_d) / ".veldo").mkdir()
+    (Path(_hist_d) / "specs").mkdir()
+
+    def _hist_commit(files, msg):
+        for _rel, _body in files.items():
+            (Path(_hist_d) / _rel).write_text(_body)
+        _hist_g("add", "-A")
+        _hist_g("commit", "-q", "-m", msg)
+        return _hist_g("rev-parse", "HEAD").stdout.strip()
+
+    _hist_c1 = _hist_commit({".veldo/policy.yaml": _hist_policy(["a.py"]),
+                             "specs/EARLY.md": _hist_spec("EARLY", "draft", ["b.py"]),
+                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "draft", ["a.py"])},
+                            "drafts")
+    _hist_c2 = _hist_commit({"specs/EARLY.md": _hist_spec("EARLY", "ready", ["b.py"]),
+                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "ready", ["a.py"])},
+                            "ready")
+    _hist_c3 = _hist_commit({".veldo/policy.yaml": _hist_policy(["a.py", "b.py"]),
+                             "specs/EARLY.md": _hist_spec("EARLY", "shipped", ["b.py"]),
+                             "specs/LATE.md": _hist_spec("LATE", "ready", ["b.py"])},
+                            "protect b.py, ship EARLY, LATE ready")
+    _HIST = {}
+    for _n in ("EARLY", "TOUCHES-A", "LATE"):
+        _rev, _pats = protected_in_force("specs/%s.md" % _n, root=_hist_d)
+        _fm = V.parse_yamlish(re.match(r"^---\n(.*?)\n---",
+                                       (Path(_hist_d) / "specs" / ("%s.md" % _n)).read_text(),
+                                       re.S).group(1))
+        _HIST[_n] = (_rev, _pats, footprint_protected_hits(_fm, _pats, _hist_arch),
+                     footprint_protected_hits(_fm, ["a.py", "b.py"], _hist_arch))
+    try:
+        protected_in_force("specs/NEVER.md", root=_hist_d)
+        _hist_never = None
+    except LookupError as _e:
+        _hist_never = _e
+expect("SUITE: a historical spec's footprint is compared with the protected set IN FORCE FOR IT, read from Git at the first commit where it carries a status at or beyond ready, so a later protection cannot retroactively redden it, and a footprint that did touch a path protected at its own time is still caught. Over a fixture history: EARLY became ready while only a.py was protected and names b.py, which a later commit protected, so it is clean against its own set although TODAY'S set would flag it; TOUCHES-A names a.py, protected when it became ready, and is caught; LATE became ready after b.py was protected and is caught; and a spec that never reached ready is a LookupError, never an empty set",
+       _HIST["EARLY"][0] == _hist_c2 and _HIST["EARLY"][1] == ["a.py"]
+       and _HIST["EARLY"][2] == [] and _HIST["EARLY"][3] == [("b.py", "b.py")]
+       and _HIST["TOUCHES-A"][0] == _hist_c2 and _HIST["TOUCHES-A"][2] == [("a.py", "a.py")]
+       and _HIST["LATE"][0] == _hist_c3 and _HIST["LATE"][1] == ["a.py", "b.py"]
+       and _HIST["LATE"][2] == [("b.py", "b.py")]
+       and _hist_c1 not in (_HIST["EARLY"][0], _HIST["TOUCHES-A"][0])
+       and isinstance(_hist_never, LookupError)
+       and P.POLICY is _hist_policy_before)
+
 # AC5 dogfood: this item's own spec is ready, standard risk, touches no protected path, and passes the
 # repository's own placement and diagnosability gates.
 _lp_fm = V.parse_yamlish(re.match(r"^---\n(.*?)\n---",
