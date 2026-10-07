@@ -1212,7 +1212,8 @@ def _v208_unconfined_leg():
            and {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
     # The candidate's dispatcher applies the list, so it is protected with it; the listed suites are
     # not, because review of the candidate, not a protected path, is the safeguard for their code.
-    dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py'}
+    dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py',
+                        'scripts/check_first_use.py'}
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
@@ -1307,13 +1308,13 @@ def _v208_unconfined_leg():
         asking['suites'].append({'suite': '02_asks', 'reason': 'the candidate asks to leave the domain'})
         (candidate / 'scripts/gate_unconfined.json').write_text(json.dumps(asking))
 
-        def stage(name, command, listing=authority_list, extra=None):
+        def stage(name, command, listing=authority_list, extra=None, root=candidate):
             for marker in outside.iterdir():
                 marker.unlink()
             record = top / ('record-' + name)
             record.unlink(missing_ok=True)
             result = subprocess.run([sys.executable, '-I', '-S', '-c', driver, str(ROOT / 'scripts/gate_legs.py'),
-                                     str(candidate), name, command, str(record), str(listing)],
+                                     str(root), name, command, str(record), str(listing)],
                                     capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                                     env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **(extra or {})))
             # The candidate tree is read-only in the gate domain, so each probe reports on stdout.
@@ -1504,6 +1505,45 @@ def _v208_unconfined_leg():
                and '02_asks' not in own.stdout.split('UNCONFINED LEG', 1)[-1].split('\n', 1)[0]
                and L.stamp(own_record) == {'declaration': 'sha256:' + __import__('hashlib').sha256(
                    authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
+
+        # No file in scripts/ or scripts/suites/ shadows a standard-library module the dispatcher
+        # imports. A candidate scripts/json.py and suites/tempfile.py that announce their import run
+        # through both legs of the real runner and dispatcher, with shared.py's own imports, and
+        # through check_first_use.py, and neither is imported; the control shows each plant is live
+        # for an ordinary script in the same directory. suites/tempfile.py is enumerated, so the
+        # dispatcher reaches shared.py rather than refusing it as SUITE_NOT_ENUMERATED.
+        shadow = top / 'shadow'
+        shutil.copytree(candidate, shadow)
+        shutil.copyfile(ROOT / 'scripts/check_first_use.py', shadow / 'scripts/check_first_use.py')
+        real_imports = ''.join(ast.get_source_segment(shared_source, node) + '\n'
+                               for node in ast.parse(shared_source).body
+                               if isinstance(node, (ast.Import, ast.ImportFrom)))
+        (shadow / 'scripts/suites/shared.py').write_text(real_imports + fixture_shared)
+        for planted in ('scripts/json.py', 'scripts/suites/tempfile.py'):
+            module = Path(planted).stem
+            (shadow / planted).write_text('if __name__ == %r:\n    print("V208-SHADOWED %s", flush=True)\n'
+                                          % (module, module))
+            (shadow / planted).with_name('control_%s.py' % module).write_text('import %s\n' % module)
+        shadow_manifest = json.loads((shadow / 'scripts/suites/manifest.json').read_text())
+        shadow_manifest['suites'].append({'name': 'tempfile', 'file': 'tempfile.py'})
+        shadow_manifest['suites'].append({'name': 'control_tempfile', 'file': 'control_tempfile.py'})
+        (shadow / 'scripts/suites/manifest.json').write_text(json.dumps(shadow_manifest))
+        legs, _, _ = stage('unit', 'python3 scripts/selftest.py', root=shadow)
+        first_use = subprocess.run([sys.executable, 'scripts/check_first_use.py', '--refuse-this'], cwd=str(shadow),
+                                   capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+        controls = [subprocess.run([sys.executable, str(shadow / relative)], cwd=str(shadow), capture_output=True,
+                                   text=True, timeout=60, stdin=subprocess.DEVNULL).stdout
+                    for relative in ('scripts/control_json.py', 'scripts/suites/control_tempfile.py')]
+        shadow_out = legs.stdout + legs.stderr
+        expect('VELDO-0208 unconfined-leg/dispatcher-never-imports-a-candidate-stdlib-shadow: '
+               + repr((legs.returncode, shadow_out[-400:], first_use.returncode, first_use.stdout[-200:], controls)),
+               {'import json', 'import subprocess', 'import tempfile'} <= set(real_imports.splitlines())
+               and legs.returncode == 0 and 'V208-SHADOWED' not in shadow_out
+               and 'selftest leg confined:' in shadow_out and 'selftest leg unconfined:' in shadow_out
+               and 'unit: confined leg: pass' in shadow_out and 'unit: unconfined leg: pass' in shadow_out
+               and first_use.returncode == 2 and 'UNRECOGNISED_FLAG' in first_use.stdout
+               and 'V208-SHADOWED' not in first_use.stdout + first_use.stderr
+               and controls == ['V208-SHADOWED json\n', 'V208-SHADOWED tempfile\n'])
 
 
 if leg_runs():

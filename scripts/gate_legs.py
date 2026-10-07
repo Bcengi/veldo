@@ -12,8 +12,11 @@ THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this 
 so adding a suite to it is a reviewed change with the owner's approval. A candidate's own copy of
 the list or an environment variable it sets decides nothing: the leg variables a candidate command
 sees are set here, and the caller's are dropped. The candidate's dispatcher applies the list
-(scripts/selftest.py, scripts/run_scope.py, scripts/suites/shared.py), and those files are
-protected too; without that, a candidate could make its dispatcher ignore the leg.
+(scripts/selftest.py, scripts/run_scope.py, scripts/suites/shared.py, and scripts/check_first_use.py,
+which hands the leg to its nested selftest.py), and those files are protected too; without that, a
+candidate could make its dispatcher ignore the leg. selftest.py and check_first_use.py keep scripts/
+and scripts/suites/ behind the standard library on sys.path, so no unprotected file there shadows a
+module they import; this runner runs from the authority as python3 -I -S.
 
 WHAT THE UNCONFINED LEG TRUSTS, stated because it is the cost of the decision. That leg executes
 the candidate's dispatcher and the listed suites with the owner's own authority, exactly as before

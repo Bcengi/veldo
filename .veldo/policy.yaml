@@ -55,11 +55,15 @@ protected_paths:
   - {path: "engine/scripts/gate_unconfined.json", floor: high}
   - {path: "engine/scripts/gate_legs.py", floor: high}
   # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
-  # and suites/shared.py (leg_runs) pick the rows. Unprotected, a candidate could make them ignore
-  # the leg and send any suite out, so the list would bound nothing. The listed suite files are
-  # deliberately NOT protected: their code runs with the owner's permissions, as every suite did
-  # before VELDO-0208, and review of the candidate is the safeguard for it.
+  # and suites/shared.py (leg_runs) pick the rows. check_first_use.py is the integration stage's
+  # command: in the unconfined leg it runs whole outside the confinement and hands its environment,
+  # the leg included, to a nested selftest.py, so it could drop the leg and send every suite out.
+  # Unprotected, a candidate could make them ignore the leg and send any suite out, so the list
+  # would bound nothing. The listed suite files are deliberately NOT protected: their code runs
+  # with the owner's permissions, as every suite did before VELDO-0208, and review of the
+  # candidate is the safeguard for it.
   - {path: "scripts/selftest.py", floor: high}
+  - {path: "scripts/check_first_use.py", floor: high}
   - {path: "scripts/run_scope.py", floor: high}
   - {path: "scripts/suites/shared.py", floor: high}
   - {path: "engine/.veldo/control_verification.py", floor: high}

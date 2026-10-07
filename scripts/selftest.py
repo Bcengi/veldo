@@ -49,16 +49,36 @@ when asked for the aggregate summary line, the verify stamp or a passed unit-evi
 its exit code is never 0. Selecting a name the manifest does not enumerate is a REFUSAL that names
 what is available, never a silent zero-assertion pass.
 """
-import json
 import os
 import sys
-import time
-from pathlib import Path
+
+# NO FILE IN scripts/ OR scripts/suites/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). The
+# gate runs this file as `python3 scripts/selftest.py`, which puts scripts/ first on sys.path, so an
+# unprotected scripts/json.py would run inside this protected dispatcher before it reads its leg,
+# and a suites/tempfile.py inside shared.py. os and sys are loaded before any script runs, so they
+# are the interpreter's; the script directory is dropped before the next import, and the two
+# repository directories go back AFTER the standard library, never ahead of it.
+_SCRIPTS = os.path.dirname(os.path.realpath(__file__))
+sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIPTS]
+
+
+def _after_stdlib(*paths):
+    """Insert paths just after the standard library's entries on sys.path (at the end when none
+    is found), so a repository module never shadows one of the standard library's."""
+    std = os.path.dirname(os.path.realpath(os.__file__))
+    at = [i + 1 for i, p in enumerate(sys.path) if "-packages" not in p
+          and (os.path.realpath(p) == std or os.path.realpath(p).startswith(std + os.sep))]
+    at = max(at) if at else len(sys.path)
+    sys.path[at:at] = paths
+
+
+import json  # noqa: E402 - only after the script directory is gone
+import time  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 SUITES = HERE / "suites"
-sys.path.insert(0, str(SUITES))
-sys.path.insert(0, str(HERE))
+_after_stdlib(str(HERE), str(SUITES))
 
 import run_scope as RS  # noqa: E402 - what a run of this suite is allowed to claim
 

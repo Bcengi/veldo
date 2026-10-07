@@ -66,15 +66,24 @@ exited nonzero, a mutation that did not observably land, a run that produced no 
 summary whose failure count disagrees with the failure names it printed. A check that passed by
 default on its own inability would be a worse version of the defect it refuses.
 """
-import json
 import os
-import shutil
-import stat
-import subprocess
 import sys
-import tempfile
-import time
-from pathlib import Path
+
+# NO FILE IN scripts/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). The gate's integration
+# stage is `python3 scripts/check_first_use.py`, which puts scripts/ first on sys.path, and in the
+# unconfined leg this file runs whole outside the confinement and hands its environment, the leg
+# included, to the nested dispatcher. os and sys are loaded before any script runs; the script
+# directory is dropped before the next import, so an unprotected scripts/json.py never runs here.
+_SCRIPTS = os.path.dirname(os.path.realpath(__file__))
+sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIPTS]
+
+import json  # noqa: E402 - only after the script directory is gone
+import shutil  # noqa: E402
+import stat  # noqa: E402
+import subprocess  # noqa: E402
+import tempfile  # noqa: E402
+import time  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SELFTEST = ROOT / "scripts" / "selftest.py"
