@@ -740,7 +740,7 @@ def integrate(shared, private, agent):
              '+%s:%s' % (namespace, namespace)])
 
 
-def grants_for(config, authority, worktree, scratch):
+def grants_for(config, authority, worktree, scratch, config_path=None):
     def expand(value):
         return Path(value.format(authority=authority, worktree=worktree,
                                  scratch=scratch)).expanduser().resolve(strict=True)
@@ -780,6 +780,11 @@ def grants_for(config, authority, worktree, scratch):
         path = Path(value).expanduser()
         if path.exists():
             read(path.resolve(strict=True))
+    # The configuration this launcher hands its tree as VELDO_AGENT_CONFIG, read only, so a launcher
+    # the tree starts reads the file it is named. Under another authority (a nested copy of the tree,
+    # an installed pack, a scaffold) that file lies outside every other grant of this domain.
+    if config_path is not None:
+        read(Path(config_path).resolve(strict=True))
     grants += [(p, READ | WRITE) for p in writes]
     # The shared repository is read-only in every profile. An agent worktree must be a linked
     # worktree of the agent's own repository, named by the orchestrator (VELDO_EXPECTED_GIT_COMMON),
@@ -871,7 +876,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
     policy.private(store, directory=True)
     if profile == 'gate':
         config = dict(config, write_roots=['{scratch}'], seed_files={})
-    grants, protected = grants_for(config, authority, worktree, scratch)
+    grants, protected = grants_for(config, authority, worktree, scratch, config_path)
 
     protected += [config_path, Path(policy.__file__).resolve()]
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
