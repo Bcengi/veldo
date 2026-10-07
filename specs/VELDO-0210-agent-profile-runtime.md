@@ -59,7 +59,8 @@ acceptance_criteria:
       in at the start, so a login made during the run is never overwritten. Set: a simulated
       refresh, an unchanged file, an invalid rewrite, a rewrite planted through a link to another
       credential, a changed non-credential seed, a refresh followed by a stop signal, a refresh
-      while the account logs in again outside the run, and a rewrite nested past the parser's
+      while the account logs in again outside the run, a second write-back waiting on the lock of the
+      first, and a rewrite nested past the parser's
       recursion limit in a run that fails, whose exit status is kept. Completeness: the only files
       written outside the scratch are the sources recorded at copy time; the copy is read component
       by component without following links. Test rows credentials/* in suite 102.
@@ -230,7 +231,9 @@ unchanged.
   regular file with one link, at most 1 MiB. Changed bytes that parse as one JSON object replace
   the source through a temporary file in the source's directory, fsync and rename; just before the
   rename the source is read again and replaced only if it still holds the bytes copied in, otherwise
-  the copy is dropped and the launcher says so. A copy that fails to parse for any reason (a
+  the copy is dropped and the launcher says so. The re-read and the rename run under an exclusive
+  flock on the sibling file <source>.veldo-lock (left in place), so two launchers writing back one
+  source never interleave them. A copy that fails to parse for any reason (a
   syntax error, nesting past the recursion limit) is not written back, and nothing the write-back
   meets replaces the run's own exit status. Every credential
   source of every client is added to deny_read for the run.
@@ -274,8 +277,8 @@ unchanged.
 - A refresh inside a run rotates the account's refresh token, so until the write-back other
   sessions on that account hold a token the provider has already replaced and may have to refresh
   or log in again. When the source changed during the run, the run's refreshed token is dropped and
-  the newer file kept. The re-read and the rename are two steps: a write landing between them is
-  replaced.
+  the newer file kept. The re-read and the rename run under the launcher's
+  lock file, which the CLIs do not take: a CLI's own write landing between them is replaced.
 - The resolver directory's other entries are readable too: resolved's resolv.conf (the upstream
   servers) and the names of its varlink sockets and per-link state directory (mode 0700, owned by
   systemd-resolve, so unreadable to this account anyway).

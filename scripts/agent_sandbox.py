@@ -1221,13 +1221,16 @@ def replace_atomically(target, data, expected=None):
     A reader sees the old file or the new one, never a partial write. The mode stays the source's
     owner bits (credentials are 0600). With `expected`, the target is read again just before the
     rename and is replaced only if it still holds exactly those bytes; otherwise Superseded is
-    raised and the target is left as it is."""
+    raised and the target is left as it is. The read and the rename run under an exclusive flock on
+    the sibling <name>.veldo-lock, so two launchers writing back one file never interleave them;
+    the CLIs do not take that lock, so a CLI's own write between the two steps is still replaced."""
     try:
         mode = stat.S_IMODE(os.stat(target).st_mode) & 0o700 or 0o600
     except FileNotFoundError:
         mode = 0o600
     descriptor, temporary = tempfile.mkstemp(prefix='.' + target.name + '.', suffix='.veldo-tmp',
                                              dir=target.parent)
+    lock = None
     try:
         try:
             os.fchmod(descriptor, mode)
@@ -1237,6 +1240,10 @@ def replace_atomically(target, data, expected=None):
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
+        # Left in place: removing it would race with the next holder.
+        lock = os.open(target.with_name(target.name + '.veldo-lock'),
+                       os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+        fcntl.flock(lock, fcntl.LOCK_EX)
         if expected is not None and current_bytes(target) != expected:
             raise Superseded('the source changed during the run')
         os.replace(temporary, target)
@@ -1246,6 +1253,9 @@ def replace_atomically(target, data, expected=None):
         except FileNotFoundError:
             pass
         raise
+    finally:
+        if lock is not None:
+            os.close(lock)
     directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
     try:
         os.fsync(directory)

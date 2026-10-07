@@ -2,6 +2,7 @@
 
 
 def _v210_agent_profile():
+    import fcntl
     import importlib.util
     import json
     import os
@@ -9,6 +10,7 @@ def _v210_agent_profile():
     import subprocess
     import sys
     import tempfile
+    import threading
     import time
 
     launcher = ROOT / 'scripts/agent_sandbox.py'
@@ -490,7 +492,8 @@ print(json.dumps(seen))
         expect('VELDO-0210 credentials/write-back-is-atomic-replace',
                after[1] != before[1] and after[2] == 0o600
                and sorted(p.name for p in account.iterdir())
-               == ['.claude.json', '.credentials.json', 'projects', 'settings.json'])
+               == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
+                   'settings.json'])
         seen = results(result)
         expect('VELDO-0210 credentials/claude-run-receives-claude-files',
                seen.get('claude') is True and seen.get('settings') is True and seen.get('state') is True)
@@ -545,6 +548,31 @@ print(json.dumps(seen))
                and (account / '.credentials.json').read_text() == login
                and 'changed during the run' in stderr and 'written back to' not in stderr
                and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
+        # Two write-backs of one source never interleave their compare and rename: a second one waits
+        # for the sibling lock, then finds the bytes the first wrote and is superseded.
+        locked = top / 'locked-credential.json'
+        locked.write_text('{"v": 1}')
+        holder = os.open(top / 'locked-credential.json.veldo-lock', os.O_RDWR | os.O_CREAT, 0o600)
+        fcntl.flock(holder, fcntl.LOCK_EX)
+        outcome = {}
+
+        def write_locked():
+            try:
+                S.replace_atomically(locked, b'{"v": 2}', expected=b'{"v": 1}')
+                outcome['result'] = 'replaced'
+            except S.Superseded:
+                outcome['result'] = 'superseded'
+        writer = threading.Thread(target=write_locked)
+        writer.start()
+        writer.join(0.5)
+        waited = writer.is_alive()
+        locked.write_text('{"v": 3}')
+        os.close(holder)
+        writer.join(10)
+        expect('VELDO-0210 credentials/compare-and-rename-under-sibling-lock: %s %s' % (waited, outcome),
+               waited and outcome.get('result') == 'superseded' and locked.read_text() == '{"v": 3}'
+               and sorted(p.name for p in top.iterdir() if p.name.startswith('locked-credential'))
+               == ['locked-credential.json', 'locked-credential.json.veldo-lock'])
         reset()
         result = act_run('settings')
         expect('VELDO-0210 credentials/non-credential-never-written-back',
