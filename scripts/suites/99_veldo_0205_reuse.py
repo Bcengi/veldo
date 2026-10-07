@@ -494,11 +494,13 @@ def _v205_review_repairs():
         assert store.put(key, {'first': True})
         expect('VELDO-0205 repair/collision-is-integrity-miss',
                not store.put(key, {'second': True}) and store.get(key) is None and store.integrity_errors)
+        # The worker confinement (mutation_sandbox.confine, the gate profile's domain): the store and
+        # its key stay out of reach of the worker and its children; only scratch is writable.
         sandbox = ROOT / 'scripts/mutation_sandbox.py'
         script = '''import importlib.util, pathlib, subprocess, sys
 spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
 s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)
-s.restrict(sys.argv[2], sys.argv[3])
+s.confine(sys.argv[5], sys.argv[2], sys.argv[3])
 p = pathlib.Path(sys.argv[4])
 try:
  p.read_bytes()
@@ -517,8 +519,8 @@ else:
 pathlib.Path(sys.argv[3], 'allowed').write_text('ok')
 '''
         result = subprocess.run([sys.executable, '-B', '-c', script, str(sandbox), str(root),
-                                 str(scratch), str(top / 'private/authentication.key')],
-                                capture_output=True, text=True, timeout=15)
+                                 str(scratch), str(top / 'private/authentication.key'), str(ROOT)],
+                                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=15)
         expect('VELDO-0205 repair/worker-and-child-cannot-access-store: ' + result.stderr[-300:],
                result.returncode == 0 and (scratch / 'allowed').read_text() == 'ok')
     import copy

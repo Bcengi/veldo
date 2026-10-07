@@ -207,43 +207,64 @@ expect('fixture target', namespace['value'] == 1)
             expect('VELDO-0207 case/listed-directory-new-child-invalidates',
                    session(expanded).keys != keys
                    and 'scripts/new-child' in session(expanded).snapshots[case['identity']])
-            network = """import errno, importlib.util, json, os, socket, sys
+            # The worker confinement (mutation_sandbox.confine) has the gate profile's network rule:
+            # the user bus and the systemd private socket stay refused, sockets opened before it
+            # do not enter the domain, and TCP reaches the network stack (VELDO-0208, owner decision
+            # Telegram 32421).
+            services = """import errno, importlib.util, json, os, socket, sys
 spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-sockets = [socket.socket(socket.AF_UNIX), socket.socket(socket.AF_UNIX), socket.socket()]
-m.restrict(sys.argv[2], sys.argv[2])
-results = []
-addresses = ['/run/user/' + str(os.getuid()) + '/bus',
-             '/run/user/' + str(os.getuid()) + '/systemd/private', ('127.0.0.1', 9)]
-for sock, address in zip(sockets, addresses):
- try: sock.connect(address)
- except OSError as error: results.append(error.errno in (errno.EPERM, errno.EACCES))
- else: results.append(False)
-for family in (socket.AF_UNIX, socket.AF_INET, socket.AF_INET6):
- try: socket.socket(family)
- except OSError as error: results.append(error.errno == errno.EPERM)
- else: results.append(False)
+inherited = [socket.socket(socket.AF_UNIX), socket.socket()]
+numbers = [s.fileno() for s in inherited]
+m.confine(sys.argv[3], sys.argv[2], sys.argv[2])
+results = {}
+for number in numbers:
+ try: os.fstat(number)
+ except OSError as error: results['inherited-' + str(number)] = errno.errorcode.get(error.errno)
+ else: results['inherited-' + str(number)] = 'open'
+for name, address in [('bus', '/run/user/' + str(os.getuid()) + '/bus'),
+                      ('systemd', '/run/user/' + str(os.getuid()) + '/systemd/private')]:
+ try:
+  sock = socket.socket(socket.AF_UNIX)
+  sock.connect(address)
+ except OSError as error: results[name] = errno.errorcode.get(error.errno)
+ else: results[name] = 'connected'
+try: socket.create_connection(('127.0.0.1', 9), timeout=5)
+except OSError as error: results['tcp'] = errno.errorcode.get(error.errno)
+else: results['tcp'] = 'connected'
 print(json.dumps(results))
 """
-            result = subprocess.run([sys.executable, '-I', '-S', '-c', network,
-                                     str(ROOT/'scripts/mutation_sandbox.py'), str(top)],
-                                    capture_output=True, text=True, timeout=15)
-            expect('VELDO-0207 case/mutant-bus-systemd-network-denied',
-                   result.returncode == 0 and json.loads(result.stdout) == [True] * 6)
+            result = subprocess.run([sys.executable, '-I', '-S', '-c', services,
+                                     str(ROOT/'scripts/mutation_sandbox.py'), str(top), str(ROOT)],
+                                    stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+            try:
+                outcome = json.loads(result.stdout)
+            except ValueError:
+                outcome = {}
+            expect('VELDO-0207 case/mutant-bus-systemd-inherited-denied: ' + repr(outcome) + result.stderr[-300:],
+                   result.returncode == 0 and outcome.get('bus') in ('EPERM', 'EACCES')
+                   and outcome.get('systemd') in ('EPERM', 'EACCES')
+                   and [v for k, v in outcome.items() if k.startswith('inherited-')] == ['EBADF'] * 2
+                   and outcome.get('tcp') in ('ECONNREFUSED', 'connected'))
 
-            broken_filter = network.replace(
-                'm.restrict(sys.argv[2], sys.argv[2])',
-                "libc = m.ctypes.CDLL(None, use_errno=True)\n"
+            # Without the seccomp filter the domain does not start: no fallback, nothing ran.
+            broken_filter = services.replace(
+                "m.confine(sys.argv[3], sys.argv[2], sys.argv[2])",
+                "real = __import__('ctypes').CDLL\n"
                 "class Kernel:\n"
-                " def syscall(self, *args): return libc.syscall(*args)\n"
-                " def prctl(self, *args): return -1 if args[0] == 22 else libc.prctl(*args)\n"
-                "m.ctypes.CDLL = lambda *a, **k: Kernel()\n"
-                "m.restrict(sys.argv[2], sys.argv[2])")
+                " def __init__(self, *a, **k): self.libc = real(*a, **k)\n"
+                " def __getattr__(self, name): return getattr(self.libc, name)\n"
+                " def syscall(self, number, *args):\n"
+                "  if getattr(number, 'value', number) == 317: return -1\n"
+                "  return self.libc.syscall(number, *args)\n"
+                "__import__('ctypes').CDLL = Kernel\n"
+                "m.confine(sys.argv[3], sys.argv[2], sys.argv[2])\n"
+                "print('confined')")
             result = subprocess.run([sys.executable, '-I', '-S', '-c', broken_filter,
-                                     str(ROOT/'scripts/mutation_sandbox.py'), str(top)],
-                                    capture_output=True, text=True, timeout=15)
-            expect('VELDO-0207 case/unavailable-network-filter-fails-closed',
-                   result.returncode != 0 and 'network filter unavailable' in result.stderr
+                                     str(ROOT/'scripts/mutation_sandbox.py'), str(top), str(ROOT)],
+                                    stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+            expect('VELDO-0207 case/unavailable-ipc-filter-fails-closed: ' + result.stderr[-300:],
+                   result.returncode != 0 and 'IPC filter unavailable' in result.stderr
                    and not result.stdout)
 
         if leg_runs():
