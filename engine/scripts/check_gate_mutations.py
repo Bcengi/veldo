@@ -434,6 +434,9 @@ class Workers:
         self.jobs = {}
         self.homes = {}
         self.ledgers = {}
+        # The authority's unconfined leg (gate_legs.mutation_leg) or None: every worker confined.
+        self.leg = None
+        self.legs = {}
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -464,6 +467,7 @@ class Workers:
         job = self.jobs[name]
         home = self.homes[name]
         record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
+                      leg=self.legs.get(name, 'confined'),
                       elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
@@ -567,6 +571,13 @@ class Workers:
                         ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
                                          | os.O_APPEND | os.O_CLOEXEC, 0o600)
                         worker_root = Path(job.get('snapshot_root', root))
+                        # A case of a suite the authority's list names runs in the unconfined leg,
+                        # as its suite does in the unit stage (VELDO-0208, owner decision): the
+                        # worker installs no boundary. It is never a declared case, so never traced.
+                        leg = 'unconfined' if in_leg(self.leg, job['case']) else 'confined'
+                        if leg == 'unconfined' and 'snapshot_root' in job:
+                            raise Refused('driver_error', name + ': an unconfined case cannot be declared')
+                        self.legs[name] = leg
                         # -I keeps user site and PYTHON* variables out. A fresh worker keeps the
                         # system site-packages its suites ran with before confinement: without it
                         # an optional oracle (PyYAML for 0119) stands down and its row passes a
@@ -574,7 +585,8 @@ class Workers:
                         argv = [sys.executable, '-I', *(('-S',) if 'snapshot_root' in job else ()), '-B',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(ROOT / 'scripts/reuse_worker.py'),
-                                'worker', str(worker_root), str(ledger), str(jobpath)]
+                                'worker' if leg == 'confined' else 'unconfined',
+                                str(worker_root), str(ledger), str(jobpath)]
                         if 'snapshot_root' in job:
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
@@ -636,6 +648,13 @@ def worker(job):
                 **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')})
 
 
+def in_leg(leg, case):
+    """Whether this case's suite is one the authority's list names. A case runs its whole suite in
+    one worker, so a suite listed for some rows has all its cases in the unconfined leg."""
+    suite = case['suite']
+    return leg is not None and suite.endswith('.py') and suite[:-3] in leg['suites']
+
+
 def control_group(case):
     return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True))
 
@@ -666,12 +685,14 @@ def snapshot(root, expected_common, destination, files, head):
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
-              drivers=None, parallel=None, diff_dir=None, force_fresh=False):
+              drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
-    root: the authority's own for the gate, a fixture's own for the fixture's creator."""
+    root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
+    authority's unconfined leg (gate_legs.mutation_leg), None for every case confined."""
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline, parallel=parallel)
+    workers.leg = leg
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
@@ -711,6 +732,17 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             {'fixture_version': FIXTURE_VERSION, 'capacities': capacities,
              'worker_environment': fixed_env('<private-worker-home>')}, force_fresh=force_fresh)
         receipt['force_fresh'] = reuse.forced
+        # An unconfined case is neither traced nor confined, so nothing bounds what it read: it is
+        # never reuse-qualified, runs fresh every time, and is never published.
+        outside = [c for c in cases if in_leg(leg, c)]
+        for case in outside:
+            reuse.keys[case['identity']] = None
+            reuse.reasons[case['identity']] = 'unconfined_leg'
+            getattr(reuse, 'snapshots', {}).pop(case['identity'], None)
+        if leg is not None:
+            receipt['unconfined'] = {'declaration': leg['declaration'], 'entries': leg['entries'],
+                                     'cases': sorted(c['identity'] for c in outside),
+                                     'suites': dict(collections.Counter(c['suite'][:-3] for c in outside))}
         receipt['reuse_qualified'] = sum(key is not None for key in reuse.keys.values())
         results = {}
         fresh = []
@@ -870,6 +902,24 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     return receipt
 
 
+def print_leg(leg, receipt, path):
+    """Name the leg on the stage lines as gate_legs.py does for the unit stage: the list, its
+    digest, and what ran unconfined."""
+    ran = receipt.get('unconfined', {})
+    outside = set(ran.get('cases', []))
+    rejected = sum(r['case']['identity'] in outside for r in receipt.get('results', []))
+    print('   mutation: confined leg - every case except those of the %d suite%s the list names (a case '
+          'runs its whole suite, so a suite listed for some rows has every case in the unconfined leg)'
+          % (len(leg['suites']), '' if len(leg['suites']) == 1 else 's'), flush=True)
+    print('   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s %s), '
+          '%d entr%s: %s' % (os.path.basename(str(path)), leg['declaration'], len(leg['entries']),
+                              'y' if len(leg['entries']) == 1 else 'ies', ', '.join(leg['entries'])), flush=True)
+    print('   mutation: unconfined leg ran %d case%s, %d rejected: %s'
+          % (len(outside), '' if len(outside) == 1 else 's', rejected,
+             ', '.join('%s (%d)' % item for item in sorted(ran.get('suites', {}).items())) or 'none'),
+          flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
@@ -879,19 +929,36 @@ def main():
     parser.add_argument('--finding', type=int, action='append')
     parser.add_argument('--case', action='append', dest='names')
     parser.add_argument('--worker-log-dir', type=Path)
+    parser.add_argument('--legs-record', type=Path, help="verify.sh's record of the gate's unconfined legs")
     args = parser.parse_args()
     if args.worker:
         # Developer entry only: no coordinator launches it, so it keeps no ownership ledger.
         # Gate workers start from reuse_worker.py, which reports to the coordinator's ledger.
         print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
+    # THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07): the cases of
+    # the suites the authority's scripts/gate_unconfined.json names run without the worker
+    # confinement when the list declares this stage. The list is read beside this file, never from
+    # --root; a caller's leg variables decide nothing (no worker environment carries them). An
+    # invalid list runs nothing.
+    legs = load(ROOT / 'scripts/gate_legs.py')
+    try:
+        leg = legs.mutation_leg()
+    except legs.Invalid as error:
+        print('   mutation: the unconfined list %s is invalid (%s); nothing ran, in either leg'
+              % (legs.DECLARATION, error), flush=True)
+        return 1
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
     receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
-                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir)
+                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir, leg=leg)
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)
+    if leg is not None:
+        print_leg(leg, receipt, legs.DECLARATION)
+        if args.legs_record:
+            legs.write_record(args.legs_record, 'mutation', leg['declaration'], leg['entries'])
     print('mutations: {status} registered={registered} executed={executed} '
           'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
     return 0 if receipt['status'] == 'passed' else 1

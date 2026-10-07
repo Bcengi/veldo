@@ -30,11 +30,18 @@ veldo_candidate() {
 # authority, never from the candidate. With no list, every stage is confined, as before.
 # VELDO_LEGS_EXPECTED is asked of the authority's list BEFORE the stage runs, so a leg record that
 # candidate code deletes or truncates later is RED, never "no unconfined leg ran". An invalid list
-# (exit 2) counts as expected, which fails closed.
-veldo_stage() {
+# (exit 2) counts as expected, which fails closed. The mutation stage follows the same list: the
+# authority's coordinator runs the listed suites' cases without the worker confinement when the
+# list declares that stage, names them, and adds the stage to the same record.
+veldo_expect_leg() {
   if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --declared --stage "$1" -- "$2"
     [ "$?" = 1 ] || VELDO_LEGS_EXPECTED="${VELDO_LEGS_EXPECTED:+$VELDO_LEGS_EXPECTED,}$1"
+  fi
+}
+veldo_stage() {
+  if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
+    veldo_expect_leg "$1" "$2"
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1" \
       --record "$VELDO_LEGS_RECORD" -- "$2"
   else veldo_candidate bash -c "$2"; fi
@@ -180,9 +187,9 @@ for name in $ORDER; do
     required:*)
       cmd="${decl#required:}"
       echo "== ${name}"
-      if [ "$name" = mutation ]; then MUTATION_RAN=1; fi
+      if [ "$name" = mutation ]; then MUTATION_RAN=1; veldo_expect_leg "$name" "$cmd"; fi
       if { if [ "$name" = mutation ]; then
-        python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" --root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"
+        python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" --root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT" --legs-record "$VELDO_LEGS_RECORD"
       else veldo_stage "$name" "$cmd"; fi; }; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
       else

@@ -121,7 +121,7 @@ expect('fixture/nested', (base / 'nested/control.txt').read_text() == 'nested re
 
 MUTATION_DECLARATION = 'CHECK_mutation="required:authority mutation stage"'
 MUTATION_INVOCATION = ('python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
-                       '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"')
+                       '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT" --legs-record "$VELDO_LEGS_RECORD"')
 
 
 def wiring(gate_source):

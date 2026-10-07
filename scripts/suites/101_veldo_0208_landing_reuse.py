@@ -1234,7 +1234,7 @@ def _v208_unconfined_leg():
     listed = {e['suite']: e.get('rows') for e in document['suites']}
     gate_text = (ROOT / 'scripts/verify.sh').read_text()
     declared_commands = {name: re.search(r'^CHECK_%s="required:(.*)"$' % name, gate_text, re.M).group(1)
-                         for name in ('unit', 'integration')}
+                         for name in ('unit', 'integration', 'mutation')}
     control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '66_0047', '67_0041', '67_0135', '71_0076',
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
@@ -1511,7 +1511,7 @@ def _v208_unconfined_leg():
         (fallback / 'scripts').mkdir(parents=True)
         (fallback / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
         functions = ''.join(re.search(r'^%s\(\) \{\n.*?^\}\n' % name, gate_text, re.S | re.M).group(0)
-                            for name in ('veldo_candidate', 'veldo_stage'))
+                            for name in ('veldo_candidate', 'veldo_expect_leg', 'veldo_stage'))
         for marker in outside.iterdir():
             marker.unlink()
         leaked = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_RECORD=%s\n%s'
@@ -1740,3 +1740,153 @@ def _v208_installed_tools():
 
 if leg_runs():
     _v208_installed_tools()
+
+
+def _v208_mutation_leg():
+    """The mutation stage follows the same list (owner decision, Telegram 32403-32407, extended to the
+    mutation stage): the cases of a suite the authority's list names run without the worker
+    confinement and are named on the stage lines and in the leg record; every other case stays
+    confined; a candidate's own copy of the list and a caller's leg variables decide nothing. Driven
+    through the real coordinator from a fixture authority over a linked candidate worktree whose
+    suites probe a directory outside both: a confined worker cannot write there, an unconfined one
+    can. Run by the gate's confined leg, that directory is still granted by the outer domain."""
+    import hashlib
+    import json
+    import os
+    from pathlib import Path
+    import re
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    def git(where, *args):
+        return subprocess.run(['git', '-C', str(where), *args], check=True, capture_output=True, text=True,
+                              env=dict(os.environ, GIT_AUTHOR_NAME='fixture', GIT_AUTHOR_EMAIL='fixture@example.test',
+                                       GIT_COMMITTER_NAME='fixture', GIT_COMMITTER_EMAIL='fixture@example.test',
+                                       GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null'))
+
+    spec = __import__('importlib.util').util.spec_from_file_location('v208_leg_evidence', ROOT / '.veldo/reuse_evidence.py')
+    E = __import__('importlib.util').util.module_from_spec(spec); spec.loader.exec_module(E)
+    gate_text = (ROOT / 'scripts/verify.sh').read_text()
+    with tempfile.TemporaryDirectory(prefix='v208-mutation-leg-') as temporary:
+        top = Path(temporary)
+        authority, candidate, outside = top / 'authority', top / 'candidate', top / 'outside'
+        outside.mkdir()
+        for relative in E.AUTHORITY_FILES:
+            if relative not in E.OPTIONAL_AUTHORITY_FILES:
+                (authority / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, authority / relative)
+        (authority / 'scripts/suites').mkdir(parents=True, exist_ok=True)
+        (authority / 'scripts/suites/manifest.json').write_text(json.dumps(
+            {'suites': [{'file': 'listed.py'}, {'file': 'unlisted.py'}]}))
+        (authority / 'scripts/suites/shared.py').write_text(
+            'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
+            'def expect(name, condition):\n    assert condition, name\n')
+        for name in ('listed', 'unlisted'):
+            (authority / 'scripts/suites' / (name + '.py')).write_text(
+                'import os\nmodule = ROOT / ".veldo" / "fixture.py"\n'
+                'try:\n    (Path(%r) / ("%s." + str(os.getpid()))).write_text("x")\nexcept OSError:\n    pass\n'
+                'expect("fixture/teeth", "answer = True" in module.read_text())\n' % (str(outside), name))
+        (authority / '.veldo/fixture.py').write_text('answer = True')
+        registry = ('\ndef cases():\n    return %r\n' % [
+            dict(name=name + '-case', finding=208, suite=name + '.py', module='fixture.py',
+                 old='answer = True', new='answer = False', rows=['fixture/teeth']) for name in ('listed', 'unlisted')])
+        (authority / 'scripts/check_teeth_mutations.py').write_text(
+            (ROOT / 'scripts/check_teeth_mutations.py').read_text() + registry)
+        (authority / 'scripts/check_review_mutations.py').write_text(registry)
+        declared = {'schema': 'veldo.gate-unconfined/v1', 'authority': 'fixture decision',
+                    'stages': {'unit': 'python3 scripts/selftest.py', 'mutation': 'authority mutation stage'},
+                    'suites': [{'suite': 'listed', 'reason': 'fixture: needs what the domain refuses'}]}
+        authority_list = authority / 'scripts/gate_unconfined.json'
+        authority_list.write_text(json.dumps(declared))
+        git(authority, 'init', '-q'); git(authority, 'add', '.'); git(authority, 'commit', '-qm', 'fixture')
+        git(authority, 'worktree', 'add', '-q', '-b', 'candidate', str(candidate))
+        # The candidate's own copy of the list asks for its other suite too; only the authority's counts.
+        (candidate / 'scripts/gate_unconfined.json').write_text(json.dumps(dict(declared, suites=declared['suites']
+            + [{'suite': 'unlisted', 'reason': 'the candidate asks to leave the domain'}])))
+        forged = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': 'unlisted',
+                  'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
+
+        def stage(record):
+            for marker in outside.iterdir():
+                marker.unlink()
+            receipt = top / 'receipt.json'
+            receipt.unlink(missing_ok=True)
+            ran = subprocess.run([sys.executable, '-I', '-S', str(authority / 'scripts/check_gate_mutations.py'),
+                                  '--root', str(candidate), '--receipt', str(receipt), '--legs-record', str(record)],
+                                 capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL,
+                                 env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
+                                          **forged))
+            markers = sorted(m.name.split('.')[0] for m in outside.iterdir())
+            document = json.loads(receipt.read_text()) if receipt.exists() else {}
+            return ran, markers, document
+
+        record = top / 'record'
+        ran, markers, receipt = stage(record)
+        output = ran.stdout + ran.stderr
+        digest = 'sha256:' + hashlib.sha256(authority_list.read_bytes()).hexdigest()
+        # Each worker by the suite it ran (controls are named by suite, mutants by case) and its leg.
+        legs = sorted((re.search(r'(unlisted|listed)', o['name']).group(1), o['mode'], o.get('leg'))
+                      for o in receipt.get('worker_outcomes', []))
+        named = [line for line in output.splitlines() if line.startswith('   mutation: ')]
+        expect('VELDO-0208 unconfined-leg/mutation-listed-suite-runs-unconfined-and-named: '
+               + repr((ran.returncode, markers, named, output[-400:])),
+               ran.returncode == 0 and receipt.get('status') == 'passed' and receipt.get('rejected') == 4
+               and 'listed' in markers
+               and any('UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, '
+                       'gate_unconfined.json ' + digest + '), 1 entry: listed' in line for line in named)
+               and any('unconfined leg ran 2 cases, 2 rejected: listed (2)' in line for line in named)
+               and receipt.get('unconfined') == {'declaration': digest, 'entries': ['listed'], 'suites': {'listed': 2},
+                   'cases': ['check_review_mutations.py:listed-case', 'check_teeth_mutations.py:listed-case']}
+               and [leg for leg in legs if leg[0] == 'listed'] == [('listed', mode, 'unconfined')
+                                                                   for mode in ('baseline', 'mutant', 'mutant', 'noop')]
+               and record.exists() and json.loads(record.read_text().splitlines()[-1]) ==
+                   {'stage': 'mutation', 'declaration': digest, 'entries': ['listed']})
+        expect('VELDO-0208 unconfined-leg/mutation-unlisted-suite-stays-confined: ' + repr((markers, legs)),
+               ran.returncode == 0 and 'unlisted' not in markers
+               and [leg for leg in legs if leg[0] == 'unlisted'] == [('unlisted', mode, 'confined')
+                                                                     for mode in ('baseline', 'mutant', 'mutant', 'noop')]
+               and all(r['reuse_reason'] != 'unconfined_leg' for r in receipt.get('results', [])
+                       if r['case']['suite'] == 'unlisted.py'))
+        expect('VELDO-0208 unconfined-leg/mutation-candidate-copy-and-caller-variables-ignored: ' + repr(named),
+               'unlisted' in (candidate / 'scripts/gate_unconfined.json').read_text()
+               and not [line for line in named if 'unlisted' in line]
+               and 'unlisted' not in json.dumps(receipt.get('unconfined'))
+               and all(r['reuse_reason'] == 'unconfined_leg' and r['reuse_key'] is None
+                       for r in receipt.get('results', []) if r['case']['suite'] == 'listed.py'))
+
+        # verify.sh asks the authority's list whether the mutation stage expects its leg BEFORE the
+        # stage runs and hands the coordinator the same record, so a record missing after an expected
+        # mutation leg is RED. A list that does not declare the stage confines every case and records
+        # nothing; an invalid one runs nothing.
+        function = re.search(r'^veldo_expect_leg\(\) \{\n.*?^\}\n', gate_text, re.S | re.M).group(0)
+        asked = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_EXPECTED=unit\n%s'
+                                'veldo_expect_leg mutation "authority mutation stage"\necho "expected=$VELDO_LEGS_EXPECTED"'
+                                % (authority, function)], capture_output=True, text=True, timeout=60)
+        spec = __import__('importlib.util').util.spec_from_file_location('v208_mleg', authority / 'scripts/gate_legs.py')
+        L = __import__('importlib.util').util.module_from_spec(spec); spec.loader.exec_module(L)
+        try:
+            L.stamp(top / 'never-written', ['unit', 'mutation'])
+            missing_red = False
+        except L.Invalid:
+            missing_red = True
+        authority_list.write_text(json.dumps(dict(declared, stages={'unit': 'python3 scripts/selftest.py'})))
+        undeclared_record = top / 'undeclared-record'
+        undeclared, undeclared_markers, undeclared_receipt = stage(undeclared_record)
+        authority_list.write_text(json.dumps(dict(declared, suites=[{'suite': 'listed', 'reason': ''}])))
+        invalid, invalid_markers, _ = stage(top / 'invalid-record')
+        expect('VELDO-0208 unconfined-leg/mutation-follows-the-list-and-its-record: '
+               + repr((asked.stdout, undeclared.returncode, undeclared_markers, invalid.returncode, invalid.stdout[-300:])),
+               'veldo_expect_leg "$name" "$cmd"' in gate_text and '--legs-record "$VELDO_LEGS_RECORD"' in gate_text
+               and 'CHECK_mutation="required:' + L.MUTATION_COMMAND + '"' in gate_text
+               and asked.stdout.strip() == 'expected=unit,mutation' and missing_red
+               and undeclared.returncode == 0 and undeclared_markers == []
+               and 'UNCONFINED' not in undeclared.stdout and 'unconfined' not in undeclared_receipt
+               and not undeclared_record.exists()
+               and invalid.returncode == 1 and 'is invalid (listed has no reason); nothing ran' in invalid.stdout
+               and invalid_markers == [] and not (top / 'invalid-record').exists())
+
+
+if leg_runs():
+    _v208_mutation_leg()

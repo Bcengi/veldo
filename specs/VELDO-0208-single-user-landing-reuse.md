@@ -331,14 +331,15 @@ follows; VELDO-0209 is withdrawn and keeps its measurements as the record of why
 ## Unconfined leg (owner decision, Telegram 32403-32407, 2026-10-07)
 
 The suites above run the way they ran before this specification's confinement existed: outside
-it, in a separate, named leg of the unit and integration stages. Every other stage and every other
-suite stays confined. The owner confirmed this design ("Yes"). It is a deliberate exception to AC1
+it, in a separate, named leg of the unit and integration stages, and their mutation cases in the
+mutation stage's unconfined leg (below). Every other stage and every other suite stays confined. The owner confirmed this design ("Yes"). It is a deliberate exception to AC1
 for these suites only: their code runs with the owner's own authority, as it did before VELDO-0208.
 
 - One declared list, scripts/gate_unconfined.json, names each suite and its reason, and the exact
   stage commands it applies to (unit: `python3 scripts/selftest.py`, integration:
-  `python3 scripts/check_first_use.py`). A suite listed with `rows` leaves the domain for those
-  rows only; the rest of that suite stays in the confined leg. The list, with its reasons:
+  `python3 scripts/check_first_use.py`, mutation: `authority mutation stage`, the text verify.sh's
+  CHECK_mutation declares). A suite listed with `rows` leaves the domain for those rows only in the
+  unit and integration stages; the rest of that suite stays in the confined leg. The list, with its reasons:
   - systemd user manager, whole suite: the 30 control-plane suites above (62_0039 through 96_0204)
     and 66_0047, each entry naming what it starts or reads through the manager;
   - nested custody confinement, whole suite: 65_0067;
@@ -396,6 +397,34 @@ for these suites only: their code runs with the owner's own authority, as it did
   - anything else code run by the owner can do.
   Review of the candidate guards that code. The confined legs keep refusing every escape the
   confined-stage rows plant.
+- The mutation stage follows the same list (owner decision extended to it, 2026-10-07: the listed
+  suites' mutation cases, about 852, failed in confined workers for the same reason). The authority's
+  scripts/check_gate_mutations.py reads the list beside itself (gate_legs.mutation_leg), never the
+  candidate's copy; with no list, or a list that does not declare the mutation stage with exactly
+  `authority mutation stage`, every worker is confined as before, and an invalid list runs nothing.
+  A mutation case runs its whole suite in one worker, so mutation cases are not row-scoped: every
+  case of a listed suite, including a suite listed for some rows (100_0207, 101_0208), runs in the
+  unconfined leg. scripts/reuse_worker.py, started by the coordinator in mode `unconfined` for those
+  cases only, installs no boundary; every other case keeps the worker confinement unchanged. An
+  unconfined case is neither traced nor confined, so nothing bounds what it read: it is never
+  reuse-qualified (reason `unconfined_leg`), runs fresh, and is never published. Workers carry the
+  coordinator's fixed environment, so a caller's leg variables reach none of them and decide nothing.
+  The stage prints the confined leg, the UNCONFINED LEG line with the list's file, digest and
+  entries, and the cases and suites that ran unconfined; the receipt carries
+  `"unconfined": {"declaration", "entries", "cases", "suites"}` and each worker outcome its `leg`.
+  verify.sh asks the list whether the mutation stage expects its leg before the stage runs
+  (veldo_expect_leg, shared with veldo_stage) and passes the coordinator the same leg record, so the
+  stamp and the gate event carry `legs.mutation` and an expected mutation leg with a missing, empty,
+  unreadable or short record is RED with the field null, as for the unit stage.
+- Fresh mutation workers read the installed tools the gate profile reads (optional_read_roots of
+  scripts/agent_sandbox.json: ~/.nvm/versions/node, ~/.local/share/claude,
+  ~/.local/share/veldo/langgraph), read only, resolved against the account's home rather than the
+  worker's private HOME, never a root that holds or lies beneath the store or a denied path. Without
+  them 62_0045 and 65_0132 lost the langgraph runtime and 82_0165 and 82_0173 the Codex and Claude
+  Code binaries, and every case of those suites was an invalid baseline. A declared case keeps only
+  its keyed runtime set. Network stays refused in every confined worker: 87_0127, 88_0127, 89_0127
+  and 90_0127 serve their model stand-in on 127.0.0.1 TCP and stay invalid confined until the owner
+  decides the worker network rule.
 - Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
   and the dispatcher files are protected, and the list is read from the authority (a candidate copy
   naming another suite is ignored); an authority without the list has a stable identity and runs
@@ -407,4 +436,10 @@ for these suites only: their code runs with the owner's own authority, as it did
   of each leg; a fixture candidate through the real runner, launcher and dispatcher in which a
   listed suite runs unconfined and is named, a suite the candidate asks for stays confined, only the
   listed rows leave, an undeclared stage or command is confined whole whatever the caller sets, and
-  an invalid list runs nothing.
+  an invalid list runs nothing; through the real coordinator from a fixture authority over a linked
+  candidate (rows unconfined-leg/mutation-*), a listed suite's mutation cases run unconfined and are
+  named on the stage lines, in the receipt and in the leg record, an unlisted suite's stay confined,
+  the candidate's own copy of the list and a caller's leg variables are ignored, verify.sh expects
+  the mutation leg from the list before the stage, and a list that does not declare the stage
+  confines every case and records nothing while an invalid one runs nothing. Row
+  worker/installed-tools-read-only covers the installed-tool grant.

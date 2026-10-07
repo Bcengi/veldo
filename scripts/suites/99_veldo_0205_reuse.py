@@ -428,7 +428,7 @@ def _v205_reuse():
                [line for line in text.splitlines() if line.startswith('CHECK_mutation=')]
                == ['CHECK_mutation="required:authority mutation stage"']
                and invocations == ['python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
-                                   '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"']
+                                   '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT" --legs-record "$VELDO_LEGS_RECORD"']
                and 'VELDO_GATE_FORCE_FRESH=1' in text
                and gate.DRIVERS == ('check_teeth_mutations.py', 'check_review_mutations.py'))
 

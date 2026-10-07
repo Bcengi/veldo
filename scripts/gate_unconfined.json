@@ -3,7 +3,8 @@
   "authority": "Owner decision, Telegram 32403-32407, 2026-10-07, recorded in VELDO-0208 (Unconfined leg). Adding an entry changes this protected file.",
   "stages": {
     "unit": "python3 scripts/selftest.py",
-    "integration": "python3 scripts/check_first_use.py"
+    "integration": "python3 scripts/check_first_use.py",
+    "mutation": "authority mutation stage"
   },
   "suites": [
     {"suite": "62_veldo_0039_dispatch", "reason": "systemd user manager: dispatch launches its worker into a transient unit under the authority's user slice"},

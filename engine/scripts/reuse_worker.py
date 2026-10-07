@@ -3,7 +3,9 @@
 
 The parent creates the job and observes this child's output and exit. Candidate
 receipts are never ingested by the coordinator. All candidate imports and execs
-happen after the reviewed authority sandbox has installed its kernel boundary.
+happen after the reviewed authority sandbox has installed its kernel boundary, except in the
+mutation stage's unconfined leg (mode 'unconfined'), which the coordinator starts only for a case of
+a suite the authority's scripts/gate_unconfined.json names (VELDO-0208, owner decision).
 """
 import fcntl
 import importlib.util
@@ -29,8 +31,10 @@ def main():
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
         print(json.dumps(gate.inventory_local(root)))
         return
-    # argv: worker ROOT LEDGER_FD JOB. The ledger descriptor is the coordinator's append-only
-    # channel; the file it names lies outside this worker's write grants.
+    # argv: worker|unconfined ROOT LEDGER_FD JOB. The ledger descriptor is the coordinator's
+    # append-only channel; the file it names lies outside this worker's write grants.
+    if mode not in ('worker', 'unconfined'):
+        raise ValueError('unknown worker mode: ' + mode)
     ledger, jobpath = int(sys.argv[3]), Path(sys.argv[4])
     if not stat.S_ISREG(os.fstat(ledger).st_mode) or not fcntl.fcntl(ledger, fcntl.F_GETFL) & os.O_APPEND:
         raise ValueError('ownership channel must be an append-only regular file descriptor')
@@ -45,6 +49,15 @@ def main():
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
     # append to the same channel, so the coordinator validates every entry before acting.
     ownership.Tracker(jobpath.parent, ledger).install()
+    if mode == 'unconfined':
+        # The mutation stage's unconfined leg (VELDO-0208, owner decision Telegram 32403-32407): the
+        # coordinator starts a case of a suite the authority's list names in this mode, and only
+        # such a case. It runs as that suite does in the unit stage's unconfined leg, without the
+        # boundary below: with the owner's authority, as every worker did before VELDO-0208.
+        if 'runtime_paths' in job or 'snapshot_root' in job:
+            raise ValueError('an unconfined worker runs no declared case')
+        observe(gate, owner, job, root)
+        return
     # Never load the candidate's sandbox or worker driver, even for fresh cases.
     grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
     grants += [(Path(p).resolve(), boundary.READ)
@@ -73,6 +86,10 @@ def main():
         os._exit(os.waitstatus_to_exitcode(status))
     if boundary.landlock(grants, profile='worker', broker=side) != 'strict':
         os.environ[boundary.BROKERED] = '1'
+    observe(gate, owner, job, root)
+
+
+def observe(gate, owner, job, root):
     case = job['case']
     prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=root)
     mutant = prepared['mutant']

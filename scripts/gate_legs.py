@@ -5,7 +5,10 @@ Owner decision, Telegram 32403-32407, 2026-10-07 (VELDO-0208, "Unconfined leg").
 need the systemd user manager or nested strace cannot pass inside the gate's Landlock domain
 without granting the escape it denies, and a KVM guest was rejected as too heavy. They run the
 way they ran before that domain existed: outside it, in a separate, named leg of the unit and
-integration stages. Every other stage and suite stays confined.
+integration stages, and their mutation cases in the mutation stage's unconfined leg (the stage is
+declared with the command MUTATION_COMMAND; scripts/check_gate_mutations.py runs that leg with
+mutation_leg and record below, since a mutation case runs its whole suite in one worker, a suite
+listed for some rows has every mutation case there). Every other stage and suite stays confined.
 
 THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this file
 (scripts/gate_unconfined.json in the authority checkout), a protected path, so adding a suite to
@@ -53,6 +56,8 @@ import sys
 HERE = Path(__file__).resolve().parent
 DECLARATION = HERE / 'gate_unconfined.json'
 SCHEMA = 'veldo.gate-unconfined/v1'
+# verify.sh's mutation stage is no shell command: CHECK_mutation declares it by this text.
+MUTATION_COMMAND = 'authority mutation stage'
 LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION'
 SUITE = re.compile(r'^[0-9A-Za-z][0-9A-Za-z_]*$')
 ROWS = re.compile(r'^[a-z][a-z0-9-]*$')
@@ -153,10 +158,27 @@ def run_stage(root, stage, command, record, path=DECLARATION):
                               'y' if len(listed) == 1 else 'ies', ', '.join(listed)), flush=True)
     outside = unconfined(root, command, _env('unconfined', listed, digest))
     print('   %s: unconfined leg: %s' % (stage, 'pass' if outside == 0 else 'FAIL'), flush=True)
+    write_record(record, stage, digest, listed)
+    return 0 if inside == 0 and outside == 0 else 1
+
+
+def write_record(record, stage, digest, listed):
     with open(record, 'a') as handle:
         handle.write(json.dumps({'stage': stage, 'declaration': digest, 'entries': listed},
                                 sort_keys=True) + '\n')
-    return 0 if inside == 0 and outside == 0 else 1
+
+
+def mutation_leg(path=DECLARATION):
+    """The mutation stage's unconfined leg from the authority's list: None when there is no list or
+    it does not declare the mutation stage with exactly MUTATION_COMMAND (every case confined, as
+    before), else {declaration, entries, suites}. An invalid list raises Invalid: nothing runs."""
+    if not Path(path).exists():
+        return None
+    document, digest = load(path)
+    if document['stages'].get('mutation') != MUTATION_COMMAND:
+        return None
+    return {'declaration': digest, 'entries': entries(document),
+            'suites': sorted(e['suite'] for e in document['suites'])}
 
 
 def declared(stage, command, path=DECLARATION):
