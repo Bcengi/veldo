@@ -34,7 +34,17 @@
       "seed_files": {
         "{home}/settings.json": ".claude/settings.json",
         "{home}/CLAUDE.md": ".claude/CLAUDE.md",
-        "{state}/.claude.json": ".claude/.claude.json"
+        "{state}/.claude.json": ".claude/.claude.json",
+        "{home}/plugins/installed_plugins.json": ".claude/plugins/installed_plugins.json",
+        "{home}/plugins/known_marketplaces.json": ".claude/plugins/known_marketplaces.json"
+      },
+      "read_links": {
+        "{home}/plugins/cache": ".claude/plugins/cache",
+        "{home}/plugins/marketplaces": ".claude/plugins/marketplaces",
+        "{home}/plugins/synced": ".claude/plugins/synced",
+        "{home}/skills": ".claude/skills",
+        "{home}/agents": ".claude/agents",
+        "{home}/commands": ".claude/commands"
       }
     },
     "codex": {
@@ -47,9 +57,17 @@
       "seed_files": {
         "{home}/config.toml": ".codex/config.toml",
         "{home}/AGENTS.md": ".codex/AGENTS.md"
+      },
+      "read_links": {
+        "{home}/skills": ".codex/skills",
+        "{home}/rules": ".codex/rules",
+        "{home}/plugins/cache": ".codex/plugins/cache"
       }
     }
   },
+  "project_read_roots": [
+    "~/projects/webflow-ops-worktrees"
+  ],
   "optional_read_roots": [
     "~/.nvm/versions/node",
     "~/.local/share/claude",

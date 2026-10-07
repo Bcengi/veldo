@@ -81,6 +81,23 @@ for item in sys.argv[1:]:
         refused(name, lambda path=path: open(path, 'w').write('forged'))
     elif kind == 'make':
         refused(name, lambda path=path: open(path, 'x').write('forged'))
+    elif kind == 'ls':
+        r[name] = bool(os.listdir(path))
+    elif kind == 'create':
+        open(path, 'w').write('allowed')
+        r[name] = open(path).read() == 'allowed'
+    elif kind == 'home':
+        readable(name, os.path.join(os.environ['HOME'], path))
+    elif kind == 'home-make':
+        refused(name, lambda path=path: open(os.path.join(os.environ['HOME'], path), 'x').write('forged'))
+    elif kind == 'home-create':
+        target = os.path.join(os.environ['HOME'], path)
+        open(target, 'w').write('allowed')
+        r[name] = open(target).read() == 'allowed'
+    elif kind == 'tcp':
+        import socket
+        with socket.create_connection(('127.0.0.1', int(path)), timeout=5) as connection:
+            r[name] = connection.recv(16) == b'served'
 print(json.dumps(r))
 ''')
 
@@ -300,6 +317,108 @@ print(json.dumps(seen))
                set(defaults.values()) == {'.gitconfig'}
                and set(real['clients']['claude']['credentials'].values()) == {'.claude/.credentials.json'}
                and set(real['clients']['codex']['credentials'].values()) == {'.codex/auth.json'})
+
+        # ---- capabilities: plugins, skills, MCP network and reviewed project roots, read only ----
+        reset()
+        plugin = account / 'plugins/cache/market/tool/1.0.0'
+        plugin.mkdir(parents=True)
+        (plugin / 'plugin.json').write_text('{"name": "tool"}')
+        (account / 'plugins/marketplaces/market').mkdir(parents=True)
+        (account / 'plugins/marketplaces/market/marketplace.json').write_text('{"name": "market"}')
+        (account / 'plugins/installed_plugins.json').write_text(json.dumps(
+            {'version': 2, 'plugins': {'tool@market': [{'scope': 'user', 'installPath': str(plugin)}]}}))
+        (account / 'skills/writing').mkdir(parents=True)
+        (account / 'skills/writing/SKILL.md').write_text('# skill')
+        (codex_home / 'skills/.system/review').mkdir(parents=True)
+        (codex_home / 'skills/.system/review/SKILL.md').write_text('# codex skill')
+        (codex_home / 'rules').mkdir()
+        (codex_home / 'rules/default.rules').write_text('allow')
+        other = top / 'projects/other-worktrees'
+        (other / 'checkout/package').mkdir(parents=True)
+        (other / 'checkout/package/module.py').write_text('VALUE = 1')
+        (other / 'checkout/secret').mkdir()
+        (other / 'checkout/secret/token').write_text('denied')
+        project_policy = dict(client_policy, project_read_roots=[str(other), str(top / 'projects/absent')],
+                              deny_read=[str(other / 'checkout/secret')])
+        project_config = top / 'project-config.json'
+        project_config.write_text(json.dumps(project_policy))
+        server = __import__('socket').socket()
+        server.bind(('127.0.0.1', 0))
+        server.listen(1)
+        import threading
+
+        def serve():
+            try:
+                connection, _ = server.accept()
+                connection.sendall(b'served')
+                connection.close()
+            except OSError:
+                pass
+        threading.Thread(target=serve, daemon=True).start()
+        claude_items = [
+            'home:plugin-through-link:.claude/plugins/cache/market/tool/1.0.0/plugin.json',
+            'home:marketplace-through-link:.claude/plugins/marketplaces/market/marketplace.json',
+            'home:installed-list-copied:.claude/plugins/installed_plugins.json',
+            'home:skill-through-link:.claude/skills/writing/SKILL.md',
+            'read:plugin-install-path:%s' % (plugin / 'plugin.json'),
+            'home-create:plugin-state-writable:.claude/plugins/plugin-directory-cache-v2.json',
+            'home-make:plugin-write-refused:.claude/plugins/cache/market/tool/1.0.0/planted.json',
+            'home-make:skill-write-refused:.claude/skills/writing/planted.md',
+            'write:plugin-source-write-refused:%s' % (plugin / 'plugin.json'),
+            'make:account-write-refused:%s' % (account / 'planted.json'),
+            'read:project-file:%s' % (other / 'checkout/package/module.py'),
+            'ls:project-listing:%s' % (other / 'checkout/package'),
+            'write:project-write-refused:%s' % (other / 'checkout/package/module.py'),
+            'make:project-create-refused:%s' % (other / 'checkout/planted.py'),
+            'deny:project-denied-path:%s' % (other / 'checkout/secret/token'),
+            'tcp:mcp-network:%d' % server.getsockname()[1],
+            'make:outside-worktree-refused:%s' % (top / 'outside'),
+            'write:runner-refused:%s' % runner, 'write:authority-refused:%s' % launcher,
+            'make:store-refused:%s' % (store / 'planted.json'),
+            'create:worktree-writable:%s' % (worktree / 'edited')]
+        result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *claude_items],
+                     client='claude', env=client_env)
+        server.close()
+        found = results(result)
+        expect('VELDO-0210 capabilities/claude-run-starts: ' + result.stderr[-300:], result.returncode == 0)
+        for item in claude_items:
+            name = item.split(':')[1]
+            expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
+        expect('VELDO-0210 capabilities/refusals-left-nothing',
+               not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
+               and (plugin / 'plugin.json').read_text() == '{"name": "tool"}'
+               and (other / 'checkout/package/module.py').read_text() == 'VALUE = 1'
+               and not (other / 'checkout/planted.py').exists() and not (account / 'planted.json').exists()
+               and not (store / 'planted.json').exists())
+        codex_items = ['home:codex-skill-through-link:.codex/skills/.system/review/SKILL.md',
+                       'home:codex-rules-through-link:.codex/rules/default.rules',
+                       'home-make:codex-skill-write-refused:.codex/skills/.system/planted']
+        result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *codex_items,
+                                                'home:claude-state-absent:.claude/plugins/installed_plugins.json'],
+                     client='codex', env=client_env)
+        found = results(result)
+        expect('VELDO-0210 capabilities/codex-run-starts: ' + result.stderr[-300:], result.returncode == 0)
+        for item in codex_items:
+            name = item.split(':')[1]
+            expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
+        expect('VELDO-0210 capabilities/codex-run-has-no-claude-plugins',
+               found.get('claude-state-absent') == 'ENOENT')
+        # The gate profile takes none of the agent additions: no project root, no resolver file.
+        result = subprocess.run([sys.executable, '-I', '-S', str(launcher), '--config', str(project_config),
+                                 '--profile', 'gate', '--worktree', str(worktree), '--', sys.executable, '-I',
+                                 '-S', str(probe), 'deny:project:%s' % (other / 'checkout/package/module.py')],
+                                capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
+        expect('VELDO-0210 capabilities/gate-profile-has-no-project-roots: ' + result.stderr[-200:],
+               result.returncode == 0 and results(result).get('project') is True)
+        expect('VELDO-0210 capabilities/reviewed-project-list',
+               real['project_read_roots'] == ['~/projects/webflow-ops-worktrees']
+               and not set(real['project_read_roots']) & set(real['write_roots'])
+               and all(value.startswith('~/') for value in real['project_read_roots']))
+        expect('VELDO-0210 capabilities/client-files-stay-in-own-directory', all(
+            relative.split('/')[0] == '.' + name
+            for name, entry in real['clients'].items()
+            for kind in ('credentials', 'seed_files', 'read_links')
+            for relative in entry.get(kind, {}).values()))
 
 
 if leg_runs():

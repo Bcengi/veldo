@@ -744,7 +744,7 @@ def integrate(shared, private, agent):
              '+%s:%s' % (namespace, namespace)])
 
 
-def grants_for(config, authority, worktree, scratch, config_path=None):
+def grants_for(config, authority, worktree, scratch, config_path=None, extra_reads=()):
     def expand(value):
         return Path(value.format(authority=authority, worktree=worktree,
                                  scratch=scratch)).expanduser().resolve(strict=True)
@@ -784,6 +784,10 @@ def grants_for(config, authority, worktree, scratch, config_path=None):
         path = Path(value).expanduser()
         if path.exists():
             read(path.resolve(strict=True))
+    # The agent profile's own read-only additions (VELDO-0210): the reviewed project roots and the
+    # selected client's plugin and skill directories, through the same filter as every read root.
+    for path in extra_reads:
+        read(path)
     # The configuration this launcher hands its tree as VELDO_AGENT_CONFIG, read only, so a launcher
     # the tree starts reads the file it is named. Under another authority (a nested copy of the tree,
     # an installed pack, a scaffold) that file lies outside every other grant of this domain.
@@ -912,6 +916,21 @@ def client_files(config, name):
             source = source.format(**places)
             files[kind].append((home / source[2:] if source.startswith('~/') else Path(source), relative))
     return files
+
+
+def project_roots(config):
+    """The reviewed project directories agents read today (project_read_roots: other projects a
+    builder's tests read). '~' is the account's home; an absent root is skipped. Read only, agent
+    profile only: they are never write roots, and the filter of grants_for still removes the store
+    and every denied path beneath them."""
+    home, roots = account_home(), []
+    for value in config.get('project_read_roots', []):
+        path = home / value[2:] if value.startswith('~/') else Path(value)
+        if not path.is_absolute():
+            raise ValueError('project read root must be absolute: ' + value)
+        if path.exists():
+            roots.append(path.resolve(strict=True))
+    return roots
 
 
 def credential_sources(config):
@@ -1058,7 +1077,10 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     # Credentials are copied in, never read in place: every client's sources are denied for the run.
     config = dict(config, deny_read=[*config.get('deny_read', []), *map(str, credential_sources(config))])
     files = client_files(config, client) if client is not None else {}
-    grants, protected = grants_for(config, authority, worktree, scratch, config_path)
+    links = [(source.resolve(strict=True), relative) for source, relative in files.get('read_links', [])
+             if source.exists()]
+    extra = [*project_roots(config), *(target for target, _ in links)] if profile == 'agent' else []
+    grants, protected = grants_for(config, authority, worktree, scratch, config_path, extra)
     if profile == 'agent':
         grants += resolver_grants()
 
@@ -1068,6 +1090,12 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     store = Path(config['store']).resolve()
     for source, relative in config.get('seed_files', {}).items():
         seed(scratch, Path(source).expanduser(), relative, store)
+    # The client's installed plugins, marketplaces and skills, read only where they are, linked
+    # where the CLI looks for them under its private state directory.
+    for target, relative in links:
+        link = scratch / relative
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(target)
     for source, relative in files.get('seed_files', []):
         seed(scratch, source, relative, store)
     credentials = []
