@@ -173,8 +173,11 @@ with open(log, 'w') as out:
             state['cr'] = runtime_py
             tool = tmp / 'tool'
             made = run([sys.executable, '-I', '-m', 'venv', tool], env=dict(FIXED, HOME=str(tmp)))
-            state['pip_env'] = dict(FIXED, HOME=str(tmp), PIP_CONFIG_FILE=os.devnull, PIP_DISABLE_PIP_VERSION_CHECK='1',
-                                    PIP_NO_INPUT='1', PIP_NO_CACHE_DIR='1', PYTHONDONTWRITEBYTECODE='1')
+            # pip stashes what it uninstalls in a temporary directory: this fixture's own, never the
+            # host's /tmp, which a confined gate (VELDO-0208) cannot write.
+            state['pip_env'] = dict(FIXED, HOME=str(tmp), TMPDIR=str(tmp), PIP_CONFIG_FILE=os.devnull,
+                                    PIP_DISABLE_PIP_VERSION_CHECK='1', PIP_NO_INPUT='1', PIP_NO_CACHE_DIR='1',
+                                    PYTHONDONTWRITEBYTECODE='1')
             state['tool'] = tool / 'bin' / 'python'
             observed['tool_venv'] = made.returncode
         except Exception as error:  # noqa: BLE001 - recorded, then every row below reds by its assertion

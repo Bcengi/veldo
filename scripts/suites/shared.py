@@ -109,6 +109,55 @@ class ForkFlag:
         return self.wait(0)
 
 
+class ForkLock:
+    """multiprocessing's Lock across a fork, on a pipe holding one token (see ForkFlag): acquiring
+    reads the token, which exactly one reader gets, and releasing writes it back."""
+
+    def __init__(self):
+        self._r, self._w = os.pipe()
+        os.write(self._w, b'.')
+
+    def __enter__(self):
+        os.read(self._r, 1)
+        return self
+
+    def __exit__(self, *exc):
+        os.write(self._w, b'.')
+
+
+class ForkBarrier:
+    """multiprocessing's Barrier across a fork, on one pipe per party (see ForkFlag). A party names
+    its own index: wait() returns once every other party has arrived, and raises
+    threading.BrokenBarrierError when one aborted or the timeout passed first (which breaks it for
+    the others too, as a Barrier's does)."""
+
+    def __init__(self, parties):
+        self._pipes = [os.pipe() for _ in range(parties)]
+
+    def _tell(self, index, byte):
+        for other, (_, writer) in enumerate(self._pipes):
+            if other != index:
+                os.write(writer, byte)
+
+    def wait(self, index, timeout=None):
+        import select
+        import threading
+        import time
+        self._tell(index, b'.')
+        reader = self._pipes[index][0]
+        deadline = None if timeout is None else time.monotonic() + timeout
+        for _ in range(len(self._pipes) - 1):
+            left = None if deadline is None else max(0.0, deadline - time.monotonic())
+            if not select.select([reader], [], [], left)[0]:
+                self.abort(index)
+                raise threading.BrokenBarrierError
+            if os.read(reader, 1) != b'.':
+                raise threading.BrokenBarrierError
+
+    def abort(self, index):
+        self._tell(index, b'!')
+
+
 def tmpfile(dirpath, name, content):
     p = Path(dirpath) / name
     p.write_text(content)

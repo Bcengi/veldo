@@ -781,9 +781,10 @@ def _v85_suite():
                         command_id=next_id('concurrent'), item=concurrent_item,
                         item_version=item(concurrent_item)['version'], unit=raw('UNIT-85-concurrent', revision=revision))))
                 process_context = multiprocessing.get_context('fork')
-                barrier = process_context.Barrier(2)
-                verify_lock = process_context.Lock()
-                result_queue = process_context.Queue()
+                # Pipes, not a Barrier, Lock and Queue: those are POSIX semaphores in /dev/shm, which
+                # the gate's confinement (VELDO-0208) does not grant (see ForkFlag in shared.py).
+                barrier, verify_lock = ForkBarrier(2), ForkLock()
+                answers = [process_context.Pipe(duplex=False) for _ in range(2)]
 
                 def concurrent_publish(index):
                     connection = None
@@ -802,18 +803,18 @@ def _v85_suite():
                             plan = author(*args, **kwargs)
                             if first_attempt[0]:
                                 first_attempt[0] = False
-                                barrier.wait(timeout=20)
+                                barrier.wait(index, timeout=20)
                             return plan
 
                         allocator.author_allocation = synchronized
                         result = DP.Decomposition(backlog, allocator, materializer).publish(packets[index])
                     except Exception as error:
                         result = ('error', type(error).__name__)
-                        barrier.abort()
+                        barrier.abort(index)
                     finally:
                         if connection is not None:
                             connection.close()
-                    result_queue.put((os.getpid(), result))
+                    answers[index][1].send((os.getpid(), result))
 
                 workers = [process_context.Process(target=concurrent_publish, args=(i,)) for i in range(2)]
                 for worker in workers:
@@ -825,10 +826,8 @@ def _v85_suite():
                     if worker.is_alive():
                         worker.terminate()
                         worker.join(timeout=5)
-                observed = [result_queue.get(timeout=5) for _ in workers] if completed else []
+                observed = [answers[i][0].recv() for i in range(2) if answers[i][0].poll(5)] if completed else []
                 results = [result for _, result in observed]
-                result_queue.close()
-                result_queue.join_thread()
                 heads = []
                 for identity, version, text in conn.execute("SELECT id, version, data FROM entities WHERE kind='accepted_document'"):
                     head = json.loads(text)
