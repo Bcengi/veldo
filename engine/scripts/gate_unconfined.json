@@ -1,0 +1,42 @@
+{
+  "schema": "veldo.gate-unconfined/v1",
+  "authority": "Owner decision, Telegram 32403-32407, 2026-10-07, recorded in VELDO-0208 (Unconfined leg). Adding an entry changes this protected file.",
+  "stages": {
+    "unit": "python3 scripts/selftest.py",
+    "integration": "python3 scripts/check_first_use.py"
+  },
+  "suites": [
+    {"suite": "62_veldo_0039_dispatch", "reason": "systemd user manager: dispatch launches its worker into a transient unit under the authority's user slice"},
+    {"suite": "63_veldo_0040_containment", "reason": "systemd user manager: each worker runs in its dispatch's own systemd-run --user scope, which the suite starts, inspects and stops"},
+    {"suite": "63_veldo_0049_floor", "reason": "systemd user manager: enrolled dispatch moves through the authority's transient units"},
+    {"suite": "64_veldo_0050_proof", "reason": "systemd user manager: the executor's dispatches run as transient user units"},
+    {"suite": "66_veldo_0042_clones", "reason": "systemd user manager: worker clones are launched with systemd-run --user and checked through systemctl --user"},
+    {"suite": "67_veldo_0041_heartbeat", "reason": "systemd user manager: the trusted wrapper's heartbeat is observed on a live transient scope"},
+    {"suite": "67_veldo_0135_offers", "reason": "systemd user manager: offered work is dispatched into transient user units"},
+    {"suite": "71_veldo_0076_projects", "reason": "systemd user manager: project lifecycle runs over a real dispatch in a user scope"},
+    {"suite": "71_veldo_0130_api", "reason": "systemd user manager: the authenticated API runs as an installed user service under the authority slice"},
+    {"suite": "71_veldo_0138_channel_service", "reason": "systemd user manager: the installed authority service is started and checked through systemctl --user"},
+    {"suite": "73_veldo_0139_factory_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host"},
+    {"suite": "78_veldo_0060_claude_adapter", "reason": "systemd user manager: the Claude Code adapter is launched with systemd-run --user and placed in /run/user/<uid>"},
+    {"suite": "79_veldo_0061_codex_adapter", "reason": "systemd user manager: the Codex adapter is launched with systemd-run --user and placed in /run/user/<uid>"},
+    {"suite": "80_veldo_0155_claude_baseline", "reason": "systemd user manager: every Claude Code run starts in a transient user unit with its runtime directory in /run/user/<uid>"},
+    {"suite": "81_veldo_0156_codex_baseline", "reason": "systemd user manager: every Codex run starts in a transient user unit with its runtime directory in /run/user/<uid>"},
+    {"suite": "82_veldo_0129_worker_wiring", "reason": "systemd user manager: installed journeys drive the real Runner and authority services"},
+    {"suite": "82_veldo_0141_execution_record", "reason": "systemd user manager: worker runs are launched as transient user units and their records read from /run/user/<uid>"},
+    {"suite": "83_veldo_0154_factory_loop", "reason": "systemd user manager: the factory loop runs inside the installed authority user service"},
+    {"suite": "85_veldo_0158_credential_delivery", "reason": "systemd user manager: credentials are delivered to transient user units through /run/user/<uid>"},
+    {"suite": "85_veldo_0171_setup_api", "reason": "systemd user manager: factory setup installs the API's user services and checks them with systemctl --user"},
+    {"suite": "86_veldo_0127_agent_configuration", "reason": "systemd user manager: accepted role revisions run through both production adapters in transient user units"},
+    {"suite": "86_veldo_0148_re_land", "reason": "systemd user manager: re-landing drives the installed authority services"},
+    {"suite": "86_veldo_0189_engine_upgrade", "reason": "systemd user manager: re-running factory setup upgrades and restarts installed user services"},
+    {"suite": "87_veldo_0170_receiver_trust", "reason": "systemd user manager: the installed receiver runs under the authority's user slice"},
+    {"suite": "91_veldo_0167_setup_records", "reason": "systemd user manager: installed records and live subscribers are checked through systemctl --user"},
+    {"suite": "92_veldo_0088_pm_cycles", "reason": "systemd user manager: project cycles coordinate the installed Runner and graph services"},
+    {"suite": "93_veldo_0152_intake_routes", "reason": "systemd user manager: intake, activation and the factory pass run through the installed Runner service"},
+    {"suite": "94_veldo_0162_configuration_routes", "reason": "systemd user manager: the configuration routes are served by the installed authority service"},
+    {"suite": "96_veldo_0204_reservation_policies", "reason": "systemd user manager: the factory provisions reservation policies on installed user services"},
+    {"suite": "65_veldo_0067_edges", "reason": "nested custody confinement: the product's custody wrapper lists every ancestor of the protected directory up to /, which the gate domain cannot list"},
+    {"suite": "100_veldo_0207_case_reuse", "rows": "strace", "reason": "nested strace: the sandbox-valid-worker, *-caught-undeclared-* and startup-runtime-boundary rows trace workers, and the gate domain refuses ptrace"},
+    {"suite": "101_veldo_0208_landing_reuse", "rows": "strace", "reason": "nested strace: the authority-worker-* and authority-observes-kill rows trace workers, and the gate domain refuses ptrace"}
+  ]
+}

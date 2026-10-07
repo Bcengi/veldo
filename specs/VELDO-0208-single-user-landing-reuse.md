@@ -9,12 +9,13 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
-protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml", "scripts/gate_unconfined.json", "scripts/gate_legs.py", "scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py"]
+protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml", "scripts/gate_unconfined.json", "scripts/gate_legs.py", "scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py", "engine/scripts/gate_legs.py", "engine/scripts/gate_unconfined.json"]
 footprint:
   - ".veldo/candidate_git.py"
   - "engine/.veldo/candidate_git.py"
   - "engine/scripts/*.py"
   - "engine/scripts/agent_sandbox.json"
+  - "engine/scripts/gate_unconfined.json"
   - ".veldo/init_scaffold.py"
   - "engine/.veldo/init_scaffold.py"
   - "scripts/case_trace.py"
@@ -363,6 +364,10 @@ for these suites only: their code runs with the owner's own authority, as it did
   unreadable or short of an expected stage, the gate is RED with the field null. The record is a
   file candidate code in the unconfined leg can reach, so its absence never reads as "no unconfined
   leg ran".
+- The list and its runner are authority files: both are in reuse_evidence.AUTHORITY_FILES, so a
+  reused result is bound to the list and runner it ran under, and in init_scaffold's
+  _REUSE_AUTHORITY, so they install with the rest of the authority (canon copies in
+  engine/scripts). The shipped engine gate declares no unit command and does not call them.
 - What the list bounds, and what it does not. The list plus the protected dispatcher bound WHICH
   suites and rows run unconfined. They do not bound what the code inside a listed suite does: that
   code still runs with the owner's full permissions, exactly as every suite did before VELDO-0208,

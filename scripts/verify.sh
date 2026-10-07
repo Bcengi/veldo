@@ -23,8 +23,9 @@ veldo_candidate() {
 }
 # THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07). A stage the
 # authority's scripts/gate_unconfined.json declares, with exactly its declared command, runs as two
-# named legs: confined (every suite but the listed ones) and unconfined (only the listed ones, which
-# need the systemd user manager or nested strace). Both legs and the list are printed on the stage
+# named legs: confined (every suite but the ones listed whole, and every row but the listed rows of
+# a suite listed for some rows) and unconfined (only the listed suites and rows, which need the
+# systemd user manager or nested strace). Both legs and the list are printed on the stage
 # lines and recorded in the stamp and the gate event. The list is a protected file, read from the
 # authority, never from the candidate. With no list, every stage is confined, as before.
 # VELDO_LEGS_EXPECTED is asked of the authority's list BEFORE the stage runs, so a leg record that

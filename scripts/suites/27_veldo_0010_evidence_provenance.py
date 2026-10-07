@@ -319,8 +319,12 @@ def _vp_run_gate(gate_rel, declare_version):
         # the authority launcher, and the throwaway tree IS the authority installation of the gate
         # copied into it. So it carries that installation's boundary files from the same home as
         # the gate under test; without them the version cannot be read and null is correct.
+        # The unconfined list (VELDO-0208) is left out: this tree is an authority with no list, so no
+        # stage expects a leg and the stamp's key set stays the payload's.
         _vp_home = ROOT / gate_rel.rsplit("scripts/verify.sh", 1)[0]
         for _vp_rel in _VP_AUTHORITY_FILES:
+            if _vp_rel == "scripts/gate_unconfined.json":
+                continue
             (base / _vp_rel).parent.mkdir(parents=True, exist_ok=True)
             _vp_shutil.copy2(_vp_home / _vp_rel, base / _vp_rel)
         if declare_version is not None:

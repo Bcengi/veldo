@@ -1219,11 +1219,6 @@ def _v208_unconfined_leg():
            and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 32
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
-    expect('VELDO-0208 unconfined-leg/list-read-from-the-authority',
-           L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'
-           and '[ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]' in gate_text
-           and 'python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1"' in gate_text
-           and 'else veldo_stage "$name" "$cmd"; fi' in gate_text)
 
     # ---- which rows each leg owns ----------------------------------------------------------------
     env = {'VELDO_GATE_UNCONFINED': 'whole,rowed:strace', 'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
@@ -1303,13 +1298,14 @@ def _v208_unconfined_leg():
         (candidate / 'scripts/suites/manifest.json').write_text(json.dumps({
             'schema': 'veldo.suites/v1', 'entry': 'selftest.py', 'shared': 'shared.py',
             'suites': [{'name': n, 'file': n + '.py'} for n in bodies]}))
-        # The candidate asks for 02_asks in its own copy of the list; only the authority's counts.
-        asking = dict(document, suites=[{'suite': '02_asks', 'reason': 'the candidate asks to leave the domain'}])
-        (candidate / 'scripts/gate_unconfined.json').write_text(json.dumps(asking))
         authority_list = top / 'gate_unconfined.json'
         authority_list.write_text(json.dumps(dict(document, stages={'unit': 'python3 scripts/selftest.py'},
             suites=[{'suite': '01_listed', 'reason': 'fixture: needs what the domain refuses'},
                     {'suite': '03_rows', 'rows': 'strace', 'reason': 'fixture: rows that trace a worker'}])))
+        # The candidate's own copy of the list is the authority's plus 02_asks; only the authority's counts.
+        asking = json.loads(authority_list.read_text())
+        asking['suites'].append({'suite': '02_asks', 'reason': 'the candidate asks to leave the domain'})
+        (candidate / 'scripts/gate_unconfined.json').write_text(json.dumps(asking))
 
         def stage(name, command, listing=authority_list, extra=None):
             for marker in outside.iterdir():
@@ -1482,6 +1478,32 @@ def _v208_unconfined_leg():
                and all('unconfined' in d and d['unconfined'] is None for d in deleted[1])
                and deleted[1][0]['status'] == 'red' and deleted[1][1]['type'] == 'gate.failed'
                and all('unconfined' not in d for d in undeclared[1]) and undeclared[1][0]['status'] == 'green')
+
+        # The list is read from the authority, observed rather than read off verify.sh: verify.sh's own
+        # veldo_stage over a candidate whose copy of the list adds 02_asks runs 02_asks confined, and
+        # the record names the authority's list and entries, never the candidate's.
+        for marker in outside.iterdir():
+            marker.unlink()
+        own_record = top / 'own-list-record'
+        own = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_RECORD=%s\nVELDO_LEGS_EXPECTED=\n%s'
+                              'cd %s && veldo_stage unit "python3 scripts/selftest.py" && echo "expected=$VELDO_LEGS_EXPECTED"'
+                              % (authority, own_record, functions, candidate)],
+                             capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                             env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
+                                      V208_PROBE_OUTSIDE=str(outside)))
+        own_markers = dict(line.split()[1:3] for line in own.stdout.splitlines() if line.startswith('V208-PROBE '))
+        expect('VELDO-0208 unconfined-leg/list-read-from-the-authority: ' + repr((own.returncode, own_markers)),
+               L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'
+               and '[ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]' in gate_text
+               and 'else veldo_stage "$name" "$cmd"; fi' in gate_text
+               and '02_asks' in (candidate / 'scripts/gate_unconfined.json').read_text()
+               and own.returncode == 0 and 'expected=unit' in own.stdout
+               and own_markers.get('01_listed.unconfined') == 'wrote'
+               and own_markers.get('02_asks.confined') == 'refused'
+               and not [m for m in own_markers if m.startswith('02_asks') and m.endswith('.unconfined')]
+               and '02_asks' not in own.stdout.split('UNCONFINED LEG', 1)[-1].split('\n', 1)[0]
+               and L.stamp(own_record) == {'declaration': 'sha256:' + __import__('hashlib').sha256(
+                   authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
 
 
 if leg_runs():
