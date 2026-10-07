@@ -478,19 +478,35 @@ print(json.dumps(r))
                and [S.NAMESPACE_SETUP.find(step) for step in steps] == sorted(S.NAMESPACE_SETUP.find(step) for step in steps)
                and min(S.NAMESPACE_SETUP.find(step) for step in steps) >= 0
                and 'veldo-userns-child' in policy_text and 'profile veldo-userns ' in policy_text)
-        # What the setup builds: the helper drops every capability and sets no_new_privs after the
+        # What the setup builds: the helper drops every capability, reading each step back, after the
         # procfs mount and before it executes the init, and relays the stops as the init expects.
         helper_source = (ROOT / 'scripts/veldo_userns.c').read_text()
         child = helper_source[helper_source.index('if (init == 0) {'):]
+        dropping = helper_source[helper_source.index('static void drop_capabilities(void)'):
+                                 helper_source.index('int main(')]
         expect('VELDO-0210 namespace/helper-drops-everything-before-exec',
                all(token in helper_source for token in (
-                   'PR_CAPBSET_DROP', 'PR_CAP_AMBIENT_CLEAR_ALL', 'SYS_capset', 'PR_SET_NO_NEW_PRIVS',
-                   'SECBIT_NOROOT_LOCKED', 'unshare(CLONE_NEWUSER)', 'unshare(CLONE_NEWNS | CLONE_NEWPID)',
+                   'PR_CAPBSET_DROP', 'PR_CAP_AMBIENT_CLEAR_ALL', 'SYS_capset', 'SECBIT_NOROOT_LOCKED',
+                   'unshare(CLONE_NEWUSER)', 'unshare(CLONE_NEWNS | CLONE_NEWPID)',
                    '"%lu %lu 1\\n"', '"deny"', 'MS_RDONLY | MS_NOSUID | MS_NODEV | MS_NOEXEC',
                    '{PYTHON, "-I", "-S", argv[1], "namespace-init", argv[2], NULL}'))
+               and all(token in dropping for token in (
+                   'PR_SET_SECUREBITS, LOCKED_SECUREBITS', 'PR_GET_SECUREBITS', 'PR_CAPBSET_READ',
+                   'PR_CAP_AMBIENT_IS_SET', 'SYS_capget', 'errno != EINVAL'))
+               and all(bit in helper_source[:helper_source.index('static void fail(')] for bit in (
+                   'SECBIT_NOROOT ', 'SECBIT_NOROOT_LOCKED', 'SECBIT_NO_SETUID_FIXUP ', 'SECBIT_NO_SETUID_FIXUP_LOCKED',
+                   'SECBIT_KEEP_CAPS_LOCKED', 'SECBIT_NO_CAP_AMBIENT_RAISE ', 'SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED'))
                and child.index('mount("proc"') < child.index('drop_capabilities();') < child.index('execve(')
-               and helper_source.index('    drop_capabilities();\n    if (syscall(SYS_close_range')
+               and helper_source.index('    drop_capabilities();\n    if (prctl(PR_SET_NO_NEW_PRIVS')
+               < helper_source.index('if (syscall(SYS_close_range')
                < helper_source.index('for (;;) {\n        siginfo_t'))
+        # No no_new_privs before the exec, under which only a stack would be allowed: neither the
+        # dropping nor the init's path to its exec sets it, and an inherited one is refused.
+        expect('VELDO-0210 namespace/helper-execs-without-no-new-privs',
+               'NO_NEW_PRIVS' not in dropping and 'NO_NEW_PRIVS' not in child[:child.index('execve(')]
+               and helper_source.count('PR_SET_NO_NEW_PRIVS') == 1
+               and helper_source.index('if (prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 0)')
+               < helper_source.index('unshare(CLONE_NEWUSER)'))
         expect('VELDO-0210 namespace/helper-relays-as-the-init-expects',
                'static const int stops[] = {SIGTERM, SIGINT, SIGHUP};' in helper_source
                and 'kill(init, SIGRTMIN + index);' in helper_source
@@ -499,19 +515,23 @@ print(json.dumps(r))
         profiles = policy_text.split('\nprofile ')
         child_profile = [part for part in profiles if part.startswith('veldo-userns-child ')]
         helper_profile = [part for part in profiles if part.startswith('veldo-userns /')]
-        # Under no_new_privs only a stack is allowed: the helper's one exec rule stacks the child
-        # profile, so the tree runs under both and keeps both across every exec.
+        # The helper's one exec rule changes the interpreter it executes to the child profile outright,
+        # no stack, and the child keeps itself across every later exec.
         expect('VELDO-0210 namespace/policy-child-denies-capabilities-and-user-namespaces',
                'profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=' in policy_text
                and len(helper_profile) == 1
                and [line for line in helper_profile[0].splitlines()
                    if any(__import__('re').fullmatch(r'[pPcCuU]?i?x,?', word) for word in line.split())]
-               == ['  /** px -> &veldo-userns-child,']
+               == ['  /usr/bin/python3* px -> veldo-userns-child,']
+               and '&' not in ''.join(line for line in policy_text.splitlines() if not line.startswith('#'))
                and '  audit deny ptrace (tracedby),\n' in helper_profile[0]
                and 'change_profile' not in helper_profile[0]
                and [line.strip() for line in helper_profile[0].splitlines() if 'ptrace' in line]
                == ['ptrace (read) peer=veldo-userns{,-child},', 'ptrace (readby),', 'audit deny ptrace (tracedby),']
-               and len(child_profile) == 1 and all(rule in child_profile[0] for rule in (
+               and len(child_profile) == 1
+               and [line.strip() for line in child_profile[0].splitlines() if 'ptrace' in line]
+               == ['ptrace (read) peer=veldo-userns{,-child},', 'ptrace (readby),', 'audit deny ptrace (tracedby),']
+               and all(rule in child_profile[0] for rule in (
                    '  audit deny capability,\n', '  audit deny userns,\n', '  audit deny change_profile,\n',
                    '  audit deny mount,\n', '  /** ix,\n'))
                and not any(word in child_profile[0] for word in ('px', 'Px', 'ux', 'Ux', 'cx', 'Cx', 'pix', 'unconfined')))
@@ -584,7 +604,7 @@ print(json.dumps(r))
         # Nested means inside a tree this launcher's helper made: its AppArmor label, never any private
         # PID namespace (a container's, a systemd PrivatePIDs one).
         # Everything else that makes a tree nested is granted here (a marker, a private PID namespace,
-        # no capability), so the label alone decides: exactly the stacked one, nothing else.
+        # no capability), so the label alone decides: exactly the child profile's, nothing else.
         saved = (S.apparmor_enabled, S.apparmor_label, S.launcher_marker, S.INITIAL_PID_NAMESPACE,
                  S.capability_problem)
         try:
@@ -594,14 +614,13 @@ print(json.dumps(r))
             exact = S.nested_namespace()
             S.apparmor_label = lambda: 'docker-default (enforce)'
             container = S.nested_namespace()
-            S.apparmor_label = lambda: 'veldo-userns//&veldo-userns-child (complain)'
+            S.apparmor_label = lambda: 'veldo-userns-child (complain)'
             complaining = S.nested_namespace()
-            # Not the child alone, not the helper's own, not another order, mode or stack.
+            # Not the helper's own, not a stack holding the child, not another mode.
             near = {}
-            for other in ('veldo-userns-child (enforce)', 'veldo-userns (enforce)',
-                          'veldo-userns-child//&veldo-userns (enforce)', 'veldo-userns//&veldo-userns-child (mixed)',
-                          'veldo-userns//&veldo-userns-child//&docker-default (enforce)',
-                          'veldo-userns//&veldo-userns-child', 'unconfined', None):
+            for other in ('veldo-userns (enforce)', 'veldo-userns//&veldo-userns-child (enforce)',
+                          'veldo-userns-child//&veldo-userns (enforce)', 'veldo-userns-child//&docker-default (enforce)',
+                          'veldo-userns-child (mixed)', 'veldo-userns-child', 'unconfined', None):
                 S.apparmor_label = lambda: other
                 near[other] = S.nested_namespace()
         finally:
@@ -639,7 +658,7 @@ print(json.dumps(r))
         os.waitpid(forger, 0)
         expect('VELDO-0210 namespace/only-the-helpers-tree-counts-as-nested: %s' % forged,
                exact == 7 and container is None and complaining is None and set(near.values()) == {None}
-               and S.NAMESPACE_LABEL == 'veldo-userns//&veldo-userns-child (enforce)'
+               and S.NAMESPACE_LABEL == 'veldo-userns-child (enforce)'
                and forged == [None, None] and nested == (
                    S.launcher_marker() is not None)
                and "apparmor_label() == NAMESPACE_LABEL" in inspect.getsource(S.nested_namespace)
@@ -685,6 +704,44 @@ print(json.dumps(r))
         else:
             print('  SELFTEST SKIP: VELDO-0210 namespace/nested-check-reads-only-what-the-outer-tree-grants: '
                   'no AppArmor label on this host')
+        # The init's very first act sets no_new_privs and stops unless it holds nothing: every
+        # capability set empty (this host process keeps its bounding set, so it stops), the securebits
+        # exactly the locked ones, and the label exactly the child profile's.
+        read_end, write_end = os.pipe()
+        entrant = os.fork()
+        if not entrant:
+            try:
+                found = [S.init_entry_problem(), Path('/proc/self/status').read_text().count('NoNewPrivs:\t1')]
+                S.capability_problem = lambda status: None
+                found.append(S.init_entry_problem())
+
+                class Locked:
+                    def prctl(self, option, *rest):
+                        return S.LOCKED_SECUREBITS if option == 27 else S.ctypes.CDLL(None).prctl(option, *rest)
+                S.LIBC, S.apparmor_enabled = Locked(), (lambda: True)
+                for label in ('veldo-userns//&veldo-userns-child (enforce)', 'veldo-userns-child (complain)',
+                              S.NAMESPACE_LABEL):
+                    S.apparmor_label = lambda: label
+                    found.append(S.init_entry_problem())
+                os.write(write_end, json.dumps(found).encode())
+                os._exit(0)
+            except BaseException as error:
+                os.write(write_end, json.dumps(repr(error)).encode())
+                os._exit(1)
+        os.close(write_end)
+        entered = json.loads(os.read(read_end, 4096) or b'null')
+        os.close(read_end)
+        os.waitpid(entrant, 0)
+        first = inspect.getsource(S.namespace_init).split('    try:\n', 1)[1].lstrip().splitlines()[0]
+        expect('VELDO-0210 namespace/init-sets-no-new-privs-first-and-holds-nothing: %s' % entered,
+               isinstance(entered, list) and len(entered) == 6 and entered[0].startswith('CapBnd is ')
+               and entered[1] == 1 and entered[2].startswith('the securebits are ')
+               and all(str(problem).endswith('not %r' % S.NAMESPACE_LABEL) for problem in entered[3:5])
+               and entered[5] is None
+               and first == 'problem = init_entry_problem()'
+               and inspect.getsource(S.init_entry_problem).split('"""')[2].lstrip().startswith(
+                   'if LIBC.prctl(38, 1, 0, 0, 0):')
+               and S.LOCKED_SECUREBITS == 0xef)
         # The outer launcher creates the marker before it executes the helper, and every process of
         # the tree keeps it; a nested one hands on the marker it inherited.
         expect('VELDO-0210 namespace/launcher-creates-and-hands-on-the-marker',
