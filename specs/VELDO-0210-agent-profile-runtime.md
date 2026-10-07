@@ -113,9 +113,14 @@ acceptance_criteria:
       reads and writes only projects/<folder>, the folder Claude Code itself names for the worktree
       (claude_project, checked against two real Claude Code 2.1.290 runs), never projects/ itself
       or another project's folder (whose memory/MEMORY.md the next unconfined run loads as
-      instructions); Codex reads and writes only veldo-agent-state/<folder>/ under CODEX_HOME
-      (sessions/, memories/, history.jsonl), never the account-wide sessions/, memories/ or
-      history.jsonl the unconfined CLI uses. Before the grant and again once the confined tree is
+      instructions); Codex reads and writes only veldo-agent-state/<folder>-<digest>/ under
+      CODEX_HOME (sessions/, memories/, history.jsonl; <digest> the first 16 hex digits of the
+      SHA-256 of the worktree's canonical path), never the account-wide sessions/, memories/ or
+      history.jsonl the unconfined CLI uses. Two worktrees whose folder names coincide (every
+      character but ASCII letters and digits becomes '-') never share state: Codex's keys differ by
+      the digest, and Claude's folder is claimed by the first worktree that runs there
+      (veldo-agent-state/claims/<folder> under CLAUDE_CONFIG_DIR, never granted, holds the SHA-256
+      of its canonical path) and refused (exit 2) to any other. Before the grant and again once the confined tree is
       gone, before any unconfined process could read it, clean_state removes and names on stderr
       every symbolic link, every regular file with another link and every special file in that
       state, at any depth and in directories the run shut. Set: a second run of each client in the
@@ -125,7 +130,8 @@ acceptance_criteria:
       credential read, a write through .. from a state directory, a read through a link planted in
       one, a planted link, FIFO, hard link and link in a shut directory removed and reported, the
       sweep on its own over 1100 nested directories, and the refusals of a state entry outside the
-      configuration directory, one holding a credential and one that is a link. Completeness:
+      configuration directory, one holding a credential and one that is a link, and two worktrees
+      whose folder names coincide. Completeness:
       state_dirs and state_files under each client in agent_sandbox.json are the only write grants
       outside the worktree and scratch; state_grants() refuses any that overlaps the store, a
       protected or denied path, a credential source or the worktree, or that clean_state cannot
@@ -435,14 +441,23 @@ unchanged.
   allows. A stdio server configured later runs inside the domain with the same grants.
 - State. Each client may declare `state_dirs` and `state_files`, which must lie strictly beneath its
   `home` place (CLAUDE_CONFIG_DIR or CODEX_HOME, the runner's configuration directory for that
-  account); '{project}' in an entry is the worktree's Claude project folder name. Claude's is
+  account); '{project}' in an entry is the worktree's Claude project folder name, and
+  '{project_key}' that name followed by '-' and the first 16 hex digits of the SHA-256 of the
+  worktree's canonical path. Two worktrees can share a folder name ('/a/b-c' and '/a-b/c' both
+  name '-a-b-c'), never a key. State named by '{project}' is claimed: the launcher keeps, in
+  veldo-agent-state/claims/<folder> under that client's configuration directory (never granted),
+  the SHA-256 of the canonical path of the first worktree that ran there, created once (a private
+  file linked into place, so whole or absent, each component opened without following a link),
+  and refuses (exit 2) a run from any other worktree whose folder name is the same. A folder
+  Claude Code made before the first confined run there belongs to whichever worktree claims it
+  first. Claude's is
   projects/{project} (transcripts), the one folder Claude Code writes for this working directory:
   every UTF-16 code unit of the resolved worktree path that is not an ASCII letter or digit becomes
   '-', and past 200 characters the name is cut and followed by '-' and the base-36 absolute value
   of the path's 32-bit string hash, as Claude Code 2.1.290 computes it. The launcher drops
   CLAUDE_CODE_PROJECT_DIR_NAME from the agent's environment, which would name another folder, and
   sets PWD to the worktree. Claude's auto-memory of a linked worktree lives in the main checkout's
-  folder, which is not granted. Codex's are veldo-agent-state/{project}/sessions, memories and
+  folder, which is not granted. Codex's are veldo-agent-state/{project_key}/sessions, memories and
   history.jsonl under CODEX_HOME, linked where Codex looks for its own; the unconfined Codex never
   reads that subtree, and the confined one never sees the account-wide sessions/, memories/ or
   history.jsonl. An absent entry is created with every directory above it up to the configuration

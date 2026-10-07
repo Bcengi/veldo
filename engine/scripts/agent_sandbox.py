@@ -1180,7 +1180,10 @@ def client_files(config, name, worktree):
     files never land where the other client looks for its own (VELDO-0210). Persistent state
     (state_dirs, state_files) must lie strictly beneath the client's `home` place: the runner's
     configuration directory for that client and account. '{project}' in an entry is the worktree's
-    Claude project folder name (claude_project), so state is this worktree's only."""
+    Claude project folder name (claude_project), which two worktrees can share ('/a/b-c' and
+    '/a-b/c' both name '-a-b-c'): state named by it is claimed for this worktree (files['claim'],
+    checked by state_grants). '{project_key}' is that name, '-' and the first 16 hex digits of the
+    SHA-256 of the worktree's canonical path, which no two worktrees share."""
     clients = config.get('clients', {})
     if name not in clients:
         raise ValueError('unknown agent client: ' + str(name))
@@ -1192,16 +1195,20 @@ def client_files(config, name, worktree):
         if not path.is_absolute():
             raise ValueError('agent client place must be an absolute directory: ' + place)
         places[place] = path
-    project = claude_project(Path(worktree).resolve(strict=True))
-    files = {}
+    real = Path(worktree).resolve(strict=True)
+    project = claude_project(real)
+    digest = __import__('hashlib').sha256(os.fsencode(str(real))).hexdigest()
+    key = project + '-' + digest[:16]
+    files, claimed = {}, False
     for kind in ('credentials', 'seed_files', 'read_links', 'state_dirs', 'state_files'):
         files[kind] = []
         for source, relative in entry.get(kind, {}).items():
-            relative = relative.format(project=project)
+            claimed = claimed or (kind.startswith('state_') and '{project}' in source)
+            relative = relative.format(project=project, project_key=key)
             parts = Path(relative).parts
             if Path(relative).is_absolute() or '..' in parts or len(parts) < 2 or parts[0] != '.' + name:
                 raise ValueError('agent client file must lie under .%s: %s' % (name, relative))
-            source = source.format(project=project, **places)
+            source = source.format(project=project, project_key=key, **places)
             source = home / source[2:] if source.startswith('~/') else Path(source)
             if kind.startswith('state_') and ('home' not in places or '..' in source.parts
                                               or places['home'] not in source.parents):
@@ -1209,7 +1216,45 @@ def client_files(config, name, worktree):
                                  + str(source))
             files[kind].append((source, relative))
     files['home'] = places.get('home')
+    files['claim'] = (project, digest) if claimed else None
     return files
+
+
+def claim_state(home, project, digest):
+    """Claim the state named by the Claude project folder name `project` for the worktree whose
+    canonical path has the SHA-256 `digest`, or refuse (ValueError) when another worktree claimed it
+    first: the claim is home/veldo-agent-state/claims/<project>, holding that digest, created once
+    (written to a private file, then linked into place, so it is whole or absent) and never granted
+    to a run. Each component is opened without following a link."""
+    directory = scratch_directory(home, ['veldo-agent-state', 'claims'])
+    try:
+        try:
+            os.stat(project, dir_fd=directory, follow_symlinks=False)
+        except FileNotFoundError:
+            draft = '.%s.%d' % (project[:200], os.getpid())
+            fd = os.open(draft, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600,
+                         dir_fd=directory)
+            try:
+                os.write(fd, digest.encode())
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+            try:
+                os.link(draft, project, src_dir_fd=directory, dst_dir_fd=directory, follow_symlinks=False)
+            except FileExistsError:
+                pass
+            finally:
+                os.unlink(draft, dir_fd=directory)
+        fd = os.open(project, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
+        try:
+            claim = os.read(fd, 65) if stat.S_ISREG(os.fstat(fd).st_mode) else b''
+        finally:
+            os.close(fd)
+    finally:
+        os.close(directory)
+    if claim != digest.encode():
+        raise ValueError('agent client state %s belongs to another worktree (claim %s)'
+                         % (project, home / 'veldo-agent-state/claims' / project))
 
 
 def state_grants(files, refused):
@@ -1225,6 +1270,8 @@ def state_grants(files, refused):
     if home is None or not home.is_dir():
         return granted
     real_home = home.resolve(strict=True)
+    if files.get('claim'):
+        claim_state(real_home, *files['claim'])
     for kind, directory in (('state_dirs', True), ('state_files', False)):
         for source, relative in files.get(kind, []):
             parts = source.relative_to(home).parts

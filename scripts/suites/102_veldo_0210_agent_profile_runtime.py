@@ -1175,15 +1175,16 @@ print(json.dumps(seen))
                and S.claude_project('/home/u/projects/veldo-worktrees/agent-profile-runtime')
                == '-home-u-projects-veldo-worktrees-agent-profile-runtime')
         project = S.claude_project(worktree.resolve())
+        project_key = project + '-' + __import__('hashlib').sha256(os.fsencode(str(worktree.resolve()))).hexdigest()[:16]
         reset()
         expect('VELDO-0210 state/reviewed-state-list',
                real['clients']['claude'].get('state_dirs') == {'{home}/projects/{project}': '.claude/projects/{project}'}
                and not real['clients']['claude'].get('state_files')
                and real['clients']['codex'].get('state_dirs')
-               == {'{home}/veldo-agent-state/{project}/sessions': '.codex/sessions',
-                   '{home}/veldo-agent-state/{project}/memories': '.codex/memories'}
+               == {'{home}/veldo-agent-state/{project_key}/sessions': '.codex/sessions',
+                   '{home}/veldo-agent-state/{project_key}/memories': '.codex/memories'}
                and real['clients']['codex'].get('state_files')
-               == {'{home}/veldo-agent-state/{project}/history.jsonl': '.codex/history.jsonl'})
+               == {'{home}/veldo-agent-state/{project_key}/history.jsonl': '.codex/history.jsonl'})
         if live:
             # Another project's auto-memory, which the next unconfined Claude run loads as instructions.
             other_memory = account / 'projects/-home-u-other-project/memory/MEMORY.md'
@@ -1227,14 +1228,16 @@ print(json.dumps(seen))
                    and (kept / 'session.jsonl').read_text() == 'allowed')
             expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
                    sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
-                                                                  'settings.json']
+                                                                  'settings.json', 'veldo-agent-state']
+                   and sorted(p.name for p in (account / 'veldo-agent-state').iterdir()) == ['claims']
+                   and sorted(p.name for p in (account / 'veldo-agent-state/claims').iterdir()) == [project]
                    and (account / 'settings.json').read_text() == '{"theme": "auto"}'
                    and (account / '.claude.json').read_text() == '{"numStartups": 1}'
                    and (account / '.credentials.json').read_text() == old_token
                    and other_memory.read_text() == '# trusted memory\n'
                    and sorted(p.name for p in other_memory.parent.iterdir()) == ['MEMORY.md']
                    and sorted(p.name for p in (account / 'projects').iterdir()) == ['-home-u-other-project', project])
-            codex_state = codex_home / 'veldo-agent-state' / project
+            codex_state = codex_home / 'veldo-agent-state' / project_key
             first = ['home-create:session-written:.codex/sessions/rollout.jsonl',
                      'home-create:memory-written:.codex/memories/note.md',
                      'home-create:history-written:.codex/history.jsonl',
@@ -1272,8 +1275,8 @@ print(json.dumps(seen))
                    result.returncode == 0 and found.get('session-seen') == 'ENOENT'
                    and found.get('memory-seen') == 'ENOENT' and found.get('history-seen') is True
                    and found.get('first-worktree-history') is True
-                   and (codex_home / 'veldo-agent-state' / S.claude_project(other_worktree.resolve())
-                        / 'history.jsonl').read_text() == '')
+                   and (codex_home / 'veldo-agent-state' / (S.claude_project(other_worktree.resolve()) + '-'
+                        + __import__('hashlib').sha256(os.fsencode(str(other_worktree.resolve()))).hexdigest()[:16]) / 'history.jsonl').read_text() == '')
             expect('VELDO-0210 state/codex-home-otherwise-untouched',
                    sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
                    and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
@@ -1281,6 +1284,40 @@ print(json.dumps(seen))
                    and (codex_home / 'auth.json').read_text() == codex_token)
         else:
             skip('state/* rows of a running tree (both clients, other project, other worktree, planted entries)')
+        # Two worktrees whose Claude folder names coincide ('-' for every other character) never share
+        # state: Codex's is keyed by a digest of the canonical path as well, Claude's folder (the name
+        # Claude Code itself uses) is claimed by the first worktree and refused to the other.
+        def path_key(tree):
+            return S.claude_project(tree.resolve()) + '-' + __import__('hashlib').sha256(os.fsencode(str(tree.resolve()))).hexdigest()[:16]
+        claim_home = top / 'claim-home'
+        claim_home.mkdir()
+        first_tree, second_tree = top / 'collide-a' / 'b', top / 'collide' / 'a-b'
+        first_tree.mkdir(parents=True)
+        second_tree.mkdir(parents=True)
+        clients = {name: dict(entry, places=dict(entry['places'], home=['V210_NO_SUCH_VARIABLE', str(claim_home)]))
+                   for name, entry in real['clients'].items()}
+        collided = S.claude_project(first_tree.resolve()) == S.claude_project(second_tree.resolve())
+        codex_sources = [sorted(str(source.relative_to(claim_home)) for kind in ('state_dirs', 'state_files')
+                                for source, _ in S.client_files({'clients': clients}, 'codex', tree)[kind])
+                         for tree in (first_tree, second_tree)]
+        claimed = []
+        for tree in (first_tree, second_tree, first_tree):
+            try:
+                granted = S.state_grants(S.client_files({'clients': clients}, 'claude', tree), [])
+                claimed.append([str(path) for path, _ in granted])
+            except ValueError as error:
+                claimed.append(str(error))
+        folder = claim_home / 'projects' / S.claude_project(first_tree.resolve())
+        claim = claim_home / 'veldo-agent-state/claims' / S.claude_project(first_tree.resolve())
+        expect('VELDO-0210 state/colliding-worktrees-never-share-state: %s %s' % (codex_sources, claimed),
+               collided and path_key(first_tree) != path_key(second_tree)
+               and codex_sources == [sorted('veldo-agent-state/%s/%s' % (path_key(tree), name)
+                                            for name in ('sessions', 'memories', 'history.jsonl'))
+                                     for tree in (first_tree, second_tree)]
+               and claimed[0] == [str(folder)] and claimed[2] == [str(folder)]
+               and isinstance(claimed[1], str) and 'belongs to another worktree' in claimed[1]
+               and claim.read_text() == __import__('hashlib').sha256(os.fsencode(str(first_tree.resolve()))).hexdigest()
+               and sorted(p.name for p in claim.parent.iterdir()) == [claim.name])
         # clean_state on its own: every link, extra hard link and special file goes, at any depth and
         # in a shut directory; the files a CLI writes stay.
         swept = top / 'swept-state'

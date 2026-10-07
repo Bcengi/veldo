@@ -67,11 +67,11 @@
         "{home}/plugins/cache": ".codex/plugins/cache"
       },
       "state_dirs": {
-        "{home}/veldo-agent-state/{project}/sessions": ".codex/sessions",
-        "{home}/veldo-agent-state/{project}/memories": ".codex/memories"
+        "{home}/veldo-agent-state/{project_key}/sessions": ".codex/sessions",
+        "{home}/veldo-agent-state/{project_key}/memories": ".codex/memories"
       },
       "state_files": {
-        "{home}/veldo-agent-state/{project}/history.jsonl": ".codex/history.jsonl"
+        "{home}/veldo-agent-state/{project_key}/history.jsonl": ".codex/history.jsonl"
       }
     }
   },
