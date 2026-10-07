@@ -79,6 +79,11 @@ def landlock(grants, profile="agent", broker=None):
     # The IPC filter goes first: whether a broker serves this tree decides the terminal grant.
     mode = broker.install(libc) if broker is not None else install_filter(libc, ipc_program())
     grants = list(grants)
+    if profile in ('gate', 'worker'):
+        # The repository's suites and the control plane they test read /proc (mounts, process
+        # identity, cgroups). Read only: Landlock's ptrace scope still refuses another domain's
+        # environ, fd, root, cwd, mem and maps, so what is left is what any account can read.
+        grants.append((PROC, READ))
     if mode != 'strict':
         # A fresh terminal pair per open. Its peer comes only through the broker (TIOCGPTPEER),
         # and /dev/pts stays ungranted, so no other terminal on the host is reachable.
@@ -109,6 +114,7 @@ SECCOMP_NOTIFY, SECCOMP_ALLOW = 0x7fc00000, 0x7fff0000
 TIOCGPTPEER = 0x5441
 DEVICE_IOCTL = 1 << 15
 PTMX = Path('/dev/ptmx')
+PROC = Path('/proc')
 BROKERED = 'VELDO_SANDBOX_BROKERED'
 
 
