@@ -632,12 +632,14 @@ class Workers:
             self.cleanup(on_result)
 
 
-def worker(job):
-    sandbox = load(ROOT / 'scripts/mutation_sandbox.py')
-    if 'runtime_paths' in job:
-        sandbox.restrict(ROOT, Path(os.environ['TMPDIR']), job['runtime_paths'], legacy=False)
-    else:
-        sandbox.restrict(ROOT, Path(os.environ['TMPDIR']))
+def worker(job, keep=()):
+    # The same confinement as a coordinator's worker (reuse_worker.py): the gate profile's domain
+    # and network rule. Only the confined child returns; the parent exits with its status. The
+    # repository's Git common directory stays readable, as it is when it lies inside ROOT, so a
+    # linked worktree's suites find their repository as the main checkout's do.
+    load(ROOT / 'scripts/mutation_sandbox.py').confine(ROOT, ROOT, Path(os.environ['TMPDIR']),
+                                                       job.get('runtime_paths'), keep=keep,
+                                                       reads=(common_directory(ROOT),))
     case = job['case']
     driver = load(ROOT / 'scripts' / case['driver'])
     owner = load(ROOT / 'scripts/check_teeth_mutations.py')

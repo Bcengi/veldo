@@ -1,91 +1,69 @@
-"""Linux Landlock filesystem boundary inherited by every mutation descendant.
+"""The one confinement of a mutation worker and of a case-input proposal's traced worker.
 
-The coordinator is trusted. Workers can read the frozen tree and runtime, and
-write only their private scratch directory. No /proc or caller home is exposed.
-Unsupported kernels fail closed; there is no unsandboxed fallback.
+The coordinator is trusted. Workers read the frozen tree and runtime, and write only their
+private scratch directory; caller home is not exposed. The domain starts through
+agent_sandbox.fork_gate_domain and agent_sandbox.landlock (worker profile), so a worker has
+exactly the gate profile's network rule (VELDO-0208, owner decision Telegram 32421): this
+module installs no network or socket rule of its own. Unsupported kernels fail closed; there is
+no unsandboxed fallback.
 """
-import ctypes
+import importlib.util
 import os
-import errno
-import platform
 from pathlib import Path
+import signal
+import sys
 
 RUNTIME = ('/usr', '/lib', '/lib64', '/etc')
-READ = (1 << 0) | (1 << 2) | (1 << 3)
-WRITE = sum(1 << n for n in (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
 
 
-def restrict(root, scratch, runtime=RUNTIME, *, legacy=True):
-    libc = ctypes.CDLL(None, use_errno=True)
-    def call(number, *args):
-        result = libc.syscall(number, *args)
-        if result < 0:
-            raise OSError(ctypes.get_errno(), 'mutation sandbox unavailable')
-        return result
-    if platform.machine() != 'x86_64':
-        raise RuntimeError('mutation sandbox supports reviewed x86_64 syscall numbers only')
-    abi = call(444, 0, 0, 1)
-    if abi < 3:
-        raise RuntimeError('mutation sandbox needs Landlock ABI 3')
-    class Ruleset(ctypes.Structure):
-        _fields_ = [('access', ctypes.c_uint64)]
-    class Beneath(ctypes.Structure):
-        _pack_ = 1
-        _fields_ = [('access', ctypes.c_uint64), ('parent', ctypes.c_int32)]
-    rules = Ruleset(READ | WRITE)
-    fd = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
-    try:
-        compatibility = [('/proc/mounts', READ), ('/sys', READ),
-                         ('/dev/shm', READ | WRITE),
-                         ('/run/user/' + str(os.getuid()), READ | WRITE)] if legacy else []
-        for path, access in [(root, READ), (scratch, READ | WRITE), *compatibility,
-                             *((p, READ) for p in runtime),
-                             ('/dev/null', (1 << 1) | (1 << 2)),
-                             ('/dev/urandom', 1 << 2)]:
-            path = Path(path)
-            if not path.exists():
-                continue
-            if not path.is_dir():
-                access &= (1 << 0) | (1 << 1) | (1 << 2) | (1 << 14)
-            parent = os.open(path, os.O_PATH | os.O_CLOEXEC)
-            try:
-                rule = Beneath(access, parent)
-                call(445, fd, 1, ctypes.byref(rule), 0)
-            finally:
-                os.close(parent)
-        if libc.prctl(38, 1, 0, 0, 0):
-            raise OSError(ctypes.get_errno(), 'cannot set no_new_privs')
-        call(446, fd, 0)
-    finally:
-        os.close(fd)
-
-    network_filter(libc)
+def load(path):
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def network_filter(libc):
-    """No service escape or network, including inherited sockets and io_uring.
+def confine(authority, root, scratch, runtime_paths=None, keep=(), reads=()):
+    """Confine this process and every descendant before any candidate code runs.
 
-    Seccomp complements Landlock on kernels without network/abstract Unix scope.
-    Unknown architectures and unavailable filtering fail closed before worker exec.
-    Authority mutation workers do not use this boundary: they take the gate profile's network
-    rule (agent_sandbox.fork_gate_domain).
+    authority is the trusted checkout whose agent_sandbox.py and agent_sandbox.json are loaded;
+    root is the tree the worker reads (the frozen snapshot or the repository), and reads any further
+    read-only roots the caller owns (a linked worktree's Git common directory). runtime_paths is a
+    declared case's keyed runtime set; without it (a fresh worker) the default runtime and the
+    installed tools the gate profile grants the same suites are readable. As in the gate launcher,
+    every descriptor above the standard three is closed in the domain except `keep` (the caller's
+    own authority channels), so no inherited socket enters it. The calling process forks: the
+    parent stays outside the domain as the child's broker (never running candidate code) and
+    exits with the child's status; only the child returns, confined.
     """
-    class Filter(ctypes.Structure):
-        _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
-                    ('jf', ctypes.c_ubyte), ('k', ctypes.c_uint)]
-
-    class Program(ctypes.Structure):
-        _fields_ = [('length', ctypes.c_ushort), ('filter', ctypes.POINTER(Filter))]
-
-    deny = 0x50000 | errno.EPERM
-    code = [(0x20, 0, 0, 4), (0x15, 1, 0, 0xc000003e), (0x06, 0, 0, 0x80000000),
-            (0x20, 0, 0, 0), (0x35, 0, 1, 0x40000000), (0x06, 0, 0, deny)]
-    # socket, connect, bind, sendto/sendmsg/sendmmsg and asynchronous dispatch.
-    # socketpair remains local; sending through it is deliberately denied too.
-    for number in (41, 42, 44, 46, 49, 307, 425, 426, 427):
-        code += [(0x15, 0, 1, number), (0x06, 0, 0, deny)]
-    code += [(0x06, 0, 0, 0x7fff0000)]
-    filters = (Filter * len(code))(*(Filter(*item) for item in code))
-    program = Program(len(code), filters)
-    if libc.prctl(22, 2, ctypes.byref(program), 0, 0):
-        raise OSError(ctypes.get_errno(), 'sandbox network filter unavailable')
+    authority, root, scratch = Path(authority), Path(root), Path(scratch)
+    boundary = load(authority / 'scripts/agent_sandbox.py')
+    grants = [(root, boundary.READ), (scratch, boundary.READ | boundary.WRITE)]
+    grants += [(Path(p), boundary.READ) for p in reads]
+    grants += [(Path(p).resolve(), boundary.READ)
+               for p in (RUNTIME if runtime_paths is None else runtime_paths) if Path(p).exists()]
+    if runtime_paths is None:
+        # A fresh worker reads the installed tools the gate profile grants the same suites (the
+        # Codex and Claude Code binaries, the langgraph runtime), read only. A declared case runs
+        # only its keyed runtime set, so it gets none of them.
+        config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
+        grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]
+    grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
+    # Suites serve and dial Unix sockets in their scratch and drive terminals; the parent brokers
+    # them. The network rule is the gate profile's own (VELDO-0208, owner decision Telegram 32421).
+    sys.stdout.flush()
+    sys.stderr.flush()
+    pid, side = boundary.fork_gate_domain([scratch])
+    if pid:
+        try:
+            _, status = os.waitpid(pid, 0)
+        finally:
+            if side is not None:
+                side.close()
+        if os.WIFSIGNALED(status):
+            signal.signal(os.WTERMSIG(status), signal.SIG_DFL)
+            os.kill(os.getpid(), os.WTERMSIG(status))
+        os._exit(os.waitstatus_to_exitcode(status))
+    boundary.close_descriptors([], keep=(*side.keep(), *keep))
+    if boundary.landlock(grants, profile='worker', broker=side) != 'strict':
+        os.environ[boundary.BROKERED] = '1'

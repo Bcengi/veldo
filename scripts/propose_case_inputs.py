@@ -39,7 +39,9 @@ def probe(jobfile, auditfile):
                 audit.flush()
         sys.addaudithook(hook)
         gate = load_gate()
-        print(json.dumps(gate.worker(json.loads(Path(jobfile).read_text()))))
+        # The worker is confined exactly as a coordinator's (mutation_sandbox.confine); the audit
+        # file is the one descriptor it keeps.
+        print(json.dumps(gate.worker(json.loads(Path(jobfile).read_text()), keep=(audit.fileno(),))))
 
 
 def trace_case(gate, case):
@@ -56,7 +58,7 @@ def trace_case(gate, case):
                                      '--probe', str(job), str(audit)])
             start = time.monotonic()
             with open(directory / 'stdout', 'w+b') as stdout, open(directory / 'stderr', 'w+b') as stderr:
-                proc = subprocess.Popen(argv, env=gate.fixed_env(directory), cwd=ROOT,
+                proc = subprocess.Popen(argv, env=gate.fixed_env(directory), cwd=ROOT, stdin=subprocess.DEVNULL,
                                         stdout=stdout, stderr=stderr, start_new_session=True)
                 try:
                     code = proc.wait(timeout=90)

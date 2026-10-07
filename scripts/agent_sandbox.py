@@ -221,7 +221,7 @@ class Handoff:
             os.close(self.reply)
 
 
-def fork_brokered(roots, network):
+def fork_brokered(roots):
     """Fork a child that will confine itself with a Handoff. Returns (0, Handoff) in the child
     and (pid, Broker or None) in the parent once the child has installed its filter: a Broker
     serving its listener, or None when the child is strict or failed first."""
@@ -244,7 +244,7 @@ def fork_brokered(roots, network):
             line += chunk
         if line.strip() not in (b'', b'-'):
             try:
-                broker = Broker(roots, network)
+                broker = Broker(roots)
                 broker.attach(pid, int(line))
             except (OSError, ValueError):
                 broker = None
@@ -258,12 +258,13 @@ def fork_brokered(roots, network):
 
 
 def fork_gate_domain(roots):
-    """fork_brokered with the gate profile's network rule. The gate and every confined mutation
-    worker start their domain here, so they have one network rule and it cannot drift (VELDO-0208,
+    """fork_brokered with the gate profile's network rule. The gate launcher and
+    mutation_sandbox.confine (every confined mutation worker and case-input proposal) start their
+    domain here, so they have one network rule and it cannot drift (VELDO-0208,
     owner decision Telegram 32421): TCP/TLS pass the broker; a Unix address is performed only
     beneath `roots`; ipc_program refuses inherited service sockets and io_uring, and the Landlock
     scope abstract sockets, alike in both."""
-    return fork_brokered(roots, network=True)
+    return fork_brokered(roots)
 
 
 class Broker:
@@ -275,13 +276,12 @@ class Broker:
     that keeps abstract sockets inside the domain. connect and addressed sends go through an
     O_PATH descriptor of the resolved socket. bind runs in a helper confined (Landlock) to create
     socket files only beneath `roots`, so the bound name is the caller's own path. Other address
-    families pass through only when `network` (gate: TCP is allowed) and are refused otherwise.
+    families (TCP/TLS) pass through: the gate profile's network rule, the only one there is.
     TIOCGPTPEER is answered with the peer of a terminal master the caller itself holds.
     """
     LIMIT = 1 << 24
 
-    def __init__(self, roots, network):
-        self.network = network
+    def __init__(self, roots):
         self.libc = libc = ctypes.CDLL(None, use_errno=True)
         for call in (libc.connect, libc.bind):
             call.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
@@ -494,8 +494,6 @@ class Broker:
             raise OSError(errno.EINVAL, 'short address')
         family = int.from_bytes(raw[:2], 'little')
         if family != 1:
-            if not self.network:
-                raise OSError(errno.EACCES, 'network address in a no-network domain')
             return raw, None
         path = raw[2:]
         if not path:

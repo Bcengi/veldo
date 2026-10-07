@@ -12,7 +12,6 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import signal
 import stat
 import sys
 
@@ -58,35 +57,10 @@ def main():
             raise ValueError('an unconfined worker runs no declared case')
         observe(gate, owner, job, root)
         return
-    # Never load the candidate's sandbox or worker driver, even for fresh cases.
-    grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
-    grants += [(Path(p).resolve(), boundary.READ)
-               for p in job.get('runtime_paths', sandbox.RUNTIME) if Path(p).exists()]
-    if 'runtime_paths' not in job:
-        # A fresh worker reads the installed tools the gate profile grants the same suites (the
-        # Codex and Claude Code binaries, the langgraph runtime), read only. A declared case runs
-        # only its keyed runtime set, so it gets none of them.
-        config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
-        grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]
-    grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
-    # Suites serve and dial Unix sockets in their scratch and drive terminals. This process stays
-    # outside the domain as their broker (never running candidate code); the child confines itself.
-    # The network rule is the gate profile's own (VELDO-0208, owner decision Telegram 32421).
-    sys.stdout.flush()
-    sys.stderr.flush()
-    pid, side = boundary.fork_gate_domain([Path(os.environ['TMPDIR'])])
-    if pid:
-        try:
-            _, status = os.waitpid(pid, 0)
-        finally:
-            if side is not None:
-                side.close()
-        if os.WIFSIGNALED(status):
-            signal.signal(os.WTERMSIG(status), signal.SIG_DFL)
-            os.kill(os.getpid(), os.WTERMSIG(status))
-        os._exit(os.waitstatus_to_exitcode(status))
-    if boundary.landlock(grants, profile='worker', broker=side) != 'strict':
-        os.environ[boundary.BROKERED] = '1'
+    # Never load the candidate's sandbox or worker driver, even for fresh cases. The confinement is
+    # mutation_sandbox.confine, the gate profile's domain and network rule (VELDO-0208, owner
+    # decision Telegram 32421); this process returns from it only as the confined child.
+    sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=(ledger,))
     observe(gate, owner, job, root)
 
 
