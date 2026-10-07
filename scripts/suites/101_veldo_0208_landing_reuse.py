@@ -1073,7 +1073,7 @@ print(json.dumps(r))
         import socket as _v208_socket
         roots = top / 'broker-root'
         roots.mkdir()
-        broker = boundary.Broker([roots], network=False)
+        broker = boundary.Broker([roots])
         try:
             outcomes = []
             for target in (roots / 'inside', outside):
@@ -1836,14 +1836,16 @@ def _v208_installed_tools():
         with patch.dict(os.environ, {'HOME': str(top)}):
             from_scratch_home = B.installed_tools(real)
         expected_real = [(home / v[2:]).resolve() for v in real['optional_read_roots'] if (home / v[2:]).is_dir()]
-    worker_source = (ROOT / 'scripts/reuse_worker.py').read_text()
+    # Every confined worker takes its grants from mutation_sandbox.confine (one_network_rule checks
+    # that reuse_worker.py and check_gate_mutations.worker confine through it).
+    sandbox_source = (ROOT / 'scripts/mutation_sandbox.py').read_text()
     expect('VELDO-0208 worker/installed-tools-read-only: ' + repr((granted, from_scratch_home)),
            granted == [(top / 'tool').resolve()]
            and from_scratch_home == expected_real
            and {'~/.nvm/versions/node', '~/.local/share/claude', '~/.local/share/veldo/langgraph'}
                <= set(real['optional_read_roots'])
-           and "if 'runtime_paths' not in job:" in worker_source
-           and "grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]" in worker_source)
+           and "    if runtime_paths is None:\n" in sandbox_source
+           and "grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]" in sandbox_source)
 
 
 if leg_runs():
@@ -2008,19 +2010,143 @@ def network_rule_probe(port, inherited, abstract, scratch):
     expect('VELDO-0208 profiles/worker-still-refuses-services: ' + repr(worker),
            all(worker.get(name) in ('EPERM', 'EACCES') for name in refused)
            and worker.get('inherited-socket') == 'EBADF')
-    worker_source = (ROOT / 'scripts/reuse_worker.py').read_text()
-    sandbox_source = (ROOT / 'scripts/agent_sandbox.py').read_text()
     expect('VELDO-0208 profiles/worker-network-rule-is-gate-rule: ' + repr((worker, gate_rule))
            + ' ' + gated.stderr[-300:],
-           worker != {} and worker == gate_rule
-           and "pid, side = boundary.fork_gate_domain([Path(os.environ['TMPDIR'])])" in worker_source
-           and 'pid, side = fork_gate_domain(roots)' in sandbox_source
-           and sandbox_source.count('fork_brokered(') == 2 and 'network_filter' not in sandbox_source
-           and 'fork_brokered' not in worker_source)
+           worker != {} and worker == gate_rule and _v208_one_network_rule() == [])
+
+
+def _v208_one_network_rule():
+    """Why there is no second network rule, structurally: the problems found, [] when none.
+
+    Only agent_sandbox.py installs a seccomp filter or a Landlock network rule anywhere in the
+    machinery (scripts, engine, .veldo, packs; suites and proofs aside); its broker has no
+    no-network mode; fork_gate_domain is the only way into fork_brokered; mutation_sandbox has no
+    rule of its own and confines through fork_gate_domain and the worker landlock; and the
+    coordinator's workers (reuse_worker.py), the developer worker and the case-input proposal
+    (check_gate_mutations.worker, which propose_case_inputs.py probes) all confine through it."""
+    import ast
+    import inspect
+    import importlib.util
+    from pathlib import Path
+    import re
+
+    problems = []
+    seccomp = re.compile(r'prctl\(\s*22\b|syscall\(\s*(ctypes\.c_long\()?317\b|PR_SET_SECCOMP|SECCOMP_SET_MODE'
+                         r'|handled_access_net|\(\s*[\'"]net[\'"]\s*,\s*ctypes')
+    for base in ('scripts', 'engine', '.veldo', 'packs'):
+        for path in sorted((ROOT / base).rglob('*.py')):
+            relative = path.relative_to(ROOT)
+            if 'suites' in relative.parts or path.name == 'agent_sandbox.py':
+                continue
+            if seccomp.search(path.read_text(errors='replace')):
+                problems.append('a network or seccomp rule outside agent_sandbox.py: ' + str(relative))
+
+    def load(relative):
+        spec = importlib.util.spec_from_file_location('v208_rule_' + Path(relative).stem, ROOT / relative)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def calls(function):
+        tree = ast.parse(inspect.getsource(function).lstrip() if not isinstance(function, str) else function)
+        return [ast.unparse(node.func) for node in ast.walk(tree) if isinstance(node, ast.Call)]
+
+    for prefix in ('', 'engine/'):
+        boundary = load(prefix + 'scripts/agent_sandbox.py')
+        sandbox = load(prefix + 'scripts/mutation_sandbox.py')
+        gate = load(prefix + 'scripts/check_gate_mutations.py')
+        source = (ROOT / prefix / 'scripts/agent_sandbox.py').read_text()
+        if list(inspect.signature(boundary.Broker).parameters) != ['roots'] or 'self.network' in source:
+            problems.append(prefix + 'agent_sandbox.Broker has a network switch')
+        if list(inspect.signature(boundary.fork_brokered).parameters) != ['roots']:
+            problems.append(prefix + 'agent_sandbox.fork_brokered has a network switch')
+        if (source.count('fork_brokered(') != 2 or calls(boundary.fork_gate_domain) != ['fork_brokered']
+                or 'pid, side = fork_gate_domain(roots)' not in source):
+            problems.append(prefix + 'agent_sandbox: a way into the domain other than fork_gate_domain')
+        if hasattr(sandbox, 'restrict') or hasattr(sandbox, 'network_filter'):
+            problems.append(prefix + 'mutation_sandbox keeps its own boundary')
+        confine = calls(sandbox.confine)
+        if 'boundary.fork_gate_domain' not in confine or 'boundary.landlock' not in confine:
+            problems.append(prefix + 'mutation_sandbox.confine does not take the gate domain')
+        if not any(c.endswith('.confine') for c in calls(gate.worker)) or 'restrict' in inspect.getsource(gate.worker):
+            problems.append(prefix + 'check_gate_mutations.worker does not confine through mutation_sandbox.confine')
+        worker = (ROOT / prefix / 'scripts/reuse_worker.py').read_text()
+        if ('sandbox.confine(' not in worker or 'fork_brokered' in worker or 'fork_gate_domain' in worker
+                or 'boundary.landlock' in worker):
+            problems.append(prefix + 'reuse_worker.py confines other than through mutation_sandbox.confine')
+    propose = (ROOT / 'scripts/propose_case_inputs.py').read_text()
+    probe = next(node for node in ast.parse(propose).body if isinstance(node, ast.FunctionDef) and node.name == 'probe')
+    if 'gate.worker' not in [ast.unparse(n.func) for n in ast.walk(probe) if isinstance(n, ast.Call)]:
+        problems.append('propose_case_inputs.probe does not run check_gate_mutations.worker')
+    return problems
 
 
 if leg_runs():
     _v208_worker_network_rule()
+    _v208_problems = _v208_one_network_rule()
+    expect('VELDO-0208 profiles/one-network-rule-everywhere: ' + repr(_v208_problems), _v208_problems == [])
+
+
+def _v208_case_input_proposal():
+    """Proposing case inputs for a suite whose cases serve on 127.0.0.1 TCP (58_veldo_0028_effects)
+    works confined: propose_case_inputs.py traces its baseline, noop and mutant workers, each
+    confined by mutation_sandbox.confine (the gate profile's network rule), and every read of the
+    suite happens in a process inside the Landlock domain. A strace row: the gate domain refuses
+    ptrace, so this runs in the unconfined leg when the authority lists it."""
+    import importlib.util
+    from pathlib import Path
+
+    def load(relative):
+        spec = importlib.util.spec_from_file_location('v208_proposal_' + Path(relative).stem, ROOT / relative)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    proposer = load('scripts/propose_case_inputs.py')
+    gate = proposer.load_gate()
+    T = proposer.T
+    suite = ROOT / 'scripts/suites/58_veldo_0028_effects.py'
+    name = 'check_teeth_mutations.py:effects-worker-scope'
+    case = {c['identity']: c for c in gate.inventory(ROOT, gate.common_directory(ROOT))}[name]
+    reads = []
+    traced = T.accesses
+
+    def accesses(trace, **kwargs):
+        # Which processes read the suite, and whether each was inside a Landlock domain then (its
+        # own landlock_restrict_self, or inherited from the process that forked it).
+        confined, hits = set(), []
+        for line in T.syscall_lines(trace):
+            match = T.CALL.search(line)
+            if not match:
+                continue
+            pid, (call, arguments, result) = line.split(None, 1)[0], match.groups()
+            if call == 'landlock_restrict_self' and result.strip() == '0':
+                confined.add(pid)
+            elif call in ('fork', 'vfork', 'clone', 'clone3') and result.split()[0].isdigit():
+                if pid in confined:
+                    confined.add(result.split()[0])
+            elif call.startswith('open') and '"' + str(suite) + '"' in arguments and not result.startswith('-1'):
+                hits.append(pid in confined)
+        reads.append(hits)
+        return traced(trace, **kwargs)
+
+    proposer.T.accesses = accesses
+    try:
+        result, _ = proposer.trace_case(gate, case)
+    finally:
+        proposer.T.accesses = traced
+    modes = {m['mode']: m for m in result['modes']}
+    failed = {mode: m.get('observation', {}).get('observation', {}).get('failed_rows') for mode, m in modes.items()}
+    expect('VELDO-0208 profiles/case-input-proposal-tcp-suite-confined: ' + repr((failed, reads))
+           + ' ' + ' '.join(m.get('error', '')[-300:] for m in modes.values()),
+           sorted(modes) == ['baseline', 'mutant', 'noop'] and all(m['exit'] == 0 for m in modes.values())
+           and failed['baseline'] == [] and failed['noop'] == [] and failed['mutant']
+           and len(reads) == 3 and all(hits and all(hits) for hits in reads)
+           and 'scripts/suites/58_veldo_0028_effects.py' in result['files'])
+
+
+if leg_runs('strace'):
+    _v208_case_input_proposal()
 
 
 def _v208_mutation_leg():
