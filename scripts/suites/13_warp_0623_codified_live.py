@@ -4301,6 +4301,7 @@ expect("WARP-0722 AC3, WHICH THE SPEC NOW ASKS FOR IN THE FORM THAT IS ACHIEVABL
 _v22_fm = V.parse_yamlish(re.match(r"^---\n(.*?)\n---", _v22_spec_text, re.S).group(1))
 _v22_arch, _v22_contract = V.load_repo_contract(repo_root=str(ROOT))
 _v22_fp = [g for g in (_v22_fm.get("footprint") or []) if isinstance(g, str)]
+_v22_in_force = protected_in_force(str(_v22_spec_path.relative_to(ROOT)))[1]
 _v22_ac = {c.get("id"): c.get("text") or "" for c in (_v22_fm.get("acceptance_criteria") or [])
            if isinstance(c, dict)}
 expect("WARP-0722 dogfood: the spec has PASSED the ready transition (so this does not go stale the moment it ships), declares the DERIVED high tier, and DECLARES THE TWO PROTECTED PATHS ITS FOOTPRINT ACTUALLY TOUCHES with the approval that entails - checked against the policy's own protected set rather than a literal, because the first draft of this front matter declared no protected path and no required approval while its footprint named scripts/verify.sh, which was false and which the ready gate does not cross-check",
@@ -4308,8 +4309,11 @@ expect("WARP-0722 dogfood: the spec has PASSED the ready transition (so this doe
        and _v22_fm.get("risk", "").split()[0] == "high"
        and _v22_fm.get("human_approval") == "required"
        and sorted(_v22_fm.get("protected_paths") or []) == ["engine/scripts/verify.sh", "scripts/verify.sh"]
-       and set(_v22_fm.get("protected_paths") or []) <= set(P.protected_patterns())
+       and set(_v22_fm.get("protected_paths") or []) <= set(_v22_in_force)
        and V.check_ready(_v22_spec_path, repo_root=str(ROOT)) == 0)
+expect("WARP-0722 dogfood: the protected paths the spec declares are EXACTLY the ones its footprint matches in the policy in force when it became ready, read from Git at that commit, so an undeclared protected touch is caught and a protection added by a later spec does not count against it",
+       sorted({_q for _g, _q in footprint_protected_hits(_v22_fm, _v22_in_force, _v22_arch)})
+       == sorted(_v22_fm.get("protected_paths") or []))
 
 expect("WARP-0722 dogfood, THE TWO CRITERIA THE BUILD AMENDED RATHER THAN REINTERPRETED: AC2 declares the key the code actually uses (the artifact's own blob, content-addressed) and no longer the adding-commit sha an independent review measured to be unstable across clones of one commit; and AC3 asks for the EQUALITY over an enumerated record list that ships, not the empty list it first demanded and that the same evidence proves unreachable. Asserted on the spec text, because a criterion nobody can satisfy is a defect in the criterion and the record for it is an amendment, not a status token that reads as satisfied",
        "BLOB SHA" in _v22_ac.get("AC2", "").upper()
