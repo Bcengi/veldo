@@ -306,6 +306,54 @@ def resolve(selector_values, manifest=None, requires=None):
     return asked, [n for n in names if n in wanted]
 
 
+# THE GATE'S LEGS (VELDO-0208, owner decision 2026-10-07). The authority's scripts/gate_legs.py
+# runs a declared stage twice and tells the run which leg it is through these two variables:
+# VELDO_GATE_LEG is "confined" or "unconfined", and VELDO_GATE_UNCONFINED is the authority's list,
+# comma-separated, each entry a suite name or name:rows for a suite only some rows of which run
+# unconfined. Unset, the run is the whole suite exactly as before. A leg is not a selector: the gate
+# runs both legs and requires both, and a person running one leg by hand has run half the stage.
+GATE_LEG = "VELDO_GATE_LEG"
+GATE_UNCONFINED = "VELDO_GATE_UNCONFINED"
+LEGS = ("confined", "unconfined")
+
+
+class LegRefused(Exception):
+    """A leg variable that does not name a leg or carries a malformed list."""
+
+
+def gate_leg(environ):
+    """(leg or None, {suite: rows tag or None for the whole suite}) from the environment."""
+    leg = environ.get(GATE_LEG) or None
+    if leg is None:
+        return None, {}
+    if leg not in LEGS:
+        raise LegRefused("%s=%r names no leg (%s)" % (GATE_LEG, leg, ", ".join(LEGS)))
+    listed = {}
+    for item in (environ.get(GATE_UNCONFINED) or "").split(","):
+        if not item:
+            continue
+        name, _, rows = item.partition(":")
+        if not re.match(r"^[0-9A-Za-z][0-9A-Za-z_]*$", name) or (rows and not re.match(r"^[a-z][a-z0-9-]*$", rows)) \
+                or name in listed:
+            raise LegRefused("%s carries a malformed or repeated entry %r" % (GATE_UNCONFINED, item))
+        listed[name] = rows or None
+    return leg, listed
+
+
+def leg_runs(suite, rows=None, environ=None):
+    """Whether this leg runs the given rows of `suite`: rows=None is the suite's ordinary rows, a
+    tag names the rows the list may move to the unconfined leg. Outside a leg everything runs."""
+    leg, listed = gate_leg(environ if environ is not None else __import__("os").environ)
+    if leg is None:
+        return True
+    scoped = suite in listed
+    if leg == "confined":
+        return not (scoped and listed[suite] is not None and listed[suite] == rows)
+    if not scoped:
+        return False
+    return listed[suite] is None or listed[suite] == rows
+
+
 class RunScope:
     """The one authority on what a single run of the unit suite may claim.
 
@@ -346,7 +394,7 @@ class RunScope:
 
     def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
                              veldo_version=None, tree=None, force_fresh=False, reused=None,
-                             reuse_evidence=None):
+                             reuse_evidence=None, unconfined=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
         that file in shell and this has no production caller yet, deliberately.
 
@@ -368,7 +416,11 @@ class RunScope:
         (VELDO-0208: "Both reused and force_fresh are mandatory on stamps and events"). reused is
         {"unit": 0, "mutation": <count>}, or the gate's fallback with mutation None when no valid
         receipt existed. reuse_evidence is present only when a reused result had to be
-        authenticated, exactly as reuse_stamp.fields adds it only then."""
+        authenticated, exactly as reuse_stamp.fields adds it only then.
+
+        unconfined is what scripts/gate_legs.py --stamp returns (VELDO-0208, owner decision
+        2026-10-07): the declaration's digest and the entries each stage ran outside the
+        confinement. Like reuse_evidence it is present only when an unconfined leg ran."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
         payload = {"commit": commit, "status": status, "at": at,
                    "checks_run": checks_run, "checks_na": checks_na,
@@ -376,6 +428,8 @@ class RunScope:
                    "reused": reused if reused is not None else {"mutation": None, "unit": 0}}
         if reuse_evidence is not None:
             payload["reuse_evidence"] = reuse_evidence
+        if unconfined is not None:
+            payload["unconfined"] = unconfined
         return payload
 
     def unit_evidence_check(self, failed):

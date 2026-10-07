@@ -1,6 +1,36 @@
 """VELDO-0208: real inherited confinement and authenticated landing, no mutation stage."""
 
 
+def _v208_worker_fixture(top, escaped):
+    """A controlled candidate tree for authority workers: one fixture suite over one subject, and a
+    candidate driver that touches `escaped` and claims a kill if it ever runs (it must not)."""
+    import os
+    import sys
+    worker_root = top / 'worker-input'; worker_home = top / 'worker-home'
+    (worker_root / 'scripts/suites').mkdir(parents=True)
+    (worker_root / '.veldo').mkdir(); worker_home.mkdir()
+    (worker_root / 'scripts/suites/shared.py').write_text(
+        'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
+        'def expect(name, condition): pass\n')
+    worker_suite = worker_root / 'scripts/suites/fixture.py'
+    worker_suite.write_text('value = (ROOT / ".veldo" / "subject.py").read_text()\n'
+                           'expect("fixture target", value == "good")\n')
+    (worker_root / '.veldo/subject.py').write_text('good')
+    # An executable candidate driver would claim all mutants killed. It must never run.
+    (worker_root / 'scripts/check_gate_mutations.py').write_text(
+        'from pathlib import Path\nPath(' + repr(str(escaped)) + ').touch()\n'
+        'print("forged killed record")\n')
+    controlled_case = dict(identity='check_teeth_mutations.py:controlled', name='controlled',
+        driver='check_teeth_mutations.py', suite='fixture.py', rows=['target'],
+        module='subject.py', old='good', new='bad')
+    def worker_argv(job):
+        # The coordinator's ownership channel: an append descriptor to a file outside the home.
+        channel = os.open(job.with_suffix('.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        return [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
+                'worker', str(worker_root), str(channel), str(job)], channel
+    return worker_root, worker_home, worker_suite, controlled_case, worker_argv
+
+
 def _v208_landing_reuse():
     import copy
     import importlib.util
@@ -447,53 +477,12 @@ print(json.dumps(results))
         (linked / '.git').rmdir()
         (linked / '.git').write_text(original_marker)
 
-        # Small controlled workers only: never run the mutation stage or its drivers.
-        worker_root = top / 'worker-input'; worker_home = top / 'worker-home'
-        (worker_root / 'scripts/suites').mkdir(parents=True)
-        (worker_root / '.veldo').mkdir(); worker_home.mkdir()
-        (worker_root / 'scripts/suites/shared.py').write_text(
-            'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
-            'def expect(name, condition): pass\n')
-        worker_suite = worker_root / 'scripts/suites/fixture.py'
-        worker_suite.write_text('value = (ROOT / ".veldo" / "subject.py").read_text()\n'
-                               'expect("fixture target", value == "good")\n')
-        (worker_root / '.veldo/subject.py').write_text('good')
-        # An executable candidate driver would claim all mutants killed. It must never run.
-        (worker_root / 'scripts/check_gate_mutations.py').write_text(
-            'from pathlib import Path\nPath(' + repr(str(escaped)) + ').touch()\n'
-            'print("forged killed record")\n')
-        controlled_case = dict(identity='check_teeth_mutations.py:controlled', name='controlled',
-            driver='check_teeth_mutations.py', suite='fixture.py', rows=['target'],
-            module='subject.py', old='good', new='bad')
+        # Small controlled workers only: never run the mutation stage or its drivers. The traced
+        # baseline, noop and mutant workers are _v208_traced_workers below, the strace rows.
+        worker_root, worker_home, worker_suite, controlled_case, worker_argv = _v208_worker_fixture(top, escaped)
         tracer = load('scripts/case_trace.py')
-        observed = {}
-        def worker_argv(job):
-            # The coordinator's ownership channel: an append descriptor to a file outside the home.
-            channel = os.open(job.with_suffix('.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
-            return [sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'),
-                    'worker', str(worker_root), str(channel), str(job)], channel
-        for mode in ('baseline', 'noop', 'mutant'):
-            scratch = worker_home / mode; scratch.mkdir()
-            job = top / (mode + '-job.json')
-            job.write_text(json.dumps(dict(case=controlled_case, mode=mode)))
-            trace = top / (mode + '.trace')
-            argv, channel = worker_argv(job)
-            try:
-                process = confined_run(tracer.command(trace, argv), cwd=worker_root, pass_fds=(channel,),
-                    env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20)
-            finally:
-                os.close(channel)
-            expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
-                   process.returncode == 0 and not escaped.exists())
-            if process.returncode == 0:
-                observed[mode] = json.loads(process.stdout)
-                tracer.check(trace, worker_root, ['scripts/suites/shared.py', 'scripts/suites/fixture.py',
-                    '.veldo/subject.py'], runtime=('/usr', '/lib', '/lib64', '/etc'), scratch=scratch,
-                    after_confinement=True)
-        expect('VELDO-0208 candidate/authority-observes-kill', len(observed) == 3
-               and observed['baseline']['observation']['failed_rows'] == []
-               and observed['noop']['observation']['failed_rows'] == []
-               and observed['mutant']['observation']['failed_rows'] == ['fixture target'])
+        scratch = worker_home / 'mutant'; scratch.mkdir()
+        job = top / 'mutant-job.json'
         worker_suite.write_text('from pathlib import Path\nPath(' +
             repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
         job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
@@ -805,7 +794,61 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                 ('engine/scripts/veldo-guard.sh', 'packs/claude/scripts/veldo-guard.sh'))))
 
 
-_v208_landing_reuse()
+def _v208_traced_workers():
+    """The authority's baseline, noop and mutant workers under its tracer (strace), each observed
+    and its trace checked against the declared closure. These are the suite's strace rows: the gate
+    domain refuses ptrace, so a gate whose authority lists them (scripts/gate_unconfined.json) runs
+    them in its unconfined leg, and every other row of this suite stays in the confined leg."""
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import subprocess
+    import sys
+    import tempfile
+
+    def load(relative):
+        spec = importlib.util.spec_from_file_location(Path(relative).stem, ROOT / relative)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    gate = load('scripts/check_gate_mutations.py')
+    tracer = load('scripts/case_trace.py')
+    with tempfile.TemporaryDirectory(prefix='landing-traced-') as temporary:
+        top = Path(temporary)
+        escaped = top / 'driver-escaped'
+        worker_root, worker_home, _, controlled_case, worker_argv = _v208_worker_fixture(top, escaped)
+        observed = {}
+        for mode in ('baseline', 'noop', 'mutant'):
+            scratch = worker_home / mode; scratch.mkdir()
+            job = top / (mode + '-job.json')
+            job.write_text(json.dumps(dict(case=controlled_case, mode=mode)))
+            trace = top / (mode + '.trace')
+            argv, channel = worker_argv(job)
+            try:
+                process = subprocess.run(tracer.command(trace, argv), cwd=worker_root, pass_fds=(channel,),
+                    env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20,
+                    stdin=subprocess.DEVNULL)
+            finally:
+                os.close(channel)
+            expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
+                   process.returncode == 0 and not escaped.exists())
+            if process.returncode == 0:
+                observed[mode] = json.loads(process.stdout)
+                tracer.check(trace, worker_root, ['scripts/suites/shared.py', 'scripts/suites/fixture.py',
+                    '.veldo/subject.py'], runtime=('/usr', '/lib', '/lib64', '/etc'), scratch=scratch,
+                    after_confinement=True)
+        expect('VELDO-0208 candidate/authority-observes-kill', len(observed) == 3
+               and observed['baseline']['observation']['failed_rows'] == []
+               and observed['noop']['observation']['failed_rows'] == []
+               and observed['mutant']['observation']['failed_rows'] == ['fixture target'])
+
+
+if leg_runs():
+    _v208_landing_reuse()
+if leg_runs('strace'):
+    _v208_traced_workers()
 
 
 def _v208_confined_stages():
@@ -1112,4 +1155,7 @@ print(json.dumps(r))
                        'force_fresh': True, 'reused': {'mutation': None, 'unit': 0}})
 
 
-_v208_confined_stages()
+
+
+if leg_runs():
+    _v208_confined_stages()

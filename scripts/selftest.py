@@ -168,6 +168,30 @@ elif SUITE_VALUES:
     RUN = [s for s in RUN if s["name"] in WANTED]
     SELECTOR = "--suite %s" % " ".join(ASKED)
 
+# THE GATE'S LEG (VELDO-0208, owner decision 2026-10-07), set only by the authority's
+# scripts/gate_legs.py: the confined leg runs every suite but the ones the authority listed whole,
+# the unconfined leg only the listed ones. A suite listed for some rows runs in both, and its rows
+# ask run_scope.leg_runs which leg owns them. Both legs say so first, with the list, so a leg is
+# never mistaken for the whole suite.
+try:
+    LEG, LISTED = RS.gate_leg(os.environ)
+except RS.LegRefused as e:
+    print("selftest: %s" % e)
+    sys.exit(2)
+if LEG:
+    _whole = [n for n, rows in LISTED.items() if rows is None]
+    _rows = ["%s:%s" % (n, rows) for n, rows in LISTED.items() if rows is not None]
+    _absent = sorted(n for n in LISTED if n not in ORDER)
+    if LEG == "confined":
+        RUN = [s for s in RUN if s["name"] not in _whole]
+        _what = "skips the %d suite(s) and runs all but the rows the unconfined leg owns" % len(_whole)
+    else:
+        RUN = [s for s in RUN if s["name"] in LISTED]
+        _what = "runs only the %d listed suite(s) present, and of a row-scoped one only its rows" % len(RUN)
+    print("selftest leg %s: %s. Whole: %s. Rows: %s.%s"
+          % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
+             " Not in this manifest: %s." % ", ".join(_absent) if _absent else ""), flush=True)
+
 SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
     print(SCOPE.banner(), flush=True)
