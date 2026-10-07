@@ -98,6 +98,20 @@ acceptance_criteria:
       Skip the lock test in the sweep, the signal block across the fork or PR_SET_PDEATHSIG;
       scratch/live-scratch-kept, scratch/stop-during-fork-forwarded-to-child or
       scratch/killed-launcher-takes-its-agent goes red.
+  - id: AC5
+    text: >
+      Claim: the selected client's transcripts, sessions, history and memories outlive the scratch:
+      they stay in the runner's configuration directory for that client and account, which the
+      agent profile reads and writes only there (Claude's projects/; Codex's sessions/, memories/
+      and history.jsonl), never its credentials and never any other path of that directory. Set: a
+      second run of each client reading what the first wrote, writes and creates elsewhere in the
+      configuration directory, a credential read, a write through .. from a state directory, a read
+      through a link planted in one, and the refusals of a state entry outside the configuration
+      directory, one holding a credential and one that is a link. Completeness: state_dirs and
+      state_files under each client in agent_sandbox.json are the only write grants outside the
+      worktree and scratch; state_grants() refuses any that overlaps the store, a protected or
+      denied path, a credential source or the worktree. Test rows state/* in suite 102.
+    falsified_by: Grant the configuration directory instead of its state entries; state/claude-settings-refused goes red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch.
 ---
@@ -117,10 +131,12 @@ no detached process.
 
 ## Amendment
 
-This amends VELDO-0208's agent profile in three statements: /proc is no longer excluded from the
+This amends VELDO-0208's agent profile in four statements: /proc is no longer excluded from the
 agent profile's grants (read only, as in the gate and worker profiles); /run stays excluded except
-the resolver directory /run/systemd/resolve, read only; and the selected client's credential files are written back after a
-refresh instead of never. Every other VELDO-0208 boundary is unchanged.
+the resolver directory /run/systemd/resolve, read only; the selected client's credential files
+are written back after a refresh instead of never; and the selected client's declared state
+entries in its configuration directory are writable, the only writes outside the worktree and
+scratch. Every other VELDO-0208 boundary is unchanged.
 
 ## Design
 
@@ -158,6 +174,15 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
   in the agent profile only. The runner accounts measured on 2026-10-07 have no stdio MCP server;
   their MCP servers are the claude.ai connectors, reached over TCP/TLS, which the profile already
   allows. A stdio server configured later runs inside the domain with the same grants.
+- State. Each client may declare `state_dirs` and `state_files`, which must lie strictly beneath its
+  `home` place (CLAUDE_CONFIG_DIR or CODEX_HOME, the runner's configuration directory for that
+  account): Claude's projects/ (transcripts), Codex's sessions/, memories/ and history.jsonl. An
+  absent entry is created (directory 0700, file 0600) unless the configuration directory itself is
+  absent; an entry that is a link, of the other kind, resolves outside the configuration directory,
+  or holds, is or lies beneath the store, a protected or denied path, a credential source or the
+  worktree refuses the start. Each is granted read and write and linked into the scratch where the
+  CLI looks for it, after every seed and through the same overlap check as the read links. The
+  rest of the configuration directory is not granted at all.
 - Scratch. launch() sweeps the temporary directory for veldo-agent-* entries owned by this uid that
   are real directories, older than a day and not locked, and removes them (shut subdirectories are
   opened first, no link is followed). Its own scratch is created there and held with flock until
@@ -183,6 +208,13 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 - The resolver directory's other entries are readable too: resolved's resolv.conf (the upstream
   servers) and the names of its varlink sockets and per-link state directory (mode 0700, owned by
   systemd-resolve, so unreadable to this account anyway).
+- A confined process can write anything into its client's state entries, which every later session
+  on that account reads (a crafted transcript can be resumed), and may plant links there; the
+  links grant nothing, since a read through one is checked against the target. Concurrent runs on
+  one account share those entries, as unconfined runs do today.
+- Codex's other state under CODEX_HOME (its SQLite stores, logs and caches) stays in the scratch
+  and is lost at exit: a SQLite store needs its directory writable for its journal, and that
+  directory holds auth.json.
 - Writes Claude or Codex make to their plugin, marketplace or skill directories (marketplace
   updates, system skill installs) fail: those directories are outside the worktree.
 - engine/scripts/agent_sandbox.json is byte-identical with this repository's copy (template sync),

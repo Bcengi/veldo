@@ -97,6 +97,10 @@ for item in sys.argv[1:]:
         refused(name, lambda path=path: open(path, 'x').write('forged'))
     elif kind == 'ls':
         r[name] = bool(os.listdir(path))
+    elif kind == 'linkread':
+        link, target = path.split('|', 1)
+        os.symlink(target, os.path.join(os.environ['HOME'], link))
+        refused(name, lambda link=link: open(os.path.join(os.environ['HOME'], link), 'rb').read())
     elif kind == 'mark':
         open(path, 'w').close()
     elif kind == 'wait':
@@ -113,6 +117,7 @@ for item in sys.argv[1:]:
         refused(name, lambda path=path: open(os.path.join(os.environ['HOME'], path), 'x').write('forged'))
     elif kind == 'home-create':
         target = os.path.join(os.environ['HOME'], path)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
         open(target, 'w').write('allowed')
         r[name] = open(target).read() == 'allowed'
     elif kind == 'tcp':
@@ -298,7 +303,8 @@ print(json.dumps(seen))
                and 'written back' in result.stderr)
         expect('VELDO-0210 credentials/write-back-is-atomic-replace',
                after[1] != before[1] and after[2] == 0o600
-               and sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'settings.json'])
+               and sorted(p.name for p in account.iterdir())
+               == ['.claude.json', '.credentials.json', 'projects', 'settings.json'])
         seen = results(result)
         expect('VELDO-0210 credentials/claude-run-receives-claude-files',
                seen.get('claude') is True and seen.get('settings') is True and seen.get('state') is True)
@@ -547,6 +553,89 @@ print(json.dumps(seen))
             for kind in ('credentials', 'seed_files', 'read_links')
             for relative in entry.get(kind, {}).values()))
 
+        # state: transcripts, sessions, history and memories outlive the scratch in the account's
+        # configuration directory; nothing else of that directory is writable.
+        reset()
+        expect('VELDO-0210 state/reviewed-state-list',
+               real['clients']['claude'].get('state_dirs') == {'{home}/projects': '.claude/projects'}
+               and not real['clients']['claude'].get('state_files')
+               and real['clients']['codex'].get('state_dirs') == {'{home}/sessions': '.codex/sessions',
+                                                                  '{home}/memories': '.codex/memories'}
+               and real['clients']['codex'].get('state_files') == {'{home}/history.jsonl': '.codex/history.jsonl'})
+        first = ['home-create:transcript-written:.claude/projects/-work/session.jsonl',
+                 'write:settings-refused:%s' % (account / 'settings.json'),
+                 'write:state-file-refused:%s' % (account / '.claude.json'),
+                 'deny:credential-refused:%s' % (account / '.credentials.json'),
+                 'make:config-dir-create-refused:%s' % (account / 'planted.json'),
+                 'home-make:dotdot-refused:.claude/projects/../planted.json',
+                 'linkread:planted-link-refused:.claude/projects/steal|%s' % (account / '.credentials.json')]
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
+                     client='claude', env=client_env)
+        found = results(result)
+        for item in first:
+            name = item.split(':')[1]
+            expect('VELDO-0210 state/claude-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
+                   found.get(name) is True)
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe),
+                                               'home:transcript-seen:.claude/projects/-work/session.jsonl'],
+                     client='claude', env=client_env)
+        expect('VELDO-0210 state/second-claude-run-sees-first-transcript: %s' % results(result),
+               results(result).get('transcript-seen') is True
+               and (account / 'projects/-work/session.jsonl').read_text() == 'allowed')
+        expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
+               sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
+                                                              'settings.json']
+               and (account / 'settings.json').read_text() == '{"theme": "auto"}'
+               and (account / '.claude.json').read_text() == '{"numStartups": 1}'
+               and (account / '.credentials.json').read_text() == old_token
+               and sorted(p.name for p in (account / 'projects').iterdir()) == ['-work', 'steal'])
+        first = ['home-create:session-written:.codex/sessions/rollout.jsonl',
+                 'home-create:memory-written:.codex/memories/note.md',
+                 'home-create:history-written:.codex/history.jsonl',
+                 'write:codex-config-refused:%s' % (codex_home / 'config.toml'),
+                 'deny:codex-credential-refused:%s' % (codex_home / 'auth.json'),
+                 'make:codex-dir-create-refused:%s' % (codex_home / 'planted.json'),
+                 'home-make:codex-dotdot-refused:.codex/sessions/../planted.json']
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
+                     client='codex', env=client_env)
+        found = results(result)
+        for item in first:
+            name = item.split(':')[1]
+            expect('VELDO-0210 state/codex-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
+                   found.get(name) is True)
+        second = ['home:session-seen:.codex/sessions/rollout.jsonl', 'home:memory-seen:.codex/memories/note.md',
+                  'home:history-seen:.codex/history.jsonl', 'home:claude-transcript-absent:.claude/projects']
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *second],
+                     client='codex', env=client_env)
+        found = results(result)
+        expect('VELDO-0210 state/second-codex-run-sees-first-state: %s' % found,
+               all(found.get(name) is True for name in ('session-seen', 'memory-seen', 'history-seen'))
+               and found.get('claude-transcript-absent') == 'ENOENT')
+        expect('VELDO-0210 state/codex-home-otherwise-untouched',
+               sorted(p.name for p in codex_home.iterdir())
+               == ['auth.json', 'config.toml', 'history.jsonl', 'memories', 'sessions']
+               and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
+               and (codex_home / 'auth.json').read_text() == codex_token)
+        # A state entry outside the configuration directory, one holding a credential, and one that is
+        # a link refuse the start.
+        for name, state, credentials, reason in (
+                ('outside-config-dir', {str(top / 'elsewhere'): '.claude/elsewhere'}, None,
+                 'beneath its configuration directory'),
+                ('holds-credential', {'{home}/sub': '.claude/sub'}, {'{home}/sub/.credentials.json': '.claude/c.json'},
+                 'state refused'),
+                ('link', {'{home}/linked': '.claude/linked'}, None, 'state refused')):
+            reset()
+            (account / 'linked').symlink_to(top / 'keep-state', target_is_directory=True)
+            (top / 'keep-state').mkdir(exist_ok=True)
+            bad = json.loads(json.dumps(client_policy))
+            bad['clients']['claude']['state_dirs'] = state
+            if credentials:
+                bad['clients']['claude']['credentials'] = credentials
+            (top / 'bad-state.json').write_text(json.dumps(bad))
+            refused = run(top / 'bad-state.json', worktree, start, client='claude', env=client_env)
+            expect('VELDO-0210 state/%s-refused: %s' % (name, refused.stderr[-200:]),
+                   refused.returncode == 2 and reason in refused.stderr and not marker.exists())
+
         # scratch: removed at exit and on stop signals; stale ones swept at the next start
         import fcntl
         import signal
@@ -694,8 +783,15 @@ time.sleep(120)
         process, held = held_run('descendant')
         process.kill()
         process.wait(timeout=60)
-        expect('VELDO-0210 scratch/killed-launcher-takes-its-agent: %s' % held,
-               bool(held) and settled(lambda: not alive(held['pid'])))
+        taken = bool(held) and settled(lambda: not alive(held['pid']))
+
+        def state(pid):
+            try:
+                return Path('/proc/%d/status' % pid).read_text().splitlines()[:8]
+            except OSError as error:
+                return str(error)
+        expect('VELDO-0210 scratch/killed-launcher-takes-its-agent: %s %s' % (held, '' if taken or not held
+                                                                            else state(held['pid'])), taken)
         descendant = held.get('descendant')
         if held:
             os.utime(held['home'], (day_old, day_old))

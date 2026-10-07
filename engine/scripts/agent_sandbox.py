@@ -894,12 +894,15 @@ def account_home():
 
 def client_files(config, name):
     """The files one client (claude, codex) receives, from the configuration's `clients`:
-    {'credentials': [(source, relative)], 'seed_files': [...], 'read_links': [...]}.
+    {'credentials': [(source, relative)], 'seed_files': [...], 'read_links': [...],
+    'state_dirs': [...], 'state_files': [...]}.
 
     A client's places are the directories its runner names in the environment (CLAUDE_CONFIG_DIR,
     CODEX_HOME: the account the runner chose), else their defaults under the account's home. Every
     destination lies under the client's own state directory (.claude, .codex), so one client's
-    files never land where the other client looks for its own (VELDO-0210)."""
+    files never land where the other client looks for its own (VELDO-0210). Persistent state
+    (state_dirs, state_files) must lie strictly beneath the client's `home` place: the runner's
+    configuration directory for that client and account."""
     clients = config.get('clients', {})
     if name not in clients:
         raise ValueError('unknown agent client: ' + str(name))
@@ -912,15 +915,55 @@ def client_files(config, name):
             raise ValueError('agent client place must be an absolute directory: ' + place)
         places[place] = path
     files = {}
-    for kind in ('credentials', 'seed_files', 'read_links'):
+    for kind in ('credentials', 'seed_files', 'read_links', 'state_dirs', 'state_files'):
         files[kind] = []
         for source, relative in entry.get(kind, {}).items():
             parts = Path(relative).parts
             if Path(relative).is_absolute() or '..' in parts or len(parts) < 2 or parts[0] != '.' + name:
                 raise ValueError('agent client file must lie under .%s: %s' % (name, relative))
             source = source.format(**places)
-            files[kind].append((home / source[2:] if source.startswith('~/') else Path(source), relative))
+            source = home / source[2:] if source.startswith('~/') else Path(source)
+            if kind.startswith('state_') and ('home' not in places or '..' in source.parts
+                                              or places['home'] not in source.parents):
+                raise ValueError('agent client state must lie beneath its configuration directory: '
+                                 + str(source))
+            files[kind].append((source, relative))
+    files['home'] = places.get('home')
     return files
+
+
+def state_grants(files, refused):
+    """The selected client's persistent state, read and write, as (resolved path, relative) pairs:
+    its transcripts, sessions, history and memories, which outlive the scratch in the runner's
+    configuration directory for that account (VELDO-0210). An absent entry is created (directory
+    0700, file 0600); with no such configuration directory there is nothing to keep. An entry that
+    is a link, is of the other kind, resolves outside that directory, or holds, is or lies beneath a
+    refused path (the store, a protected path, a denied path, a credential source, the worktree)
+    refuses the start."""
+    granted, home = [], files.get('home')
+    if home is None or not home.is_dir():
+        return granted
+    home = home.resolve(strict=True)
+    for kind, directory in (('state_dirs', True), ('state_files', False)):
+        for source, relative in files.get(kind, []):
+            if directory:
+                try:
+                    os.mkdir(source, 0o700)
+                except FileExistsError:
+                    pass
+            else:
+                try:
+                    os.close(os.open(source, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                     0o600))
+                except FileExistsError:
+                    pass
+            mode = os.lstat(source).st_mode
+            real = source.resolve(strict=True)
+            if (not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)) or home not in real.parents
+                    or any(beneath(real, p) or beneath(p, real) for p in refused)):
+                raise ValueError('agent client state refused: ' + str(source))
+            granted.append((real, relative))
+    return granted
 
 
 def project_roots(config):
@@ -1321,7 +1364,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
         raise ValueError('launcher, configuration and authority must be outside the worktree')
     store = Path(config['store']).resolve()
-    overlapping_links([relative for _, relative in files.get('read_links', [])],
+    overlapping_links([relative for kind in ('read_links', 'state_dirs', 'state_files')
+                       for _, relative in files.get(kind, [])],
                       [*config.get('seed_files', {}).values(),
                        *(relative for kind in ('seed_files', 'credentials') for _, relative in files.get(kind, []))])
     # Every file is copied in before any link exists.
@@ -1335,11 +1379,16 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         if copied is not None:
             real, data = copied
             credentials.append((real, relative, data))
+    # The client's persistent state: read and write where it is, linked where the CLI looks for it.
+    state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config),
+                                 *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
+    grants += [(real, READ | WRITE) for real, _ in state]
     for name in ('.codex', '.claude', 'tmp'):
         os.close(scratch_directory(scratch, [name]))
-    # The client's installed plugins, marketplaces and skills, read only where they are, linked
-    # where the CLI looks for them under its private state directory.
-    for target, relative in links:
+    # The client's installed plugins, marketplaces and skills (read only) and its persistent state
+    # (read and write), where they are, linked where the CLI looks for them under its private state
+    # directory.
+    for target, relative in [*links, *state]:
         parts = Path(relative).parts
         directory = scratch_directory(scratch, parts[:-1])
         try:

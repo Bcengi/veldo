@@ -45,6 +45,9 @@
         "{home}/skills": ".claude/skills",
         "{home}/agents": ".claude/agents",
         "{home}/commands": ".claude/commands"
+      },
+      "state_dirs": {
+        "{home}/projects": ".claude/projects"
       }
     },
     "codex": {
@@ -62,6 +65,13 @@
         "{home}/skills": ".codex/skills",
         "{home}/rules": ".codex/rules",
         "{home}/plugins/cache": ".codex/plugins/cache"
+      },
+      "state_dirs": {
+        "{home}/sessions": ".codex/sessions",
+        "{home}/memories": ".codex/memories"
+      },
+      "state_files": {
+        "{home}/history.jsonl": ".codex/history.jsonl"
       }
     }
   },
