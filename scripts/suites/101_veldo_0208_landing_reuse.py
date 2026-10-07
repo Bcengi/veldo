@@ -1980,6 +1980,23 @@ def _v208_mutation_leg():
                and all(r['reuse_reason'] == 'unconfined_leg' and r['reuse_key'] is None
                        for r in receipt.get('results', []) if r['case']['suite'] == 'listed.py'))
 
+        # A case runs its whole suite in one worker, so a case of a suite the list names only for some
+        # rows cannot be held to those rows: the stage refuses it by name and is RED, and no worker
+        # runs, confined or not, where it once ran every row of that suite unconfined.
+        authority_list.write_text(json.dumps(dict(declared, suites=[
+            {'suite': 'listed', 'rows': 'strace', 'reason': 'fixture: rows that trace a worker'}])))
+        rows_record = top / 'rows-record'
+        rows, rows_markers, rows_receipt = stage(rows_record)
+        authority_list.write_text(json.dumps(declared))
+        expect('VELDO-0208 unconfined-leg/mutation-rows-scoped-suite-case-refused: '
+               + repr((rows.returncode, rows_markers, rows_receipt.get('error'), rows_receipt.get('detail'))),
+               rows.returncode == 1 and rows_receipt.get('status') == 'failed'
+               and rows_receipt.get('error') == 'rows_scoped_unconfined_case'
+               and 'listed-case is a case of listed, which the unconfined list names only for some rows'
+                   in rows_receipt.get('detail', '')
+               and rows_markers == [] and not rows_receipt.get('worker_outcomes')
+               and 'mutations: failed' in rows.stdout)
+
         # verify.sh asks the authority's list whether the mutation stage expects its leg BEFORE the
         # stage runs and hands the coordinator the same record, so a record missing after an expected
         # mutation leg is RED. A list that does not declare the stage confines every case and records

@@ -7,8 +7,9 @@ without granting the escape it denies, and a KVM guest was rejected as too heavy
 way they ran before that domain existed: outside it, in a separate, named leg of the unit and
 integration stages, and their mutation cases in the mutation stage's unconfined leg (the stage is
 declared with the command MUTATION_COMMAND; scripts/check_gate_mutations.py runs that leg with
-mutation_leg and record below, since a mutation case runs its whole suite in one worker, a suite
-listed for some rows has every mutation case there). Every other stage and suite stays confined.
+mutation_leg and record below; since a mutation case runs its whole suite in one worker, a case of
+a suite listed only for some rows is refused, never run there). Every other stage and suite stays
+confined.
 
 THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this file
 (scripts/gate_unconfined.json in the authority checkout), a protected path, so adding a suite to

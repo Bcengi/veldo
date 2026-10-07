@@ -648,11 +648,23 @@ def worker(job):
                 **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')})
 
 
+# A case of a suite the authority lists only for some rows: refused, the stage RED.
+ROWS_SCOPED_CASE = 'rows_scoped_unconfined_case'
+
+
 def in_leg(leg, case):
-    """Whether this case's suite is one the authority's list names. A case runs its whole suite in
-    one worker, so a suite listed for some rows has all its cases in the unconfined leg."""
+    """Whether this case runs in the unconfined leg: its suite is one the authority's list names
+    whole. A case runs its whole suite in one worker, so a case of a suite listed only for some rows
+    cannot be held to those rows; it is refused rather than run unconfined with every row of its
+    suite, and those suites are the ones that test the confinement itself."""
     suite = case['suite']
-    return leg is not None and suite.endswith('.py') and suite[:-3] in leg['suites']
+    if leg is None or not suite.endswith('.py') or suite[:-3] not in leg['suites']:
+        return False
+    if suite[:-3] in {e.split(':', 1)[0] for e in leg['entries'] if ':' in e}:
+        raise Refused(ROWS_SCOPED_CASE, '%s is a case of %s, which the unconfined list names only for '
+                      'some rows, and a case runs its whole suite; refusing rather than running every '
+                      'row of it unconfined' % (case.get('identity') or case.get('name'), suite[:-3]))
+    return True
 
 
 def control_group(case):
@@ -909,7 +921,7 @@ def print_leg(leg, receipt, path):
     outside = set(ran.get('cases', []))
     rejected = sum(r['case']['identity'] in outside for r in receipt.get('results', []))
     print('   mutation: confined leg - every case except those of the %d suite%s the list names (a case '
-          'runs its whole suite, so a suite listed for some rows has every case in the unconfined leg)'
+          'runs its whole suite, so a case of a suite listed only for some rows is refused)'
           % (len(leg['suites']), '' if len(leg['suites']) == 1 else 's'), flush=True)
     print('   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s %s), '
           '%d entr%s: %s' % (os.path.basename(str(path)), leg['declaration'], len(leg['entries']),
