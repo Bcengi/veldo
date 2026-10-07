@@ -9,16 +9,39 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208]
 placement: [enforcement]
-protected_paths: ["engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json"]
+protected_paths: ["engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/gate_candidate.py", "scripts/gate_candidate.py", "engine/scripts/check_gate_mutations.py", "scripts/check_gate_mutations.py", "engine/scripts/gate_legs.py", "scripts/gate_legs.py", "scripts/check_first_use.py", "scripts/suites/shared.py", "engine/.veldo/control_verification.py", ".veldo/control_verification.py"]
 footprint:
+  - "docs/veldo-userns-setup.txt"
   - "engine/scripts/agent_sandbox.py"
   - "engine/scripts/agent_sandbox.json"
   - "engine/scripts/veldo_userns.c"
   - "engine/scripts/veldo-userns.apparmor"
+  - "engine/scripts/gate_candidate.py"
+  - "engine/scripts/check_gate_mutations.py"
+  - "engine/scripts/gate_legs.py"
+  - "engine/.veldo/control_proof.py"
+  - "engine/.veldo/control_verification.py"
+  - ".veldo/control_proof.py"
+  - ".veldo/control_verification.py"
   - "scripts/agent_sandbox.py"
   - "scripts/agent_sandbox.json"
   - "scripts/veldo_userns.c"
   - "scripts/veldo-userns.apparmor"
+  - "scripts/gate_candidate.py"
+  - "scripts/check_gate_mutations.py"
+  - "scripts/gate_legs.py"
+  - "scripts/check_first_use.py"
+  - "scripts/check_install_and_run.py"
+  - "scripts/migrate_to_veldo.py"
+  - "scripts/suites/shared.py"
+  - "scripts/suites/03_plugin_extension_loading_runner.py"
+  - "scripts/suites/14_warp_0717_subset_runner.py"
+  - "scripts/suites/24_veldo_0007_install_and_run.py"
+  - "scripts/suites/27_veldo_0010_evidence_provenance.py"
+  - "scripts/suites/53_veldo_0123_mutations.py"
+  - "scripts/suites/66_veldo_0051_events.py"
+  - "scripts/suites/69_veldo_0058_gate_output.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/102_veldo_0210_agent_profile_runtime.py"
   - "scripts/suites/manifest.json"
@@ -176,7 +199,11 @@ acceptance_criteria:
       namespace other than the host's whose procfs is /proc; no capability) creates none, and its
       init is a child subreaper that kills and reaps every remaining descendant when the agent ends;
       any other private PID namespace (a container's, a systemd PrivatePIDs one) has no marker and
-      does not count. Set: the pids /proc lists inside, a host process
+      does not count. Python closes every descriptor it does not hand a child, so every process that
+      may start a launcher hands it the marker (pass_fds, agent_sandbox.launcher_fds: the verified
+      marker, nothing outside a tree): the gate's entry gate_candidate.py and each tool, product module
+      and suite that starts a gate; a launcher below the child profile that holds none refuses, naming
+      that, and never consults the helper. Set: the pids /proc lists inside, a host process
       started with a marker argument read by pid and found by scanning, uid, gid, every capability
       set, no_new_privs and the AppArmor label inside, a clone(CLONE_NEWUSER) by the agent, the owner
       of a file created inside, /proc's mount options, an orphan reaped by the init, a descendant
@@ -189,7 +216,8 @@ acceptance_criteria:
       label, a stack, complain mode and a forged
       tree (the child label, no capability, only its own namespace descriptors) not counting as
       nested; the nested check under the gate and the agent profile's real grants, where /sys is
-      unreadable; the marker created before the helper and kept by the tree; a subreaper ending a setsid
+      unreadable; the marker created before the helper and kept by the tree, handed on through the gate's
+      entry and refused when a child closed it; a subreaper ending a setsid
       descendant; the start and handoff waits timing out; TERM, INT and HUP ending a start whose
       helper hangs, in both profiles; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
       the helper, a run granted a write to the launcher's own file or above it, and every start on a
@@ -209,7 +237,8 @@ acceptance_criteria:
       namespace/only-the-helpers-tree-counts-as-nested goes red. Wait out the start despite a stop;
       namespace/stop-ends-a-hung-helper-* go red. Set no_new_privs in the helper's dropping;
       namespace/helper-execs-without-no-new-privs goes red. Skip the init's first check;
-      namespace/init-sets-no-new-privs-first-and-holds-nothing goes red.
+      namespace/init-sets-no-new-privs-first-and-holds-nothing goes red. Drop pass_fds from
+      gate_candidate.py; namespace/gate-entry-hands-on-the-marker goes red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch. On the host, `sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns`.
 ---
@@ -453,7 +482,18 @@ unchanged.
   an ancestor (NS_GET_PARENT refuses it, its procfs shows no process outside), so only a process
   outside hands one in. A container's or a systemd PrivatePIDs namespace has none and does not
   count, whatever its label: there the launcher uses the helper as on the host. The nested
-  launcher hands on the marker it inherited. Its C forks G itself and relays as the helper does;
+  launcher hands on the marker it inherited. Python's subprocess closes every descriptor above the
+  standard three that it is not handed, so each process between two launchers hands the marker on
+  explicitly with pass_fds=launcher_fds(), which returns the descriptor launcher_marker verifies and
+  nothing outside a tree: gate_candidate.py; gate_legs.py's confined leg; the mutation coordinator's
+  inventory; check_install_and_run.py, check_first_use.py and migrate_to_veldo.py; the installed
+  verifier control_verification.observe_gate runs and the head gate control_proof.capture_gate runs,
+  each taking launcher_fds from the launcher that gate runs; and every suite row that starts a
+  gate, the launcher or a nested dispatcher (shared.launcher_fds). Handing it on grants nothing the
+  nested launcher does not check again. A launcher whose AppArmor label is NAMESPACE_LABEL but which
+  holds no marker refuses before helper_problem, naming the closed marker: below the child profile
+  no helper can run, and root shows as an unmapped uid there, which helper_problem would misreport
+  as a helper not owned by root. Its C forks G itself and relays as the helper does;
   G is a child subreaper (PR_SET_CHILD_SUBREAPER), so a descendant that leaves the agent's session
   is reaped by it, and when A exits G kills every remaining descendant (each child in
   /proc/self/task/<pid>/children, then the ones that become its children) before it exits. The
