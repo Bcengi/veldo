@@ -111,7 +111,9 @@ sys.stdout.write(json.dumps(reply))
 # production runner lives. The block refuses every network egress event after recording it
 # (urllib3's import-time loopback IPv6 probe is a bind, not egress), counts the compiled graphs
 # this process executes, and writes one audit record per exchange under
-# /tmp/veldo-graph-43-audit/<domain uuid>/<command id>.json. It ends without interpreter
+# <AUDIT>/<domain uuid>/<command id>.json, AUDIT being a directory in the suite's own temporary
+# root spliced in at install (the gate's confinement grants no other writable place, VELDO-0208).
+# It ends without interpreter
 # shutdown, so a tracing mutant's exporter cannot stall on its refused retries.
 _S43_RUNNER = r'''
 # ---- VELDO-0043 suite workflows ----
@@ -148,7 +150,7 @@ langgraph.pregel.Pregel.invoke = _counting
 
 def audit(request):
     import langsmith.utils
-    directory = _t_Path('/tmp/veldo-graph-43-audit') / request['domain_uuid']
+    directory = _t_Path(AUDIT) / request['domain_uuid']
     directory.mkdir(parents=True, exist_ok=True)
     (directory / (request['command_id'] + '.json')).write_text(json.dumps({
         'switches': {k: _t_os.environ.get(k) for k in SWITCHES}, 'tracing': langsmith.utils.tracing_is_enabled(),
@@ -434,9 +436,17 @@ def _s43_runtime(root, repo, graph, store, snapshot):
 
     def account_state():
         # The account's runtime and stage, entry by entry: the suite must leave both untouched.
+        # Inside the gate's confinement (VELDO-0208) the account stage is private state the domain
+        # can neither list nor write, so there the kernel is what keeps it untouched, and it is
+        # recorded as unreadable on both sides of the comparison.
         listing = {}
         for base in (directory, account_stage):
-            for entry in (sorted(base.rglob('*')) if base.is_dir() else []):
+            try:
+                entries = sorted(base.rglob('*')) if base.is_dir() else []
+            except PermissionError:
+                listing[str(base)] = 'unreadable'
+                continue
+            for entry in entries:
                 if 'site-packages' not in entry.parts:
                     listing[str(entry)] = entry.lstat().st_mtime_ns
         return listing
@@ -474,9 +484,11 @@ def _s43_runtime(root, repo, graph, store, snapshot):
     production_runner = (repo / '.veldo/control_graph_langgraph.py').read_text()
     installed_runner = checkout / '.veldo/control_graph_langgraph.py'
     installed_runner.parent.mkdir()
-    installed_runner.write_text(production_runner.split("\nif __name__ == '__main__':\n")[0] + '\n' + _S43_RUNNER)
+    audit_root = root / 'graph-audit'
+    installed_runner.write_text(production_runner.split("\nif __name__ == '__main__':\n")[0] + '\n'
+                                + 'AUDIT = ' + repr(str(audit_root)) + '\n' + _S43_RUNNER)
     domain = 'domain-' + _s43_os.urandom(6).hex()
-    audit_directory = _s43_Path('/tmp/veldo-graph-43-audit') / domain
+    audit_directory = audit_root / domain
     stage_root = root / 'stage-runtime'
     adapter = graph.Adapter(dict(runtime, runner=str(installed_runner), stage=str(stage_root)), domain,
                             'repository', evidence=graph.runtime_evidence())

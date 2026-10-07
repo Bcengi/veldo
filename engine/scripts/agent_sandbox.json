@@ -29,7 +29,8 @@
   },
   "optional_read_roots": [
     "~/.nvm/versions/node",
-    "~/.local/share/claude"
+    "~/.local/share/claude",
+    "~/.local/share/veldo/langgraph"
   ],
   "deny_read": [
     "~/.ssh",
