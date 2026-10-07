@@ -252,7 +252,7 @@ def _v58_suite():
         first = git(seed, 'rev-parse', 'HEAD')
         # The ordinary landing step, unchanged: the checkout's own gate, then its stamp committed.
         ordinary = subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
-                                  stdin=subprocess.DEVNULL, env=clean, timeout=300)
+                                  stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
         stamp_path, log_path = seed / '.veldo' / 'last_verify', seed / '.veldo' / 'events.jsonl'
         observed['ordinary'] = {
             'exit': ordinary.returncode, 'terminal': (ordinary.stdout.strip().splitlines() or [''])[-1],
@@ -429,7 +429,8 @@ def _v58_suite():
                 args = ['--candidate', str(probe)] + (['--sink', str(sink)] if sink is not None else []) + list(extra)
                 before = snapshot(probe)
                 run = subprocess.run(['bash', str(verifier)] + args, cwd=str(probe), capture_output=True, text=True,
-                                     stdin=subprocess.DEVNULL, env=clean, timeout=300)
+                                     stdin=subprocess.DEVNULL, env=clean, timeout=300,
+                                     pass_fds=launcher_fds())
                 lines = run.stdout.strip().splitlines()
                 return {'exit': run.returncode, 'terminal': lines[-1] if lines else None,
                         'refused': any(line.startswith('== gate output: REFUSED') for line in lines),

@@ -122,7 +122,8 @@ def _v51_suite():
         def run(argv, cwd=None, env=None, stdin=None):
             return subprocess.run([str(a) for a in argv], capture_output=True, text=True, timeout=120,
                                   cwd=str(cwd or base), env=env, input=stdin,
-                                  stdin=None if stdin is not None else subprocess.DEVNULL)
+                                  stdin=None if stdin is not None else subprocess.DEVNULL,
+                                  pass_fds=launcher_fds())
 
         def cli(*args, cwd=None, env=None, stdin=None):
             return run([sys.executable, '-B', *args], cwd=cwd, env=env, stdin=stdin)

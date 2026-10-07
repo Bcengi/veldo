@@ -164,7 +164,7 @@ def _v57_suite():
         first = git(seed, 'rev-parse', 'HEAD')
         # The ordinary landing step: the checkout's own gate, then its stamp committed.
         subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
-                       stdin=subprocess.DEVNULL, env=clean, timeout=300)
+                       stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
         git(seed, 'add', '--', '.veldo/last_verify', '.veldo/events.jsonl')
         git(seed, 'commit', '-q', '-m', 'Gate stamp for ' + first[:12])
         SEED = git(seed, 'rev-parse', 'HEAD')

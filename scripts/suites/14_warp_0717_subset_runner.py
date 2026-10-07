@@ -308,7 +308,7 @@ def _w17_fixture(d, suites, requires=None):
 
 def _w17_run(root, *args):
     r = subprocess.run([sys.executable, str(root / "scripts" / "selftest.py")] + list(args),
-                       capture_output=True, text=True, cwd=str(root))
+                       capture_output=True, text=True, cwd=str(root), pass_fds=launcher_fds())
     return r.returncode, r.stdout + r.stderr
 
 
@@ -497,7 +497,8 @@ expect("WARP-0717 AC3 NO REGRESSION FROM THE FLAG REFUSAL: `--list` still prints
 # ---------------------------------------------------------------------------------------
 _w17_cheap = "05_tracker_routing_resolver_veldo"
 _w17_r = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"),
-                         "--suite", _w17_cheap], capture_output=True, text=True, cwd=str(ROOT))
+                         "--suite", _w17_cheap], capture_output=True, text=True, cwd=str(ROOT),
+                        pass_fds=launcher_fds())
 _w17_real_out = _w17_r.stdout + _w17_r.stderr
 
 def _w17_banner_ran(out):
@@ -534,7 +535,7 @@ expect("WARP-0717 AC1: a partial run REPORTS ITS OWN ELAPSED TIME AND THE SELECT
 
 _w17_upto = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"),
                             "--upto", _w17_names[0]], capture_output=True, text=True,
-                           cwd=str(ROOT))
+                           cwd=str(ROOT), pass_fds=launcher_fds())
 _w17_upto_out = _w17_upto.stdout + _w17_upto.stderr
 expect("WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and "
        "its final line still BEGINS with the exact text WARP-0712 gave it, "

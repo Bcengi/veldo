@@ -770,8 +770,10 @@ _IAR_LAUNCHERS = {"_git_process.run", "subprocess.run", "subprocess.Popen", "sub
                   "subprocess.check_output", "os.system", "os.popen", "os.spawnv", "os.spawnl",
                   "os.posix_spawn", "os.fork", "os.forkpty", "pty.spawn"}
 _IAR_DETACHING = {"start_new_session", "preexec_fn", "creationflags", "process_group", "shell"}
+# pass_fds hands the child the agent launcher's marker (VELDO-0210 AC6): one inherited descriptor,
+# no session, group or shell of its own.
 _IAR_LAUNCH_OK = {"cwd", "capture_output", "text", "timeout", "env", "check", "input", "encoding",
-                  "errors", "stdin", "stdout", "stderr", "bufsize"}
+                  "errors", "stdin", "stdout", "stderr", "bufsize", "pass_fds"}
 
 # EVERY WAY A PYTHON FILE COULD REACH A NETWORK, as identifiers, and every way a SHELL SCRIPT could,
 # as tokens. ONE definition of each, used for this file AND for the children it launches, so the
@@ -1181,7 +1183,8 @@ def _iar_ac4_inventory():
         b_repo, b_home = _iar_repository_inventory(repo), _iar_inventory(home, observe_mtime=True)
         proc = _iar_sp.run([_iar_sys.executable, "scripts/check_install_and_run.py",
                             "--pack", _IAR_REP["composed"][0]],
-                           cwd=str(repo), env=env, capture_output=True, text=True, timeout=900)
+                           cwd=str(repo), env=env, capture_output=True, text=True, timeout=900,
+                           pass_fds=launcher_fds())
         a_repo, a_home = _iar_repository_inventory(repo), _iar_inventory(home, observe_mtime=True)
         laid = _iar_re.search(r"installed (\d+) file\(s\) from (\S+)", proc.stdout)
         expect("VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows "
@@ -1637,7 +1640,8 @@ def _iar_ac5():
            "over one pack, exiting zero",
            _iar_sp.run([_iar_sys.executable, str(ROOT / "scripts" / "check_install_and_run.py"),
                         "--pack", _IAR_REP["composed"][0]],
-                       cwd=str(ROOT), capture_output=True, text=True).returncode == 0)
+                       cwd=str(ROOT), capture_output=True, text=True,
+                       pass_fds=launcher_fds()).returncode == 0)
 
 
 _iar_block("AC5", _iar_ac5)

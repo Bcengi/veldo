@@ -146,7 +146,7 @@ def gate_exit(root, gate_source):
     for name in ('validate.py', 'shape_gate.py', 'events.py', 'version.py'):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
     return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
-                       text=True, timeout=30).returncode
+                       text=True, timeout=30, pass_fds=launcher_fds()).returncode
 
 
 def qualification(module, repository, selected=None):
@@ -207,7 +207,8 @@ def qualification(module, repository, selected=None):
                 # (VELDO-0208: the gate never runs a candidate copy of its own machinery).
                 ok &= wiring(repository / 'scripts/verify.sh')
                 (root / 'scripts/check_gate_mutations.py').unlink()
-                absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20)
+                absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20,
+                                      pass_fds=launcher_fds())
                 ok &= absent.returncode != 0
                 answers[row] = bool(ok)
             elif row == ROWS[1]:

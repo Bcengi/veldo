@@ -332,7 +332,7 @@ def _vp_run_gate(gate_rel, declare_version):
             (base / ".claude-plugin" / "marketplace.json").write_text(json.dumps(
                 {"plugins": [{"name": "veldo", "version": declare_version}]}))
         _vp_subprocess.run(["bash", "scripts/verify.sh"], cwd=str(base),
-                           capture_output=True, text=True, timeout=300)
+                           capture_output=True, text=True, timeout=300, pass_fds=launcher_fds())
         stamp = base / ".veldo" / "last_verify"
         if not stamp.is_file():
             return None, None

@@ -48,6 +48,9 @@ def _v208_landing_reuse():
         unless a row names another. The boundary refuses a socket on a standard descriptor, so a row
         must not depend on what stdin the suite itself was started with."""
         kwargs.setdefault('stdin', subprocess.DEVNULL)
+        # Inside a tree the agent launcher made, the launcher started here is nested: it is handed
+        # the tree's marker beside whatever the row passes (VELDO-0210 AC6).
+        kwargs['pass_fds'] = (*kwargs.get('pass_fds', ()), *launcher_fds())
         return subprocess.run(*args, **kwargs)
 
     def load(relative):
@@ -151,7 +154,7 @@ print(json.dumps(results))
         planted_result = subprocess.run([sys.executable, '-I', '-S',
             str(ROOT / 'scripts/gate_candidate.py'), '--root', str(worktree), '--',
             sys.executable, str(planted)], env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)),
-            capture_output=True, text=True, timeout=20)
+            capture_output=True, text=True, timeout=20, pass_fds=launcher_fds())
         expect('VELDO-0208 candidate/planted-suite-publication-red',
                planted_result.returncode != 0 and 'store publication denied' in planted_result.stderr
                and 'store-denied domain' in planted_result.stderr
@@ -653,7 +656,8 @@ print(json.dumps(results))
             "assert s.store.put(key, data['record']), 'real-key publication denied'\n")
         attack = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_candidate.py'),
             '--root', str(worktree), '--', sys.executable, str(planted)],
-            env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)), capture_output=True, text=True, timeout=20)
+            env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)), capture_output=True, text=True, timeout=20,
+            pass_fds=launcher_fds())
         expect('VELDO-0208 candidate/real-session-key-planting-red',
                attack.returncode != 0 and 'real-key publication denied' in attack.stderr
                and 'store-denied domain' in attack.stderr and not (storepath / (key + '.json')).exists())
@@ -913,7 +917,7 @@ def _v208_confined_stages():
         veldo_candidate runs it: stdin /dev/null, output captured."""
         return subprocess.run(launcher + ['--root', str(root), '--', *command], capture_output=True,
                               text=True, timeout=timeout, stdin=subprocess.DEVNULL,
-                              env=dict(os.environ if env is None else env))
+                              env=dict(os.environ if env is None else env), pass_fds=launcher_fds())
 
     with tempfile.TemporaryDirectory(prefix='v208-confined-') as temporary:
         top = Path(temporary)
@@ -1100,9 +1104,12 @@ print(json.dumps(r))
             'import importlib.util, subprocess, sys, tempfile\nfrom pathlib import Path\n'
             'spec = importlib.util.spec_from_file_location("isc", ' + repr(str(ROOT / '.veldo/init_scaffold.py')) + ')\n'
             'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\n'
+            'spec = importlib.util.spec_from_file_location("sb", ' + repr(str(ROOT / 'scripts/agent_sandbox.py')) + ')\n'
+            'sb = importlib.util.module_from_spec(spec); spec.loader.exec_module(sb)\n'
             'with tempfile.TemporaryDirectory() as d:\n'
             '    m.scaffold(d)\n'
-            '    r = subprocess.run(["bash", str(Path(d) / "scripts/verify.sh")], capture_output=True, text=True)\n'
+            '    r = subprocess.run(["bash", str(Path(d) / "scripts/verify.sh")], capture_output=True, text=True,\n'
+            '                       pass_fds=sb.launcher_fds())\n'
             '    print(r.stdout[-400:] + r.stderr[-400:]); sys.exit(r.returncode)\n')
         nested_gate = confined(scaffold, [sys.executable, str(scaffold / 'run.py')], timeout=300)
         expect('VELDO-0208 confined-stage/nested-scaffold-gate-green: ' + nested_gate.stdout[-300:],
@@ -1367,7 +1374,8 @@ def _v208_unconfined_leg():
             result = subprocess.run([sys.executable, '-I', '-S', '-c', driver, str(ROOT / 'scripts/gate_legs.py'),
                                      str(root), name, command, str(record), str(listing)],
                                     capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
-                                    env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **(extra or {})))
+                                    env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **(extra or {})),
+                                    pass_fds=launcher_fds())
             # The candidate tree is read-only in the gate domain, so each probe reports on stdout.
             markers = dict(line.split()[1:3] for line in result.stdout.splitlines()
                            if line.startswith('V208-PROBE '))
@@ -1420,7 +1428,7 @@ def _v208_unconfined_leg():
             ran = subprocess.run(['bash', '-c', program, 'fixture', *map(str, outputs)],
                                  capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                          V208_PROBE_OUTSIDE=str(outside)))
+                                          V208_PROBE_OUTSIDE=str(outside)), pass_fds=launcher_fds())
             return ran.returncode, [json.loads(o.read_text()) for o in outputs]
         empty = top / 'empty-record'; empty.write_text('')
         corrupt = top / 'corrupt-record'; corrupt.write_text('{"stage": "unit"\n')
@@ -1479,7 +1487,7 @@ def _v208_unconfined_leg():
             return subprocess.run([sys.executable, str(candidate / 'scripts/selftest.py')], cwd=str(candidate),
                                   capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL,
                                   env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                           V208_PROBE_OUTSIDE=str(outside), **extra))
+                                           V208_PROBE_OUTSIDE=str(outside), **extra), pass_fds=launcher_fds())
         leg_of = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
         empty_list = dispatcher({'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': ''})
         no_suite = dispatcher(dict(leg_of, VELDO_GATE_UNCONFINED='99_absent'))
@@ -1506,7 +1514,8 @@ def _v208_unconfined_leg():
                                  'cd %s && veldo_stage unit "python3 scripts/selftest.py"'
                                  % (fallback, top / 'fallback-record', functions, candidate)],
                                 capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
-                                env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked))
+                                env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked),
+                                pass_fds=launcher_fds())
         leaked_markers = dict(line.split()[1:3] for line in leaked.stdout.splitlines()
                               if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/fallback-drops-the-callers-leg-variables: '
@@ -1526,7 +1535,8 @@ def _v208_unconfined_leg():
                                         'cd %s && veldo_candidate bash -c "python3 scripts/selftest.py"'
                                         % (fallback, engine_candidate, candidate)],
                                        capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
-                                       env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked))
+                                       env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked),
+                                       pass_fds=launcher_fds())
         engine_markers = dict(line.split()[1:3] for line in engine_leaked.stdout.splitlines()
                               if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/engine-gate-drops-the-callers-leg-variables: '
@@ -1574,7 +1584,7 @@ def _v208_unconfined_leg():
                               % (authority, own_record, functions, candidate)],
                              capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                              env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                      V208_PROBE_OUTSIDE=str(outside)))
+                                      V208_PROBE_OUTSIDE=str(outside)), pass_fds=launcher_fds())
         own_markers = dict(line.split()[1:3] for line in own.stdout.splitlines() if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/list-read-from-the-authority: ' + repr((own.returncode, own_markers)),
                L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'
@@ -1669,7 +1679,7 @@ def _v208_unconfined_leg():
                                    % (bare, bare_record, functions, candidate)],
                                   capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                                   env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                           V208_PROBE_OUTSIDE=str(outside)))
+                                           V208_PROBE_OUTSIDE=str(outside)), pass_fds=launcher_fds())
         bare_markers = dict(line.split()[1:3] for line in bare_run.stdout.splitlines()
                             if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/authority-without-the-list-has-an-identity-and-is-confined: '
@@ -1990,7 +2000,7 @@ def network_rule_probe(port, inherited, abstract, scratch):
             gated = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/agent_sandbox.py'),
                                     '--profile', 'gate', '--config', str(config), '--worktree', str(worktree),
                                     '--', sys.executable, '-I', '-S', '-c', code, str(port), str(inherited),
-                                    abstract], pass_fds=(inherited,), stdin=subprocess.DEVNULL,
+                                    abstract], pass_fds=(inherited, *launcher_fds()), stdin=subprocess.DEVNULL,
                                    capture_output=True, text=True, timeout=60)
             try:
                 gate_rule = json.loads(gated.stdout.strip().splitlines()[-1])
@@ -2225,7 +2235,7 @@ def _v208_mutation_leg():
                                   '--root', str(candidate), '--receipt', str(receipt), '--legs-record', str(record)],
                                  capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL,
                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                          **forged))
+                                          **forged), pass_fds=launcher_fds())
             markers = sorted(m.name.split('.')[0] for m in outside.iterdir())
             document = json.loads(receipt.read_text()) if receipt.exists() else {}
             return ran, markers, document

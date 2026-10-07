@@ -873,7 +873,7 @@ ISC = importlib.util.module_from_spec(_iscspec); _iscspec.loader.exec_module(ISC
 
 def _scaffold_gate_green(target):
     r = subprocess.run(["bash", str(Path(target) / "scripts" / "verify.sh")],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, pass_fds=launcher_fds())
     return r.returncode == 0
 
 
