@@ -1076,7 +1076,7 @@ def write_back(scratch, credentials):
         try:
             if not isinstance(json.loads(data.decode('utf-8')), dict):
                 raise ValueError('not a JSON object')
-        except ValueError as error:
+        except Exception as error:  # ValueError, and RecursionError for a deeply nested document
             print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
             continue
@@ -1340,8 +1340,12 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                     pass
             if side is not None:
                 side.close()
-            # The confined group is gone: a refreshed credential goes back to its account.
-            write_back(scratch, credentials)
+            # The confined group is gone: a refreshed credential goes back to its account. Nothing
+            # the write-back meets replaces the run's own exit status.
+            try:
+                write_back(scratch, credentials)
+            except Exception as error:
+                print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
     # Only this child executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.

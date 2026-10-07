@@ -53,8 +53,9 @@ acceptance_criteria:
       during a run never logs the account out, and only if the source still holds the bytes copied
       in at the start, so a login made during the run is never overwritten. Set: a simulated
       refresh, an unchanged file, an invalid rewrite, a rewrite planted through a link to another
-      credential, a changed non-credential seed, a refresh followed by a stop signal, and a refresh
-      while the account logs in again outside the run. Completeness: the only files
+      credential, a changed non-credential seed, a refresh followed by a stop signal, a refresh
+      while the account logs in again outside the run, and a rewrite nested past the parser's
+      recursion limit in a run that fails, whose exit status is kept. Completeness: the only files
       written outside the scratch are the sources recorded at copy time; the copy is read component
       by component without following links. Test rows credentials/* in suite 102.
     falsified_by: Write back without the JSON check or follow links in the scratch; a credentials row goes red.
@@ -126,7 +127,9 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
   regular file with one link, at most 1 MiB. Changed bytes that parse as one JSON object replace
   the source through a temporary file in the source's directory, fsync and rename; just before the
   rename the source is read again and replaced only if it still holds the bytes copied in, otherwise
-  the copy is dropped and the launcher says so. Every credential
+  the copy is dropped and the launcher says so. A copy that fails to parse for any reason (a
+  syntax error, nesting past the recursion limit) is not written back, and nothing the write-back
+  meets replaces the run's own exit status. Every credential
   source of every client is added to deny_read for the run.
 - Capabilities. Read links: Claude's plugins/cache, plugins/marketplaces, plugins/synced, skills,
   agents and commands; Codex's skills, rules and plugins/cache. Each target is granted read-only

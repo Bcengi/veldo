@@ -208,6 +208,11 @@ elif mode == 'directory-link':
     claude.symlink_to(sys.argv[4])
 elif mode == 'settings':
     rewrite(claude / 'settings.json', '{"forged": true}')
+elif mode == 'deep':
+    # Nested past the parser's recursion limit, well inside the size limit; the run then fails.
+    rewrite(credentials, '[' * 200000 + ']' * 200000)
+    print(json.dumps(seen))
+    sys.exit(7)
 elif mode == 'refresh-wait':
     # A refresh, then the run goes on until the test has logged the account in again outside it.
     rewrite(credentials, sys.argv[4])
@@ -268,6 +273,14 @@ print(json.dumps(seen))
             result = act_run(mode)
             expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
                    result.returncode == 0 and account_state() == before and reason in result.stderr)
+        reset()
+        before = account_state()
+        result = act_run('deep')
+        expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
+                                                                              result.stderr[-200:]),
+               result.returncode == 7 and account_state() == before
+               and 'changed but not written back' in result.stderr
+               and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr)
         for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
             reset()
             before = account_state()
