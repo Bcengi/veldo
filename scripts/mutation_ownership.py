@@ -116,7 +116,12 @@ def remove_tree(path):
 def admitted(home, ledger, runtime=None):
     """Split the ledger into entries the Tracker can produce for the worker at `home` and the rest:
     a directory strictly beneath that home (after resolving links), a veldo-authority-<hex>.service
-    file directly in the user unit directory, or a slice of the Tracker's own pattern."""
+    file directly in the user unit directory, or a slice of the Tracker's own pattern.
+
+    Python audits tempfile.mkdtemp before its mkdir, so the Tracker also records attempts the
+    domain refused (a suite probing /dev/shm) and directories the case removed itself. A directory
+    entry outside the home that does not exist names nothing to reap and is dropped; one that
+    exists, or whose absence cannot be shown, stays rejected and is never touched."""
     home = Path(home).resolve()
     runtime = unit_directory() if runtime is None else Path(runtime)
     accepted, rejected = [], []
@@ -131,6 +136,10 @@ def admitted(home, ledger, runtime=None):
                 resolved = path.resolve()
                 if resolved != home and resolved.is_relative_to(home):
                     accepted.append((kind, str(resolved)))
+                    continue
+                try:
+                    os.lstat(value)
+                except (FileNotFoundError, NotADirectoryError):
                     continue
             elif kind == 'service' and plain and path.parent == runtime and SERVICE.fullmatch(path.name):
                 accepted.append((kind, value))

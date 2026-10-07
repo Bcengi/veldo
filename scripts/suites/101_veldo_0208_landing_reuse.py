@@ -561,6 +561,21 @@ print(json.dumps(results))
             expect('VELDO-0208 ownership/forged-' + kind + '-red-and-untouched: ' + str(outcome.get('detail')),
                    code == 'worker_cleanup_error' and 'outside this worker' in outcome.get('detail', '')
                    and calls == [] and intact)
+        # Python audits mkdtemp before its mkdir, so a probe the domain refuses still reaches the
+        # ledger. shared.fast_temp's /dev/shm probe did, and every suite using it went red in the
+        # gate's mutation stage (worker_cleanup_error) while passing alone.
+        code, calls, outcome, intact = drive_ledger(
+            'for parent in ("/dev/shm", %r):\n'
+            '    try:\n'
+            '        os.rmdir(tempfile.mkdtemp(prefix="fast-probe-", dir=parent))\n'
+            '    except OSError:\n'
+            '        pass\n' % str(victims))
+        expect('VELDO-0208 ownership/refused-outside-probe-not-red: ' + str(outcome.get('detail')),
+               code is None and calls == [] and intact
+               and sorted(p.name for p in victims.iterdir()) == ['keep', 'victim.service'])
+        code, calls, outcome, intact = drive_ledger(forge('directory', str(victims / 'absent')))
+        expect('VELDO-0208 ownership/forged-absent-directory-untouched: ' + str(outcome.get('detail')),
+               code is None and calls == [] and intact and not (victims / 'absent').exists())
         code, calls, outcome, intact = drive_ledger(
             'open(os.path.join(os.environ["TMPDIR"], "ownership.jsonl"), "w").write('
             'json.dumps(["directory", %r]) + "\\n")\n' % str(victims))
