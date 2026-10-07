@@ -508,8 +508,19 @@ print(json.dumps(r))
             writable_tree.mkdir()
             writable_tree.chmod(0o777)
             (writable_tree / 'agent_sandbox.py').write_text('')
+            linked_tree = top / 'linked-tree'
+            linked_tree.mkdir()
+            (linked_tree / 'agent_sandbox.py').symlink_to(entry_tree / 'agent_sandbox.py')
+            directory_tree = top / 'directory-tree'
+            (directory_tree / 'agent_sandbox.py').mkdir(parents=True)
+            entry = str(entry_tree / 'agent_sandbox.py')
             for name, argv, reason in (
-                    ('usage', [], 'usage'), ('relative-entry', ['scripts/agent_sandbox.py', '5'], 'absolute'),
+                    ('usage', [], 'usage'), ('extra-argument', [entry, '5', '6'], 'usage'),
+                    ('relative-entry', ['scripts/agent_sandbox.py', '5'], 'absolute'),
+                    ('linked-entry', [str(linked_tree / 'agent_sandbox.py'), '5'], 'canonical path'),
+                    ('directory-entry', [str(directory_tree / 'agent_sandbox.py'), '5'], 'not a regular file'),
+                    ('long-descriptor', [entry, '1234567890'], 'descriptor number or selftest'),
+                    ('empty-descriptor', [entry, ''], 'descriptor number or selftest'),
                     ('other-program', ['/usr/bin/true', '5'], 'must be agent_sandbox.py'),
                     ('other-argument', [str(entry_tree / 'agent_sandbox.py'), '--anything'],
                      'descriptor number or selftest'),
@@ -518,6 +529,20 @@ print(json.dumps(r))
                                          stdin=subprocess.DEVNULL) if binary.exists() else None
                 expect('VELDO-0210 namespace/helper-refuses-%s: %s' % (name, refused and refused.stderr[-200:]),
                        refused is not None and refused.returncode == 2 and reason in refused.stderr)
+            try:
+                restricted = Path('/proc/sys/kernel/apparmor_restrict_unprivileged_userns').read_text().strip() == '1'
+            except OSError:
+                restricted = False
+            if restricted and not nested and binary.exists():
+                # Past every check, a build that is not the installed path the policy names gets a user
+                # namespace with no rights: it cannot map the account and executes nothing.
+                ran = top / 'entry-ran'
+                (entry_tree / 'agent_sandbox.py').write_text('open(%r, "w").close()\n' % str(ran))
+                refused = subprocess.run([str(binary), entry, 'selftest'], capture_output=True, text=True,
+                                         timeout=30, stdin=subprocess.DEVNULL)
+                expect('VELDO-0210 namespace/helper-uninstalled-gets-no-user-namespace: %s' % refused.stderr[-200:],
+                       refused.returncode == 2 and refused.stderr.startswith('veldo-userns: ')
+                       and not ran.exists())
         # Nested means inside a tree this launcher's helper made: its AppArmor label, never any private
         # PID namespace (a container's, a systemd PrivatePIDs one).
         saved = S.apparmor_enabled, S.apparmor_label
@@ -539,7 +564,11 @@ print(json.dumps(r))
                         os.open(str(launcher), os.O_RDONLY), write_end]
                 for descriptor in held:
                     os.set_inheritable(descriptor, True)
-                S.close_descriptors([], keep=held)
+                low = 3
+                for descriptor in sorted(held):
+                    os.closerange(low, descriptor)
+                    low = descriptor + 1
+                os.closerange(low, 0x7fffffff)
                 S.apparmor_enabled = lambda: True
                 S.apparmor_label = lambda: S.NAMESPACE_PROFILE + ' (enforce)'
                 S.INITIAL_PID_NAMESPACE = 'pid:[0]'
