@@ -2,7 +2,8 @@
 """Start one implementing process tree in an inherited, unprivileged domain.
 
 Invoke with python3 -I -S from a reviewed authority checkout, never the candidate.
-No daemon, alternate uid, root helper, or unsandboxed fallback is used.
+No daemon, alternate uid or unsandboxed fallback is used. The one helper is the owner-installed,
+root-owned copy of unshare that creates the tree's user namespace; it runs as this account.
 
 An agent's Git worktree belongs to the agent's own repository, never the shared one:
 `prepare` creates it (private objects, the shared store a read-only alternate, a branch
@@ -116,6 +117,22 @@ RESOLVER = Path('/etc/resolv.conf')
 RESOLVER_RUNTIME = Path('/run/systemd/resolve')
 # Marks a tree a Broker serves, for suites that must know whether they already run inside one.
 BROKERED = 'VELDO_SANDBOX_BROKERED'
+# The PID namespace helper (VELDO-0210 AC6): a root-owned copy of util-linux unshare, the only path
+# the host's AppArmor profile veldo-unshare lets create a user namespace. Fixed here: never taken
+# from the environment, the configuration or the candidate.
+NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-unshare')
+NAMESPACE_SETUP = ("sudo install -D -o root -g root -m 0755 /usr/bin/unshare /usr/local/lib/veldo/veldo-unshare && "
+                   "printf 'abi <abi/4.0>,\\ninclude <tunables/global>\\n\\nprofile veldo-unshare "
+                   "/usr/local/lib/veldo/veldo-unshare flags=(unconfined) {\\n  userns,\\n}\\n' | "
+                   "sudo tee /etc/apparmor.d/veldo-unshare >/dev/null && "
+                   "sudo apparmor_parser -r /etc/apparmor.d/veldo-unshare")
+INITIAL_PID_NAMESPACE = 'pid:[4026531836]'
+# Stops the launcher's child relays to the namespace's init, which acts on these only: a stop it
+# receives itself (it shares the child's process group) is discarded, so the agent gets each once.
+RELAY = {signal.SIGTERM: signal.SIGRTMIN, signal.SIGINT: signal.SIGRTMIN + 1,
+         signal.SIGHUP: signal.SIGRTMIN + 2}
+# The namespace steps run before Landlock and use this handle, loaded once with the module.
+LIBC = ctypes.CDLL(None, use_errno=True)
 
 
 def ipc_program(mediate=None):
@@ -192,7 +209,7 @@ class Handoff:
     nothing in the domain can answer its own requests."""
 
     def __init__(self, request, reply):
-        self.request, self.reply, self.mode = request, reply, None
+        self.request, self.reply, self.mode, self.pid = request, reply, None, None
 
     def keep(self):
         return (self.request, self.reply)
@@ -214,7 +231,9 @@ class Handoff:
                 os.write(self.request, b'-\n')
                 return self.mode
             try:
-                os.write(self.request, b'%d\n' % listener)
+                # With the pid the trusted parent sees this process by (it runs in a PID namespace
+                # of its own), else the parent attaches to the pid its fork returned.
+                os.write(self.request, (b'%d %d\n' % (listener, self.pid)) if self.pid else b'%d\n' % listener)
                 if os.read(self.reply, 1) != b'1':
                     raise RuntimeError('agent sandbox broker unavailable')
             finally:
@@ -250,7 +269,8 @@ def fork_brokered(roots):
         if line.strip() not in (b'', b'-'):
             try:
                 broker = Broker(roots)
-                broker.attach(pid, int(line))
+                listener, *target = line.split()
+                broker.attach(int(target[0]) if target else pid, int(listener))
             except (OSError, ValueError):
                 broker = None
             os.write(reply_w, b'1' if broker else b'0')
@@ -838,6 +858,97 @@ def resolver_grants():
     if target != RESOLVER and target != runtime and beneath(target, runtime) and runtime.is_dir():
         return [(runtime, READ)]
     return []
+
+
+def helper_problem(helper):
+    """Why `helper` may not create the namespace, or None. It must be a regular file (not a link)
+    owned by root that only root can write, in directories owned by root that only root can write,
+    and this account must not be able to write it."""
+    directory = helper.parent.resolve()
+    for path in [helper, directory, *directory.parents]:
+        try:
+            info = os.lstat(path)
+        except OSError as error:
+            return '%s: %s' % (path, error.strerror)
+        if path == helper and not stat.S_ISREG(info.st_mode):
+            return '%s is not a regular file' % path
+        if info.st_uid != 0:
+            return '%s is not owned by root' % path
+        if info.st_mode & 0o022:
+            return '%s is writable by group or others' % path
+    if os.access(helper, os.W_OK):
+        return '%s is writable by this account' % helper
+    return None
+
+
+def private_pid_namespace():
+    """This process runs in a PID namespace other than the host's and /proc is that namespace's
+    procfs (a launcher nested in a sandbox this launcher made): /proc already shows no host process."""
+    try:
+        return (os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
+                and os.readlink('/proc/self') == str(os.getpid()))
+    except OSError:
+        return False
+
+
+def enter_namespaces():
+    """Move this single-threaded process into a user namespace where only this account's uid and gid
+    are mapped, each to itself, and unshare the mount and PID namespaces inside it: its next child
+    is that PID namespace's init (VELDO-0210 AC6). Returns False, creating nothing, when the process
+    already runs in a private PID namespace. The user namespace comes from NAMESPACE_HELPER (the
+    host lets no other program create one); the helper must pass helper_problem, and an unusable
+    helper or a namespace that cannot be made raises with the owner's setup command."""
+    def refuse(problem):
+        return RuntimeError('cannot create the PID namespace (%s); the owner\'s one-time setup: %s'
+                            % (problem, NAMESPACE_SETUP))
+    problem = helper_problem(NAMESPACE_HELPER)
+    if problem:
+        raise refuse(problem)
+    if private_pid_namespace():
+        return False
+    ids = os.getuid(), os.getgid()
+    try:
+        # The holder reports once the helper has made the namespace and written its maps, then waits
+        # for its stdin to close; it never forks, so it adds no process to any namespace.
+        holder = subprocess.Popen([str(NAMESPACE_HELPER), '--user', '--map-current-user', '--', sys.executable,
+                                   '-I', '-S', '-c', 'import os; os.write(1, b"1"); os.read(0, 1)'],
+                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                  env={}, close_fds=True)
+        user = None
+        try:
+            if holder.stdout.read(1) == b'1':
+                user = os.open('/proc/%d/ns/user' % holder.pid, os.O_RDONLY | os.O_CLOEXEC)
+        finally:
+            _, error = holder.communicate(timeout=30)
+        if user is None:
+            raise refuse('%s exited %s: %s' % (NAMESPACE_HELPER, holder.returncode,
+                                                error.decode(errors='replace').strip()[-300:]))
+        try:
+            os.setns(user, os.CLONE_NEWUSER)
+        finally:
+            os.close(user)
+        if (os.getuid(), os.getgid()) != ids:
+            raise refuse('the user namespace does not map this account to itself')
+        os.unshare(os.CLONE_NEWNS | os.CLONE_NEWPID)
+        # MS_REC | MS_PRIVATE on /: nothing mounted in this namespace propagates anywhere.
+        if LIBC.mount(b'none', b'/', None, (1 << 14) | (1 << 18), None):
+            raise OSError(ctypes.get_errno(), 'mount propagation')
+    except (OSError, subprocess.SubprocessError) as error:
+        raise refuse(error)
+    return True
+
+
+def mount_procfs():
+    """In the new PID namespace's init: a fresh procfs read only over /proc (MS_RDONLY, MS_NOSUID,
+    MS_NODEV, MS_NOEXEC), which lists this namespace's processes only."""
+    if LIBC.mount(b'proc', b'/proc', b'proc', 1 | 2 | 4 | 8, None):
+        raise OSError(ctypes.get_errno(), 'cannot mount the namespace procfs')
+    if os.readlink('/proc/self') != '1':
+        raise RuntimeError('the namespace procfs is not the init\'s')
+
+
+def exit_code(status):
+    return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
 
 
 def installed_tools(config):
@@ -1452,13 +1563,19 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             except Exception as error:
                 print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
-    # Only this child executes candidate/agent code. The parent only waits (and, for the gate,
+    # Only this child's tree executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.
     try:
+        forward = [n for n in STOP_SIGNALS if stop is None or n in stop.previous]
         if stop is not None:
             stop.in_child()
-        signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+        # The stops stay blocked here and in the init: both take them with sigwaitinfo.
+        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD, *RELAY.values()})
         os.setsid()
+        # A launcher killed outright takes this child with it, and with it the init and the whole
+        # namespace; a launcher gone before this point refuses the start.
+        if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != launcher:
+            raise RuntimeError('the launcher is gone')
         # The confined command holds its own shared lock on the scratch for as long as it runs (and
         # every descendant that keeps the descriptor), so no sweep removes a scratch still in use.
         held = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -1466,15 +1583,106 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         os.set_inheritable(held, True)
         keep = [held, *(side.keep() if side else ())]
         close_descriptors(protected, keep=keep)
+        private = enter_namespaces()
+        parent = os.pidfd_open(os.getpid())
+        init = os.fork()
+        if not init:
+            confined_init(private, parent, worktree, command, env, grants, profile, side, protected, keep,
+                          mask)
+        os.close(parent)
+        for descriptor in (side.keep() if side else ()):
+            os.close(descriptor)
+        while True:
+            number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD}).si_signo
+            if number == signal.SIGCHLD:
+                done, status = os.waitpid(init, os.WNOHANG)
+                if done:
+                    os._exit(exit_code(status))
+            elif number in forward:
+                os.kill(init, RELAY[number])
+    except BaseException as error:
+        print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
+        os._exit(2)
+
+
+def confined_init(private, parent, worktree, command, env, grants, profile, side, protected, keep, mask):
+    """The init of the tree's PID namespace (VELDO-0210 AC6), or the tree's first process when the
+    launcher is nested in one. Mounts the fresh procfs, forks the agent, forwards each stop the
+    launcher's child relays to the agent's process group, reaps every process that ends here, and
+    exits with the agent's status once it is gone; the kernel then ends what is left in the
+    namespace. Never returns."""
+    try:
+        if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0):
+            raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
+        alive = __import__('select').poll()
+        alive.register(parent, __import__('select').POLLIN)
+        if alive.poll(0):
+            raise RuntimeError('the launcher is gone')
+        os.close(parent)
+        # The launcher's procfs, before the fresh one covers it: the agent reads from it the pid the
+        # launcher sees it by, for the gate profile's broker.
+        launcher_proc = os.open('/proc', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+        if private:
+            mount_procfs()
+        init = os.getpid()
+        agent = os.fork()
+        if not agent:
+            confined_agent(launcher_proc, init, worktree, command, env, grants, profile, side, protected,
+                           keep, mask)
+        try:
+            os.setpgid(agent, agent)
+        except OSError:
+            pass  # the agent already did, or has gone
+        os.close(launcher_proc)
+        for descriptor in (side.keep() if side else ()):
+            os.close(descriptor)
+        relayed = {number: original for original, number in RELAY.items()}
+        while True:
+            number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD, *relayed}).si_signo
+            if number in relayed:
+                try:
+                    os.killpg(agent, relayed[number])
+                except ProcessLookupError:
+                    try:
+                        os.kill(agent, relayed[number])  # not yet in its own group
+                    except ProcessLookupError:
+                        pass
+            elif number == signal.SIGCHLD:
+                while True:
+                    try:
+                        done, status = os.waitpid(-1, os.WNOHANG)
+                    except ChildProcessError:
+                        break
+                    if not done:
+                        break
+                    if done == agent:
+                        try:
+                            os.killpg(agent, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        os._exit(exit_code(status))
+    except BaseException as error:
+        print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
+        os._exit(2)
+
+
+def confined_agent(launcher_proc, init, worktree, command, env, grants, profile, side, protected, keep, mask):
+    """The agent: its own process group, then the existing confinement (seccomp, Landlock), then exec.
+    Never returns."""
+    try:
+        os.setpgid(0, 0)
+        if side is not None:
+            side.pid = int(os.readlink('self', dir_fd=launcher_proc))
+        close_descriptors(protected, keep=keep)
         mode = landlock(grants, profile, broker=side)
-        # A launcher killed outright takes its child with it (PR_SET_PDEATHSIG, kept across exec), so
-        # no agent runs on unsupervised; a launcher gone before this point refuses the start.
-        if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != launcher:
+        # PR_SET_PDEATHSIG is kept across exec; the init's death ends the namespace in any case.
+        if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != init:
             raise RuntimeError('the launcher is gone')
         env.pop(BROKERED, None)
         if mode != 'strict':
             env[BROKERED] = '1'
         os.chdir(worktree)
+        signal.pthread_sigmask(signal.SIG_SETMASK, mask)
         os.execvpe(command[0], command, env)
     except BaseException as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)

@@ -40,12 +40,14 @@ sys.exit(m.main())
     S = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(S)
 
-    def run(config, worktree, command, patch=None, client=None, env=None, timeout=60, **kwargs):
+    def run(config, worktree, command, patch=None, client=None, env=None, timeout=60, profile=None, **kwargs):
         """One launch through the real launcher, stdin /dev/null, output captured."""
         argv = [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), json.dumps(patch or {}),
                 '--config', str(config), '--worktree', str(worktree)]
         if client:
             argv += ['--client', client]
+        if profile:
+            argv += ['--profile', profile]
         return subprocess.run(argv + ['--', *command], capture_output=True, text=True, timeout=timeout,
                               stdin=subprocess.DEVNULL, env=dict(os.environ if env is None else env),
                               **kwargs)
@@ -82,7 +84,9 @@ def refused(name, operation):
         operation()
         r[name] = False
     except OSError as error:
-        r[name] = error.errno in (errno.EACCES, errno.EPERM, errno.EXDEV, errno.ELOOP)
+        r[name] = error.errno in (errno.EACCES, errno.EPERM, errno.EXDEV, errno.ELOOP, errno.EROFS)
+def processes():
+    return [int(entry) for entry in os.listdir('/proc') if entry.isdigit()]
 for item in sys.argv[1:]:
     kind, name, path = item.split(':', 2)
     if kind == 'read':
@@ -120,6 +124,63 @@ for item in sys.argv[1:]:
         os.makedirs(os.path.dirname(target), exist_ok=True)
         open(target, 'w').write('allowed')
         r[name] = open(target).read() == 'allowed'
+    elif kind == 'hide':
+        # Not there to read (another PID namespace's process), or refused.
+        try:
+            open(path, 'rb').read()
+            r[name] = False
+        except OSError as error:
+            r[name] = error.errno in (errno.ENOENT, errno.ESRCH, errno.EACCES, errno.EPERM)
+    elif kind == 'pids':
+        r[name] = sorted(processes())
+    elif kind == 'scan':
+        r[name] = []
+        for pid in processes():
+            try:
+                if path.encode() in open('/proc/%d/cmdline' % pid, 'rb').read().split(b'\0'):
+                    r[name].append(pid)
+            except OSError:
+                pass
+    elif kind == 'owner':
+        # A file created in the scratch, which is gone after the run: its owner as seen inside.
+        target = os.path.join(os.environ['TMPDIR'], path)
+        open(target, 'w').close()
+        r[name] = [os.stat(target).st_uid, os.stat(target).st_gid]
+    elif kind == 'ids':
+        r[name] = [os.getuid(), os.getgid(), os.geteuid(), os.getegid()]
+    elif kind == 'caps':
+        r[name] = [line.split()[1] for line in open('/proc/self/status') if line.startswith('CapEff:')]
+    elif kind == 'procmount':
+        # The options of the mount /proc resolves to: the last one on that mount point.
+        r[name] = [line.split()[5] for line in open('/proc/self/mountinfo') if line.split()[4] == '/proc'][-1:]
+    elif kind == 'init':
+        r[name] = open('/proc/1/cmdline', 'rb').read().decode(errors='replace')
+    elif kind == 'ns':
+        r[name] = os.readlink('/proc/self/ns/pid')
+    elif kind == 'orphan':
+        # A grandchild whose parent is gone ends after it: reaped, its /proc entry goes; not, a zombie.
+        import time
+        read, write = os.pipe()
+        child = os.fork()
+        if not child:
+            grandchild = os.fork()
+            if grandchild:
+                os.write(write, str(grandchild).encode())
+                os._exit(0)
+            time.sleep(0.2)
+            os._exit(0)
+        os.waitpid(child, 0)
+        os.close(write)
+        grandchild = int(os.read(read, 32))
+        time.sleep(1.5)
+        r[name] = not os.path.exists('/proc/%d' % grandchild)
+    elif kind == 'escape':
+        # A descendant that leaves the agent's process group and session, and outlives the agent.
+        import subprocess
+        subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', path],
+                         start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL)
+        r[name] = True
     elif kind == 'tcp':
         import socket
         with socket.create_connection(('127.0.0.1', int(path)), timeout=5) as connection:
@@ -140,7 +201,7 @@ print(json.dumps(r))
         resolver = {'RESOLVER': str(top / 'etc/resolv.conf'), 'RESOLVER_RUNTIME': str(resolve)}
         result = probe_run(['read:proc-status:/proc/self/status', 'read:proc-mounts:/proc/self/mounts',
                             'write:proc-comm:/proc/self/comm',
-                            'deny:launcher-environ:/proc/%d/environ' % os.getpid(),
+                            'hide:launcher-environ:/proc/%d/environ' % os.getpid(),
                             'read:resolver-link:%s' % (top / 'etc/resolv.conf'),
                             'read:resolver-target:%s' % (resolve / 'stub-resolv.conf'),
                             'read:resolver-sibling:%s' % (resolve / 'resolv.conf'),
@@ -209,6 +270,24 @@ print(json.dumps(r))
         expect('VELDO-0210 runtime/resolver-agent-profile-only',
                "    if profile == 'agent':\n        grants += resolver_grants()\n" in source
                and source.count('resolver_grants()') == 2)
+
+        # The tree runs in its own PID namespace (AC6), so a pid it records is not this suite's: rows
+        # find a confined process by its exact command line instead. Run by the gate, this suite is
+        # already inside the gate launcher's namespace, and a launcher started here is a nested one
+        # that creates none.
+        nested = S.private_pid_namespace()
+
+        def host_pids(argv):
+            """The pids, as this suite sees them, of the processes whose command line is exactly argv."""
+            found = []
+            for entry in os.listdir('/proc'):
+                try:
+                    if entry.isdigit() and Path('/proc', entry, 'cmdline').read_bytes() == (
+                            '\0'.join(argv) + '\0').encode():
+                        found.append(int(entry))
+                except OSError:
+                    pass
+            return found
 
         # credentials: copied in per client, a refresh written back atomically
         account, codex_home = top / 'account', top / 'codex-home'
@@ -652,12 +731,12 @@ credentials = Path(os.environ['CLAUDE_CONFIG_DIR'], '.credentials.json')
 temporary = credentials.with_name('fresh')
 temporary.write_text(sys.argv[3])
 os.replace(temporary, credentials)
-record = {'home': os.environ['HOME'], 'pid': os.getpid()}
+record = {'home': os.environ['HOME']}
 if sys.argv[1] == 'descendant':
     # Inherits every descriptor the agent holds, its scratch lock among them, and outlives it.
     import subprocess
-    record['descendant'] = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)'],
-                                            close_fds=False).pid
+    subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', sys.argv[2] + '.descendant'],
+                     close_fds=False)
 Path(sys.argv[2]).write_text(json.dumps(record))
 time.sleep(120)
 ''')
@@ -678,6 +757,17 @@ time.sleep(120)
         shim = ('import os, signal, sys; signal.signal(signal.SIGINT, getattr(signal, sys.argv[1])); '
                 'os.execv(sys.argv[2], sys.argv[2:])')
 
+        def agent_pid(held, mode, marker):
+            """The holding agent's pid as this suite sees it (inside, it has a namespace's own pid),
+            found by its exact command line, and its descendant's, if it started one."""
+            if held:
+                agent = host_pids([sys.executable, '-I', '-S', str(hold), mode, str(marker), json.dumps(new_token)])
+                held['pid'] = agent[0] if len(agent) == 1 else -1
+                if mode == 'descendant':
+                    descendant = host_pids([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)',
+                                            str(marker) + '.descendant'])
+                    held['descendant'] = descendant[0] if len(descendant) == 1 else None
+
         def stopped(number, mode='plain', patch=None, interrupt='SIG_DFL', settle=None):
             '''Start a holding run, wait until it holds, send `number` to the launcher; returns the
             launcher's exit code, what the confined process recorded and the seconds it took.'''
@@ -694,6 +784,7 @@ time.sleep(120)
             while not marker.exists() and time.time() < deadline and process.poll() is None:
                 time.sleep(0.05)
             held = json.loads(marker.read_text()) if marker.exists() else {}
+            agent_pid(held, mode, marker)
             started = time.time()
             process.send_signal(number)
             if settle is not None:
@@ -709,7 +800,7 @@ time.sleep(120)
             return code, held, time.time() - started
 
         def gone(held):
-            return (bool(held) and not Path(held['home']).exists()
+            return (bool(held) and held['pid'] > 0 and not Path(held['home']).exists()
                     and not Path('/proc/%d' % held['pid']).exists())
 
         for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
@@ -760,7 +851,9 @@ time.sleep(120)
             deadline = time.time() + 30
             while not marker.exists() and time.time() < deadline and process.poll() is None:
                 time.sleep(0.05)
-            return process, (json.loads(marker.read_text()) if marker.exists() else {})
+            held = json.loads(marker.read_text()) if marker.exists() else {}
+            agent_pid(held, mode, marker)
+            return process, held
 
         def settled(condition):
             deadline = time.time() + 10
@@ -778,12 +871,13 @@ time.sleep(120)
                result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
         process.send_signal(signal.SIGTERM)
         process.wait(timeout=60)
-        # A launcher killed outright takes its agent with it; a descendant that kept the agent's
-        # descriptors keeps the scratch until it is gone too.
+        # A launcher killed outright takes its agent with it. In its own namespace the agent's
+        # descendants go too, since the namespace ends with its init; nested in another sandbox, a
+        # descendant that kept the agent's descriptors keeps the scratch until it is gone too.
         process, held = held_run('descendant')
         process.kill()
         process.wait(timeout=60)
-        taken = bool(held) and settled(lambda: not alive(held['pid']))
+        taken = bool(held) and held['pid'] > 0 and settled(lambda: not alive(held['pid']))
 
         def state(pid):
             try:
@@ -795,13 +889,17 @@ time.sleep(120)
         descendant = held.get('descendant')
         if held:
             os.utime(held['home'], (day_old, day_old))
-        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
-        expect('VELDO-0210 scratch/scratch-of-live-descendant-kept',
-               result.returncode == 0 and descendant is not None and alive(descendant)
-               and Path(held['home']).is_dir())
-        if descendant is not None:
-            os.kill(descendant, signal.SIGKILL)
-            settled(lambda: not alive(descendant))
+        if not nested:
+            expect('VELDO-0210 scratch/killed-launcher-takes-its-descendants: %s' % held,
+                   descendant is not None and settled(lambda: not alive(descendant)))
+        else:
+            result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+            expect('VELDO-0210 scratch/scratch-of-live-descendant-kept',
+                   result.returncode == 0 and descendant is not None and alive(descendant)
+                   and Path(held['home']).is_dir())
+            if descendant is not None:
+                os.kill(descendant, signal.SIGKILL)
+                settled(lambda: not alive(descendant))
         result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
         expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
                result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
