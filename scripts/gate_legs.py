@@ -39,7 +39,7 @@ import sys
 HERE = Path(__file__).resolve().parent
 DECLARATION = HERE / 'gate_unconfined.json'
 SCHEMA = 'veldo.gate-unconfined/v1'
-LEG, ENTRIES = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED'
+LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION'
 SUITE = re.compile(r'^[0-9A-Za-z][0-9A-Za-z_]*$')
 ROWS = re.compile(r'^[a-z][a-z0-9-]*$')
 
@@ -89,10 +89,10 @@ def entries(document):
     return [e['suite'] + (':' + e['rows'] if 'rows' in e else '') for e in document['suites']]
 
 
-def _env(leg=None, listed=()):
-    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES)}
+def _env(leg=None, listed=(), digest=None):
+    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST)}
     if leg:
-        env[LEG], env[ENTRIES] = leg, ','.join(listed)
+        env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
     return env
 
 
@@ -123,12 +123,12 @@ def run_stage(root, stage, command, record, path=DECLARATION):
     listed = entries(document)
     print('   %s: confined leg - every suite except the %d listed for the unconfined leg'
           % (stage, len(listed)), flush=True)
-    inside = confined(root, command, _env('confined', listed))
+    inside = confined(root, command, _env('confined', listed, digest))
     print('   %s: confined leg: %s' % (stage, 'pass' if inside == 0 else 'FAIL'), flush=True)
     print('   %s: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s), '
           '%d entr%s: %s' % (stage, os.path.basename(str(path)), len(listed),
                               'y' if len(listed) == 1 else 'ies', ', '.join(listed)), flush=True)
-    outside = unconfined(root, command, _env('unconfined', listed))
+    outside = unconfined(root, command, _env('unconfined', listed, digest))
     print('   %s: unconfined leg: %s' % (stage, 'pass' if outside == 0 else 'FAIL'), flush=True)
     with open(record, 'a') as handle:
         handle.write(json.dumps({'stage': stage, 'declaration': digest, 'entries': listed},

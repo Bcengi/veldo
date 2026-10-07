@@ -307,34 +307,48 @@ def resolve(selector_values, manifest=None, requires=None):
 
 
 # THE GATE'S LEGS (VELDO-0208, owner decision 2026-10-07). The authority's scripts/gate_legs.py
-# runs a declared stage twice and tells the run which leg it is through these two variables:
-# VELDO_GATE_LEG is "confined" or "unconfined", and VELDO_GATE_UNCONFINED is the authority's list,
+# runs a declared stage twice and tells the run which leg it is through these three variables:
+# VELDO_GATE_LEG is "confined" or "unconfined", VELDO_GATE_UNCONFINED is the authority's list,
 # comma-separated, each entry a suite name or name:rows for a suite only some rows of which run
-# unconfined. Unset, the run is the whole suite exactly as before. A leg is not a selector: the gate
-# runs both legs and requires both, and a person running one leg by hand has run half the stage.
+# unconfined, and VELDO_GATE_DECLARATION is the sha256 digest of the list gate_legs.py read. All
+# three unset, the run is the whole suite exactly as before. A leg is not a selector: the gate runs
+# both legs and requires both, and a person running one leg by hand has run half the stage.
+# A leg run that is not what gate_legs.py sets, three variables naming a leg, a digest and a
+# non-empty well-formed list, is REFUSED rather than read: an empty list once made an unconfined leg
+# run zero suites and print a passing aggregate line.
 GATE_LEG = "VELDO_GATE_LEG"
 GATE_UNCONFINED = "VELDO_GATE_UNCONFINED"
+GATE_DECLARATION = "VELDO_GATE_DECLARATION"
+GATE_VARIABLES = (GATE_LEG, GATE_UNCONFINED, GATE_DECLARATION)
 LEGS = ("confined", "unconfined")
 
 
 class LegRefused(Exception):
-    """A leg variable that does not name a leg or carries a malformed list."""
+    """Leg variables that are not the complete, well-formed set the authority's leg runner sets."""
 
 
 def gate_leg(environ):
     """(leg or None, {suite: rows tag or None for the whole suite}) from the environment."""
-    leg = environ.get(GATE_LEG) or None
-    if leg is None:
+    present = [name for name in GATE_VARIABLES if environ.get(name) is not None]
+    if not present:
         return None, {}
+    if len(present) != len(GATE_VARIABLES):
+        raise LegRefused("leg variables %s are set without %s; only the authority's gate_legs.py "
+                         "starts a leg, and it sets all three"
+                         % (", ".join(present), ", ".join(n for n in GATE_VARIABLES if n not in present)))
+    leg = environ[GATE_LEG]
     if leg not in LEGS:
         raise LegRefused("%s=%r names no leg (%s)" % (GATE_LEG, leg, ", ".join(LEGS)))
+    if not re.match(r"^sha256:[0-9a-f]{64}$", environ[GATE_DECLARATION]):
+        raise LegRefused("%s=%r is not the digest of a declared list"
+                         % (GATE_DECLARATION, environ[GATE_DECLARATION]))
+    if not environ[GATE_UNCONFINED]:
+        raise LegRefused("%s is empty; a leg without the authority's list is not a leg" % GATE_UNCONFINED)
     listed = {}
-    for item in (environ.get(GATE_UNCONFINED) or "").split(","):
-        if not item:
-            continue
+    for item in environ[GATE_UNCONFINED].split(","):
         name, _, rows = item.partition(":")
         if not re.match(r"^[0-9A-Za-z][0-9A-Za-z_]*$", name) or (rows and not re.match(r"^[a-z][a-z0-9-]*$", rows)) \
-                or name in listed:
+                or (":" in item and not rows) or name in listed:
             raise LegRefused("%s carries a malformed or repeated entry %r" % (GATE_UNCONFINED, item))
         listed[name] = rows or None
     return leg, listed

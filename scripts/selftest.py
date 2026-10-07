@@ -172,7 +172,8 @@ elif SUITE_VALUES:
 # scripts/gate_legs.py: the confined leg runs every suite but the ones the authority listed whole,
 # the unconfined leg only the listed ones. A suite listed for some rows runs in both, and its rows
 # ask run_scope.leg_runs which leg owns them. Both legs say so first, with the list, so a leg is
-# never mistaken for the whole suite.
+# never mistaken for the whole suite. Leg variables that are not the complete set gate_legs.py sets
+# are refused, and a leg that runs no suite or no row is refused after it, never a pass.
 try:
     LEG, LISTED = RS.gate_leg(os.environ)
 except RS.LegRefused as e:
@@ -188,9 +189,14 @@ if LEG:
     else:
         RUN = [s for s in RUN if s["name"] in LISTED]
         _what = "runs only the %d listed suite(s) present, and of a row-scoped one only its rows" % len(RUN)
-    print("selftest leg %s: %s. Whole: %s. Rows: %s.%s"
+    print("selftest leg %s: %s. Whole: %s. Rows: %s.%s Declaration: %s."
           % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
-             " Not in this manifest: %s." % ", ".join(_absent) if _absent else ""), flush=True)
+             " Not in this manifest: %s." % ", ".join(_absent) if _absent else "",
+             os.environ[RS.GATE_DECLARATION]), flush=True)
+    if not RUN:
+        print("selftest leg %s: LEG_RAN_NOTHING: no suite of this manifest is in the %s leg; "
+              "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
+        sys.exit(2)
 
 SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
@@ -205,6 +211,7 @@ shared.SCOPE = SCOPE
 
 T0 = time.monotonic()
 PER_SUITE = []
+_LEG_FLOOR = shared.PASS + shared.FAIL
 for _s in RUN:
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
@@ -213,6 +220,11 @@ for _s in RUN:
     _before, _t = shared.PASS, time.monotonic()
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
+
+if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR:
+    print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
+          "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, len(RUN)))
+    sys.exit(2)
 
 if SCOPE.partial:
     # Per-suite counts and times, so a reader sees WHERE the run went and what the SELECTED

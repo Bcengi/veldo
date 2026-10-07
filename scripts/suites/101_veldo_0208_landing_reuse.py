@@ -1217,7 +1217,7 @@ def _v208_unconfined_leg():
            and 'else veldo_stage "$name" "$cmd"; fi' in gate_text)
 
     # ---- which rows each leg owns ----------------------------------------------------------------
-    env = {'VELDO_GATE_UNCONFINED': 'whole,rowed:strace'}
+    env = {'VELDO_GATE_UNCONFINED': 'whole,rowed:strace', 'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
     table = {(leg, suite, rows): RSL.leg_runs(suite, rows, dict(env, VELDO_GATE_LEG=leg))
              for leg in ('confined', 'unconfined') for suite in ('whole', 'rowed', 'asks')
              for rows in (None, 'strace')}
@@ -1228,7 +1228,7 @@ def _v208_unconfined_leg():
     else:
         bad_leg = False
     try:
-        RSL.gate_leg({'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_UNCONFINED': '../x'})
+        RSL.gate_leg(dict(env, VELDO_GATE_LEG='confined', VELDO_GATE_UNCONFINED='../x'))
     except RSL.LegRefused:
         bad_entry = True
     else:
@@ -1241,6 +1241,25 @@ def _v208_unconfined_leg():
                      ('unconfined', 'rowed', None): False, ('unconfined', 'rowed', 'strace'): True,
                      ('unconfined', 'asks', None): False, ('unconfined', 'asks', 'strace'): False}
            and RSL.leg_runs('asks', 'strace', {}) and bad_leg and bad_entry)
+
+    # Only the complete set gate_legs.py sets is a leg: a leg with an empty list, a list without its
+    # digest, a stray variable on its own and a digest that is not one are each refused, never read.
+    def refused(environ):
+        try:
+            RSL.gate_leg(environ)
+        except RSL.LegRefused:
+            return True
+        return False
+    complete = dict(env, VELDO_GATE_LEG='unconfined')
+    expect('VELDO-0208 unconfined-leg/only-the-runners-complete-set-is-a-leg',
+           RSL.gate_leg(complete) == ('unconfined', {'whole': None, 'rowed': 'strace'})
+           and refused(dict(complete, VELDO_GATE_UNCONFINED=''))
+           and refused({k: v for k, v in complete.items() if k != 'VELDO_GATE_DECLARATION'})
+           and refused({'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': ''})
+           and refused({'VELDO_GATE_UNCONFINED': 'whole'}) and refused({'VELDO_GATE_LEG': ''})
+           and refused(dict(complete, VELDO_GATE_DECLARATION='sha256:short'))
+           and refused(dict(complete, VELDO_GATE_UNCONFINED='whole,,rowed:strace'))
+           and refused(dict(complete, VELDO_GATE_UNCONFINED='whole:')))
 
     # ---- a fixture candidate run through the real leg runner -------------------------------------
     shared_source = (ROOT / 'scripts/suites/shared.py').read_text()
@@ -1351,7 +1370,8 @@ def _v208_unconfined_leg():
 
         # A stage the list does not declare, or a command other than the declared one, is confined
         # whole, and a caller's leg variables never reach it.
-        asked = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': '02_asks'}
+        asked = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': '02_asks',
+                 'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
         other, other_markers, other_record = stage('integration', 'python3 scripts/selftest.py', extra=asked)
         changed, changed_markers, changed_record = stage('unit', 'python3 scripts/selftest.py ', extra=asked)
         expect('VELDO-0208 unconfined-leg/undeclared-stage-is-confined-whole: ' + repr((other_markers, changed_markers)),
@@ -1369,6 +1389,49 @@ def _v208_unconfined_leg():
         expect('VELDO-0208 unconfined-leg/invalid-list-runs-nothing: ' + invalid.stdout[-300:],
                invalid.returncode == 1 and 'is invalid (01_listed has no reason)' in invalid.stdout
                and invalid_markers == {} and not invalid_record.exists())
+
+        # A leg that tests nothing is refused, never a pass: the reviewer's empty-list run, a leg
+        # whose list names no suite of the manifest, and a leg whose listed suite asserts no row.
+        def dispatcher(extra):
+            return subprocess.run([sys.executable, str(candidate / 'scripts/selftest.py')], cwd=str(candidate),
+                                  capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL,
+                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
+                                           V208_PROBE_OUTSIDE=str(outside), **extra))
+        leg_of = {'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_DECLARATION': 'sha256:' + '0' * 64}
+        empty_list = dispatcher({'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_UNCONFINED': ''})
+        no_suite = dispatcher(dict(leg_of, VELDO_GATE_UNCONFINED='99_absent'))
+        no_row = dispatcher(dict(leg_of, VELDO_GATE_UNCONFINED='03_rows:other'))
+        ran = dispatcher(dict(leg_of, VELDO_GATE_UNCONFINED='01_listed'))
+        expect('VELDO-0208 unconfined-leg/leg-that-tests-nothing-is-refused: '
+               + repr([(r.returncode, r.stdout[-200:]) for r in (empty_list, no_suite, no_row, ran)]),
+               all(r.returncode == 2 and ' passed, ' not in r.stdout for r in (empty_list, no_suite, no_row))
+               and 'set without VELDO_GATE_DECLARATION' in empty_list.stdout
+               and 'LEG_RAN_NOTHING: no suite of this manifest' in no_suite.stdout
+               and 'LEG_RAN_NOTHING: the 1 suite(s) of this leg asserted no row' in no_row.stdout
+               and ran.returncode == 0 and 'selftest: 1 passed, 0 failed' in ran.stdout)
+
+        # The gate's fallback with no list in the authority runs the stage confined whole and drops a
+        # caller's leg variables, even a complete set that would otherwise be honoured.
+        fallback = top / 'authority-without-list'
+        (fallback / 'scripts').mkdir(parents=True)
+        (fallback / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
+        functions = ''.join(re.search(r'^%s\(\) \{\n.*?^\}\n' % name, gate_text, re.S | re.M).group(0)
+                            for name in ('veldo_candidate', 'veldo_stage'))
+        for marker in outside.iterdir():
+            marker.unlink()
+        leaked = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_RECORD=%s\n%s'
+                                 'cd %s && veldo_stage unit "python3 scripts/selftest.py"'
+                                 % (fallback, top / 'fallback-record', functions, candidate)],
+                                capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked))
+        leaked_markers = dict(line.split()[1:3] for line in leaked.stdout.splitlines()
+                              if line.startswith('V208-PROBE '))
+        expect('VELDO-0208 unconfined-leg/fallback-drops-the-callers-leg-variables: '
+               + repr((leaked.returncode, leaked_markers, leaked.stdout[-300:])),
+               leaked.returncode == 0 and 'selftest leg' not in leaked.stdout
+               and leaked_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
+                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
+               and not (top / 'fallback-record').exists())
 
 
 if leg_runs():

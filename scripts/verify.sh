@@ -15,8 +15,11 @@ VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
+# A caller's gate leg variables (VELDO-0208) never reach a candidate command: only the authority's
+# gate_legs.py sets them, for the leg it runs, so this path, the no-list fallback included, drops them.
 veldo_candidate() {
-  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+  env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION \
+    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
 # THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07). A stage the
 # authority's scripts/gate_unconfined.json declares, with exactly its declared command, runs as two
