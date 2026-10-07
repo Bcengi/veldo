@@ -42,6 +42,16 @@ by construction, so a regression can never be an artefact of the live tree chang
 reads. It also cancels any sensitivity to the tree's location, since both runs see the same kind of
 path.
 
+WHY A COPY OF A LINKED WORKTREE GETS ITS OWN REPOSITORY. A linked worktree's `.git` is a file naming
+its private directory in the shared repository, and that directory names the worktree back. Copied
+as it stands, the copy's marker names a directory that names somebody else, which the candidate Git
+guard (.veldo/candidate_git.py) refuses as a redirect: every row that runs a gate or a launcher over
+the copied tree failed in the nested run and nowhere else, five of them inside the gate's confined
+leg, hidden because the baseline failed identically. So the copy's `.git` becomes a directory: the
+shared repository's contents without its other worktrees, with this worktree's own HEAD, index and
+logs over them. The copy then has the same branch, refs, objects and staged state as the tree, and
+names only itself. A tree whose `.git` is already a directory is copied whole, as before.
+
 WHAT THIS CHECK CANNOT SEE, on record because a check whose limits are undocumented is the thing
 it is fixing:
   1. IT ONLY FILLS THE CORPORA ITS MUTATION TABLE FILLS. Today that is recorded spend, through
@@ -59,6 +69,8 @@ it is fixing:
   4. IT CANNOT ATTRIBUTE A PRE-EXISTING FAILURE. When the tree is already red, this check reports
      the pre-existing set and passes on it: the `unit` slot owns those, and reporting them twice
      as though this mutation caused them would be the false accusation this check exists to avoid.
+     Every failing row of every run is printed by name, so a pre-existing set that the `unit` slot
+     does NOT show (a failure only the nested copy has) is on the page rather than a bare count.
 
 FAILING LOUD IS NOT OPTIONAL. Every way this check can fail to answer exits NONZERO with the reason
 named: no interpreter, a missing writer or dispatcher, a copy that did not complete, a writer that
@@ -156,12 +168,16 @@ def _spend_carrying(tree):
     return n, bad
 
 
-def _copy(src, dest, what):
-    def skip_special(directory, names):
-        # Runtime endpoints carry no repository bytes. Preserve ordinary symlinks.
+def _skip_special(what, also=()):
+    """A copytree ignore: runtime endpoints carry no repository bytes, so sockets, fifos and
+    devices are skipped and named. `also` is (directory, name) pairs skipped silently."""
+    def skip(directory, names):
         skipped = []
         for name in names:
             path = Path(directory) / name
+            if (Path(directory), name) in also:
+                skipped.append(name)
+                continue
             mode = path.lstat().st_mode
             for predicate, kind in ((stat.S_ISSOCK, "socket"), (stat.S_ISFIFO, "fifo"),
                                     (stat.S_ISCHR, "character-device"),
@@ -171,11 +187,63 @@ def _copy(src, dest, what):
                     skipped.append(name)
                     break
         return skipped
+    return skip
 
+
+# What a linked worktree keeps for itself (gitrepository-layout): its HEAD and the other pseudo
+# refs, its index, its HEAD log and its per-worktree ref namespaces, plus in-progress operation
+# state. The shared repository's own copies of these belong to its main checkout, never the copy.
+_PER_WORKTREE = ("HEAD", "index", "COMMIT_EDITMSG", "AUTO_MERGE", "sequencer", "rebase-merge",
+                 "rebase-apply")
+_PER_WORKTREE_NESTED = (("logs", "HEAD"), ("refs", "bisect"), ("refs", "worktree"),
+                        ("refs", "rewritten"))
+_LINK_FILES = ("commondir", "gitdir", "locked")
+
+
+def _own_repository(src, dest, what):
+    """Give a copy of a linked worktree a `.git` directory of its own (see the docstring), or do
+    nothing when the copied `.git` is not a linked worktree's marker."""
+    marker = dest / ".git"
+    if marker.is_symlink() or not marker.is_file():
+        return
+    line = marker.read_text(errors="replace").strip()
+    if not line.startswith("gitdir: "):
+        raise CannotAnswer("the %s tree's .git file is not a Git marker: %r" % (what, line[:120]))
     try:
-        shutil.copytree(src, dest, symlinks=True, ignore=skip_special)
+        private = (src / line[8:]).resolve(strict=True)
+        common_file = private / "commondir"
+        common = ((private / common_file.read_text().strip()).resolve(strict=True)
+                  if common_file.is_file() else private)
+        marker.unlink()
+        also = {(common, "worktrees")} | {(common, n) for n in os.listdir(common)
+                                          if n in _PER_WORKTREE or n.endswith("_HEAD")}
+        also |= {(common / d, n) for d, n in _PER_WORKTREE_NESTED}
+        shutil.copytree(common, marker, symlinks=True, ignore=_skip_special(what, also))
+        for name in sorted(os.listdir(private)):
+            if name in _LINK_FILES:
+                continue
+            source, target = private / name, marker / name
+            if source.is_dir() and not source.is_symlink():
+                shutil.copytree(source, target, symlinks=True, dirs_exist_ok=True,
+                                ignore=_skip_special(what))
+            else:
+                shutil.copy2(source, target, follow_symlinks=False)
+    except (OSError, shutil.Error) as e:
+        raise CannotAnswer("could not give the %s tree a repository of its own from %s: %s"
+                           % (what, line[8:], e))
+    if not ((marker / "HEAD").is_file() and (marker / "objects").is_dir()):
+        raise CannotAnswer("the %s tree's own repository at %s has no HEAD or no objects"
+                           % (what, marker))
+    print("   %s copy: linked worktree, given its own repository from %s" % (what, common),
+          flush=True)
+
+
+def _copy(src, dest, what):
+    try:
+        shutil.copytree(src, dest, symlinks=True, ignore=_skip_special(what))
     except (OSError, shutil.Error) as e:
         raise CannotAnswer("could not build the %s tree at %s: %s" % (what, dest, e))
+    _own_repository(src, dest, what)
     if not (dest / "scripts" / "selftest.py").exists():
         raise CannotAnswer("the %s tree at %s has no scripts/selftest.py: the copy is incomplete"
                            % (what, dest))
@@ -228,6 +296,10 @@ def _run_suite(tree, label):
                            "not know what failed" % (label, len(names), failed))
     print("   %s run: %d passed, %d failed (%.0fs)" % (label, passed, failed,
                                                        time.monotonic() - t0), flush=True)
+    # Named on every run, the baseline included: a count alone let five rows that failed only in
+    # this nested copy pass as "already failing" through gate after gate.
+    for name in names:
+        print("   %s failing: %s" % (label, name[:400]), flush=True)
     return passed, failed, names
 
 

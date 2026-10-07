@@ -1700,6 +1700,122 @@ if leg_runs():
     _v208_unconfined_leg()
 
 
+def _v208_first_use_nested_copy():
+    """The integration stage's nested copy (scripts/check_first_use.py) is a tree a gate and a
+    launcher can run over, and a failing row there is named. Five confined-stage rows of this suite
+    failed only in that copy, in both its runs, and the stage passed on the equal counts without a
+    name on the page: a linked worktree's copied `.git` was refused as a redirect, the launcher
+    handed a nested domain a configuration it could not read, and the rows' outside address lay
+    in the outer scratch."""
+    import contextlib
+    import importlib.util
+    import io
+    import os
+    from pathlib import Path
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    def load(name, path):
+        saved = list(sys.path)
+        try:
+            spec = importlib.util.spec_from_file_location(name, path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        finally:
+            sys.path[:] = saved  # check_first_use.py drops scripts/ from the path it loads in
+
+    def git(where, *args):
+        return subprocess.run(['git', '-C', str(where), *args], check=True, capture_output=True, text=True,
+                              env=dict(os.environ, GIT_AUTHOR_NAME='fixture', GIT_AUTHOR_EMAIL='fixture@example.test',
+                                       GIT_COMMITTER_NAME='fixture', GIT_COMMITTER_EMAIL='fixture@example.test',
+                                       GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')).stdout.strip()
+
+    F = load('v208_first_use', ROOT / 'scripts/check_first_use.py')
+    G = load('v208_first_use_git', ROOT / '.veldo/candidate_git.py')
+    S = load('v208_first_use_sandbox', ROOT / 'scripts/agent_sandbox.py')
+    with tempfile.TemporaryDirectory(prefix='v208-first-use-') as temporary:
+        top = Path(temporary)
+
+        # A run with failures names every failing row, the baseline run included.
+        named = top / 'named'
+        (named / 'scripts').mkdir(parents=True)
+        (named / 'scripts/selftest.py').write_text(
+            'print("  SELFTEST FAIL: V208 row-one: detail")\nprint("  SELFTEST FAIL: V208 row-two")\n'
+            'print("selftest: 3 passed, 2 failed")\n')
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            counted = F._run_suite(named, 'baseline')
+        printed = out.getvalue()
+        expect('VELDO-0208 first-use/failing-rows-named: ' + printed[-300:],
+               counted == (3, 2, ['V208 row-one: detail', 'V208 row-two'])
+               and '   baseline failing: V208 row-one: detail\n' in printed
+               and '   baseline failing: V208 row-two\n' in printed)
+
+        # A copy of a linked worktree is a repository of its own: the Git guard accepts it with its
+        # own .git as the common directory, and it has the worktree's branch, commit and staged and
+        # unstaged state. The copy as copytree leaves it is refused, which is what the rows saw.
+        main, linked = top / 'main', top / 'linked'
+        (main / 'scripts').mkdir(parents=True)
+        (main / 'scripts/selftest.py').write_text('print("selftest: 1 passed, 0 failed")\n')
+        (main / 'kept').write_text('one\n')
+        git(main, 'init', '-q', '-b', 'main')
+        git(main, 'add', '-A')
+        git(main, 'commit', '-q', '-m', 'one')
+        git(main, 'worktree', 'add', '-q', '-b', 'topic', str(linked))
+        (linked / 'kept').write_text('two\n')
+        (linked / 'staged').write_text('staged\n')
+        git(linked, 'add', 'staged')
+        state = [git(linked, *a) for a in (('rev-parse', '--abbrev-ref', 'HEAD'), ('rev-parse', 'HEAD'),
+                                           ('status', '--porcelain'), ('rev-parse', 'main'))]
+        with contextlib.redirect_stdout(io.StringIO()):
+            copied = F._copy(linked, top / 'copied', 'pristine')
+        try:
+            G.validate(copied, copied / '.git')
+            accepted = True
+        except ValueError as error:
+            accepted = repr(error)
+        naive = top / 'naive'
+        shutil.copytree(linked, naive, symlinks=True)
+        try:
+            G.validate(naive, main / '.git')
+            naive_refused = False
+        except ValueError as error:
+            naive_refused = 'redirects outside' in str(error)
+        copied_state = [git(copied, *a) for a in (('rev-parse', '--abbrev-ref', 'HEAD'), ('rev-parse', 'HEAD'),
+                                                  ('status', '--porcelain'), ('rev-parse', 'main'))]
+        expect('VELDO-0208 first-use/linked-worktree-copy-is-own-repository: '
+               + repr((accepted, naive_refused, state, copied_state)),
+               accepted is True and naive_refused and (copied / '.git').is_dir()
+               and not (copied / '.git/worktrees').exists() and copied_state == state
+               and state[0] == 'topic' and 'A  staged' in state[2] and 'M kept' in state[2])
+
+        # The launcher grants its domain read of the configuration it names to it, so a launcher
+        # started inside reads it; without the path there is no such grant (the control).
+        authority, worktree, scratch, elsewhere = (top / n for n in ('authority', 'worktree', 'scratch', 'elsewhere'))
+        for directory in (authority, worktree, scratch, elsewhere):
+            directory.mkdir()
+        config_path = elsewhere / 'agent_sandbox.json'
+        config_path.write_text('{}')
+        config = {'store': str(top / 'store'), 'read_roots': ['{worktree}'], 'write_roots': ['{scratch}'],
+                  'deny_write': ['{authority}']}
+        (top / 'store').mkdir()
+        try:
+            granted = S.grants_for(config, authority, worktree, scratch, config_path)[0]
+        except TypeError as error:
+            granted = [repr(error)]
+        ungranted = S.grants_for(config, authority, worktree, scratch)[0]
+        expect('VELDO-0208 first-use/launcher-grants-its-configuration: ' + repr(granted),
+               (config_path.resolve(), S.READ) in granted
+               and not [p for p, _ in ungranted if p == config_path.resolve() or p == elsewhere.resolve()])
+
+
+if leg_runs():
+    _v208_first_use_nested_copy()
+
+
 def _v208_installed_tools():
     """A fresh mutation worker reads the installed tools the gate profile grants (optional_read_roots
     of the authority's sandbox configuration), read only, resolved against the account's home rather
