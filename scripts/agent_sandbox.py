@@ -987,6 +987,16 @@ def launcher_marker():
     return None
 
 
+def launcher_fds():
+    """What a process in a tree this launcher made hands, as pass_fds, to a child that may start a
+    nested launcher: the tree's marker (launcher_marker), else nothing. Python's subprocess closes
+    every other descriptor, and a launcher whose marker was closed on the way is refused the
+    namespace like any other (VELDO-0210 AC6). Handing it on grants nothing: the nested launcher
+    checks it again, and outside a tree there is none to hand."""
+    marker = launcher_marker()
+    return () if marker is None else (marker,)
+
+
 def nested_namespace():
     """The marker descriptor (launcher_marker) when this launcher already runs inside a tree this
     launcher made (VELDO-0210 AC6), else None. Inside means: it inherited the marker the outer
@@ -1994,6 +2004,13 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                         os._exit(exit_code(status))
                 elif number in forward:
                     os.kill(init, RELAY[number])
+        if apparmor_label() == NAMESPACE_LABEL:
+            # Below the helper's child profile no helper can run (no capability, no user namespace),
+            # and a launcher there is nested only with the marker its tree handed down.
+            raise RuntimeError('this launcher runs in a tree the helper made (label %s) but holds no '
+                               'marker of it: a process between the outer launcher and this one closed '
+                               'it; a child that may start a launcher is handed it with '
+                               'pass_fds=agent_sandbox.launcher_fds()' % NAMESPACE_LABEL)
         problem = helper_problem(NAMESPACE_HELPER)
         if problem:
             raise RuntimeError('cannot create the PID namespace (%s); %s' % (problem, setup_text()))
