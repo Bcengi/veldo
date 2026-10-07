@@ -467,6 +467,10 @@ expect("WARP-0623 AC5 dogfood: the spec has PASSED the ready transition (status 
        and _lp_fm.get("behavior_bearing") == "true" and isinstance(_lp_fm.get("observability"), dict)
        and V.check_ready(ROOT / "specs/WARP-0623-live-provisioner-name-collision.md", repo_root=str(ROOT)) == 0)
 _lp_arch, _lp_contract = V.load_repo_contract(repo_root=str(ROOT))
+_lp_in_force_rev, _lp_in_force = protected_in_force("specs/WARP-0623-live-provisioner-name-collision.md")
+expect("WARP-0623 AC5 dogfood: declaring no protected path is CHECKED, not trusted - no footprint glob matches a path protected by the policy in force when the spec became ready, read from Git at that commit rather than from today's policy, which later specs extend",
+       len(_lp_in_force_rev) == 40 and len(_lp_in_force) > 0
+       and footprint_protected_hits(_lp_fm, _lp_in_force, _lp_arch) == [])
 expect("WARP-0623 AC5 dogfood: the spec's placement resolves to the TRACKER area and its footprint tier is standard (one declared area, no boundary crossing)",
        _lp_fm.get("placement") == ["tracker"] and _lp_contract is not None
        and _lp_arch.footprint_areas(_lp_fm, _lp_contract) == {"tracker"}
