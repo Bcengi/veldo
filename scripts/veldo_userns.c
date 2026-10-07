@@ -3,9 +3,9 @@
  *
  * Installed root-owned at /usr/local/lib/veldo/veldo-userns by the owner's one-time setup, built
  * statically (no dynamic loader, so no LD_PRELOAD), run as the calling account, never setuid. The
- * host's AppArmor profile veldo-userns lets only this path create a user namespace; everything it
- * executes runs under the child profile veldo-userns-child, which denies every capability and
- * every user namespace.
+ * host's AppArmor profile veldo-userns lets only this path create a user namespace; the one program
+ * it executes (/usr/bin/python3) runs under the child profile veldo-userns-child, a plain transition
+ * that holds across every later exec and denies every capability and every user namespace.
  *
  * Usage: veldo-userns /absolute/path/agent_sandbox.py CONTEXT-DESCRIPTOR|selftest
  *
@@ -13,14 +13,17 @@
  *   1. checks the entry point: an absolute canonical path to a regular file named agent_sandbox.py,
  *      owned by root or the calling account and writable by no other account (group write only
  *      for the caller's own primary group), in directories with the same property (or root-owned
- *      and sticky); the second argument is a descriptor number or "selftest";
+ *      and sticky); the second argument is a descriptor number or "selftest"; and refuses when it
+ *      inherited no_new_privs (the exec into the child profile needs it unset);
  *   2. creates a user namespace and maps the calling uid and gid to themselves (setgroups denied);
  *   3. creates a mount and a PID namespace inside it and makes every mount private;
  *   4. forks the PID namespace's init, which waits until the parent has done step 5's first two
- *      parts, mounts a fresh procfs read only over /proc, drops every capability (bounding, ambient,
- *      effective, permitted and inheritable sets, securebits locked), sets no_new_privs and executes
- *      /usr/bin/python3 -I -S <entry> namespace-init <argument> with no environment but LC_CTYPE;
- *   5. in the parent, drops every capability the same way, closes every descriptor above stderr,
+ *      parts, mounts a fresh procfs read only over /proc, drops every capability (securebits locked,
+ *      bounding, ambient, inheritable, permitted and effective sets cleared, each read back) and,
+ *      without no_new_privs, executes /usr/bin/python3 -I -S <entry> namespace-init <argument> with no
+ *      environment but LC_CTYPE; that init sets no_new_privs as its first act;
+ *   5. in the parent, drops every capability the same way and sets no_new_privs, closes every
+ *      descriptor above stderr,
  *      relays TERM, INT and HUP (unless they were ignored when it started) to the init as SIGRTMIN,
  *      SIGRTMIN+1 and SIGRTMIN+2, and exits with the init's status.
  *
@@ -48,6 +51,10 @@
 
 #define PYTHON "/usr/bin/python3"
 #define ENTRY_NAME "agent_sandbox.py"
+/* No root fixup and no set-user-ID fixup, keep caps off, no ambient raise: each locked. */
+#define LOCKED_SECUREBITS (SECBIT_NOROOT | SECBIT_NOROOT_LOCKED | SECBIT_NO_SETUID_FIXUP \
+                           | SECBIT_NO_SETUID_FIXUP_LOCKED | SECBIT_KEEP_CAPS_LOCKED \
+                           | SECBIT_NO_CAP_AMBIENT_RAISE | SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED)
 
 static void fail(const char *step)
 {
@@ -133,28 +140,44 @@ static void check_argument(const char *argument)
         refuse("the second argument must be a descriptor number or selftest");
 }
 
-/* Every capability, in every set, for good: securebits first (they need CAP_SETPCAP), then the
- * bounding set, the ambient set, the three process sets, and no_new_privs. */
+/* Every capability, in every set, for good, and each step read back: securebits first (they need
+ * CAP_SETPCAP), then the bounding set, the ambient set and the three process sets. No exec after it
+ * can gain a capability: no root fixup, an empty bounding set, and set-user-ID files of owners the
+ * user namespace does not map change no identity. It sets no no_new_privs: under it the exec into
+ * the child profile would be refused (only a stack is allowed then), so the init sets it first. */
 static void drop_capabilities(void)
 {
     struct __user_cap_header_struct header = {_LINUX_CAPABILITY_VERSION_3, 0};
     struct __user_cap_data_struct data[_LINUX_CAPABILITY_U32S_3];
-    int capability;
+    int capability, count, index;
 
-    if (prctl(PR_SET_SECUREBITS, SECBIT_NOROOT | SECBIT_NOROOT_LOCKED | SECBIT_NO_SETUID_FIXUP
-              | SECBIT_NO_SETUID_FIXUP_LOCKED | SECBIT_KEEP_CAPS_LOCKED | SECBIT_NO_CAP_AMBIENT_RAISE
-              | SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED, 0, 0, 0) != 0)
+    if (prctl(PR_SET_SECUREBITS, LOCKED_SECUREBITS, 0, 0, 0) != 0)
         fail("lock the securebits");
-    for (capability = 0; prctl(PR_CAPBSET_READ, capability, 0, 0, 0) >= 0; capability++)
-        if (prctl(PR_CAPBSET_DROP, capability, 0, 0, 0) != 0)
+    for (count = 0; prctl(PR_CAPBSET_READ, count, 0, 0, 0) >= 0; count++)
+        if (prctl(PR_CAPBSET_DROP, count, 0, 0, 0) != 0)
             fail("drop the bounding set");
+    if (errno != EINVAL || count == 0)
+        fail("read the bounding set");
     if (prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_CLEAR_ALL, 0, 0, 0) != 0)
         fail("clear the ambient set");
     memset(data, 0, sizeof data);
     if (syscall(SYS_capset, &header, data) != 0)
         fail("clear the capability sets");
-    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0)
-        fail("set no_new_privs");
+
+    if (prctl(PR_GET_SECUREBITS, 0, 0, 0, 0) != LOCKED_SECUREBITS)
+        refuse("the securebits are not exactly the locked ones");
+    for (capability = 0; capability < count; capability++) {
+        if (prctl(PR_CAPBSET_READ, capability, 0, 0, 0) != 0)
+            refuse("a capability is left in the bounding set");
+        if (prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, capability, 0, 0) != 0)
+            refuse("a capability is left in the ambient set");
+    }
+    memset(data, 0xff, sizeof data);
+    if (syscall(SYS_capget, &header, data) != 0)
+        fail("read the capability sets");
+    for (index = 0; index < _LINUX_CAPABILITY_U32S_3; index++)
+        if (data[index].effective || data[index].permitted || data[index].inheritable)
+            refuse("a capability is left in the effective, permitted or inheritable set");
 }
 
 int main(int argc, char **argv)
@@ -174,6 +197,8 @@ int main(int argc, char **argv)
         refuse("runs as the calling account only");
     check_entry(argv[1], uid, gid);
     check_argument(argv[2]);
+    if (prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 0)
+        refuse("no_new_privs is set: the exec into the child profile needs it unset");
     if (prctl(PR_SET_PDEATHSIG, SIGKILL, 0, 0, 0) != 0)
         fail("PR_SET_PDEATHSIG");
 
@@ -227,6 +252,8 @@ int main(int argc, char **argv)
     }
 
     drop_capabilities();
+    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 || prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 1)
+        fail("set no_new_privs");
     if (syscall(SYS_close_range, 3U, ~0U, 0U) != 0)
         fail("close the inherited descriptors");
     for (;;) {
