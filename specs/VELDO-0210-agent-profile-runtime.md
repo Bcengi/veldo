@@ -32,8 +32,9 @@ observability:
   traces: Not applicable; the launcher keeps no state beyond the run.
   error_taxonomy: >
     An unknown client, a client place that is not an absolute directory, a client file outside the
-    client's own state directory, or a credential whose source lies in the store or a protected path
-    refuses the start (exit 2) before any command runs.
+    client's own state directory, a credential whose source lies in the store or a protected path,
+    or a PID namespace helper that is unusable or cannot create the namespace (the message names the
+    owner's setup command) refuses the start (exit 2) before any command runs.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -88,8 +89,8 @@ acceptance_criteria:
       it; a scratch directory left behind is removed by the next start once it is more than a day
       old, unless a live launcher, its agent or a descendant that kept the agent's descriptors
       holds it. Set: each stop signal, a child that ignores TERM, a stop sent the instant the fork
-      returns, a launcher killed outright with a descendant that outlives the agent, a live
-      launcher's aged scratch, a stale directory with a shut subdirectory, a recent one, a stale one
+      returns, a launcher killed outright with a descendant that outlives the agent (in the tree's
+      own PID namespace the descendant ends with it), a live launcher's aged scratch, a stale directory with a shut subdirectory, a recent one, a stale one
       a live launcher holds, a stale link and a stale plain file. Completeness: every launch goes
       through launch(), which sweeps before creating its own scratch and holds a shared lock on it
       until removal; the confined command holds a second shared lock on its own descriptor. Test
@@ -112,6 +113,32 @@ acceptance_criteria:
       worktree and scratch; state_grants() refuses any that overlaps the store, a protected or
       denied path, a credential source or the worktree. Test rows state/* in suite 102.
     falsified_by: Grant the configuration directory instead of its state entries; state/claude-settings-refused goes red.
+  - id: AC6
+    text: >
+      Claim: the agent and gate profiles run the confined tree in its own PID namespace with its own
+      procfs, so /proc inside shows only the sandbox's processes and no host process's command line.
+      The launcher's child joins a user namespace that the fixed helper
+      /usr/local/lib/veldo/veldo-unshare creates with only this account's uid and gid, each mapped to
+      itself, unshares the mount and PID namespaces inside it, and forks the namespace's init, which
+      mounts a fresh procfs read only over /proc and forks the agent, which confines itself (seccomp,
+      Landlock) and execs. The helper is never taken from the environment, the configuration or the
+      candidate; one that is absent, not a regular file, not owned by root, writable by anyone but
+      root (or in a directory that is), or a namespace that cannot be created refuses the start
+      (exit 2) naming the owner's one-time setup command; host /proc is never the fallback. A launcher
+      already in a PID namespace other than the host's whose procfs is /proc (nested in a sandbox
+      this launcher made) creates none. Set: the pids /proc lists inside, a host process started
+      with a marker argument read by pid and found by scanning, uid, gid and capabilities inside, the
+      owner of a file created inside, /proc's mount options, an orphan reaped by the init, a
+      descendant that left the agent's process group after the agent exits, the same for the gate
+      profile, and a missing, user-owned, user-writable and uncreatable helper. Completeness: every
+      launch goes through prepared_launch, whose child calls enter_namespaces before it forks the
+      init, and helper_problem is its only check of the helper. Test rows namespace/* in suite 102;
+      signals, cleanup and write-back keep their AC2 and AC4 rows.
+    falsified_by: >
+      Skip enter_namespaces or the procfs mount; namespace/proc-lists-only-sandbox-pids and
+      namespace/host-process-hidden-by-scan go red. Map root instead of the current user;
+      namespace/ids-equal-outside goes red. Drop helper_problem; namespace/user-writable-helper-refused
+      goes red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch.
 ---
@@ -136,7 +163,10 @@ agent profile's grants (read only, as in the gate and worker profiles); /run sta
 the resolver directory /run/systemd/resolve, read only; the selected client's credential files
 are written back after a refresh instead of never; and the selected client's declared state
 entries in its configuration directory are writable, the only writes outside the worktree and
-scratch. Every other VELDO-0208 boundary is unchanged.
+scratch. It also amends VELDO-0208's "no root helper": the agent and gate profiles need the
+owner-installed, root-owned copy of unshare (not setuid, run as this account) to create their
+user namespace, owner decision Telegram 32539, installed 32542. Every other VELDO-0208 boundary is
+unchanged.
 
 ## Design
 
@@ -149,6 +179,44 @@ scratch. Every other VELDO-0208 boundary is unchanged.
   matching mid-run. /run stays blocked for every other read root. Name lookups that try a service
   socket (mdns, resolved's varlink sockets in that same directory) are refused by the IPC filter and
   fall through to DNS. Gate and worker profiles are unchanged apart from the shared /proc line they already had.
+- PID namespace (AC6, owner decision Telegram 32539 after the review found a host process's
+  command line, a live tunnel token, readable through /proc). Unprivileged user namespaces are
+  blocked on the host (kernel.apparmor_restrict_unprivileged_userns=1, VELDO-0209); the AppArmor
+  profile veldo-unshare (flags=(unconfined), userns) lets only /usr/local/lib/veldo/veldo-unshare,
+  a root-owned copy of util-linux unshare, create one. The owner's one-time setup command, which the
+  refusal prints:
+
+  `sudo install -D -o root -g root -m 0755 /usr/bin/unshare /usr/local/lib/veldo/veldo-unshare && printf 'abi <abi/4.0>,\ninclude <tunables/global>\n\nprofile veldo-unshare /usr/local/lib/veldo/veldo-unshare flags=(unconfined) {\n  userns,\n}\n' | sudo tee /etc/apparmor.d/veldo-unshare >/dev/null && sudo apparmor_parser -r /etc/apparmor.d/veldo-unshare`
+
+  The launcher's child (C) runs veldo-unshare with its user and map-current-user options and a holder that
+  reports ready and waits on its stdin, opens the holder's /proc/<pid>/ns/user, ends the holder and
+  joins that namespace (setns), checks its uid and gid are unchanged, then unshares the mount and
+  PID namespaces itself (it holds every capability in the namespace it joined) and makes its mounts
+  private. The helper creates only the user namespace: a PID namespace's pid_for_children is not
+  openable before its init exists. C's first child (G) is PID 1 of the new namespace: it mounts
+  procfs at /proc read only (nosuid, nodev, noexec) and checks /proc/self is 1, then forks the agent
+  (A), which takes its own process group, confines itself as before and execs. Landlock's /proc grant
+  binds the fresh procfs, so the host procfs beneath it is unreachable even by path. The command
+  runs with no capabilities: its uid in the namespace is not 0, so exec clears them, and no_new_privs
+  refuses file capabilities.
+  Signals: the launcher stops C's process group as before. C and G keep TERM, INT and HUP blocked
+  and take them with sigwaitinfo; C relays each it caught (never one the launcher inherited ignored)
+  to G as a real-time signal, and G forwards it to A's process group, so the agent gets each stop
+  once, even one that came before it existed. G discards the stop signals it receives directly. G
+  reaps every process of the namespace, and when A exits G exits with A's status; the kernel then
+  kills whatever is left in the namespace, including processes that left A's process group. C sets
+  PR_SET_PDEATHSIG (SIGKILL) and checks the launcher is still its parent; G sets it and polls C's
+  pidfd, so a launcher killed outright takes C, G and with G the whole namespace. A keeps its own
+  PR_SET_PDEATHSIG after confinement.
+  The gate profile's broker attaches to A by the pid the launcher sees: A reads it from the
+  launcher's procfs, which G opened before mounting the new one, and the handoff line carries it.
+  Unix addresses, terminals and the bind helper are unchanged: the mount namespace is a copy, only
+  /proc differs.
+  A launcher whose own process already runs in a PID namespace other than the host's (its
+  /proc/self/ns/pid is not the initial pid:[4026531836]) and whose /proc/self is its own pid (that
+  procfs is its namespace's) creates no namespace: its /proc already shows no host process. That is
+  a launcher nested in a sandbox this launcher made, as the gate's suites run, and the nested
+  launcher's tree sees the outer sandbox's processes. The helper is checked in every case.
 - Clients. agent_sandbox.json gains `clients`. Each client names its places (an environment variable
   the runner may set, else a default under the account's home), its `credentials`, its `seed_files`
   and its `read_links`. The launcher's client option selects one (claude or codex); without it no
@@ -192,8 +260,9 @@ scratch. Every other VELDO-0208 boundary is unchanged.
   from before the fork until the parent has registered its child, then forwarded to the confined
   group; a group still alive ten seconds later is killed. The launcher then writes back
   credentials, removes the scratch and exits 128 plus the signal number. The child sets
-  PR_SET_PDEATHSIG to SIGKILL once confined, just before exec, and refuses the start if the
-  launcher is already gone, so a launcher killed outright never leaves its agent running.
+  PR_SET_PDEATHSIG to SIGKILL and refuses the start if the launcher is already gone, and so do the
+  namespace's init and the agent (the agent once confined, just before exec), so a launcher killed
+  outright never leaves its agent running (AC6 has the chain).
 
 ## Accepted residuals
 
@@ -219,11 +288,18 @@ scratch. Every other VELDO-0208 boundary is unchanged.
   updates, system skill installs) fail: those directories are outside the worktree.
 - engine/scripts/agent_sandbox.json is byte-identical with this repository's copy (template sync),
   so the reviewed project_read_roots entry ships to adopters; an absent root grants nothing.
-- Processes that leave the confined process group (their own setsid) are not stopped by the
-  launcher; they stay confined.
-- PR_SET_PDEATHSIG reaches the agent the launcher started, not its descendants. A descendant that
-  outlives a launcher killed outright runs on, confined; if it also closed the descriptors it
-  inherited, nothing holds the scratch and the next start more than a day later removes it.
+- A launcher nested in a sandbox (a PID namespace other than the host's whose procfs is /proc)
+  creates no namespace, so its tree sees the outer sandbox's processes, never the host's; a
+  launcher run inside some other container behaves the same and shows that container's processes.
+  In such a nested launch, processes that leave the agent's process group outlive the agent until
+  the outer namespace ends, and PR_SET_PDEATHSIG reaches the agent, not its descendants.
+- Inside the namespace, files owned by any uid or gid other than this account's show as 65534
+  (nobody, nogroup), and so do the account's supplementary groups; access is still decided by the
+  real ids.
+- The host procfs stays mounted beneath the fresh one in the copied mount table: /proc/self/mounts
+  lists it, the mount is locked to the namespace, and Landlock grants only the fresh one.
+- The setup needs the owner once, with sudo, per host; without it every agent and gate start
+  refuses.
 
 ## Out of scope
 
@@ -233,6 +309,6 @@ this one. The gate and worker profiles' grants.
 
 ## Build and evidence limits
 
-Only suites 99, 100, 101 and 102 run for this specification, sequentially in the foreground, plus
+Only suites 99, 100, 101, 102, 64 and 69 run for this specification, sequentially in the foreground, plus
 template sync, generated, lint, docs and validate.py all. The owner runs the full gate and lands
 the stamp; no protected-path approval is recorded here.
