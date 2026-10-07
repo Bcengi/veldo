@@ -1139,7 +1139,10 @@ _L07_FM = V.parse_yamlish(re.match(r"^---\n(.*?)\n---", _L07_SPEC_TEXT, re.S).gr
 _L07_FOOTPRINT = [_g for _g in _L07_FM.get("footprint") or [] if isinstance(_g, str)]
 _L07_FROZEN = [".veldo/authorization.py", ".veldo/two_key.py", ".veldo/policy_check.py",
                ".veldo/decision.py"]
-_L07_GUARDED = sorted(set(P.protected_patterns()) | set(_L07_FROZEN)
+# The protected set IN FORCE FOR THIS SPEC, not today's: a later spec protecting a file this
+# footprint names must not retroactively redden it (see protected_in_force).
+_L07_IN_FORCE_REV, _L07_IN_FORCE = protected_in_force(str(_L07_SPEC_PATH.relative_to(ROOT)))
+_L07_GUARDED = sorted(set(_L07_IN_FORCE) | set(_L07_FROZEN)
                       | {"scripts/verify.sh", "engine/scripts/verify.sh"})
 _L07_VERIFY = (ROOT / "scripts/verify.sh").read_text()
 expect("WARP-0711 AC3: the STAGE LIST is untouched - verify.sh still declares this stage as `required:bash scripts/check_lint.sh` and `lint` is still in its ORDER - and NO footprint glob of this spec can match scripts/verify.sh, any path the policy protects, or any file of the frozen safety core, which is the gate's own footprint refusal rather than a promise not to touch them",
@@ -7306,7 +7309,7 @@ expect("WARP-0713 dogfood: the spec has PASSED the ready transition (so this doe
        and _v13_fm.get("risk", "").split()[0] == "high"
        and _v13_fm.get("human_approval") == "not_required"
        and (_v13_fm.get("protected_paths") or []) == []
-       and not [g for g in _v13_fp if g in set(P.protected_patterns())]
+       and footprint_protected_hits(_v13_fm, protected_in_force(_v13_spec_rel)[1], _v13_arch) == []
        and V.check_ready(ROOT / _v13_spec_rel, repo_root=str(ROOT)) == 0
        and _v13_arch.placement_gate(_v13_fm, _v13_contract) == [])
 
