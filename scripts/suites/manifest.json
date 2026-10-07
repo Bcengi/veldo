@@ -1403,6 +1403,15 @@
    ],
    "regions": "Single-user agent confinement and authenticated landing reuse.",
    "requires_note": "Only ROOT, V and expect; foreground child fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "102_veldo_0210_agent_profile_runtime",
+   "file": "102_veldo_0210_agent_profile_runtime.py",
+   "requires": [
+    "102_veldo_0210_agent_profile_runtime"
+   ],
+   "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
+   "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
   }
  ],
  "resource_capacities": {

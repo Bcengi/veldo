@@ -76,11 +76,11 @@ def landlock(grants, profile="agent", broker=None):
     # The IPC filter goes first: whether a broker serves this tree decides the terminal grant.
     mode = broker.install(libc) if broker is not None else install_filter(libc, ipc_program())
     grants = list(grants)
-    if profile in ('gate', 'worker'):
-        # The repository's suites and the control plane they test read /proc (mounts, process
-        # identity, cgroups). Read only: Landlock's ptrace scope still refuses another domain's
-        # environ, fd, root, cwd, mem and maps, so what is left is what any account can read.
-        grants.append((PROC, READ))
+    # Every profile reads /proc: the suites and the control plane read mounts, process identity and
+    # cgroups, and Claude's runtime aborts without it (VELDO-0210). Read only: Landlock's ptrace
+    # scope still refuses another domain's environ, fd, root, cwd, mem and maps, so what is left is
+    # what any account can read.
+    grants.append((PROC, READ))
     if mode != 'strict':
         # A fresh terminal pair per open. Its peer comes only through the broker (TIOCGPTPEER),
         # and /dev/pts stays ungranted, so no other terminal on the host is reachable.
@@ -109,6 +109,8 @@ TIOCGPTPEER = 0x5441
 DEVICE_IOCTL = 1 << 15
 PTMX = Path('/dev/ptmx')
 PROC = Path('/proc')
+RESOLVER = Path('/etc/resolv.conf')
+RESOLVER_RUNTIME = Path('/run/systemd/resolve')
 # Marks a tree a Broker serves, for suites that must know whether they already run inside one.
 BROKERED = 'VELDO_SANDBOX_BROKERED'
 
@@ -817,6 +819,17 @@ def grants_for(config, authority, worktree, scratch, config_path=None):
     return grants, [store, *protected]
 
 
+def resolver_grants():
+    """The DNS resolver configuration, read only, for the agent profile (VELDO-0210).
+    /etc/resolv.conf lies under the /etc read root; when it links into /run/systemd/resolve, the one
+    regular file it names is granted too. Nothing else under /run: the user bus, systemd's sockets
+    and every other runtime file stay outside the domain."""
+    target = RESOLVER.resolve()
+    if target != RESOLVER and beneath(target, RESOLVER_RUNTIME.resolve()) and target.is_file():
+        return [(target, READ)]
+    return []
+
+
 def installed_tools(config):
     """The installed tools and runtimes the configuration names (optional_read_roots: Node under
     ~/.nvm, Claude Code, the langgraph runtime), as a fresh mutation worker's read-only grants, the
@@ -878,6 +891,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
     if profile == 'gate':
         config = dict(config, write_roots=['{scratch}'], seed_files={})
     grants, protected = grants_for(config, authority, worktree, scratch, config_path)
+    if profile == 'agent':
+        grants += resolver_grants()
 
     protected += [config_path, Path(policy.__file__).resolve()]
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
