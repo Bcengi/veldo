@@ -305,16 +305,17 @@ def close_descriptors(protected, keep=()):
         if stat.S_ISSOCK(info.st_mode):
             raise ValueError('standard descriptors may not be service sockets')
         if stat.S_ISREG(info.st_mode):
+            # A launcher nested in another domain cannot read /proc; an unnamed file is refused.
             target = Path(os.readlink('/proc/self/fd/' + str(fd))).resolve()
             if any(beneath(target, p) for p in protected):
                 raise ValueError('standard descriptor exposes a protected path')
-    # Close the actual open set, including descriptors above a lowered rlimit.
-    for name in os.listdir('/proc/self/fd'):
-        if int(name) >= 3 and int(name) not in keep:
-            try:
-                os.close(int(name))
-            except OSError:
-                pass
+    # Close the actual open set, including descriptors above a lowered rlimit: closerange is
+    # close_range(2), which needs no /proc listing (a nested launcher has none).
+    low = 3
+    for fd in sorted(k for k in keep if k >= 3):
+        os.closerange(low, fd)
+        low = fd + 1
+    os.closerange(low, 0x7fffffff)
 
 
 def launch(config_path, worktree, command, profile="agent"):
