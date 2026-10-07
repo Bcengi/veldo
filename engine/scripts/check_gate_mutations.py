@@ -567,7 +567,11 @@ class Workers:
                         ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
                                          | os.O_APPEND | os.O_CLOEXEC, 0o600)
                         worker_root = Path(job.get('snapshot_root', root))
-                        argv = [sys.executable, '-I', '-S', '-B',
+                        # -I keeps user site and PYTHON* variables out. A fresh worker keeps the
+                        # system site-packages its suites ran with before confinement: without it
+                        # an optional oracle (PyYAML for 0119) stands down and its row passes a
+                        # mutant. A declared case runs only its keyed runtime set, so it adds -S.
+                        argv = [sys.executable, '-I', *(('-S',) if 'snapshot_root' in job else ()), '-B',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(ROOT / 'scripts/reuse_worker.py'),
                                 'worker', str(worker_root), str(ledger), str(jobpath)]

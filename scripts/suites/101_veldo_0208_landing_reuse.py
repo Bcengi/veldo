@@ -576,6 +576,13 @@ print(json.dumps(results))
         code, calls, outcome, intact = drive_ledger(forge('directory', str(victims / 'absent')))
         expect('VELDO-0208 ownership/forged-absent-directory-untouched: ' + str(outcome.get('detail')),
                code is None and calls == [] and intact and not (victims / 'absent').exists())
+        # A fresh worker runs isolated but with the system site-packages its suites ran with before
+        # confinement. Under -S, 0119's PyYAML oracle stood down and reader-strip-quoted-hash survived.
+        code, calls, outcome, intact = drive_ledger(
+            'if sys.flags.no_site or not sys.flags.isolated:\n'
+            '    raise SystemExit("worker flags: no_site=%d isolated=%d" % (sys.flags.no_site, sys.flags.isolated))\n')
+        expect('VELDO-0208 worker/fresh-keeps-system-site: ' + str(outcome.get('detail')),
+               code is None and calls == [])
         code, calls, outcome, intact = drive_ledger(
             'open(os.path.join(os.environ["TMPDIR"], "ownership.jsonl"), "w").write('
             'json.dumps(["directory", %r]) + "\\n")\n' % str(victims))
