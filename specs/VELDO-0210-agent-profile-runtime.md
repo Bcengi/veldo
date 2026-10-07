@@ -97,6 +97,13 @@ Owner's rules: agents keep exactly the capabilities they have today; the confine
 escaping the worktree and the protected paths. Single user, no separate OS user, no system service,
 no detached process.
 
+## Amendment
+
+This amends VELDO-0208's agent profile in three statements: /proc is no longer excluded from the
+agent profile's grants (read only, as in the gate and worker profiles); /run stays excluded except
+the one resolver file; and the selected client's credential files are written back after a
+refresh instead of never. Every other VELDO-0208 boundary is unchanged.
+
 ## Design
 
 - Runtime. landlock() grants /proc read-only to every profile, as it did for gate and worker.

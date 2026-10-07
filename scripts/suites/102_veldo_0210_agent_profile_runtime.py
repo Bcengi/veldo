@@ -104,7 +104,7 @@ print(json.dumps(r))
         def probe_run(items, **kwargs):
             return run(config, worktree, [sys.executable, '-I', '-S', str(probe), *items], **kwargs)
 
-        # ---- runtime: /proc read only, the resolver file and nothing else under /run -------------
+        # runtime: /proc read only, the resolver file and nothing else under /run
         resolve = top / 'run/systemd/resolve'
         resolve.mkdir(parents=True)
         (resolve / 'stub-resolv.conf').write_text('nameserver 127.0.0.53\n')
@@ -164,7 +164,7 @@ print(json.dumps(r))
                "    if profile == 'agent':\n        grants += resolver_grants()\n" in source
                and source.count('resolver_grants()') == 2)
 
-        # ---- credentials: copied in per client, a refresh written back atomically ---------------
+        # credentials: copied in per client, a refresh written back atomically
         account, codex_home = top / 'account', top / 'codex-home'
         account.mkdir()
         codex_home.mkdir()
@@ -321,7 +321,7 @@ print(json.dumps(seen))
                and set(real['clients']['claude']['credentials'].values()) == {'.claude/.credentials.json'}
                and set(real['clients']['codex']['credentials'].values()) == {'.codex/auth.json'})
 
-        # ---- capabilities: plugins, skills, MCP network and reviewed project roots, read only ----
+        # capabilities: plugins, skills, MCP network and reviewed project roots, read only
         reset()
         plugin = account / 'plugins/cache/market/tool/1.0.0'
         plugin.mkdir(parents=True)
@@ -423,7 +423,7 @@ print(json.dumps(seen))
             for kind in ('credentials', 'seed_files', 'read_links')
             for relative in entry.get(kind, {}).values()))
 
-        # ---- scratch: removed at exit and on stop signals; stale ones swept at the next start ----
+        # scratch: removed at exit and on stop signals; stale ones swept at the next start
         import fcntl
         import signal
         import time
