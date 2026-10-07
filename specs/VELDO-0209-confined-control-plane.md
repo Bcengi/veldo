@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0209
-title: Control-plane suites proven in a KVM guest the candidate cannot leave
+title: "WITHDRAWN (owner, Telegram 32403-32407): control-plane suites proven in a KVM guest the candidate cannot leave"
 status: draft
 risk: high
 owner: dmitry
@@ -87,6 +87,20 @@ acceptance_criteria:
 required_evidence: [unit, integration]
 rollback: Return CHECK_unit and CHECK_integration to the host domain (required:) and record the VELDO-0208 open classes as red, as before this specification.
 ---
+
+## Withdrawn, 2026-10-07
+
+The owner rejected this design (Telegram 32403-32407, 2026-10-07): the KVM guest is too heavy
+("VM is shit... do not do it"). Instead the suites it was for run the way they ran before the
+VELDO-0208 sandbox existed: outside the confinement, in a separate, clearly named leg of the unit
+and integration stages, while every other stage and suite stays confined. He confirmed that design
+("Yes"). It is specified and implemented in VELDO-0208, section "Unconfined leg".
+
+This specification never reached ready (06c4c4f2 marked it ready and 4c390079 reverted that), and
+nothing of it was implemented: no guest, kit or suite 102 exists. The repository's lifecycle has no
+withdrawn status, so it stays a draft, which is never implemented, under a title that says it is
+withdrawn. Do not implement it. The sections below are unchanged: they are the measurements and the
+reasoning the decision was taken on, kept as the record of why.
 
 ## Problem
 
