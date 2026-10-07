@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
-protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml", "scripts/gate_unconfined.json", "scripts/gate_legs.py"]
+protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml", "scripts/gate_unconfined.json", "scripts/gate_legs.py", "scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py"]
 footprint:
   - ".veldo/candidate_git.py"
   - "engine/.veldo/candidate_git.py"
@@ -61,6 +61,8 @@ footprint:
   - "scripts/update_index.py"
   - "engine/scripts/update_index.py"
   - "scripts/run_scope.py"
+  - "scripts/suites/shared.py"
+  - "proof/WARP-0716/crossing-state.md"
   - "scripts/check_install_and_run.py"
   - "scripts/suites/*.py"
   - "proof/VELDO-0088/fixture.py"
@@ -336,10 +338,16 @@ for these suites only: their code runs with the owner's own authority, as it did
     rows and startup-runtime-boundary) and 101_0208 (authority-worker-* and
     authority-observes-kill).
 - The list is the authority's: verify.sh reads it from its own installation
-  ($VELDO_AUTHORITY/scripts), never from the candidate. A candidate's own copy of the list, a
-  manifest flag or a leg variable it sets decides nothing. A suite not on the list never runs
-  unconfined. Adding a suite to the list is a change to a protected file
-  (scripts/gate_unconfined.json and its runner scripts/gate_legs.py are protected paths).
+  ($VELDO_AUTHORITY/scripts), never from the candidate, so a candidate's own copy of the list or a
+  leg variable it sets decides nothing. The candidate's dispatcher applies the list:
+  scripts/selftest.py picks each leg's suites, and scripts/run_scope.py and
+  scripts/suites/shared.py (leg_runs) pick the rows. The list, its runner scripts/gate_legs.py
+  and those three dispatcher files are protected paths, and that is the only reason a suite not
+  on the list does not run unconfined: sending one out takes a change to a protected file, which
+  needs the owner's approval. Nothing else in the candidate enforces it.
+- The bound is by suite name as scripts/suites/manifest.json enumerates it. The listed suite
+  files and the manifest entries that name them are not protected, so which code a listed name
+  runs is candidate code like any other suite's.
 - A declared stage runs as two legs through scripts/gate_legs.py: the confined leg through
   scripts/gate_candidate.py with VELDO_GATE_LEG=confined, then the unconfined leg directly with
   VELDO_GATE_LEG=unconfined; VELDO_GATE_UNCONFINED carries the list. The stage passes only when both
@@ -351,12 +359,15 @@ for these suites only: their code runs with the owner's own authority, as it did
   `"unconfined": {"declaration": "sha256:<list digest>", "legs": {"<stage>": [<entries>]}}` whenever
   a leg ran; the field is absent only when no stage ran one (an authority with no list, or a catalog
   with no declared stage). A leg record the gate cannot read is RED with the field null.
-- What the list bounds: what the gate dispatches unconfined. The unconfined leg executes the
-  candidate's dispatcher and the listed suites unconfined, so a hostile candidate can do there what
-  any owner-run code can; review of the candidate is the control for that leg, as it was before
-  this specification. The confined legs keep refusing every escape the confined-stage rows plant.
+- What the list bounds, and what it does not. The list plus the protected dispatcher bound WHICH
+  suites and rows run unconfined. They do not bound what the code inside a listed suite does: that
+  code still runs with the owner's full permissions, exactly as every suite did before VELDO-0208,
+  so a hostile candidate can do there what any owner-run code can. Review of the candidate is the
+  safeguard for that code. The confined legs keep refusing every escape the confined-stage rows
+  plant.
 - Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
-  are protected and read from the authority; verify.sh's own stamp and event lines carry the leg
+  and the dispatcher files are protected, and the list is read from the authority (a candidate copy
+  naming another suite is ignored); verify.sh's own stamp and event lines carry the leg
   when it ran, omit it when none ran and are RED when the record is unreadable; the row ownership
   of each leg; a fixture candidate through the real runner, launcher and dispatcher in which a
   listed suite runs unconfined and is named, a suite the candidate asks for stays confined, only the

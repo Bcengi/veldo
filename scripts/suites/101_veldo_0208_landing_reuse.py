@@ -1210,6 +1210,15 @@ def _v208_unconfined_leg():
     expect('VELDO-0208 unconfined-leg/list-is-protected',
            {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(P.protected_patterns())
            and {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
+    # The candidate's dispatcher applies the list, so it is protected with it; the listed suites are
+    # not, because review of the candidate, not a protected path, is the safeguard for their code.
+    dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py'}
+    listed_files = ['scripts/suites/%s.py' % name for name in listed]
+    expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
+           dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 32
+           and not [f for f in listed_files for pattern in P.protected_patterns()
+                    if __import__('fnmatch').fnmatch(f, pattern)])
     expect('VELDO-0208 unconfined-leg/list-read-from-the-authority',
            L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'
            and '[ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]' in gate_text

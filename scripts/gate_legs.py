@@ -10,13 +10,16 @@ integration stages. Every other stage and suite stays confined.
 THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this file
 (scripts/gate_unconfined.json in the authority checkout or its installed copy), a protected path,
 so adding a suite to it is a reviewed change with the owner's approval. A candidate's own copy of
-the list, an environment variable it sets or a flag in its manifest decides nothing: the leg
-variables a candidate command sees are set here, and the caller's are dropped.
+the list or an environment variable it sets decides nothing: the leg variables a candidate command
+sees are set here, and the caller's are dropped. The candidate's dispatcher applies the list
+(scripts/selftest.py, scripts/run_scope.py, scripts/suites/shared.py), and those files are
+protected too; without that, a candidate could make its dispatcher ignore the leg.
 
 WHAT THE UNCONFINED LEG TRUSTS, stated because it is the cost of the decision. That leg executes
 the candidate's dispatcher and the listed suites with the owner's own authority, exactly as before
-VELDO-0208; the list bounds what the gate dispatches there, not what candidate code does once it
-runs. That is why the leg is printed with its suite list on the stage line and recorded in the
+VELDO-0208; the list and the protected dispatcher bound which suites and rows run there, not
+what the code of a listed suite does once it runs. Review of the candidate is the safeguard for
+that code. That is why the leg is printed with its suite list on the stage line and recorded in the
 stamp and the gate event: it is visible on every run, never silent.
 
   gate_legs.py --root <candidate> --stage <name> --record <file> -- <command>

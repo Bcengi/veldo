@@ -52,6 +52,14 @@ protected_paths:
   # change, never a step an agent takes on its own behalf.
   - {path: "scripts/gate_unconfined.json", floor: high}
   - {path: "scripts/gate_legs.py", floor: high}
+  # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
+  # and suites/shared.py (leg_runs) pick the rows. Unprotected, a candidate could make them ignore
+  # the leg and send any suite out, so the list would bound nothing. The listed suite files are
+  # deliberately NOT protected: their code runs with the owner's permissions, as every suite did
+  # before VELDO-0208, and review of the candidate is the safeguard for it.
+  - {path: "scripts/selftest.py", floor: high}
+  - {path: "scripts/run_scope.py", floor: high}
+  - {path: "scripts/suites/shared.py", floor: high}
   - {path: "engine/.veldo/control_verification.py", floor: high}
   - {path: ".veldo/control_verification.py", floor: high}
   # The enforcement core: this repository ships the templates every adopting
