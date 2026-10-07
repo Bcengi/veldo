@@ -137,6 +137,9 @@ NAMESPACE_SETUP = ('d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -sta
                    'sudo rm -f /usr/local/lib/veldo/veldo-unshare && rm -r "$d" && '
                    'python3 -I -S scripts/agent_sandbox.py namespace-selftest')
 INITIAL_PID_NAMESPACE = 'pid:[4026531836]'
+# nsfs ioctls (linux/nsfs.h): a namespace descriptor's type, and this process's pid as the descriptor's
+# PID namespace sees it (refused unless that namespace is this one or an ancestor of it).
+NS_GET_NSTYPE, NS_GET_PID_IN_PIDNS, CLONE_NEWPID = 0xb703, 0x8004b708, 0x20000000
 # Stops the launcher's child relays to the namespace's init, which acts on these only: a stop it
 # receives itself (it shares the child's process group) is discarded, so the agent gets each once.
 RELAY = {signal.SIGTERM: signal.SIGRTMIN, signal.SIGINT: signal.SIGRTMIN + 1,
@@ -946,21 +949,49 @@ def capability_problem(status):
     return None
 
 
+def launcher_marker():
+    """The descriptor that marks a tree this launcher made (VELDO-0210 AC6), or None. Before it
+    executes the helper, the launcher's child opens its own PID namespace (/proc/self/ns/pid), the
+    parent of the one the helper makes, and every process of the tree inherits that descriptor. Here
+    it is an inherited PID namespace descriptor that is a proper ancestor of this process's own:
+    this process's pid shows in it, and it is not this namespace. A process cannot make one: inside
+    a PID namespace NS_GET_PARENT refuses the parent and the namespace's procfs shows no process
+    outside it, so only a process outside hands one in, which a container runtime or systemd's
+    PrivatePIDs does not."""
+    own = os.stat('/proc/self/ns/pid')
+    for name in os.listdir('/proc/self/fd'):
+        try:
+            descriptor = int(name)
+            info = os.fstat(descriptor)
+            # Only nsfs descriptors get the ioctls: an unknown request reaches no device driver.
+            if info.st_dev != own.st_dev or info.st_ino == own.st_ino:
+                continue
+            if (fcntl.ioctl(descriptor, NS_GET_NSTYPE) == CLONE_NEWPID
+                    and fcntl.ioctl(descriptor, NS_GET_PID_IN_PIDNS, os.getpid()) > 0):
+                return descriptor
+        except (OSError, ValueError):
+            continue
+    return None
+
+
 def nested_namespace():
-    """This launcher already runs inside a tree this launcher's helper made (VELDO-0210 AC6): its
-    AppArmor label is the helper's child profile in enforce mode, which only an exec through the
-    root-owned helper gives and which no process can leave (change_profile is denied there); it runs
-    in a PID namespace other than the host's whose procfs is /proc; and it holds no capability. A
-    container's or a systemd PrivatePIDs namespace carries no such label and does not count. Such a
-    launcher creates no namespace: its /proc already shows no host process, and the helper's child
-    profile would refuse it one anyway."""
+    """The marker descriptor (launcher_marker) when this launcher already runs inside a tree this
+    launcher made (VELDO-0210 AC6), else None. Inside means: it inherited the marker the outer
+    launcher created; its AppArmor label is the helper's child profile in enforce mode, which only
+    an exec through the root-owned helper gives and which no process can leave (change_profile is
+    denied there); it runs in a PID namespace other than the host's whose procfs is /proc; and it
+    holds no capability. Any other private PID namespace (a container's, a systemd PrivatePIDs one)
+    has no marker and does not count. Such a launcher creates no namespace: its /proc already shows
+    no host process, and the helper's child profile would refuse it one anyway."""
     try:
-        return (apparmor_enabled() and apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'
+        if (apparmor_enabled() and apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'
                 and os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
                 and os.readlink('/proc/self') == str(os.getpid())
-                and capability_problem(Path('/proc/self/status').read_text()) is None)
+                and capability_problem(Path('/proc/self/status').read_text()) is None):
+            return launcher_marker()
     except OSError:
-        return False
+        pass
+    return None
 
 
 def namespace_problem(ids):
@@ -1844,7 +1875,14 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         # every descendant that keeps the descriptor), so no sweep removes a scratch still in use.
         held = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         fcntl.flock(held, fcntl.LOCK_SH | fcntl.LOCK_NB)
-        keep = [held, *(side.keep() if side else ())]
+        # The tree's marker (launcher_marker), which every process of the tree keeps: nested, the one
+        # this launcher inherited; otherwise this process's own PID namespace, the parent of the one
+        # the helper makes.
+        marker = nested_namespace()
+        nested = marker is not None
+        if not nested:
+            marker = os.open('/proc/self/ns/pid', os.O_RDONLY)
+        keep = [held, marker, *(side.keep() if side else ())]
         # The launcher's procfs, before the namespace's covers it: the agent reads from it the pid the
         # launcher sees it by, for the gate profile's broker. The init watches the launcher and this
         # process (the helper, after its exec) through their pidfds.
@@ -1853,7 +1891,6 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         handed = [*keep, launcher_proc, *alive, report]
         for descriptor in handed:
             os.set_inheritable(descriptor, True)
-        nested = nested_namespace()
         context = {'worktree': str(worktree), 'command': list(command), 'env': env, 'profile': profile,
                    'grants': [[str(path), access] for path, access in grants],
                    'protected': [str(path) for path in protected], 'keep': keep,
@@ -2062,7 +2099,20 @@ def namespace_selftest():
                 'if child > 0:\n    os.waitpid(child, 0)\n'
                 'label = open("/proc/self/attr/current").read().strip("\\0\\n ")\n'
                 'pids = sorted(int(p) for p in os.listdir("/proc") if p.isdigit())\n'
-                'print(json.dumps({"pids": pids, "status": status, "userns": userns, "label": label}))\n')
+                'import fcntl\n'
+                'own = os.stat("/proc/self/ns/pid")\n'
+                'marked = False\n'
+                'for entry in os.listdir("/proc/self/fd"):\n'
+                '    try:\n'
+                '        info = os.fstat(int(entry))\n'
+                '        if (info.st_dev == own.st_dev and info.st_ino != own.st_ino\n'
+                '                and fcntl.ioctl(int(entry), 0xb703) == 0x20000000\n'
+                '                and fcntl.ioctl(int(entry), 0x8004b708, os.getpid()) > 0):\n'
+                '            marked = True\n'
+                '    except OSError:\n'
+                '        pass\n'
+                'print(json.dumps({"pids": pids, "status": status, "userns": userns, "label": label,\n'
+                '                  "marked": marked}))\n')
         worktree = tempfile.mkdtemp(prefix='veldo-selftest-')
         try:
             launched = subprocess.run([sys.executable, '-I', '-S', str(Path(__file__).resolve()), '--config',
@@ -2085,6 +2135,8 @@ def namespace_selftest():
                                                        seen.get('label')]
         rows['launch-cannot-create-a-user-namespace'] = [seen.get('userns') in ('EACCES', 'EPERM'),
                                                          seen.get('userns')]
+        # The marker a launcher nested in this tree recognizes it by (launcher_marker).
+        rows['launch-carries-the-launchers-marker'] = [seen.get('marked') is True, seen.get('marked')]
     for name, (passed, detail) in rows.items():
         print('%s %s: %s' % ('PASS' if passed else 'FAIL', name, detail))
     failed = [name for name, (passed, _) in rows.items() if not passed]

@@ -180,6 +180,20 @@ for item in sys.argv[1:]:
         r[name] = open('/proc/1/cmdline', 'rb').read().decode(errors='replace')
     elif kind == 'ns':
         r[name] = os.readlink('/proc/self/ns/pid')
+    elif kind == 'marker':
+        # The launcher's marker: an inherited PID namespace descriptor, a proper ancestor of this one.
+        import fcntl
+        own = os.stat('/proc/self/ns/pid')
+        r[name] = False
+        for entry in os.listdir('/proc/self/fd'):
+            try:
+                info = os.fstat(int(entry))
+                if (info.st_dev == own.st_dev and info.st_ino != own.st_ino
+                        and fcntl.ioctl(int(entry), 0xb703) == 0x20000000
+                        and fcntl.ioctl(int(entry), 0x8004b708, os.getpid()) > 0):
+                    r[name] = True
+            except OSError:
+                pass
     elif kind == 'orphan':
         # A grandchild whose parent is gone ends after it: reaped, its /proc entry goes; not, a zombie.
         import time
@@ -229,7 +243,7 @@ print(json.dumps(r))
         # A running tree needs the namespace the installed helper makes (AC6), and the launcher refuses
         # every start without it, never falling back. Where the owner's setup has not been run, the rows
         # of a running tree are skipped with the launcher's own reason; every refusal and unit row runs.
-        nested = S.nested_namespace()
+        nested = S.nested_namespace() is not None
         unavailable = None
         if not nested:
             unavailable = S.helper_problem(S.NAMESPACE_HELPER)
@@ -363,7 +377,7 @@ print(json.dumps(r))
                                         'hide:by-pid:/proc/%d/cmdline' % sleeper.pid,
                                         'hide:launcher-by-pid:/proc/%d/cmdline' % os.getpid(),
                                         'ids:ids:', 'status:status:', 'label:label:', 'clone-userns:userns:',
-                                        'procmount:proc-mount:', 'init:init:', 'ns:ns:',
+                                        'procmount:proc-mount:', 'init:init:', 'ns:ns:', 'marker:marker:',
                                         'create:created:%s' % owned if profile == 'agent' else 'owner:created:owned',
                                         'orphan:orphan:', 'escape:escape:' + escaped],
                                        profile=profile)
@@ -401,6 +415,8 @@ print(json.dumps(r))
                            not S.apparmor_enabled() or found.get('label') == S.NAMESPACE_PROFILE + ' (enforce)')
                     expect(label + 'no-user-namespace-for-the-agent: %s' % found.get('userns'),
                            found.get('userns') in ('EACCES', 'EPERM'))
+                    expect(label + 'tree-carries-the-launchers-marker: %s' % found.get('marker'),
+                           found.get('marker') is True)
                     expect(label + 'proc-read-only: %s' % found.get('proc-mount'),
                            len(found.get('proc-mount', [])) == 1 and 'ro' in found['proc-mount'][0].split(','))
                     expect(label + 'init-reaps-orphans', found.get('orphan') is True)
@@ -512,9 +528,43 @@ print(json.dumps(r))
             complaining = S.nested_namespace()
         finally:
             S.apparmor_enabled, S.apparmor_label = saved
-        expect('VELDO-0210 namespace/only-the-helpers-tree-counts-as-nested',
-               container is False and complaining is False
-               and "apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'" in inspect.getsource(S.nested_namespace))
+        # And the label is not enough: a private PID namespace with that label and no capability, but
+        # without the marker the outer launcher created, is not nested, whatever namespace descriptors
+        # it holds itself (its own PID namespace, another kind, a regular file).
+        read_end, write_end = os.pipe()
+        forger = os.fork()
+        if not forger:
+            try:
+                held = [os.open('/proc/self/ns/pid', os.O_RDONLY), os.open('/proc/self/ns/net', os.O_RDONLY),
+                        os.open(str(launcher), os.O_RDONLY), write_end]
+                for descriptor in held:
+                    os.set_inheritable(descriptor, True)
+                S.close_descriptors([], keep=held)
+                S.apparmor_enabled = lambda: True
+                S.apparmor_label = lambda: S.NAMESPACE_PROFILE + ' (enforce)'
+                S.INITIAL_PID_NAMESPACE = 'pid:[0]'
+                S.capability_problem = lambda status: None
+                found = [S.launcher_marker(), S.nested_namespace()]
+                os.write(write_end, json.dumps(found).encode())
+                os._exit(0)
+            except BaseException as error:
+                os.write(write_end, json.dumps(repr(error)).encode())
+                os._exit(1)
+        os.close(write_end)
+        forged = json.loads(os.read(read_end, 4096) or b'null')
+        os.close(read_end)
+        os.waitpid(forger, 0)
+        expect('VELDO-0210 namespace/only-the-helpers-tree-counts-as-nested: %s' % forged,
+               container is None and complaining is None and forged == [None, None] and nested == (
+                   S.launcher_marker() is not None)
+               and "apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'" in inspect.getsource(S.nested_namespace)
+               and 'return launcher_marker()' in inspect.getsource(S.nested_namespace))
+        # The outer launcher creates the marker before it executes the helper, and every process of
+        # the tree keeps it; a nested one hands on the marker it inherited.
+        expect('VELDO-0210 namespace/launcher-creates-and-hands-on-the-marker',
+               "marker = nested_namespace()" in source and "marker = os.open('/proc/self/ns/pid', os.O_RDONLY)"
+               in source and 'keep = [held, marker, ' in source and "'keep': keep" in source
+               and source.index("marker = os.open('/proc/self/ns/pid'") < source.index('os.execv(NAMESPACE_HELPER'))
         # A nested tree's init is a subreaper: a descendant that left the agent's session is reaped and,
         # once the agent is gone, killed.
         read_end, write_end = os.pipe()
