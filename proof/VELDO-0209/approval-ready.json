@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-READY-2026-10-07-VELDO-0209",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0209",
+    "commit": "44c9c03017eb4c4195ea30b0a9fa82365f81897c",
+    "paths": [
+      "specs/VELDO-0209-confined-control-plane.md"
+    ]
+  },
+  "basis": "THE READY TRANSITION FOR VELDO-0209. Dmitry approved over Telegram on 2026-10-07T02:43Z (message 32398, 'approve 0209'). The approved text is the specification at 44c9c030 ('Specify proving the control-plane suites in a KVM guest the candidate cannot leave'). With it he settled the spec's three open decisions: (1) the kit is Ubuntu's own kernel packages for the host's release (noble, 7.0.0-30-generic: linux-image-unsigned and linux-modules), fetched as the user with apt-get download, verified and pinned by sha256 in the checked-in sandbox configuration, and kept outside the repository under ~/.local/share/veldo/guest/; a build refuses an unpinned or mismatched kernel; (2) guest memory 4 GiB, 4 cpus, and a per-stage time limit set from measurement; (3) single OS user, no network device in the guest, read-only host shares, no $HOME secrets, the reuse store and its key never shared, qemu inside the VELDO-0208 domain; integration's nested unit run stays in place inside the integration stage's guest. Only the unit and integration stages move into the guest; every other stage, agent and mutation worker stays in the VELDO-0208 domain.",
+  "recorded_at": "2026-10-07T02:43:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval as relayed in the build instruction; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-07T00:00:00Z"
+}

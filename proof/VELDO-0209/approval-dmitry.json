@@ -1,0 +1,25 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0209-PROTECTED-PATHS",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0209",
+    "commit": "44c9c03017eb4c4195ea30b0a9fa82365f81897c",
+    "paths": [
+      "scripts/verify.sh",
+      "engine/scripts/verify.sh",
+      "scripts/gate_candidate.py",
+      "engine/scripts/gate_candidate.py",
+      "engine/scripts/agent_sandbox.py",
+      "engine/scripts/agent_sandbox.json",
+      "scripts/agent_sandbox.py",
+      "scripts/agent_sandbox.json",
+      ".veldo/policy.yaml"
+    ]
+  },
+  "basis": "THE PROTECTED PATHS VELDO-0209 DECLARES, for the change that specification describes and nothing else. Dmitry approved the specification over Telegram on 2026-10-07T02:43Z (message 32398, 'approve 0209'); the specification at 44c9c030 names these paths in protected_paths and says what changes in each: verify.sh (both copies) gains the required:guest:<command> placement, routes CHECK_unit and CHECK_integration through scripts/gate_guest.py, prints a stand-down reason on the stage line and records guest timings or the stand-down in the stamp and gate event; agent_sandbox.json (both copies) gains the guest block (kit directory, pinned kernel and modules package digests, memory, cpus, stage limit); agent_sandbox.py and gate_candidate.py only as far as gate_guest.py needs to reuse grants_for and the launcher's Landlock domain; .veldo/policy.yaml only to register the new authority files (gate_guest.py, gate_guest_init.sh, both copies) as protected. WHAT IT DOES NOT COVER: no other stage's placement or required-ness, no weakening of the VELDO-0208 domain, and no standing grant on any of these files. Because the protected-path check binds an approval to any commit in the push range, this record would also satisfy that check for any of these paths changed by another specification in the same push (VELDO-0208's work shares this branch); it is not an approval of that work, and the landing should still carry an approval bound to the implementation commit.",
+  "recorded_at": "2026-10-07T02:43:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval as relayed in the build instruction; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-07T00:00:00Z"
+}
