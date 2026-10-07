@@ -806,3 +806,310 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
 
 
 _v208_landing_reuse()
+
+
+def _v208_confined_stages():
+    """The gate's own stages, run UNDER the gate's confinement (scripts/gate_candidate.py, the
+    launcher verify.sh uses), not beside it. Every suite passed alone while the first confined
+    gate went red on all of these, so each row reproduces one way that happened:
+    generators writing the read-only tree, the unit stage's Unix sockets and terminals, a nested
+    gate's launcher listing /proc, an installed pack's gate inheriting this repository's Git
+    common directory, a mutation worker serving a socket, and a failed receipt's traceback."""
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    launcher = [sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_candidate.py')]
+    # Run alone, a row starts the gate's launcher. Run by the gate's own unit stage, this suite is
+    # already inside that confinement, and a launcher started here would be a nested one, which
+    # never gets Unix sockets (asserted below): there the row runs its command as it stands.
+    inside = os.environ.get('VELDO_SANDBOX_BROKERED') == '1'
+    # Outside every domain's writable roots (the gate never writes the authority tree), so an
+    # address there is outside the confinement whether or not this suite already runs in it.
+    outside = ROOT / ('.v208-outside-%d' % os.getpid())
+
+    def confined(root, command, env=None, timeout=120):
+        """One gate stage command in the gate's own domain over `root`, exactly as verify.sh's
+        veldo_candidate runs it: stdin /dev/null, output captured."""
+        return subprocess.run(launcher + ['--root', str(root), '--', *command], capture_output=True,
+                              text=True, timeout=timeout, stdin=subprocess.DEVNULL,
+                              env=dict(os.environ if env is None else env))
+
+    with tempfile.TemporaryDirectory(prefix='v208-confined-') as temporary:
+        top = Path(temporary)
+
+        # ---- generated: regenerate privately, compare, never write the tree ----------------------
+        tree = top / 'generated-tree'
+        (tree / 'scripts').mkdir(parents=True)
+        shutil.copytree(ROOT / '.veldo', tree / '.veldo', ignore=shutil.ignore_patterns('__pycache__'))
+        shutil.copyfile(ROOT / 'scripts/update_index.py', tree / 'scripts/update_index.py')
+        (tree / 'specs').mkdir()
+        (tree / 'specs/VELDO-9208-fixture.md').write_text(
+            '---\nid: VELDO-9208\ntitle: Confined generated fixture\nstatus: draft\nrisk: low\n'
+            'owner: suite\n---\n\nFixture.\n')
+        subprocess.run([sys.executable, str(tree / 'scripts/update_index.py')], check=True,
+                       capture_output=True, timeout=60)
+        index = tree / 'specs/index.md'
+        fresh = index.read_text()
+        stage_env = dict(os.environ, GENERATED_CHECK_ROOT=str(tree), GENERATED_CHECK_ONLY='spec-index')
+        clean = confined(tree, ['bash', str(ROOT / 'scripts/check_generated.sh')], stage_env)
+        index.write_text(fresh + 'stale\n')
+        stale = confined(tree, ['bash', str(ROOT / 'scripts/check_generated.sh')], stage_env)
+        expect('VELDO-0208 confined-stage/generated-compares-without-writing: ' + (clean.stdout + clean.stderr)[-300:],
+               clean.returncode == 0 and 'generated: pass (specs/index.md)' in clean.stdout
+               and stale.returncode == 1 and 'specs/index.md was stale' in stale.stdout
+               and 'Nothing was rewritten' in stale.stdout and 'errored or refused' not in stale.stdout
+               and 'Permission denied' not in stale.stdout + stale.stderr
+               and index.read_text() == fresh + 'stale\n')
+
+        # ---- unit: the suites' Unix sockets and terminals, brokered; services refused -----------
+        probe = top / 'probe-root'
+        probe.mkdir()
+        (probe / 'probe.py').write_text(r"""import errno, json, os, pty, socket, tempfile, threading
+r = {}
+def holds(name, operation):
+    # Each row on its own: one that raises is recorded false, never takes the others with it.
+    try:
+        r[name] = bool(operation())
+    except Exception as error:
+        r[name] = repr(error)
+def refused(name, operation):
+    try:
+        operation()
+    except OSError as error:
+        r[name] = error.errno in (errno.EACCES, errno.EPERM, errno.EXDEV)
+    except Exception as error:
+        r[name] = repr(error)
+    else:
+        r[name] = False
+d = tempfile.mkdtemp()
+path = os.path.join(d, 'listener')
+def serve_and_dial():
+    srv = socket.socket(socket.AF_UNIX)
+    srv.bind(path)
+    srv.listen()
+    r['bound-name-is-the-path'] = srv.getsockname() == path
+    def serve():
+        c, _ = srv.accept(); c.sendall(c.recv(8).upper()); c.close()
+    threading.Thread(target=serve, daemon=True).start()
+    c = socket.socket(socket.AF_UNIX); c.connect(path); c.sendall(b'ping')
+    return c.recv(8) == b'PING'
+holds('stream-round-trip', serve_and_dial)
+def datagram():
+    q = os.path.join(d, 'datagram')
+    dg = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM); dg.bind(q)
+    socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM).sendto(b'x', q)
+    return dg.recv(4) == b'x'
+holds('datagram-to-own-socket', datagram)
+def descriptors():
+    x, y = socket.socketpair()
+    socket.send_fds(x, [b'f'], [1])
+    return len(socket.recv_fds(y, 4, 2)[1]) == 1
+holds('descriptor-passing', descriptors)
+def terminal():
+    master, terminal = os.openpty()
+    os.write(master, b'typed\n')
+    return os.isatty(terminal) and os.read(terminal, 16).startswith(b'typed')
+holds('own-terminal', terminal)
+def terminal_child():
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.write(1, b'child-on-terminal\n'); os._exit(0)
+    out = b''
+    try:
+        while True:
+            chunk = os.read(fd, 64)
+            if not chunk: break
+            out += chunk
+    except OSError:
+        pass
+    os.waitpid(pid, 0)
+    return b'child-on-terminal' in out
+holds('terminal-child', terminal_child)
+holds('proc-mounts-readable', lambda: open('/proc/mounts').read(8))
+bus = '/run/user/%d/bus' % os.getuid()
+refused('user-bus-refused', lambda: socket.socket(socket.AF_UNIX).connect(bus))
+def via_link():
+    os.symlink(bus, os.path.join(d, 'bus-link'))
+    socket.socket(socket.AF_UNIX).connect(os.path.join(d, 'bus-link'))
+refused('symlink-to-bus-refused', via_link)
+refused('abstract-connect-refused', lambda: socket.socket(socket.AF_UNIX).connect('\0veldo-probe'))
+refused('abstract-bind-refused', lambda: socket.socket(socket.AF_UNIX).bind('\0veldo-probe'))
+refused('bind-outside-scratch-refused', lambda: socket.socket(socket.AF_UNIX).bind(os.environ['VELDO_PROBE_OUTSIDE']))
+refused('addressed-sendto-service-refused',
+        lambda: socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)[0].sendto(b'x', bus))
+refused('addressed-sendmsg-service-refused',
+        lambda: socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)[0].sendmsg([b'x'], [], 0, '/run/systemd/journal/socket'))
+def outside_environ():
+    # The nearest ancestor outside this domain is the launcher's trusted parent: its environ must
+    # be refused (Landlock's ptrace scope), while ancestors inside the domain stay readable.
+    pid = os.getppid()
+    while pid > 1:
+        try:
+            open('/proc/%d/environ' % pid, 'rb').read()
+        except PermissionError:
+            return True
+        pid = int(open('/proc/%d/stat' % pid).read().rsplit(')', 1)[1].split()[1])
+    return False
+holds('outside-environ-refused', outside_environ)
+print(json.dumps(r))
+""")
+        probe_env = dict(os.environ, VELDO_PROBE_OUTSIDE=str(outside))
+        names = ('bound-name-is-the-path', 'stream-round-trip', 'datagram-to-own-socket', 'descriptor-passing',
+                 'own-terminal', 'terminal-child', 'proc-mounts-readable', 'user-bus-refused',
+                 'symlink-to-bus-refused', 'abstract-connect-refused', 'abstract-bind-refused',
+                 'bind-outside-scratch-refused', 'addressed-sendto-service-refused',
+                 'addressed-sendmsg-service-refused', 'outside-environ-refused')
+        command = [sys.executable, str(probe / 'probe.py')]
+        result = (subprocess.run(command, capture_output=True, text=True, timeout=120, env=probe_env,
+                                 stdin=subprocess.DEVNULL) if inside else confined(probe, command, probe_env))
+        try:
+            found = json.loads(result.stdout.strip().splitlines()[-1])
+        except (ValueError, IndexError):
+            found = {}
+        for name in names:
+            expect('VELDO-0208 confined-stage/unit-' + name + ': ' + repr(found.get(name))
+                   + ' ' + result.stderr[-300:], found.get(name) is True)
+        expect('VELDO-0208 confined-stage/unit-nothing-bound-outside', not outside.exists())
+        # A launcher started inside a brokered domain (a gate a suite runs) cannot hold a listener
+        # of its own; the outer broker answers for the outer domain's roots, not the nested one's,
+        # so the nested domain gets no Unix sockets rather than its parent's reach.
+        (probe / 'strict.py').write_text('import socket\ntry:\n    socket.socket(socket.AF_UNIX)\n'
+                                         'except PermissionError:\n    print("refused")\n')
+        nested = [sys.executable, str(probe / 'strict.py')]
+        nested = launcher + ['--root', str(probe), '--', *nested] if not inside else nested
+        nested_result = confined(probe, nested)
+        expect('VELDO-0208 confined-stage/nested-launcher-strict: ' + nested_result.stderr[-300:],
+               nested_result.returncode == 0 and nested_result.stdout.strip() == 'refused')
+        if outside.exists():
+            outside.unlink()
+
+        # The bind helper itself creates socket files only beneath the domain's roots, so a path
+        # whose components are swapped for links after the broker resolved it still cannot land
+        # elsewhere: asked directly for an outside path, it refuses.
+        spec = importlib.util.spec_from_file_location('v208_boundary', ROOT / 'scripts/agent_sandbox.py')
+        boundary = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(boundary)
+        import socket as _v208_socket
+        roots = top / 'broker-root'
+        roots.mkdir()
+        broker = boundary.Broker([roots], network=False)
+        try:
+            outcomes = []
+            for target in (roots / 'inside', outside):
+                sock = _v208_socket.socket(_v208_socket.AF_UNIX)
+                try:
+                    broker._bind_path(sock.fileno(), b'\x01\x00' + os.fsencode(target) + b'\0')
+                    outcomes.append('bound')
+                except PermissionError:
+                    outcomes.append('refused')
+                finally:
+                    sock.close()
+        finally:
+            broker.close()
+        expect('VELDO-0208 confined-stage/bind-helper-confined-to-roots: ' + repr(outcomes),
+               outcomes == ['bound', 'refused'] and (roots / 'inside').is_socket() and not outside.exists())
+        if outside.exists():
+            outside.unlink()
+
+        # ---- unit: a gate the confined stage runs for another tree (the init scaffold's) ----------
+        scaffold = top / 'scaffold-root'
+        scaffold.mkdir()
+        (scaffold / 'run.py').write_text(
+            'import importlib.util, subprocess, sys, tempfile\nfrom pathlib import Path\n'
+            'spec = importlib.util.spec_from_file_location("isc", ' + repr(str(ROOT / '.veldo/init_scaffold.py')) + ')\n'
+            'm = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\n'
+            'with tempfile.TemporaryDirectory() as d:\n'
+            '    m.scaffold(d)\n'
+            '    r = subprocess.run(["bash", str(Path(d) / "scripts/verify.sh")], capture_output=True, text=True)\n'
+            '    print(r.stdout[-400:] + r.stderr[-400:]); sys.exit(r.returncode)\n')
+        nested_gate = confined(scaffold, [sys.executable, str(scaffold / 'run.py')], timeout=300)
+        expect('VELDO-0208 confined-stage/nested-scaffold-gate-green: ' + nested_gate.stdout[-300:],
+               nested_gate.returncode == 0 and 'GATE: GREEN' in nested_gate.stdout
+               and 'refused to start' not in nested_gate.stdout)
+
+        # ---- packaging: an installed pack's gate names its own repository ------------------------
+        # verify.sh exports the authority's common directory; the stage is run with it exported.
+        common = subprocess.run([sys.executable, '-I', '-S', str(ROOT / '.veldo/candidate_git.py'),
+                                 '--authority-common'], capture_output=True, text=True).stdout.strip()
+        packaged = confined(ROOT, [sys.executable, 'scripts/check_install_and_run.py', '--pack', 'claude'],
+                            dict(os.environ, VELDO_EXPECTED_GIT_COMMON=common), timeout=300)
+        expect('VELDO-0208 confined-stage/installed-pack-gate-green: ' + (packaged.stdout + packaged.stderr)[-300:],
+               packaged.returncode == 0 and 'adopter gate GREEN' in packaged.stdout
+               and 'candidate Git boundary refused' not in packaged.stdout)
+
+        # ---- mutation: a worker under the worker boundary serves sockets and terminals -----------
+        gate = importlib.util.module_from_spec(importlib.util.spec_from_file_location(
+            'v208_gate', ROOT / 'scripts/check_gate_mutations.py'))
+        gate.__spec__.loader.exec_module(gate)
+        worker_root = top / 'worker-input'
+        (worker_root / 'scripts/suites').mkdir(parents=True)
+        (worker_root / '.veldo').mkdir()
+        (worker_root / 'scripts/suites/shared.py').write_text(
+            'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
+            'def expect(name, condition): pass\n')
+        (worker_root / 'scripts/suites/fixture.py').write_text(
+            'import os, socket, tempfile, threading\n'
+            'path = os.path.join(tempfile.mkdtemp(), "s")\n'
+            'srv = socket.socket(socket.AF_UNIX); srv.bind(path); srv.listen()\n'
+            'def serve():\n    c, _ = srv.accept(); c.sendall(c.recv(8).upper()); c.close()\n'
+            'threading.Thread(target=serve, daemon=True).start()\n'
+            'c = socket.socket(socket.AF_UNIX); c.connect(path); c.sendall(b"ping")\n'
+            'served = c.recv(8) == b"PING"\n'
+            'master, terminal = os.openpty()\n'
+            'value = (ROOT / ".veldo" / "subject.py").read_text()\n'
+            'expect("fixture target", served and os.isatty(terminal) and value == "good")\n')
+        (worker_root / '.veldo/subject.py').write_text('good')
+        case = dict(identity='check_teeth_mutations.py:socket-worker', name='socket-worker',
+                    driver='check_teeth_mutations.py', suite='fixture.py', rows=['target'],
+                    module='subject.py', old='good', new='bad')
+        observed, stderr = {}, {}
+        for mode in ('baseline', 'mutant'):
+            scratch = top / ('worker-home-' + mode)
+            scratch.mkdir()
+            job = top / (mode + '-job.json')
+            job.write_text(json.dumps(dict(case=case, mode=mode)))
+            channel = os.open(top / (mode + '.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+            try:
+                run = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'), 'worker',
+                                      str(worker_root), str(channel), str(job)], cwd=worker_root,
+                                     pass_fds=(channel,), env=gate.fixed_env(scratch),
+                                     capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+            finally:
+                os.close(channel)
+            try:
+                observed[mode] = json.loads(run.stdout)['observation']['failed_rows']
+            except (ValueError, KeyError):
+                observed[mode] = None
+            stderr[mode] = run.stderr[-300:]
+        if not inside:
+            expect('VELDO-0208 confined-stage/worker-serves-socket-and-terminal: ' + repr((observed, stderr)),
+                   observed == {'baseline': [], 'mutant': ['fixture target']})
+        else:
+            # Inside the gate a worker is a nested domain: strict, so the fixture's socket is refused.
+            expect('VELDO-0208 confined-stage/worker-nested-strict: ' + repr((observed, stderr)),
+                   observed == {'baseline': None, 'mutant': None}
+                   and all('Operation not permitted' in text for text in stderr.values()))
+
+        # ---- the stamp: a failed stage is a clean RED in the requested mode, never a traceback ---
+        receipt = top / 'failed-receipt.json'
+        receipt.write_text(json.dumps({'status': 'failed', 'error': 'driver_error', 'reused': 0,
+                                       'force_fresh': True}))
+        empty = top / 'empty-receipt.json'
+        empty.write_text('')
+        for name, source in (('failed', receipt), ('empty', empty)):
+            reduced = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_stamp.py'),
+                                      str(source), '1', 'a' * 40], capture_output=True, text=True, timeout=30)
+            expect('VELDO-0208 confined-stage/stamp-' + name + '-receipt-clean-red: ' + reduced.stderr[-200:],
+                   reduced.returncode == 1 and 'Traceback' not in reduced.stderr
+                   and 'the gate is RED' in reduced.stderr
+                   and json.loads('{' + reduced.stdout.strip() + '}') == {
+                       'force_fresh': True, 'reused': {'mutation': None, 'unit': 0}})
+
+
+_v208_confined_stages()
