@@ -28,10 +28,27 @@ def digest(value):
 AUTHORITY_FILES = ('.veldo/candidate_git.py', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/agent_sandbox.json', '.veldo/reuse_evidence.py', '.veldo/git_process.py', 'scripts/gate_legs.py', 'scripts/gate_unconfined.json')
 
 
+# An authority may lack these, and that is a state of its own, not an error: with no unconfined
+# list every gate stage is confined (VELDO-0208), as in an authority that predates the list or an
+# adopter's installation, which never receives one. Absent is recorded as ABSENT, which no digest
+# equals, so adding or removing the list changes the identity; a list that is present is hashed
+# like any other file, whatever it holds.
+OPTIONAL_AUTHORITY_FILES = ('scripts/gate_unconfined.json',)
+ABSENT = 'absent'
+
+
+def _file_identity(root, name):
+    try:
+        return hashlib.sha256((root / name).read_bytes()).hexdigest()
+    except FileNotFoundError:
+        if name in OPTIONAL_AUTHORITY_FILES:
+            return ABSENT
+        raise
+
+
 def authority_identity():
     root = Path(__file__).resolve().parents[1]
-    return digest({name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-                   for name in AUTHORITY_FILES})
+    return digest({name: _file_identity(root, name) for name in AUTHORITY_FILES})
 
 
 def configuration(path=None):

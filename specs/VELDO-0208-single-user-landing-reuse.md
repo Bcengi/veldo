@@ -370,8 +370,12 @@ for these suites only: their code runs with the owner's own authority, as it did
   file candidate code in the unconfined leg can reach, so its absence never reads as "no unconfined
   leg ran".
 - The list and its runner are authority files: both are in reuse_evidence.AUTHORITY_FILES, so a
-  reused result is bound to the list and runner it ran under, and in init_scaffold's
-  _REUSE_AUTHORITY, so they install with the rest of the authority (canon copies in
+  reused result is bound to the list and runner it ran under. The list is optional there, as it is
+  in verify.sh: authority_identity records a missing list as `absent`, a stable value no digest
+  equals, so an authority without it (the first landing's, which predates it) has a working
+  identity and every stage confined. Any other missing authority file is still an error, and a list
+  that is present is hashed whatever it holds, so an invalid one is RED in its stage as before.
+  They are also in init_scaffold's _REUSE_AUTHORITY, so they install with the rest of the authority (canon copies in
   engine/scripts). The shipped engine gate declares no unit command and does not call them.
 - Accepted residuals. The list and the protected dispatcher bound which suites and rows run
   unconfined, not what the code of a listed suite does once it runs: that code runs with the
@@ -385,7 +389,8 @@ for these suites only: their code runs with the owner's own authority, as it did
   confined-stage rows plant.
 - Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
   and the dispatcher files are protected, and the list is read from the authority (a candidate copy
-  naming another suite is ignored); a candidate scripts/json.py or suites/tempfile.py is never
+  naming another suite is ignored); an authority without the list has a stable identity and runs
+  the stage confined whole; a candidate scripts/json.py or suites/tempfile.py is never
   imported by the dispatcher in either leg, nor by check_first_use.py; verify.sh's own stamp and event lines carry the leg
   when it was expected, omit it when none was, and are RED with null when an expected leg's record
   is deleted, empty or unreadable; the row ownership

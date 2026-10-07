@@ -323,7 +323,7 @@ def _vp_run_gate(gate_rel, declare_version):
         # stage expects a leg and the stamp's key set stays the payload's.
         _vp_home = ROOT / gate_rel.rsplit("scripts/verify.sh", 1)[0]
         for _vp_rel in _VP_AUTHORITY_FILES:
-            if _vp_rel == "scripts/gate_unconfined.json":
+            if _vp_rel in _vp_re_mod.OPTIONAL_AUTHORITY_FILES:
                 continue
             (base / _vp_rel).parent.mkdir(parents=True, exist_ok=True)
             _vp_shutil.copy2(_vp_home / _vp_rel, base / _vp_rel)

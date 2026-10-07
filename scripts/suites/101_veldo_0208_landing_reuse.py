@@ -1545,6 +1545,57 @@ def _v208_unconfined_leg():
                and 'V208-SHADOWED' not in first_use.stdout + first_use.stderr
                and controls == ['V208-SHADOWED json\n', 'V208-SHADOWED tempfile\n'])
 
+        # The list is optional in the authority (with none, every stage is confined: the first
+        # landing's authority predates it, and an adopter never receives one), so an authority
+        # without it still has an identity: the list is recorded as absent, a stable value no digest
+        # equals, while any other missing authority file is still an error. The same authority runs
+        # verify.sh's veldo_stage confined whole.
+        bare = top / 'authority-bare'
+        evidence = importlib.util.spec_from_file_location('v208_bare_evidence', ROOT / '.veldo/reuse_evidence.py')
+        E_bare = importlib.util.module_from_spec(evidence); evidence.loader.exec_module(E_bare)
+        for relative in E_bare.AUTHORITY_FILES:
+            if relative not in E_bare.OPTIONAL_AUTHORITY_FILES:
+                (bare / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, bare / relative)
+        def bare_identity():
+            loaded = importlib.util.spec_from_file_location('v208_bare_identity', bare / '.veldo/reuse_evidence.py')
+            module = importlib.util.module_from_spec(loaded); loaded.loader.exec_module(module)
+            try:
+                return module.authority_identity()
+            except OSError as error:
+                return type(error).__name__
+        absent_twice = bare_identity(), bare_identity()
+        (bare / 'scripts/gate_unconfined.json').write_bytes((ROOT / 'scripts/gate_unconfined.json').read_bytes())
+        with_list = bare_identity()
+        (bare / 'scripts/gate_unconfined.json').write_text('not a list')
+        with_invalid = bare_identity()
+        (bare / 'scripts/gate_unconfined.json').unlink()
+        (bare / 'scripts/gate_legs.py').rename(bare / 'gate_legs.moved')
+        without_runner = bare_identity()
+        (bare / 'gate_legs.moved').rename(bare / 'scripts/gate_legs.py')
+        for marker in outside.iterdir():
+            marker.unlink()
+        bare_record = top / 'bare-record'
+        bare_run = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_RECORD=%s\nVELDO_LEGS_EXPECTED=\n%s'
+                                   'cd %s && veldo_stage unit "python3 scripts/selftest.py" && echo "expected=$VELDO_LEGS_EXPECTED"'
+                                   % (bare, bare_record, functions, candidate)],
+                                  capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
+                                           V208_PROBE_OUTSIDE=str(outside)))
+        bare_markers = dict(line.split()[1:3] for line in bare_run.stdout.splitlines()
+                            if line.startswith('V208-PROBE '))
+        expect('VELDO-0208 unconfined-leg/authority-without-the-list-has-an-identity-and-is-confined: '
+               + repr((absent_twice, with_list, with_invalid, without_runner, bare_run.returncode, bare_markers)),
+               E_bare.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json',)
+               and absent_twice[0] == absent_twice[1] and re.match(r'^[0-9a-f]{64}$', absent_twice[0])
+               and len({absent_twice[0], with_list, with_invalid}) == 3
+               and without_runner == 'FileNotFoundError'
+               and bare_run.returncode == 0 and 'expected=\n' in bare_run.stdout
+               and 'UNCONFINED' not in bare_run.stdout and 'selftest leg' not in bare_run.stdout
+               and bare_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
+                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
+               and not bare_record.exists())
+
 
 if leg_runs():
     _v208_confined_stages()
