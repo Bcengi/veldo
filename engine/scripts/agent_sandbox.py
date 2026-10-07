@@ -120,12 +120,15 @@ RESOLVER_RUNTIME = Path('/run/systemd/resolve')
 BROKERED = 'VELDO_SANDBOX_BROKERED'
 # The namespace helper (VELDO-0210 AC6): veldo-userns, built from scripts/veldo_userns.c and installed
 # root-owned by the owner, the only path the host's AppArmor profile veldo-userns lets create a user
-# namespace. Whatever it executes runs under the child profile stacked onto the helper's (no
-# capability, no user namespace): the label the kernel reports there is exactly NAMESPACE_LABEL, the
-# two profiles in the kernel's order joined by '//&' and the one mode both are in. Fixed here: never
-# taken from the environment, the configuration or the candidate.
+# namespace. The interpreter it executes changes to the child profile veldo-userns-child outright
+# (no capability, no user namespace, kept across every later exec): the label the kernel reports
+# there is exactly NAMESPACE_LABEL, that one profile in enforce mode. Fixed here: never taken from the
+# environment, the configuration or the candidate.
 NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')
-NAMESPACE_LABEL = 'veldo-userns//&veldo-userns-child (enforce)'
+NAMESPACE_LABEL = 'veldo-userns-child (enforce)'
+# The securebits the helper locks before it executes the init (linux/securebits.h): noroot, no
+# set-user-ID fixup and no ambient raise, each with its lock, and keep caps locked off.
+LOCKED_SECUREBITS = 0b11101111
 # How long the tree's init has to report that its namespace is as the helper must make it.
 NAMESPACE_START_SECONDS = 60
 # The owner's one-time setup, run from the authority checkout's root (every refusal prints it with
@@ -936,7 +939,7 @@ def apparmor_enabled():
 
 
 def apparmor_label():
-    """This process's AppArmor label, such as 'veldo-userns//&veldo-userns-child (enforce)', or None."""
+    """This process's AppArmor label, such as 'veldo-userns-child (enforce)', or None."""
     for path in ('/proc/self/attr/apparmor/current', '/proc/self/attr/current'):
         try:
             return Path(path).read_text().strip('\0\n ')
@@ -987,8 +990,8 @@ def launcher_marker():
 def nested_namespace():
     """The marker descriptor (launcher_marker) when this launcher already runs inside a tree this
     launcher made (VELDO-0210 AC6), else None. Inside means: it inherited the marker the outer
-    launcher created; its AppArmor label is exactly NAMESPACE_LABEL (the child profile stacked onto
-    the helper's, both in enforce mode), which only an exec through the root-owned helper gives and
+    launcher created; its AppArmor label is exactly NAMESPACE_LABEL (the child profile alone, in
+    enforce mode), which no profile but the root-owned helper's changes to on exec and
     which no process can leave (change_profile is denied there); it runs in a PID namespace other than the host's whose procfs is /proc; and it
     holds no capability. Any other private PID namespace (a container's, a systemd PrivatePIDs one)
     has no marker and does not count. Such a launcher creates no namespace: its /proc already shows
@@ -2014,13 +2017,39 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         os._exit(2)
 
 
+def init_entry_problem():
+    """The init's very first act (VELDO-0210 AC6), or why it must stop: sets no_new_privs, which the
+    helper leaves unset so its exec can change to the child profile, then reads back that it is set,
+    that every capability set (inheritable, permitted, effective, bounding, ambient) is empty, that
+    the securebits are exactly LOCKED_SECUREBITS and, where AppArmor is enabled, that the label is
+    exactly NAMESPACE_LABEL."""
+    if LIBC.prctl(38, 1, 0, 0, 0):
+        return 'cannot set no_new_privs: %s' % os.strerror(ctypes.get_errno())
+    try:
+        problem = capability_problem(Path('/proc/self/status').read_text())
+    except OSError as error:
+        return str(error)
+    if problem:
+        return problem
+    securebits = LIBC.prctl(27, 0, 0, 0, 0)  # PR_GET_SECUREBITS
+    if securebits != LOCKED_SECUREBITS:
+        return 'the securebits are %#x, not %#x' % (securebits, LOCKED_SECUREBITS)
+    if apparmor_enabled() and apparmor_label() != NAMESPACE_LABEL:
+        return 'the AppArmor label is %r, not %r' % (apparmor_label(), NAMESPACE_LABEL)
+    return None
+
+
 def namespace_init(argument):
     """The PID namespace's init as the helper executes it (python3 -I -S agent_sandbox.py
     namespace-init <descriptor>), after the helper made the namespaces, mounted the procfs and dropped
-    every capability: it reads the launch's context from the inherited descriptor, checks its
-    namespace (namespace_problem) and goes on as confined_init. With 'selftest' it runs the owner's
-    probe instead. Never returns."""
+    every capability: first of all it sets no_new_privs and checks it holds nothing
+    (init_entry_problem), else exits; then it reads the launch's context from the inherited
+    descriptor, checks its namespace (namespace_problem) and goes on as confined_init. With
+    'selftest' it runs the owner's probe instead. Never returns."""
     try:
+        problem = init_entry_problem()
+        if problem:
+            raise RuntimeError('the namespace\'s init holds more than it may (%s); %s' % (problem, setup_text()))
         signal.pthread_sigmask(signal.SIG_BLOCK, {*STOP_SIGNALS, signal.SIGCHLD, *RELAY.values()})
         if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0):
             raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
@@ -2047,9 +2076,11 @@ def namespace_init(argument):
 
 def namespace_probe():
     """The owner's self-test, inside the namespace the helper made (namespace_selftest runs it): the
-    init's own check, then everything a program run through the helper could try to get a capability
-    with: sethostname and a UTS namespace here, a new user namespace, and in new user, UTS and network
-    namespaces sethostname and bringing up an interface, directly and through executed programs.
+    init's own check, an empty bounding set and the locked securebits, then everything a program run
+    through the helper could try to get a capability with: sethostname, bringing up an interface and
+    a UTS namespace here, a new user namespace (refused with EPERM or EACCES), and in new user, UTS and
+    network namespaces sethostname and bringing up an interface, directly and through executed
+    programs.
     Prints one JSON object {row: [passed, detail]} and waits for its stdin to close, so the caller can
     read the helper's own process meanwhile. Never returns."""
     import shutil as _shutil
@@ -2095,9 +2126,10 @@ def namespace_probe():
         if LIBC.sethostname(b'veldo-probe', 11):
             raise OSError(ctypes.get_errno(), 'sethostname')
 
-    def interface_up():
+    def interface_up(fresh=True):
         import socket
-        new_namespaces(os.CLONE_NEWNET)
+        if fresh:
+            new_namespaces(os.CLONE_NEWNET)
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as handle:
             current = fcntl.ioctl(handle, 0x8913, struct.pack('16sH14x', b'lo', 0))  # SIOCGIFFLAGS
             flags = struct.unpack_from('16sH', current)[1]
@@ -2108,14 +2140,22 @@ def namespace_probe():
         row('namespace-as-the-helper-must-make-it', problem is None,
             problem or 'PID 1, read-only procfs, identity map, no capability, no_new_privs, label %s'
             % apparmor_label())
+        fields = dict(line.split(':', 1) for line in Path('/proc/self/status').read_text().splitlines() if ':' in line)
+        row('bounding-set-empty', fields.get('CapBnd', '').strip() == '0000000000000000',
+            'CapBnd %s' % fields.get('CapBnd', 'absent').strip())
+        securebits = LIBC.prctl(27, 0, 0, 0, 0)  # PR_GET_SECUREBITS
+        row('securebits-locked', securebits == LOCKED_SECUREBITS, 'securebits %#x' % securebits)
         result = LIBC.sethostname(b'veldo-probe', 11)
         row('sethostname-refused', result != 0, errno.errorcode.get(ctypes.get_errno(), result))
+        # Here is the host's network namespace: lo is up already, so even a success changes nothing.
+        row('interface-up-refused', *in_child(lambda: interface_up(fresh=False)))
         try:
             os.unshare(os.CLONE_NEWUTS)
             row('uts-namespace-refused', False, 'created')
         except OSError as error:
             row('uts-namespace-refused', True, failure(error))
-        row('user-namespace-refused', *in_child(lambda: os.unshare(os.CLONE_NEWUSER)))
+        refused, detail = in_child(lambda: os.unshare(os.CLONE_NEWUSER))
+        row('user-namespace-refused', refused and detail in ('EPERM', 'EACCES'), detail)
         row('sethostname-in-new-namespaces-refused', *in_child(hostname))
         row('interface-up-in-new-namespaces-refused', *in_child(interface_up))
         ip = _shutil.which('ip', path='/usr/sbin:/usr/bin:/sbin:/bin') or '/usr/sbin/ip'
@@ -2169,6 +2209,7 @@ def namespace_selftest():
         code = ('import ctypes, errno, json, os\n'
                 'libc = ctypes.CDLL(None, use_errno=True)\n'
                 'names = ("CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb", "NoNewPrivs")\n'
+                'securebits = libc.prctl(27, 0, 0, 0, 0)\n'
                 'status = {l.split(":")[0]: l.split()[1] for l in open("/proc/self/status") if l.split(":")[0] in names}\n'
                 'child = libc.syscall(56, 0x10000000 | 17, 0, 0, 0, 0)\n'
                 'if child == 0:\n    os._exit(0)\n'
@@ -2189,7 +2230,7 @@ def namespace_selftest():
                 '    except OSError:\n'
                 '        pass\n'
                 'print(json.dumps({"pids": pids, "status": status, "userns": userns, "label": label,\n'
-                '                  "marked": marked}))\n')
+                '                  "marked": marked, "securebits": securebits}))\n')
         worktree = tempfile.mkdtemp(prefix='veldo-selftest-')
         try:
             launched = subprocess.run([sys.executable, '-I', '-S', str(Path(__file__).resolve()), '--config',
@@ -2208,6 +2249,7 @@ def namespace_selftest():
         rows['launch-sees-only-its-tree'] = [seen.get('pids') == [1, 2], seen.get('pids')]
         rows['launch-holds-no-capability'] = [seen.get('status') == dict(
             CapInh=empty, CapPrm=empty, CapEff=empty, CapBnd=empty, CapAmb=empty, NoNewPrivs='1'), seen.get('status')]
+        rows['launch-securebits-locked'] = [seen.get('securebits') == LOCKED_SECUREBITS, seen.get('securebits')]
         rows['launch-runs-under-the-child-profile'] = [seen.get('label') == NAMESPACE_LABEL,
                                                        seen.get('label')]
         rows['launch-cannot-create-a-user-namespace'] = [seen.get('userns') in ('EACCES', 'EPERM'),
