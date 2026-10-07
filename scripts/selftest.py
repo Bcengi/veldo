@@ -72,7 +72,8 @@ def _after_stdlib(*paths):
     sys.path[at:at] = paths
 
 
-import json  # noqa: E402 - only after the script directory is gone
+import importlib.util  # noqa: E402 - only after the script directory is gone
+import json  # noqa: E402
 import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -80,7 +81,21 @@ HERE = Path(__file__).resolve().parent
 SUITES = HERE / "suites"
 _after_stdlib(str(HERE), str(SUITES))
 
-import run_scope as RS  # noqa: E402 - what a run of this suite is allowed to claim
+
+# NOR CAN ANY FILE STAND IN FOR A PROTECTED MODULE THIS DISPATCHER IMPORTS (VELDO-0208). Behind the
+# standard library, scripts/ and scripts/suites/ still race each other for a name: an unprotected
+# scripts/shared.py came ahead of the protected suites/shared.py and was the namespace both legs ran
+# in. So the two protected modules are loaded from their fixed paths and registered under the names
+# the suites and shared.py import them by, and a later `import run_scope` finds the protected one.
+def _protected(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+RS = _protected("run_scope", HERE / "run_scope.py")  # what a run of this suite is allowed to claim
 
 MANIFEST = json.loads((SUITES / "manifest.json").read_text())
 FRAGMENTS = RS.fragments(MANIFEST)
@@ -222,7 +237,7 @@ SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
     print(SCOPE.banner(), flush=True)
 
-import shared  # noqa: E402 - the shared namespace every fragment runs in
+shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
 # THE ONE SCOPE FOR THIS RUN, handed to the module that owns the counters and the summary
 # line. shared.report() emits THROUGH it, so a partial run reaching the aggregate line

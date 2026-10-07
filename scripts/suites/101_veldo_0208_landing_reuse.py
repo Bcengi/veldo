@@ -1605,11 +1605,13 @@ def _v208_unconfined_leg():
                    authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
 
         # No file in scripts/ or scripts/suites/ shadows a standard-library module the dispatcher
-        # imports. A candidate scripts/json.py and suites/tempfile.py that announce their import run
-        # through both legs of the real runner and dispatcher, with shared.py's own imports, and
-        # through check_first_use.py, and neither is imported; the control shows each plant is live
-        # for an ordinary script in the same directory. suites/tempfile.py is enumerated, so the
-        # dispatcher reaches shared.py rather than refusing it as SUITE_NOT_ENUMERATED.
+        # imports, nor one of the protected modules it imports by name. A candidate scripts/json.py
+        # and suites/tempfile.py, and a scripts/shared.py and suites/run_scope.py standing in for the
+        # protected suites/shared.py and scripts/run_scope.py, each announcing its import, run through
+        # both legs of the real runner and dispatcher, with shared.py's own imports, and through
+        # check_first_use.py, and none is imported; the control shows each plant is live for an
+        # ordinary script in the same directory. The plants in suites/ are enumerated, so the
+        # dispatcher reaches shared.py rather than refusing them as SUITE_NOT_ENUMERATED.
         shadow = top / 'shadow'
         shutil.copytree(candidate, shadow)
         shutil.copyfile(ROOT / 'scripts/check_first_use.py', shadow / 'scripts/check_first_use.py')
@@ -1617,21 +1619,24 @@ def _v208_unconfined_leg():
                                for node in ast.parse(shared_source).body
                                if isinstance(node, (ast.Import, ast.ImportFrom)))
         (shadow / 'scripts/suites/shared.py').write_text(real_imports + fixture_shared)
-        for planted in ('scripts/json.py', 'scripts/suites/tempfile.py'):
+        plants = ('scripts/json.py', 'scripts/suites/tempfile.py', 'scripts/shared.py', 'scripts/suites/run_scope.py')
+        for planted in plants:
             module = Path(planted).stem
             (shadow / planted).write_text('if __name__ == %r:\n    print("V208-SHADOWED %s", flush=True)\n'
                                           % (module, module))
             (shadow / planted).with_name('control_%s.py' % module).write_text('import %s\n' % module)
         shadow_manifest = json.loads((shadow / 'scripts/suites/manifest.json').read_text())
-        shadow_manifest['suites'].append({'name': 'tempfile', 'file': 'tempfile.py'})
-        shadow_manifest['suites'].append({'name': 'control_tempfile', 'file': 'control_tempfile.py'})
+        for module in ('tempfile', 'run_scope'):
+            shadow_manifest['suites'].append({'name': module, 'file': module + '.py'})
+            shadow_manifest['suites'].append({'name': 'control_' + module, 'file': 'control_%s.py' % module})
         (shadow / 'scripts/suites/manifest.json').write_text(json.dumps(shadow_manifest))
         legs, _, _ = stage('unit', 'python3 scripts/selftest.py', root=shadow)
         first_use = subprocess.run([sys.executable, 'scripts/check_first_use.py', '--refuse-this'], cwd=str(shadow),
                                    capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
         controls = [subprocess.run([sys.executable, str(shadow / relative)], cwd=str(shadow), capture_output=True,
                                    text=True, timeout=60, stdin=subprocess.DEVNULL).stdout
-                    for relative in ('scripts/control_json.py', 'scripts/suites/control_tempfile.py')]
+                    for relative in (str(Path(planted).with_name('control_' + Path(planted).name))
+                                     for planted in plants)]
         shadow_out = legs.stdout + legs.stderr
         expect('VELDO-0208 unconfined-leg/dispatcher-never-imports-a-candidate-stdlib-shadow: '
                + repr((legs.returncode, shadow_out[-400:], first_use.returncode, first_use.stdout[-200:], controls)),
@@ -1641,7 +1646,7 @@ def _v208_unconfined_leg():
                and 'unit: confined leg: pass' in shadow_out and 'unit: unconfined leg: pass' in shadow_out
                and first_use.returncode == 2 and 'UNRECOGNISED_FLAG' in first_use.stdout
                and 'V208-SHADOWED' not in first_use.stdout + first_use.stderr
-               and controls == ['V208-SHADOWED json\n', 'V208-SHADOWED tempfile\n'])
+               and controls == ['V208-SHADOWED %s\n' % Path(planted).stem for planted in plants])
 
         # The list is optional in the authority (with none, every stage is confined: the first
         # landing's authority predates it, and an adopter never receives one), so an authority

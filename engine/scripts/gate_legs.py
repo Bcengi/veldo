@@ -20,7 +20,9 @@ sees are set here, and the caller's are dropped. The candidate's dispatcher appl
 which hands the leg to its nested selftest.py), and those files are protected too; without that, a
 candidate could make its dispatcher ignore the leg. selftest.py and check_first_use.py keep scripts/
 and scripts/suites/ behind the standard library on sys.path, so no unprotected file there shadows a
-module they import; this runner runs from the authority as python3 -I -S.
+standard-library module they import, and selftest.py loads run_scope.py and suites/shared.py from
+their fixed paths, so no unprotected file stands in for either; this runner runs from the authority
+as python3 -I -S.
 
 WHAT THE UNCONFINED LEG TRUSTS, stated because it is the cost of the decision. That leg executes
 the candidate's dispatcher and the listed suites with the owner's own authority, exactly as before
