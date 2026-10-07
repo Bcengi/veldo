@@ -3,7 +3,8 @@
 
 Invoke with python3 -I -S from a reviewed authority checkout, never the candidate.
 No daemon, alternate uid or unsandboxed fallback is used. The one helper is the owner-installed,
-root-owned copy of unshare that creates the tree's user namespace; it runs as this account.
+root-owned veldo-userns (scripts/veldo_userns.c), which creates the tree's namespaces, drops every
+capability and executes this file's namespace-init; it runs as this account.
 
 An agent's Git worktree belongs to the agent's own repository, never the shared one:
 `prepare` creates it (private objects, the shared store a read-only alternate, a branch
@@ -117,15 +118,24 @@ RESOLVER = Path('/etc/resolv.conf')
 RESOLVER_RUNTIME = Path('/run/systemd/resolve')
 # Marks a tree a Broker serves, for suites that must know whether they already run inside one.
 BROKERED = 'VELDO_SANDBOX_BROKERED'
-# The PID namespace helper (VELDO-0210 AC6): a root-owned copy of util-linux unshare, the only path
-# the host's AppArmor profile veldo-unshare lets create a user namespace. Fixed here: never taken
-# from the environment, the configuration or the candidate.
-NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-unshare')
-NAMESPACE_SETUP = ("sudo install -D -o root -g root -m 0755 /usr/bin/unshare /usr/local/lib/veldo/veldo-unshare && "
-                   "printf 'abi <abi/4.0>,\\ninclude <tunables/global>\\n\\nprofile veldo-unshare "
-                   "/usr/local/lib/veldo/veldo-unshare flags=(unconfined) {\\n  userns,\\n}\\n' | "
-                   "sudo tee /etc/apparmor.d/veldo-unshare >/dev/null && "
-                   "sudo apparmor_parser -r /etc/apparmor.d/veldo-unshare")
+# The namespace helper (VELDO-0210 AC6): veldo-userns, built from scripts/veldo_userns.c and installed
+# root-owned by the owner, the only path the host's AppArmor profile veldo-userns lets create a user
+# namespace. Whatever it executes runs under the child profile NAMESPACE_PROFILE (no capability, no
+# user namespace). Fixed here: never taken from the environment, the configuration or the candidate.
+NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')
+NAMESPACE_PROFILE = 'veldo-userns-child'
+# How long the tree's init has to report that its namespace is as the helper must make it.
+NAMESPACE_START_SECONDS = 60
+# The owner's one-time setup, run from the authority checkout's root: build the helper reproducibly,
+# install it and its AppArmor policy root-owned, load the policy, retire the unshare copy the first
+# design used, and run the self-test.
+NAMESPACE_SETUP = ('d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -static '
+                   '-ffile-prefix-map="$PWD"=. -o "$d/veldo-userns" scripts/veldo_userns.c && '
+                   'sudo install -D -o root -g root -m 0755 "$d/veldo-userns" /usr/local/lib/veldo/veldo-userns && '
+                   'sudo install -o root -g root -m 0644 scripts/veldo-userns.apparmor /etc/apparmor.d/veldo-userns && '
+                   'sudo apparmor_parser -r /etc/apparmor.d/veldo-userns && '
+                   'sudo rm -f /usr/local/lib/veldo/veldo-unshare && rm -r "$d" && '
+                   'python3 -I -S scripts/agent_sandbox.py namespace-selftest')
 INITIAL_PID_NAMESPACE = 'pid:[4026531836]'
 # Stops the launcher's child relays to the namespace's init, which acts on these only: a stop it
 # receives itself (it shares the child's process group) is discarded, so the agent gets each once.
@@ -248,7 +258,8 @@ class Handoff:
 def fork_brokered(roots):
     """Fork a child that will confine itself with a Handoff. Returns (0, Handoff) in the child
     and (pid, Broker or None) in the parent once the child has installed its filter: a Broker
-    serving its listener, or None when the child is strict or failed first."""
+    serving its listener, or None when the child is strict, failed first or did not hand off within
+    NAMESPACE_START_SECONDS."""
     request_r, request_w = os.pipe()
     reply_r, reply_w = os.pipe()
     pid = os.fork()
@@ -260,8 +271,18 @@ def fork_brokered(roots):
     os.close(reply_r)
     broker = None
     try:
+        # Within NAMESPACE_START_SECONDS: a child that never hands off (a hung helper or init) gets no
+        # broker, and its tree is killed by the launcher's own start check.
+        import select
+        deadline = time.monotonic() + NAMESPACE_START_SECONDS
+        poller = select.poll()
+        poller.register(request_r, select.POLLIN)
         line = b''
         while not line.endswith(b'\n'):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not poller.poll(remaining * 1000):
+                line = b''
+                break
             chunk = os.read(request_r, 32)
             if not chunk:
                 break
@@ -861,9 +882,10 @@ def resolver_grants():
 
 
 def helper_problem(helper):
-    """Why `helper` may not create the namespace, or None. It must be a regular file (not a link)
-    owned by root that only root can write, in directories owned by root that only root can write,
-    and this account must not be able to write it."""
+    """Why `helper` may not create the namespace, or None. It must be a regular file (not a link,
+    not set-user-ID or set-group-ID, with no file capabilities) owned by root that only root can
+    write, in directories owned by root that only root can write, and this account must not be able
+    to write it."""
     directory = helper.parent.resolve()
     for path in [helper, directory, *directory.parents]:
         try:
@@ -872,81 +894,143 @@ def helper_problem(helper):
             return '%s: %s' % (path, error.strerror)
         if path == helper and not stat.S_ISREG(info.st_mode):
             return '%s is not a regular file' % path
+        if path == helper and info.st_mode & (stat.S_ISUID | stat.S_ISGID):
+            return '%s is set-user-ID or set-group-ID' % path
         if info.st_uid != 0:
             return '%s is not owned by root' % path
         if info.st_mode & 0o022:
             return '%s is writable by group or others' % path
     if os.access(helper, os.W_OK):
         return '%s is writable by this account' % helper
+    try:
+        os.getxattr(helper, 'security.capability', follow_symlinks=False)
+        return '%s carries file capabilities' % helper
+    except OSError:
+        pass
     return None
 
 
-def private_pid_namespace():
-    """This process runs in a PID namespace other than the host's and /proc is that namespace's
-    procfs (a launcher nested in a sandbox this launcher made): /proc already shows no host process."""
+def setup_text():
+    """The owner's one-time setup as a refusal names it."""
+    return 'the owner\'s one-time setup, from %s: %s' % (Path(__file__).resolve().parents[1], NAMESPACE_SETUP)
+
+
+def apparmor_enabled():
     try:
-        return (os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
-                and os.readlink('/proc/self') == str(os.getpid()))
+        return Path('/sys/module/apparmor/parameters/enabled').read_text().strip() == 'Y'
     except OSError:
         return False
 
 
-def enter_namespaces():
-    """Move this single-threaded process into a user namespace where only this account's uid and gid
-    are mapped, each to itself, and unshare the mount and PID namespaces inside it: its next child
-    is that PID namespace's init (VELDO-0210 AC6). Returns False, creating nothing and using no
-    helper, when the process already runs in a private PID namespace (there root's files show as
-    the overflow uid, so no helper could pass the check anyway). The user namespace comes from
-    NAMESPACE_HELPER (the host lets no other program create one); the helper must pass
-    helper_problem, and an unusable helper or a namespace that cannot be made raises with the
-    owner's setup command."""
-    def refuse(problem):
-        return RuntimeError('cannot create the PID namespace (%s); the owner\'s one-time setup: %s'
-                            % (problem, NAMESPACE_SETUP))
-    if private_pid_namespace():
-        return False
-    problem = helper_problem(NAMESPACE_HELPER)
-    if problem:
-        raise refuse(problem)
-    ids = os.getuid(), os.getgid()
+def apparmor_label():
+    """This process's AppArmor label, such as 'veldo-userns-child (enforce)', or None."""
+    for path in ('/proc/self/attr/apparmor/current', '/proc/self/attr/current'):
+        try:
+            return Path(path).read_text().strip('\0\n ')
+        except OSError:
+            continue
+    return None
+
+
+def capability_problem(status):
+    """Why a /proc/<pid>/status text shows a process that may hold a capability, or None: every
+    capability set (inheritable, permitted, effective, bounding, ambient) must be empty and
+    no_new_privs set."""
+    fields = dict(line.split(':', 1) for line in status.splitlines() if ':' in line)
+    for name in ('CapInh', 'CapPrm', 'CapEff', 'CapBnd', 'CapAmb'):
+        value = fields.get(name, '').strip()
+        if not value or int(value, 16):
+            return '%s is %s' % (name, value or 'absent')
+    if fields.get('NoNewPrivs', '').strip() != '1':
+        return 'no_new_privs is not set'
+    return None
+
+
+def nested_namespace():
+    """This launcher already runs inside a tree this launcher's helper made (VELDO-0210 AC6): its
+    AppArmor label is the helper's child profile in enforce mode, which only an exec through the
+    root-owned helper gives and which no process can leave (change_profile is denied there); it runs
+    in a PID namespace other than the host's whose procfs is /proc; and it holds no capability. A
+    container's or a systemd PrivatePIDs namespace carries no such label and does not count. Such a
+    launcher creates no namespace: its /proc already shows no host process, and the helper's child
+    profile would refuse it one anyway."""
     try:
-        # The holder reports once the helper has made the namespace and written its maps, then waits
-        # for its stdin to close; it never forks, so it adds no process to any namespace.
-        holder = subprocess.Popen([str(NAMESPACE_HELPER), '--user', '--map-current-user', '--', sys.executable,
-                                   '-I', '-S', '-c', 'import os; os.write(1, b"1"); os.read(0, 1)'],
-                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                  env={}, close_fds=True)
-        user = None
-        try:
-            if holder.stdout.read(1) == b'1':
-                user = os.open('/proc/%d/ns/user' % holder.pid, os.O_RDONLY | os.O_CLOEXEC)
-        finally:
-            _, error = holder.communicate(timeout=30)
-        if user is None:
-            raise refuse('%s exited %s: %s' % (NAMESPACE_HELPER, holder.returncode,
-                                                error.decode(errors='replace').strip()[-300:]))
-        try:
-            os.setns(user, os.CLONE_NEWUSER)
-        finally:
-            os.close(user)
-        if (os.getuid(), os.getgid()) != ids:
-            raise refuse('the user namespace does not map this account to itself')
-        os.unshare(os.CLONE_NEWNS | os.CLONE_NEWPID)
-        # MS_REC | MS_PRIVATE on /: nothing mounted in this namespace propagates anywhere.
-        if LIBC.mount(b'none', b'/', None, (1 << 14) | (1 << 18), None):
-            raise OSError(ctypes.get_errno(), 'mount propagation')
-    except (OSError, subprocess.SubprocessError) as error:
-        raise refuse(error)
-    return True
+        return (apparmor_enabled() and apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'
+                and os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
+                and os.readlink('/proc/self') == str(os.getpid())
+                and capability_problem(Path('/proc/self/status').read_text()) is None)
+    except OSError:
+        return False
 
 
-def mount_procfs():
-    """In the new PID namespace's init: a fresh procfs read only over /proc (MS_RDONLY, MS_NOSUID,
-    MS_NODEV, MS_NOEXEC), which lists this namespace's processes only."""
-    if LIBC.mount(b'proc', b'/proc', b'proc', 1 | 2 | 4 | 8, None):
-        raise OSError(ctypes.get_errno(), 'cannot mount the namespace procfs')
-    if os.readlink('/proc/self') != '1':
-        raise RuntimeError('the namespace procfs is not the init\'s')
+def namespace_problem(ids):
+    """The init's own check, at its start, that the helper made the namespace it must (VELDO-0210
+    AC6), or None: this process is PID 1 of a PID namespace other than the host's whose fresh procfs
+    is mounted read only on /proc; only the account's uid and gid are mapped, each to itself; every
+    capability set is empty and no_new_privs is set; and, where AppArmor is enabled, the process runs
+    under the helper's child profile in enforce mode."""
+    try:
+        if os.getpid() != 1 or os.readlink('/proc/self') != '1':
+            return 'the init is not PID 1 of its own procfs'
+        if os.readlink('/proc/self/ns/pid') == INITIAL_PID_NAMESPACE:
+            return 'the init is in the host\'s PID namespace'
+        mounts = [line.split() for line in Path('/proc/self/mountinfo').read_text().splitlines()]
+        options = [fields[5] for fields in mounts if len(fields) > 5 and fields[4] == '/proc']
+        if not options or 'ro' not in options[-1].split(','):
+            return '/proc is not a read-only procfs'
+        uid, gid = ids
+        if (os.getuid(), os.getgid()) != (uid, gid):
+            return 'the uid or gid changed'
+        for name, value in (('uid_map', uid), ('gid_map', gid)):
+            if Path('/proc/self', name).read_text().split() != [str(value), str(value), '1']:
+                return 'the %s maps more than this account to itself' % name
+        problem = capability_problem(Path('/proc/self/status').read_text())
+        if problem:
+            return problem
+        if apparmor_enabled() and apparmor_label() != NAMESPACE_PROFILE + ' (enforce)':
+            return 'the AppArmor label is %r, not %s in enforce mode' % (apparmor_label(), NAMESPACE_PROFILE)
+    except OSError as error:
+        return str(error)
+    return None
+
+
+def await_start(ready):
+    """What the tree reported on its ready pipe within NAMESPACE_START_SECONDS: b'1' from the init once
+    its namespace is checked, b'0' from a child or init that refused and said why on stderr, b'' when
+    the pipe closed with nothing, None when the time ran out. A stop meanwhile runs the launcher's
+    handler (it forwards the stop, and a group still alive GRACE_SECONDS later is killed) and the
+    wait goes on."""
+    import select
+    deadline = time.monotonic() + NAMESPACE_START_SECONDS
+    poller = select.poll()
+    poller.register(ready, select.POLLIN)
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return None
+        if poller.poll(remaining * 1000):
+            return os.read(ready, 1)
+
+
+def end_descendants():
+    """In a nested tree's init, a child subreaper: kill and reap every remaining descendant. Each
+    direct child is killed; its own children then become this process's and are killed in turn."""
+    while True:
+        try:
+            children = Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()
+        except OSError:
+            children = []
+        for child in children:
+            try:
+                os.kill(int(child), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        try:
+            done, _ = os.waitpid(-1, 0 if children else os.WNOHANG)
+        except ChildProcessError:
+            return
+        if not children and not done:
+            return
 
 
 def exit_code(status):
@@ -1660,6 +1744,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     # TERM, INT and HUP stay blocked from before the fork until the parent has registered its child:
     # a stop in between would otherwise end the launch, remove the scratch and leave the child running.
     launcher = os.getpid()
+    # The tree's init writes one byte here once it has checked its namespace (await_start).
+    ready, report = os.pipe()
     mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
     try:
         if profile == 'gate':
@@ -1671,15 +1757,34 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             pid, side = os.fork(), None
     except BaseException:
         signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+        os.close(ready)
+        os.close(report)
         raise
     if pid:
-        status = None
+        os.close(report)
+        status = started = reported = None
         try:
             if stop is not None:
                 stop.child(pid)
             signal.pthread_sigmask(signal.SIG_SETMASK, mask)  # a stop that came meanwhile is handled now
+            reported = await_start(ready)
+            started = reported == b'1'
+            problem = None if started else 'the tree did not start'
+            if started:
+                # The helper's own process (the launcher's child) keeps no capability either.
+                try:
+                    problem = capability_problem(Path('/proc/%d/status' % pid).read_text())
+                except OSError as error:
+                    problem = str(error)
+                started = problem is None
+            if not started:
+                try:
+                    os.killpg(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
             _, status = os.waitpid(pid, 0)
         finally:
+            os.close(ready)
             if stop is not None and status is not None:
                 stop.reaped = True
             try:
@@ -1706,14 +1811,29 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                 clean_state(state)
             except Exception as error:
                 print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
+        if not started and reported != b'0' and (stop is None or stop.number is None):
+            # Never a run with the host's /proc: the tree was killed before its command could start.
+            print('agent sandbox refused to start: cannot create the PID namespace (%s: %s; any message above '
+                  'is the helper\'s); %s'
+                  % (problem, 'no ready report within %d seconds' % NAMESPACE_START_SECONDS if reported is None
+                     else 'exit status %d' % os.WEXITSTATUS(status) if os.WIFEXITED(status) else 'killed',
+                     setup_text()), file=sys.stderr, flush=True)
+            return 2
+        if not started:
+            return 2
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
     # Only this child's tree executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.
     try:
+        os.close(ready)
         forward = [n for n in STOP_SIGNALS if stop is None or n in stop.previous]
         if stop is not None:
             stop.in_child()
-        # The stops stay blocked here and in the init: both take them with sigwaitinfo.
+        # A stop the launcher forwards stays at its default and one it inherited ignored stays ignored:
+        # that is how the helper, across its exec, tells which ones to relay.
+        for number in STOP_SIGNALS:
+            signal.signal(number, signal.SIG_DFL if number in forward else signal.SIG_IGN)
+        # The stops stay blocked here, in the helper and in the init: they take them with sigwaitinfo.
         signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD, *RELAY.values()})
         os.setsid()
         # A launcher killed outright takes this child with it, and with it the init and the whole
@@ -1724,60 +1844,290 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         # every descendant that keeps the descriptor), so no sweep removes a scratch still in use.
         held = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         fcntl.flock(held, fcntl.LOCK_SH | fcntl.LOCK_NB)
-        os.set_inheritable(held, True)
         keep = [held, *(side.keep() if side else ())]
-        close_descriptors(protected, keep=keep)
-        private = enter_namespaces()
-        parent = os.pidfd_open(os.getpid())
-        init = os.fork()
-        if not init:
-            confined_init(private, parent, worktree, command, env, grants, profile, side, protected, keep,
-                          mask)
-        os.close(parent)
-        for descriptor in (side.keep() if side else ()):
-            os.close(descriptor)
+        # The launcher's procfs, before the namespace's covers it: the agent reads from it the pid the
+        # launcher sees it by, for the gate profile's broker. The init watches the launcher and this
+        # process (the helper, after its exec) through their pidfds.
+        launcher_proc = os.open('/proc', os.O_PATH | os.O_DIRECTORY)
+        alive = [os.pidfd_open(launcher), os.pidfd_open(os.getpid())]
+        handed = [*keep, launcher_proc, *alive, report]
+        for descriptor in handed:
+            os.set_inheritable(descriptor, True)
+        nested = nested_namespace()
+        context = {'worktree': str(worktree), 'command': list(command), 'env': env, 'profile': profile,
+                   'grants': [[str(path), access] for path, access in grants],
+                   'protected': [str(path) for path in protected], 'keep': keep,
+                   'side': list(side.keep()) if side else None, 'mask': sorted(int(n) for n in mask),
+                   'ids': [os.getuid(), os.getgid()], 'nested': nested, 'ready': report,
+                   'launcher_proc': launcher_proc, 'alive': alive}
+        if nested:
+            # Already inside a tree the helper made: no helper, no new namespace. This process stays
+            # the relay and its first child is the tree's init, a child subreaper.
+            close_descriptors(protected, keep=handed)
+            init = os.fork()
+            if not init:
+                confined_init(context)
+            for descriptor in [*(side.keep() if side else ()), launcher_proc, *alive, report]:
+                os.close(descriptor)
+            while True:
+                number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD}).si_signo
+                if number == signal.SIGCHLD:
+                    done, status = os.waitpid(init, os.WNOHANG)
+                    if done:
+                        os._exit(exit_code(status))
+                elif number in forward:
+                    os.kill(init, RELAY[number])
+        problem = helper_problem(NAMESPACE_HELPER)
+        if problem:
+            raise RuntimeError('cannot create the PID namespace (%s); %s' % (problem, setup_text()))
+        # The context goes to the init the helper executes on an inherited memory file.
+        carrier = os.memfd_create('veldo-namespace-context', 0)
+        os.write(carrier, json.dumps(context).encode())
+        os.lseek(carrier, 0, os.SEEK_SET)
+        os.set_inheritable(carrier, True)
+        close_descriptors(protected, keep=[*handed, carrier])
+        try:
+            os.execv(NAMESPACE_HELPER, [str(NAMESPACE_HELPER), str(Path(__file__).resolve()), str(carrier)])
+        except OSError as error:
+            raise RuntimeError('cannot create the PID namespace (%s: %s); %s'
+                               % (NAMESPACE_HELPER, error.strerror, setup_text()))
+    except BaseException as error:
+        print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
+        try:
+            os.write(report, b'0')  # said why: the launcher adds nothing
+        except OSError:
+            pass
+        os._exit(2)
+
+
+def namespace_init(argument):
+    """The PID namespace's init as the helper executes it (python3 -I -S agent_sandbox.py
+    namespace-init <descriptor>), after the helper made the namespaces, mounted the procfs and dropped
+    every capability: it reads the launch's context from the inherited descriptor, checks its
+    namespace (namespace_problem) and goes on as confined_init. With 'selftest' it runs the owner's
+    probe instead. Never returns."""
+    try:
+        signal.pthread_sigmask(signal.SIG_BLOCK, {*STOP_SIGNALS, signal.SIGCHLD, *RELAY.values()})
+        if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0):
+            raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
+        if argument == 'selftest':
+            namespace_probe()
+        carrier = int(argument)
+        data = b''
         while True:
-            number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD}).si_signo
-            if number == signal.SIGCHLD:
-                done, status = os.waitpid(init, os.WNOHANG)
-                if done:
-                    os._exit(exit_code(status))
-            elif number in forward:
-                os.kill(init, RELAY[number])
+            chunk = os.read(carrier, 1 << 16)
+            if not chunk:
+                break
+            data += chunk
+        os.close(carrier)
+        context = json.loads(data)
+        problem = namespace_problem(context['ids'])
+        if problem:
+            os.write(context['ready'], b'0')
+            raise RuntimeError('cannot create the PID namespace (%s); %s' % (problem, setup_text()))
+        confined_init(context)
     except BaseException as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
         os._exit(2)
 
 
-def confined_init(private, parent, worktree, command, env, grants, profile, side, protected, keep, mask):
-    """The init of the tree's PID namespace (VELDO-0210 AC6), or the tree's first process when the
-    launcher is nested in one. Mounts the fresh procfs, forks the agent, forwards each stop the
-    launcher's child relays to the agent's process group, reaps every process that ends here, and
-    exits with the agent's status once it is gone; the kernel then ends what is left in the
-    namespace. Never returns."""
+def namespace_probe():
+    """The owner's self-test, inside the namespace the helper made (namespace_selftest runs it): the
+    init's own check, then everything a program run through the helper could try to get a capability
+    with: sethostname and a UTS namespace here, a new user namespace, and in new user, UTS and network
+    namespaces sethostname and bringing up an interface, directly and through executed programs.
+    Prints one JSON object {row: [passed, detail]} and waits for its stdin to close, so the caller can
+    read the helper's own process meanwhile. Never returns."""
+    import shutil as _shutil
+    rows = {}
+
+    def row(name, passed, detail):
+        rows[name] = [bool(passed), str(detail)]
+
+    def failure(error):
+        return errno.errorcode.get(error.errno, str(error.errno)) if isinstance(error, OSError) else repr(error)
+
+    def in_child(action):
+        """(refused, detail): whether `action` raised in a forked child."""
+        read, write = os.pipe()
+        child = os.fork()
+        if not child:
+            os.close(read)
+            try:
+                action()
+                os.write(write, b'done')
+                os._exit(0)
+            except BaseException as error:
+                os.write(write, failure(error).encode())
+                os._exit(1)
+        os.close(write)
+        detail = os.read(read, 200).decode(errors='replace')
+        os.close(read)
+        _, status = os.waitpid(child, 0)
+        return not (os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0), detail
+
+    def new_namespaces(kind):
+        os.unshare(os.CLONE_NEWUSER)
+        for name, value in (('setgroups', 'deny'), ('uid_map', '%d %d 1' % (os.getuid(), os.getuid())),
+                            ('gid_map', '%d %d 1' % (os.getgid(), os.getgid()))):
+            try:
+                Path('/proc/self', name).write_text(value)
+            except OSError:
+                pass
+        os.unshare(kind)
+
+    def hostname():
+        new_namespaces(os.CLONE_NEWUTS)
+        if LIBC.sethostname(b'veldo-probe', 11):
+            raise OSError(ctypes.get_errno(), 'sethostname')
+
+    def interface_up():
+        import socket
+        new_namespaces(os.CLONE_NEWNET)
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as handle:
+            current = fcntl.ioctl(handle, 0x8913, struct.pack('16sH14x', b'lo', 0))  # SIOCGIFFLAGS
+            flags = struct.unpack_from('16sH', current)[1]
+            fcntl.ioctl(handle, 0x8914, struct.pack('16sH14x', b'lo', flags | 1))  # SIOCSIFFLAGS, IFF_UP
+
+    try:
+        problem = namespace_problem([os.getuid(), os.getgid()])
+        row('namespace-as-the-helper-must-make-it', problem is None,
+            problem or 'PID 1, read-only procfs, identity map, no capability, no_new_privs, label %s'
+            % apparmor_label())
+        result = LIBC.sethostname(b'veldo-probe', 11)
+        row('sethostname-refused', result != 0, errno.errorcode.get(ctypes.get_errno(), result))
+        try:
+            os.unshare(os.CLONE_NEWUTS)
+            row('uts-namespace-refused', False, 'created')
+        except OSError as error:
+            row('uts-namespace-refused', True, failure(error))
+        row('user-namespace-refused', *in_child(lambda: os.unshare(os.CLONE_NEWUSER)))
+        row('sethostname-in-new-namespaces-refused', *in_child(hostname))
+        row('interface-up-in-new-namespaces-refused', *in_child(interface_up))
+        ip = _shutil.which('ip', path='/usr/sbin:/usr/bin:/sbin:/bin') or '/usr/sbin/ip'
+        for name, argv in (('executed-sethostname-refused',
+                            ['/usr/bin/unshare', '--user', '--map-root-user', '--uts', '/bin/hostname', 'veldo-probe']),
+                           ('executed-interface-up-refused',
+                            ['/usr/bin/unshare', '--user', '--map-root-user', '--net', ip, 'link', 'set', 'lo', 'up'])):
+            done = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+            row(name, done.returncode != 0, (done.stderr.strip() or 'exit %d' % done.returncode)[-200:])
+    except BaseException as error:
+        row('probe-completed', False, failure(error))
+    sys.stdout.write(json.dumps(rows) + '\n')
+    sys.stdout.flush()
+    sys.stdin.read()
+    os._exit(0)
+
+
+def namespace_selftest():
+    """The owner's one-time check after the setup (python3 -I -S scripts/agent_sandbox.py
+    namespace-selftest): runs namespace_probe through the installed helper, checks the helper's own
+    process holds no capability while the probe waits, runs one real launch (gate profile, a scratch
+    worktree) whose command reports what it sees, and prints one PASS or FAIL line per row. Returns 0
+    only when every row passed."""
+    rows = {}
+    problem = helper_problem(NAMESPACE_HELPER)
+    if problem:
+        rows['helper-installed'] = [False, problem]
+    else:
+        process = subprocess.Popen([str(NAMESPACE_HELPER), str(Path(__file__).resolve()), 'selftest'],
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={})
+        try:
+            line = b''
+            import select
+            if select.select([process.stdout], [], [], NAMESPACE_START_SECONDS)[0]:
+                line = process.stdout.readline()
+            try:
+                rows.update(json.loads(line))
+            except ValueError:
+                rows['probe-completed'] = [False, line.decode(errors='replace')[-200:] or 'no output']
+            try:
+                problem = capability_problem(Path('/proc/%d/status' % process.pid).read_text())
+            except OSError as error:
+                problem = str(error)
+            rows['helper-process-holds-no-capability'] = [problem is None, problem or 'every set empty']
+        finally:
+            _, error = process.communicate(timeout=NAMESPACE_START_SECONDS)
+        rows['helper-exit-status'] = [process.returncode == 0,
+                                      'exit %s %s' % (process.returncode, error.decode(errors='replace').strip()[-300:])]
+        # And a real launch through this launcher (gate profile, a scratch worktree): the context
+        # descriptor and the ready report cross the profile change, and the command sees its own tree.
+        code = ('import ctypes, errno, json, os\n'
+                'libc = ctypes.CDLL(None, use_errno=True)\n'
+                'names = ("CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb", "NoNewPrivs")\n'
+                'status = {l.split(":")[0]: l.split()[1] for l in open("/proc/self/status") if l.split(":")[0] in names}\n'
+                'child = libc.syscall(56, 0x10000000 | 17, 0, 0, 0, 0)\n'
+                'if child == 0:\n    os._exit(0)\n'
+                'userns = "created" if child > 0 else errno.errorcode.get(ctypes.get_errno(), "?")\n'
+                'if child > 0:\n    os.waitpid(child, 0)\n'
+                'label = open("/proc/self/attr/current").read().strip("\\0\\n ")\n'
+                'pids = sorted(int(p) for p in os.listdir("/proc") if p.isdigit())\n'
+                'print(json.dumps({"pids": pids, "status": status, "userns": userns, "label": label}))\n')
+        worktree = tempfile.mkdtemp(prefix='veldo-selftest-')
+        try:
+            launched = subprocess.run([sys.executable, '-I', '-S', str(Path(__file__).resolve()), '--config',
+                                       str(Path(__file__).resolve().with_name('agent_sandbox.json')), '--profile',
+                                       'gate', '--worktree', worktree, '--', sys.executable, '-I', '-S', '-c', code],
+                                      capture_output=True, text=True, timeout=2 * NAMESPACE_START_SECONDS,
+                                      stdin=subprocess.DEVNULL)
+        finally:
+            shutil.rmtree(worktree, ignore_errors=True)
+        try:
+            seen = json.loads(launched.stdout.strip().splitlines()[-1])
+        except (IndexError, ValueError):
+            seen = {}
+        empty = '0000000000000000'
+        rows['launch-starts'] = [launched.returncode == 0, 'exit %d %s' % (launched.returncode, launched.stderr[-300:])]
+        rows['launch-sees-only-its-tree'] = [seen.get('pids') == [1, 2], seen.get('pids')]
+        rows['launch-holds-no-capability'] = [seen.get('status') == dict(
+            CapInh=empty, CapPrm=empty, CapEff=empty, CapBnd=empty, CapAmb=empty, NoNewPrivs='1'), seen.get('status')]
+        rows['launch-runs-under-the-child-profile'] = [seen.get('label') == NAMESPACE_PROFILE + ' (enforce)',
+                                                       seen.get('label')]
+        rows['launch-cannot-create-a-user-namespace'] = [seen.get('userns') in ('EACCES', 'EPERM'),
+                                                         seen.get('userns')]
+    for name, (passed, detail) in rows.items():
+        print('%s %s: %s' % ('PASS' if passed else 'FAIL', name, detail))
+    failed = [name for name, (passed, _) in rows.items() if not passed]
+    print('veldo-userns self-test: %d passed, %d failed' % (len(rows) - len(failed), len(failed)))
+    return 1 if failed else 0
+
+
+def confined_init(context):
+    """The init of the tree's PID namespace (VELDO-0210 AC6), or, nested in a tree the helper made,
+    the tree's first process and a child subreaper. Reports ready, forks the agent, forwards each
+    stop the launcher's child relays to the agent's process group, reaps every process that ends
+    here, and exits with the agent's status once it is gone; the kernel then ends what is left in the
+    namespace, and nested, this process kills and reaps every remaining descendant first. Never
+    returns."""
+    import select
     try:
         if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0):
             raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
-        alive = __import__('select').poll()
-        alive.register(parent, __import__('select').POLLIN)
+        alive = select.poll()
+        for descriptor in context['alive']:
+            alive.register(descriptor, select.POLLIN)
         if alive.poll(0):
             raise RuntimeError('the launcher is gone')
-        os.close(parent)
-        # The launcher's procfs, before the fresh one covers it: the agent reads from it the pid the
-        # launcher sees it by, for the gate profile's broker.
-        launcher_proc = os.open('/proc', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
-        if private:
-            mount_procfs()
+        for descriptor in context['alive']:
+            os.close(descriptor)
+        # PR_SET_CHILD_SUBREAPER: nested, orphans (a setsid descendant among them) come here to be reaped.
+        if context['nested'] and LIBC.prctl(36, 1, 0, 0, 0):
+            raise OSError(ctypes.get_errno(), 'PR_SET_CHILD_SUBREAPER')
+        os.write(context['ready'], b'1')
+        os.close(context['ready'])
+        side = Handoff(*context['side']) if context['side'] else None
         init = os.getpid()
         agent = os.fork()
         if not agent:
-            confined_agent(launcher_proc, init, worktree, command, env, grants, profile, side, protected,
-                           keep, mask)
+            confined_agent(context['launcher_proc'], init, Path(context['worktree']), context['command'],
+                           context['env'], [(Path(path), access) for path, access in context['grants']],
+                           context['profile'], side, [Path(path) for path in context['protected']],
+                           context['keep'], set(context['mask']))
         try:
             os.setpgid(agent, agent)
         except OSError:
             pass  # the agent already did, or has gone
-        os.close(launcher_proc)
+        os.close(context['launcher_proc'])
         for descriptor in (side.keep() if side else ()):
             os.close(descriptor)
         relayed = {number: original for original, number in RELAY.items()}
@@ -1804,6 +2154,8 @@ def confined_init(private, parent, worktree, command, env, grants, profile, side
                             os.killpg(agent, signal.SIGKILL)
                         except ProcessLookupError:
                             pass
+                        if context['nested']:
+                            end_descendants()
                         os._exit(exit_code(status))
     except BaseException as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr, flush=True)
@@ -1858,6 +2210,10 @@ def repository_main(action, argv):
 def main():
     if sys.argv[1:2] in (['prepare'], ['integrate']):
         return repository_main(sys.argv[1], sys.argv[2:])
+    if sys.argv[1:2] == ['namespace-init'] and len(sys.argv) == 3:
+        namespace_init(sys.argv[2])
+    if sys.argv[1:] == ['namespace-selftest']:
+        return namespace_selftest()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profile', choices=('agent', 'gate'), default='agent')

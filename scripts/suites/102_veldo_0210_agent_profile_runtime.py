@@ -152,6 +152,27 @@ for item in sys.argv[1:]:
         r[name] = [os.getuid(), os.getgid(), os.geteuid(), os.getegid()]
     elif kind == 'caps':
         r[name] = [line.split()[1] for line in open('/proc/self/status') if line.startswith('CapEff:')]
+    elif kind == 'status':
+        r[name] = {line.split(':')[0]: line.split()[1] for line in open('/proc/self/status')
+                   if line.split(':')[0] in ('CapInh', 'CapPrm', 'CapEff', 'CapBnd', 'CapAmb', 'NoNewPrivs')}
+    elif kind == 'label':
+        try:
+            r[name] = open('/proc/self/attr/current').read().strip('\0\n ')
+        except OSError as error:
+            r[name] = str(error)
+    elif kind == 'clone-userns':
+        # clone(CLONE_NEWUSER | SIGCHLD), which the seccomp filter does not cover: only the helper's
+        # child profile stands between the agent and a user namespace with every capability.
+        import ctypes
+        libc = ctypes.CDLL(None, use_errno=True)
+        child = libc.syscall(56, 0x10000000 | 17, 0, 0, 0, 0)
+        if child == 0:
+            os._exit(0)
+        if child > 0:
+            os.waitpid(child, 0)
+            r[name] = False
+        else:
+            r[name] = errno.errorcode.get(ctypes.get_errno(), str(ctypes.get_errno()))
     elif kind == 'procmount':
         # The options of the mount /proc resolves to: the last one on that mount point.
         r[name] = [line.split()[5] for line in open('/proc/self/mountinfo') if line.split()[4] == '/proc'][-1:]
@@ -205,6 +226,25 @@ print(json.dumps(r))
         def probe_run(items, **kwargs):
             return run(config, worktree, [sys.executable, '-I', '-S', str(probe), *items], **kwargs)
 
+        # A running tree needs the namespace the installed helper makes (AC6), and the launcher refuses
+        # every start without it, never falling back. Where the owner's setup has not been run, the rows
+        # of a running tree are skipped with the launcher's own reason; every refusal and unit row runs.
+        nested = S.nested_namespace()
+        unavailable = None
+        if not nested:
+            unavailable = S.helper_problem(S.NAMESPACE_HELPER)
+            trial = run(config, worktree, ['/usr/bin/true'])
+            if trial.returncode != 0:
+                unavailable = unavailable or (trial.stderr.strip().splitlines() or ['exit %d' % trial.returncode])[-1]
+                expect('VELDO-0210 namespace/unconfigured-host-refuses-every-start: %s' % trial.stderr[-300:],
+                       trial.returncode == 2 and 'cannot create the PID namespace' in trial.stderr
+                       and S.NAMESPACE_SETUP in trial.stderr)
+        live = unavailable is None
+
+        def skip(what):
+            print('  SELFTEST SKIP: VELDO-0210 %s: the installed namespace helper cannot make the tree\'s '
+                  'namespace on this host (%s)' % (what, unavailable[:400]))
+
         # runtime: /proc read only, the resolver directory and nothing else under /run
         resolve = top / 'run/systemd/resolve'
         resolve.mkdir(parents=True)
@@ -213,50 +253,53 @@ print(json.dumps(r))
         (top / 'etc').mkdir()
         (top / 'etc/resolv.conf').symlink_to('../run/systemd/resolve/stub-resolv.conf')
         resolver = {'RESOLVER': str(top / 'etc/resolv.conf'), 'RESOLVER_RUNTIME': str(resolve)}
-        result = probe_run(['read:proc-status:/proc/self/status', 'read:proc-mounts:/proc/self/mounts',
-                            'write:proc-comm:/proc/self/comm',
-                            'hide:launcher-environ:/proc/%d/environ' % os.getpid(),
-                            'read:resolver-link:%s' % (top / 'etc/resolv.conf'),
-                            'read:resolver-target:%s' % (resolve / 'stub-resolv.conf'),
-                            'read:resolver-sibling:%s' % (resolve / 'resolv.conf'),
-                            'write:resolver-write:%s' % (resolve / 'stub-resolv.conf'),
-                            'make:resolver-create:%s' % (resolve / 'planted.conf'),
-                            'list:run-systemd:%s' % resolve.parent,
-                            'list:run-user:/run/user/%d' % os.getuid(),
-                            'deny:run-user-bus:/run/user/%d/bus' % os.getuid(),
-                            'write:worktree-outside:%s' % (top / 'outside'),
-                            'write:runner:%s' % runner, 'write:authority:%s' % launcher,
-                            'make:store:%s' % (store / 'planted.json')],
-                           patch=resolver)
-        found = results(result)
-        expect('VELDO-0210 runtime/launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
-        for name in ('proc-status', 'proc-mounts', 'resolver-link', 'resolver-target', 'resolver-sibling'):
-            expect('VELDO-0210 runtime/%s-readable: %s' % (name, found.get(name)), found.get(name) is True)
-        for name in ('proc-comm', 'launcher-environ', 'resolver-write', 'resolver-create', 'run-systemd', 'run-user',
-                     'run-user-bus', 'worktree-outside', 'runner', 'authority', 'store'):
-            expect('VELDO-0210 runtime/%s-refused: %s' % (name, found.get(name)), found.get(name) is True)
-        expect('VELDO-0210 runtime/refusals-left-nothing',
-               not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
-               and not (store / 'planted.json').exists() and not (resolve / 'planted.conf').exists()
-               and (resolve / 'stub-resolv.conf').read_text() == 'nameserver 127.0.0.53\n')
-        # systemd-resolved replaces stub-resolv.conf by rename on a network change: the new file is
-        # readable through the link in a run that started before the change.
-        ready, go = worktree / 'resolver-ready', worktree / 'resolver-go'
-        process = subprocess.Popen(
-            [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), json.dumps(resolver), '--config', str(config),
-             '--worktree', str(worktree), '--', sys.executable, '-I', '-S', str(probe), 'mark:ready:%s' % ready,
-             'wait:go:%s' % go, 'read:resolver-after-rename:%s' % (top / 'etc/resolv.conf')],
-            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        deadline = time.time() + 30
-        while not ready.exists() and time.time() < deadline and process.poll() is None:
-            time.sleep(0.05)
-        (resolve / 'stub-resolv.conf.new').write_text('nameserver 127.0.0.54\n')
-        os.replace(resolve / 'stub-resolv.conf.new', resolve / 'stub-resolv.conf')
-        go.write_text('go')
-        stdout, stderr = process.communicate(timeout=60)
-        found = results(subprocess.CompletedProcess([], process.returncode, stdout, stderr))
-        expect('VELDO-0210 runtime/resolver-replaced-by-rename-readable: %s %s' % (found, stderr[-200:]),
-               process.returncode == 0 and found.get('resolver-after-rename') is True)
+        if live:
+            result = probe_run(['read:proc-status:/proc/self/status', 'read:proc-mounts:/proc/self/mounts',
+                                'write:proc-comm:/proc/self/comm',
+                                'hide:launcher-environ:/proc/%d/environ' % os.getpid(),
+                                'read:resolver-link:%s' % (top / 'etc/resolv.conf'),
+                                'read:resolver-target:%s' % (resolve / 'stub-resolv.conf'),
+                                'read:resolver-sibling:%s' % (resolve / 'resolv.conf'),
+                                'write:resolver-write:%s' % (resolve / 'stub-resolv.conf'),
+                                'make:resolver-create:%s' % (resolve / 'planted.conf'),
+                                'list:run-systemd:%s' % resolve.parent,
+                                'list:run-user:/run/user/%d' % os.getuid(),
+                                'deny:run-user-bus:/run/user/%d/bus' % os.getuid(),
+                                'write:worktree-outside:%s' % (top / 'outside'),
+                                'write:runner:%s' % runner, 'write:authority:%s' % launcher,
+                                'make:store:%s' % (store / 'planted.json')],
+                               patch=resolver)
+            found = results(result)
+            expect('VELDO-0210 runtime/launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
+            for name in ('proc-status', 'proc-mounts', 'resolver-link', 'resolver-target', 'resolver-sibling'):
+                expect('VELDO-0210 runtime/%s-readable: %s' % (name, found.get(name)), found.get(name) is True)
+            for name in ('proc-comm', 'launcher-environ', 'resolver-write', 'resolver-create', 'run-systemd', 'run-user',
+                         'run-user-bus', 'worktree-outside', 'runner', 'authority', 'store'):
+                expect('VELDO-0210 runtime/%s-refused: %s' % (name, found.get(name)), found.get(name) is True)
+            expect('VELDO-0210 runtime/refusals-left-nothing',
+                   not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
+                   and not (store / 'planted.json').exists() and not (resolve / 'planted.conf').exists()
+                   and (resolve / 'stub-resolv.conf').read_text() == 'nameserver 127.0.0.53\n')
+            # systemd-resolved replaces stub-resolv.conf by rename on a network change: the new file is
+            # readable through the link in a run that started before the change.
+            ready, go = worktree / 'resolver-ready', worktree / 'resolver-go'
+            process = subprocess.Popen(
+                [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), json.dumps(resolver), '--config', str(config),
+                 '--worktree', str(worktree), '--', sys.executable, '-I', '-S', str(probe), 'mark:ready:%s' % ready,
+                 'wait:go:%s' % go, 'read:resolver-after-rename:%s' % (top / 'etc/resolv.conf')],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            deadline = time.time() + 30
+            while not ready.exists() and time.time() < deadline and process.poll() is None:
+                time.sleep(0.05)
+            (resolve / 'stub-resolv.conf.new').write_text('nameserver 127.0.0.54\n')
+            os.replace(resolve / 'stub-resolv.conf.new', resolve / 'stub-resolv.conf')
+            go.write_text('go')
+            stdout, stderr = process.communicate(timeout=60)
+            found = results(subprocess.CompletedProcess([], process.returncode, stdout, stderr))
+            expect('VELDO-0210 runtime/resolver-replaced-by-rename-readable: %s %s' % (found, stderr[-200:]),
+                   process.returncode == 0 and found.get('resolver-after-rename') is True)
+        else:
+            skip('runtime/* rows of a running tree')
         # A resolver that is a plain file, or a link outside /run/systemd/resolve, adds no grant.
         (top / 'etc/plain.conf').write_text('nameserver 192.0.2.2\n')
         (top / 'etc/elsewhere.conf').symlink_to(top / 'run/systemd/resolv-elsewhere.conf')
@@ -287,9 +330,8 @@ print(json.dumps(r))
 
         # The tree runs in its own PID namespace (AC6), so a pid it records is not this suite's: rows
         # find a confined process by its exact command line instead. Run by the gate, this suite is
-        # already inside the gate launcher's namespace, and a launcher started here is a nested one
-        # that creates none.
-        nested = S.private_pid_namespace()
+        # already inside the gate launcher's tree, and a launcher started here is a nested one that
+        # creates none.
 
         def host_pids(argv):
             """The pids, as this suite sees them, of the processes whose command line is exactly argv."""
@@ -303,89 +345,239 @@ print(json.dumps(r))
                     pass
             return found
 
-        # namespace: the tree runs in its own PID namespace with its own procfs. Nested in the gate's,
-        # the rows check that this suite's own procfs is that namespace's, which hides the host from
-        # both.
+        # namespace: the tree runs in its own PID namespace with its own procfs. Nested in a tree the
+        # helper made, the rows check that this suite's own procfs is that namespace's, which hides the
+        # host from both.
         own_namespace = os.readlink('/proc/self/ns/pid')
         outer_ok = (nested and own_namespace != S.INITIAL_PID_NAMESPACE
                     and 'agent_sandbox.py' in Path('/proc/1/cmdline').read_bytes().decode(errors='replace'))
         marker = 'v210-host-sleeper-%d' % os.getpid()
-        sleeper = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', marker],
-                                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        try:
-            for prefix, profile in (('', 'agent'), ('gate-', 'gate')):
-                owned = worktree / ('owned-by-' + profile)
-                escaped = 'v210-escaped-%s-%d' % (profile, os.getpid())
-                result = probe_run(['pids:pids:', 'scan:scan:' + marker,
-                                    'hide:by-pid:/proc/%d/cmdline' % sleeper.pid,
-                                    'hide:launcher-by-pid:/proc/%d/cmdline' % os.getpid(),
-                                    'ids:ids:', 'caps:caps:', 'procmount:proc-mount:', 'init:init:', 'ns:ns:',
-                                    'create:created:%s' % owned if profile == 'agent' else 'owner:created:owned',
-                                    'orphan:orphan:', 'escape:escape:' + escaped],
-                                   profile=profile)
-                found = results(result)
-                label = 'VELDO-0210 namespace/' + prefix
-                expect(label + 'launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
-                if nested:
-                    for name in ('proc-lists-only-sandbox-pids', 'host-process-hidden-by-pid',
-                                 'host-process-hidden-by-scan', 'launcher-hidden'):
-                        expect(label + name + ' (nested in the gate launcher\'s namespace): %s' % found,
-                               outer_ok and found.get('ns') == own_namespace)
-                else:
-                    expect(label + 'proc-lists-only-sandbox-pids: %s' % found,
-                           found.get('pids') == [1, 2] and 'agent_sandbox.py' in found.get('init', '')
-                           and found.get('ns') != S.INITIAL_PID_NAMESPACE)
-                    expect(label + 'host-process-hidden-by-pid: %s' % found.get('by-pid'), found.get('by-pid') is True)
-                    expect(label + 'host-process-hidden-by-scan: %s' % found.get('scan'), found.get('scan') == [])
-                    expect(label + 'launcher-hidden: %s' % found.get('launcher-by-pid'),
-                           found.get('launcher-by-pid') is True)
-                expect(label + 'ids-equal-outside: %s' % found.get('ids'),
-                       found.get('ids') == [os.getuid(), os.getgid(), os.getuid(), os.getgid()])
-                # The agent's file is seen from outside; the gate profile writes only its scratch, which
-                # is gone after the run, and the identity map shows its owner inside as outside.
-                info = owned.stat() if owned.exists() else None
-                expect(label + 'created-file-owned-by-user: %s' % found.get('created'),
-                       (found.get('created') is True and info is not None
-                        and (info.st_uid, info.st_gid) == (os.getuid(), os.getgid())) if profile == 'agent'
-                       else found.get('created') == [os.getuid(), os.getgid()])
-                expect(label + 'no-capabilities: %s' % found.get('caps'), found.get('caps') == ['0000000000000000'])
-                expect(label + 'proc-read-only: %s' % found.get('proc-mount'),
-                       len(found.get('proc-mount', [])) == 1 and 'ro' in found['proc-mount'][0].split(','))
-                expect(label + 'init-reaps-orphans', found.get('orphan') is True)
-                argv = [sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', escaped]
-                if nested:
-                    for pid in host_pids(argv):
-                        os.kill(pid, 9)
-                else:
+        if live:
+            sleeper = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', marker],
+                                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                for prefix, profile in (('', 'agent'), ('gate-', 'gate')):
+                    owned = worktree / ('owned-by-' + profile)
+                    escaped = 'v210-escaped-%s-%d' % (profile, os.getpid())
+                    result = probe_run(['pids:pids:', 'scan:scan:' + marker,
+                                        'hide:by-pid:/proc/%d/cmdline' % sleeper.pid,
+                                        'hide:launcher-by-pid:/proc/%d/cmdline' % os.getpid(),
+                                        'ids:ids:', 'status:status:', 'label:label:', 'clone-userns:userns:',
+                                        'procmount:proc-mount:', 'init:init:', 'ns:ns:',
+                                        'create:created:%s' % owned if profile == 'agent' else 'owner:created:owned',
+                                        'orphan:orphan:', 'escape:escape:' + escaped],
+                                       profile=profile)
+                    found = results(result)
+                    label = 'VELDO-0210 namespace/' + prefix
+                    expect(label + 'launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
+                    if nested:
+                        for name in ('proc-lists-only-sandbox-pids', 'host-process-hidden-by-pid',
+                                     'host-process-hidden-by-scan', 'launcher-hidden'):
+                            expect(label + name + ' (nested in the gate launcher\'s tree): %s' % found,
+                                   outer_ok and found.get('ns') == own_namespace)
+                    else:
+                        expect(label + 'proc-lists-only-sandbox-pids: %s' % found,
+                               found.get('pids') == [1, 2] and 'agent_sandbox.py' in found.get('init', '')
+                               and found.get('ns') != S.INITIAL_PID_NAMESPACE)
+                        expect(label + 'host-process-hidden-by-pid: %s' % found.get('by-pid'),
+                               found.get('by-pid') is True)
+                        expect(label + 'host-process-hidden-by-scan: %s' % found.get('scan'), found.get('scan') == [])
+                        expect(label + 'launcher-hidden: %s' % found.get('launcher-by-pid'),
+                               found.get('launcher-by-pid') is True)
+                    expect(label + 'ids-equal-outside: %s' % found.get('ids'),
+                           found.get('ids') == [os.getuid(), os.getgid(), os.getuid(), os.getgid()])
+                    # The agent's file is seen from outside; the gate profile writes only its scratch,
+                    # which is gone after the run, and the identity map shows its owner inside as outside.
+                    info = owned.stat() if owned.exists() else None
+                    expect(label + 'created-file-owned-by-user: %s' % found.get('created'),
+                           (found.get('created') is True and info is not None
+                            and (info.st_uid, info.st_gid) == (os.getuid(), os.getgid())) if profile == 'agent'
+                           else found.get('created') == [os.getuid(), os.getgid()])
+                    expect(label + 'no-capability-in-any-set: %s' % found.get('status'),
+                           found.get('status') == {'CapInh': '0000000000000000', 'CapPrm': '0000000000000000',
+                                                   'CapEff': '0000000000000000', 'CapBnd': '0000000000000000',
+                                                   'CapAmb': '0000000000000000', 'NoNewPrivs': '1'})
+                    expect(label + 'runs-under-the-child-profile: %s' % found.get('label'),
+                           not S.apparmor_enabled() or found.get('label') == S.NAMESPACE_PROFILE + ' (enforce)')
+                    expect(label + 'no-user-namespace-for-the-agent: %s' % found.get('userns'),
+                           found.get('userns') in ('EACCES', 'EPERM'))
+                    expect(label + 'proc-read-only: %s' % found.get('proc-mount'),
+                           len(found.get('proc-mount', [])) == 1 and 'ro' in found['proc-mount'][0].split(','))
+                    expect(label + 'init-reaps-orphans', found.get('orphan') is True)
+                    # Ends with the agent: the namespace ends with its init, and nested, the init is a
+                    # subreaper that kills and reaps what is left.
+                    argv = [sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)', escaped]
                     deadline = time.time() + 10
                     while host_pids(argv) and time.time() < deadline:
                         time.sleep(0.05)
                     expect(label + 'descendant-outside-agent-group-ends-with-agent',
                            found.get('escape') is True and host_pids(argv) == [])
-        finally:
-            sleeper.kill()
-            sleeper.wait()
+                    for pid in host_pids(argv):
+                        os.kill(pid, 9)
+            finally:
+                sleeper.kill()
+                sleeper.wait()
+        else:
+            skip('namespace/* rows of a running tree, agent and gate profiles')
         # The helper is fixed and checked; an unusable one refuses the start with the setup command,
         # never runs the tree with the host's /proc.
         source = launcher.read_text()
         import inspect
-        checked = inspect.getsource(S.helper_problem) + inspect.getsource(S.enter_namespaces)
         expect('VELDO-0210 namespace/helper-path-fixed',
-               S.NAMESPACE_HELPER == Path('/usr/local/lib/veldo/veldo-unshare')
-               and source.count('NAMESPACE_HELPER = ') == 1 and 'environ' not in checked
-               and "'--map-current-user'" in checked)
-        expect('VELDO-0210 namespace/setup-command-in-spec',
-               S.NAMESPACE_SETUP in (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text())
+               S.NAMESPACE_HELPER == Path('/usr/local/lib/veldo/veldo-userns')
+               and source.count('NAMESPACE_HELPER = ') == 1 and 'environ' not in inspect.getsource(S.helper_problem)
+               and 'os.execv(NAMESPACE_HELPER, [str(NAMESPACE_HELPER), str(Path(__file__).resolve()), str(carrier)])'
+               in source)
+        spec_text = (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text()
+        policy_text = (ROOT / 'scripts/veldo-userns.apparmor').read_text()
+        expect('VELDO-0210 namespace/setup-command-and-policy-in-spec',
+               S.NAMESPACE_SETUP in spec_text and all(line.strip() in spec_text for line in policy_text.splitlines()
+                                                      if line.strip() and not line.startswith('#')))
+        # What the setup builds: the helper drops every capability and sets no_new_privs after the
+        # procfs mount and before it executes the init, and relays the stops as the init expects.
+        helper_source = (ROOT / 'scripts/veldo_userns.c').read_text()
+        child = helper_source[helper_source.index('if (init == 0) {'):]
+        expect('VELDO-0210 namespace/helper-drops-everything-before-exec',
+               all(token in helper_source for token in (
+                   'PR_CAPBSET_DROP', 'PR_CAP_AMBIENT_CLEAR_ALL', 'SYS_capset', 'PR_SET_NO_NEW_PRIVS',
+                   'SECBIT_NOROOT_LOCKED', 'unshare(CLONE_NEWUSER)', 'unshare(CLONE_NEWNS | CLONE_NEWPID)',
+                   '"%lu %lu 1\\n"', '"deny"', 'MS_RDONLY | MS_NOSUID | MS_NODEV | MS_NOEXEC',
+                   '{PYTHON, "-I", "-S", argv[1], "namespace-init", argv[2], NULL}'))
+               and child.index('mount("proc"') < child.index('drop_capabilities();') < child.index('execve(')
+               and helper_source.index('    drop_capabilities();\n    if (syscall(SYS_close_range')
+               < helper_source.index('for (;;) {\n        siginfo_t'))
+        expect('VELDO-0210 namespace/helper-relays-as-the-init-expects',
+               'static const int stops[] = {SIGTERM, SIGINT, SIGHUP};' in helper_source
+               and 'kill(init, SIGRTMIN + index);' in helper_source
+               and [S.RELAY[n] - S.signal.SIGRTMIN for n in (S.signal.SIGTERM, S.signal.SIGINT, S.signal.SIGHUP)]
+               == [0, 1, 2])
+        profiles = policy_text.split('\nprofile ')
+        child_profile = [part for part in profiles if part.startswith('veldo-userns-child ')]
+        expect('VELDO-0210 namespace/policy-child-denies-capabilities-and-user-namespaces',
+               'profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=' in policy_text
+               and '  /usr/bin/python3* px -> veldo-userns-child,\n' in policy_text
+               and '  audit deny ptrace (tracedby),\n' in policy_text
+               and len(child_profile) == 1 and all(rule in child_profile[0] for rule in (
+                   '  audit deny capability,\n', '  audit deny userns,\n', '  audit deny change_profile,\n',
+                   '  audit deny mount,\n', '  /** ix,\n'))
+               and not any(word in child_profile[0] for word in ('px', 'Px', 'ux', 'Ux', 'cx', 'Cx', 'pix', 'unconfined')))
+        parser = Path('/usr/sbin/apparmor_parser')
+        if parser.exists() and not nested:
+            compiled = subprocess.run([str(parser), '-Q', '-K', '-T', str(ROOT / 'scripts/veldo-userns.apparmor')],
+                                      capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+            expect('VELDO-0210 namespace/policy-compiles: ' + compiled.stderr[-300:], compiled.returncode == 0)
+        compiler = __import__('shutil').which('cc')
+        if compiler and Path('/usr/lib/x86_64-linux-gnu/libc.a').exists():
+            # Built twice as the setup builds it: the same bytes, a static executable.
+            built = []
+            for attempt in ('one', 'two'):
+                directory = top / ('build-' + attempt)
+                directory.mkdir()
+                (directory / 'veldo_userns.c').write_text(helper_source)
+                subprocess.run([compiler, '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', '-static',
+                                '-ffile-prefix-map=%s=.' % directory, '-o', 'veldo-userns', 'veldo_userns.c'],
+                               cwd=directory, capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
+                output = directory / 'veldo-userns'
+                built.append(__import__('hashlib').sha256(output.read_bytes()).hexdigest() if output.exists() else None)
+            binary = top / 'build-one/veldo-userns'
+            expect('VELDO-0210 namespace/helper-builds-reproducibly: %s' % built,
+                   built[0] is not None and built[0] == built[1] and b'\x7fELF' == binary.read_bytes()[:4]
+                   and b'/lib64/ld-linux' not in binary.read_bytes())
+            # Its refusals, before any namespace: arguments, the entry point's name, path and owners.
+            entry_tree = top / 'entry-tree'
+            entry_tree.mkdir()
+            (entry_tree / 'agent_sandbox.py').write_text('')
+            (entry_tree / 'agent_sandbox.py').chmod(0o644)
+            writable_tree = top / 'writable-tree'
+            writable_tree.mkdir()
+            writable_tree.chmod(0o777)
+            (writable_tree / 'agent_sandbox.py').write_text('')
+            for name, argv, reason in (
+                    ('usage', [], 'usage'), ('relative-entry', ['scripts/agent_sandbox.py', '5'], 'absolute'),
+                    ('other-program', ['/usr/bin/true', '5'], 'must be agent_sandbox.py'),
+                    ('other-argument', [str(entry_tree / 'agent_sandbox.py'), '--anything'],
+                     'descriptor number or selftest'),
+                    ('writable-directory', [str(writable_tree / 'agent_sandbox.py'), '5'], 'writable by another account')):
+                refused = subprocess.run([str(binary), *argv], capture_output=True, text=True, timeout=30,
+                                         stdin=subprocess.DEVNULL) if binary.exists() else None
+                expect('VELDO-0210 namespace/helper-refuses-%s: %s' % (name, refused and refused.stderr[-200:]),
+                       refused is not None and refused.returncode == 2 and reason in refused.stderr)
+        # Nested means inside a tree this launcher's helper made: its AppArmor label, never any private
+        # PID namespace (a container's, a systemd PrivatePIDs one).
+        saved = S.apparmor_enabled, S.apparmor_label
+        try:
+            S.apparmor_enabled, S.apparmor_label = (lambda: True), (lambda: 'docker-default (enforce)')
+            container = S.nested_namespace()
+            S.apparmor_label = lambda: S.NAMESPACE_PROFILE + ' (complain)'
+            complaining = S.nested_namespace()
+        finally:
+            S.apparmor_enabled, S.apparmor_label = saved
+        expect('VELDO-0210 namespace/only-the-helpers-tree-counts-as-nested',
+               container is False and complaining is False
+               and "apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'" in inspect.getsource(S.nested_namespace))
+        # A nested tree's init is a subreaper: a descendant that left the agent's session is reaped and,
+        # once the agent is gone, killed.
+        read_end, write_end = os.pipe()
+        reaper = os.fork()
+        if not reaper:
+            try:
+                if S.LIBC.prctl(36, 1, 0, 0, 0):
+                    os._exit(3)
+                middle = os.fork()
+                if not middle:
+                    escaped = os.fork()
+                    if not escaped:
+                        os.setsid()
+                        time.sleep(120)
+                        os._exit(0)
+                    os.write(write_end, b'%d\n' % escaped)
+                    os._exit(0)
+                os.waitpid(middle, 0)
+                time.sleep(0.2)
+                S.end_descendants()
+                os._exit(0 if not Path('/proc/self/task/%d/children' % os.getpid()).read_text().split() else 4)
+            except BaseException:
+                os._exit(5)
+        os.close(write_end)
+        escaped_pid = int(os.read(read_end, 32) or b'0')
+        os.close(read_end)
+        _, reaped_status = os.waitpid(reaper, 0)
+        expect('VELDO-0210 namespace/nested-init-ends-setsid-descendants: %s' % reaped_status,
+               os.WIFEXITED(reaped_status) and os.WEXITSTATUS(reaped_status) == 0 and escaped_pid > 0
+               and not Path('/proc/%d' % escaped_pid).exists())
+        # The start is bounded: no ready report within the time, or no handoff, is no start.
+        saved = S.NAMESPACE_START_SECONDS
+        try:
+            S.NAMESPACE_START_SECONDS = 1
+            silent_read, silent_write = os.pipe()
+            began = time.time()
+            started = S.await_start(silent_read)
+            waited = time.time() - began
+            os.close(silent_read)
+            os.close(silent_write)
+            began = time.time()
+            handed, broker = S.fork_brokered([str(top)])
+            if not handed:
+                time.sleep(5)
+                os._exit(0)
+            handoff_waited = time.time() - began
+            os.kill(handed, 9)
+            os.waitpid(handed, 0)
+        finally:
+            S.NAMESPACE_START_SECONDS = saved
+        expect('VELDO-0210 namespace/start-wait-times-out: %.1f %.1f' % (waited, handoff_waited),
+               started is None and 0.9 < waited < 3 and broker is None and 0.9 < handoff_waited < 3
+               and 'reported = await_start(ready)' in source and 'os.killpg(pid, signal.SIGKILL)' in source)
         start_marker = worktree / 'must-not-start'
         start = [sys.executable, '-I', '-S', '-c', 'open(%r, "w").close()' % str(start_marker)]
         writable = top / 'writable-helper'
-        writable.write_text('#!/bin/sh\nexec /usr/local/lib/veldo/veldo-unshare "$@"\n')
+        writable.write_text('#!/bin/sh\nexec /usr/local/lib/veldo/veldo-userns "$@"\n')
         writable.chmod(0o777)
         user_owned = top / 'user-owned-helper'
         user_owned.write_text(writable.read_text())
         user_owned.chmod(0o755)
         linked_helper = top / 'linked-helper'
-        linked_helper.symlink_to('/usr/local/lib/veldo/veldo-unshare')
+        linked_helper.symlink_to('/usr/bin/true')
         for name, helper, reason in (('missing-helper-refused', top / 'absent-helper', 'No such file'),
                                      ('user-writable-helper-refused', writable, 'not owned by root'),
                                      ('user-owned-helper-refused', user_owned, 'not owned by root'),
@@ -401,12 +593,12 @@ print(json.dumps(r))
                    refused.returncode == 2 and reason in refused.stderr and S.NAMESPACE_SETUP in refused.stderr
                    and 'cannot create the PID namespace' in refused.stderr and not start_marker.exists())
         if not nested:
-            # util-linux unshare itself is root-owned and sound, but the host's AppArmor profile lets
-            # only the helper's path create a user namespace: the namespace cannot be made.
+            # A root-owned program that is not the helper makes no namespace and reports nothing: the
+            # launcher kills the tree and refuses; the command never runs with the host's /proc.
             start_marker.unlink(missing_ok=True)
-            refused = run(config, worktree, start, patch={'NAMESPACE_HELPER': '/usr/bin/unshare'})
-            expect('VELDO-0210 namespace/uncreatable-namespace-refused: %s' % refused.stderr[-300:],
-                   refused.returncode == 2 and '/usr/bin/unshare exited' in refused.stderr
+            refused = run(config, worktree, start, patch={'NAMESPACE_HELPER': '/usr/bin/true'})
+            expect('VELDO-0210 namespace/not-the-helper-refused: %s' % refused.stderr[-300:],
+                   refused.returncode == 2 and 'cannot create the PID namespace (the tree did not start' in refused.stderr
                    and S.NAMESPACE_SETUP in refused.stderr and not start_marker.exists())
         start_marker.unlink(missing_ok=True)
 
@@ -494,72 +686,75 @@ print(json.dumps(seen))
             return run(client_config, worktree, [sys.executable, '-I', '-S', str(act), mode, '', '', extra],
                        client=client, env=client_env)
 
-        reset()
-        before = account_state()
-        result = act_run('refresh', extra=json.dumps(new_token))
-        after = account_state()
-        expect('VELDO-0210 credentials/refresh-written-back: ' + result.stderr[-300:],
-               result.returncode == 0 and json.loads(after[0]) == new_token
-               and 'written back' in result.stderr)
-        expect('VELDO-0210 credentials/write-back-is-atomic-replace',
-               after[1] != before[1] and after[2] == 0o600
-               and sorted(p.name for p in account.iterdir())
-               == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
-                   'settings.json'])
-        seen = results(result)
-        expect('VELDO-0210 credentials/claude-run-receives-claude-files',
-               seen.get('claude') is True and seen.get('settings') is True and seen.get('state') is True)
-        expect('VELDO-0210 credentials/claude-run-has-no-codex-credentials',
-               seen.get('codex') is False and seen.get('codex-config') is False)
-        result = act_run('unchanged')
-        expect('VELDO-0210 credentials/unchanged-left-alone',
-               result.returncode == 0 and account_state() == after and 'written back' not in result.stderr)
-        for mode, reason in (('invalid', 'not written back'), ('array', 'not a JSON object')):
+        if live:
             reset()
             before = account_state()
-            result = act_run(mode)
-            expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
-                   result.returncode == 0 and account_state() == before and reason in result.stderr)
-        reset()
-        before = account_state()
-        result = act_run('deep')
-        expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
-                                                                              result.stderr[-200:]),
-               result.returncode == 7 and account_state() == before
-               and 'changed but not written back' in result.stderr
-               and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr)
-        for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
+            result = act_run('refresh', extra=json.dumps(new_token))
+            after = account_state()
+            expect('VELDO-0210 credentials/refresh-written-back: ' + result.stderr[-300:],
+                   result.returncode == 0 and json.loads(after[0]) == new_token
+                   and 'written back' in result.stderr)
+            expect('VELDO-0210 credentials/write-back-is-atomic-replace',
+                   after[1] != before[1] and after[2] == 0o600
+                   and sorted(p.name for p in account.iterdir())
+                   == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
+                       'settings.json'])
+            seen = results(result)
+            expect('VELDO-0210 credentials/claude-run-receives-claude-files',
+                   seen.get('claude') is True and seen.get('settings') is True and seen.get('state') is True)
+            expect('VELDO-0210 credentials/claude-run-has-no-codex-credentials',
+                   seen.get('codex') is False and seen.get('codex-config') is False)
+            result = act_run('unchanged')
+            expect('VELDO-0210 credentials/unchanged-left-alone',
+                   result.returncode == 0 and account_state() == after and 'written back' not in result.stderr)
+            for mode, reason in (('invalid', 'not written back'), ('array', 'not a JSON object')):
+                reset()
+                before = account_state()
+                result = act_run(mode)
+                expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
+                       result.returncode == 0 and account_state() == before and reason in result.stderr)
             reset()
             before = account_state()
-            result = act_run(mode, extra=str(target))
-            expect('VELDO-0210 credentials/%s-not-followed: %s' % (mode, result.stderr[-200:]),
-                   account_state() == before and 'not written back' in result.stderr
-                   and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True})
-        # A login (or another run's write-back) that replaced the source during the run wins: the
-        # run's own refresh is never written over it.
-        reset()
-        refreshed, go = worktree / 'refreshed', worktree / 'go'
-        for path in (refreshed, go):
-            path.unlink(missing_ok=True)
-        login = json.dumps({'claudeAiOauth': {'accessToken': 'login', 'refreshToken': 'r9'}})
-        process = subprocess.Popen(
-            [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
-             '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(act),
-             'refresh-wait', str(refreshed), str(go), json.dumps(new_token)],
-            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=client_env)
-        deadline = time.time() + 30
-        while not refreshed.exists() and time.time() < deadline and process.poll() is None:
-            time.sleep(0.05)
-        fresh = account / '.credentials.fresh'
-        fresh.write_text(login)
-        os.replace(fresh, account / '.credentials.json')
-        go.write_text('go')
-        _, stderr = process.communicate(timeout=60)
-        expect('VELDO-0210 credentials/concurrent-login-never-overwritten: ' + stderr[-200:],
-               refreshed.exists() and process.returncode == 0
-               and (account / '.credentials.json').read_text() == login
-               and 'changed during the run' in stderr and 'written back to' not in stderr
-               and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
+            result = act_run('deep')
+            expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
+                                                                                  result.stderr[-200:]),
+                   result.returncode == 7 and account_state() == before
+                   and 'changed but not written back' in result.stderr
+                   and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr)
+            for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
+                reset()
+                before = account_state()
+                result = act_run(mode, extra=str(target))
+                expect('VELDO-0210 credentials/%s-not-followed: %s' % (mode, result.stderr[-200:]),
+                       account_state() == before and 'not written back' in result.stderr
+                       and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True})
+            # A login (or another run's write-back) that replaced the source during the run wins: the
+            # run's own refresh is never written over it.
+            reset()
+            refreshed, go = worktree / 'refreshed', worktree / 'go'
+            for path in (refreshed, go):
+                path.unlink(missing_ok=True)
+            login = json.dumps({'claudeAiOauth': {'accessToken': 'login', 'refreshToken': 'r9'}})
+            process = subprocess.Popen(
+                [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
+                 '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(act),
+                 'refresh-wait', str(refreshed), str(go), json.dumps(new_token)],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=client_env)
+            deadline = time.time() + 30
+            while not refreshed.exists() and time.time() < deadline and process.poll() is None:
+                time.sleep(0.05)
+            fresh = account / '.credentials.fresh'
+            fresh.write_text(login)
+            os.replace(fresh, account / '.credentials.json')
+            go.write_text('go')
+            _, stderr = process.communicate(timeout=60)
+            expect('VELDO-0210 credentials/concurrent-login-never-overwritten: ' + stderr[-200:],
+                   refreshed.exists() and process.returncode == 0
+                   and (account / '.credentials.json').read_text() == login
+                   and 'changed during the run' in stderr and 'written back to' not in stderr
+                   and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
+        else:
+            skip('credentials/* rows of a running tree (refresh, write-back, links, concurrent login)')
         # Two write-backs of one source never interleave their compare and rename: a second one waits
         # for the sibling lock, then finds the bytes the first wrote and is superseded.
         locked = top / 'locked-credential.json'
@@ -585,34 +780,38 @@ print(json.dumps(seen))
                waited and outcome.get('result') == 'superseded' and locked.read_text() == '{"v": 3}'
                and sorted(p.name for p in top.iterdir() if p.name.startswith('locked-credential'))
                == ['locked-credential.json', 'locked-credential.json.veldo-lock'])
-        reset()
-        result = act_run('settings')
-        expect('VELDO-0210 credentials/non-credential-never-written-back',
-               result.returncode == 0 and (account / 'settings.json').read_text() == '{"theme": "auto"}')
-        reset()
-        result = act_run('refresh', client='codex', extra=json.dumps(new_token))
-        seen = results(result)
-        expect('VELDO-0210 credentials/codex-run-has-no-claude-credentials',
-               result.returncode == 0 and seen.get('codex') is True and seen.get('codex-config') is True
-               and seen.get('claude') is False and seen.get('settings') is False)
-        expect('VELDO-0210 credentials/other-client-source-untouched',
-               (account / '.credentials.json').read_text() == old_token
-               and (codex_home / 'auth.json').read_text() == codex_token)
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(act), 'unchanged'],
-                     env=client_env)
-        seen = results(result)
-        expect('VELDO-0210 credentials/no-client-no-credentials',
-               result.returncode == 0 and seen.get('claude') is False and seen.get('codex') is False)
-        # The sources are never readable in place, even under a read root that holds them.
-        reachable = dict(client_policy, read_roots=[*real['read_roots'], str(top / 'account')])
-        (top / 'reachable.json').write_text(json.dumps(reachable))
-        result = run(top / 'reachable.json', worktree,
-                     [sys.executable, '-I', '-S', str(probe), 'deny:source:%s' % (account / '.credentials.json'),
-                      'read:settings:%s' % (account / 'settings.json')], client='claude', env=client_env)
-        found = results(result)
-        expect('VELDO-0210 credentials/source-unreadable-in-place: ' + result.stderr[-200:],
-               found.get('source') is True and found.get('settings') is True)
+        if live:
+            reset()
+            result = act_run('settings')
+            expect('VELDO-0210 credentials/non-credential-never-written-back',
+                   result.returncode == 0 and (account / 'settings.json').read_text() == '{"theme": "auto"}')
+            reset()
+            result = act_run('refresh', client='codex', extra=json.dumps(new_token))
+            seen = results(result)
+            expect('VELDO-0210 credentials/codex-run-has-no-claude-credentials',
+                   result.returncode == 0 and seen.get('codex') is True and seen.get('codex-config') is True
+                   and seen.get('claude') is False and seen.get('settings') is False)
+            expect('VELDO-0210 credentials/other-client-source-untouched',
+                   (account / '.credentials.json').read_text() == old_token
+                   and (codex_home / 'auth.json').read_text() == codex_token)
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', str(act), 'unchanged'],
+                         env=client_env)
+            seen = results(result)
+            expect('VELDO-0210 credentials/no-client-no-credentials',
+                   result.returncode == 0 and seen.get('claude') is False and seen.get('codex') is False)
+            # The sources are never readable in place, even under a read root that holds them.
+            reachable = dict(client_policy, read_roots=[*real['read_roots'], str(top / 'account')])
+            (top / 'reachable.json').write_text(json.dumps(reachable))
+            result = run(top / 'reachable.json', worktree,
+                         [sys.executable, '-I', '-S', str(probe), 'deny:source:%s' % (account / '.credentials.json'),
+                          'read:settings:%s' % (account / 'settings.json')], client='claude', env=client_env)
+            found = results(result)
+            expect('VELDO-0210 credentials/source-unreadable-in-place: ' + result.stderr[-200:],
+                   found.get('source') is True and found.get('settings') is True)
+        else:
+            skip('credentials/* rows of a running tree (per-client files, sources unreadable in place)')
         # Refusals before anything runs.
+        reset()
         marker = worktree / 'must-not-start'
         start = [sys.executable, '-I', '-S', '-c', 'open(%r, "w").close()' % str(marker)]
         refused = run(client_config, worktree, start, client='gemini', env=client_env)
@@ -677,98 +876,101 @@ print(json.dumps(seen))
                and set(real['clients']['claude']['credentials'].values()) == {'.claude/.credentials.json'}
                and set(real['clients']['codex']['credentials'].values()) == {'.codex/auth.json'})
 
-        # capabilities: plugins, skills, MCP network and reviewed project roots, read only
-        reset()
-        plugin = account / 'plugins/cache/market/tool/1.0.0'
-        plugin.mkdir(parents=True)
-        (plugin / 'plugin.json').write_text('{"name": "tool"}')
-        (account / 'plugins/marketplaces/market').mkdir(parents=True)
-        (account / 'plugins/marketplaces/market/marketplace.json').write_text('{"name": "market"}')
-        (account / 'plugins/installed_plugins.json').write_text(json.dumps(
-            {'version': 2, 'plugins': {'tool@market': [{'scope': 'user', 'installPath': str(plugin)}]}}))
-        (account / 'skills/writing').mkdir(parents=True)
-        (account / 'skills/writing/SKILL.md').write_text('# skill')
-        (codex_home / 'skills/.system/review').mkdir(parents=True)
-        (codex_home / 'skills/.system/review/SKILL.md').write_text('# codex skill')
-        (codex_home / 'rules').mkdir()
-        (codex_home / 'rules/default.rules').write_text('allow')
-        other = top / 'projects/other-worktrees'
-        (other / 'checkout/package').mkdir(parents=True)
-        (other / 'checkout/package/module.py').write_text('VALUE = 1')
-        (other / 'checkout/secret').mkdir()
-        (other / 'checkout/secret/token').write_text('denied')
-        project_policy = dict(client_policy, project_read_roots=[str(other), str(top / 'projects/absent')],
-                              deny_read=[str(other / 'checkout/secret')])
-        project_config = top / 'project-config.json'
-        project_config.write_text(json.dumps(project_policy))
-        server = __import__('socket').socket()
-        server.bind(('127.0.0.1', 0))
-        server.listen(1)
-        import threading
+        if live:
+            # capabilities: plugins, skills, MCP network and reviewed project roots, read only
+            reset()
+            plugin = account / 'plugins/cache/market/tool/1.0.0'
+            plugin.mkdir(parents=True)
+            (plugin / 'plugin.json').write_text('{"name": "tool"}')
+            (account / 'plugins/marketplaces/market').mkdir(parents=True)
+            (account / 'plugins/marketplaces/market/marketplace.json').write_text('{"name": "market"}')
+            (account / 'plugins/installed_plugins.json').write_text(json.dumps(
+                {'version': 2, 'plugins': {'tool@market': [{'scope': 'user', 'installPath': str(plugin)}]}}))
+            (account / 'skills/writing').mkdir(parents=True)
+            (account / 'skills/writing/SKILL.md').write_text('# skill')
+            (codex_home / 'skills/.system/review').mkdir(parents=True)
+            (codex_home / 'skills/.system/review/SKILL.md').write_text('# codex skill')
+            (codex_home / 'rules').mkdir()
+            (codex_home / 'rules/default.rules').write_text('allow')
+            other = top / 'projects/other-worktrees'
+            (other / 'checkout/package').mkdir(parents=True)
+            (other / 'checkout/package/module.py').write_text('VALUE = 1')
+            (other / 'checkout/secret').mkdir()
+            (other / 'checkout/secret/token').write_text('denied')
+            project_policy = dict(client_policy, project_read_roots=[str(other), str(top / 'projects/absent')],
+                                  deny_read=[str(other / 'checkout/secret')])
+            project_config = top / 'project-config.json'
+            project_config.write_text(json.dumps(project_policy))
+            server = __import__('socket').socket()
+            server.bind(('127.0.0.1', 0))
+            server.listen(1)
+            import threading
 
-        def serve():
-            try:
-                connection, _ = server.accept()
-                connection.sendall(b'served')
-                connection.close()
-            except OSError:
-                pass
-        threading.Thread(target=serve, daemon=True).start()
-        claude_items = [
-            'home:plugin-through-link:.claude/plugins/cache/market/tool/1.0.0/plugin.json',
-            'home:marketplace-through-link:.claude/plugins/marketplaces/market/marketplace.json',
-            'home:installed-list-copied:.claude/plugins/installed_plugins.json',
-            'home:skill-through-link:.claude/skills/writing/SKILL.md',
-            'read:plugin-install-path:%s' % (plugin / 'plugin.json'),
-            'home-create:plugin-state-writable:.claude/plugins/plugin-directory-cache-v2.json',
-            'home-make:plugin-write-refused:.claude/plugins/cache/market/tool/1.0.0/planted.json',
-            'home-make:skill-write-refused:.claude/skills/writing/planted.md',
-            'write:plugin-source-write-refused:%s' % (plugin / 'plugin.json'),
-            'make:account-write-refused:%s' % (account / 'planted.json'),
-            'read:project-file:%s' % (other / 'checkout/package/module.py'),
-            'ls:project-listing:%s' % (other / 'checkout/package'),
-            'write:project-write-refused:%s' % (other / 'checkout/package/module.py'),
-            'make:project-create-refused:%s' % (other / 'checkout/planted.py'),
-            'deny:project-denied-path:%s' % (other / 'checkout/secret/token'),
-            'tcp:mcp-network:%d' % server.getsockname()[1],
-            'make:outside-worktree-refused:%s' % (top / 'outside'),
-            'write:runner-refused:%s' % runner, 'write:authority-refused:%s' % launcher,
-            'make:store-refused:%s' % (store / 'planted.json'),
-            'create:worktree-writable:%s' % (worktree / 'edited')]
-        result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *claude_items],
-                     client='claude', env=client_env)
-        server.close()
-        found = results(result)
-        expect('VELDO-0210 capabilities/claude-run-starts: ' + result.stderr[-300:], result.returncode == 0)
-        for item in claude_items:
-            name = item.split(':')[1]
-            expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
-        expect('VELDO-0210 capabilities/refusals-left-nothing',
-               not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
-               and (plugin / 'plugin.json').read_text() == '{"name": "tool"}'
-               and (other / 'checkout/package/module.py').read_text() == 'VALUE = 1'
-               and not (other / 'checkout/planted.py').exists() and not (account / 'planted.json').exists()
-               and not (store / 'planted.json').exists())
-        codex_items = ['home:codex-skill-through-link:.codex/skills/.system/review/SKILL.md',
-                       'home:codex-rules-through-link:.codex/rules/default.rules',
-                       'home-make:codex-skill-write-refused:.codex/skills/.system/planted']
-        result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *codex_items,
-                                                'home:claude-state-absent:.claude/plugins/installed_plugins.json'],
-                     client='codex', env=client_env)
-        found = results(result)
-        expect('VELDO-0210 capabilities/codex-run-starts: ' + result.stderr[-300:], result.returncode == 0)
-        for item in codex_items:
-            name = item.split(':')[1]
-            expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
-        expect('VELDO-0210 capabilities/codex-run-has-no-claude-plugins',
-               found.get('claude-state-absent') == 'ENOENT')
-        # The gate profile takes none of the agent additions: no project root, no resolver file.
-        result = subprocess.run([sys.executable, '-I', '-S', str(launcher), '--config', str(project_config),
-                                 '--profile', 'gate', '--worktree', str(worktree), '--', sys.executable, '-I',
-                                 '-S', str(probe), 'deny:project:%s' % (other / 'checkout/package/module.py')],
-                                capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
-        expect('VELDO-0210 capabilities/gate-profile-has-no-project-roots: ' + result.stderr[-200:],
-               result.returncode == 0 and results(result).get('project') is True)
+            def serve():
+                try:
+                    connection, _ = server.accept()
+                    connection.sendall(b'served')
+                    connection.close()
+                except OSError:
+                    pass
+            threading.Thread(target=serve, daemon=True).start()
+            claude_items = [
+                'home:plugin-through-link:.claude/plugins/cache/market/tool/1.0.0/plugin.json',
+                'home:marketplace-through-link:.claude/plugins/marketplaces/market/marketplace.json',
+                'home:installed-list-copied:.claude/plugins/installed_plugins.json',
+                'home:skill-through-link:.claude/skills/writing/SKILL.md',
+                'read:plugin-install-path:%s' % (plugin / 'plugin.json'),
+                'home-create:plugin-state-writable:.claude/plugins/plugin-directory-cache-v2.json',
+                'home-make:plugin-write-refused:.claude/plugins/cache/market/tool/1.0.0/planted.json',
+                'home-make:skill-write-refused:.claude/skills/writing/planted.md',
+                'write:plugin-source-write-refused:%s' % (plugin / 'plugin.json'),
+                'make:account-write-refused:%s' % (account / 'planted.json'),
+                'read:project-file:%s' % (other / 'checkout/package/module.py'),
+                'ls:project-listing:%s' % (other / 'checkout/package'),
+                'write:project-write-refused:%s' % (other / 'checkout/package/module.py'),
+                'make:project-create-refused:%s' % (other / 'checkout/planted.py'),
+                'deny:project-denied-path:%s' % (other / 'checkout/secret/token'),
+                'tcp:mcp-network:%d' % server.getsockname()[1],
+                'make:outside-worktree-refused:%s' % (top / 'outside'),
+                'write:runner-refused:%s' % runner, 'write:authority-refused:%s' % launcher,
+                'make:store-refused:%s' % (store / 'planted.json'),
+                'create:worktree-writable:%s' % (worktree / 'edited')]
+            result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *claude_items],
+                         client='claude', env=client_env)
+            server.close()
+            found = results(result)
+            expect('VELDO-0210 capabilities/claude-run-starts: ' + result.stderr[-300:], result.returncode == 0)
+            for item in claude_items:
+                name = item.split(':')[1]
+                expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
+            expect('VELDO-0210 capabilities/refusals-left-nothing',
+                   not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
+                   and (plugin / 'plugin.json').read_text() == '{"name": "tool"}'
+                   and (other / 'checkout/package/module.py').read_text() == 'VALUE = 1'
+                   and not (other / 'checkout/planted.py').exists() and not (account / 'planted.json').exists()
+                   and not (store / 'planted.json').exists())
+            codex_items = ['home:codex-skill-through-link:.codex/skills/.system/review/SKILL.md',
+                           'home:codex-rules-through-link:.codex/rules/default.rules',
+                           'home-make:codex-skill-write-refused:.codex/skills/.system/planted']
+            result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *codex_items,
+                                                    'home:claude-state-absent:.claude/plugins/installed_plugins.json'],
+                         client='codex', env=client_env)
+            found = results(result)
+            expect('VELDO-0210 capabilities/codex-run-starts: ' + result.stderr[-300:], result.returncode == 0)
+            for item in codex_items:
+                name = item.split(':')[1]
+                expect('VELDO-0210 capabilities/%s: %s' % (name, found.get(name)), found.get(name) is True)
+            expect('VELDO-0210 capabilities/codex-run-has-no-claude-plugins',
+                   found.get('claude-state-absent') == 'ENOENT')
+            # The gate profile takes none of the agent additions: no project root, no resolver file.
+            result = subprocess.run([sys.executable, '-I', '-S', str(launcher), '--config', str(project_config),
+                                     '--profile', 'gate', '--worktree', str(worktree), '--', sys.executable, '-I',
+                                     '-S', str(probe), 'deny:project:%s' % (other / 'checkout/package/module.py')],
+                                    capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
+            expect('VELDO-0210 capabilities/gate-profile-has-no-project-roots: ' + result.stderr[-200:],
+                   result.returncode == 0 and results(result).get('project') is True)
+        else:
+            skip('capabilities/* rows of a running tree')
         expect('VELDO-0210 capabilities/reviewed-project-list',
                real['project_read_roots'] == ['~/projects/webflow-ops-worktrees']
                and not set(real['project_read_roots']) & set(real['write_roots'])
@@ -799,100 +1001,103 @@ print(json.dumps(seen))
                    '{home}/veldo-agent-state/{project}/memories': '.codex/memories'}
                and real['clients']['codex'].get('state_files')
                == {'{home}/veldo-agent-state/{project}/history.jsonl': '.codex/history.jsonl'})
-        # Another project's auto-memory, which the next unconfined Claude run loads as instructions.
-        other_memory = account / 'projects/-home-u-other-project/memory/MEMORY.md'
-        other_memory.parent.mkdir(parents=True)
-        other_memory.write_text('# trusted memory\n')
-        outside_file = top / 'state-outside.txt'
-        outside_file.write_text('outside')
-        first = ['home-create:transcript-written:.claude/projects/%s/session.jsonl' % project,
-                 'write:settings-refused:%s' % (account / 'settings.json'),
-                 'write:state-file-refused:%s' % (account / '.claude.json'),
-                 'deny:credential-refused:%s' % (account / '.credentials.json'),
-                 'make:config-dir-create-refused:%s' % (account / 'planted.json'),
-                 'write:other-project-memory-refused:%s' % other_memory,
-                 'make:other-project-create-refused:%s' % (other_memory.parent / 'planted.md'),
-                 'list:other-projects-unlisted:%s' % (account / 'projects'),
-                 'home-make:dotdot-refused:.claude/projects/%s/../planted.json' % project,
-                 'linkread:planted-link-refused:.claude/projects/%s/steal|%s' % (project, account / '.credentials.json'),
-                 'plant:planted-entries:.claude/projects/%s|%s' % (project, worktree / 'linked-source')]
-        (worktree / 'linked-source').write_text('worktree file')
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
-                     client='claude', env=client_env)
-        found = results(result)
-        for item in first:
-            name = item.split(':')[1]
-            expect('VELDO-0210 state/claude-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
-                   found.get(name) is True)
-        kept = account / 'projects' / project
-        expect('VELDO-0210 state/planted-entries-removed-and-reported: %s' % result.stderr[-600:],
-               sorted(p.name for p in kept.iterdir()) == ['session.jsonl', 'shut']
-               and sorted(p.name for p in (kept / 'shut').iterdir()) == ['kept.txt']
-               and all('removed from agent state: %s (%s)' % (kept / name, why) in result.stderr
-                       for name, why in (('steal', 'a symbolic link'), ('fifo', 'a special file'),
-                                         ('hardlink', 'a regular file with another link'),
-                                         ('shut/escape', 'a symbolic link')))
-               and (worktree / 'linked-source').read_text() == 'worktree file')
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe),
-                                               'home:transcript-seen:.claude/projects/%s/session.jsonl' % project],
-                     client='claude', env=client_env)
-        expect('VELDO-0210 state/second-claude-run-sees-first-transcript: %s' % results(result),
-               results(result).get('transcript-seen') is True
-               and (kept / 'session.jsonl').read_text() == 'allowed')
-        expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
-               sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
-                                                              'settings.json']
-               and (account / 'settings.json').read_text() == '{"theme": "auto"}'
-               and (account / '.claude.json').read_text() == '{"numStartups": 1}'
-               and (account / '.credentials.json').read_text() == old_token
-               and other_memory.read_text() == '# trusted memory\n'
-               and sorted(p.name for p in other_memory.parent.iterdir()) == ['MEMORY.md']
-               and sorted(p.name for p in (account / 'projects').iterdir()) == ['-home-u-other-project', project])
-        codex_state = codex_home / 'veldo-agent-state' / project
-        first = ['home-create:session-written:.codex/sessions/rollout.jsonl',
-                 'home-create:memory-written:.codex/memories/note.md',
-                 'home-create:history-written:.codex/history.jsonl',
-                 'write:codex-config-refused:%s' % (codex_home / 'config.toml'),
-                 'deny:codex-credential-refused:%s' % (codex_home / 'auth.json'),
-                 'make:codex-dir-create-refused:%s' % (codex_home / 'planted.json'),
-                 'make:codex-account-history-refused:%s' % (codex_home / 'history.jsonl'),
-                 'make:codex-account-sessions-refused:%s' % (codex_home / 'sessions'),
-                 'home-make:codex-dotdot-refused:.codex/sessions/../planted.json']
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
-                     client='codex', env=client_env)
-        found = results(result)
-        for item in first:
-            name = item.split(':')[1]
-            expect('VELDO-0210 state/codex-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
-                   found.get(name) is True)
-        second = ['home:session-seen:.codex/sessions/rollout.jsonl', 'home:memory-seen:.codex/memories/note.md',
-                  'home:history-seen:.codex/history.jsonl', 'home:claude-transcript-absent:.claude/projects']
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *second],
-                     client='codex', env=client_env)
-        found = results(result)
-        expect('VELDO-0210 state/second-codex-run-sees-first-state: %s' % found,
-               all(found.get(name) is True for name in ('session-seen', 'memory-seen', 'history-seen'))
-               and found.get('claude-transcript-absent') == 'ENOENT')
-        # Another worktree has state of its own: it sees none of this one's.
-        other_worktree = top / 'other-worktree'
-        other_worktree.mkdir()
-        (other_worktree / 'probe.py').write_text(probe.read_text())
-        result = run(client_config, other_worktree, [sys.executable, '-I', '-S', str(other_worktree / 'probe.py'),
-                                                     *second[:3],
-                                                     'deny:first-worktree-history:%s' % (codex_state / 'history.jsonl')],
-                     client='codex', env=client_env)
-        found = results(result)
-        expect('VELDO-0210 state/other-worktree-run-sees-none-of-it: %s %s' % (found, result.stderr[-200:]),
-               result.returncode == 0 and found.get('session-seen') == 'ENOENT'
-               and found.get('memory-seen') == 'ENOENT' and found.get('history-seen') is True
-               and found.get('first-worktree-history') is True
-               and (codex_home / 'veldo-agent-state' / S.claude_project(other_worktree.resolve())
-                    / 'history.jsonl').read_text() == '')
-        expect('VELDO-0210 state/codex-home-otherwise-untouched',
-               sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
-               and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
-               and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
-               and (codex_home / 'auth.json').read_text() == codex_token)
+        if live:
+            # Another project's auto-memory, which the next unconfined Claude run loads as instructions.
+            other_memory = account / 'projects/-home-u-other-project/memory/MEMORY.md'
+            other_memory.parent.mkdir(parents=True)
+            other_memory.write_text('# trusted memory\n')
+            outside_file = top / 'state-outside.txt'
+            outside_file.write_text('outside')
+            first = ['home-create:transcript-written:.claude/projects/%s/session.jsonl' % project,
+                     'write:settings-refused:%s' % (account / 'settings.json'),
+                     'write:state-file-refused:%s' % (account / '.claude.json'),
+                     'deny:credential-refused:%s' % (account / '.credentials.json'),
+                     'make:config-dir-create-refused:%s' % (account / 'planted.json'),
+                     'write:other-project-memory-refused:%s' % other_memory,
+                     'make:other-project-create-refused:%s' % (other_memory.parent / 'planted.md'),
+                     'list:other-projects-unlisted:%s' % (account / 'projects'),
+                     'home-make:dotdot-refused:.claude/projects/%s/../planted.json' % project,
+                     'linkread:planted-link-refused:.claude/projects/%s/steal|%s' % (project, account / '.credentials.json'),
+                     'plant:planted-entries:.claude/projects/%s|%s' % (project, worktree / 'linked-source')]
+            (worktree / 'linked-source').write_text('worktree file')
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
+                         client='claude', env=client_env)
+            found = results(result)
+            for item in first:
+                name = item.split(':')[1]
+                expect('VELDO-0210 state/claude-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
+                       found.get(name) is True)
+            kept = account / 'projects' / project
+            expect('VELDO-0210 state/planted-entries-removed-and-reported: %s' % result.stderr[-600:],
+                   sorted(p.name for p in kept.iterdir()) == ['session.jsonl', 'shut']
+                   and sorted(p.name for p in (kept / 'shut').iterdir()) == ['kept.txt']
+                   and all('removed from agent state: %s (%s)' % (kept / name, why) in result.stderr
+                           for name, why in (('steal', 'a symbolic link'), ('fifo', 'a special file'),
+                                             ('hardlink', 'a regular file with another link'),
+                                             ('shut/escape', 'a symbolic link')))
+                   and (worktree / 'linked-source').read_text() == 'worktree file')
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe),
+                                                   'home:transcript-seen:.claude/projects/%s/session.jsonl' % project],
+                         client='claude', env=client_env)
+            expect('VELDO-0210 state/second-claude-run-sees-first-transcript: %s' % results(result),
+                   results(result).get('transcript-seen') is True
+                   and (kept / 'session.jsonl').read_text() == 'allowed')
+            expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
+                   sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
+                                                                  'settings.json']
+                   and (account / 'settings.json').read_text() == '{"theme": "auto"}'
+                   and (account / '.claude.json').read_text() == '{"numStartups": 1}'
+                   and (account / '.credentials.json').read_text() == old_token
+                   and other_memory.read_text() == '# trusted memory\n'
+                   and sorted(p.name for p in other_memory.parent.iterdir()) == ['MEMORY.md']
+                   and sorted(p.name for p in (account / 'projects').iterdir()) == ['-home-u-other-project', project])
+            codex_state = codex_home / 'veldo-agent-state' / project
+            first = ['home-create:session-written:.codex/sessions/rollout.jsonl',
+                     'home-create:memory-written:.codex/memories/note.md',
+                     'home-create:history-written:.codex/history.jsonl',
+                     'write:codex-config-refused:%s' % (codex_home / 'config.toml'),
+                     'deny:codex-credential-refused:%s' % (codex_home / 'auth.json'),
+                     'make:codex-dir-create-refused:%s' % (codex_home / 'planted.json'),
+                     'make:codex-account-history-refused:%s' % (codex_home / 'history.jsonl'),
+                     'make:codex-account-sessions-refused:%s' % (codex_home / 'sessions'),
+                     'home-make:codex-dotdot-refused:.codex/sessions/../planted.json']
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
+                         client='codex', env=client_env)
+            found = results(result)
+            for item in first:
+                name = item.split(':')[1]
+                expect('VELDO-0210 state/codex-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
+                       found.get(name) is True)
+            second = ['home:session-seen:.codex/sessions/rollout.jsonl', 'home:memory-seen:.codex/memories/note.md',
+                      'home:history-seen:.codex/history.jsonl', 'home:claude-transcript-absent:.claude/projects']
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *second],
+                         client='codex', env=client_env)
+            found = results(result)
+            expect('VELDO-0210 state/second-codex-run-sees-first-state: %s' % found,
+                   all(found.get(name) is True for name in ('session-seen', 'memory-seen', 'history-seen'))
+                   and found.get('claude-transcript-absent') == 'ENOENT')
+            # Another worktree has state of its own: it sees none of this one's.
+            other_worktree = top / 'other-worktree'
+            other_worktree.mkdir()
+            (other_worktree / 'probe.py').write_text(probe.read_text())
+            result = run(client_config, other_worktree, [sys.executable, '-I', '-S', str(other_worktree / 'probe.py'),
+                                                         *second[:3],
+                                                         'deny:first-worktree-history:%s' % (codex_state / 'history.jsonl')],
+                         client='codex', env=client_env)
+            found = results(result)
+            expect('VELDO-0210 state/other-worktree-run-sees-none-of-it: %s %s' % (found, result.stderr[-200:]),
+                   result.returncode == 0 and found.get('session-seen') == 'ENOENT'
+                   and found.get('memory-seen') == 'ENOENT' and found.get('history-seen') is True
+                   and found.get('first-worktree-history') is True
+                   and (codex_home / 'veldo-agent-state' / S.claude_project(other_worktree.resolve())
+                        / 'history.jsonl').read_text() == '')
+            expect('VELDO-0210 state/codex-home-otherwise-untouched',
+                   sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
+                   and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
+                   and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
+                   and (codex_home / 'auth.json').read_text() == codex_token)
+        else:
+            skip('state/* rows of a running tree (both clients, other project, other worktree, planted entries)')
         # clean_state on its own: every link, extra hard link and special file goes, at any depth and
         # in a shut directory; the files a CLI writes stay.
         swept = top / 'swept-state'
@@ -989,166 +1194,172 @@ time.sleep(120)
         def leftovers():
             return sorted(p.name for p in parent.iterdir())
 
-        reset()
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
-                     'import os; open("home-normal", "w").write(os.environ["HOME"])'],
-                     client='claude', env=scratch_env)
-        home = Path((worktree / 'home-normal').read_text()) if (worktree / 'home-normal').exists() else None
-        expect('VELDO-0210 scratch/removed-at-exit',
-               result.returncode == 0 and home is not None and home.parent == parent and not home.exists()
-               and leftovers() == [])
+        if live:
+            reset()
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
+                         'import os; open("home-normal", "w").write(os.environ["HOME"])'],
+                         client='claude', env=scratch_env)
+            home = Path((worktree / 'home-normal').read_text()) if (worktree / 'home-normal').exists() else None
+            expect('VELDO-0210 scratch/removed-at-exit',
+                   result.returncode == 0 and home is not None and home.parent == parent and not home.exists()
+                   and leftovers() == [])
+        else:
+            skip('scratch/removed-at-exit')
         refused = run(client_config, worktree, ['/usr/bin/true'], client='gemini', env=scratch_env)
         expect('VELDO-0210 scratch/removed-after-refusal', refused.returncode == 2 and leftovers() == [])
-        shim = ('import os, signal, sys; signal.signal(signal.SIGINT, getattr(signal, sys.argv[1])); '
-                'os.execv(sys.argv[2], sys.argv[2:])')
-
-        def agent_pid(held, mode, marker):
-            """The holding agent's pid as this suite sees it (inside, it has a namespace's own pid),
-            found by its exact command line, and its descendant's, if it started one."""
-            if held:
-                agent = host_pids([sys.executable, '-I', '-S', str(hold), mode, str(marker), json.dumps(new_token)])
-                held['pid'] = agent[0] if len(agent) == 1 else -1
-                if mode == 'descendant':
-                    descendant = host_pids([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)',
-                                            str(marker) + '.descendant'])
-                    held['descendant'] = descendant[0] if len(descendant) == 1 else None
-
-        def stopped(number, mode='plain', patch=None, interrupt='SIG_DFL', settle=None):
-            '''Start a holding run, wait until it holds, send `number` to the launcher; returns the
-            launcher's exit code, what the confined process recorded and the seconds it took.'''
-            reset()
-            marker = worktree / ('held-%s-%d' % (mode, number))
-            marker.unlink(missing_ok=True)
-            argv = [sys.executable, '-c', shim, interrupt, sys.executable, '-I', '-S', '-c', wrapper,
-                    str(launcher), json.dumps(patch or {}), '--config', str(client_config),
-                    '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S',
-                    str(hold), mode, str(marker), json.dumps(new_token)]
-            process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, text=True, env=scratch_env)
-            deadline = time.time() + 30
-            while not marker.exists() and time.time() < deadline and process.poll() is None:
-                time.sleep(0.05)
-            held = json.loads(marker.read_text()) if marker.exists() else {}
-            agent_pid(held, mode, marker)
-            started = time.time()
-            process.send_signal(number)
-            if settle is not None:
-                time.sleep(settle)
-                alive = process.poll() is None
-                process.send_signal(signal.SIGTERM)
-            try:
-                process.communicate(timeout=60)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.communicate()
-            code = process.returncode if settle is None else (alive, process.returncode)
-            return code, held, time.time() - started
-
-        def gone(held):
-            return (bool(held) and held['pid'] > 0 and not Path(held['home']).exists()
-                    and not Path('/proc/%d' % held['pid']).exists())
-
-        for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-            code, held, _ = stopped(number)
-            name = signal.Signals(number).name
-            expect('VELDO-0210 scratch/%s-removes-scratch-and-stops-tree: %s %s' % (name, code, held),
-                   code == 128 + number and gone(held) and leftovers() == [])
-            expect('VELDO-0210 scratch/%s-still-writes-back-refresh' % name,
-                   json.loads((account / '.credentials.json').read_text()) == new_token)
-        code, held, took = stopped(signal.SIGTERM, mode='ignore-term', patch={'GRACE_SECONDS': 1})
-        expect('VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: %s %.1fs' % (code, took),
-               code == 128 + signal.SIGTERM and gone(held) and took < 20 and leftovers() == [])
-        (alive, code), held, _ = stopped(signal.SIGINT, interrupt='SIG_IGN', settle=1.0)
-        expect('VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: %s %s' % (alive, code),
-               alive and code == 128 + signal.SIGTERM and gone(held) and leftovers() == [])
-
-        # A stop that lands between the fork and the child's registration waits for the registration:
-        # the child gets the stop forwarded (and may end cleanly), never runs on with its scratch gone.
-        late, termed = worktree / 'outlived-launcher', worktree / 'stop-forwarded'
-        for path in (late, termed):
-            path.unlink(missing_ok=True)
-        result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
-                     'import signal, sys, time\n'
-                     'signal.signal(signal.SIGTERM, lambda *_: (open(%r, "w").close(), sys.exit(0)))\n'
-                     'time.sleep(3); open(%r, "w").close()' % (str(termed), str(late))],
-                     patch={'FORK_THEN_SIGNAL': True}, client='claude', env=scratch_env)
-        time.sleep(3)
-        expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s %s' % (result.returncode,
-                                                                                  result.stderr[-200:]),
-               result.returncode == 128 + signal.SIGTERM and termed.exists() and not late.exists()
-               and leftovers() == [])
-
-        def alive(pid):
-            try:
-                return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] != 'Z'
-            except (OSError, IndexError):
-                return False
-
-        def held_run(mode):
-            reset()
-            marker = worktree / ('held-%s' % mode)
-            marker.unlink(missing_ok=True)
-            process = subprocess.Popen(
-                [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
-                 '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(hold),
-                 mode, str(marker), json.dumps(new_token)],
-                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=scratch_env)
-            deadline = time.time() + 30
-            while not marker.exists() and time.time() < deadline and process.poll() is None:
-                time.sleep(0.05)
-            held = json.loads(marker.read_text()) if marker.exists() else {}
-            agent_pid(held, mode, marker)
-            return process, held
-
-        def settled(condition):
-            deadline = time.time() + 10
-            while not condition() and time.time() < deadline:
-                time.sleep(0.05)
-            return condition()
-
         day_old = time.time() - 2 * 24 * 60 * 60
-        # A live launcher's scratch is never swept, however old it looks.
-        process, held = held_run('plain')
-        if held:
-            os.utime(held['home'], (day_old, day_old))
-        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
-        expect('VELDO-0210 scratch/live-launcher-scratch-kept: %s' % held,
-               result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
-        process.send_signal(signal.SIGTERM)
-        process.wait(timeout=60)
-        # A launcher killed outright takes its agent with it. In its own namespace the agent's
-        # descendants go too, since the namespace ends with its init; nested in another sandbox, a
-        # descendant that kept the agent's descriptors keeps the scratch until it is gone too.
-        process, held = held_run('descendant')
-        process.kill()
-        process.wait(timeout=60)
-        taken = bool(held) and held['pid'] > 0 and settled(lambda: not alive(held['pid']))
+        if live:
+            shim = ('import os, signal, sys; signal.signal(signal.SIGINT, getattr(signal, sys.argv[1])); '
+                    'os.execv(sys.argv[2], sys.argv[2:])')
 
-        def state(pid):
-            try:
-                return Path('/proc/%d/status' % pid).read_text().splitlines()[:8]
-            except OSError as error:
-                return str(error)
-        expect('VELDO-0210 scratch/killed-launcher-takes-its-agent: %s %s' % (held, '' if taken or not held
-                                                                            else state(held['pid'])), taken)
-        descendant = held.get('descendant')
-        if held:
-            os.utime(held['home'], (day_old, day_old))
-        if not nested:
-            expect('VELDO-0210 scratch/killed-launcher-takes-its-descendants: %s' % held,
-                   descendant is not None and settled(lambda: not alive(descendant)))
-        else:
+            def agent_pid(held, mode, marker):
+                """The holding agent's pid as this suite sees it (inside, it has a namespace's own pid),
+                found by its exact command line, and its descendant's, if it started one."""
+                if held:
+                    agent = host_pids([sys.executable, '-I', '-S', str(hold), mode, str(marker), json.dumps(new_token)])
+                    held['pid'] = agent[0] if len(agent) == 1 else -1
+                    if mode == 'descendant':
+                        descendant = host_pids([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)',
+                                                str(marker) + '.descendant'])
+                        held['descendant'] = descendant[0] if len(descendant) == 1 else None
+
+            def stopped(number, mode='plain', patch=None, interrupt='SIG_DFL', settle=None):
+                '''Start a holding run, wait until it holds, send `number` to the launcher; returns the
+                launcher's exit code, what the confined process recorded and the seconds it took.'''
+                reset()
+                marker = worktree / ('held-%s-%d' % (mode, number))
+                marker.unlink(missing_ok=True)
+                argv = [sys.executable, '-c', shim, interrupt, sys.executable, '-I', '-S', '-c', wrapper,
+                        str(launcher), json.dumps(patch or {}), '--config', str(client_config),
+                        '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S',
+                        str(hold), mode, str(marker), json.dumps(new_token)]
+                process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE, text=True, env=scratch_env)
+                deadline = time.time() + 30
+                while not marker.exists() and time.time() < deadline and process.poll() is None:
+                    time.sleep(0.05)
+                held = json.loads(marker.read_text()) if marker.exists() else {}
+                agent_pid(held, mode, marker)
+                started = time.time()
+                process.send_signal(number)
+                if settle is not None:
+                    time.sleep(settle)
+                    alive = process.poll() is None
+                    process.send_signal(signal.SIGTERM)
+                try:
+                    process.communicate(timeout=60)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.communicate()
+                code = process.returncode if settle is None else (alive, process.returncode)
+                return code, held, time.time() - started
+
+            def gone(held):
+                return (bool(held) and held['pid'] > 0 and not Path(held['home']).exists()
+                        and not Path('/proc/%d' % held['pid']).exists())
+
+            for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+                code, held, _ = stopped(number)
+                name = signal.Signals(number).name
+                expect('VELDO-0210 scratch/%s-removes-scratch-and-stops-tree: %s %s' % (name, code, held),
+                       code == 128 + number and gone(held) and leftovers() == [])
+                expect('VELDO-0210 scratch/%s-still-writes-back-refresh' % name,
+                       json.loads((account / '.credentials.json').read_text()) == new_token)
+            code, held, took = stopped(signal.SIGTERM, mode='ignore-term', patch={'GRACE_SECONDS': 1})
+            expect('VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: %s %.1fs' % (code, took),
+                   code == 128 + signal.SIGTERM and gone(held) and took < 20 and leftovers() == [])
+            (alive, code), held, _ = stopped(signal.SIGINT, interrupt='SIG_IGN', settle=1.0)
+            expect('VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: %s %s' % (alive, code),
+                   alive and code == 128 + signal.SIGTERM and gone(held) and leftovers() == [])
+
+            # A stop that lands between the fork and the child's registration waits for the registration:
+            # the child gets the stop forwarded (and may end cleanly), never runs on with its scratch gone.
+            late, termed = worktree / 'outlived-launcher', worktree / 'stop-forwarded'
+            for path in (late, termed):
+                path.unlink(missing_ok=True)
+            result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
+                         'import signal, sys, time\n'
+                         'signal.signal(signal.SIGTERM, lambda *_: (open(%r, "w").close(), sys.exit(0)))\n'
+                         'time.sleep(3); open(%r, "w").close()' % (str(termed), str(late))],
+                         patch={'FORK_THEN_SIGNAL': True}, client='claude', env=scratch_env)
+            time.sleep(3)
+            expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s %s' % (result.returncode,
+                                                                                      result.stderr[-200:]),
+                   result.returncode == 128 + signal.SIGTERM and termed.exists() and not late.exists()
+                   and leftovers() == [])
+
+            def alive(pid):
+                try:
+                    return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] != 'Z'
+                except (OSError, IndexError):
+                    return False
+
+            def held_run(mode):
+                reset()
+                marker = worktree / ('held-%s' % mode)
+                marker.unlink(missing_ok=True)
+                process = subprocess.Popen(
+                    [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
+                     '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(hold),
+                     mode, str(marker), json.dumps(new_token)],
+                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=scratch_env)
+                deadline = time.time() + 30
+                while not marker.exists() and time.time() < deadline and process.poll() is None:
+                    time.sleep(0.05)
+                held = json.loads(marker.read_text()) if marker.exists() else {}
+                agent_pid(held, mode, marker)
+                return process, held
+
+            def settled(condition):
+                deadline = time.time() + 10
+                while not condition() and time.time() < deadline:
+                    time.sleep(0.05)
+                return condition()
+
+            # A live launcher's scratch is never swept, however old it looks.
+            process, held = held_run('plain')
+            if held:
+                os.utime(held['home'], (day_old, day_old))
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
-            expect('VELDO-0210 scratch/scratch-of-live-descendant-kept',
-                   result.returncode == 0 and descendant is not None and alive(descendant)
-                   and Path(held['home']).is_dir())
-            if descendant is not None:
-                os.kill(descendant, signal.SIGKILL)
-                settled(lambda: not alive(descendant))
-        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
-        expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
-               result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+            expect('VELDO-0210 scratch/live-launcher-scratch-kept: %s' % held,
+                   result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
+            process.send_signal(signal.SIGTERM)
+            process.wait(timeout=60)
+            # A launcher killed outright takes its agent with it. In its own namespace the agent's
+            # descendants go too, since the namespace ends with its init; nested in another sandbox, a
+            # descendant that kept the agent's descriptors keeps the scratch until it is gone too.
+            process, held = held_run('descendant')
+            process.kill()
+            process.wait(timeout=60)
+            taken = bool(held) and held['pid'] > 0 and settled(lambda: not alive(held['pid']))
 
+            def state(pid):
+                try:
+                    return Path('/proc/%d/status' % pid).read_text().splitlines()[:8]
+                except OSError as error:
+                    return str(error)
+            expect('VELDO-0210 scratch/killed-launcher-takes-its-agent: %s %s' % (held, '' if taken or not held
+                                                                                else state(held['pid'])), taken)
+            descendant = held.get('descendant')
+            if held:
+                os.utime(held['home'], (day_old, day_old))
+            if not nested:
+                expect('VELDO-0210 scratch/killed-launcher-takes-its-descendants: %s' % held,
+                       descendant is not None and settled(lambda: not alive(descendant)))
+            else:
+                result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+                expect('VELDO-0210 scratch/scratch-of-live-descendant-kept',
+                       result.returncode == 0 and descendant is not None and alive(descendant)
+                       and Path(held['home']).is_dir())
+                if descendant is not None:
+                    os.kill(descendant, signal.SIGKILL)
+                    settled(lambda: not alive(descendant))
+            result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+            expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
+                   result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+
+        else:
+            skip('scratch/* rows of a running tree (stop signals, live and killed launchers)')
         # Stale: a day-old scratch is swept at the next start; nothing else is.
         stale = parent / 'veldo-agent-stale'
         (stale / 'shut/inner').mkdir(parents=True)
@@ -1174,8 +1385,9 @@ time.sleep(120)
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
         finally:
             os.close(locked)
+        # The sweep runs before the start, so it is checked even where the start is refused.
         expect('VELDO-0210 scratch/stale-removed-at-next-start: %s' % leftovers(),
-               result.returncode == 0 and not stale.exists())
+               result.returncode == (0 if live else 2) and not stale.exists())
         expect('VELDO-0210 scratch/recent-scratch-kept', recent.is_dir())
         expect('VELDO-0210 scratch/live-scratch-kept', held_stale.is_dir())
         expect('VELDO-0210 scratch/stale-link-and-file-untouched',
