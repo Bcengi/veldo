@@ -917,9 +917,12 @@ def _v208_confined_stages():
     # already inside that confinement, and a launcher started here would be a nested one, which
     # never gets Unix sockets (asserted below): there the row runs its command as it stands.
     inside = os.environ.get('VELDO_SANDBOX_BROKERED') == '1'
-    # Outside every domain's writable roots (the gate never writes the authority tree), so an
-    # address there is outside the confinement whether or not this suite already runs in it.
-    outside = ROOT / ('.v208-outside-%d' % os.getpid())
+    # Outside every domain's writable roots, so an address there is outside the confinement whether
+    # or not this suite already runs in it. Run alone, that is this tree: the gate never writes the
+    # authority tree. Run inside the gate's domain, this tree can itself lie in that domain's
+    # writable scratch (check_first_use.py's nested copy is there), where the outer broker binds it;
+    # the launcher names the scratch as HOME, and its parent is granted to no domain.
+    outside = (Path(os.environ['HOME']).parent if inside else ROOT) / ('.v208-outside-%d' % os.getpid())
 
     def confined(root, command, env=None, timeout=120):
         """One gate stage command in the gate's own domain over `root`, exactly as verify.sh's
