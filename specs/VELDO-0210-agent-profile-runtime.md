@@ -156,20 +156,26 @@ acceptance_criteria:
       environment, the configuration or the candidate; one that is absent, not a regular file,
       set-user-ID or with file capabilities, not owned by root, writable by anyone but root (or in a
       directory that is) refuses the start (exit 2) naming the owner's one-time setup command, as
-      does a host without the setup; host /proc is never the fallback. A launcher already inside a
-      tree the helper made (label veldo-userns-child in enforce mode, a PID namespace other than the
-      host's whose procfs is /proc, no capability) creates none, and its init is a child subreaper
-      that kills and reaps every remaining descendant when the agent ends; a container's or a
-      systemd PrivatePIDs namespace does not count. Set: the pids /proc lists inside, a host process
+      does a host without the setup; host /proc is never the fallback. A stop (TERM, INT, HUP)
+      during the start ends it at once: the tree, a hung helper with it, is killed and the launcher
+      exits 128 plus the signal number. A launcher already inside a tree the outer launcher made
+      (it inherited the outer launcher's marker, a descriptor of the outer launcher's PID namespace
+      that is a proper ancestor of its own; label veldo-userns-child in enforce mode; a PID
+      namespace other than the host's whose procfs is /proc; no capability) creates none, and its
+      init is a child subreaper that kills and reaps every remaining descendant when the agent ends;
+      any other private PID namespace (a container's, a systemd PrivatePIDs one) has no marker and
+      does not count. Set: the pids /proc lists inside, a host process
       started with a marker argument read by pid and found by scanning, uid, gid, every capability
       set, no_new_privs and the AppArmor label inside, a clone(CLONE_NEWUSER) by the agent, the owner
       of a file created inside, /proc's mount options, an orphan reaped by the init, a descendant
       that left the agent's process group after the agent exits, the same for the gate profile; the
       helper source dropping everything after the procfs mount and before exec, its relays, its
       reproducible static build and its refusals (arguments, entry point's name, path, owners); the
-      policy compiling and its child profile's denials; a container label and complain mode not
-      counting as nested; a subreaper ending a setsid descendant; the start and handoff waits timing
-      out; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
+      policy compiling and its child profile's denials; a container label, complain mode and a forged
+      tree (the child label, no capability, only its own namespace descriptors) not counting as
+      nested; the marker created before the helper and kept by the tree; a subreaper ending a setsid
+      descendant; the start and handoff waits timing out; TERM, INT and HUP ending a start whose
+      helper hangs, in both profiles; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
       the helper, and every start on a host without the setup. Completeness: every launch goes
       through prepared_launch, whose child executes the helper (or, nested, forks the init) and
       whose parent waits in await_start; helper_problem is its only check of the helper and
@@ -183,7 +189,8 @@ acceptance_criteria:
       goes red. Drop helper_problem; namespace/user-writable-helper-refused goes red. Let the child
       profile allow userns; namespace/policy-child-denies-capabilities-and-user-namespaces and
       namespace/no-user-namespace-for-the-agent go red. Count any private PID namespace as nested;
-      namespace/only-the-helpers-tree-counts-as-nested goes red.
+      namespace/only-the-helpers-tree-counts-as-nested goes red. Wait out the start despite a stop;
+      namespace/stop-ends-a-hung-helper-* go red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch. On the host, `sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns`.
 ---
@@ -305,8 +312,11 @@ unchanged.
     audit deny pivot_root,
   }
 
-  The owner's one-time setup, run from the repository root, which every refusal prints with the
-  checkout's path; its last step is the self-test, which proves through the installed helper that
+  The owner's one-time setup, one line run from the repository root (docs/veldo-userns-setup.txt
+  carries the same line; every refusal prints it, as one line to paste, with `cd <checkout> && `
+  first). It builds the helper, installs it root-owned, installs the policy file that holds both
+  profiles (veldo-userns and veldo-userns-child) root-owned, loads both with apparmor_parser -r,
+  retires the first design's unshare copy, and runs the self-test. Its last step is the self-test, which proves through the installed helper that
   the namespace is as the init requires and that a program run through it cannot sethostname here or
   in new user and UTS namespaces, cannot create a UTS or user namespace, and cannot bring up an
   interface in new user and network namespaces, directly or through executed programs (util-linux
@@ -318,7 +328,9 @@ unchanged.
   disposition to default when the launcher forwards it and to ignored when the launcher inherited
   it ignored (the helper reads them across its exec), takes its own session, sets PR_SET_PDEATHSIG
   and checks the launcher is its parent, holds its shared lock on the scratch, opens the launcher's
-  /proc (O_PATH) and pidfds of the launcher and of itself, writes the launch's context (worktree,
+  /proc (O_PATH) and pidfds of the launcher and of itself, opens the tree's marker (its own PID
+  namespace, /proc/self/ns/pid, the parent of the one the helper makes, kept by every process of
+  the tree), writes the launch's context (worktree,
   command, environment, grants, profile, protected paths, descriptors, signal mask, ids) to a memory
   file and executes the helper with that descriptor. The init (G, PID 1) reads the context, checks
   namespace_problem, checks through the pidfds that the launcher and the helper are alive, writes
@@ -326,11 +338,13 @@ unchanged.
   reads the pid the launcher sees it by from the launcher's /proc (for the gate profile's broker),
   confines itself as before and execs. Landlock's /proc grant binds the fresh procfs, so the host
   procfs beneath it is unreachable even by path. The launcher waits for the ready byte at most 60
-  seconds (a stop meanwhile is forwarded to the group as before, which is killed GRACE_SECONDS
-  later), then reads the helper's /proc status: every capability set empty and no_new_privs set.
+  seconds, in slices of a tenth of a second; a stop meanwhile is forwarded to the group and ends
+  the wait at once, and the group, a hung helper with it, is killed (nothing has started the
+  command yet). Then it reads the helper's /proc status: every capability set empty and no_new_privs set.
   Otherwise it kills the group, writes back and cleans up, and refuses (exit 2) with the setup
   command; a stop during the start still exits 128 plus its number. The gate profile's handoff read
-  in fork_brokered is bounded by the same 60 seconds.
+  in fork_brokered is bounded by the same 60 seconds and ends as soon as a stop is pending (the
+  launcher still blocks the stops there), so a stop ends the gate profile's start the same way.
   Signals: the launcher stops C's process group as before. The helper and G keep TERM, INT and HUP
   blocked and take them with sigwaitinfo; the helper relays each the launcher forwards to G as a
   real-time signal, and G forwards it to A's process group, so the agent gets each stop once, even
@@ -341,12 +355,17 @@ unchanged.
   helper, G and with G the whole namespace. A keeps its own PR_SET_PDEATHSIG after confinement.
   Unix addresses, terminals and the bind helper are unchanged: the mount namespace is a copy, only
   /proc differs.
-  A launcher already inside a tree the helper made creates no namespace (nested_namespace): its
-  AppArmor label is veldo-userns-child in enforce mode, which only an exec through the root-owned
-  helper gives and which no process can leave, its /proc/self/ns/pid is not the initial
-  pid:[4026531836], its /proc/self is its own pid, and it holds no capability. A container's or a
-  systemd PrivatePIDs namespace carries another label and does not count: there the launcher uses
-  the helper as on the host. The nested launcher's C forks G itself and relays as the helper does;
+  A launcher already inside a tree the outer launcher made creates no namespace (nested_namespace):
+  it inherited the marker (launcher_marker: an open descriptor of a PID namespace, NS_GET_NSTYPE,
+  that is not its own and in which NS_GET_PID_IN_PIDNS finds its pid, so a proper ancestor of its
+  own; only nsfs descriptors get the ioctls), its AppArmor label is veldo-userns-child in enforce
+  mode, which only an exec through the root-owned helper gives and which no process can leave, its
+  /proc/self/ns/pid is not the initial pid:[4026531836], its /proc/self is its own pid, and it holds
+  no capability. The marker cannot be forged from inside: a process in a PID namespace cannot open
+  an ancestor (NS_GET_PARENT refuses it, its procfs shows no process outside), so only a process
+  outside hands one in. A container's or a systemd PrivatePIDs namespace has none and does not
+  count, whatever its label: there the launcher uses the helper as on the host. The nested
+  launcher hands on the marker it inherited. Its C forks G itself and relays as the helper does;
   G is a child subreaper (PR_SET_CHILD_SUBREAPER), so a descendant that leaves the agent's session
   is reaped by it, and when A exits G kills every remaining descendant (each child in
   /proc/self/task/<pid>/children, then the ones that become its children) before it exits. The
@@ -459,6 +478,10 @@ unchanged.
   an unconfined CLI) holds every capability over the tree's user namespace, as the namespace's
   owner, and could join it; nothing inside the tree can, and none of the tree's processes reaches
   such a process.
+- The marker lets a process of the tree translate its own pids into the outer launcher's PID
+  namespace (NS_GET_PID_IN_PIDNS), so it learns the host pids of its own tree's processes; it
+  cannot join, see or signal anything there (setns into an ancestor PID namespace is refused, and
+  NS_GET_PARENT and NS_GET_USERNS from it are outside its scope).
 - AppArmor part unproven here: the policy compiles (apparmor_parser -Q) and the helper builds
   reproducibly and refuses as specified, but loading the policy needs root; until the owner runs
   the setup and its self-test passes, the rows of a running tree are skipped and every start
