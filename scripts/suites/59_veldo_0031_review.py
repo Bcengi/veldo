@@ -126,8 +126,8 @@ class Fixture:
     # ---- real IPC authority in a forked process ----
     def start_server(self):
         ctx = mp.get_context('fork')
-        ready = ctx.Event()
-        self.stop = ctx.Event()
+        ready = ForkFlag()
+        self.stop = ForkFlag()
         self.address = self.IPC.socket_path_for(self.E.read_binding(str(self.repos[0])))
 
         def serve():

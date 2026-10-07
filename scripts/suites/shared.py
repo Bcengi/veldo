@@ -90,6 +90,25 @@ def fast_temp():
     return _FAST_TEMP[0]
 
 
+class ForkFlag:
+    """A set-once flag shared across a fork, on a pipe: what a suite needs from multiprocessing's
+    Event, without its POSIX semaphore in /dev/shm, which the gate's confinement (VELDO-0208) does
+    not grant (so an Event, a Lock or a Queue cannot even be created there)."""
+
+    def __init__(self):
+        self._r, self._w = os.pipe()
+
+    def set(self):
+        os.write(self._w, b'.')
+
+    def wait(self, timeout=None):
+        import select
+        return bool(select.select([self._r], [], [], timeout)[0])
+
+    def is_set(self):
+        return self.wait(0)
+
+
 def tmpfile(dirpath, name, content):
     p = Path(dirpath) / name
     p.write_text(content)

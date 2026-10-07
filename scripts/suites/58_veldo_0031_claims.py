@@ -103,7 +103,8 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
                     project='claims', backlog_item_uuid='backlog', requirements=['mac'] if _v31_unit == 'capability-unit' else [],
                     eligible_holders=['worker-a', 'worker-b']))
     _v31_ctx = _v31_mp.get_context('fork')
-    _v31_stop, _v31_ready = _v31_ctx.Event(), _v31_ctx.Event()
+
+    _v31_stop, _v31_ready = ForkFlag(), ForkFlag()
     _v31_address = _v31_IPC.socket_path_for(_v31_E.read_binding(str(_v31_repos[0])))
     _v31_audit = _v31_base / 'observations.json'
 
@@ -263,17 +264,23 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_write('backlog', 'backlog_item', dict(_v31_backlog_data, state='ADMITTED'))
         _v31_check(1, 'priority-required', _v31_request(_v31_clients[0], 'claim')['reason'] == 'not_admitted')
         _v31_write('backlog', 'backlog_item', _v31_backlog_data)
-        _v31_queue, _v31_go = _v31_ctx.Queue(), _v31_ctx.Event()
+        # One pipe per racer, not a Queue: a Queue's lock is a POSIX semaphore (see ForkFlag).
+        _v31_answers, _v31_go = [_v31_ctx.Pipe(duplex=False) for _ in range(2)], ForkFlag()
 
         def _v31_race(index):
             _v31_go.wait(5)
-            _v31_queue.put((index, _v31_request(_v31_clients[index], 'claim')))
+            _v31_answers[index][1].send((index, _v31_request(_v31_clients[index], 'claim')))
+
+        def _v31_answer(index):
+            if not _v31_answers[index][0].poll(15):
+                raise RuntimeError('clone client did not answer')
+            return _v31_answers[index][0].recv()
 
         _v31_children = [_v31_ctx.Process(target=_v31_race, args=(i,)) for i in range(2)]
         for _v31_p in _v31_children:
             _v31_p.start()
         _v31_go.set()
-        _v31_results = [_v31_queue.get(timeout=15) for _ in range(2)]
+        _v31_results = [_v31_answer(i) for i in range(2)]
         for _v31_p in _v31_children:
             _v31_p.join(5)
             if _v31_p.is_alive():
