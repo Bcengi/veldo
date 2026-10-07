@@ -828,12 +828,15 @@ def grants_for(config, authority, worktree, scratch, config_path=None, extra_rea
 
 def resolver_grants():
     """The DNS resolver configuration, read only, for the agent profile (VELDO-0210).
-    /etc/resolv.conf lies under the /etc read root; when it links into /run/systemd/resolve, the one
-    regular file it names is granted too. Nothing else under /run: the user bus, systemd's sockets
-    and every other runtime file stay outside the domain."""
+    /etc/resolv.conf lies under the /etc read root; when it links into /run/systemd/resolve, that
+    directory is granted read only. Not the one file it names: systemd-resolved replaces
+    stub-resolv.conf by rename on every network change, and a grant binds the inode it was made
+    for. Nothing else under /run: the user bus, systemd's sockets and every other runtime file stay
+    outside the domain, and the agent profile's filter refuses the Unix sockets in that directory."""
+    runtime = RESOLVER_RUNTIME.resolve()
     target = RESOLVER.resolve()
-    if target != RESOLVER and beneath(target, RESOLVER_RUNTIME.resolve()) and target.is_file():
-        return [(target, READ)]
+    if target != RESOLVER and target != runtime and beneath(target, runtime) and runtime.is_dir():
+        return [(runtime, READ)]
     return []
 
 

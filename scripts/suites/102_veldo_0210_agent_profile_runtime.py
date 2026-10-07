@@ -97,6 +97,13 @@ for item in sys.argv[1:]:
         refused(name, lambda path=path: open(path, 'x').write('forged'))
     elif kind == 'ls':
         r[name] = bool(os.listdir(path))
+    elif kind == 'mark':
+        open(path, 'w').close()
+    elif kind == 'wait':
+        import time
+        deadline = time.time() + 30
+        while not os.path.exists(path) and time.time() < deadline:
+            time.sleep(0.05)
     elif kind == 'create':
         open(path, 'w').write('allowed')
         r[name] = open(path).read() == 'allowed'
@@ -118,7 +125,7 @@ print(json.dumps(r))
         def probe_run(items, **kwargs):
             return run(config, worktree, [sys.executable, '-I', '-S', str(probe), *items], **kwargs)
 
-        # runtime: /proc read only, the resolver file and nothing else under /run
+        # runtime: /proc read only, the resolver directory and nothing else under /run
         resolve = top / 'run/systemd/resolve'
         resolve.mkdir(parents=True)
         (resolve / 'stub-resolv.conf').write_text('nameserver 127.0.0.53\n')
@@ -131,8 +138,10 @@ print(json.dumps(r))
                             'deny:launcher-environ:/proc/%d/environ' % os.getpid(),
                             'read:resolver-link:%s' % (top / 'etc/resolv.conf'),
                             'read:resolver-target:%s' % (resolve / 'stub-resolv.conf'),
-                            'deny:resolver-sibling:%s' % (resolve / 'resolv.conf'),
-                            'list:resolver-directory:%s' % resolve,
+                            'read:resolver-sibling:%s' % (resolve / 'resolv.conf'),
+                            'write:resolver-write:%s' % (resolve / 'stub-resolv.conf'),
+                            'make:resolver-create:%s' % (resolve / 'planted.conf'),
+                            'list:run-systemd:%s' % resolve.parent,
                             'list:run-user:/run/user/%d' % os.getuid(),
                             'deny:run-user-bus:/run/user/%d/bus' % os.getuid(),
                             'write:worktree-outside:%s' % (top / 'outside'),
@@ -141,14 +150,33 @@ print(json.dumps(r))
                            patch=resolver)
         found = results(result)
         expect('VELDO-0210 runtime/launcher-starts: ' + result.stderr[-300:], result.returncode == 0)
-        for name in ('proc-status', 'proc-mounts', 'resolver-link', 'resolver-target'):
+        for name in ('proc-status', 'proc-mounts', 'resolver-link', 'resolver-target', 'resolver-sibling'):
             expect('VELDO-0210 runtime/%s-readable: %s' % (name, found.get(name)), found.get(name) is True)
-        for name in ('proc-comm', 'launcher-environ', 'resolver-sibling', 'resolver-directory', 'run-user',
+        for name in ('proc-comm', 'launcher-environ', 'resolver-write', 'resolver-create', 'run-systemd', 'run-user',
                      'run-user-bus', 'worktree-outside', 'runner', 'authority', 'store'):
             expect('VELDO-0210 runtime/%s-refused: %s' % (name, found.get(name)), found.get(name) is True)
         expect('VELDO-0210 runtime/refusals-left-nothing',
                not (top / 'outside').exists() and runner.read_text() == 'trusted runner'
-               and not (store / 'planted.json').exists())
+               and not (store / 'planted.json').exists() and not (resolve / 'planted.conf').exists()
+               and (resolve / 'stub-resolv.conf').read_text() == 'nameserver 127.0.0.53\n')
+        # systemd-resolved replaces stub-resolv.conf by rename on a network change: the new file is
+        # readable through the link in a run that started before the change.
+        ready, go = worktree / 'resolver-ready', worktree / 'resolver-go'
+        process = subprocess.Popen(
+            [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), json.dumps(resolver), '--config', str(config),
+             '--worktree', str(worktree), '--', sys.executable, '-I', '-S', str(probe), 'mark:ready:%s' % ready,
+             'wait:go:%s' % go, 'read:resolver-after-rename:%s' % (top / 'etc/resolv.conf')],
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        deadline = time.time() + 30
+        while not ready.exists() and time.time() < deadline and process.poll() is None:
+            time.sleep(0.05)
+        (resolve / 'stub-resolv.conf.new').write_text('nameserver 127.0.0.54\n')
+        os.replace(resolve / 'stub-resolv.conf.new', resolve / 'stub-resolv.conf')
+        go.write_text('go')
+        stdout, stderr = process.communicate(timeout=60)
+        found = results(subprocess.CompletedProcess([], process.returncode, stdout, stderr))
+        expect('VELDO-0210 runtime/resolver-replaced-by-rename-readable: %s %s' % (found, stderr[-200:]),
+               process.returncode == 0 and found.get('resolver-after-rename') is True)
         # A resolver that is a plain file, or a link outside /run/systemd/resolve, adds no grant.
         (top / 'etc/plain.conf').write_text('nameserver 192.0.2.2\n')
         (top / 'etc/elsewhere.conf').symlink_to(top / 'run/systemd/resolv-elsewhere.conf')
@@ -164,13 +192,12 @@ print(json.dumps(r))
             linked = S.resolver_grants()
         finally:
             S.RESOLVER, S.RESOLVER_RUNTIME = saved
-        expect('VELDO-0210 runtime/resolver-grant-is-one-file',
-               plain == [] and elsewhere == [] and linked == [((resolve / 'stub-resolv.conf'), S.READ)])
+        expect('VELDO-0210 runtime/resolver-grant-is-its-directory',
+               plain == [] and elsewhere == [] and linked == [(resolve, S.READ)])
         host = S.resolver_grants()
         expect('VELDO-0210 runtime/host-resolver-constants',
                S.RESOLVER == Path('/etc/resolv.conf') and S.RESOLVER_RUNTIME == Path('/run/systemd/resolve')
-               and len(host) <= 1 and all(access == S.READ and path.is_file()
-                                          and S.beneath(path, Path('/run/systemd/resolve').resolve())
+               and len(host) <= 1 and all(access == S.READ and path == Path('/run/systemd/resolve').resolve()
                                           for path, access in host))
         # The gate profile does not take the resolver grant: it stays as VELDO-0208 left it.
         source = launcher.read_text()

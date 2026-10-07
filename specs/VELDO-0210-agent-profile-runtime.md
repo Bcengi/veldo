@@ -38,13 +38,16 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: an agent-profile process reads /proc (never writes it) and reads the DNS resolver
-      configuration: /etc/resolv.conf and, when it links into /run/systemd/resolve, the one file it
-      names. Nothing else under /run is readable. Set: read of /proc/self/status, write of
-      /proc/self/comm, read of the launcher's /proc/<pid>/environ, read of the resolver link and its
-      target, read of a sibling file in the resolver directory and of /run/user/<uid>.
-      Completeness: one grant adds /proc for every profile in landlock(); one function
-      (resolver_grants) derives the only /run grant from the link. Test rows runtime/* in suite 102.
-    falsified_by: Grant the resolver's whole directory instead of its one file; runtime/resolver-sibling-denied goes red.
+      configuration: /etc/resolv.conf and, when it links into /run/systemd/resolve, that directory,
+      read only, so the file systemd-resolved renames over stub-resolv.conf on a network change is
+      readable in a run already going. Nothing else under /run is readable. Set: read of
+      /proc/self/status, write of /proc/self/comm, read of the launcher's /proc/<pid>/environ, read
+      of the resolver link, its target and a sibling, a write and a create in the resolver
+      directory, a read after the target is replaced by rename, a listing of its parent and of
+      /run/user/<uid>. Completeness: one grant adds /proc for every profile in landlock(); one
+      function (resolver_grants) derives the only /run grant from the link. Test rows runtime/* in
+      suite 102.
+    falsified_by: Grant only the one file the link names; runtime/resolver-replaced-by-rename-readable goes red.
   - id: AC2
     text: >
       Claim: the launcher copies the selected client's credential files into the private scratch and,
@@ -116,17 +119,20 @@ no detached process.
 
 This amends VELDO-0208's agent profile in three statements: /proc is no longer excluded from the
 agent profile's grants (read only, as in the gate and worker profiles); /run stays excluded except
-the one resolver file; and the selected client's credential files are written back after a
+the resolver directory /run/systemd/resolve, read only; and the selected client's credential files are written back after a
 refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 
 ## Design
 
 - Runtime. landlock() grants /proc read-only to every profile, as it did for gate and worker.
   Landlock's ptrace scope still refuses another domain's environ, fd, root, cwd, mem and maps.
-  resolver_grants() reads where /etc/resolv.conf points; a regular file beneath /run/systemd/resolve
-  is granted read-only. /run stays blocked for every other read root. Name lookups that try a
-  service socket (mdns, resolved's varlink socket) are refused by the IPC filter and fall through to
-  DNS. Gate and worker profiles are unchanged apart from the shared /proc line they already had.
+  resolver_grants() reads where /etc/resolv.conf points; when that is beneath
+  /run/systemd/resolve, the directory itself is granted read-only, never its parent and nothing
+  else under /run. A grant binds the inode it was made for, and systemd-resolved replaces
+  stub-resolv.conf by rename on every network change, so a grant of the one file would stop
+  matching mid-run. /run stays blocked for every other read root. Name lookups that try a service
+  socket (mdns, resolved's varlink sockets in that same directory) are refused by the IPC filter and
+  fall through to DNS. Gate and worker profiles are unchanged apart from the shared /proc line they already had.
 - Clients. agent_sandbox.json gains `clients`. Each client names its places (an environment variable
   the runner may set, else a default under the account's home), its `credentials`, its `seed_files`
   and its `read_links`. The launcher's client option selects one (claude or codex); without it no
@@ -174,6 +180,9 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
   or log in again. When the source changed during the run, the run's refreshed token is dropped and
   the newer file kept. The re-read and the rename are two steps: a write landing between them is
   replaced.
+- The resolver directory's other entries are readable too: resolved's resolv.conf (the upstream
+  servers) and the names of its varlink sockets and per-link state directory (mode 0700, owned by
+  systemd-resolve, so unreadable to this account anyway).
 - Writes Claude or Codex make to their plugin, marketplace or skill directories (marketplace
   updates, system skill installs) fail: those directories are outside the worktree.
 - engine/scripts/agent_sandbox.json is byte-identical with this repository's copy (template sync),
