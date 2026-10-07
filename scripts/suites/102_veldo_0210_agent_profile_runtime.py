@@ -50,6 +50,9 @@ sys.exit(m.main())
             argv += ['--client', client]
         if profile:
             argv += ['--profile', profile]
+        # Run by the gate, this suite is inside the gate launcher's tree: the launcher started here is
+        # nested and is handed the tree's marker beside whatever the row passes.
+        kwargs['pass_fds'] = (*kwargs.get('pass_fds', ()), *launcher_fds())
         return subprocess.run(argv + ['--', *command], capture_output=True, text=True, timeout=timeout,
                               stdin=subprocess.DEVNULL, env=dict(os.environ if env is None else env),
                               **kwargs)
@@ -301,7 +304,8 @@ print(json.dumps(r))
                 [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), json.dumps(resolver), '--config', str(config),
                  '--worktree', str(worktree), '--', sys.executable, '-I', '-S', str(probe), 'mark:ready:%s' % ready,
                  'wait:go:%s' % go, 'read:resolver-after-rename:%s' % (top / 'etc/resolv.conf')],
-                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                pass_fds=launcher_fds())
             deadline = time.time() + 30
             while not ready.exists() and time.time() < deadline and process.poll() is None:
                 time.sleep(0.05)
@@ -583,6 +587,13 @@ print(json.dumps(r))
                     ('other-argument', [str(entry_tree / 'agent_sandbox.py'), '--anything'],
                      'descriptor number or selftest'),
                     ('writable-directory', [str(writable_tree / 'agent_sandbox.py'), '5'], 'writable by another account')):
+                if nested and reason == 'descriptor number or selftest':
+                    # The helper reads its second argument after it has walked the entry's owners, and
+                    # in a tree's user namespace root is unmapped, so every path is another account's.
+                    print('  SELFTEST SKIP: VELDO-0210 namespace/helper-refuses-%s: nested in a tree the '
+                          'helper made, root is unmapped and the owner walk refuses first; measured when '
+                          'this suite runs on the host' % name)
+                    continue
                 refused = subprocess.run([str(binary), *argv], capture_output=True, text=True, timeout=30,
                                          stdin=subprocess.DEVNULL) if binary.exists() else None
                 expect('VELDO-0210 namespace/helper-refuses-%s: %s' % (name, refused and refused.stderr[-200:]),
@@ -706,7 +717,9 @@ print(json.dumps(r))
                   'no AppArmor label on this host')
         # The init's very first act sets no_new_privs and stops unless it holds nothing: every
         # capability set empty (this host process keeps its bounding set, so it stops), the securebits
-        # exactly the locked ones, and the label exactly the child profile's.
+        # exactly the locked ones, and the label exactly the child profile's. Nested in a tree the
+        # helper made, this process holds nothing and its securebits are the locked ones, so both
+        # checks pass for real there.
         read_end, write_end = os.pipe()
         entrant = os.fork()
         if not entrant:
@@ -734,8 +747,10 @@ print(json.dumps(r))
         os.waitpid(entrant, 0)
         first = inspect.getsource(S.namespace_init).split('    try:\n', 1)[1].lstrip().splitlines()[0]
         expect('VELDO-0210 namespace/init-sets-no-new-privs-first-and-holds-nothing: %s' % entered,
-               isinstance(entered, list) and len(entered) == 6 and entered[0].startswith('CapBnd is ')
-               and entered[1] == 1 and entered[2].startswith('the securebits are ')
+               isinstance(entered, list) and len(entered) == 6
+               and (entered[0] is None if nested else str(entered[0]).startswith('CapBnd is '))
+               and entered[1] == 1
+               and (entered[2] is None if nested else str(entered[2]).startswith('the securebits are '))
                and all(str(problem).endswith('not %r' % S.NAMESPACE_LABEL) for problem in entered[3:5])
                and entered[5] is None
                and first == 'problem = init_entry_problem()'
@@ -748,6 +763,27 @@ print(json.dumps(r))
                "marker = nested_namespace()" in source and "marker = os.open('/proc/self/ns/pid', os.O_RDONLY)"
                in source and 'keep = [held, marker, ' in source and "'keep': keep" in source
                and source.index("marker = os.open('/proc/self/ns/pid'") < source.index('os.execv(NAMESPACE_HELPER'))
+        # Python closes every descriptor a child is not handed, so each process that may start a nested
+        # launcher hands it the marker (launcher_fds): through the gate's entry the nested launcher
+        # starts; one whose marker a Python child closed is refused with that reason, never helped by
+        # the helper below the child profile.
+        if live or nested:
+            entry = ROOT / 'scripts/gate_candidate.py'
+            handoff = ('"$1" -I -S "$2" --root "$PWD" -- /usr/bin/true; echo "handed $?"; '
+                       '"$1" -I -S -c "import subprocess, sys; sys.exit(subprocess.run(sys.argv[1:]).returncode)" '
+                       '"$1" -I -S "$3" --profile gate --config "$VELDO_AGENT_CONFIG" --worktree "$PWD" -- '
+                       '/usr/bin/true; echo "dropped $?"')
+            through = subprocess.run([sys.executable, '-I', '-S', str(entry), '--root', str(worktree), '--',
+                                      'bash', '-c', handoff, 'handoff', sys.executable, str(entry), str(launcher)],
+                                     capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL,
+                                     env=dict(os.environ, VELDO_AGENT_CONFIG=str(config)), pass_fds=launcher_fds())
+            expect('VELDO-0210 namespace/gate-entry-hands-on-the-marker: %r %r' % (through.stdout[-100:],
+                                                                                  through.stderr[-300:]),
+                   through.returncode == 0 and through.stdout.split() == ['handed', '0', 'dropped', '2']
+                   and 'holds no marker of it' in through.stderr and 'not owned by root' not in through.stderr
+                   and 'pass_fds=sandbox.launcher_fds()' in entry.read_text())
+        else:
+            skip('namespace/gate-entry-hands-on-the-marker')
         # A nested tree's init is a subreaper: a descendant that left the agent's session is reaped and,
         # once the agent is gone, killed.
         read_end, write_end = os.pipe()
@@ -825,7 +861,7 @@ print(json.dumps(r))
                     [sys.executable, '-I', '-S', '-c', wrapper, str(launcher),
                      json.dumps({'NAMESPACE_HELPER': '/usr/bin/yes'}), '--config', str(config),
                      '--worktree', str(worktree), '--profile', profile, '--', '/usr/bin/true'],
-                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                    pass_fds=launcher_fds(), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
                     preexec_fn=lambda: [signal.signal(n, signal.SIG_DFL)
                                         for n in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)])
                 deadline = time.time() + 20
@@ -979,7 +1015,7 @@ print(json.dumps(seen))
                    after[1] != before[1] and after[2] == 0o600
                    and sorted(p.name for p in account.iterdir())
                    == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
-                       'settings.json'])
+                       'settings.json', 'veldo-agent-state'])
             seen = results(result)
             expect('VELDO-0210 credentials/claude-run-receives-claude-files',
                    seen.get('claude') is True and seen.get('settings') is True and seen.get('state') is True)
@@ -1020,7 +1056,8 @@ print(json.dumps(seen))
                 [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
                  '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(act),
                  'refresh-wait', str(refreshed), str(go), json.dumps(new_token)],
-                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=client_env)
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=client_env,
+                pass_fds=launcher_fds())
             deadline = time.time() + 30
             while not refreshed.exists() and time.time() < deadline and process.poll() is None:
                 time.sleep(0.05)
@@ -1111,7 +1148,8 @@ print(json.dumps(seen))
                refused.returncode == 2 and 'protected path' in refused.stderr and not marker.exists())
         gate = subprocess.run([sys.executable, '-I', '-S', str(launcher), '--config', str(client_config),
                                '--profile', 'gate', '--client', 'claude', '--worktree', str(worktree), '--', *start],
-                              capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
+                              capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env,
+                              pass_fds=launcher_fds())
         expect('VELDO-0210 credentials/gate-takes-no-client',
                gate.returncode == 2 and 'takes no agent client' in gate.stderr and not marker.exists())
         # Seeds are written first and never through a link: a read link at, above or beneath a seed
@@ -1247,7 +1285,8 @@ print(json.dumps(seen))
             result = subprocess.run([sys.executable, '-I', '-S', str(launcher), '--config', str(project_config),
                                      '--profile', 'gate', '--worktree', str(worktree), '--', sys.executable, '-I',
                                      '-S', str(probe), 'deny:project:%s' % (other / 'checkout/package/module.py')],
-                                    capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
+                                    capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env,
+                                    pass_fds=launcher_fds())
             expect('VELDO-0210 capabilities/gate-profile-has-no-project-roots: ' + result.stderr[-200:],
                    result.returncode == 0 and results(result).get('project') is True)
         else:
@@ -1552,7 +1591,8 @@ time.sleep(120)
                         '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S',
                         str(hold), mode, str(marker), json.dumps(new_token)]
                 process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE, text=True, env=scratch_env)
+                                           stderr=subprocess.PIPE, text=True, env=scratch_env,
+                                           pass_fds=launcher_fds())
                 deadline = time.time() + 30
                 while not marker.exists() and time.time() < deadline and process.poll() is None:
                     time.sleep(0.05)
@@ -1591,7 +1631,9 @@ time.sleep(120)
                    alive and code == 128 + signal.SIGTERM and gone(held) and leftovers() == [])
 
             # A stop that lands between the fork and the child's registration waits for the registration:
-            # the child gets the stop forwarded (and may end cleanly), never runs on with its scratch gone.
+            # the child's group gets the stop forwarded, never runs on with its scratch gone. The tree is
+            # still starting then, and a stop during the start ends it at once (AC6): the command never
+            # runs.
             late, termed = worktree / 'outlived-launcher', worktree / 'stop-forwarded'
             for path in (late, termed):
                 path.unlink(missing_ok=True)
@@ -1603,7 +1645,7 @@ time.sleep(120)
             time.sleep(3)
             expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s %s' % (result.returncode,
                                                                                       result.stderr[-200:]),
-                   result.returncode == 128 + signal.SIGTERM and termed.exists() and not late.exists()
+                   result.returncode == 128 + signal.SIGTERM and not termed.exists() and not late.exists()
                    and leftovers() == [])
 
             def alive(pid):
@@ -1620,7 +1662,8 @@ time.sleep(120)
                     [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
                      '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(hold),
                      mode, str(marker), json.dumps(new_token)],
-                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=scratch_env)
+                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=scratch_env,
+                    pass_fds=launcher_fds())
                 deadline = time.time() + 30
                 while not marker.exists() and time.time() < deadline and process.poll() is None:
                     time.sleep(0.05)
