@@ -75,6 +75,7 @@ _git_spec = _git_importlib.spec_from_file_location("veldo_git_process", _git_loc
 _git_process = _git_importlib.module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -138,12 +139,12 @@ def composed_packs(pub_root):
 # THE ONE LAUNCHER. Every child this stage starts comes through here, which is what makes an
 # assertion about this call's keyword arguments an assertion about every child: no session is
 # detached, no shell is interposed, nothing is left running when the call returns.
-def _run(argv, cwd=None, timeout=900):
+def _run(argv, cwd=None, timeout=900, env=None):
     if argv and str(argv[0]) == "git":
         return _git_process.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
                                 capture_output=True, text=True, timeout=timeout)
     return subprocess.run([str(a) for a in argv], cwd=str(cwd) if cwd else None,
-                          capture_output=True, text=True, timeout=timeout)
+                          capture_output=True, text=True, timeout=timeout, env=env)
 
 
 def commit_tree(target):
@@ -244,7 +245,11 @@ def install_and_run(pack_dir, target, gate=True):
         out["failure"] = FAIL_COMMIT
         return out
 
-    g = _run(["bash", ADOPTER_GATE], cwd=target)
+    # THE ADOPTER'S REPOSITORY IS ITS OWN, and this stage created it, so this stage names its Git
+    # common directory to the adopter's gate. Inherited, the variable would name the repository
+    # this stage runs in, and every adopter gate would refuse its own .git as a redirect.
+    g = _run(["bash", ADOPTER_GATE], cwd=target,
+             env=dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str((target / ".git").resolve())))
     out["gate_returncode"] = g.returncode
     full = g.stdout + g.stderr
     out["gate_tail"] = full.strip()[-1200:]

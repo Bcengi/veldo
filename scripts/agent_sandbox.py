@@ -356,8 +356,12 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
                VELDO_AGENT_CONFIG=str(config_path),
                XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
                XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'))
+    # VELDO_EXPECTED_GIT_COMMON names the trusted repository to this launcher only. Handed on, it
+    # would make a gate the confined command runs for another repository (a freshly scaffolded
+    # one, a fixture) check that repository against this one's common directory.
     for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
-                 'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK'):
+                 'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
+                 'VELDO_EXPECTED_GIT_COMMON'):
         env.pop(name, None)
     pid = os.fork()
     if pid:
