@@ -1235,7 +1235,7 @@ def _v208_unconfined_leg():
     gate_text = (ROOT / 'scripts/verify.sh').read_text()
     declared_commands = {name: re.search(r'^CHECK_%s="required:(.*)"$' % name, gate_text, re.M).group(1)
                          for name in ('unit', 'integration')}
-    control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '67_0041', '67_0135', '71_0076',
+    control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '66_0047', '67_0041', '67_0135', '71_0076',
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
                      '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204']
@@ -1244,7 +1244,7 @@ def _v208_unconfined_leg():
     expected_whole = sorted([n for n in manifest for short in control_plane + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 31 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 32 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)
@@ -1278,7 +1278,7 @@ def _v208_unconfined_leg():
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 33
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 34
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 

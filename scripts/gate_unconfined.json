@@ -11,6 +11,7 @@
     {"suite": "63_veldo_0049_floor", "reason": "systemd user manager: enrolled dispatch moves through the authority's transient units"},
     {"suite": "64_veldo_0050_proof", "reason": "systemd user manager: the executor's dispatches run as transient user units"},
     {"suite": "66_veldo_0042_clones", "reason": "systemd user manager: worker clones are launched with systemd-run --user and checked through systemctl --user"},
+    {"suite": "66_veldo_0047_authority", "reason": "systemd user manager: the authority service is installed, started and stopped as a user unit under the owner's manager, and without the manager the suite stands down by name and asserts none of its rows"},
     {"suite": "67_veldo_0041_heartbeat", "reason": "systemd user manager: the trusted wrapper's heartbeat is observed on a live transient scope"},
     {"suite": "67_veldo_0135_offers", "reason": "systemd user manager: offered work is dispatched into transient user units"},
     {"suite": "71_veldo_0076_projects", "reason": "systemd user manager: project lifecycle runs over a real dispatch in a user scope"},

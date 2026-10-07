@@ -318,7 +318,10 @@ It joins the classes above. 95_0203 was missed by that classification and found 
 gate with the leg (2026-10-07, 35 rows refused "the ingress configuration is absent"): it builds its
 host from 85_0171's setup fixture, whose factory setup refuses inside the domain with
 unavailable_service:profile:user_manager. It joins the systemd class, and suite 101 now requires
-every suite that loads a listed suite's fixture to be listed itself.
+every suite that loads a listed suite's fixture to be listed itself. 66_0047 was missed too and
+found by the first confined mutation sample (2026-10-07, 15 cases missing_target): it installs the
+authority service as a user unit and, without the user manager, stands down by name and asserts none
+of its rows. It joins the systemd class.
 
 Neither class can turn green inside the confinement without granting the escape it denies.
 VELDO-0209 proposed running the unit and integration stages in a KVM guest instead. The owner
@@ -336,8 +339,8 @@ for these suites only: their code runs with the owner's own authority, as it did
   stage commands it applies to (unit: `python3 scripts/selftest.py`, integration:
   `python3 scripts/check_first_use.py`). A suite listed with `rows` leaves the domain for those
   rows only; the rest of that suite stays in the confined leg. The list, with its reasons:
-  - systemd user manager, whole suite: the 30 control-plane suites above (62_0039 through 96_0204),
-    each entry naming what it starts or reads through the manager;
+  - systemd user manager, whole suite: the 30 control-plane suites above (62_0039 through 96_0204)
+    and 66_0047, each entry naming what it starts or reads through the manager;
   - nested custody confinement, whole suite: 65_0067;
   - nested strace, rows `strace` only: 100_0207 (sandbox-valid-worker, the *-caught-undeclared-*
     rows and startup-runtime-boundary) and 101_0208 (authority-worker-* and
