@@ -412,7 +412,7 @@ print(json.dumps(r))
                                                    'CapEff': '0000000000000000', 'CapBnd': '0000000000000000',
                                                    'CapAmb': '0000000000000000', 'NoNewPrivs': '1'})
                     expect(label + 'runs-under-the-child-profile: %s' % found.get('label'),
-                           not S.apparmor_enabled() or found.get('label') == S.NAMESPACE_LABEL)
+                           not (nested or S.apparmor_enabled()) or found.get('label') == S.NAMESPACE_LABEL)
                     expect(label + 'no-user-namespace-for-the-agent: %s' % found.get('userns'),
                            found.get('userns') in ('EACCES', 'EPERM'))
                     expect(label + 'tree-carries-the-launchers-marker: %s' % found.get('marker'),
@@ -644,6 +644,47 @@ print(json.dumps(r))
                    S.launcher_marker() is not None)
                and "apparmor_label() == NAMESPACE_LABEL" in inspect.getsource(S.nested_namespace)
                and 'return launcher_marker()' in inspect.getsource(S.nested_namespace))
+        # A launcher nested in a gate or agent tree decides from what that tree's Landlock grants: /proc,
+        # never /sys. Under each profile's real grants, with every other condition granted and the
+        # label it reads taken as the tree's, it counts as nested, while /sys stays unreadable.
+        host_label = S.apparmor_label()
+        if host_label is not None:
+            store.mkdir(exist_ok=True)
+            inside = {}
+            for profile in ('gate', 'agent'):
+                scratch_dir = Path(tempfile.mkdtemp(prefix='v210-nested-', dir=top)).resolve()
+                grants, _ = S.grants_for(dict(policy, write_roots=['{scratch}']) if profile == 'gate' else policy,
+                                         Path(S.__file__).resolve().parents[1], worktree.resolve(), scratch_dir,
+                                         config)
+                read_end, write_end = os.pipe()
+                child = os.fork()
+                if not child:
+                    try:
+                        os.close(read_end)
+                        S.landlock(grants, profile)
+                        S.NAMESPACE_LABEL, S.launcher_marker = host_label, (lambda: 7)
+                        S.INITIAL_PID_NAMESPACE, S.capability_problem = 'pid:[0]', (lambda status: None)
+                        try:
+                            Path('/sys/module/apparmor/parameters/enabled').read_text()
+                            sysfs = 'read'
+                        except OSError as error:
+                            sysfs = __import__('errno').errorcode.get(error.errno, str(error.errno))
+                        found = [S.nested_namespace(), S.apparmor_label(), sysfs, len(os.listdir('/proc/self/fd')) > 0]
+                        os.write(write_end, json.dumps(found).encode())
+                        os._exit(0)
+                    except BaseException as error:
+                        os.write(write_end, json.dumps(repr(error)).encode())
+                        os._exit(1)
+                os.close(write_end)
+                inside[profile] = json.loads(os.read(read_end, 4096) or b'null')
+                os.close(read_end)
+                os.waitpid(child, 0)
+            expect('VELDO-0210 namespace/nested-check-reads-only-what-the-outer-tree-grants: %s' % inside,
+                   all(inside[profile] == [7, host_label, 'EACCES', True] for profile in ('gate', 'agent'))
+                   and 'apparmor_enabled' not in inspect.getsource(S.nested_namespace))
+        else:
+            print('  SELFTEST SKIP: VELDO-0210 namespace/nested-check-reads-only-what-the-outer-tree-grants: '
+                  'no AppArmor label on this host')
         # The outer launcher creates the marker before it executes the helper, and every process of
         # the tree keeps it; a nested one hands on the marker it inherited.
         expect('VELDO-0210 namespace/launcher-creates-and-hands-on-the-marker',

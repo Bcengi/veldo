@@ -992,9 +992,11 @@ def nested_namespace():
     which no process can leave (change_profile is denied there); it runs in a PID namespace other than the host's whose procfs is /proc; and it
     holds no capability. Any other private PID namespace (a container's, a systemd PrivatePIDs one)
     has no marker and does not count. Such a launcher creates no namespace: its /proc already shows
-    no host process, and the helper's child profile would refuse it one anyway."""
+    no host process, and the helper's child profile would refuse it one anyway. Every source it
+    reads lies in /proc, which every profile's Landlock grants: never /sys, which none grants, so
+    the label read alone shows AppArmor is enabled."""
     try:
-        if (apparmor_enabled() and apparmor_label() == NAMESPACE_LABEL
+        if (apparmor_label() == NAMESPACE_LABEL
                 and os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
                 and os.readlink('/proc/self') == str(os.getpid())
                 and capability_problem(Path('/proc/self/status').read_text()) is None):

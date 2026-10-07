@@ -181,7 +181,8 @@ acceptance_criteria:
       reproducible static build and its refusals (arguments, entry point's name, path, owners); the
       policy compiling and its child profile's denials; a container label, complain mode and a forged
       tree (the child label, no capability, only its own namespace descriptors) not counting as
-      nested; the marker created before the helper and kept by the tree; a subreaper ending a setsid
+      nested; the nested check under the gate and the agent profile's real grants, where /sys is
+      unreadable; the marker created before the helper and kept by the tree; a subreaper ending a setsid
       descendant; the start and handoff waits timing out; TERM, INT and HUP ending a start whose
       helper hangs, in both profiles; a missing, user-owned, user-writable and linked helper, a root-owned program that is not
       the helper, a run granted a write to the launcher's own file or above it, and every start on a
@@ -403,7 +404,9 @@ unchanged.
   complain or mixed mode and any other stack do not count), which only an exec through the
   root-owned helper gives and which no process can leave, its
   /proc/self/ns/pid is not the initial pid:[4026531836], its /proc/self is its own pid, and it holds
-  no capability. The marker cannot be forged from inside: a process in a PID namespace cannot open
+  no capability. Every one of these is read from /proc, which the outer tree's Landlock grants in
+  every profile; none from /sys, which no profile grants (the label read alone shows AppArmor is
+  enabled), so the check decides the same inside a gate tree and inside an agent tree. The marker cannot be forged from inside: a process in a PID namespace cannot open
   an ancestor (NS_GET_PARENT refuses it, its procfs shows no process outside), so only a process
   outside hands one in. A container's or a systemd PrivatePIDs namespace has none and does not
   count, whatever its label: there the launcher uses the helper as on the host. The nested
