@@ -293,7 +293,11 @@ fi
 if [ "$MUTATION_RAN" = 1 ]; then REUSE_SOURCE="$VELDO_REUSE_RECEIPT"; else REUSE_SOURCE=--not-run; fi
 REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOURCE" "${VELDO_GATE_FORCE_FRESH:-0}" "$COMMIT") || {
   FAIL=1; STATUS=red; EVENT=gate.failed
-  REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
+  # The refusal prints a RED stamp's fields in the requested mode; only a reducer that printed
+  # nothing (an unreadable mode) leaves this fallback.
+  if [ -z "$REUSE_JSON" ]; then
+    REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
+  fi
 }
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON")

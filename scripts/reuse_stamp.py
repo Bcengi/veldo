@@ -14,6 +14,11 @@ E = load('gate_reuse').E
 
 
 def fields(receipt, force, commit=None):
+    if not isinstance(receipt, dict):
+        raise ValueError('missing or inconsistent mutation reuse receipt')
+    if receipt.get('status') == 'failed':
+        # A failed stage is red on its own; its receipt is evidence of nothing, reuse included.
+        raise ValueError('the mutation stage failed (%s)' % str(receipt.get('error', 'unnamed error'))[:200])
     if (receipt.get('status') != 'passed' or type(receipt.get('reused')) is not int
             or receipt['reused'] < 0 or type(receipt.get('force_fresh')) is not bool
             or receipt['force_fresh'] != force or (force and receipt['reused'])):
@@ -63,11 +68,33 @@ def not_run(force):
     return {'force_fresh': force, 'reused': {'unit': 0, 'mutation': 0}}
 
 
-if __name__ == '__main__':
-    if sys.argv[1] == '--not-run':
-        answer = not_run(truthy(sys.argv[2]))
-    else:
-        with open(sys.argv[1]) as stream:
-            receipt = json.load(stream)
-        answer = fields(receipt, truthy(sys.argv[2]), sys.argv[3])
+def main(argv):
+    """Print the stamp's reuse fields. A receipt that cannot carry them (a failed stage, an empty
+    or unreadable receipt, a reuse claim without evidence) is a one-line refusal and exit 1, never
+    a traceback, and the fields printed are a RED stamp's: the requested mode and no reuse claimed
+    (reused.mutation null). verify.sh stamps RED with them."""
+    try:
+        if argv[1] == '--not-run':
+            answer = not_run(truthy(argv[2]))
+        else:
+            with open(argv[1]) as stream:
+                try:
+                    receipt = json.load(stream)
+                except ValueError as error:
+                    raise ValueError('unreadable mutation receipt (%s)' % error) from None
+            answer = fields(receipt, truthy(argv[2]), argv[3])
+    except (OSError, ValueError, KeyError, TypeError, IndexError) as error:
+        print('mutation reuse: no stamp fields: %s; the gate is RED and claims no reuse' % error,
+              file=sys.stderr)
+        try:
+            print(json.dumps({'force_fresh': truthy(argv[2]), 'reused': {'mutation': None, 'unit': 0}},
+                             separators=(',', ':'))[1:-1])
+        except (ValueError, IndexError):
+            pass
+        return 1
     print(json.dumps(answer, separators=(',', ':'))[1:-1])
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
