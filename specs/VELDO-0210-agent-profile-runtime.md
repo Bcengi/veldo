@@ -145,9 +145,10 @@ acceptance_criteria:
       over /proc, drops every capability (bounding, ambient, effective, permitted, inheritable;
       securebits locked) and sets no_new_privs before it executes python3 -I -S agent_sandbox.py
       namespace-init. The host's AppArmor policy (scripts/veldo-userns.apparmor) lets only the helper
-      create a user namespace and runs whatever it executes under the child profile
-      veldo-userns-child, which denies every capability, every user namespace, mounts and profile
-      changes, and is inherited by every program executed below it. The init refuses to go on unless
+      create a user namespace and stacks the child profile veldo-userns-child onto the helper's
+      profile for whatever it executes (no_new_privs allows only a stack), which denies every
+      capability, every user namespace, mounts and profile changes, and is kept by every program
+      executed below it. The init refuses to go on unless
       it is PID 1 of a read-only fresh procfs, only the identity map exists, every capability set is
       empty, no_new_privs is set and (with AppArmor) its label is veldo-userns-child in enforce mode;
       it then reports ready and forks the agent, which confines itself (seccomp, Landlock) and execs.
@@ -257,24 +258,38 @@ unchanged.
   The AppArmor policy, scripts/veldo-userns.apparmor, installed as /etc/apparmor.d/veldo-userns,
   attaches veldo-userns to the helper's path with userns, the four capabilities it needs inside its
   own namespace, the two mounts it makes, signals, and no tracing of it (so no process injects code
-  with its rights); the only program it may execute, /usr/bin/python3, transitions to the child
-  profile veldo-userns-child, as Ubuntu's bwrap-userns-restrict runs what bwrap starts under
-  unpriv_bwrap. The child profile allows files, network, Unix sockets, signals, tracing (the gate's
-  broker reads the agent's memory and descriptors) and IPC, denies every capability, every user
-  namespace, every mount and profile change, and every program executed below it inherits it
-  (ix). Nothing the helper runs can therefore create or use a user namespace with capabilities,
-  whatever it executes. The policy:
+  with its rights). The helper sets no_new_privs before it executes /usr/bin/python3, and under
+  no_new_privs the kernel lets a confined process change only to a label that still holds its
+  current profile, so the exec stacks the child profile onto the helper's (px ->
+  &veldo-userns-child), as Ubuntu's unprivileged_userns stacks itself onto what it executes: the
+  tree runs under the stacked label veldo-userns//&veldo-userns-child, and every access must pass
+  both profiles. The child profile allows files, network, Unix sockets, signals, tracing and IPC,
+  denies every capability, every user namespace, every mount, unmount, pivot_root and profile
+  change, and keeps itself across every exec (ix); veldo-userns stacks the child again on every
+  exec (px -> &veldo-userns-child), so every program executed below keeps the same stack and can
+  never leave it. veldo-userns allows what the stack's programs need besides: network, Unix
+  sockets, signals, IPC, and reading the /proc entries of the stack's own processes (ptrace read,
+  peer veldo-userns or veldo-userns-child); it lets no confined process trace the helper or a
+  process of the stack (an unconfined tracer, such as the launcher whose gate broker reads the
+  agent's memory and descriptors, is not checked against a tracee's rules). Nothing the helper
+  runs can therefore create or use a user namespace with capabilities, whatever it executes. The
+  policy:
 
   # AppArmor policy for the agent sandbox's namespace helper (VELDO-0210 AC6), installed by the
   # owner's one-time setup as /etc/apparmor.d/veldo-userns.
   #
   # veldo-userns is the only program on the host this lets create a user namespace. It needs the
   # capabilities below inside that namespace only, to map the account to itself, make the mount and
-  # PID namespaces and mount their procfs. Whatever it executes (only /usr/bin/python3) runs under
-  # veldo-userns-child, as Ubuntu's bwrap-userns-restrict runs what bwrap starts under unpriv_bwrap:
-  # no capability, no user namespace, no mount, no profile change, and every program that child
-  # executes inherits the same profile. So nothing the helper runs can create or use a user
-  # namespace with capabilities. No process may trace the helper, so no code runs with its rights.
+  # PID namespaces and mount their procfs. The helper sets no_new_privs before it executes anything,
+  # and under no_new_privs the kernel lets a confined process change only to a label that keeps its
+  # current profile, so whatever it executes (only /usr/bin/python3) runs under the stack
+  # veldo-userns//&veldo-userns-child, as Ubuntu's unprivileged_userns stacks itself onto what it
+  # executes: each access must pass both profiles, and veldo-userns-child denies every capability,
+  # user namespace, mount, unmount, pivot_root and profile change. Every program the stack executes
+  # gets the same stack. So nothing the helper runs can create or use a user namespace with
+  # capabilities. veldo-userns also allows what the programs of the stack need (network, Unix
+  # sockets, signals, IPC, reading their own processes' /proc). No confined process may trace the
+  # helper or a process of the stack, so no code runs with the helper's rights.
 
   abi <abi/4.0>,
   include <tunables/global>
@@ -288,10 +303,16 @@ unchanged.
     mount options=(rw, rprivate) -> /,
     mount fstype=proc options=(ro, nosuid, nodev, noexec) proc -> /proc/,
     file rwlkm /{**,},
+    network,
+    unix,
     signal,
+    mqueue,
+    io_uring,
+    dbus,
+    ptrace (read) peer=veldo-userns{,-child},
     ptrace (readby),
     audit deny ptrace (tracedby),
-    /usr/bin/python3* px -> veldo-userns-child,
+    /** px -> &veldo-userns-child,
   }
 
   profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {

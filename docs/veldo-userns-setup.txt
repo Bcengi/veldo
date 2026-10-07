@@ -13,8 +13,9 @@ What it does, in order:
 3. Installs scripts/veldo-userns.apparmor root-owned, mode 0644, as
    /etc/apparmor.d/veldo-userns. The file holds both AppArmor profiles: veldo-userns, which
    lets only the helper create a user namespace, and its child profile veldo-userns-child,
-   which denies every capability, user namespace, mount and profile change to everything the
-   helper executes.
+   which the helper's exec stacks onto veldo-userns (the label inside is
+   veldo-userns//&veldo-userns-child) and which denies every capability, user namespace, mount
+   and profile change to everything the helper executes.
 4. Loads both profiles with apparmor_parser -r.
 5. Removes the unshare copy the first design installed, and the temporary directory.
 6. Runs the self-test (python3 -I -S scripts/agent_sandbox.py namespace-selftest), which prints

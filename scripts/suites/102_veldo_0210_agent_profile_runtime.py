@@ -485,10 +485,19 @@ print(json.dumps(r))
                == [0, 1, 2])
         profiles = policy_text.split('\nprofile ')
         child_profile = [part for part in profiles if part.startswith('veldo-userns-child ')]
+        helper_profile = [part for part in profiles if part.startswith('veldo-userns /')]
+        # Under no_new_privs only a stack is allowed: the helper's one exec rule stacks the child
+        # profile, so the tree runs under both and keeps both across every exec.
         expect('VELDO-0210 namespace/policy-child-denies-capabilities-and-user-namespaces',
                'profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=' in policy_text
-               and '  /usr/bin/python3* px -> veldo-userns-child,\n' in policy_text
-               and '  audit deny ptrace (tracedby),\n' in policy_text
+               and len(helper_profile) == 1
+               and [line for line in helper_profile[0].splitlines()
+                   if any(__import__('re').fullmatch(r'[pPcCuU]?i?x,?', word) for word in line.split())]
+               == ['  /** px -> &veldo-userns-child,']
+               and '  audit deny ptrace (tracedby),\n' in helper_profile[0]
+               and 'change_profile' not in helper_profile[0]
+               and [line.strip() for line in helper_profile[0].splitlines() if 'ptrace' in line]
+               == ['ptrace (read) peer=veldo-userns{,-child},', 'ptrace (readby),', 'audit deny ptrace (tracedby),']
                and len(child_profile) == 1 and all(rule in child_profile[0] for rule in (
                    '  audit deny capability,\n', '  audit deny userns,\n', '  audit deny change_profile,\n',
                    '  audit deny mount,\n', '  /** ix,\n'))
