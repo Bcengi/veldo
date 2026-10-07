@@ -120,10 +120,12 @@ RESOLVER_RUNTIME = Path('/run/systemd/resolve')
 BROKERED = 'VELDO_SANDBOX_BROKERED'
 # The namespace helper (VELDO-0210 AC6): veldo-userns, built from scripts/veldo_userns.c and installed
 # root-owned by the owner, the only path the host's AppArmor profile veldo-userns lets create a user
-# namespace. Whatever it executes runs under the child profile NAMESPACE_PROFILE (no capability, no
-# user namespace). Fixed here: never taken from the environment, the configuration or the candidate.
+# namespace. Whatever it executes runs under the child profile stacked onto the helper's (no
+# capability, no user namespace): the label the kernel reports there is exactly NAMESPACE_LABEL, the
+# two profiles in the kernel's order joined by '//&' and the one mode both are in. Fixed here: never
+# taken from the environment, the configuration or the candidate.
 NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')
-NAMESPACE_PROFILE = 'veldo-userns-child'
+NAMESPACE_LABEL = 'veldo-userns//&veldo-userns-child (enforce)'
 # How long the tree's init has to report that its namespace is as the helper must make it.
 NAMESPACE_START_SECONDS = 60
 # The owner's one-time setup, run from the authority checkout's root (every refusal prints it with
@@ -934,7 +936,7 @@ def apparmor_enabled():
 
 
 def apparmor_label():
-    """This process's AppArmor label, such as 'veldo-userns-child (enforce)', or None."""
+    """This process's AppArmor label, such as 'veldo-userns//&veldo-userns-child (enforce)', or None."""
     for path in ('/proc/self/attr/apparmor/current', '/proc/self/attr/current'):
         try:
             return Path(path).read_text().strip('\0\n ')
@@ -985,14 +987,14 @@ def launcher_marker():
 def nested_namespace():
     """The marker descriptor (launcher_marker) when this launcher already runs inside a tree this
     launcher made (VELDO-0210 AC6), else None. Inside means: it inherited the marker the outer
-    launcher created; its AppArmor label is the helper's child profile in enforce mode, which only
-    an exec through the root-owned helper gives and which no process can leave (change_profile is
-    denied there); it runs in a PID namespace other than the host's whose procfs is /proc; and it
+    launcher created; its AppArmor label is exactly NAMESPACE_LABEL (the child profile stacked onto
+    the helper's, both in enforce mode), which only an exec through the root-owned helper gives and
+    which no process can leave (change_profile is denied there); it runs in a PID namespace other than the host's whose procfs is /proc; and it
     holds no capability. Any other private PID namespace (a container's, a systemd PrivatePIDs one)
     has no marker and does not count. Such a launcher creates no namespace: its /proc already shows
     no host process, and the helper's child profile would refuse it one anyway."""
     try:
-        if (apparmor_enabled() and apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'
+        if (apparmor_enabled() and apparmor_label() == NAMESPACE_LABEL
                 and os.readlink('/proc/self/ns/pid') != INITIAL_PID_NAMESPACE
                 and os.readlink('/proc/self') == str(os.getpid())
                 and capability_problem(Path('/proc/self/status').read_text()) is None):
@@ -1006,8 +1008,8 @@ def namespace_problem(ids):
     """The init's own check, at its start, that the helper made the namespace it must (VELDO-0210
     AC6), or None: this process is PID 1 of a PID namespace other than the host's whose fresh procfs
     is mounted read only on /proc; only the account's uid and gid are mapped, each to itself; every
-    capability set is empty and no_new_privs is set; and, where AppArmor is enabled, the process runs
-    under the helper's child profile in enforce mode."""
+    capability set is empty and no_new_privs is set; and, where AppArmor is enabled, its label is
+    exactly NAMESPACE_LABEL."""
     try:
         if os.getpid() != 1 or os.readlink('/proc/self') != '1':
             return 'the init is not PID 1 of its own procfs'
@@ -1026,8 +1028,8 @@ def namespace_problem(ids):
         problem = capability_problem(Path('/proc/self/status').read_text())
         if problem:
             return problem
-        if apparmor_enabled() and apparmor_label() != NAMESPACE_PROFILE + ' (enforce)':
-            return 'the AppArmor label is %r, not %s in enforce mode' % (apparmor_label(), NAMESPACE_PROFILE)
+        if apparmor_enabled() and apparmor_label() != NAMESPACE_LABEL:
+            return 'the AppArmor label is %r, not %r' % (apparmor_label(), NAMESPACE_LABEL)
     except OSError as error:
         return str(error)
     return None
@@ -2142,7 +2144,7 @@ def namespace_selftest():
         rows['launch-sees-only-its-tree'] = [seen.get('pids') == [1, 2], seen.get('pids')]
         rows['launch-holds-no-capability'] = [seen.get('status') == dict(
             CapInh=empty, CapPrm=empty, CapEff=empty, CapBnd=empty, CapAmb=empty, NoNewPrivs='1'), seen.get('status')]
-        rows['launch-runs-under-the-child-profile'] = [seen.get('label') == NAMESPACE_PROFILE + ' (enforce)',
+        rows['launch-runs-under-the-child-profile'] = [seen.get('label') == NAMESPACE_LABEL,
                                                        seen.get('label')]
         rows['launch-cannot-create-a-user-namespace'] = [seen.get('userns') in ('EACCES', 'EPERM'),
                                                          seen.get('userns')]

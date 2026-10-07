@@ -412,7 +412,7 @@ print(json.dumps(r))
                                                    'CapEff': '0000000000000000', 'CapBnd': '0000000000000000',
                                                    'CapAmb': '0000000000000000', 'NoNewPrivs': '1'})
                     expect(label + 'runs-under-the-child-profile: %s' % found.get('label'),
-                           not S.apparmor_enabled() or found.get('label') == S.NAMESPACE_PROFILE + ' (enforce)')
+                           not S.apparmor_enabled() or found.get('label') == S.NAMESPACE_LABEL)
                     expect(label + 'no-user-namespace-for-the-agent: %s' % found.get('userns'),
                            found.get('userns') in ('EACCES', 'EPERM'))
                     expect(label + 'tree-carries-the-launchers-marker: %s' % found.get('marker'),
@@ -570,14 +570,30 @@ print(json.dumps(r))
                        and not ran.exists())
         # Nested means inside a tree this launcher's helper made: its AppArmor label, never any private
         # PID namespace (a container's, a systemd PrivatePIDs one).
-        saved = S.apparmor_enabled, S.apparmor_label
+        # Everything else that makes a tree nested is granted here (a marker, a private PID namespace,
+        # no capability), so the label alone decides: exactly the stacked one, nothing else.
+        saved = (S.apparmor_enabled, S.apparmor_label, S.launcher_marker, S.INITIAL_PID_NAMESPACE,
+                 S.capability_problem)
         try:
-            S.apparmor_enabled, S.apparmor_label = (lambda: True), (lambda: 'docker-default (enforce)')
+            S.apparmor_enabled, S.launcher_marker = (lambda: True), (lambda: 7)
+            S.INITIAL_PID_NAMESPACE, S.capability_problem = 'pid:[0]', (lambda status: None)
+            S.apparmor_label = lambda: S.NAMESPACE_LABEL
+            exact = S.nested_namespace()
+            S.apparmor_label = lambda: 'docker-default (enforce)'
             container = S.nested_namespace()
-            S.apparmor_label = lambda: S.NAMESPACE_PROFILE + ' (complain)'
+            S.apparmor_label = lambda: 'veldo-userns//&veldo-userns-child (complain)'
             complaining = S.nested_namespace()
+            # Not the child alone, not the helper's own, not another order, mode or stack.
+            near = {}
+            for other in ('veldo-userns-child (enforce)', 'veldo-userns (enforce)',
+                          'veldo-userns-child//&veldo-userns (enforce)', 'veldo-userns//&veldo-userns-child (mixed)',
+                          'veldo-userns//&veldo-userns-child//&docker-default (enforce)',
+                          'veldo-userns//&veldo-userns-child', 'unconfined', None):
+                S.apparmor_label = lambda: other
+                near[other] = S.nested_namespace()
         finally:
-            S.apparmor_enabled, S.apparmor_label = saved
+            (S.apparmor_enabled, S.apparmor_label, S.launcher_marker, S.INITIAL_PID_NAMESPACE,
+             S.capability_problem) = saved
         # And the label is not enough: a private PID namespace with that label and no capability, but
         # without the marker the outer launcher created, is not nested, whatever namespace descriptors
         # it holds itself (its own PID namespace, another kind, a regular file).
@@ -595,7 +611,7 @@ print(json.dumps(r))
                     low = descriptor + 1
                 os.closerange(low, 0x7fffffff)
                 S.apparmor_enabled = lambda: True
-                S.apparmor_label = lambda: S.NAMESPACE_PROFILE + ' (enforce)'
+                S.apparmor_label = lambda: S.NAMESPACE_LABEL
                 S.INITIAL_PID_NAMESPACE = 'pid:[0]'
                 S.capability_problem = lambda status: None
                 found = [S.launcher_marker(), S.nested_namespace()]
@@ -609,9 +625,11 @@ print(json.dumps(r))
         os.close(read_end)
         os.waitpid(forger, 0)
         expect('VELDO-0210 namespace/only-the-helpers-tree-counts-as-nested: %s' % forged,
-               container is None and complaining is None and forged == [None, None] and nested == (
+               exact == 7 and container is None and complaining is None and set(near.values()) == {None}
+               and S.NAMESPACE_LABEL == 'veldo-userns//&veldo-userns-child (enforce)'
+               and forged == [None, None] and nested == (
                    S.launcher_marker() is not None)
-               and "apparmor_label() == NAMESPACE_PROFILE + ' (enforce)'" in inspect.getsource(S.nested_namespace)
+               and "apparmor_label() == NAMESPACE_LABEL" in inspect.getsource(S.nested_namespace)
                and 'return launcher_marker()' in inspect.getsource(S.nested_namespace))
         # The outer launcher creates the marker before it executes the helper, and every process of
         # the tree keeps it; a nested one hands on the marker it inherited.

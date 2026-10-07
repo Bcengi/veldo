@@ -150,7 +150,8 @@ acceptance_criteria:
       capability, every user namespace, mounts and profile changes, and is kept by every program
       executed below it. The init refuses to go on unless
       it is PID 1 of a read-only fresh procfs, only the identity map exists, every capability set is
-      empty, no_new_privs is set and (with AppArmor) its label is veldo-userns-child in enforce mode;
+      empty, no_new_privs is set and (with AppArmor) its label is exactly
+      veldo-userns//&veldo-userns-child (enforce), the stack as the kernel prints it;
       it then reports ready and forks the agent, which confines itself (seccomp, Landlock) and execs.
       The launcher refuses unless the init reports ready within 60 seconds and the helper's own
       process holds no capability, and kills the tree first. The helper is never taken from the
@@ -161,7 +162,7 @@ acceptance_criteria:
       during the start ends it at once: the tree, a hung helper with it, is killed and the launcher
       exits 128 plus the signal number. A launcher already inside a tree the outer launcher made
       (it inherited the outer launcher's marker, a descriptor of the outer launcher's PID namespace
-      that is a proper ancestor of its own; label veldo-userns-child in enforce mode; a PID
+      that is a proper ancestor of its own; label exactly veldo-userns//&veldo-userns-child (enforce); a PID
       namespace other than the host's whose procfs is /proc; no capability) creates none, and its
       init is a child subreaper that kills and reaps every remaining descendant when the agent ends;
       any other private PID namespace (a container's, a systemd PrivatePIDs one) has no marker and
@@ -379,8 +380,11 @@ unchanged.
   A launcher already inside a tree the outer launcher made creates no namespace (nested_namespace):
   it inherited the marker (launcher_marker: an open descriptor of a PID namespace, NS_GET_NSTYPE,
   that is not its own and in which NS_GET_PID_IN_PIDNS finds its pid, so a proper ancestor of its
-  own; only nsfs descriptors get the ioctls), its AppArmor label is veldo-userns-child in enforce
-  mode, which only an exec through the root-owned helper gives and which no process can leave, its
+  own; only nsfs descriptors get the ioctls), its AppArmor label is exactly
+  veldo-userns//&veldo-userns-child (enforce) (the kernel prints a stack's profiles in its own
+  order joined by '//&', then one mode when all share it; the child alone, the helper's own label,
+  complain or mixed mode and any other stack do not count), which only an exec through the
+  root-owned helper gives and which no process can leave, its
   /proc/self/ns/pid is not the initial pid:[4026531836], its /proc/self is its own pid, and it holds
   no capability. The marker cannot be forged from inside: a process in a PID namespace cannot open
   an ancestor (NS_GET_PARENT refuses it, its procfs shows no process outside), so only a process
