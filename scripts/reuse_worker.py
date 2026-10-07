@@ -49,6 +49,12 @@ def main():
     grants = [(root, boundary.READ), (Path(os.environ['TMPDIR']), boundary.READ | boundary.WRITE)]
     grants += [(Path(p).resolve(), boundary.READ)
                for p in job.get('runtime_paths', sandbox.RUNTIME) if Path(p).exists()]
+    if 'runtime_paths' not in job:
+        # A fresh worker reads the installed tools the gate profile grants the same suites (the
+        # Codex and Claude Code binaries, the langgraph runtime), read only. A declared case runs
+        # only its keyed runtime set, so it gets none of them.
+        config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
+        grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
     # Suites serve and dial Unix sockets in their scratch and drive terminals. This process stays
     # outside the domain as their broker (never running candidate code); the child confines itself.

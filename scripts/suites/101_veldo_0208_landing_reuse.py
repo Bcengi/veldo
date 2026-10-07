@@ -1695,3 +1695,48 @@ def _v208_unconfined_leg():
 if leg_runs():
     _v208_confined_stages()
     _v208_unconfined_leg()
+
+
+def _v208_installed_tools():
+    """A fresh mutation worker reads the installed tools the gate profile grants (optional_read_roots
+    of the authority's sandbox configuration), read only, resolved against the account's home rather
+    than the worker's private HOME, and never a root that holds or lies beneath a denied path or the
+    reuse store. Without them 0045 and 0132 lost the langgraph runtime and 0165 and 0173 the Codex
+    and Claude Code binaries, and every case of those suites was an invalid baseline."""
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import pwd
+    import tempfile
+    from unittest.mock import patch
+
+    spec = importlib.util.spec_from_file_location('v208_tools_boundary', ROOT / 'scripts/agent_sandbox.py')
+    B = importlib.util.module_from_spec(spec); spec.loader.exec_module(B)
+    with tempfile.TemporaryDirectory(prefix='v208-tools-') as temporary:
+        top = Path(temporary)
+        for name in ('tool', 'denied/inner', 'store-parent/store'):
+            (top / name).mkdir(parents=True)
+        (top / 'plain-file').write_text('x')
+        config = {'store': str(top / 'store-parent/store'), 'deny_read': [str(top / 'denied')],
+                  'optional_read_roots': [str(top / 'tool'), str(top / 'absent'), str(top / 'denied/inner'),
+                                          str(top / 'store-parent'), str(top / 'plain-file')]}
+        granted = B.installed_tools(config)
+        real = json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())
+        real['store'] = str(Path(pwd.getpwuid(os.getuid()).pw_dir) / real['store'][2:])
+        home = Path(pwd.getpwuid(os.getuid()).pw_dir)
+        with patch.dict(os.environ, {'HOME': str(top)}):
+            from_scratch_home = B.installed_tools(real)
+        expected_real = [(home / v[2:]).resolve() for v in real['optional_read_roots'] if (home / v[2:]).is_dir()]
+    worker_source = (ROOT / 'scripts/reuse_worker.py').read_text()
+    expect('VELDO-0208 worker/installed-tools-read-only: ' + repr((granted, from_scratch_home)),
+           granted == [(top / 'tool').resolve()]
+           and from_scratch_home == expected_real
+           and {'~/.nvm/versions/node', '~/.local/share/claude', '~/.local/share/veldo/langgraph'}
+               <= set(real['optional_read_roots'])
+           and "if 'runtime_paths' not in job:" in worker_source
+           and "grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]" in worker_source)
+
+
+if leg_runs():
+    _v208_installed_tools()

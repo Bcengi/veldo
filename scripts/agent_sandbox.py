@@ -811,6 +811,29 @@ def grants_for(config, authority, worktree, scratch):
     return grants, [store, *protected]
 
 
+def installed_tools(config):
+    """The installed tools and runtimes the configuration names (optional_read_roots: Node under
+    ~/.nvm, Claude Code, the langgraph runtime), as a fresh mutation worker's read-only grants, the
+    ones the gate profile gives the same suites. '~' is the account's home, never the HOME a worker
+    runs with (its private scratch). A root that is absent, or that holds, is or lies beneath the
+    reuse store or a denied path, is not granted; nothing here is ever writable."""
+    home = Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
+
+    def expand(value):
+        return home / value[2:] if value.startswith('~/') else Path(value)
+    blocked = [Path(config['store']).resolve()]
+    blocked += [expand(p).resolve() for p in config.get('deny_read', [])]
+    roots = []
+    for value in config.get('optional_read_roots', []):
+        path = expand(value)
+        if not path.exists():
+            continue
+        path = path.resolve(strict=True)
+        if path.is_dir() and not any(beneath(path, p) or beneath(p, path) for p in blocked):
+            roots.append(path)
+    return roots
+
+
 def close_descriptors(protected, keep=()):
     for fd in (0, 1, 2):
         try:
