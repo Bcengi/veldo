@@ -460,11 +460,19 @@ answered "Ok" (Telegram 32421, 2026-10-07T09:30:28Z).
   is permitted; Unix service sockets (the user bus, the systemd private socket and every address
   outside the domain's writable roots), inherited socket descriptors, abstract cross-domain
   sockets and io_uring stay denied exactly as in the gate profile.
-- One definition: the gate launcher and scripts/reuse_worker.py both start their domain through
+- One definition: the gate launcher and mutation_sandbox.confine both start their domain through
   agent_sandbox.fork_gate_domain, and the Landlock and seccomp layers install nothing per profile
-  for the network, so the two rules cannot drift. The worker-only socket filter
-  (mutation_sandbox.network_filter with unix=True) is removed; mutation_sandbox.restrict, which
-  the coordinator's workers do not use, keeps its full network denial.
+  for the network, so the rules cannot drift. Every path that confines a mutation worker goes
+  through mutation_sandbox.confine: the coordinator's workers (scripts/reuse_worker.py), the
+  developer worker and the case-input proposal (check_gate_mutations.worker, which
+  scripts/propose_case_inputs.py probes). The worker-only socket filter
+  (mutation_sandbox.network_filter, in both forms) and mutation_sandbox.restrict are removed, and
+  the broker has no no-network mode. confine keeps every non-network restriction: the worker reads
+  only its root, its runtime set (and, fresh, the installed tools) and device null and random,
+  writes only its scratch, and inherits no descriptor beyond its own authority channels; a
+  proposal in a linked worktree also reads that repository's Git common directory, as a main
+  checkout's suites read its .git. This supersedes VELDO-0205's legacy-worker exceptions
+  (/proc/mounts, /sys, /dev/shm, /run/user/<uid>): no worker receives them.
 - Tests (suite 101): the same probe runs in a real authority worker started as the coordinator
   starts it and in the gate profile's launcher. Row profiles/worker-binds-and-connects-loopback-tcp
   requires loopback TCP bind, listen, connect and a round trip in the worker; row
@@ -472,4 +480,14 @@ answered "Ok" (Telegram 32421, 2026-10-07T09:30:28Z).
   systemd private socket, an inherited socket, abstract connect and bind and io_uring setup, enter
   and register to stay refused; row profiles/worker-network-rule-is-gate-rule requires the outcome
   of every probed operation to be identical in both and both launchers to use fork_gate_domain.
-  They replace row profiles/worker-denies-tcp-and-user-bus.
+  They replace row profiles/worker-denies-tcp-and-user-bus. Row
+  profiles/one-network-rule-everywhere finds no seccomp filter or Landlock network rule outside
+  agent_sandbox.py in the machinery, no network switch on the broker or fork_brokered, no way into
+  the domain but fork_gate_domain, no restrict or network_filter in mutation_sandbox, and every
+  worker path confining through mutation_sandbox.confine. Row
+  profiles/case-input-proposal-tcp-suite-confined (a strace row) proposes inputs for a case of
+  58_veldo_0028_effects, whose rows serve on 127.0.0.1 TCP: baseline and noop pass, the mutant
+  is killed, and every read of the suite is by a process inside the Landlock domain. Suite 99
+  (repair/worker-and-child-cannot-access-store) and suite 100
+  (case/mutant-bus-systemd-inherited-denied, case/unavailable-ipc-filter-fails-closed) drive
+  mutation_sandbox.confine.
