@@ -20,6 +20,7 @@ import re
 import shutil
 import signal
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
@@ -41,7 +42,14 @@ def beneath(path, root):
     return path == root or root in path.parents
 
 
-def landlock(grants, profile="agent"):
+def landlock(grants, profile="agent", broker=None):
+    """Confine this process and every descendant before candidate code runs.
+
+    broker is the child's Handoff from fork_brokered (gate and worker profiles). With it, the
+    confined tree has Unix sockets and its own terminals, every operation that could reach
+    outside the domain (connect, bind, addressed sends, TIOCGPTPEER) performed by the trusted
+    parent's Broker. Without it the strict IPC filter refuses Unix sockets outright.
+    """
     spec = importlib.util.spec_from_file_location('mutation_sandbox',
                                                   Path(__file__).with_name('mutation_sandbox.py'))
     boundary = importlib.util.module_from_spec(spec)
@@ -66,53 +74,79 @@ def landlock(grants, profile="agent"):
         _pack_ = 1
         _fields_ = [('access', ctypes.c_uint64), ('parent', ctypes.c_int32)]
 
+    if libc.prctl(38, 1, 0, 0, 0):
+        raise OSError(ctypes.get_errno(), 'cannot set no_new_privs')
+    # The IPC filter goes first: whether a broker serves this tree decides the terminal grant.
+    mode = broker.install(libc) if broker is not None else install_filter(libc, ipc_program())
+    grants = list(grants)
+    if mode != 'strict':
+        # A fresh terminal pair per open. Its peer comes only through the broker (TIOCGPTPEER),
+        # and /dev/pts stays ungranted, so no other terminal on the host is reachable.
+        grants.append((PTMX, (1 << 1) | (1 << 2) | DEVICE_IOCTL))
     # Handle device ioctl too; only ordinary files and selected safe devices get grants.
-    rules = Ruleset(READ | WRITE | (1 << 15), 0, 3)
+    rules = Ruleset(READ | WRITE | DEVICE_IOCTL, 0, 3)
     fd = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
     try:
         for path, access in grants:
             if not path.is_dir():
-                access &= FILE
+                access &= FILE | (DEVICE_IOCTL if stat.S_ISCHR(path.stat().st_mode) else 0)
             parent = os.open(path, os.O_PATH | os.O_CLOEXEC)
             try:
                 rule = Beneath(access, parent)
                 call(445, fd, 1, ctypes.byref(rule), 0)
             finally:
                 os.close(parent)
-        if libc.prctl(38, 1, 0, 0, 0):
-            raise OSError(ctypes.get_errno(), 'cannot set no_new_privs')
         call(446, fd, 0)
     finally:
         os.close(fd)
     if profile == 'worker':
-        boundary.network_filter(libc)
-    ipc_filter(libc)
+        # Brokered workers create Unix sockets only; the broker refuses every other address.
+        boundary.network_filter(libc, unix=mode != 'strict')
+    return mode
 
 
-def ipc_filter(libc):
+SECCOMP_NOTIFY, SECCOMP_ALLOW = 0x7fc00000, 0x7fff0000
+TIOCGPTPEER = 0x5441
+DEVICE_IOCTL = 1 << 15
+PTMX = Path('/dev/ptmx')
+BROKERED = 'VELDO_SANDBOX_BROKERED'
+
+
+def ipc_program(mediate=None):
     """Block pathname Unix service escapes too (Landlock ABI 6 scopes abstract ones).
 
     Do not expose inherited sockets or io_uring as alternate syscall dispatch.
     Agent TCP/TLS is allowed; only workers install the full network filter.
+
+    mediate None is the strict filter: socket(AF_UNIX) is refused. Otherwise Unix sockets may be
+    created and mediate is the action for every call that names an address or a terminal peer:
+    connect, bind, sendto with an address, sendmsg and TIOCGPTPEER. SECCOMP_NOTIFY hands them to
+    this launcher's Broker; SECCOMP_ALLOW leaves them to an outer Broker whose filter, still
+    installed, notifies first. sendmmsg reports ENOSYS so libraries fall back to sendmsg.
     """
-    class Filter(ctypes.Structure):
-        _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
-                    ('jf', ctypes.c_ubyte), ('k', ctypes.c_uint)]
-
-    class Program(ctypes.Structure):
-        _fields_ = [('length', ctypes.c_ushort), ('filter', ctypes.POINTER(Filter))]
-
     deny = 0x50000 | errno.EPERM
     code = [(0x20, 0, 0, 4), (0x15, 1, 0, 0xc000003e), (0x06, 0, 0, 0x80000000),
             (0x20, 0, 0, 0), (0x35, 0, 1, 0x40000000), (0x06, 0, 0, deny)]
-    # socket(AF_UNIX, ...) refused; socketpair is local to this process tree.
-    code += [(0x15, 0, 3, 41), (0x20, 0, 0, 16), (0x15, 0, 1, 1), (0x06, 0, 0, deny),
-             (0x20, 0, 0, 0)]
-    # Standard descriptors can be terminals opened before confinement. Do not
-    # let a child inject input into the orchestrator's terminal through them.
-    code += [(0x15, 0, 5, 16), (0x20, 0, 0, 24), (0x15, 0, 1, 0x5412),
-             (0x06, 0, 0, deny), (0x15, 0, 1, 0x541c), (0x06, 0, 0, deny),
-             (0x20, 0, 0, 0)]
+    if mediate is None:
+        # socket(AF_UNIX, ...) refused; socketpair is local to this process tree.
+        code += [(0x15, 0, 3, 41), (0x20, 0, 0, 16), (0x15, 0, 1, 1), (0x06, 0, 0, deny),
+                 (0x20, 0, 0, 0)]
+        # Standard descriptors can be terminals opened before confinement. Do not
+        # let a child inject input into the orchestrator's terminal through them.
+        code += [(0x15, 0, 5, 16), (0x20, 0, 0, 24), (0x15, 0, 1, 0x5412),
+                 (0x06, 0, 0, deny), (0x15, 0, 1, 0x541c), (0x06, 0, 0, deny),
+                 (0x20, 0, 0, 0)]
+    else:
+        code += [(0x15, 0, 7, 16), (0x20, 0, 0, 24), (0x15, 0, 1, 0x5412),
+                 (0x06, 0, 0, deny), (0x15, 0, 1, 0x541c), (0x06, 0, 0, deny),
+                 (0x15, 0, 1, TIOCGPTPEER), (0x06, 0, 0, mediate), (0x20, 0, 0, 0)]
+        for number in (42, 46, 49):  # connect, sendmsg, bind
+            code += [(0x15, 0, 1, number), (0x06, 0, 0, mediate)]
+        code += [(0x15, 0, 1, 307), (0x06, 0, 0, 0x50000 | errno.ENOSYS)]
+        # sendto with a NULL destination is a send on a connected socket; any address is mediated.
+        code += [(0x15, 0, 6, 44), (0x20, 0, 0, 48), (0x15, 0, 3, 0), (0x20, 0, 0, 52),
+                 (0x15, 0, 1, 0), (0x06, 0, 0, SECCOMP_ALLOW), (0x06, 0, 0, mediate),
+                 (0x20, 0, 0, 0)]
     # Close IPC, namespace, mount, ptrace and asynchronous syscall alternatives.
     # chmod is intentionally available for normal build/Git use: it cannot grant
     # file-content access denied by Landlock. Metadata secrecy is not claimed.
@@ -120,11 +154,487 @@ def ipc_filter(libc):
                    303, 304, 308, 310, 311, 313, 321, 323, 425, 426, 427, 428, 429,
                    430, 431, 432, 433, 438, 442, 452):
         code += [(0x15, 0, 1, number), (0x06, 0, 0, deny)]
-    code += [(0x06, 0, 0, 0x7fff0000)]
+    code += [(0x06, 0, 0, SECCOMP_ALLOW)]
+    return code
+
+
+def install_filter(libc, code, flags=0):
+    """seccomp(SECCOMP_SET_MODE_FILTER). Returns 'strict' for a plain filter, or the listener
+    descriptor when flags ask for one."""
+    class Filter(ctypes.Structure):
+        _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte),
+                    ('jf', ctypes.c_ubyte), ('k', ctypes.c_uint)]
+
+    class Program(ctypes.Structure):
+        _fields_ = [('length', ctypes.c_ushort), ('filter', ctypes.POINTER(Filter))]
+
     filters = (Filter * len(code))(*(Filter(*item) for item in code))
     program = Program(len(code), filters)
-    if libc.prctl(22, 2, ctypes.byref(program), 0, 0):
+    result = libc.syscall(ctypes.c_long(317), ctypes.c_long(1), ctypes.c_long(flags),
+                          ctypes.byref(program))
+    if result < 0:
         raise OSError(ctypes.get_errno(), 'agent sandbox IPC filter unavailable')
+    return result if flags else 'strict'
+
+
+def ipc_filter(libc):
+    install_filter(libc, ipc_program())
+
+
+class Handoff:
+    """The confined child's half of fork_brokered: install the notifying filter and hand its
+    listener to the trusted parent before any candidate code runs, then close it here, so
+    nothing in the domain can answer its own requests."""
+
+    def __init__(self, request, reply):
+        self.request, self.reply, self.mode = request, reply, None
+
+    def keep(self):
+        return (self.request, self.reply)
+
+    def install(self, libc):
+        try:
+            try:
+                # NEW_LISTENER | WAIT_KILLABLE_RECV: once the broker holds a request, only a fatal
+                # signal interrupts the caller, so a request is never performed twice.
+                listener = install_filter(libc, ipc_program(SECCOMP_NOTIFY), (1 << 3) | (1 << 5))
+            except OSError as error:
+                if error.errno != errno.EBUSY:
+                    raise
+                # Another listener is already above this process. Only this launcher's own broker
+                # marks the tree it serves, and nothing beneath it can add a listener, so with the
+                # mark that broker mediates for this nested domain too. Without it, strict.
+                self.mode = 'delegate' if os.environ.get(BROKERED) == '1' else 'strict'
+                install_filter(libc, ipc_program(SECCOMP_ALLOW) if self.mode == 'delegate'
+                               else ipc_program())
+                os.write(self.request, b'-\n')
+                return self.mode
+            try:
+                os.write(self.request, b'%d\n' % listener)
+                if os.read(self.reply, 1) != b'1':
+                    raise RuntimeError('agent sandbox broker unavailable')
+            finally:
+                os.close(listener)
+            self.mode = 'broker'
+            return self.mode
+        finally:
+            os.close(self.request)
+            os.close(self.reply)
+
+
+def fork_brokered(roots, network):
+    """Fork a child that will confine itself with a Handoff. Returns (0, Handoff) in the child
+    and (pid, Broker or None) in the parent once the child has installed its filter: a Broker
+    serving its listener, or None when the child is strict, delegated or failed first."""
+    request_r, request_w = os.pipe()
+    reply_r, reply_w = os.pipe()
+    pid = os.fork()
+    if not pid:
+        os.close(request_r)
+        os.close(reply_w)
+        return 0, Handoff(request_w, reply_r)
+    os.close(request_w)
+    os.close(reply_r)
+    broker = None
+    try:
+        line = b''
+        while not line.endswith(b'\n'):
+            chunk = os.read(request_r, 32)
+            if not chunk:
+                break
+            line += chunk
+        if line.strip() not in (b'', b'-'):
+            try:
+                broker = Broker(roots, network)
+                broker.attach(pid, int(line))
+            except (OSError, ValueError):
+                broker = None
+            os.write(reply_w, b'1' if broker else b'0')
+    except OSError:
+        broker = None
+    finally:
+        os.close(request_r)
+        os.close(reply_w)
+    return pid, broker
+
+
+class Broker:
+    """The trusted parent's side: performs each mediated call with its own copy of the arguments.
+
+    A Unix address must be absolute and lie beneath one of `roots` (the domain's writable roots,
+    where only the domain can create sockets), resolved with no symlink, magic link or mount
+    crossing; an abstract address is refused, since this process is outside the Landlock scope
+    that keeps abstract sockets inside the domain. connect and addressed sends go through an
+    O_PATH descriptor of the resolved socket. bind runs in a helper confined (Landlock) to create
+    socket files only beneath `roots`, so the bound name is the caller's own path. Other address
+    families pass through only when `network` (gate: TCP is allowed) and are refused otherwise.
+    TIOCGPTPEER is answered with the peer of a terminal master the caller itself holds.
+    """
+    LIMIT = 1 << 24
+
+    def __init__(self, roots, network):
+        self.network = network
+        self.libc = libc = ctypes.CDLL(None, use_errno=True)
+        for call in (libc.connect, libc.bind):
+            call.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
+        libc.sendto.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_size_t, ctypes.c_int,
+                                ctypes.c_char_p, ctypes.c_uint32]
+        libc.sendto.restype = libc.sendmsg.restype = ctypes.c_ssize_t
+        libc.sendmsg.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int]
+        self.roots = []
+        for root in roots:
+            self.roots.append((os.fsencode(Path(root).resolve(strict=True)),
+                               os.open(root, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)))
+        self.listener = None
+        self.binder, self.lock = self._binder(), __import__('threading').Lock()
+
+    def _syscall(self, number, *args):
+        result = self.libc.syscall(ctypes.c_long(number), *(ctypes.c_long(a) for a in args))
+        if result < 0:
+            raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
+        return result
+
+    def attach(self, pid, number):
+        pidfd = self._syscall(434, pid, 0)
+        try:
+            self.listener = self._syscall(438, pidfd, number, 0)
+        finally:
+            os.close(pidfd)
+        os.set_inheritable(self.listener, False)
+        threading = __import__('threading')
+        threading.Thread(target=self._serve, daemon=True).start()
+
+    def close(self):
+        """Stop serving: the listener, the roots and the bind helper (which exits on EOF)."""
+        for descriptor in [self.listener, *(fd for _, fd in self.roots)]:
+            if descriptor is not None:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+        self.binder.close()
+        try:
+            os.waitpid(self.binder_pid, 0)
+        except ChildProcessError:
+            pass
+
+    # ---- the confined bind helper ------------------------------------------------------------
+    def _binder(self):
+        import socket
+        ours, theirs = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+        pid = os.fork()
+        if pid:
+            theirs.close()
+            self.binder_pid = pid
+            return ours
+        try:
+            keep = theirs.fileno()
+            os.closerange(3, keep)
+            os.closerange(keep + 1, 0x7fffffff)
+            libc = ctypes.CDLL(None, use_errno=True)
+            libc.bind.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
+            confined = False
+            while True:
+                data, ancillary, _, _ = theirs.recvmsg(256, socket.CMSG_SPACE(4))
+                if not data:
+                    os._exit(0)
+                if not confined:
+                    # Confined on its first request, never earlier: the first request comes after
+                    # the served tree confined itself, so a trace's confinement boundary (the first
+                    # landlock_restrict_self it records) is still that tree's own.
+                    self._confine_binder(libc)
+                    confined = True
+                fds = [int.from_bytes(d[:4], 'little') for level, kind, d in ancillary
+                       if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS]
+                code = errno.EBADF
+                if len(fds) == 1:
+                    code = 0 if libc.bind(fds[0], data, len(data)) == 0 else ctypes.get_errno()
+                for fd in fds:
+                    os.close(fd)
+                os.write(theirs.fileno(), code.to_bytes(4, 'little'))
+        except BaseException:
+            os._exit(3)
+
+    def _confine_binder(self, libc):
+        """Landlock handling only socket creation, granted beneath the roots: a bind of a path whose
+        components were swapped for links after the broker checked it still cannot create a
+        socket anywhere else."""
+        class Ruleset(ctypes.Structure):
+            _fields_ = [('access', ctypes.c_uint64)]
+
+        class Beneath(ctypes.Structure):
+            _pack_ = 1
+            _fields_ = [('access', ctypes.c_uint64), ('parent', ctypes.c_int32)]
+        make_sock = 1 << 9
+        rules = Ruleset(make_sock)
+        ruleset = libc.syscall(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
+        if ruleset < 0:
+            os._exit(3)
+        for root, _ in self.roots:
+            parent = os.open(root, os.O_PATH | os.O_CLOEXEC)
+            if libc.syscall(445, ruleset, 1, ctypes.byref(Beneath(make_sock, parent)), 0):
+                os._exit(3)
+            os.close(parent)
+        if libc.prctl(38, 1, 0, 0, 0) or libc.syscall(446, ruleset, 0):
+            os._exit(3)
+        os.close(ruleset)
+
+    def _bind_path(self, sock, address):
+        import socket
+        with self.lock:
+            self.binder.sendmsg([address], [(socket.SOL_SOCKET, socket.SCM_RIGHTS,
+                                             sock.to_bytes(4, 'little'))])
+            reply = self.binder.recv(4)
+        if len(reply) != 4:
+            raise OSError(errno.EACCES, 'bind helper unavailable')
+        code = int.from_bytes(reply, 'little')
+        if code:
+            raise OSError(code, os.strerror(code))
+
+    # ---- request service ---------------------------------------------------------------------
+    def _serve(self):
+        import select
+        import threading
+        poller = select.poll()
+        poller.register(self.listener, select.POLLIN)
+        while True:
+            try:
+                events = poller.poll()
+            except InterruptedError:
+                continue
+            except OSError:
+                return
+            if any(flags & (select.POLLHUP | select.POLLERR | select.POLLNVAL) and not flags & select.POLLIN
+                   for _, flags in events):
+                return
+            notification = _Notification()
+            if self.libc.ioctl(self.listener, ctypes.c_ulong(0xc0502100), ctypes.byref(notification)):
+                if ctypes.get_errno() in (errno.ENOENT, errno.EINTR):
+                    continue
+                return
+            threading.Thread(target=self._answer, args=(notification,), daemon=True).start()
+
+    def _answer(self, notification):
+        opened = []
+        try:
+            value = self._perform(notification, opened)
+            if value is None:
+                return
+            error = 0
+        except OSError as failure:
+            value, error = 0, -(failure.errno or errno.EACCES)
+        finally:
+            for fd in opened:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+        response = _Response(notification.id, value, error, 0)
+        self.libc.ioctl(self.listener, ctypes.c_ulong(0xc0182101), ctypes.byref(response))
+
+    def _valid(self, notification):
+        """The caller is still blocked in this very request (no pid reuse, no completed call)."""
+        ident = ctypes.c_uint64(notification.id)
+        return self.libc.ioctl(self.listener, ctypes.c_ulong(0x40082102), ctypes.byref(ident)) == 0
+
+    def _read(self, tid, address, length):
+        if length == 0:
+            return b''
+        if length < 0 or length > self.LIMIT:
+            raise OSError(errno.EMSGSIZE, 'request too large')
+        buffer = ctypes.create_string_buffer(length)
+        local, remote = _Iovec(ctypes.addressof(buffer), length), _Iovec(address, length)
+        result = self.libc.syscall(ctypes.c_long(310), ctypes.c_long(tid), ctypes.byref(local),
+                                   ctypes.c_long(1), ctypes.byref(remote), ctypes.c_long(1), ctypes.c_long(0))
+        if result != length:
+            raise OSError(errno.EFAULT, 'unreadable request')
+        return buffer.raw
+
+    def _descriptor(self, tid, number, opened):
+        pidfd = self._syscall(434, tid, os.O_EXCL)  # PIDFD_THREAD
+        try:
+            fd = self._syscall(438, pidfd, number & 0xffffffff, 0)
+        finally:
+            os.close(pidfd)
+        opened.append(fd)
+        return fd
+
+    def _resolve(self, path, opened, directory=False):
+        """An O_PATH descriptor of `path` beneath a root, or OSError."""
+        if not path.startswith(b'/'):
+            raise OSError(errno.EACCES, 'only absolute Unix addresses are brokered')
+        for root, rootfd in self.roots:
+            if path == root or path.startswith(root + b'/'):
+                relative = path[len(root) + 1:] or b'.'
+                break
+        else:
+            raise OSError(errno.EACCES, 'Unix address outside the domain')
+        how = struct.pack('QQQ', os.O_PATH | os.O_CLOEXEC | (os.O_DIRECTORY if directory else 0),
+                          0, 0x01 | 0x02 | 0x04 | 0x08)  # NO_XDEV, NO_MAGICLINKS, NO_SYMLINKS, BENEATH
+        fd = self.libc.syscall(ctypes.c_long(437), ctypes.c_long(rootfd), ctypes.c_char_p(relative),
+                               ctypes.c_char_p(how), ctypes.c_long(len(how)))
+        if fd < 0:
+            code = ctypes.get_errno()
+            raise OSError(errno.EACCES if code in (errno.ELOOP, errno.EXDEV) else code, 'unresolvable')
+        opened.append(fd)
+        return fd
+
+    def _address(self, raw, opened, bind=False):
+        """The address this process uses for the caller's raw sockaddr, or None for a bind it
+        hands to the helper with the caller's own path (returned second)."""
+        if len(raw) < 2:
+            raise OSError(errno.EINVAL, 'short address')
+        family = int.from_bytes(raw[:2], 'little')
+        if family != 1:
+            if not self.network:
+                raise OSError(errno.EACCES, 'network address in a no-network domain')
+            return raw, None
+        path = raw[2:]
+        if not path:
+            if bind:
+                return raw, None  # autobind: a kernel-chosen abstract name, nothing named
+            raise OSError(errno.EINVAL, 'empty Unix address')
+        if path[0] == 0:
+            raise OSError(errno.EPERM, 'abstract Unix address')
+        path = path.split(b'\0', 1)[0]
+        if bind:
+            parent, _, name = path.rpartition(b'/')
+            if name in (b'', b'.', b'..'):
+                raise OSError(errno.EINVAL, 'invalid socket name')
+            self._resolve(parent or b'/', opened, directory=True)
+            return None, raw[:2] + path + b'\0'
+        target = self._resolve(path, opened)
+        if not stat.S_ISSOCK(os.fstat(target).st_mode):
+            raise OSError(errno.ECONNREFUSED, 'not a socket')
+        return b'\x01\x00' + b'/proc/self/fd/%d\0' % target, None
+
+    def _perform(self, notification, opened):
+        tid, number, args = notification.pid, notification.data.nr, list(notification.data.args)
+        libc = self.libc
+        if number == 16:  # ioctl(fd, TIOCGPTPEER, flags)
+            master = self._descriptor(tid, args[0], opened)
+            info = os.fstat(master)
+            if not stat.S_ISCHR(info.st_mode) or (os.major(info.st_rdev), os.minor(info.st_rdev)) != (5, 2):
+                raise OSError(errno.ENOTTY, 'not a terminal master')
+            flags = args[2] & 0xffffffff
+            if not self._valid(notification):
+                return None
+            peer = libc.ioctl(master, ctypes.c_ulong(TIOCGPTPEER),
+                              ctypes.c_ulong((flags | os.O_NOCTTY | os.O_CLOEXEC) & 0xffffffff))
+            if peer < 0:
+                raise OSError(ctypes.get_errno(), 'TIOCGPTPEER')
+            opened.append(peer)
+            addfd = _AddFd(notification.id, 1 << 1, peer, 0, os.O_CLOEXEC if flags & os.O_CLOEXEC else 0)
+            if libc.ioctl(self.listener, ctypes.c_ulong(0x40182103), ctypes.byref(addfd)) < 0:
+                if ctypes.get_errno() == errno.ENOENT:
+                    return None  # the caller is gone
+                raise OSError(ctypes.get_errno(), 'peer descriptor not delivered')
+            return None  # SECCOMP_ADDFD_FLAG_SEND answered the request with the new descriptor
+        if number in (42, 49):  # connect, bind
+            length = args[2] & 0xffffffff
+            if length > 128:
+                raise OSError(errno.EINVAL, 'address too long')
+            raw = self._read(tid, args[1], length)
+            sock = self._descriptor(tid, args[0], opened)
+            address, path = self._address(raw, opened, bind=number == 49)
+            if not self._valid(notification):
+                return None
+            if path is not None:
+                self._bind_path(sock, path)
+                return 0
+            call = libc.connect if number == 42 else libc.bind
+            if call(sock, address, len(address)):
+                raise OSError(ctypes.get_errno(), 'connect' if number == 42 else 'bind')
+            return 0
+        if number == 44:  # sendto(fd, buf, len, flags, addr, addrlen), addr not NULL
+            length = args[5] & 0xffffffff
+            if length > 128:
+                raise OSError(errno.EINVAL, 'address too long')
+            data = self._read(tid, args[1], args[2])
+            raw = self._read(tid, args[4], length)
+            sock = self._descriptor(tid, args[0], opened)
+            address, _ = self._address(raw, opened)
+            if not self._valid(notification):
+                return None
+            sent = libc.sendto(sock, data, len(data), args[3] & 0xffffffff, address, len(address))
+            if sent < 0:
+                raise OSError(ctypes.get_errno(), 'sendto')
+            return sent
+        if number == 46:  # sendmsg(fd, msg, flags)
+            return self._sendmsg(notification, tid, args, opened)
+        raise OSError(errno.ENOSYS, 'unmediated request')
+
+    def _sendmsg(self, notification, tid, args, opened):
+        name, namelen, iov, iovlen, control, controllen, _ = struct.unpack(
+            '<QI4xQQQQi4x', self._read(tid, args[1], 56))
+        if iovlen > 1024 or namelen > 128 or controllen > 65536:
+            raise OSError(errno.EMSGSIZE if iovlen > 1024 else errno.EINVAL, 'sendmsg bounds')
+        vectors = [struct.unpack_from('<QQ', self._read(tid, iov, 16 * iovlen), 16 * i)
+                   for i in range(iovlen)] if iovlen else []
+        if sum(length for _, length in vectors) > self.LIMIT:
+            raise OSError(errno.EMSGSIZE, 'request too large')
+        data = [self._read(tid, base, length) for base, length in vectors]
+        raw = self._read(tid, name, namelen) if name and namelen else b''
+        ancillary = self._read(tid, control, controllen) if control and controllen else b''
+        sock = self._descriptor(tid, args[0], opened)
+        address = self._address(raw, opened)[0] if raw else b''
+        rebuilt, offset = b'', 0
+        while offset + 16 <= len(ancillary):
+            length, level, kind = struct.unpack_from('<Qii', ancillary, offset)
+            if length < 16 or offset + length > len(ancillary):
+                raise OSError(errno.EINVAL, 'malformed control message')
+            body = ancillary[offset + 16:offset + length]
+            if level == 1 and kind == 1:  # SCM_RIGHTS: the caller's descriptors, as ours
+                body = b''.join(self._descriptor(tid, int.from_bytes(body[i:i + 4], 'little'), opened)
+                                .to_bytes(4, 'little') for i in range(0, len(body) - len(body) % 4, 4))
+            elif level == 1:
+                raise OSError(errno.EPERM, 'only SCM_RIGHTS is brokered at socket level')
+            entry = struct.pack('<Qii', 16 + len(body), level, kind) + body
+            rebuilt += entry + b'\0' * (-len(entry) % 8)
+            offset += length + (-length % 8)
+        if not self._valid(notification):
+            return None
+        buffers = [ctypes.create_string_buffer(chunk, len(chunk)) for chunk in data]
+        vector = (_Iovec * max(len(buffers), 1))(*(_Iovec(ctypes.addressof(b), len(b)) for b in buffers))
+        name_buffer = ctypes.create_string_buffer(address, len(address)) if address else None
+        control_buffer = ctypes.create_string_buffer(rebuilt, len(rebuilt)) if rebuilt else None
+        header = _Msghdr(ctypes.addressof(name_buffer) if name_buffer else None, len(address),
+                         ctypes.addressof(vector), len(buffers),
+                         ctypes.addressof(control_buffer) if control_buffer else None, len(rebuilt), 0)
+        sent = self.libc.sendmsg(sock, ctypes.byref(header), args[2] & 0xffffffff)
+        if sent < 0:
+            raise OSError(ctypes.get_errno(), 'sendmsg')
+        return sent
+
+
+class _Data(ctypes.Structure):
+    _fields_ = [('nr', ctypes.c_int), ('arch', ctypes.c_uint32), ('ip', ctypes.c_uint64),
+                ('args', ctypes.c_uint64 * 6)]
+
+
+class _Notification(ctypes.Structure):
+    _fields_ = [('id', ctypes.c_uint64), ('pid', ctypes.c_uint32), ('flags', ctypes.c_uint32),
+                ('data', _Data)]
+
+
+class _Response(ctypes.Structure):
+    _fields_ = [('id', ctypes.c_uint64), ('val', ctypes.c_int64), ('error', ctypes.c_int32),
+                ('flags', ctypes.c_uint32)]
+
+
+class _AddFd(ctypes.Structure):
+    _fields_ = [('id', ctypes.c_uint64), ('flags', ctypes.c_uint32), ('srcfd', ctypes.c_uint32),
+                ('newfd', ctypes.c_uint32), ('newfd_flags', ctypes.c_uint32)]
+
+
+class _Iovec(ctypes.Structure):
+    _fields_ = [('base', ctypes.c_void_p), ('length', ctypes.c_size_t)]
+
+
+class _Msghdr(ctypes.Structure):
+    _fields_ = [('name', ctypes.c_void_p), ('namelen', ctypes.c_uint32), ('iov', ctypes.c_void_p),
+                ('iovlen', ctypes.c_size_t), ('control', ctypes.c_void_p),
+                ('controllen', ctypes.c_size_t), ('flags', ctypes.c_int)]
 
 
 AGENT_ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]*')
@@ -363,7 +873,13 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
                  'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
                  'VELDO_EXPECTED_GIT_COMMON'):
         env.pop(name, None)
-    pid = os.fork()
+    if profile == 'gate':
+        # Gate commands run this repository's own suites, which serve and dial Unix sockets and
+        # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
+        roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
+        pid, side = fork_brokered(roots, network=True)
+    else:
+        pid, side = os.fork(), None
     if pid:
         try:
             _, status = os.waitpid(pid, 0)
@@ -372,13 +888,18 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
                 os.killpg(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
+            if side is not None:
+                side.close()
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
-    # Only this child executes candidate/agent code. The parent only waits and
-    # removes its own scratch using symlink-safe stdlib cleanup.
+    # Only this child executes candidate/agent code. The parent only waits (and, for the gate,
+    # brokers) and removes its own scratch using symlink-safe stdlib cleanup.
     try:
         os.setsid()
-        close_descriptors(protected)
-        landlock(grants)
+        close_descriptors(protected, keep=side.keep() if side else ())
+        mode = landlock(grants, profile, broker=side)
+        env.pop(BROKERED, None)
+        if mode != 'strict':
+            env[BROKERED] = '1'
         os.chdir(worktree)
         os.execvpe(command[0], command, env)
     except BaseException as error:

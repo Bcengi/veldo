@@ -10,6 +10,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import signal
 import stat
 import sys
 
@@ -49,7 +50,23 @@ def main():
     grants += [(Path(p).resolve(), boundary.READ)
                for p in job.get('runtime_paths', sandbox.RUNTIME) if Path(p).exists()]
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
-    boundary.landlock(grants, profile='worker')
+    # Suites serve and dial Unix sockets in their scratch and drive terminals. This process stays
+    # outside the domain as their broker (never running candidate code); the child confines itself.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    pid, side = boundary.fork_brokered([Path(os.environ['TMPDIR'])], network=False)
+    if pid:
+        try:
+            _, status = os.waitpid(pid, 0)
+        finally:
+            if side is not None:
+                side.close()
+        if os.WIFSIGNALED(status):
+            signal.signal(os.WTERMSIG(status), signal.SIG_DFL)
+            os.kill(os.getpid(), os.WTERMSIG(status))
+        os._exit(os.waitstatus_to_exitcode(status))
+    if boundary.landlock(grants, profile='worker', broker=side) != 'strict':
+        os.environ[boundary.BROKERED] = '1'
     case = job['case']
     prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=root)
     mutant = prepared['mutant']

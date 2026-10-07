@@ -153,7 +153,7 @@ def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directo
     grants = [root, *(Path(p).resolve() for p in runtime)]
     if scratch is not None:
         grants.append(Path(scratch).resolve())
-    devices = {Path('/dev/null'), Path('/dev/urandom')}
+    devices = {Path('/dev/null'), Path('/dev/urandom'), Path('/dev/ptmx')}  # ptmx: a fresh pair, no input
     for path, kind, success in accesses(trace, cwd=root, after_confinement=after_confinement):
         resolved = path.resolve()
         if resolved == root or root in resolved.parents:
