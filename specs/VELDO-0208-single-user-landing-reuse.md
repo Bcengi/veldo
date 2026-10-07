@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0205, VELDO-0207]
 placement: [enforcement]
-protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml"]
+protected_paths: ["scripts/gate_candidate.py", "scripts/reuse_worker.py", "scripts/mutation_observer.py", "scripts/mutation_ownership.py", "engine/scripts/mutation_ownership.py", ".veldo/candidate_git.py", "engine/.veldo/candidate_git.py", "engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "engine/scripts/mutation_sandbox.py", "engine/scripts/gate_candidate.py", "engine/scripts/reuse_worker.py", "engine/scripts/mutation_observer.py", "engine/scripts/check_gate_mutations.py", "engine/scripts/case_reuse.py", "engine/scripts/case_inputs.py", "engine/scripts/case_trace.py", "engine/scripts/mutation_reuse.py", "engine/scripts/gate_reuse.py", "engine/scripts/reuse_stamp.py", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "scripts/gate_reuse.py", "scripts/mutation_reuse.py", "scripts/case_reuse.py", "scripts/case_inputs.py", "scripts/reuse_stamp.py", "scripts/verify.sh", "scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "engine/.veldo/reuse_evidence.py", ".veldo/reuse_evidence.py", ".veldo/policy.yaml", "scripts/gate_unconfined.json", "scripts/gate_legs.py"]
 footprint:
   - ".veldo/candidate_git.py"
   - "engine/.veldo/candidate_git.py"
@@ -33,6 +33,9 @@ footprint:
   - "scripts/case_inputs.py"
   - "scripts/reuse_stamp.py"
   - "scripts/verify.sh"
+  - "scripts/gate_legs.py"
+  - "scripts/gate_unconfined.json"
+  - "scripts/selftest.py"
   - "scripts/veldo-guard.sh"
   - "engine/scripts/veldo-guard.sh"
   - "packs/claude/scripts/veldo-guard.sh"
@@ -51,6 +54,7 @@ footprint:
   - "specs/VELDO-0207-declared-case-reuse.md"
   - "specs/VELDO-0123-mutation-drivers-in-every-gate.md"
   - "specs/VELDO-0208-single-user-landing-reuse.md"
+  - "specs/VELDO-0209-confined-control-plane.md"
   - "specs/index.md"
   - "proof/VELDO-0208/*"
   - "scripts/check_generated.sh"
@@ -285,7 +289,7 @@ because nothing ran a stage the way the gate runs it. Corrections, each kept ins
 
 Suite 101 runs these stages under the gate's launcher (rows confined-stage/*).
 
-## Open: suites the confined gate cannot run (owner decision), 2026-10-07
+## Suites the confined gate cannot run, 2026-10-07
 
 With the corrections above the unit stage reaches every suite, and two classes stay red by the
 design of this specification, not by a defect in how the gate runs them:
@@ -302,17 +306,59 @@ design of this specification, not by a defect in how the gate runs them:
 - Nested tracing. Suites 100 and 101 drive authority workers under strace; ptrace is refused
   inside the domain, so those rows cannot run when the unit stage itself is confined.
 
-Classified 2026-10-07 (VELDO-0209): 62_0045 and 82_0085 were simple confinement mismatches and are
-fixed in their suites: pip's uninstall stash fell back to an ungranted /tmp because the fixture's pip
+Classified 2026-10-07: 62_0045 and 82_0085 were simple confinement mismatches and are fixed in
+their suites: pip's uninstall stash fell back to an ungranted /tmp because the fixture's pip
 environment dropped TMPDIR, and multiprocessing's Barrier, Lock and Queue need /dev/shm (shared.py
 gains ForkLock and ForkBarrier on pipes). 65_0067 is not: the product's custody wrapper builds its
 allowlist by listing every ancestor of the protected directory up to /, which the domain cannot list.
 It joins the classes above.
 
-Neither open class can turn green inside the confinement without granting the escape it
-denies. The choice is the owner's: keep these legs outside the landing gate and say where they
-are proven, or have them stand down by name inside it.
+Neither class can turn green inside the confinement without granting the escape it denies.
+VELDO-0209 proposed running the unit and integration stages in a KVM guest instead. The owner
+rejected it (Telegram 32403-32407, 2026-10-07: "VM is shit... do not do it") and decided what
+follows; VELDO-0209 is withdrawn and keeps its measurements as the record of why.
 
-VELDO-0209 (draft) measures every option on this host and recommends running the unit and
-integration stages in a KVM guest that the authority launcher boots, with qemu itself inside this
-specification's Landlock domain.
+## Unconfined leg (owner decision, Telegram 32403-32407, 2026-10-07)
+
+The suites above run the way they ran before this specification's confinement existed: outside
+it, in a separate, named leg of the unit and integration stages. Every other stage and every other
+suite stays confined. The owner confirmed this design ("Yes"). It is a deliberate exception to AC1
+for these suites only: their code runs with the owner's own authority, as it did before VELDO-0208.
+
+- One declared list, scripts/gate_unconfined.json, names each suite and its reason, and the exact
+  stage commands it applies to (unit: `python3 scripts/selftest.py`, integration:
+  `python3 scripts/check_first_use.py`). A suite listed with `rows` leaves the domain for those
+  rows only; the rest of that suite stays in the confined leg. The list, with its reasons:
+  - systemd user manager, whole suite: the 29 control-plane suites above (62_0039 through 96_0204),
+    each entry naming what it starts or reads through the manager;
+  - nested custody confinement, whole suite: 65_0067;
+  - nested strace, rows `strace` only: 100_0207 (sandbox-valid-worker, the *-caught-undeclared-*
+    rows and startup-runtime-boundary) and 101_0208 (authority-worker-* and
+    authority-observes-kill).
+- The list is the authority's: verify.sh reads it from its own installation
+  ($VELDO_AUTHORITY/scripts), never from the candidate. A candidate's own copy of the list, a
+  manifest flag or a leg variable it sets decides nothing. A suite not on the list never runs
+  unconfined. Adding a suite to the list is a change to a protected file
+  (scripts/gate_unconfined.json and its runner scripts/gate_legs.py are protected paths).
+- A declared stage runs as two legs through scripts/gate_legs.py: the confined leg through
+  scripts/gate_candidate.py with VELDO_GATE_LEG=confined, then the unconfined leg directly with
+  VELDO_GATE_LEG=unconfined; VELDO_GATE_UNCONFINED carries the list. The stage passes only when both
+  legs pass. A stage the list does not declare, or a command other than the declared one, runs
+  confined whole, and the caller's leg variables are dropped. An invalid list runs nothing.
+- Visible, never silent: the gate prints each leg on the stage lines, the unconfined one as
+  "UNCONFINED LEG - runs outside the confinement by owner decision" followed by its entries, and
+  the dispatcher prints each leg's banner with its list. The stamp and the gate event carry
+  `"unconfined": {"declaration": "sha256:<list digest>", "legs": {"<stage>": [<entries>]}}` whenever
+  a leg ran; the field is absent only when no stage ran one (an authority with no list, or a catalog
+  with no declared stage). A leg record the gate cannot read is RED with the field null.
+- What the list bounds: what the gate dispatches unconfined. The unconfined leg executes the
+  candidate's dispatcher and the listed suites unconfined, so a hostile candidate can do there what
+  any owner-run code can; review of the candidate is the control for that leg, as it was before
+  this specification. The confined legs keep refusing every escape the confined-stage rows plant.
+- Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
+  are protected and read from the authority; verify.sh's own stamp and event lines carry the leg
+  when it ran, omit it when none ran and are RED when the record is unreadable; the row ownership
+  of each leg; a fixture candidate through the real runner, launcher and dispatcher in which a
+  listed suite runs unconfined and is named, a suite the candidate asks for stays confined, only the
+  listed rows leave, an undeclared stage or command is confined whole whatever the caller sets, and
+  an invalid list runs nothing.
