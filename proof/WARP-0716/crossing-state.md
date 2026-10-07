@@ -46,8 +46,8 @@ the one obstructing region a PRIVATE validator instance, which removed the obstr
 had named, and the published verdict stayed NOT_FEASIBLE while the file measured
 FEASIBLE_WITH_PREPARATION. Nothing went red, because a prose warning is not a check.
 
-Measured from: `scripts/selftest.py`, 237 lines
-Content digest: sha256 8257d38a607bb452be1623dc0051a7c8f571591a209414629761240ae26d42a3
+Measured from: `scripts/selftest.py`, 257 lines
+Content digest: sha256 2a72aa8e618172de61713bd075eab1747decae71dac02a64ca1c59ac901a01fd
 
 WHY A DIGEST AND NOT A COMMIT. The line above names the exact bytes these figures were read off. A
 commit id cannot do that job in a GENERATED file: it would go stale the moment anything else in
@@ -60,7 +60,7 @@ Reproduce: `python3 scripts/suite_survey.py --target scripts/selftest.py`
 Machine-readable: the same command with `--json`. Finest partition: `--partition statement`.
 Regenerate: `python3 scripts/suite_survey.py --emit-report`, which is what the gate runs.
 
-Target: 237 lines, 44 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
+Target: 257 lines, 46 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
 
 ## Verdict
 
@@ -121,18 +121,18 @@ Every row here is emitted from the measurement. None of them is typed.
 
 | measure | value |
 |---|---|
-| Target lines | 237 |
+| Target lines | 257 |
 | Crossing names | 0 |
 | Crossing read sites | 0 |
 | Regions (marker partition) | 1 |
-| Top-level statements (finest partition) | 44 |
+| Top-level statements (finest partition) | 46 |
 | Assertion sites | 0 |
 | Raw components (all crossing edges) | 1 |
 | Residual components (SHARED_FIXTURE edges removed) | 1 |
 | Largest residual component, assertion sites | 0 |
 | Largest residual component, regions | 1 |
 | Literal path crossings (carrier C6) | 0 |
-| Interpreter and process events (carriers C4, C5) | 2 |
+| Interpreter and process events (carriers C4, C5) | 0 |
 | Module objects crossing regions | 0 |
 | Module names loaded more than once | 0 |
 | Hoistable symbols (class SHARED_FIXTURE) | 0 |
@@ -180,8 +180,6 @@ These cross to EVERY later region regardless of any name.
 
 | carrier | line | what | later regions affected |
 |---|---|---|---|
-| C4 | 60 | sys.path.insert() | 0 |
-| C4 | 61 | sys.path.insert() | 0 |
 
 ### The filesystem index (carrier C6), a PARTIAL view by construction
 
