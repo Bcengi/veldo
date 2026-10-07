@@ -9,6 +9,7 @@ def _v210_agent_profile():
     import subprocess
     import sys
     import tempfile
+    import time
 
     launcher = ROOT / 'scripts/agent_sandbox.py'
     # The real launcher's main() with module constants replaced (fixture resolver paths, a short
@@ -182,6 +183,7 @@ print(json.dumps(r))
         # The confined CLI's side: what a token refresh (or a hostile rewrite) does to its copies.
         act.write_text(r'''import json, os, sys
 from pathlib import Path
+import time
 mode, claude, codex = sys.argv[1], Path(os.environ['CLAUDE_CONFIG_DIR']), Path(os.environ['CODEX_HOME'])
 credentials = claude / '.credentials.json'
 seen = {'claude': credentials.exists(), 'codex': (codex / 'auth.json').exists(),
@@ -206,6 +208,13 @@ elif mode == 'directory-link':
     claude.symlink_to(sys.argv[4])
 elif mode == 'settings':
     rewrite(claude / 'settings.json', '{"forged": true}')
+elif mode == 'refresh-wait':
+    # A refresh, then the run goes on until the test has logged the account in again outside it.
+    rewrite(credentials, sys.argv[4])
+    Path(sys.argv[2]).write_text('refreshed')
+    deadline = time.time() + 30
+    while not Path(sys.argv[3]).exists() and time.time() < deadline:
+        time.sleep(0.05)
 print(json.dumps(seen))
 ''')
 
@@ -266,6 +275,31 @@ print(json.dumps(seen))
             expect('VELDO-0210 credentials/%s-not-followed: %s' % (mode, result.stderr[-200:]),
                    account_state() == before and 'not written back' in result.stderr
                    and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True})
+        # A login (or another run's write-back) that replaced the source during the run wins: the
+        # run's own refresh is never written over it.
+        reset()
+        refreshed, go = worktree / 'refreshed', worktree / 'go'
+        for path in (refreshed, go):
+            path.unlink(missing_ok=True)
+        login = json.dumps({'claudeAiOauth': {'accessToken': 'login', 'refreshToken': 'r9'}})
+        process = subprocess.Popen(
+            [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
+             '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(act),
+             'refresh-wait', str(refreshed), str(go), json.dumps(new_token)],
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=client_env)
+        deadline = time.time() + 30
+        while not refreshed.exists() and time.time() < deadline and process.poll() is None:
+            time.sleep(0.05)
+        fresh = account / '.credentials.fresh'
+        fresh.write_text(login)
+        os.replace(fresh, account / '.credentials.json')
+        go.write_text('go')
+        _, stderr = process.communicate(timeout=60)
+        expect('VELDO-0210 credentials/concurrent-login-never-overwritten: ' + stderr[-200:],
+               refreshed.exists() and process.returncode == 0
+               and (account / '.credentials.json').read_text() == login
+               and 'changed during the run' in stderr and 'written back to' not in stderr
+               and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
         reset()
         result = act_run('settings')
         expect('VELDO-0210 credentials/non-credential-never-written-back',
@@ -426,7 +460,6 @@ print(json.dumps(seen))
         # scratch: removed at exit and on stop signals; stale ones swept at the next start
         import fcntl
         import signal
-        import time
         parent = top / 'tmp-parent'
         parent.mkdir()
         scratch_env = dict(client_env, TMPDIR=str(parent))

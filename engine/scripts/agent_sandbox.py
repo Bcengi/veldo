@@ -995,10 +995,38 @@ def read_scratch_file(scratch, relative):
         os.close(descriptor)
 
 
-def replace_atomically(target, data):
+class Superseded(Exception):
+    """The source no longer holds the bytes copied in at the start: something else wrote it."""
+
+
+def current_bytes(path):
+    """The bytes of `path` now, without following a final link, or None when it is absent, not a
+    regular file or larger than CREDENTIAL_LIMIT."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+    except FileNotFoundError:
+        return None
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > CREDENTIAL_LIMIT:
+            return None
+        data = b''
+        while len(data) <= CREDENTIAL_LIMIT:
+            chunk = os.read(descriptor, CREDENTIAL_LIMIT + 1 - len(data))
+            if not chunk:
+                return data
+            data += chunk
+        return None
+    finally:
+        os.close(descriptor)
+
+
+def replace_atomically(target, data, expected=None):
     """Replace `target` with `data`: a temporary file beside it, fsync, rename, fsync the directory.
     A reader sees the old file or the new one, never a partial write. The mode stays the source's
-    owner bits (credentials are 0600)."""
+    owner bits (credentials are 0600). With `expected`, the target is read again just before the
+    rename and is replaced only if it still holds exactly those bytes; otherwise Superseded is
+    raised and the target is left as it is."""
     try:
         mode = stat.S_IMODE(os.stat(target).st_mode) & 0o700 or 0o600
     except FileNotFoundError:
@@ -1014,6 +1042,8 @@ def replace_atomically(target, data):
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
+        if expected is not None and current_bytes(target) != expected:
+            raise Superseded('the source changed during the run')
         os.replace(temporary, target)
     except BaseException:
         try:
@@ -1032,7 +1062,8 @@ def write_back(scratch, credentials):
     """After the run: each credential file the launcher copied in that the CLI changed (a token
     refresh) and that is still one JSON object replaces its source atomically, so a refresh during
     a run never logs the account out (VELDO-0210). Nothing else in the scratch is ever written back,
-    and an unchanged, unreadable or invalid copy leaves the source as it is."""
+    and an unchanged, unreadable or invalid copy leaves the source as it is. So does a source that no
+    longer holds the bytes copied in (a login or another run wrote it meanwhile): the newer file wins."""
     for real, relative, original in credentials:
         try:
             data = read_scratch_file(scratch, relative)
@@ -1050,7 +1081,11 @@ def write_back(scratch, credentials):
                   file=sys.stderr, flush=True)
             continue
         try:
-            replace_atomically(real, data)
+            replace_atomically(real, data, expected=original)
+        except Superseded as error:
+            print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
+                  file=sys.stderr, flush=True)
+            continue
         except OSError as error:
             print('agent sandbox: credential %s write-back to %s failed: %s' % (relative, real, error),
                   file=sys.stderr, flush=True)

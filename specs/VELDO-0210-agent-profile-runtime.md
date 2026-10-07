@@ -25,7 +25,8 @@ behavior_bearing: true
 observability:
   logs: >
     The launcher names on stderr each credential it wrote back, each changed credential it did not
-    write back and why (not a JSON object, not a private regular file), an unknown client, and each
+    write back and why (not a JSON object, not a private regular file, its source changed during the
+    run), an unknown client, and each
     stale scratch directory it could not remove.
   metrics: None beyond the run's exit status; a run stopped by a signal exits 128 plus its number.
   traces: Not applicable; the launcher keeps no state beyond the run.
@@ -49,9 +50,11 @@ acceptance_criteria:
       Claim: the launcher copies the selected client's credential files into the private scratch and,
       after the run (normal exit, failure or a stop signal), writes each one back over its source
       atomically, only if the CLI changed it and it is still one JSON object, so a token refresh
-      during a run never logs the account out. Set: a simulated refresh, an unchanged file, an
-      invalid rewrite, a rewrite planted through a link to another credential, a changed
-      non-credential seed, and a refresh followed by a stop signal. Completeness: the only files
+      during a run never logs the account out, and only if the source still holds the bytes copied
+      in at the start, so a login made during the run is never overwritten. Set: a simulated
+      refresh, an unchanged file, an invalid rewrite, a rewrite planted through a link to another
+      credential, a changed non-credential seed, a refresh followed by a stop signal, and a refresh
+      while the account logs in again outside the run. Completeness: the only files
       written outside the scratch are the sources recorded at copy time; the copy is read component
       by component without following links. Test rows credentials/* in suite 102.
     falsified_by: Write back without the JSON check or follow links in the scratch; a credentials row goes red.
@@ -121,7 +124,9 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 - Credentials. Source bytes are read once and written to the scratch copy (mode 0600). After the
   confined group is gone, each copy is opened component by component with O_NOFOLLOW and must be a
   regular file with one link, at most 1 MiB. Changed bytes that parse as one JSON object replace
-  the source through a temporary file in the source's directory, fsync and rename. Every credential
+  the source through a temporary file in the source's directory, fsync and rename; just before the
+  rename the source is read again and replaced only if it still holds the bytes copied in, otherwise
+  the copy is dropped and the launcher says so. Every credential
   source of every client is added to deny_read for the run.
 - Capabilities. Read links: Claude's plugins/cache, plugins/marketplaces, plugins/synced, skills,
   agents and commands; Codex's skills, rules and plugins/cache. Each target is granted read-only
@@ -142,6 +147,11 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 - A confined process can write any JSON object into its copy of the selected client's credential
   file, and that object replaces the account's file. The process already holds that credential;
   the write cannot reach any other file or the other client's credentials.
+- A refresh inside a run rotates the account's refresh token, so until the write-back other
+  sessions on that account hold a token the provider has already replaced and may have to refresh
+  or log in again. When the source changed during the run, the run's refreshed token is dropped and
+  the newer file kept. The re-read and the rename are two steps: a write landing between them is
+  replaced.
 - Writes Claude or Codex make to their plugin, marketplace or skill directories (marketplace
   updates, system skill installs) fail: those directories are outside the worktree.
 - engine/scripts/agent_sandbox.json is byte-identical with this repository's copy (template sync),
