@@ -3,16 +3,18 @@
 #
 # veldo-userns is the only program on the host this lets create a user namespace. It needs the
 # capabilities below inside that namespace only, to map the account to itself, make the mount and
-# PID namespaces and mount their procfs. The helper sets no_new_privs before it executes anything,
-# and under no_new_privs the kernel lets a confined process change only to a label that keeps its
-# current profile, so whatever it executes (only /usr/bin/python3) runs under the stack
-# veldo-userns//&veldo-userns-child, as Ubuntu's unprivileged_userns stacks itself onto what it
-# executes: each access must pass both profiles, and veldo-userns-child denies every capability,
-# user namespace, mount, unmount, pivot_root and profile change. Every program the stack executes
-# gets the same stack. So nothing the helper runs can create or use a user namespace with
-# capabilities. veldo-userns also allows what the programs of the stack need (network, Unix
-# sockets, signals, IPC, reading their own processes' /proc). No confined process may trace the
-# helper or a process of the stack, so no code runs with the helper's rights.
+# PID namespaces and mount their procfs. The one program it may execute is the interpreter
+# /usr/bin/python3, which AppArmor matches by the path the link resolves to (/usr/bin/python3.12
+# and the like), and that exec changes to the child profile veldo-userns-child outright (px), so
+# the label inside is exactly veldo-userns-child. Before that exec the helper drops every
+# capability with the securebits locked (no root fixup, an empty bounding set), so the exec gains
+# none, and it sets no no_new_privs, under which only a stack would be allowed; the executed init
+# sets no_new_privs as its first act. veldo-userns-child denies every capability, user namespace,
+# mount, unmount, pivot_root and profile change, and keeps itself across every later exec (ix).
+# So nothing the helper runs can create or use a user namespace with capabilities. Both profiles
+# carry the same ptrace rules: reading the /proc entries of the helper's and the tree's processes,
+# and no confined process may trace the helper or a process of the tree, so no code runs with the
+# helper's rights, as under the stack the first version used.
 
 abi <abi/4.0>,
 include <tunables/global>
@@ -35,7 +37,7 @@ profile veldo-userns /usr/local/lib/veldo/veldo-userns flags=(attach_disconnecte
   ptrace (read) peer=veldo-userns{,-child},
   ptrace (readby),
   audit deny ptrace (tracedby),
-  /** px -> &veldo-userns-child,
+  /usr/bin/python3* px -> veldo-userns-child,
 }
 
 profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {
@@ -44,7 +46,9 @@ profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {
   network,
   unix,
   signal,
-  ptrace,
+  ptrace (read) peer=veldo-userns{,-child},
+  ptrace (readby),
+  audit deny ptrace (tracedby),
   mqueue,
   io_uring,
   dbus,
