@@ -117,8 +117,16 @@ def confined(root, command, env):
                           stdin=subprocess.DEVNULL).returncode
 
 
+# What verify.sh exports for its own launchers, never for candidate code. The confined launcher
+# reads VELDO_EXPECTED_GIT_COMMON and then drops it (agent_sandbox.py); handed on here, it made every
+# gate a listed suite runs for a fixture repository check that repository against the authority's
+# common directory and refuse it, so 0050 and 0148 failed only inside the real gate.
+AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON',)
+
+
 def unconfined(root, command, env):
     """The stage command outside every domain, in the candidate, as before VELDO-0208."""
+    env = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
     return subprocess.run(['bash', '-c', command], cwd=str(root), env=env,
                           stdin=subprocess.DEVNULL).returncode
 

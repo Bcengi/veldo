@@ -1302,7 +1302,9 @@ def _v208_unconfined_leg():
         'def probe(label):\n    leg = os.environ.get("VELDO_GATE_LEG", "none")\n'
         '    try:\n        (Path(os.environ["V208_PROBE_OUTSIDE"]) / (label + "." + leg)).write_text("x")\n'
         '        outcome = "wrote"\n    except OSError:\n        outcome = "refused"\n'
-        '    print("V208-PROBE %s.%s %s" % (label, leg, outcome), flush=True)\n    expect(label, True)\n')
+        '    print("V208-PROBE %s.%s %s" % (label, leg, outcome), flush=True)\n'
+        '    print("V208-COMMON %s.%s %s" % (label, leg, os.environ.get("VELDO_EXPECTED_GIT_COMMON", "absent")),'
+        ' flush=True)\n    expect(label, True)\n')
     bodies = {'01_listed': 'probe("01_listed")\n',
               '02_asks': 'if leg_runs("strace"):\n    probe("02_asks.strace")\nif leg_runs():\n    probe("02_asks")\n',
               '03_rows': 'if leg_runs():\n    probe("03_rows")\nif leg_runs("strace"):\n    probe("03_rows.strace")\n'}
@@ -1361,6 +1363,18 @@ def _v208_unconfined_leg():
         expect('VELDO-0208 unconfined-leg/listed-rows-only-leave: ' + repr(markers),
                markers.get('03_rows.confined') == 'refused' and markers.get('03_rows.strace.unconfined') == 'wrote'
                and '03_rows.strace.confined' not in markers and '03_rows.unconfined' not in markers)
+        # The authority's own Git common directory, which verify.sh exports for its launchers, reaches
+        # candidate code in neither leg. The unconfined leg once handed it on, so a listed suite's gate
+        # for a fixture repository checked that repository against the authority's directory and
+        # refused it: 0050 and 0148 failed inside the real gate and passed in every run without it.
+        held, _, _ = stage('unit', 'python3 scripts/selftest.py',
+                           extra={'VELDO_EXPECTED_GIT_COMMON': str(top / 'authority-common')})
+        seen = dict(line.split()[1:3] for line in held.stdout.splitlines() if line.startswith('V208-COMMON '))
+        expect('VELDO-0208 unconfined-leg/authority-git-common-reaches-neither-leg: ' + repr(seen),
+               held.returncode == 0
+               and {'01_listed.unconfined', '03_rows.strace.unconfined', '02_asks.confined',
+                    '03_rows.confined'} <= set(seen)
+               and set(seen.values()) == {'absent'})
         stamped = L.stamp(record)
         # verify.sh's own stamp and event lines, executed over this record, an empty one and a
         # corrupt one: the leg is in both records when it was expected and ran, absent when none was
