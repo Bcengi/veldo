@@ -454,8 +454,10 @@ _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-q
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
 
-# VELDO-0208: the complete authority confinement and reuse identity travels with the gate.
-_REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_legs.py', 'scripts/gate_unconfined.json']
+# VELDO-0208: the complete authority confinement and reuse identity travels with the gate. The
+# unconfined list (scripts/gate_unconfined.json) does not: it is VELDO's own owner decision, naming
+# VELDO's suites, so an adopter has none and every stage of its gate is confined.
+_REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_legs.py']
 _FILES += _REUSE_AUTHORITY
 
 # Files that must be executable in the scaffolded repository.

@@ -8,8 +8,9 @@ way they ran before that domain existed: outside it, in a separate, named leg of
 integration stages. Every other stage and suite stays confined.
 
 THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this file
-(scripts/gate_unconfined.json in the authority checkout or its installed copy), a protected path,
-so adding a suite to it is a reviewed change with the owner's approval. A candidate's own copy of
+(scripts/gate_unconfined.json in the authority checkout), a protected path, so adding a suite to
+it is a reviewed change with the owner's approval. The installer ships no list: the one this
+repository carries is its own owner's decision, so an adopter's gate confines every stage. A candidate's own copy of
 the list or an environment variable it sets decides nothing: the leg variables a candidate command
 sees are set here, and the caller's are dropped. The candidate's dispatcher applies the list
 (scripts/selftest.py, scripts/run_scope.py, scripts/suites/shared.py, and scripts/check_first_use.py,

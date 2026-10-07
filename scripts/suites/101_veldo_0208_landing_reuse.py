@@ -584,8 +584,16 @@ print(json.dumps(results))
                 refused_registry = False
         expect('VELDO-0208 candidate/planted-registry-red', refused_registry)
         scaffold = load('engine/.veldo/init_scaffold.py')
+        # The unconfined list is this repository's own owner decision: it is optional in the
+        # authority and never shipped, and no engine copy exists to ship.
         expect('VELDO-0208 engine/scaffold-includes-boundary',
-               set(E.AUTHORITY_FILES) <= set(scaffold._FILES))
+               set(E.AUTHORITY_FILES) - set(E.OPTIONAL_AUTHORITY_FILES) <= set(scaffold._FILES)
+               and 'scripts/gate_legs.py' in scaffold._FILES)
+        expect('VELDO-0208 engine/adopters-receive-no-unconfined-list',
+               E.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json',)
+               and not set(E.OPTIONAL_AUTHORITY_FILES) & set(scaffold._FILES)
+               and not set(E.OPTIONAL_AUTHORITY_FILES) & set(scaffold.REQUIRED_SUBSTRATE)
+               and not (ROOT / 'engine/scripts/gate_unconfined.json').exists())
         catalog = load('.veldo/control_proof.py').catalog((ROOT / 'scripts/verify.sh').read_text())
         expect('VELDO-0208 gate/catalog-includes-authority-stage',
                {'extra', 'mutation'} <= set(catalog['required']))
@@ -696,14 +704,25 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             expect('VELDO-0208 landing/signed-other-authority-refused', E.landing_problem(
                 dict(stamp, reuse_evidence=E.sign(forged_authority, store.secret))) is not None)
 
+            # This repository's authority carries its unconfined list; the engine's, which adopters
+            # install, carries none, so the two identities differ. The engine-side checks (the
+            # fleet's judge, the engine and pack guards) get evidence signed under the engine's
+            # identity, as an adopter's own gate signs it.
+            engine_identity = load('engine/.veldo/reuse_evidence.py').authority_identity()
+            def signed_under(identity, at):
+                path.write_bytes(E.canonical(E.sign(dict(payload, authority=identity), store.secret)))
+                with patch.object(reducer.E, 'authority_identity', return_value=identity):
+                    return dict(commit=at, status='green', **reducer.fields(receipt, False, at))
+            engine_stamp = signed_under(engine_identity, commit)
             stdout = '== unit\n   unit: pass\nGATE: GREEN (' + commit + ')'
             sample = {'schema': 'veldo.gate_observation/v1', 'commit': commit, 'stdout': stdout,
                 'stdout_digest': landing.digest(stdout.encode()), 'exit': 0, 'terminal': stdout.splitlines()[-1],
                 'catalog': {'required': ['unit'], 'results': {'unit': 'pass'}},
                 'candidate': {'commit': commit, 'tree': 'b'*40, 'binds_refs': False, 'state': {}},
                 'post_run': {'equal': True, 'state': {}},
-                'outputs': {'last_verify': stamp, 'gate_event': dict(stamp, type='gate.passed')}}
-            expect('VELDO-0208 landing/fleet-accepts-gate-records', not landing.judge(sample))
+                'outputs': {'last_verify': engine_stamp, 'gate_event': dict(engine_stamp, type='gate.passed')}}
+            expect('VELDO-0208 landing/fleet-accepts-gate-records',
+                   engine_identity != E.authority_identity() and not landing.judge(sample))
             for document in ('last_verify', 'gate_event'):
                 altered = copy.deepcopy(sample)
                 altered['outputs'][document]['reuse_evidence'] = {}
@@ -716,6 +735,7 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                         altered['outputs'][document].pop(field)
                     expect('VELDO-0208 landing/missing-fields-' + document + str(missing),
                            bool(landing.judge(altered)))
+            path.write_bytes(raw)
             alterations = [dict(reuse_evidence={}), dict(commit='c' * 40),
                           dict(reused={'unit': 0, 'mutation': 2}), dict(force_fresh=True)]
             for n, change in enumerate(alterations):
@@ -723,6 +743,7 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                        E.landing_problem(dict(stamp, **change)) is not None)
             path.write_bytes(E.canonical(E.sign(legacy, store.secret)))
             expect('VELDO-0208 landing/missing-record-provenance-refused', E.landing_problem(stamp) is not None)
+            path.write_bytes(E.canonical(E.sign(dict(legacy, authority=engine_identity), store.secret)))
             expect('VELDO-0208 landing/fleet-refuses-missing-provenance',
                    'missing_evidence:gate/authenticated_reuse_required' in landing.judge(sample))
             path.write_bytes(raw)
@@ -758,9 +779,10 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid',
                 'commit', '--allow-empty', '-qm', 'Fixture')
             actual = git('rev-parse', 'HEAD')
-            valid = dict(commit=actual, status='green', **reducer.fields(receipt, False, actual))
             for guard in ('scripts/veldo-guard.sh', 'engine/scripts/veldo-guard.sh',
                           'packs/claude/scripts/veldo-guard.sh'):
+                valid = signed_under(E.authority_identity() if guard == 'scripts/veldo-guard.sh'
+                                     else engine_identity, actual)
                 for name, candidate, refused in [('valid', valid, False),
                         ('no-provenance', dict(valid, reuse_evidence={}), True),
                         ('missing-both', {'commit': actual, 'status': 'green'}, True),
@@ -772,6 +794,7 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                         capture_output=True, timeout=20, env=dict(env, CLAUDE_PROJECT_DIR=str(fixture)))
                     expect('VELDO-0208 landing/real-guard-' + guard + '-' + name,
                            ('Landing requires authenticated' in result.stderr) is refused and result.returncode == 2)
+            path.write_bytes(raw)
         # Exercise only the stamp writer function, never a gate/catalog command.
         template = (ROOT / 'engine/scripts/verify.sh').read_text()
         stamp_function = template[template.index('veldo_write_stamp() {'):].split('\n}', 1)[0] + '\n}'
@@ -1452,6 +1475,26 @@ def _v208_unconfined_leg():
                and leaked_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
                    '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
                and not (top / 'fallback-record').exists())
+
+        # The engine's gate, which adopters install, drops a caller's leg variables the same way: it
+        # runs no unconfined leg, so a candidate's dispatcher never reads one from the caller.
+        engine_text = (ROOT / 'engine/scripts/verify.sh').read_text()
+        engine_candidate = re.search(r'^veldo_candidate\(\) \{\n.*?^\}\n', engine_text, re.S | re.M).group(0)
+        for marker in outside.iterdir():
+            marker.unlink()
+        engine_leaked = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\n%s'
+                                        'cd %s && veldo_candidate bash -c "python3 scripts/selftest.py"'
+                                        % (fallback, engine_candidate, candidate)],
+                                       capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                       env=dict(os.environ, V208_PROBE_OUTSIDE=str(outside), **asked))
+        engine_markers = dict(line.split()[1:3] for line in engine_leaked.stdout.splitlines()
+                              if line.startswith('V208-PROBE '))
+        expect('VELDO-0208 unconfined-leg/engine-gate-drops-the-callers-leg-variables: '
+               + repr((engine_leaked.returncode, engine_markers, engine_leaked.stdout[-300:])),
+               'veldo_stage' not in engine_text and 'gate_legs' not in engine_text
+               and engine_leaked.returncode == 0 and 'selftest leg' not in engine_leaked.stdout
+               and engine_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
+                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'})
 
         # The same through verify.sh's own veldo_stage: it learns from the authority's list that the
         # unit stage expects a leg before the stage runs, so deleting the record after the leg ran

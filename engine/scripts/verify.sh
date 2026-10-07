@@ -15,8 +15,11 @@ VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
+# A caller's gate leg variables (VELDO-0208) never reach a candidate command: this gate runs no
+# unconfined leg, so a candidate's dispatcher must never read one from the caller.
 veldo_candidate() {
-  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+  env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION \
+    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
 
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
