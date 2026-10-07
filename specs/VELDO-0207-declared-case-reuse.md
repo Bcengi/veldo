@@ -102,7 +102,7 @@ that clock, random, network, mount or service dependencies are deterministic: de
 as proposals, and only reviewed file-only cases are admitted to reuse. Cases needing host
 services or repository history remain fresh until a separate explicit closure can enforce them.
 
-The Linux kernel, tracer and coordinator account are trusted. Landlock confines file contents and seccomp denies sockets/network;
+The Linux kernel, tracer and coordinator account are trusted. Landlock confines file contents and seccomp denies service sockets;
 the tracer is the additional fail-loud boundary for absent reads. Non-file nondeterminism is
 explicitly outside a file-only qualification and requires review. The HMAC key is readable by
 the coordinator account, never by a confined worker. An arbitrary hostile process already
@@ -114,8 +114,10 @@ Metadata probes (including absent exists/is_file/stat/access/readlink) are input
 Directory listings require explicit directory declarations, keyed with their complete subtree.
 The proposer captures the same syscall family. Expected absent runtime paths are explicit,
 keyed, and checked again before publication. Forced runs enforce identical snapshot rules.
-Socket creation, connection, sending and io_uring are denied in workers and implementing
-agents; unsupported filtering refuses execution. Timings belong in receipts, never keyed
+Workers and implementing agents may use TCP/TLS; Unix service sockets, inherited socket
+descriptors, abstract cross-domain sockets and io_uring are denied in both, and mutation
+workers take exactly the gate profile's network rule (VELDO-0208, Worker network rule:
+owner decision, Telegram 32421, 2026-10-07); unsupported filtering refuses execution. Timings belong in receipts, never keyed
 records; conflicting content for one key makes the stage fail.
 
 The original open-only measurement has 21 of 30 unclean baselines and 19 universal shared

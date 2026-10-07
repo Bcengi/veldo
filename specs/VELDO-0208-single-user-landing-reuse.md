@@ -147,8 +147,9 @@ after review. The orchestrator must not execute candidate launcher or verificati
 trusted machinery before that review. The agent/gate profile permits TCP/TLS, including
 remote Codex and Claude model APIs. It denies AF_UNIX service sockets (including the
 user bus and systemd private socket), inherited socket descriptors, abstract cross-domain
-sockets and io_uring alternatives. The worker profile additionally denies all network
-sockets and socket dispatch. Agent network access is necessary for normal CLI operation.
+sockets and io_uring alternatives. The worker profile has exactly the gate profile's
+network rule (Worker network rule, below). Agent network access is necessary for normal CLI
+operation.
 
 The owner wires the command prefix into myday's codex_work.sh and claude_work.sh after review.
 Those external files are not edited here. This checkout is not retroactively confined.
@@ -217,7 +218,8 @@ commands receive no CLI credential copies.
 The landing environment explicitly selects authenticated reuse by default and preserves a
 requested force-fresh mode. Both reused and force_fresh are mandatory on stamps and events.
 Both profiles deny Unix service connections, preopened socket descriptors and io_uring
-alternatives. Only mutant workers deny TCP/TLS; agent network connections are allowed. Suite 100 plants missing fields, service-socket attempts and denied
+alternatives. TCP/TLS is allowed in agents, the gate and mutant workers alike (Worker network
+rule, below). Suite 100 plants missing fields, service-socket attempts and denied
 writes, and drives a real commit in a disposable linked worktree through the launcher.
 
 Authority startup loads no candidate Python. Worker file tracing begins at the observed
@@ -272,8 +274,8 @@ because nothing ran a stage the way the gate runs it. Corrections, each kept ins
   and TIOCGPTPEER are performed by the parent with its own copy of the arguments. An address
   must be absolute and resolve beneath the domain's writable roots with no symlink, magic link
   or mount crossing; abstract names are refused; bind runs in a helper confined to create
-  socket files only beneath those roots; only SCM_RIGHTS crosses at socket level; workers get
-  no other address family. /dev/ptmx is granted and /dev/pts is not, so a domain reaches only
+  socket files only beneath those roots; only SCM_RIGHTS crosses at socket level; other address
+  families (TCP/TLS) pass through in the gate and worker profiles alike. /dev/ptmx is granted and /dev/pts is not, so a domain reaches only
   terminals it created. A launcher nested in a brokered domain is strict (no Unix sockets): the
   outer broker answers for its own domain's roots, never a nested one's. The agent profile is
   unchanged.
@@ -422,9 +424,9 @@ for these suites only: their code runs with the owner's own authority, as it did
   worker's private HOME, never a root that holds or lies beneath the store or a denied path. Without
   them 62_0045 and 65_0132 lost the langgraph runtime and 82_0165 and 82_0173 the Codex and Claude
   Code binaries, and every case of those suites was an invalid baseline. A declared case keeps only
-  its keyed runtime set. Network stays refused in every confined worker: 87_0127, 88_0127, 89_0127
-  and 90_0127 serve their model stand-in on 127.0.0.1 TCP and stay invalid confined until the owner
-  decides the worker network rule.
+  its keyed runtime set. Confined workers have the gate profile's network rule (Worker network
+  rule, below), so suites that serve a stand-in on 127.0.0.1 TCP (87_0127, 88_0127, 89_0127,
+  90_0127 among them) run confined.
 - Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
   and the dispatcher files are protected, and the list is read from the authority (a candidate copy
   naming another suite is ignored); an authority without the list has a stable identity and runs
@@ -443,3 +445,31 @@ for these suites only: their code runs with the owner's own authority, as it did
   the mutation leg from the list before the stage, and a list that does not declare the stage
   confines every case and records nothing while an invalid one runs nothing. Row
   worker/installed-tools-read-only covers the installed-tool grant.
+
+## Worker network rule (owner decision, Telegram 32421, 2026-10-07)
+
+Confined mutation workers denied every network socket (seccomp, commit 10acd901), so the about 28
+suites whose mutation cases start a local server on 127.0.0.1 (58_0028, 60_0064, 62_0065, 63_0066,
+68_0126, 68_0136, 69_0068, 69_0133, 70_0069, 70_0073, 72_0075, 72_0077, 72_0128, 73_0078, 73_0089,
+74_0140, 75_0150, 76_0079, 77_0149, 82_0085, 82_0144, 84_0169, 86_0168, 87_0127, 88_0127, 89_0127,
+90_0127, 91_0151) failed in them while the same suites pass in the unit stage. Asked whether
+mutation runs get the same network rule as the normal test stage (Telegram 32419), the owner
+answered "Ok" (Telegram 32421, 2026-10-07T09:30:28Z).
+
+- A confined mutation worker has exactly the gate profile's network rule, nothing wider: TCP/TLS
+  is permitted; Unix service sockets (the user bus, the systemd private socket and every address
+  outside the domain's writable roots), inherited socket descriptors, abstract cross-domain
+  sockets and io_uring stay denied exactly as in the gate profile.
+- One definition: the gate launcher and scripts/reuse_worker.py both start their domain through
+  agent_sandbox.fork_gate_domain, and the Landlock and seccomp layers install nothing per profile
+  for the network, so the two rules cannot drift. The worker-only socket filter
+  (mutation_sandbox.network_filter with unix=True) is removed; mutation_sandbox.restrict, which
+  the coordinator's workers do not use, keeps its full network denial.
+- Tests (suite 101): the same probe runs in a real authority worker started as the coordinator
+  starts it and in the gate profile's launcher. Row profiles/worker-binds-and-connects-loopback-tcp
+  requires loopback TCP bind, listen, connect and a round trip in the worker; row
+  profiles/worker-still-refuses-services requires the user bus (connect and addressed send), the
+  systemd private socket, an inherited socket, abstract connect and bind and io_uring setup, enter
+  and register to stay refused; row profiles/worker-network-rule-is-gate-rule requires the outcome
+  of every probed operation to be identical in both and both launchers to use fork_gate_domain.
+  They replace row profiles/worker-denies-tcp-and-user-bus.
