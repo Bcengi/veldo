@@ -304,7 +304,7 @@ design of this specification, not by a defect in how the gate runs them:
   specification denies. Affected (some rows only in several): 62_0039, 63_0040, 63_0049,
   64_0050, 66_0042, 67_0041, 67_0135, 71_0076, 71_0130, 71_0138, 73_0139, 78_0060, 79_0061,
   80_0155, 81_0156, 82_0129, 82_0141, 83_0154, 85_0158, 85_0171, 86_0127, 86_0148, 86_0189,
-  87_0170, 91_0167, 92_0088, 93_0152, 94_0162, 96_0204. Module-level failures in several of
+  87_0170, 91_0167, 92_0088, 93_0152, 94_0162, 95_0203, 96_0204. Module-level failures in several of
   them stop the unit run, and with it the integration stage's nested run.
 - Nested tracing. Suites 100 and 101 drive authority workers under strace; ptrace is refused
   inside the domain, so those rows cannot run when the unit stage itself is confined.
@@ -314,7 +314,11 @@ their suites: pip's uninstall stash fell back to an ungranted /tmp because the f
 environment dropped TMPDIR, and multiprocessing's Barrier, Lock and Queue need /dev/shm (shared.py
 gains ForkLock and ForkBarrier on pipes). 65_0067 is not: the product's custody wrapper builds its
 allowlist by listing every ancestor of the protected directory up to /, which the domain cannot list.
-It joins the classes above.
+It joins the classes above. 95_0203 was missed by that classification and found by the first full
+gate with the leg (2026-10-07, 35 rows refused "the ingress configuration is absent"): it builds its
+host from 85_0171's setup fixture, whose factory setup refuses inside the domain with
+unavailable_service:profile:user_manager. It joins the systemd class, and suite 101 now requires
+every suite that loads a listed suite's fixture to be listed itself.
 
 Neither class can turn green inside the confinement without granting the escape it denies.
 VELDO-0209 proposed running the unit and integration stages in a KVM guest instead. The owner
@@ -332,7 +336,7 @@ for these suites only: their code runs with the owner's own authority, as it did
   stage commands it applies to (unit: `python3 scripts/selftest.py`, integration:
   `python3 scripts/check_first_use.py`). A suite listed with `rows` leaves the domain for those
   rows only; the rest of that suite stays in the confined leg. The list, with its reasons:
-  - systemd user manager, whole suite: the 29 control-plane suites above (62_0039 through 96_0204),
+  - systemd user manager, whole suite: the 30 control-plane suites above (62_0039 through 96_0204),
     each entry naming what it starts or reads through the manager;
   - nested custody confinement, whole suite: 65_0067;
   - nested strace, rows `strace` only: 100_0207 (sandbox-valid-worker, the *-caught-undeclared-*

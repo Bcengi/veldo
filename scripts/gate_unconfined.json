@@ -34,6 +34,7 @@
     {"suite": "92_veldo_0088_pm_cycles", "reason": "systemd user manager: project cycles coordinate the installed Runner and graph services"},
     {"suite": "93_veldo_0152_intake_routes", "reason": "systemd user manager: intake, activation and the factory pass run through the installed Runner service"},
     {"suite": "94_veldo_0162_configuration_routes", "reason": "systemd user manager: the configuration routes are served by the installed authority service"},
+    {"suite": "95_veldo_0203_owner_revisions", "reason": "systemd user manager: owner saves run on the host VELDO-0171's fixture installs, and its factory setup refuses a profile without the user manager"},
     {"suite": "96_veldo_0204_reservation_policies", "reason": "systemd user manager: the factory provisions reservation policies on installed user services"},
     {"suite": "65_veldo_0067_edges", "reason": "nested custody confinement: the product's custody wrapper lists every ancestor of the protected directory up to /, which the gate domain cannot list"},
     {"suite": "100_veldo_0207_case_reuse", "rows": "strace", "reason": "nested strace: the sandbox-valid-worker, *-caught-undeclared-* and startup-runtime-boundary rows trace workers, and the gate domain refuses ptrace"},
