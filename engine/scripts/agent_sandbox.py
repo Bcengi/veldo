@@ -115,6 +115,7 @@ TIOCGPTPEER = 0x5441
 DEVICE_IOCTL = 1 << 15
 PTMX = Path('/dev/ptmx')
 PROC = Path('/proc')
+# Marks a tree a Broker serves, for suites that must know whether they already run inside one.
 BROKERED = 'VELDO_SANDBOX_BROKERED'
 
 
@@ -124,11 +125,10 @@ def ipc_program(mediate=None):
     Do not expose inherited sockets or io_uring as alternate syscall dispatch.
     Agent TCP/TLS is allowed; only workers install the full network filter.
 
-    mediate None is the strict filter: socket(AF_UNIX) is refused. Otherwise Unix sockets may be
-    created and mediate is the action for every call that names an address or a terminal peer:
-    connect, bind, sendto with an address, sendmsg and TIOCGPTPEER. SECCOMP_NOTIFY hands them to
-    this launcher's Broker; SECCOMP_ALLOW leaves them to an outer Broker whose filter, still
-    installed, notifies first. sendmmsg reports ENOSYS so libraries fall back to sendmsg.
+    mediate None is the strict filter: socket(AF_UNIX) is refused. Otherwise (SECCOMP_NOTIFY) Unix
+    sockets may be created and every call that names an address or a terminal peer (connect,
+    bind, sendto with an address, sendmsg and TIOCGPTPEER) goes to this launcher's Broker.
+    sendmmsg reports ENOSYS so libraries fall back to sendmsg.
     """
     deny = 0x50000 | errno.EPERM
     code = [(0x20, 0, 0, 4), (0x15, 1, 0, 0xc000003e), (0x06, 0, 0, 0x80000000),
@@ -207,12 +207,11 @@ class Handoff:
             except OSError as error:
                 if error.errno != errno.EBUSY:
                     raise
-                # Another listener is already above this process. Only this launcher's own broker
-                # marks the tree it serves, and nothing beneath it can add a listener, so with the
-                # mark that broker mediates for this nested domain too. Without it, strict.
-                self.mode = 'delegate' if os.environ.get(BROKERED) == '1' else 'strict'
-                install_filter(libc, ipc_program(SECCOMP_ALLOW) if self.mode == 'delegate'
-                               else ipc_program())
+                # A listener is already above this process (this launcher nested in a brokered
+                # domain). That broker answers for its own domain's roots, not this one's, so a
+                # nested domain gets no Unix sockets at all rather than its parent's reach.
+                self.mode = 'strict'
+                install_filter(libc, ipc_program())
                 os.write(self.request, b'-\n')
                 return self.mode
             try:
@@ -231,7 +230,7 @@ class Handoff:
 def fork_brokered(roots, network):
     """Fork a child that will confine itself with a Handoff. Returns (0, Handoff) in the child
     and (pid, Broker or None) in the parent once the child has installed its filter: a Broker
-    serving its listener, or None when the child is strict, delegated or failed first."""
+    serving its listener, or None when the child is strict or failed first."""
     request_r, request_w = os.pipe()
     reply_r, reply_w = os.pipe()
     pid = os.fork()
