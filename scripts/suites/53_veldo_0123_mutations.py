@@ -71,16 +71,16 @@ def fixture(root, source, driver_source=None, suite_source=None):
     (root / 'scripts/suites/manifest.json').write_text(__import__('json').dumps({
         'suites': [{'file': 'fixture.py'}, {'file': 'fixture_kind.py'}]}))
     (root / '.veldo').mkdir()
-    # The fixture is its own authority when its gate runs, so it carries the authority machinery.
-    for helper in ('candidate_git.py', 'reuse_evidence.py', 'git_process.py'):
-        (root / '.veldo' / helper).write_bytes((source.parent.parent / '.veldo' / helper).read_bytes())
+    # The fixture is its own authority when its gate runs, so it carries the authority machinery:
+    # every required file of the authority identity (.veldo/reuse_evidence.py), not a copy of that
+    # list kept here, which fell behind when the identity gained scripts/gate_legs.py (VELDO-0208).
+    # The optional unconfined list stays absent, so the fixture's gate confines every stage.
+    authority = source.parent.parent
+    identity = import_gate(authority / '.veldo/reuse_evidence.py')
+    for name in identity.AUTHORITY_FILES:
+        if name not in identity.OPTIONAL_AUTHORITY_FILES:
+            (root / name).write_bytes((authority / name).read_bytes())
     (root / 'proof').mkdir()
-    (root / 'scripts/check_gate_mutations.py').write_bytes(source.read_bytes())
-    for helper in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py', 'case_inputs.py',
-                   'case_reuse.py', 'case_trace.py', 'reuse_stamp.py', 'mutation_ownership.py',
-                   'gate_candidate.py', 'agent_sandbox.py', 'agent_sandbox.json', 'reuse_worker.py',
-                   'mutation_observer.py'):
-        (root / 'scripts' / helper).write_bytes((source.parent / helper).read_bytes())
     for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
         # Keep the real materializer while replacing only the disposable registry.
         owner = (source.parent / 'check_teeth_mutations.py').read_text() if driver == 'check_teeth_mutations.py' else ''
