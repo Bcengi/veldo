@@ -1005,7 +1005,43 @@ def account_home():
     return Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
 
 
-def client_files(config, name):
+def claude_project(path):
+    """The folder name Claude Code gives a working directory under its projects/ directory, computed
+    as Claude Code 2.1.290 computes it (VELDO-0210): every UTF-16 code unit of the path that is not
+    an ASCII letter or digit becomes '-', and a name longer than 200 is cut to 200 and followed by
+    '-' and the base-36 absolute value of the path's 32-bit string hash (h = 31 * h + unit). A path
+    that is not valid text (an undecodable byte) has no name Claude would derive the same way."""
+    text = str(path)
+    try:
+        text.encode('utf-8')
+    except UnicodeEncodeError:
+        raise ValueError('a working directory that is not valid text has no Claude project folder: '
+                         + repr(text))
+    units = []
+    for character in text:
+        code = ord(character)
+        if code > 0xffff:
+            code -= 0x10000
+            units += [0xd800 + (code >> 10), 0xdc00 + (code & 0x3ff)]
+        else:
+            units.append(code)
+    name = ''.join(chr(unit) if unit < 128 and chr(unit).isalnum() else '-' for unit in units)
+    if len(name) <= 200:
+        return name
+    value = 0
+    for unit in units:
+        value = (value * 31 + unit) & 0xffffffff
+    value = abs(value - (1 << 32) if value >= 1 << 31 else value)
+    digits = ''
+    while True:
+        value, digit = divmod(value, 36)
+        digits = '0123456789abcdefghijklmnopqrstuvwxyz'[digit] + digits
+        if not value:
+            break
+    return name[:200] + '-' + digits
+
+
+def client_files(config, name, worktree):
     """The files one client (claude, codex) receives, from the configuration's `clients`:
     {'credentials': [(source, relative)], 'seed_files': [...], 'read_links': [...],
     'state_dirs': [...], 'state_files': [...]}.
@@ -1015,7 +1051,8 @@ def client_files(config, name):
     destination lies under the client's own state directory (.claude, .codex), so one client's
     files never land where the other client looks for its own (VELDO-0210). Persistent state
     (state_dirs, state_files) must lie strictly beneath the client's `home` place: the runner's
-    configuration directory for that client and account."""
+    configuration directory for that client and account. '{project}' in an entry is the worktree's
+    Claude project folder name (claude_project), so state is this worktree's only."""
     clients = config.get('clients', {})
     if name not in clients:
         raise ValueError('unknown agent client: ' + str(name))
@@ -1027,14 +1064,16 @@ def client_files(config, name):
         if not path.is_absolute():
             raise ValueError('agent client place must be an absolute directory: ' + place)
         places[place] = path
+    project = claude_project(Path(worktree).resolve(strict=True))
     files = {}
     for kind in ('credentials', 'seed_files', 'read_links', 'state_dirs', 'state_files'):
         files[kind] = []
         for source, relative in entry.get(kind, {}).items():
+            relative = relative.format(project=project)
             parts = Path(relative).parts
             if Path(relative).is_absolute() or '..' in parts or len(parts) < 2 or parts[0] != '.' + name:
                 raise ValueError('agent client file must lie under .%s: %s' % (name, relative))
-            source = source.format(**places)
+            source = source.format(project=project, **places)
             source = home / source[2:] if source.startswith('~/') else Path(source)
             if kind.startswith('state_') and ('home' not in places or '..' in source.parts
                                               or places['home'] not in source.parents):
@@ -1046,37 +1085,121 @@ def client_files(config, name):
 
 
 def state_grants(files, refused):
-    """The selected client's persistent state, read and write, as (resolved path, relative) pairs:
-    its transcripts, sessions, history and memories, which outlive the scratch in the runner's
-    configuration directory for that account (VELDO-0210). An absent entry is created (directory
-    0700, file 0600); with no such configuration directory there is nothing to keep. An entry that
-    is a link, is of the other kind, resolves outside that directory, or holds, is or lies beneath a
-    refused path (the store, a protected path, a denied path, a credential source, the worktree)
-    refuses the start."""
+    """The selected client's persistent state for this worktree, read and write, as (resolved path,
+    relative) pairs: its transcripts, sessions, history and memories, which outlive the scratch in
+    the runner's configuration directory for that account (VELDO-0210). An absent entry is created
+    with every directory above it up to the configuration directory (directories 0700, file 0600),
+    each component opened without following a link; with no such configuration directory there is
+    nothing to keep. An entry that is a link, is of the other kind, resolves outside that directory,
+    or holds, is or lies beneath a refused path (the store, a protected path, a denied path, a
+    credential source, the worktree) refuses the start, and so does one clean_state cannot check."""
     granted, home = [], files.get('home')
     if home is None or not home.is_dir():
         return granted
-    home = home.resolve(strict=True)
+    real_home = home.resolve(strict=True)
     for kind, directory in (('state_dirs', True), ('state_files', False)):
         for source, relative in files.get(kind, []):
-            if directory:
-                try:
-                    os.mkdir(source, 0o700)
-                except FileExistsError:
-                    pass
-            else:
-                try:
-                    os.close(os.open(source, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
-                                     0o600))
-                except FileExistsError:
-                    pass
-            mode = os.lstat(source).st_mode
+            parts = source.relative_to(home).parts
+            parent = scratch_directory(real_home, parts[:-1])
+            try:
+                if directory:
+                    try:
+                        os.mkdir(parts[-1], 0o700, dir_fd=parent)
+                    except FileExistsError:
+                        pass
+                else:
+                    try:
+                        os.close(os.open(parts[-1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+                                         | os.O_CLOEXEC, 0o600, dir_fd=parent))
+                    except FileExistsError:
+                        pass
+                mode = os.stat(parts[-1], dir_fd=parent, follow_symlinks=False).st_mode
+            finally:
+                os.close(parent)
             real = source.resolve(strict=True)
-            if (not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)) or home not in real.parents
+            if (not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)) or real_home not in real.parents
                     or any(beneath(real, p) or beneath(p, real) for p in refused)):
                 raise ValueError('agent client state refused: ' + str(source))
             granted.append((real, relative))
+    if clean_state(granted):
+        raise ValueError('agent client state could not be checked')
     return granted
+
+
+def clean_state(state):
+    """Remove from the granted state every entry an unconfined CLI must never meet there: a symbolic
+    link, a regular file with more than one link (a hard link to a file elsewhere) and any special
+    file (a FIFO, a socket, a device), each named on stderr. Directories the run shut are opened up
+    first; nothing is followed. The walk holds one descriptor at a time and climbs back through
+    '..', so no depth exhausts descriptors or path length. Returns the entries it could not check.
+    Run at the start before the grant and after the confined tree is gone, before any unconfined
+    process could read what the run left (VELDO-0210)."""
+    def kind(mode):
+        return ('a symbolic link' if stat.S_ISLNK(mode) else 'a regular file with another link'
+                if stat.S_ISREG(mode) else 'a special file')
+
+    def remove(name, directory, shown, mode):
+        os.unlink(name, dir_fd=directory)
+        print('agent sandbox: removed from agent state: %s (%s)' % (shown, kind(mode)), file=sys.stderr,
+              flush=True)
+
+    def opened_up(name, directory, mode):
+        inner = os.open(name, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
+        try:
+            if stat.S_IMODE(mode) & 0o700 != 0o700:
+                os.chmod('/proc/self/fd/%d' % inner, stat.S_IMODE(mode) | 0o700)
+        finally:
+            os.close(inner)
+        return os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
+
+    unchecked = []
+    for real, _ in state:
+        parent = None
+        try:
+            parent = os.open(real.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+            info = os.stat(real.name, dir_fd=parent, follow_symlinks=False)
+            if not stat.S_ISDIR(info.st_mode):
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                    remove(real.name, parent, real, info.st_mode)
+                continue
+            current = opened_up(real.name, parent, info.st_mode)
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            unchecked.append(real)
+            print('agent sandbox: agent state %s not checked: %s' % (real, error), file=sys.stderr, flush=True)
+            continue
+        finally:
+            if parent is not None:
+                os.close(parent)
+        path, pending = [str(real)], [os.listdir(current)]
+        try:
+            while pending:
+                if not pending[-1]:
+                    pending.pop()
+                    path.pop()
+                    if pending:
+                        up = os.open('..', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC, dir_fd=current)
+                        os.close(current)
+                        current = up
+                    continue
+                name = pending[-1].pop()
+                shown = '/'.join([*path, name])
+                info = os.stat(name, dir_fd=current, follow_symlinks=False)
+                if stat.S_ISDIR(info.st_mode):
+                    inner = opened_up(name, current, info.st_mode)
+                    os.close(current)
+                    current = inner
+                    path.append(name)
+                    pending.append(os.listdir(current))
+                elif not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                    remove(name, current, shown, info.st_mode)
+        except OSError as error:
+            unchecked.append(real)
+            print('agent sandbox: agent state %s not checked: %s' % (real, error), file=sys.stderr, flush=True)
+        finally:
+            os.close(current)
+    return unchecked
 
 
 def project_roots(config):
@@ -1094,11 +1217,11 @@ def project_roots(config):
     return roots
 
 
-def credential_sources(config):
+def credential_sources(config, worktree):
     """Every client's credential sources, as they resolve for this run: never readable in place."""
     sources = []
     for name in config.get('clients', {}):
-        sources += [source for source, _ in client_files(config, name)['credentials']]
+        sources += [source for source, _ in client_files(config, name, worktree)['credentials']]
     return sources
 
 
@@ -1474,8 +1597,9 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             raise ValueError('the gate profile takes no agent client')
         config = dict(config, write_roots=['{scratch}'], seed_files={})
     # Credentials are copied in, never read in place: every client's sources are denied for the run.
-    config = dict(config, deny_read=[*config.get('deny_read', []), *map(str, credential_sources(config))])
-    files = client_files(config, client) if client is not None else {}
+    config = dict(config, deny_read=[*config.get('deny_read', []),
+                                     *map(str, credential_sources(config, worktree))])
+    files = client_files(config, client, worktree) if client is not None else {}
     links = [(source.resolve(strict=True), relative) for source, relative in files.get('read_links', [])
              if source.exists()]
     extra = [*project_roots(config), *(target for target, _ in links)] if profile == 'agent' else []
@@ -1502,8 +1626,9 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         if copied is not None:
             real, data = copied
             credentials.append((real, relative, data))
-    # The client's persistent state: read and write where it is, linked where the CLI looks for it.
-    state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config),
+    # The client's persistent state for this worktree: read and write where it is, linked where the
+    # CLI looks for it, checked by clean_state before the grant and again once the tree is gone.
+    state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
                                  *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
     grants += [(real, READ | WRITE) for real, _ in state]
     for name in ('.codex', '.claude', 'tmp'):
@@ -1522,13 +1647,15 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'),
                VELDO_AGENT_CONFIG=str(config_path),
                XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
-               XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'))
+               XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'),
+               PWD=str(worktree))
     # VELDO_EXPECTED_GIT_COMMON names the trusted repository to this launcher only. Handed on, it
     # would make a gate the confined command runs for another repository (a freshly scaffolded
     # one, a fixture) check that repository against this one's common directory.
     for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
                  'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
-                 'VELDO_EXPECTED_GIT_COMMON'):
+                 'VELDO_EXPECTED_GIT_COMMON', 'CLAUDE_CODE_PROJECT_DIR_NAME'):
+        # CLAUDE_CODE_PROJECT_DIR_NAME would name another projects/ folder than the one granted.
         env.pop(name, None)
     # TERM, INT and HUP stay blocked from before the fork until the parent has registered its child:
     # a stop in between would otherwise end the launch, remove the scratch and leave the child running.
@@ -1574,6 +1701,11 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                 write_back(scratch, credentials)
             except Exception as error:
                 print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
+            # Before any unconfined CLI reads what the run left in its state.
+            try:
+                clean_state(state)
+            except Exception as error:
+                print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
     # Only this child's tree executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.

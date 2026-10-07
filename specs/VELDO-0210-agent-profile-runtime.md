@@ -103,18 +103,31 @@ acceptance_criteria:
       scratch/killed-launcher-takes-its-agent goes red.
   - id: AC5
     text: >
-      Claim: the selected client's transcripts, sessions, history and memories outlive the scratch:
-      they stay in the runner's configuration directory for that client and account, which the
-      agent profile reads and writes only there (Claude's projects/; Codex's sessions/, memories/
-      and history.jsonl), never its credentials and never any other path of that directory. Set: a
-      second run of each client reading what the first wrote, writes and creates elsewhere in the
-      configuration directory, a credential read, a write through .. from a state directory, a read
-      through a link planted in one, and the refusals of a state entry outside the configuration
-      directory, one holding a credential and one that is a link. Completeness: state_dirs and
-      state_files under each client in agent_sandbox.json are the only write grants outside the
-      worktree and scratch; state_grants() refuses any that overlaps the store, a protected or
-      denied path, a credential source or the worktree. Test rows state/* in suite 102.
-    falsified_by: Grant the configuration directory instead of its state entries; state/claude-settings-refused goes red.
+      Claim: the selected client's transcripts, sessions, history and memories for this worktree
+      outlive the scratch, and no run can reach another project's or the account-wide ones: Claude
+      reads and writes only projects/<folder>, the folder Claude Code itself names for the worktree
+      (claude_project, checked against two real Claude Code 2.1.290 runs), never projects/ itself
+      or another project's folder (whose memory/MEMORY.md the next unconfined run loads as
+      instructions); Codex reads and writes only veldo-agent-state/<folder>/ under CODEX_HOME
+      (sessions/, memories/, history.jsonl), never the account-wide sessions/, memories/ or
+      history.jsonl the unconfined CLI uses. Before the grant and again once the confined tree is
+      gone, before any unconfined process could read it, clean_state removes and names on stderr
+      every symbolic link, every regular file with another link and every special file in that
+      state, at any depth and in directories the run shut. Set: a second run of each client in the
+      same worktree reading what the first wrote, a run in another worktree seeing none of it,
+      writes and creates in another project's memory folder, a listing of projects/, writes and
+      creates elsewhere in the configuration directory and in the account-wide Codex state, a
+      credential read, a write through .. from a state directory, a read through a link planted in
+      one, a planted link, FIFO, hard link and link in a shut directory removed and reported, the
+      sweep on its own over 1100 nested directories, and the refusals of a state entry outside the
+      configuration directory, one holding a credential and one that is a link. Completeness:
+      state_dirs and state_files under each client in agent_sandbox.json are the only write grants
+      outside the worktree and scratch; state_grants() refuses any that overlaps the store, a
+      protected or denied path, a credential source or the worktree, or that clean_state cannot
+      check. Test rows state/* in suite 102.
+    falsified_by: >
+      Grant projects/ instead of the worktree's folder; state/claude-other-project-memory-refused goes
+      red. Skip clean_state after the run; state/planted-entries-removed-and-reported goes red.
   - id: AC6
     text: >
       Claim: the agent and gate profiles run the confined tree in its own PID namespace with its own
@@ -249,13 +262,29 @@ unchanged.
   allows. A stdio server configured later runs inside the domain with the same grants.
 - State. Each client may declare `state_dirs` and `state_files`, which must lie strictly beneath its
   `home` place (CLAUDE_CONFIG_DIR or CODEX_HOME, the runner's configuration directory for that
-  account): Claude's projects/ (transcripts), Codex's sessions/, memories/ and history.jsonl. An
-  absent entry is created (directory 0700, file 0600) unless the configuration directory itself is
-  absent; an entry that is a link, of the other kind, resolves outside the configuration directory,
-  or holds, is or lies beneath the store, a protected or denied path, a credential source or the
-  worktree refuses the start. Each is granted read and write and linked into the scratch where the
-  CLI looks for it, after every seed and through the same overlap check as the read links. The
-  rest of the configuration directory is not granted at all.
+  account); '{project}' in an entry is the worktree's Claude project folder name. Claude's is
+  projects/{project} (transcripts), the one folder Claude Code writes for this working directory:
+  every UTF-16 code unit of the resolved worktree path that is not an ASCII letter or digit becomes
+  '-', and past 200 characters the name is cut and followed by '-' and the base-36 absolute value
+  of the path's 32-bit string hash, as Claude Code 2.1.290 computes it. The launcher drops
+  CLAUDE_CODE_PROJECT_DIR_NAME from the agent's environment, which would name another folder, and
+  sets PWD to the worktree. Claude's auto-memory of a linked worktree lives in the main checkout's
+  folder, which is not granted. Codex's are veldo-agent-state/{project}/sessions, memories and
+  history.jsonl under CODEX_HOME, linked where Codex looks for its own; the unconfined Codex never
+  reads that subtree, and the confined one never sees the account-wide sessions/, memories/ or
+  history.jsonl. An absent entry is created with every directory above it up to the configuration
+  directory (directories 0700, file 0600, each component opened without following a link) unless
+  the configuration directory itself is absent; an entry that is a link, of the other kind,
+  resolves outside the configuration directory, or holds, is or lies beneath the store, a protected
+  or denied path, a credential source or the worktree refuses the start. Each is granted read and
+  write and linked into the scratch where the CLI looks for it, after every seed and through the
+  same overlap check as the read links. The rest of the configuration directory is not granted at
+  all. clean_state walks each entry before the grant (a run killed outright left it unchecked) and
+  again in the launcher once the confined tree is gone, before the launcher exits: every symbolic
+  link, regular file with more than one link and FIFO, socket or device is removed and named on
+  stderr; a directory the run shut is opened up (owner rwx) first; nothing is followed; the walk
+  holds one descriptor at a time and climbs back through '..', so no depth exhausts descriptors or
+  path length. An entry it cannot check refuses the start, or is named on stderr after the run.
 - Scratch. launch() sweeps the temporary directory for veldo-agent-* entries owned by this uid that
   are real directories, older than a day and not locked, and removes them (shut subdirectories are
   opened first, no link is followed). Its own scratch is created there and held with flock until
@@ -282,10 +311,17 @@ unchanged.
 - The resolver directory's other entries are readable too: resolved's resolv.conf (the upstream
   servers) and the names of its varlink sockets and per-link state directory (mode 0700, owned by
   systemd-resolve, so unreadable to this account anyway).
-- A confined process can write anything into its client's state entries, which every later session
-  on that account reads (a crafted transcript can be resumed), and may plant links there; the
-  links grant nothing, since a read through one is checked against the target. Concurrent runs on
-  one account share those entries, as unconfined runs do today.
+- A confined process can write anything into its client's state for this worktree, which later
+  sessions in this worktree read (a crafted transcript can be resumed by an unconfined Claude
+  started in the same worktree, which reads that folder). It reaches no other project's folder and
+  no account-wide Codex state. Links, extra hard links and special files it leaves are removed
+  when the run ends; an unconfined session running in the same worktree at the same time can meet
+  them while the run lasts. Concurrent runs in one worktree share its state, as unconfined runs
+  do today. Two worktree paths that differ only in characters other than ASCII letters and digits
+  have one Claude folder name, as they do for Claude itself.
+- A confined Claude run in a linked worktree loses its auto-memory writes: Claude keeps that
+  memory in the main checkout's folder, and granting it would let the run rewrite instructions an
+  unconfined run of the main checkout loads.
 - Codex's other state under CODEX_HOME (its SQLite stores, logs and caches) stays in the scratch
   and is lost at exit: a SQLite store needs its directory writable for its journal, and that
   directory holds auth.json.

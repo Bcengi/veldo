@@ -47,7 +47,7 @@
         "{home}/commands": ".claude/commands"
       },
       "state_dirs": {
-        "{home}/projects": ".claude/projects"
+        "{home}/projects/{project}": ".claude/projects/{project}"
       }
     },
     "codex": {
@@ -67,11 +67,11 @@
         "{home}/plugins/cache": ".codex/plugins/cache"
       },
       "state_dirs": {
-        "{home}/sessions": ".codex/sessions",
-        "{home}/memories": ".codex/memories"
+        "{home}/veldo-agent-state/{project}/sessions": ".codex/sessions",
+        "{home}/veldo-agent-state/{project}/memories": ".codex/memories"
       },
       "state_files": {
-        "{home}/history.jsonl": ".codex/history.jsonl"
+        "{home}/veldo-agent-state/{project}/history.jsonl": ".codex/history.jsonl"
       }
     }
   },

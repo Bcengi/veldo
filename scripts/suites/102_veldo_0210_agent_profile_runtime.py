@@ -183,6 +183,18 @@ for item in sys.argv[1:]:
                          start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL)
         r[name] = True
+    elif kind == 'plant':
+        # What a run could leave in its own state for an unconfined CLI: a FIFO, a hard link to a
+        # file elsewhere and, in a directory it shuts, a link next to an ordinary file.
+        directory, source = path.split('|', 1)
+        base = os.path.join(os.environ['HOME'], directory)
+        os.mkfifo(os.path.join(base, 'fifo'))
+        os.link(source, os.path.join(base, 'hardlink'))
+        os.mkdir(os.path.join(base, 'shut'))
+        open(os.path.join(base, 'shut', 'kept.txt'), 'w').write('kept')
+        os.symlink('/etc/passwd', os.path.join(base, 'shut', 'escape'))
+        os.chmod(os.path.join(base, 'shut'), 0)
+        r[name] = True
     elif kind == 'tcp':
         import socket
         with socket.create_connection(('127.0.0.1', int(path)), timeout=5) as connection:
@@ -767,22 +779,44 @@ print(json.dumps(seen))
             for kind in ('credentials', 'seed_files', 'read_links')
             for relative in entry.get(kind, {}).values()))
 
-        # state: transcripts, sessions, history and memories outlive the scratch in the account's
-        # configuration directory; nothing else of that directory is writable.
+        # state: this worktree's transcripts, sessions, history and memories outlive the scratch in the
+        # account's configuration directory; nothing else of that directory is writable.
+        # The folder Claude Code names for a working directory, as two real runs of Claude Code 2.1.290
+        # named it (one past the 200-character cut, so its hash is checked too).
+        long_path = '/tmp/v210-slug/' + 'a.b_c-' * 40 + '/Ünï \U0001F600 x'
+        expect('VELDO-0210 state/project-folder-named-as-claude-names-it',
+               S.claude_project(long_path) == '-tmp-v210-slug-' + 'a-b-c-' * 30 + 'a-b-c-lhhscs'
+               and S.claude_project('/tmp/v210-slug/Ünï \U0001F600.x_y') == '-tmp-v210-slug--n-----x-y'
+               and S.claude_project('/home/u/projects/veldo-worktrees/agent-profile-runtime')
+               == '-home-u-projects-veldo-worktrees-agent-profile-runtime')
+        project = S.claude_project(worktree.resolve())
         reset()
         expect('VELDO-0210 state/reviewed-state-list',
-               real['clients']['claude'].get('state_dirs') == {'{home}/projects': '.claude/projects'}
+               real['clients']['claude'].get('state_dirs') == {'{home}/projects/{project}': '.claude/projects/{project}'}
                and not real['clients']['claude'].get('state_files')
-               and real['clients']['codex'].get('state_dirs') == {'{home}/sessions': '.codex/sessions',
-                                                                  '{home}/memories': '.codex/memories'}
-               and real['clients']['codex'].get('state_files') == {'{home}/history.jsonl': '.codex/history.jsonl'})
-        first = ['home-create:transcript-written:.claude/projects/-work/session.jsonl',
+               and real['clients']['codex'].get('state_dirs')
+               == {'{home}/veldo-agent-state/{project}/sessions': '.codex/sessions',
+                   '{home}/veldo-agent-state/{project}/memories': '.codex/memories'}
+               and real['clients']['codex'].get('state_files')
+               == {'{home}/veldo-agent-state/{project}/history.jsonl': '.codex/history.jsonl'})
+        # Another project's auto-memory, which the next unconfined Claude run loads as instructions.
+        other_memory = account / 'projects/-home-u-other-project/memory/MEMORY.md'
+        other_memory.parent.mkdir(parents=True)
+        other_memory.write_text('# trusted memory\n')
+        outside_file = top / 'state-outside.txt'
+        outside_file.write_text('outside')
+        first = ['home-create:transcript-written:.claude/projects/%s/session.jsonl' % project,
                  'write:settings-refused:%s' % (account / 'settings.json'),
                  'write:state-file-refused:%s' % (account / '.claude.json'),
                  'deny:credential-refused:%s' % (account / '.credentials.json'),
                  'make:config-dir-create-refused:%s' % (account / 'planted.json'),
-                 'home-make:dotdot-refused:.claude/projects/../planted.json',
-                 'linkread:planted-link-refused:.claude/projects/steal|%s' % (account / '.credentials.json')]
+                 'write:other-project-memory-refused:%s' % other_memory,
+                 'make:other-project-create-refused:%s' % (other_memory.parent / 'planted.md'),
+                 'list:other-projects-unlisted:%s' % (account / 'projects'),
+                 'home-make:dotdot-refused:.claude/projects/%s/../planted.json' % project,
+                 'linkread:planted-link-refused:.claude/projects/%s/steal|%s' % (project, account / '.credentials.json'),
+                 'plant:planted-entries:.claude/projects/%s|%s' % (project, worktree / 'linked-source')]
+        (worktree / 'linked-source').write_text('worktree file')
         result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
                      client='claude', env=client_env)
         found = results(result)
@@ -790,25 +824,39 @@ print(json.dumps(seen))
             name = item.split(':')[1]
             expect('VELDO-0210 state/claude-%s: %s %s' % (name, found.get(name), result.stderr[-200:]),
                    found.get(name) is True)
+        kept = account / 'projects' / project
+        expect('VELDO-0210 state/planted-entries-removed-and-reported: %s' % result.stderr[-600:],
+               sorted(p.name for p in kept.iterdir()) == ['session.jsonl', 'shut']
+               and sorted(p.name for p in (kept / 'shut').iterdir()) == ['kept.txt']
+               and all('removed from agent state: %s (%s)' % (kept / name, why) in result.stderr
+                       for name, why in (('steal', 'a symbolic link'), ('fifo', 'a special file'),
+                                         ('hardlink', 'a regular file with another link'),
+                                         ('shut/escape', 'a symbolic link')))
+               and (worktree / 'linked-source').read_text() == 'worktree file')
         result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe),
-                                               'home:transcript-seen:.claude/projects/-work/session.jsonl'],
+                                               'home:transcript-seen:.claude/projects/%s/session.jsonl' % project],
                      client='claude', env=client_env)
         expect('VELDO-0210 state/second-claude-run-sees-first-transcript: %s' % results(result),
                results(result).get('transcript-seen') is True
-               and (account / 'projects/-work/session.jsonl').read_text() == 'allowed')
+               and (kept / 'session.jsonl').read_text() == 'allowed')
         expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
                sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
                                                               'settings.json']
                and (account / 'settings.json').read_text() == '{"theme": "auto"}'
                and (account / '.claude.json').read_text() == '{"numStartups": 1}'
                and (account / '.credentials.json').read_text() == old_token
-               and sorted(p.name for p in (account / 'projects').iterdir()) == ['-work', 'steal'])
+               and other_memory.read_text() == '# trusted memory\n'
+               and sorted(p.name for p in other_memory.parent.iterdir()) == ['MEMORY.md']
+               and sorted(p.name for p in (account / 'projects').iterdir()) == ['-home-u-other-project', project])
+        codex_state = codex_home / 'veldo-agent-state' / project
         first = ['home-create:session-written:.codex/sessions/rollout.jsonl',
                  'home-create:memory-written:.codex/memories/note.md',
                  'home-create:history-written:.codex/history.jsonl',
                  'write:codex-config-refused:%s' % (codex_home / 'config.toml'),
                  'deny:codex-credential-refused:%s' % (codex_home / 'auth.json'),
                  'make:codex-dir-create-refused:%s' % (codex_home / 'planted.json'),
+                 'make:codex-account-history-refused:%s' % (codex_home / 'history.jsonl'),
+                 'make:codex-account-sessions-refused:%s' % (codex_home / 'sessions'),
                  'home-make:codex-dotdot-refused:.codex/sessions/../planted.json']
         result = run(client_config, worktree, [sys.executable, '-I', '-S', str(probe), *first],
                      client='codex', env=client_env)
@@ -825,11 +873,73 @@ print(json.dumps(seen))
         expect('VELDO-0210 state/second-codex-run-sees-first-state: %s' % found,
                all(found.get(name) is True for name in ('session-seen', 'memory-seen', 'history-seen'))
                and found.get('claude-transcript-absent') == 'ENOENT')
+        # Another worktree has state of its own: it sees none of this one's.
+        other_worktree = top / 'other-worktree'
+        other_worktree.mkdir()
+        (other_worktree / 'probe.py').write_text(probe.read_text())
+        result = run(client_config, other_worktree, [sys.executable, '-I', '-S', str(other_worktree / 'probe.py'),
+                                                     *second[:3],
+                                                     'deny:first-worktree-history:%s' % (codex_state / 'history.jsonl')],
+                     client='codex', env=client_env)
+        found = results(result)
+        expect('VELDO-0210 state/other-worktree-run-sees-none-of-it: %s %s' % (found, result.stderr[-200:]),
+               result.returncode == 0 and found.get('session-seen') == 'ENOENT'
+               and found.get('memory-seen') == 'ENOENT' and found.get('history-seen') is True
+               and found.get('first-worktree-history') is True
+               and (codex_home / 'veldo-agent-state' / S.claude_project(other_worktree.resolve())
+                    / 'history.jsonl').read_text() == '')
         expect('VELDO-0210 state/codex-home-otherwise-untouched',
-               sorted(p.name for p in codex_home.iterdir())
-               == ['auth.json', 'config.toml', 'history.jsonl', 'memories', 'sessions']
+               sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
+               and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
                and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
                and (codex_home / 'auth.json').read_text() == codex_token)
+        # clean_state on its own: every link, extra hard link and special file goes, at any depth and
+        # in a shut directory; the files a CLI writes stay.
+        swept = top / 'swept-state'
+        (swept / 'shut').mkdir(parents=True)
+        (swept / 'session.jsonl').write_text('linked')
+        (swept / 'kept.jsonl').write_text('kept')
+        (swept / 'shut/link').symlink_to(account / '.credentials.json')
+        os.mkfifo(swept / 'fifo')
+        listener = __import__('socket').socket(__import__('socket').AF_UNIX)
+        listener.bind(str(swept / 'socket'))
+        listener.close()
+        os.link(swept / 'session.jsonl', top / 'swept-hardlink')
+        depth = os.open(swept, os.O_RDONLY | os.O_DIRECTORY)
+        for _ in range(1100):
+            os.mkdir('d', dir_fd=depth)
+            inner = os.open('d', os.O_RDONLY | os.O_DIRECTORY, dir_fd=depth)
+            os.close(depth)
+            depth = inner
+        os.symlink('/etc/passwd', 'deepest', dir_fd=depth)
+        os.close(depth)
+        (swept / 'shut').chmod(0)
+        import contextlib
+        import io
+        report = io.StringIO()
+        with contextlib.redirect_stderr(report):
+            unchecked = S.clean_state([(swept, '.claude/projects/x')])
+        (swept / 'shut').chmod(0o700)
+        names = sorted(p.name for p in swept.iterdir())
+        deepest = os.open(swept, os.O_RDONLY | os.O_DIRECTORY)
+        for _ in range(1100):
+            inner = os.open('d', os.O_RDONLY | os.O_DIRECTORY, dir_fd=deepest)
+            os.close(deepest)
+            deepest = inner
+        left = os.listdir(deepest)
+        # Climbed back and removed level by level: shutil.rmtree recurses once per level.
+        for _ in range(1100):
+            up = os.open('..', os.O_RDONLY | os.O_DIRECTORY, dir_fd=deepest)
+            os.close(deepest)
+            deepest = up
+            os.rmdir('d', dir_fd=deepest)
+        os.close(deepest)
+        expect('VELDO-0210 state/clean-state-removes-links-and-special-files: %s' % report.getvalue()[-400:],
+               unchecked == [] and names == ['d', 'kept.jsonl', 'shut']
+               and list((swept / 'shut').iterdir()) == [] and left == []
+               and (top / 'swept-hardlink').read_text() == 'linked'
+               and report.getvalue().count('removed from agent state') == 5)
+        __import__('shutil').rmtree(swept)
         # A state entry outside the configuration directory, one holding a credential, and one that is
         # a link refuse the start.
         for name, state, credentials, reason in (
