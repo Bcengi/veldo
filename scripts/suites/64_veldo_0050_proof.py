@@ -383,13 +383,24 @@ sys.stdout.flush()
                 except (OSError, IndexError, ValueError):
                     return 0
 
+            def ours(pid):
+                # Only this run's own gate: a concurrent run of this or another suite (the mutation
+                # stage runs many at once) has a check of the same shape, and stopping its gate
+                # leaves ours sleeping until the worker deadline.
+                seen = 0
+                while pid > 1 and seen < 64:
+                    if pid == os.getpid():
+                        return True
+                    pid, seen = parent(pid), seen + 1
+                return False
+
             def running_check():
                 # The confined check: the process the sandbox forked and exec'd, whose parent is the
                 # launcher (whose own argv also names the check, as do the processes above it).
                 for entry in os.listdir('/proc'):
                     if (entry.isdigit() and 'check.py' in cmdline(int(entry))
                             and 'agent_sandbox.py' not in cmdline(int(entry))
-                            and 'agent_sandbox.py' in cmdline(parent(int(entry)))):
+                            and 'agent_sandbox.py' in cmdline(parent(int(entry))) and ours(int(entry))):
                         return int(entry)
                 return None
 
