@@ -275,7 +275,9 @@ def fork_brokered(roots):
     broker = None
     try:
         # Within NAMESPACE_START_SECONDS: a child that never hands off (a hung helper or init) gets no
-        # broker, and its tree is killed by the launcher's own start check.
+        # broker, and its tree is killed by the launcher's own start check. So does one still waited
+        # for when a stop is pending (the launcher blocks TERM, INT and HUP until it has registered
+        # this child): the launcher then takes the stop and kills the tree at once.
         import select
         deadline = time.monotonic() + NAMESPACE_START_SECONDS
         poller = select.poll()
@@ -283,9 +285,11 @@ def fork_brokered(roots):
         line = b''
         while not line.endswith(b'\n'):
             remaining = deadline - time.monotonic()
-            if remaining <= 0 or not poller.poll(remaining * 1000):
+            if remaining <= 0 or signal.sigpending().intersection(STOP_SIGNALS):
                 line = b''
                 break
+            if not poller.poll(min(remaining, 0.1) * 1000):
+                continue
             chunk = os.read(request_r, 32)
             if not chunk:
                 break
@@ -1025,22 +1029,25 @@ def namespace_problem(ids):
     return None
 
 
-def await_start(ready):
+def await_start(ready, stop=None):
     """What the tree reported on its ready pipe within NAMESPACE_START_SECONDS: b'1' from the init once
     its namespace is checked, b'0' from a child or init that refused and said why on stderr, b'' when
-    the pipe closed with nothing, None when the time ran out. A stop meanwhile runs the launcher's
-    handler (it forwards the stop, and a group still alive GRACE_SECONDS later is killed) and the
-    wait goes on."""
+    the pipe closed with nothing, None when the time ran out or a stop came first. A stop (TERM, INT
+    or HUP) runs the launcher's handler, which forwards it, and ends the wait within a tenth of a
+    second: nothing in the tree has started the command yet, so the caller kills it at once, a hung
+    helper with it."""
     import select
     deadline = time.monotonic() + NAMESPACE_START_SECONDS
     poller = select.poll()
     poller.register(ready, select.POLLIN)
-    while True:
+    while stop is None or stop.number is None:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             return None
-        if poller.poll(remaining * 1000):
+        # In slices: a handler that returns lets poll go on waiting (PEP 475), so the stop is seen here.
+        if poller.poll(min(remaining, 0.1) * 1000):
             return os.read(ready, 1)
+    return None
 
 
 def end_descendants():
@@ -1798,7 +1805,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             if stop is not None:
                 stop.child(pid)
             signal.pthread_sigmask(signal.SIG_SETMASK, mask)  # a stop that came meanwhile is handled now
-            reported = await_start(ready)
+            reported = await_start(ready, stop)
             started = reported == b'1'
             problem = None if started else 'the tree did not start'
             if started:

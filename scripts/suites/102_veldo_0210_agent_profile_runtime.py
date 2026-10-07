@@ -617,7 +617,55 @@ print(json.dumps(r))
             S.NAMESPACE_START_SECONDS = saved
         expect('VELDO-0210 namespace/start-wait-times-out: %.1f %.1f' % (waited, handoff_waited),
                started is None and 0.9 < waited < 3 and broker is None and 0.9 < handoff_waited < 3
-               and 'reported = await_start(ready)' in source and 'os.killpg(pid, signal.SIGKILL)' in source)
+               and 'reported = await_start(ready, stop)' in source and 'os.killpg(pid, signal.SIGKILL)' in source)
+        if not nested:
+            # A stop during the start ends it at once, in both profiles (the gate's waits for the
+            # handoff first): a helper that hangs (here a root-owned program that never reports,
+            # /usr/bin/yes) is killed with its group, and the launcher exits 128 plus the signal
+            # number well before the start wait or the grace would end.
+            import signal
+
+            def hung_helpers():
+                found = []
+                for entry in os.listdir('/proc'):
+                    try:
+                        if entry.isdigit() and Path('/proc', entry, 'cmdline').read_bytes().startswith(
+                                b'/usr/bin/yes\0' + str(launcher).encode() + b'\0'):
+                            found.append(int(entry))
+                    except OSError:
+                        pass
+                return found
+
+            for profile, number in [(profile, number) for profile in ('agent', 'gate')
+                                    for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)]:
+                hung = subprocess.Popen(
+                    [sys.executable, '-I', '-S', '-c', wrapper, str(launcher),
+                     json.dumps({'NAMESPACE_HELPER': '/usr/bin/yes'}), '--config', str(config),
+                     '--worktree', str(worktree), '--profile', profile, '--', '/usr/bin/true'],
+                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                    preexec_fn=lambda: [signal.signal(n, signal.SIG_DFL)
+                                        for n in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)])
+                deadline = time.time() + 20
+                while not hung_helpers() and time.time() < deadline:
+                    time.sleep(0.05)
+                began_helpers = hung_helpers()
+                began = time.time()
+                hung.send_signal(number)
+                try:
+                    _, hung_error = hung.communicate(timeout=20)
+                except subprocess.TimeoutExpired:
+                    hung.kill()
+                    _, hung_error = hung.communicate()
+                stopped_after = time.time() - began
+                time.sleep(0.2)
+                left = hung_helpers()
+                for pid in left:
+                    os.kill(pid, 9)
+                expect('VELDO-0210 namespace/stop-ends-a-hung-helper-%s-%s: %s %.1f %s %s'
+                       % (profile, signal.Signals(number).name, hung.returncode, stopped_after, left,
+                          hung_error.decode(errors='replace')[-200:]),
+                       began_helpers != [] and hung.returncode == 128 + number and stopped_after < 3
+                       and left == [])
         start_marker = worktree / 'must-not-start'
         start = [sys.executable, '-I', '-S', '-c', 'open(%r, "w").close()' % str(start_marker)]
         writable = top / 'writable-helper'
