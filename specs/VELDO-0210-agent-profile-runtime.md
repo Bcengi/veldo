@@ -148,17 +148,21 @@ acceptance_criteria:
       (scripts/veldo_userns.c) with the launcher's own path and a context descriptor; the helper
       creates a user namespace mapping only this account's uid and gid, each to itself, then the
       mount and PID namespaces, and forks the namespace's init, which mounts a fresh procfs read only
-      over /proc, drops every capability (bounding, ambient, effective, permitted, inheritable;
-      securebits locked) and sets no_new_privs before it executes python3 -I -S agent_sandbox.py
-      namespace-init. The host's AppArmor policy (scripts/veldo-userns.apparmor) lets only the helper
-      create a user namespace and stacks the child profile veldo-userns-child onto the helper's
-      profile for whatever it executes (no_new_privs allows only a stack), which denies every
+      over /proc, locks the securebits (no root fixup, no set-user-ID fixup, keep caps off, no
+      ambient raise, each locked), drops the whole bounding set, clears the ambient, inheritable,
+      permitted and effective sets, reads each result back, and, without no_new_privs (the helper
+      refuses one it inherited), executes python3 -I -S agent_sandbox.py namespace-init. The host's
+      AppArmor policy (scripts/veldo-userns.apparmor) lets only the helper create a user namespace
+      and changes the interpreter it executes (/usr/bin/python3*, matched on the resolved path) to
+      the child profile veldo-userns-child with a plain transition (px), which denies every
       capability, every user namespace, mounts and profile changes, and is kept by every program
-      executed below it. The init refuses to go on unless
-      it is PID 1 of a read-only fresh procfs, only the identity map exists, every capability set is
-      empty, no_new_privs is set and (with AppArmor) its label is exactly
-      veldo-userns//&veldo-userns-child (enforce), the stack as the kernel prints it;
-      it then reports ready and forks the agent, which confines itself (seccomp, Landlock) and execs.
+      executed below it (ix). The init's very first act sets no_new_privs and exits unless every
+      capability set, the bounding set included, is empty, the securebits are the locked ones and
+      (with AppArmor) its label is exactly veldo-userns-child (enforce). It then refuses to go on
+      unless it is PID 1 of a read-only fresh procfs, only the identity map exists, every capability
+      set is empty, no_new_privs is set and (with AppArmor) its label is exactly
+      veldo-userns-child (enforce); it then reports ready and forks the agent, which confines itself
+      (seccomp, Landlock) and execs.
       The launcher refuses unless the init reports ready within 60 seconds and the helper's own
       process holds no capability, and kills the tree first. The helper is never taken from the
       environment, the configuration or the candidate; one that is absent, not a regular file,
@@ -168,7 +172,7 @@ acceptance_criteria:
       during the start ends it at once: the tree, a hung helper with it, is killed and the launcher
       exits 128 plus the signal number. A launcher already inside a tree the outer launcher made
       (it inherited the outer launcher's marker, a descriptor of the outer launcher's PID namespace
-      that is a proper ancestor of its own; label exactly veldo-userns//&veldo-userns-child (enforce); a PID
+      that is a proper ancestor of its own; label exactly veldo-userns-child (enforce); a PID
       namespace other than the host's whose procfs is /proc; no capability) creates none, and its
       init is a child subreaper that kills and reaps every remaining descendant when the agent ends;
       any other private PID namespace (a container's, a systemd PrivatePIDs one) has no marker and
@@ -177,9 +181,12 @@ acceptance_criteria:
       set, no_new_privs and the AppArmor label inside, a clone(CLONE_NEWUSER) by the agent, the owner
       of a file created inside, /proc's mount options, an orphan reaped by the init, a descendant
       that left the agent's process group after the agent exits, the same for the gate profile; the
-      helper source dropping everything after the procfs mount and before exec, its relays, its
+      helper source dropping everything after the procfs mount and before exec, reading each step
+      back and setting no no_new_privs before that exec, the init setting no_new_privs first and
+      stopping while it holds a capability, other securebits or another label, its relays, its
       reproducible static build and its refusals (arguments, entry point's name, path, owners); the
-      policy compiling and its child profile's denials; a container label, complain mode and a forged
+      policy compiling, its one plain exec transition and its child profile's denials; a container
+      label, a stack, complain mode and a forged
       tree (the child label, no capability, only its own namespace descriptors) not counting as
       nested; the nested check under the gate and the agent profile's real grants, where /sys is
       unreadable; the marker created before the helper and kept by the tree; a subreaper ending a setsid
@@ -200,7 +207,9 @@ acceptance_criteria:
       profile allow userns; namespace/policy-child-denies-capabilities-and-user-namespaces and
       namespace/no-user-namespace-for-the-agent go red. Count any private PID namespace as nested;
       namespace/only-the-helpers-tree-counts-as-nested goes red. Wait out the start despite a stop;
-      namespace/stop-ends-a-hung-helper-* go red.
+      namespace/stop-ends-a-hung-helper-* go red. Set no_new_privs in the helper's dropping;
+      namespace/helper-execs-without-no-new-privs goes red. Skip the init's first check;
+      namespace/init-sets-no-new-privs-first-and-holds-nothing goes red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch. On the host, `sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns`.
 ---
@@ -257,10 +266,15 @@ unchanged.
   maps `<id> <id> 1`; creates the mount and PID namespaces and makes every mount private; forks the
   init. The init waits on a pipe until the parent has dropped its capabilities and closed its
   descriptors, sets PR_SET_PDEATHSIG, mounts procfs on /proc read only (nosuid, nodev, noexec),
-  locks the securebits (noroot, no setuid fixup, keep caps, no ambient raise), drops the whole
-  bounding set, clears the ambient set, clears the effective, permitted and inheritable sets, sets
+  locks the securebits (SECBIT_NOROOT, SECBIT_NOROOT_LOCKED, SECBIT_NO_SETUID_FIXUP,
+  SECBIT_NO_SETUID_FIXUP_LOCKED, SECBIT_KEEP_CAPS_LOCKED, SECBIT_NO_CAP_AMBIENT_RAISE,
+  SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED), drops the whole bounding set, clears the ambient set, clears
+  the effective, permitted and inheritable sets, and reads each result back (the securebits exactly
+  those, every bounding and ambient bit clear, capget all zero), else exits 2. It sets no
   no_new_privs and executes `/usr/bin/python3 -I -S <launcher> namespace-init <descriptor>` with no
-  environment but LC_CTYPE. The parent drops the same, closes every descriptor above stderr,
+  environment but LC_CTYPE; the helper refuses at its start (after its argument checks) when it
+  inherited no_new_privs. The parent drops the same, sets no_new_privs (it executes nothing),
+  closes every descriptor above stderr,
   relays TERM, INT and HUP (unless ignored at its start) to the init as SIGRTMIN, SIGRTMIN+1 and
   SIGRTMIN+2, and exits with the init's status. Static, it has no dynamic loader, so LD_PRELOAD and
   the like cannot run code with its rights.
@@ -272,43 +286,71 @@ unchanged.
   it once more after every grant is final and before the fork (launcher_write_problem): a run that
   would be granted any write access to its own agent_sandbox.py, or to a directory above it, in any
   profile, refuses to start (exit 2). Even an edited launcher gains nothing beyond today's
-  unconfined account: the helper has dropped every capability and set no_new_privs before that
-  exec, and the stacked child profile denies capabilities and user namespaces below it.
+  unconfined account: the helper has dropped every capability, with the securebits locked, before
+  that exec, the child profile denies capabilities and user namespaces below it, and the init sets
+  no_new_privs before anything of the launcher's own runs.
   The AppArmor policy, scripts/veldo-userns.apparmor, installed as /etc/apparmor.d/veldo-userns,
   attaches veldo-userns to the helper's path with userns, the four capabilities it needs inside its
   own namespace, the two mounts it makes, signals, and no tracing of it (so no process injects code
-  with its rights). The helper sets no_new_privs before it executes /usr/bin/python3, and under
-  no_new_privs the kernel lets a confined process change only to a label that still holds its
-  current profile, so the exec stacks the child profile onto the helper's (px ->
-  &veldo-userns-child), as Ubuntu's unprivileged_userns stacks itself onto what it executes: the
-  tree runs under the stacked label veldo-userns//&veldo-userns-child, and every access must pass
-  both profiles. The child profile allows files, network, Unix sockets, signals, tracing and IPC,
-  denies every capability, every user namespace, every mount, unmount, pivot_root and profile
-  change, and keeps itself across every exec (ix); veldo-userns stacks the child again on every
-  exec (px -> &veldo-userns-child), so every program executed below keeps the same stack and can
-  never leave it. veldo-userns allows what the stack's programs need besides: network, Unix
-  sockets, signals, IPC, and reading the /proc entries of the stack's own processes (ptrace read,
-  peer veldo-userns or veldo-userns-child); it lets no confined process trace the helper or a
-  process of the stack (an unconfined tracer, such as the launcher whose gate broker reads the
-  agent's memory and descriptors, is not checked against a tracee's rules). Nothing the helper
-  runs can therefore create or use a user namespace with capabilities, whatever it executes. The
-  policy:
+  with its rights). Its one exec rule, `/usr/bin/python3* px -> veldo-userns-child,`, lets the
+  helper execute only the interpreter and changes it to the child profile outright: AppArmor
+  matches an exec by the path the executable resolves to, here /usr/bin/python3.12 through the
+  link /usr/bin/python3, and the glob takes whichever python3 minor version the host has. The tree
+  runs under the plain label veldo-userns-child. The child profile allows files, network, Unix
+  sockets, signals and IPC, denies every capability, every user namespace, every mount, unmount,
+  pivot_root and profile change, and keeps itself across every exec (ix), so every program
+  executed below stays in it and can never leave it. Both profiles carry the same ptrace rules:
+  reading the /proc entries of the helper's and the tree's processes (ptrace read, peer
+  veldo-userns or veldo-userns-child), and no confined process may trace the helper or a process of
+  the tree (an unconfined tracer, such as the launcher whose gate broker reads the agent's memory
+  and descriptors, is not checked against a tracee's rules).
+  Why the transition is plain, not a stack (owner's host, kernel 7.0, Ubuntu): the first version
+  set no_new_privs in the helper before its exec, and under no_new_privs a confined process may
+  change only to a label that keeps its current profile, so the rule stacked the child onto the
+  helper (`/** px -> &veldo-userns-child`). On the owner's host that exec was refused, "profile
+  transition not found" (Ubuntu's own unprivileged_userns only stacks onto itself). So the helper
+  sets no no_new_privs before its exec, and the transition is a plain px.
+  Why this is at least as strong as the stack. What the stack gave was the child profile's
+  denials, which the plain transition gives unchanged: every access of the tree is checked against
+  veldo-userns-child, which denies every capability, user namespace, mount, unmount, pivot_root and
+  profile change, and ix keeps it across every exec, so nothing the tree runs can get a user
+  namespace (and with it capabilities in a namespace of its own), whatever it executes. The
+  helper profile's own rules in the stack narrowed the child's in one place only, ptrace, and the
+  child now carries the helper's ptrace rules itself (read the /proc entries of veldo-userns and
+  veldo-userns-child processes, be read by any, never be traced), so the tree still traces nothing
+  and no confined process traces the helper; every other rule of the helper profile allowed at
+  least what the child allows (files, exec, network, Unix sockets, signals, IPC), and the child
+  alone denies capabilities, user namespaces, mounts, pivot_root and profile changes, as the stack
+  did.
+  What no_new_privs gave before the exec, that the exec gains no capability and no identity, comes
+  from the capability state instead: the bounding set is empty, so no file capability can add
+  one; the securebits are locked with no root fixup and no set-user-ID fixup, so neither uid 0
+  nor a set-user-ID root file grants the full sets; the ambient set is empty and cannot be raised;
+  and inside the user namespace only the account's own uid and gid are mapped, so a set-user-ID or
+  set-group-ID file of any other owner changes no identity (the kernel ignores it), and one of the
+  account's own changes nothing. The helper reads each of these back before it executes. And the
+  init sets no_new_privs as its very first act, before any code of the tree runs, and exits unless
+  every set is empty and the label is exactly veldo-userns-child (enforce); from there on the tree
+  runs under no_new_privs as before. Nothing the helper runs can therefore create or use a user
+  namespace with capabilities, whatever it executes. The policy:
 
   # AppArmor policy for the agent sandbox's namespace helper (VELDO-0210 AC6), installed by the
   # owner's one-time setup as /etc/apparmor.d/veldo-userns.
   #
   # veldo-userns is the only program on the host this lets create a user namespace. It needs the
   # capabilities below inside that namespace only, to map the account to itself, make the mount and
-  # PID namespaces and mount their procfs. The helper sets no_new_privs before it executes anything,
-  # and under no_new_privs the kernel lets a confined process change only to a label that keeps its
-  # current profile, so whatever it executes (only /usr/bin/python3) runs under the stack
-  # veldo-userns//&veldo-userns-child, as Ubuntu's unprivileged_userns stacks itself onto what it
-  # executes: each access must pass both profiles, and veldo-userns-child denies every capability,
-  # user namespace, mount, unmount, pivot_root and profile change. Every program the stack executes
-  # gets the same stack. So nothing the helper runs can create or use a user namespace with
-  # capabilities. veldo-userns also allows what the programs of the stack need (network, Unix
-  # sockets, signals, IPC, reading their own processes' /proc). No confined process may trace the
-  # helper or a process of the stack, so no code runs with the helper's rights.
+  # PID namespaces and mount their procfs. The one program it may execute is the interpreter
+  # /usr/bin/python3, which AppArmor matches by the path the link resolves to (/usr/bin/python3.12
+  # and the like), and that exec changes to the child profile veldo-userns-child outright (px), so
+  # the label inside is exactly veldo-userns-child. Before that exec the helper drops every
+  # capability with the securebits locked (no root fixup, an empty bounding set), so the exec gains
+  # none, and it sets no no_new_privs, under which only a stack would be allowed; the executed init
+  # sets no_new_privs as its first act. veldo-userns-child denies every capability, user namespace,
+  # mount, unmount, pivot_root and profile change, and keeps itself across every later exec (ix).
+  # So nothing the helper runs can create or use a user namespace with capabilities. Both profiles
+  # carry the same ptrace rules: reading the /proc entries of the helper's and the tree's processes,
+  # and no confined process may trace the helper or a process of the tree, so no code runs with the
+  # helper's rights, as under the stack the first version used.
 
   abi <abi/4.0>,
   include <tunables/global>
@@ -331,7 +373,7 @@ unchanged.
     ptrace (read) peer=veldo-userns{,-child},
     ptrace (readby),
     audit deny ptrace (tracedby),
-    /** px -> &veldo-userns-child,
+    /usr/bin/python3* px -> veldo-userns-child,
   }
 
   profile veldo-userns-child flags=(attach_disconnected, mediate_deleted) {
@@ -340,7 +382,9 @@ unchanged.
     network,
     unix,
     signal,
-    ptrace,
+    ptrace (read) peer=veldo-userns{,-child},
+    ptrace (readby),
+    audit deny ptrace (tracedby),
     mqueue,
     io_uring,
     dbus,
@@ -358,9 +402,10 @@ unchanged.
   profiles (veldo-userns and veldo-userns-child) root-owned, loads both with apparmor_parser -r,
   retires the first design's unshare copy, and runs the self-test. Its last step is the self-test, which proves through the installed helper that
   the namespace is as the init requires and that a program run through it cannot sethostname here or
-  in new user and UTS namespaces, cannot create a UTS or user namespace, and cannot bring up an
-  interface in new user and network namespaces, directly or through executed programs (util-linux
-  unshare, hostname, ip), and that the helper's own process holds no capability:
+  in new user and UTS namespaces, cannot bring up an interface here or in new user and network
+  namespaces, cannot create a UTS namespace, cannot create a user namespace (EPERM or EACCES),
+  directly or through executed programs (util-linux unshare, hostname, ip), has CapBnd 0 and the
+  securebits locked as above, and that the helper's own process holds no capability:
 
   `d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$PWD"=. -o "$d/veldo-userns" scripts/veldo_userns.c && sudo install -D -o root -g root -m 0755 "$d/veldo-userns" /usr/local/lib/veldo/veldo-userns && sudo install -o root -g root -m 0644 scripts/veldo-userns.apparmor /etc/apparmor.d/veldo-userns && sudo apparmor_parser -r /etc/apparmor.d/veldo-userns && sudo rm -f /usr/local/lib/veldo/veldo-unshare && rm -r "$d" && python3 -I -S scripts/agent_sandbox.py namespace-selftest`
 
@@ -399,10 +444,8 @@ unchanged.
   it inherited the marker (launcher_marker: an open descriptor of a PID namespace, NS_GET_NSTYPE,
   that is not its own and in which NS_GET_PID_IN_PIDNS finds its pid, so a proper ancestor of its
   own; only nsfs descriptors get the ioctls), its AppArmor label is exactly
-  veldo-userns//&veldo-userns-child (enforce) (the kernel prints a stack's profiles in its own
-  order joined by '//&', then one mode when all share it; the child alone, the helper's own label,
-  complain or mixed mode and any other stack do not count), which only an exec through the
-  root-owned helper gives and which no process can leave, its
+  veldo-userns-child (enforce) (the helper's own label, any stack, complain or mixed mode do not
+  count), which no profile but the helper's changes to on exec and which no process can leave, its
   /proc/self/ns/pid is not the initial pid:[4026531836], its /proc/self is its own pid, and it holds
   no capability. Every one of these is read from /proc, which the outer tree's Landlock grants in
   every profile; none from /sys, which no profile grants (the label read alone shows AppArmor is
@@ -526,10 +569,15 @@ unchanged.
   init, and descendants of the nested agent then outlive it until the outer tree ends.
 - The helper's entry check (name, path, owners) is a guard on what it executes, not the boundary:
   the account owns the launcher file and can change it, and the helper accepts any agent_sandbox.py
-  the account owns, wherever it lies. The boundary is that the helper drops every capability and
-  sets no_new_privs before it executes anything, and that the stacked child profile denies
+  the account owns, wherever it lies. The boundary is that the helper drops every capability, with
+  the securebits locked, before it executes anything, and that the child profile denies
   capabilities and user namespaces to whatever runs below it, so a launcher file someone edited
   runs with nothing beyond what the unconfined account already has today.
+- The helper refuses to run when it inherited no_new_privs (a caller under a sandbox that sets
+  it): the exec into the child profile would be refused there. A process of this account that is
+  unconfined may itself change to veldo-userns-child (AppArmor lets an unconfined process change to
+  any loaded profile); that only takes rights away from it, and without the outer launcher's
+  marker it does not count as nested.
 - Another process of this account that runs unconfined outside every tree (the owner's own shell,
   an unconfined CLI) holds every capability over the tree's user namespace, as the namespace's
   owner, and could join it; nothing inside the tree can, and none of the tree's processes reaches
