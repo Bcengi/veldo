@@ -344,39 +344,98 @@ expect("WARP-0623 AC5: the live board provisioners and adapter remain repository
        == (ROOT / "engine/.veldo/tracker_intake.py").read_bytes())
 # --- A HISTORICAL SPEC'S FOOTPRINT AGAINST THE PROTECTED SET IN FORCE FOR IT ---------------------
 # The dogfood rows in this file assert that a landed spec's footprint touched no protected path. The
-# set that answers that is the one in force WHEN THE SPEC WAS APPROVED, not today's: comparing against
-# today's policy turned two rows red the moment a later spec protected scripts/selftest.py, which
-# every one of these footprints names, although nothing about the historical specs had changed. So
-# the set is read from Git: the policy committed at the first revision in which the spec carries a
-# status at or beyond ready, through the gate's own reader. A later protection lands in a later commit
-# and cannot move that revision, so this stays correct however many files become protected later. In
-# a history that begins with the spec already ready (a flattened successor, or this repository's own
-# root) the set is the root's policy, which is the earliest the history can say and is never smaller
-# than the set the spec was approved against, so a real violation still shows.
+# set that answers that is the one in force WHEN THE FOOTPRINT WAS APPROVED, not today's: comparing
+# against today's policy turned two rows red the moment a later spec protected scripts/selftest.py,
+# which every one of these footprints names, although nothing about the historical specs had changed.
+# So both sides are read from Git, through the gate's own reader: the footprint the spec carried at
+# the first revision with a status at or beyond ready is judged against the policy committed THERE,
+# and every entry that entered the footprint after that is judged against the policy committed at the
+# revision it entered (an uncommitted entry against the working tree's policy). Reading only the
+# policy from Git and the footprint from today let a footprint widened after ready, to a path a later
+# commit protected, pass against a set that predates the protection.
+# A later widening is judged at its own commit rather than refused outright, because that is what
+# stays correct as history grows: the revision an entry entered and the policy committed there are
+# both fixed facts of past commits, so a later protection can neither redden an entry approved while
+# its path was unprotected nor clear one that named a path already protected, while a rule that no
+# footprint may ever widen would turn every legitimate widening red for good. Every entry that ever
+# entered counts, not only today's, so narrowing the footprint again does not erase a protected touch.
+# In a history that begins with the spec already ready (a flattened successor, or this repository's
+# own root) the ready revision is the root, which is the earliest the history can say and is never
+# smaller than the set the spec was approved against, so a real violation still shows.
 _HIST_ADVANCED = ("ready", "in_progress", "review", "proven", "shipped")
+
+
+def _hist_git(root, *args):
+    return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
+                          check=True).stdout
+
+
+def _hist_footprint(text):
+    """The footprint key of a spec revision's front matter, parsed on its own through the gate's
+    parser: older revisions carry other fields in a form today's parser refuses, and those fields
+    say nothing about the footprint."""
+    match = re.match(r"^---\n(.*?)\n---", text, re.S)
+    block = re.search(r"^footprint:.*(?:\n[ \t-].*)*", match.group(1) if match else "", re.M)
+    fm = V.parse_yamlish(block.group(0)) if block else {}
+    return [g for g in fm.get("footprint") or [] if isinstance(g, str)]
+
+
+def _hist_protected(policy):
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "policy.yaml").write_text(policy)
+        saved, P.POLICY = P.POLICY, Path(d) / "policy.yaml"
+        try:
+            return P.protected_patterns()
+        finally:
+            P.POLICY = saved
+
+
+def _hist_revisions(spec_rel, root):
+    """The revisions that change `spec_rel` from the first one at or beyond ready on, oldest first.
+    Loud when the spec never reached ready in this history, never an empty list."""
+    revs = _hist_git(root, "log", "--reverse", "--format=%H", "--", spec_rel).split()
+    for i, rev in enumerate(revs):
+        status = re.search(r"^status:\s*(\S+)", _hist_git(root, "show", "%s:%s" % (rev, spec_rel)), re.M)
+        if status and status.group(1) in _HIST_ADVANCED:
+            return revs[i:]
+    raise LookupError("%s never reached ready in this history" % spec_rel)
 
 
 def protected_in_force(spec_rel, root=ROOT):
     """(commit, patterns): the first commit at which `spec_rel` carries a status at or beyond ready,
     and the protected patterns of the policy committed there. Loud when the spec never reached ready
     in this history or the policy is absent at that commit, never an empty set."""
-    def _git(*args):
-        return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
-                              check=True).stdout
-    for rev in _git("log", "--reverse", "--format=%H", "--", spec_rel).split():
-        status = re.search(r"^status:\s*(\S+)", _git("show", "%s:%s" % (rev, spec_rel)), re.M)
-        if status and status.group(1) in _HIST_ADVANCED:
-            break
-    else:
-        raise LookupError("%s never reached ready in this history" % spec_rel)
-    policy = _git("show", "%s:.veldo/policy.yaml" % rev)
-    with tempfile.TemporaryDirectory() as d:
-        (Path(d) / "policy.yaml").write_text(policy)
-        saved, P.POLICY = P.POLICY, Path(d) / "policy.yaml"
-        try:
-            return rev, P.protected_patterns()
-        finally:
-            P.POLICY = saved
+    rev = _hist_revisions(spec_rel, root)[0]
+    return rev, _hist_protected(_hist_git(root, "show", "%s:.veldo/policy.yaml" % rev))
+
+
+def footprint_in_force(spec_rel, root=ROOT):
+    """[(revision, glob, patterns)]: every glob the footprint of `spec_rel` carried at its ready
+    revision, and every glob that entered it at a later revision, each with the protected patterns
+    of the policy committed at the revision it entered. An entry the working tree adds is listed
+    with the revision 'worktree' and the working tree's policy."""
+    revs, entries, before, policies = _hist_revisions(spec_rel, root), [], set(), {}
+    steps = [(rev, _hist_git(root, "show", "%s:%s" % (rev, spec_rel))) for rev in revs]
+    steps.append(("worktree", (Path(root) / spec_rel).read_text()))
+    for rev, text in steps:
+        footprint = _hist_footprint(text)
+        for glob in footprint:
+            if glob not in before:
+                if rev not in policies:
+                    policies[rev] = (_hist_protected((Path(root) / ".veldo/policy.yaml").read_text())
+                                     if rev == "worktree" else
+                                     _hist_protected(_hist_git(root, "show", "%s:.veldo/policy.yaml" % rev)))
+                entries.append((rev, glob, policies[rev]))
+        before = set(footprint)
+    return entries
+
+
+def footprint_hits_in_force(spec_rel, arch, root=ROOT, also=()):
+    """Every (revision, glob, pattern) where a footprint entry matches a path protected when it
+    entered (footprint_in_force), or one of `also`, through the repository's one glob compiler."""
+    return [(rev, g, q) for rev, g, patterns in footprint_in_force(spec_rel, root)
+            for q in list(patterns) + [a for a in also if a not in patterns]
+            if arch._glob_re(g).match(q)]
 
 
 def footprint_protected_hits(fm, patterns, arch):
@@ -391,6 +450,10 @@ def footprint_protected_hits(fm, patterns, arch):
 # is clean against its own set and would be red against today's, which is the retroactive failure
 # this replaces; a spec whose footprint names a.py is caught; and a spec that became ready AFTER b.py
 # was protected and names it is caught too, so the row still has teeth for a later violation.
+# WIDENED is the widening after ready: ready at the second commit naming c.py, widened at the third
+# to d.py while d.py is unprotected, and at the fourth, which protects d.py, to b.py, protected since
+# the third. Only b.py is caught, at the fourth commit, where today's footprint against the ready
+# commit's policy saw nothing; and an entry the working tree adds is judged against its policy.
 _hist_arch, _ = V.load_repo_contract(repo_root=str(ROOT))
 
 
@@ -423,15 +486,21 @@ with tempfile.TemporaryDirectory() as _hist_d:
 
     _hist_c1 = _hist_commit({".veldo/policy.yaml": _hist_policy(["a.py"]),
                              "specs/EARLY.md": _hist_spec("EARLY", "draft", ["b.py"]),
-                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "draft", ["a.py"])},
+                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "draft", ["a.py"]),
+                             "specs/WIDENED.md": _hist_spec("WIDENED", "draft", ["c.py"])},
                             "drafts")
     _hist_c2 = _hist_commit({"specs/EARLY.md": _hist_spec("EARLY", "ready", ["b.py"]),
-                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "ready", ["a.py"])},
+                             "specs/TOUCHES-A.md": _hist_spec("TOUCHES-A", "ready", ["a.py"]),
+                             "specs/WIDENED.md": _hist_spec("WIDENED", "ready", ["c.py"])},
                             "ready")
     _hist_c3 = _hist_commit({".veldo/policy.yaml": _hist_policy(["a.py", "b.py"]),
                              "specs/EARLY.md": _hist_spec("EARLY", "shipped", ["b.py"]),
-                             "specs/LATE.md": _hist_spec("LATE", "ready", ["b.py"])},
-                            "protect b.py, ship EARLY, LATE ready")
+                             "specs/LATE.md": _hist_spec("LATE", "ready", ["b.py"]),
+                             "specs/WIDENED.md": _hist_spec("WIDENED", "shipped", ["c.py", "d.py"])},
+                            "protect b.py, ship EARLY, LATE ready, widen WIDENED to d.py")
+    _hist_c4 = _hist_commit({".veldo/policy.yaml": _hist_policy(["a.py", "b.py", "d.py"]),
+                             "specs/WIDENED.md": _hist_spec("WIDENED", "shipped", ["c.py", "d.py", "b.py"])},
+                            "protect d.py, widen WIDENED to b.py")
     _HIST = {}
     for _n in ("EARLY", "TOUCHES-A", "LATE"):
         _rev, _pats = protected_in_force("specs/%s.md" % _n, root=_hist_d)
@@ -440,6 +509,16 @@ with tempfile.TemporaryDirectory() as _hist_d:
                                        re.S).group(1))
         _HIST[_n] = (_rev, _pats, footprint_protected_hits(_fm, _pats, _hist_arch),
                      footprint_protected_hits(_fm, ["a.py", "b.py"], _hist_arch))
+        _HIST[_n] += (footprint_hits_in_force("specs/%s.md" % _n, _hist_arch, root=_hist_d),)
+    _hist_wfm = V.parse_yamlish(re.match(r"^---\n(.*?)\n---", (Path(_hist_d) / "specs/WIDENED.md").read_text(),
+                                         re.S).group(1))
+    _hist_widened = (protected_in_force("specs/WIDENED.md", root=_hist_d),
+                     footprint_protected_hits(_hist_wfm, protected_in_force("specs/WIDENED.md", root=_hist_d)[1],
+                                              _hist_arch),
+                     [(_r, _g) for _r, _g, _ in footprint_in_force("specs/WIDENED.md", root=_hist_d)],
+                     footprint_hits_in_force("specs/WIDENED.md", _hist_arch, root=_hist_d))
+    (Path(_hist_d) / "specs/EARLY.md").write_text(_hist_spec("EARLY", "shipped", ["b.py", "a.py"]))
+    _hist_worktree = footprint_hits_in_force("specs/EARLY.md", _hist_arch, root=_hist_d)
     try:
         protected_in_force("specs/NEVER.md", root=_hist_d)
         _hist_never = None
@@ -452,7 +531,16 @@ expect("SUITE: a historical spec's footprint is compared with the protected set 
        and _HIST["LATE"][0] == _hist_c3 and _HIST["LATE"][1] == ["a.py", "b.py"]
        and _HIST["LATE"][2] == [("b.py", "b.py")]
        and _hist_c1 not in (_HIST["EARLY"][0], _HIST["TOUCHES-A"][0])
+       and _HIST["EARLY"][4] == [] and _HIST["TOUCHES-A"][4] == [(_hist_c2, "a.py", "a.py")]
+       and _HIST["LATE"][4] == [(_hist_c3, "b.py", "b.py")]
        and isinstance(_hist_never, LookupError)
+       and P.POLICY is _hist_policy_before)
+expect("SUITE: a footprint WIDENED after ready is judged entry by entry against the policy committed where each entry entered, never today's footprint against the ready commit's policy. WIDENED became ready naming c.py (C1 ready), b.py was protected (C2 protect), and the footprint later grew to b.py (C3 widen): the old comparison of today's footprint with the ready commit's set finds nothing, while the entry b.py is caught at the commit it entered. d.py, which entered while unprotected and was protected in the same commit that added b.py, stays clean, so a later protection still cannot redden an approved entry; and an entry only the working tree adds is judged against the working tree's policy: "
+       + repr((_hist_widened[1:], _hist_worktree)),
+       _hist_widened[0] == (_hist_c2, ["a.py"]) and _hist_widened[1] == []
+       and _hist_widened[2] == [(_hist_c2, "c.py"), (_hist_c3, "d.py"), (_hist_c4, "b.py")]
+       and _hist_widened[3] == [(_hist_c4, "b.py", "b.py")]
+       and _hist_worktree == [("worktree", "a.py", "a.py")]
        and P.POLICY is _hist_policy_before)
 
 # AC5 dogfood: this item's own spec is ready, standard risk, touches no protected path, and passes the
@@ -468,9 +556,9 @@ expect("WARP-0623 AC5 dogfood: the spec has PASSED the ready transition (status 
        and V.check_ready(ROOT / "specs/WARP-0623-live-provisioner-name-collision.md", repo_root=str(ROOT)) == 0)
 _lp_arch, _lp_contract = V.load_repo_contract(repo_root=str(ROOT))
 _lp_in_force_rev, _lp_in_force = protected_in_force("specs/WARP-0623-live-provisioner-name-collision.md")
-expect("WARP-0623 AC5 dogfood: declaring no protected path is CHECKED, not trusted - no footprint glob matches a path protected by the policy in force when the spec became ready, read from Git at that commit rather than from today's policy, which later specs extend",
+expect("WARP-0623 AC5 dogfood: declaring no protected path is CHECKED, not trusted - no footprint glob matches a path protected by the policy in force when it entered the footprint, the ready commit's for the footprint the spec carried there, read from Git at that commit rather than from today's policy, which later specs extend",
        len(_lp_in_force_rev) == 40 and len(_lp_in_force) > 0
-       and footprint_protected_hits(_lp_fm, _lp_in_force, _lp_arch) == [])
+       and footprint_hits_in_force("specs/WARP-0623-live-provisioner-name-collision.md", _lp_arch) == [])
 expect("WARP-0623 AC5 dogfood: the spec's placement resolves to the TRACKER area and its footprint tier is standard (one declared area, no boundary crossing)",
        _lp_fm.get("placement") == ["tracker"] and _lp_contract is not None
        and _lp_arch.footprint_areas(_lp_fm, _lp_contract) == {"tracker"}
@@ -1155,7 +1243,9 @@ expect("WARP-0711 AC3: the STAGE LIST is untouched - verify.sh still declares th
        and len(_L07_GUARDED) >= 7 and len(_L07_FOOTPRINT) >= 5
        and [_g for _g in _L07_FOOTPRINT if _L07_ARCH._glob_re(_g).match("scripts/check_lint.sh")]
        and not [(_g, _q) for _g in _L07_FOOTPRINT for _q in _L07_GUARDED
-                if _L07_ARCH._glob_re(_g).match(_q)])
+                if _L07_ARCH._glob_re(_g).match(_q)]
+       and footprint_hits_in_force(str(_L07_SPEC_PATH.relative_to(ROOT)), _L07_ARCH,
+                                   also=_L07_GUARDED) == [])
 
 # --- AC1 the measured baseline, committed at the path the criteria name --------
 _L07_BASELINE = ROOT / "proof/WARP-0711/baseline.md"
@@ -4311,8 +4401,8 @@ expect("WARP-0722 dogfood: the spec has PASSED the ready transition (so this doe
        and sorted(_v22_fm.get("protected_paths") or []) == ["engine/scripts/verify.sh", "scripts/verify.sh"]
        and set(_v22_fm.get("protected_paths") or []) <= set(_v22_in_force)
        and V.check_ready(_v22_spec_path, repo_root=str(ROOT)) == 0)
-expect("WARP-0722 dogfood: the protected paths the spec declares are EXACTLY the ones its footprint matches in the policy in force when it became ready, read from Git at that commit, so an undeclared protected touch is caught and a protection added by a later spec does not count against it",
-       sorted({_q for _g, _q in footprint_protected_hits(_v22_fm, _v22_in_force, _v22_arch)})
+expect("WARP-0722 dogfood: the protected paths the spec declares are EXACTLY the ones its footprint matches in the policy in force when each entry entered it, the ready commit's for the footprint it carried there, read from Git, so an undeclared protected touch is caught and a protection added by a later spec does not count against it",
+       sorted({_q for _r, _g, _q in footprint_hits_in_force(str(_v22_spec_path.relative_to(ROOT)), _v22_arch)})
        == sorted(_v22_fm.get("protected_paths") or []))
 
 expect("WARP-0722 dogfood, THE TWO CRITERIA THE BUILD AMENDED RATHER THAN REINTERPRETED: AC2 declares the key the code actually uses (the artifact's own blob, content-addressed) and no longer the adding-commit sha an independent review measured to be unstable across clones of one commit; and AC3 asks for the EQUALITY over an enumerated record list that ships, not the empty list it first demanded and that the same evidence proves unreachable. Asserted on the spec text, because a criterion nobody can satisfy is a defect in the criterion and the record for it is an amendment, not a status token that reads as satisfied",
@@ -7317,7 +7407,7 @@ expect("WARP-0713 dogfood: the spec has PASSED the ready transition (so this doe
        and _v13_fm.get("risk", "").split()[0] == "high"
        and _v13_fm.get("human_approval") == "not_required"
        and (_v13_fm.get("protected_paths") or []) == []
-       and footprint_protected_hits(_v13_fm, protected_in_force(_v13_spec_rel)[1], _v13_arch) == []
+       and footprint_hits_in_force(_v13_spec_rel, _v13_arch) == []
        and V.check_ready(ROOT / _v13_spec_rel, repo_root=str(ROOT)) == 0
        and _v13_arch.placement_gate(_v13_fm, _v13_contract) == [])
 
