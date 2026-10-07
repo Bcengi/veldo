@@ -53,6 +53,15 @@ footprint:
   - "specs/VELDO-0208-single-user-landing-reuse.md"
   - "specs/index.md"
   - "proof/VELDO-0208/*"
+  - "scripts/check_generated.sh"
+  - "scripts/update_index.py"
+  - "engine/scripts/update_index.py"
+  - "scripts/run_scope.py"
+  - "scripts/check_install_and_run.py"
+  - "scripts/suites/*.py"
+  - "proof/VELDO-0088/fixture.py"
+  - "proof/VELDO-0152/fixture.py"
+  - "proof/VELDO-0162/base_fixture.py"
 behavior_bearing: true
 observability:
   logs: Launcher names unavailable confinement and invalid configuration; landing names missing authenticated evidence.
@@ -240,3 +249,63 @@ fetch, and shows that a remapped object in the private store fails integration w
 shared ref. It refuses start for a shared worktree, an unnamed repository and an out-of-namespace
 branch. It also plants a pack remapping the verifier's blob id and shows installation refuses it,
 while the same installer without the hash check would install the forged bytes.
+
+## Gate stage corrections, 2026-10-07
+
+The first full confined gate (e7d68c72) went red in five stages while every suite passed alone,
+because nothing ran a stage the way the gate runs it. Corrections, each kept inside AC1:
+
+- Generated: every generator writes into a private temporary file and the committed file is
+  compared with it. A stale file is red with its one-command remedy and is never rewritten.
+- Unix sockets and terminals (unit, integration, mutation workers): Landlock ABI 8 does not
+  mediate connect to a pathname socket, so the gate and worker profiles keep refusing every
+  call that could reach a service and have the launcher's trusted parent perform the rest
+  through a seccomp user-notification listener the confined child hands over and closes before
+  any candidate code runs. Unix sockets may be created; connect, bind, addressed sendto, sendmsg
+  and TIOCGPTPEER are performed by the parent with its own copy of the arguments. An address
+  must be absolute and resolve beneath the domain's writable roots with no symlink, magic link
+  or mount crossing; abstract names are refused; bind runs in a helper confined to create
+  socket files only beneath those roots; only SCM_RIGHTS crosses at socket level; workers get
+  no other address family. /dev/ptmx is granted and /dev/pts is not, so a domain reaches only
+  terminals it created. A launcher nested in a brokered domain is strict (no Unix sockets): the
+  outer broker answers for its own domain's roots, never a nested one's. The agent profile is
+  unchanged.
+- /proc is readable (never writable) in the gate and worker profiles: the suites and the control
+  plane read mounts, process identity and cgroups. Another domain's environ, fd, root, cwd, mem
+  and maps are ptrace-mode accesses, which Landlock refuses across domains (measured).
+- The account's locked graph runtime (~/.local/share/veldo/langgraph) is an optional read root,
+  like the CLI directories. Its stage (~/.local/state/veldo/graph-stage) is never granted:
+  production executes the runner copies it holds.
+- A nested launcher closes inherited descriptors with close_range, not a /proc listing, and does
+  not hand VELDO_EXPECTED_GIT_COMMON to confined commands; install-and-run names each adopter
+  repository's own common directory to its gate.
+- A failed mutation receipt is a one-line RED in the requested mode with reused.mutation null.
+- Suite fixtures choose /dev/shm by trying it, and signal across forks on pipes: /dev/shm (POSIX
+  semaphores) is not granted, since it holds every same-user process's shared memory.
+
+Suite 101 runs these stages under the gate's launcher (rows confined-stage/*).
+
+## Open: suites the confined gate cannot run (owner decision), 2026-10-07
+
+With the corrections above the unit stage reaches every suite, and two classes stay red by the
+design of this specification, not by a defect in how the gate runs them:
+
+- The systemd user manager. The control-plane suites start transient units and slices through
+  systemctl --user, place runtime directories in /run/user/<uid>, and refuse a host whose
+  profile lacks the user manager (unavailable_service:profile:user_manager). A unit the manager
+  starts runs outside the Landlock domain, which is exactly the same-user service escape this
+  specification denies. Affected (some rows only in several): 62_0039, 63_0040, 63_0049,
+  64_0050, 66_0042, 67_0041, 67_0135, 71_0076, 71_0130, 71_0138, 73_0139, 78_0060, 79_0061,
+  80_0155, 81_0156, 82_0129, 82_0141, 83_0154, 85_0158, 85_0171, 86_0127, 86_0148, 86_0189,
+  87_0170, 91_0167, 92_0088, 93_0152, 94_0162, 96_0204. Module-level failures in several of
+  them stop the unit run, and with it the integration stage's nested run.
+- Nested tracing. Suites 100 and 101 drive authority workers under strace; ptrace is refused
+  inside the domain, so those rows cannot run when the unit stage itself is confined.
+
+Not yet classified (each needs its own look, not assumed to be either class): 62_0045 (pip
+wheel refusal rows), 65_0067 (the product's own nested worker confinement), 82_0085 (a
+multiprocessing Barrier, Lock and Queue across a fork, which need /dev/shm).
+
+Neither open class can turn green inside the confinement without granting the escape it
+denies. The choice is the owner's: keep these legs outside the landing gate and say where they
+are proven, or have them stand down by name inside it.
