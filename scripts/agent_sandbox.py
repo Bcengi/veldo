@@ -943,10 +943,42 @@ def credential_sources(config):
     return sources
 
 
+def scratch_directory(scratch, parts):
+    """A descriptor of the directory scratch/<parts>, each component opened (and created 0700 when
+    absent) without following a link: a link anywhere on the path refuses, never redirects."""
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    directory = os.open(scratch, flags)
+    try:
+        for part in parts:
+            try:
+                os.mkdir(part, 0o700, dir_fd=directory)
+            except FileExistsError:
+                pass
+            inner = os.open(part, flags, dir_fd=directory)
+            os.close(directory)
+            directory = inner
+    except BaseException:
+        os.close(directory)
+        raise
+    return directory
+
+
+def overlapping_links(links, destinations):
+    """Refuse a read link at, above or beneath a seed destination or another read link: every seed
+    is written before any link exists, and no write or link of the launcher may pass through one."""
+    for index, relative in enumerate(links):
+        link = Path(relative)
+        for other in [*destinations, *links[:index], *links[index + 1:]]:
+            other = Path(other)
+            if link == other or link in other.parents or other in link.parents:
+                raise ValueError('agent client read link %s overlaps %s' % (relative, other))
+
+
 def seed(scratch, source, relative, store, protected=None):
     """Copy one private state file into the scratch. Returns (resolved source, bytes copied), or
     None when the source is absent. A source in the store, or, for a credential that is written
-    back, in a protected path, refuses the start."""
+    back, in a protected path, refuses the start. The destination is created component by component
+    without following a link."""
     if Path(relative).is_absolute() or '..' in Path(relative).parts:
         raise ValueError('invalid private state seed')
     if not source.is_file():
@@ -957,9 +989,13 @@ def seed(scratch, source, relative, store, protected=None):
     if protected is not None and any(beneath(real, p) for p in protected):
         raise ValueError('credential source lies in a protected path: ' + str(real))
     data = real.read_bytes()
-    destination = scratch / relative
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    parts = Path(relative).parts
+    directory = scratch_directory(scratch, parts[:-1])
+    try:
+        descriptor = os.open(parts[-1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                             0o600, dir_fd=directory)
+    finally:
+        os.close(directory)
     with os.fdopen(descriptor, 'wb') as handle:
         handle.write(data)
     return real, data
@@ -1282,14 +1318,12 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
         raise ValueError('launcher, configuration and authority must be outside the worktree')
     store = Path(config['store']).resolve()
+    overlapping_links([relative for _, relative in files.get('read_links', [])],
+                      [*config.get('seed_files', {}).values(),
+                       *(relative for kind in ('seed_files', 'credentials') for _, relative in files.get(kind, []))])
+    # Every file is copied in before any link exists.
     for source, relative in config.get('seed_files', {}).items():
         seed(scratch, Path(source).expanduser(), relative, store)
-    # The client's installed plugins, marketplaces and skills, read only where they are, linked
-    # where the CLI looks for them under its private state directory.
-    for target, relative in links:
-        link = scratch / relative
-        link.parent.mkdir(parents=True, exist_ok=True)
-        link.symlink_to(target)
     for source, relative in files.get('seed_files', []):
         seed(scratch, source, relative, store)
     credentials = []
@@ -1299,7 +1333,16 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             real, data = copied
             credentials.append((real, relative, data))
     for name in ('.codex', '.claude', 'tmp'):
-        (scratch / name).mkdir(exist_ok=True)
+        os.close(scratch_directory(scratch, [name]))
+    # The client's installed plugins, marketplaces and skills, read only where they are, linked
+    # where the CLI looks for them under its private state directory.
+    for target, relative in links:
+        parts = Path(relative).parts
+        directory = scratch_directory(scratch, parts[:-1])
+        try:
+            os.symlink(target, parts[-1], dir_fd=directory)
+        finally:
+            os.close(directory)
     env = dict(os.environ, HOME=str(scratch), CODEX_HOME=str(scratch / '.codex'),
                CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'),
                VELDO_AGENT_CONFIG=str(config_path),

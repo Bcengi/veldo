@@ -70,9 +70,12 @@ acceptance_criteria:
       only Claude runs. Set: reads through the links and the absolute plugin paths, writes to them,
       a project root read and write, each client's run looking for the other client's credentials,
       a run with no client, and the refusals VELDO-0208 keeps (writes outside the worktree and
-      scratch, the store, the runner, the authority). Completeness: every file a client receives is
-      declared under that client in the configuration and must lie under its own state directory
-      (.claude or .codex). Test rows capabilities/* in suite 102.
+      scratch, the store, the runner, the authority), a read link at, above or beneath a seed or
+      credential destination or another link, and a seed whose scratch path holds a link.
+      Completeness: every file a client receives is declared under that client in the configuration
+      and must lie under its own state directory (.claude or .codex); every seed is written before
+      any link exists, component by component without following a link. Test rows capabilities/* in
+      suite 102.
     falsified_by: Copy every client's credentials into every run; capabilities/claude-run-has-no-codex-credentials goes red.
   - id: AC4
     text: >
@@ -142,7 +145,10 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 - Capabilities. Read links: Claude's plugins/cache, plugins/marketplaces, plugins/synced, skills,
   agents and commands; Codex's skills, rules and plugins/cache. Each target is granted read-only
   (through the same filter as every read root) and linked into the scratch; an absent target is
-  skipped. project_read_roots (absent roots skipped, '~' is the account's home) are read-only grants
+  skipped. Every seed and credential is written first, each directory component of its scratch
+  path opened (or created 0700) with O_NOFOLLOW and the file created O_EXCL beneath it; the links
+  are made afterwards the same way. A read link at, above or beneath a seed or credential
+  destination, or another read link, refuses the start. project_read_roots (absent roots skipped, '~' is the account's home) are read-only grants
   in the agent profile only. The runner accounts measured on 2026-10-07 have no stdio MCP server;
   their MCP servers are the claude.ai connectors, reached over TCP/TLS, which the profile already
   allows. A stdio server configured later runs inside the domain with the same grants.

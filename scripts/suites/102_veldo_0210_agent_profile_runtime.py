@@ -375,6 +375,43 @@ print(json.dumps(seen))
                               capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, env=client_env)
         expect('VELDO-0210 credentials/gate-takes-no-client',
                gate.returncode == 2 and 'takes no agent client' in gate.stderr and not marker.exists())
+        # Seeds are written first and never through a link: a read link at, above or beneath a seed
+        # destination (or another link) refuses the start, and seed() follows no link on its path.
+        (account / 'plugins').mkdir(exist_ok=True)
+        for name, links, seeds in (
+                ('link-above-seed', {'{home}/plugins': '.claude/plugins'},
+                 {'{home}/settings.json': '.claude/plugins/planted.json'}),
+                ('link-at-seed', {'{home}/plugins': '.claude/settings.json'},
+                 {'{home}/settings.json': '.claude/settings.json'}),
+                ('link-beneath-seed', {'{home}/plugins': '.claude/settings.json/inner'},
+                 {'{home}/settings.json': '.claude/settings.json'}),
+                ('link-above-credential', {'{home}/plugins': '.claude/sub'},
+                 {}),
+                ('link-above-link', {'{home}/plugins': '.claude/shared', '{home}/skills': '.claude/shared/skills'},
+                 {})):
+            overlap = json.loads(json.dumps(client_policy))
+            overlap['clients']['claude']['read_links'] = links
+            overlap['clients']['claude']['seed_files'] = seeds
+            if name == 'link-above-credential':
+                overlap['clients']['claude']['credentials'] = {'{home}/.credentials.json': '.claude/sub/.credentials.json'}
+            (top / 'overlap.json').write_text(json.dumps(overlap))
+            refused = run(top / 'overlap.json', worktree, start, client='claude', env=client_env)
+            expect('VELDO-0210 capabilities/%s-refused: %s' % (name, refused.stderr[-200:]),
+                   refused.returncode == 2 and 'overlaps' in refused.stderr and not marker.exists()
+                   and sorted(p.name for p in (account / 'plugins').iterdir()) == [])
+        outside = top / 'seed-outside'
+        outside.mkdir()
+        for name, planted in (('scratch-top', '.claude'), ('scratch-inner', '.claude/plugins')):
+            seeded = Path(tempfile.mkdtemp(dir=top))
+            (seeded / planted).parent.mkdir(parents=True, exist_ok=True)
+            (seeded / planted).symlink_to(outside)
+            try:
+                S.seed(seeded, account / 'settings.json', '.claude/plugins/settings.json', store.resolve())
+                followed = True
+            except OSError:
+                followed = False
+            expect('VELDO-0210 capabilities/seed-follows-no-link-%s' % name,
+                   not followed and sorted(p.name for p in outside.iterdir()) == [])
         defaults = real['seed_files']
         expect('VELDO-0210 credentials/shared-seeds-carry-no-credential',
                set(defaults.values()) == {'.gitconfig'}
