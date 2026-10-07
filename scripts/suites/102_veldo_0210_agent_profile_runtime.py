@@ -14,11 +14,24 @@ def _v210_agent_profile():
     launcher = ROOT / 'scripts/agent_sandbox.py'
     # The real launcher's main() with module constants replaced (fixture resolver paths, a short
     # grace): the code under test is the launcher's own, only its host paths move into the fixture.
+    # FORK_THEN_SIGNAL sends the launcher TERM the instant its fork returns, before it can register
+    # the child, and gives the signal a second to land.
     wrapper = '''import importlib.util, json, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('agent_sandbox', sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-for name, value in json.loads(sys.argv[2]).items():
+values = json.loads(sys.argv[2])
+if values.pop('FORK_THEN_SIGNAL', None):
+    import os, signal, time
+    fork = os.fork
+    def forked():
+        pid = fork()
+        if pid:
+            os.kill(os.getpid(), signal.SIGTERM)
+            time.sleep(1)
+        return pid
+    os.fork = forked
+for name, value in values.items():
     setattr(m, name, Path(value) if isinstance(value, str) else value)
 sys.argv = [sys.argv[1], *sys.argv[3:]]
 sys.exit(m.main())
@@ -486,7 +499,13 @@ credentials = Path(os.environ['CLAUDE_CONFIG_DIR'], '.credentials.json')
 temporary = credentials.with_name('fresh')
 temporary.write_text(sys.argv[3])
 os.replace(temporary, credentials)
-Path(sys.argv[2]).write_text(json.dumps({'home': os.environ['HOME'], 'pid': os.getpid()}))
+record = {'home': os.environ['HOME'], 'pid': os.getpid()}
+if sys.argv[1] == 'descendant':
+    # Inherits every descriptor the agent holds, its scratch lock among them, and outlives it.
+    import subprocess
+    record['descendant'] = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import time; time.sleep(120)'],
+                                            close_fds=False).pid
+Path(sys.argv[2]).write_text(json.dumps(record))
 time.sleep(120)
 ''')
 
@@ -554,8 +573,80 @@ time.sleep(120)
         expect('VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: %s %s' % (alive, code),
                alive and code == 128 + signal.SIGTERM and gone(held) and leftovers() == [])
 
-        # Stale: a day-old scratch is swept at the next start; nothing else is.
+        # A stop that lands between the fork and the child's registration waits for the registration:
+        # the child gets the stop forwarded (and may end cleanly), never runs on with its scratch gone.
+        late, termed = worktree / 'outlived-launcher', worktree / 'stop-forwarded'
+        for path in (late, termed):
+            path.unlink(missing_ok=True)
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
+                     'import signal, sys, time\n'
+                     'signal.signal(signal.SIGTERM, lambda *_: (open(%r, "w").close(), sys.exit(0)))\n'
+                     'time.sleep(3); open(%r, "w").close()' % (str(termed), str(late))],
+                     patch={'FORK_THEN_SIGNAL': True}, client='claude', env=scratch_env)
+        time.sleep(3)
+        expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s %s' % (result.returncode,
+                                                                                  result.stderr[-200:]),
+               result.returncode == 128 + signal.SIGTERM and termed.exists() and not late.exists()
+               and leftovers() == [])
+
+        def alive(pid):
+            try:
+                return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] != 'Z'
+            except (OSError, IndexError):
+                return False
+
+        def held_run(mode):
+            reset()
+            marker = worktree / ('held-%s' % mode)
+            marker.unlink(missing_ok=True)
+            process = subprocess.Popen(
+                [sys.executable, '-I', '-S', '-c', wrapper, str(launcher), '{}', '--config', str(client_config),
+                 '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S', str(hold),
+                 mode, str(marker), json.dumps(new_token)],
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=scratch_env)
+            deadline = time.time() + 30
+            while not marker.exists() and time.time() < deadline and process.poll() is None:
+                time.sleep(0.05)
+            return process, (json.loads(marker.read_text()) if marker.exists() else {})
+
+        def settled(condition):
+            deadline = time.time() + 10
+            while not condition() and time.time() < deadline:
+                time.sleep(0.05)
+            return condition()
+
         day_old = time.time() - 2 * 24 * 60 * 60
+        # A live launcher's scratch is never swept, however old it looks.
+        process, held = held_run('plain')
+        if held:
+            os.utime(held['home'], (day_old, day_old))
+        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+        expect('VELDO-0210 scratch/live-launcher-scratch-kept: %s' % held,
+               result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
+        process.send_signal(signal.SIGTERM)
+        process.wait(timeout=60)
+        # A launcher killed outright takes its agent with it; a descendant that kept the agent's
+        # descriptors keeps the scratch until it is gone too.
+        process, held = held_run('descendant')
+        process.kill()
+        process.wait(timeout=60)
+        expect('VELDO-0210 scratch/killed-launcher-takes-its-agent: %s' % held,
+               bool(held) and settled(lambda: not alive(held['pid'])))
+        descendant = held.get('descendant')
+        if held:
+            os.utime(held['home'], (day_old, day_old))
+        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+        expect('VELDO-0210 scratch/scratch-of-live-descendant-kept',
+               result.returncode == 0 and descendant is not None and alive(descendant)
+               and Path(held['home']).is_dir())
+        if descendant is not None:
+            os.kill(descendant, signal.SIGKILL)
+            settled(lambda: not alive(descendant))
+        result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+        expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
+               result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+
+        # Stale: a day-old scratch is swept at the next start; nothing else is.
         stale = parent / 'veldo-agent-stale'
         (stale / 'shut/inner').mkdir(parents=True)
         (stale / 'shut/inner/credential.json').write_text('{}')

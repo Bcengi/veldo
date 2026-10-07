@@ -77,13 +77,21 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: the launcher's scratch directory is removed when it exits, including when it is stopped
-      by TERM, INT or HUP; a scratch directory left behind (the launcher killed outright) is removed
-      by the next start once it is more than a day old, unless a live launcher holds it. Set: each
-      stop signal, a child that ignores TERM, a stale directory with a shut subdirectory, a recent
-      one, a stale one a live launcher holds, a stale link and a stale plain file. Completeness:
-      every launch goes through launch(), which sweeps before creating its own scratch and holds an
-      exclusive lock on it until removal. Test rows scratch/* in suite 102.
-    falsified_by: Skip the lock test in the sweep; scratch/live-scratch-kept goes red.
+      by TERM, INT or HUP, and a stop that lands between the fork and the child's registration is
+      forwarded to the child once it is registered; a launcher killed outright takes its agent with
+      it; a scratch directory left behind is removed by the next start once it is more than a day
+      old, unless a live launcher, its agent or a descendant that kept the agent's descriptors
+      holds it. Set: each stop signal, a child that ignores TERM, a stop sent the instant the fork
+      returns, a launcher killed outright with a descendant that outlives the agent, a live
+      launcher's aged scratch, a stale directory with a shut subdirectory, a recent one, a stale one
+      a live launcher holds, a stale link and a stale plain file. Completeness: every launch goes
+      through launch(), which sweeps before creating its own scratch and holds a shared lock on it
+      until removal; the confined command holds a second shared lock on its own descriptor. Test
+      rows scratch/* in suite 102.
+    falsified_by: >
+      Skip the lock test in the sweep, the signal block across the fork or PR_SET_PDEATHSIG;
+      scratch/live-scratch-kept, scratch/stop-during-fork-forwarded-to-child or
+      scratch/killed-launcher-takes-its-agent goes red.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch.
 ---
@@ -141,9 +149,14 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
 - Scratch. launch() sweeps the temporary directory for veldo-agent-* entries owned by this uid that
   are real directories, older than a day and not locked, and removes them (shut subdirectories are
   opened first, no link is followed). Its own scratch is created there and held with flock until
-  removal. TERM, INT and HUP (unless the launcher inherited them ignored) are forwarded to the
-  confined group; a group still alive ten seconds later is killed. The launcher then writes back
-  credentials, removes the scratch and exits 128 plus the signal number.
+  removal, with a shared lock; the child opens the scratch again and holds its own shared lock,
+  kept across exec, so the sweep's exclusive lock fails while the agent or any descendant holding
+  that descriptor lives. TERM, INT and HUP (unless the launcher inherited them ignored) are blocked
+  from before the fork until the parent has registered its child, then forwarded to the confined
+  group; a group still alive ten seconds later is killed. The launcher then writes back
+  credentials, removes the scratch and exits 128 plus the signal number. The child sets
+  PR_SET_PDEATHSIG to SIGKILL before anything else and refuses the start if the launcher is
+  already gone, so a launcher killed outright never leaves its agent running.
 
 ## Accepted residuals
 
@@ -161,6 +174,9 @@ refresh instead of never. Every other VELDO-0208 boundary is unchanged.
   so the reviewed project_read_roots entry ships to adopters; an absent root grants nothing.
 - Processes that leave the confined process group (their own setsid) are not stopped by the
   launcher; they stay confined.
+- PR_SET_PDEATHSIG reaches the agent the launcher started, not its descendants. A descendant that
+  outlives a launcher killed outright runs on, confined; if it also closed the descriptors it
+  inherited, nothing holds the scratch and the next start more than a day later removes it.
 
 ## Out of scope
 

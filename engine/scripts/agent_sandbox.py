@@ -1124,9 +1124,10 @@ def remove_tree(path):
 
 def remove_stale_scratch(parent):
     """Remove the scratch directories launchers killed outright left in `parent`: veldo-agent-*
-    directories this uid owns, untouched for more than a day and held by no live launcher (each
-    launcher holds an exclusive lock on its own scratch until it removes it). A link or any other
-    kind of entry is never followed or removed."""
+    directories this uid owns, untouched for more than a day and held by no live launcher or agent
+    (each launcher holds a shared lock on its own scratch until it removes it, and its confined
+    command holds another on its own descriptor for as long as it runs). A link or any other kind of
+    entry is never followed or removed."""
     try:
         entries = list(os.scandir(parent))
     except OSError:
@@ -1227,9 +1228,9 @@ class Stop:
 
 def launch(config_path, worktree, command, profile="agent", client=None):
     """Run `command` confined. The private scratch is created in the temporary directory, held
-    with an exclusive lock and removed when the launcher returns, raises or is stopped by TERM, INT
-    or HUP; one a launcher killed outright left behind is removed by the next start once it is a day
-    old (VELDO-0210)."""
+    with a shared lock and removed when the launcher returns, raises or is stopped by TERM, INT or
+    HUP; one a launcher killed outright left behind is removed by the next start once it is a day
+    old and no process holds its lock (VELDO-0210)."""
     parent = Path(tempfile.gettempdir())
     remove_stale_scratch(parent)
     scratch = lock = None
@@ -1238,7 +1239,7 @@ def launch(config_path, worktree, command, profile="agent", client=None):
         try:
             scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
         except Interrupted:
             code = None
@@ -1311,18 +1312,27 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                  'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
                  'VELDO_EXPECTED_GIT_COMMON'):
         env.pop(name, None)
-    if profile == 'gate':
-        # Gate commands run this repository's own suites, which serve and dial Unix sockets and
-        # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
-        roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
-        pid, side = fork_gate_domain(roots)
-    else:
-        pid, side = os.fork(), None
+    # TERM, INT and HUP stay blocked from before the fork until the parent has registered its child:
+    # a stop in between would otherwise end the launch, remove the scratch and leave the child running.
+    launcher = os.getpid()
+    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+    try:
+        if profile == 'gate':
+            # Gate commands run this repository's own suites, which serve and dial Unix sockets and
+            # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
+            roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
+            pid, side = fork_gate_domain(roots)
+        else:
+            pid, side = os.fork(), None
+    except BaseException:
+        signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+        raise
     if pid:
         status = None
         try:
             if stop is not None:
                 stop.child(pid)
+            signal.pthread_sigmask(signal.SIG_SETMASK, mask)  # a stop that came meanwhile is handled now
             _, status = os.waitpid(pid, 0)
         finally:
             if stop is not None and status is not None:
@@ -1352,8 +1362,19 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     try:
         if stop is not None:
             stop.in_child()
+        # A launcher killed outright takes its child with it (PR_SET_PDEATHSIG, kept across exec), so
+        # no agent runs on unsupervised; a launcher already gone refuses the start.
+        if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != launcher:
+            raise RuntimeError('the launcher is gone')
+        signal.pthread_sigmask(signal.SIG_SETMASK, mask)
         os.setsid()
-        close_descriptors(protected, keep=side.keep() if side else ())
+        # The confined command holds its own shared lock on the scratch for as long as it runs (and
+        # every descendant that keeps the descriptor), so no sweep removes a scratch still in use.
+        held = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        fcntl.flock(held, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        os.set_inheritable(held, True)
+        keep = [held, *(side.keep() if side else ())]
+        close_descriptors(protected, keep=keep)
         mode = landlock(grants, profile, broker=side)
         env.pop(BROKERED, None)
         if mode != 'strict':
