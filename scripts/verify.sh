@@ -27,8 +27,13 @@ veldo_candidate() {
 # need the systemd user manager or nested strace). Both legs and the list are printed on the stage
 # lines and recorded in the stamp and the gate event. The list is a protected file, read from the
 # authority, never from the candidate. With no list, every stage is confined, as before.
+# VELDO_LEGS_EXPECTED is asked of the authority's list BEFORE the stage runs, so a leg record that
+# candidate code deletes or truncates later is RED, never "no unconfined leg ran". An invalid list
+# (exit 2) counts as expected, which fails closed.
 veldo_stage() {
   if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
+    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --declared --stage "$1" -- "$2"
+    [ "$?" = 1 ] || VELDO_LEGS_EXPECTED="${VELDO_LEGS_EXPECTED:+$VELDO_LEGS_EXPECTED,}$1"
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1" \
       --record "$VELDO_LEGS_RECORD" -- "$2"
   else veldo_candidate bash -c "$2"; fi
@@ -134,6 +139,7 @@ CHECK_deploy_dry_run="na:no automated deployment path yet"
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
 VELDO_LEGS_RECORD=$(mktemp)
+VELDO_LEGS_EXPECTED=""
 trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh"
 CHECK_mutation="required:authority mutation stage"
@@ -316,11 +322,14 @@ REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOU
   fi
 }
 # Which suites ran outside the confinement, by stage, and under which declaration. The field is
-# present exactly when an unconfined leg ran, as reuse_evidence is present only when reuse needed it;
-# a leg record that cannot be read is RED with the field null, never absent.
+# present exactly when an unconfined leg was expected, as reuse_evidence is present only when reuse
+# needed it. When one was expected, a leg record that is missing, empty, unreadable or short of an
+# expected stage is RED with the field null, never absent: the record is a file the unconfined leg's
+# candidate code can reach, and only VELDO_LEGS_EXPECTED is out of its reach.
 UNCONFINED_FIELD=""
-if [ -s "$VELDO_LEGS_RECORD" ]; then
-  if _veldo_u=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --stamp "$VELDO_LEGS_RECORD"); then
+if [ -n "$VELDO_LEGS_EXPECTED" ]; then
+  if _veldo_u=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --stamp "$VELDO_LEGS_RECORD" \
+       --expect "$VELDO_LEGS_EXPECTED"); then
     UNCONFINED_FIELD=",\"unconfined\":$_veldo_u"
   else
     FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'

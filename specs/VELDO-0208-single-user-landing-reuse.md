@@ -357,8 +357,12 @@ for these suites only: their code runs with the owner's own authority, as it did
   "UNCONFINED LEG - runs outside the confinement by owner decision" followed by its entries, and
   the dispatcher prints each leg's banner with its list. The stamp and the gate event carry
   `"unconfined": {"declaration": "sha256:<list digest>", "legs": {"<stage>": [<entries>]}}` whenever
-  a leg ran; the field is absent only when no stage ran one (an authority with no list, or a catalog
-  with no declared stage). A leg record the gate cannot read is RED with the field null.
+  a leg was expected; the field is absent only when no stage expected one (an authority with no
+  list, or a catalog with no declared stage). verify.sh asks the authority's list whether a stage
+  expects a leg before the stage runs; when one was expected and the leg record is missing, empty,
+  unreadable or short of an expected stage, the gate is RED with the field null. The record is a
+  file candidate code in the unconfined leg can reach, so its absence never reads as "no unconfined
+  leg ran".
 - What the list bounds, and what it does not. The list plus the protected dispatcher bound WHICH
   suites and rows run unconfined. They do not bound what the code inside a listed suite does: that
   code still runs with the owner's full permissions, exactly as every suite did before VELDO-0208,
@@ -368,7 +372,8 @@ for these suites only: their code runs with the owner's own authority, as it did
 - Tests (suite 101, rows unconfined-leg/*): the declared list and its reasons; the list and runner
   and the dispatcher files are protected, and the list is read from the authority (a candidate copy
   naming another suite is ignored); verify.sh's own stamp and event lines carry the leg
-  when it ran, omit it when none ran and are RED when the record is unreadable; the row ownership
+  when it was expected, omit it when none was, and are RED with null when an expected leg's record
+  is deleted, empty or unreadable; the row ownership
   of each leg; a fixture candidate through the real runner, launcher and dispatcher in which a
   listed suite runs unconfined and is named, a suite the candidate asks for stays confined, only the
   listed rows leave, an undeclared stage or command is confined whole whatever the caller sets, and

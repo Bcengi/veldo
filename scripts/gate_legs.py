@@ -26,9 +26,15 @@ stamp and the gate event: it is visible on every run, never silent.
       One gate stage. A stage the list declares, with exactly its declared command, runs twice:
       the confined leg (every suite except the listed ones) through scripts/gate_candidate.py, then
       the unconfined leg (only the listed ones) directly. Any other stage runs confined only.
-  gate_legs.py --stamp <file>
-      The stamp's "unconfined" value: {} when no leg ran, otherwise the declaration's digest and
-      the entries each stage ran unconfined.
+  gate_legs.py --declared --stage <name> -- <command>
+      Exit 0 when the list declares this stage with exactly this command, 1 when it does not, 2
+      when the list is invalid. verify.sh asks before the stage runs, so it knows a leg is expected
+      whatever candidate code later does to the record.
+  gate_legs.py --stamp <file> [--expect <stage,stage>]
+      The stamp's "unconfined" value: the declaration's digest and the entries each stage ran
+      unconfined. With --expect, a record that is missing, empty, unreadable or does not hold
+      exactly those stages is an error, never {}: candidate code in the unconfined leg can delete or
+      truncate the record, and that must not read as "no unconfined leg ran".
 """
 import argparse
 import hashlib
@@ -139,9 +145,21 @@ def run_stage(root, stage, command, record, path=DECLARATION):
     return 0 if inside == 0 and outside == 0 else 1
 
 
-def stamp(record):
-    """The stamp value, compact JSON. A record this cannot read is an error, never {}."""
+def declared(stage, command, path=DECLARATION):
+    """0 when the list declares this stage with exactly this command, 1 when not, 2 when invalid."""
+    try:
+        document, _ = load(path)
+    except Invalid:
+        return 2
+    return 0 if document['stages'].get(stage) == command else 1
+
+
+def stamp(record, expected=None):
+    """The stamp value, compact JSON. A record this cannot read is an error, never {}. With the
+    stages a leg was expected in, a record that does not hold exactly those is an error too."""
     legs, digests = {}, set()
+    if expected is not None and not Path(record).is_file():
+        raise Invalid('the leg record is missing')
     try:
         text = Path(record).read_text() if Path(record).exists() else ''
         for line in text.splitlines():
@@ -150,6 +168,9 @@ def stamp(record):
             digests.add(item['declaration'])
     except (OSError, ValueError, KeyError, TypeError) as error:
         raise Invalid('unreadable leg record: %s' % error)
+    if expected is not None and set(legs) != set(expected):
+        raise Invalid('the leg record holds stages %s where %s were expected'
+                      % (sorted(legs) or 'none', sorted(expected)))
     if not legs:
         return {}
     if len(digests) != 1:
@@ -163,17 +184,24 @@ def main(argv=None):
     parser.add_argument('--stage')
     parser.add_argument('--record')
     parser.add_argument('--stamp')
+    parser.add_argument('--expect')
+    parser.add_argument('--declared', action='store_true')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
     if args.stamp is not None:
         try:
-            print(json.dumps(stamp(args.stamp), sort_keys=True, separators=(',', ':')))
+            expected = None if args.expect is None else [s for s in args.expect.split(',') if s]
+            print(json.dumps(stamp(args.stamp, expected), sort_keys=True, separators=(',', ':')))
         except Invalid as error:
             print('null')
             print('gate legs: %s; the gate is RED' % error, file=sys.stderr)
             return 1
         return 0
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
+    if args.declared:
+        if not args.stage or len(command) != 1:
+            parser.error('--declared needs --stage and exactly one command string')
+        return declared(args.stage, command[0])
     if not (args.root and args.stage and args.record) or len(command) != 1:
         parser.error('--root, --stage, --record and exactly one command string are required')
     return run_stage(args.root, args.stage, command[0], args.record)

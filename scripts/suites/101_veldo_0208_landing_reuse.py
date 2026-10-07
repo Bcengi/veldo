@@ -1343,22 +1343,28 @@ def _v208_unconfined_leg():
                and '03_rows.strace.confined' not in markers and '03_rows.unconfined' not in markers)
         stamped = L.stamp(record)
         # verify.sh's own stamp and event lines, executed over this record, an empty one and a
-        # corrupt one: the leg is in both records when it ran, absent when none ran, RED when unread.
+        # corrupt one: the leg is in both records when it was expected and ran, absent when none was
+        # expected, RED when unread.
         stamp_block = gate_text[gate_text.index('UNCONFINED_FIELD=""'):]
         stamp_block = stamp_block[:stamp_block.index('veldo_write_stamp() {')] + \
             stamp_block[stamp_block.index('veldo_write_stamp() {'):].split('\n}', 1)[0] + '\n}\n'
-        def written(legs_record):
-            program = ('VELDO_AUTHORITY=' + str(ROOT) + '\nVELDO_LEGS_RECORD=' + str(legs_record) + '\n'
+        def written(legs_record, expected='unit', before='', authority=ROOT):
+            program = ('VELDO_AUTHORITY=' + str(authority) + '\nVELDO_LEGS_RECORD=' + str(legs_record) + '\n'
+                       'VELDO_LEGS_EXPECTED=' + expected + '\n'
                        'FAIL=0\nSTATUS=green\nEVENT=gate.passed\nCOMMIT=' + 'a' * 40 + '\nTS=fixture\nRAN=1\nNA=0\n'
                        'VERSION_JSON=null\nTREE_JSON=null\nREUSE_JSON=\'"force_fresh":false,"reused":{"mutation":0,"unit":0}\'\n'
-                       + stamp_block + 'veldo_write_stamp "$1"\nprintf "%s\\n" "$EVENT_LINE" > "$2"\n')
+                       + before + stamp_block + 'veldo_write_stamp "$1"\nprintf "%s\\n" "$EVENT_LINE" > "$2"\n')
             outputs = top / 'written-stamp', top / 'written-event'
+            for o in outputs:
+                o.unlink(missing_ok=True)
             ran = subprocess.run(['bash', '-c', program, 'fixture', *map(str, outputs)],
-                                 capture_output=True, text=True, timeout=30)
+                                 capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                 env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
+                                          V208_PROBE_OUTSIDE=str(outside)))
             return ran.returncode, [json.loads(o.read_text()) for o in outputs]
         empty = top / 'empty-record'; empty.write_text('')
         corrupt = top / 'corrupt-record'; corrupt.write_text('{"stage": "unit"\n')
-        with_leg, without_leg, unread = written(record), written(empty), written(corrupt)
+        with_leg, without_leg, unread = written(record), written(empty, expected=''), written(corrupt)
         expect('VELDO-0208 unconfined-leg/stamp-and-event-carry-the-leg: ' + repr((with_leg, without_leg, unread)),
                all(code == 0 for code, _ in (with_leg, without_leg, unread))
                and all(document['unconfined'] == stamped for document in with_leg[1])
@@ -1376,6 +1382,14 @@ def _v208_unconfined_leg():
                and L.stamp(empty) == {} and L.stamp(top / 'never-written') == {}
                and refused_stamp.returncode == 1 and refused_stamp.stdout.strip() == 'null'
                and 'the gate is RED' in refused_stamp.stderr)
+
+        # An expected leg whose record is gone, empty or short of a stage is RED with the field null,
+        # never absent: candidate code in the unconfined leg can reach the record.
+        missing = [written(top / 'deleted-record'), written(empty), written(record, expected='unit,integration')]
+        expect('VELDO-0208 unconfined-leg/expected-leg-without-its-record-is-red-and-null: ' + repr(missing),
+               all(code == 0 and all('unconfined' in d and d['unconfined'] is None for d in documents)
+                   and documents[0]['status'] == 'red' and documents[1]['type'] == 'gate.failed'
+                   for code, documents in missing))
 
         # A stage the list does not declare, or a command other than the declared one, is confined
         # whole, and a caller's leg variables never reach it.
@@ -1441,6 +1455,33 @@ def _v208_unconfined_leg():
                and leaked_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
                    '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
                and not (top / 'fallback-record').exists())
+
+        # The same through verify.sh's own veldo_stage: it learns from the authority's list that the
+        # unit stage expects a leg before the stage runs, so deleting the record after the leg ran
+        # (what candidate code in the unconfined leg can do) is RED and null; a stage the list does
+        # not declare expects nothing and the field stays absent.
+        authority = top / 'authority-with-list'
+        (authority / 'scripts').mkdir(parents=True)
+        shutil.copyfile(ROOT / 'scripts/gate_legs.py', authority / 'scripts/gate_legs.py')
+        shutil.copyfile(authority_list, authority / 'scripts/gate_unconfined.json')
+        (authority / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
+        def through_stage(stage, command, delete):
+            live = top / 'live-record'
+            live.write_text('')
+            return written(live, expected='', authority=authority, before=functions
+                           + 'cd %s && veldo_stage %s "%s"\n' % (candidate, stage, command)
+                           + ('rm -f "$VELDO_LEGS_RECORD"\n' if delete else ''))
+        kept = through_stage('unit', 'python3 scripts/selftest.py', False)
+        deleted = through_stage('unit', 'python3 scripts/selftest.py', True)
+        undeclared = through_stage('lint', 'true', False)
+        expect('VELDO-0208 unconfined-leg/deleted-record-after-an-expected-leg-is-red-and-null: '
+               + repr((kept, deleted, undeclared)),
+               all(d.get('unconfined') == {'declaration': 'sha256:' + __import__('hashlib').sha256(
+                       authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}}
+                   for d in kept[1]) and kept[1][0]['status'] == 'green'
+               and all('unconfined' in d and d['unconfined'] is None for d in deleted[1])
+               and deleted[1][0]['status'] == 'red' and deleted[1][1]['type'] == 'gate.failed'
+               and all('unconfined' not in d for d in undeclared[1]) and undeclared[1][0]['status'] == 'green')
 
 
 if leg_runs():

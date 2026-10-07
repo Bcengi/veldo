@@ -434,7 +434,8 @@ class RunScope:
 
         unconfined is what scripts/gate_legs.py --stamp returns (VELDO-0208, owner decision
         2026-10-07): the declaration's digest and the entries each stage ran outside the
-        confinement. Like reuse_evidence it is present only when an unconfined leg ran."""
+        confinement, or None when a leg was expected and its record could not be read (the gate is
+        then RED). Like reuse_evidence it is present only when an unconfined leg was expected."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
         payload = {"commit": commit, "status": status, "at": at,
                    "checks_run": checks_run, "checks_na": checks_na,
