@@ -13,6 +13,7 @@ import argparse
 import ctypes
 import errno
 import importlib.util
+import json
 import os
 from pathlib import Path
 import platform
@@ -875,12 +876,174 @@ def close_descriptors(protected, keep=()):
     os.closerange(low, 0x7fffffff)
 
 
-def launch(config_path, worktree, command, profile="agent"):
+CREDENTIAL_LIMIT = 1 << 20
+
+
+def account_home():
+    return Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
+
+
+def client_files(config, name):
+    """The files one client (claude, codex) receives, from the configuration's `clients`:
+    {'credentials': [(source, relative)], 'seed_files': [...], 'read_links': [...]}.
+
+    A client's places are the directories its runner names in the environment (CLAUDE_CONFIG_DIR,
+    CODEX_HOME: the account the runner chose), else their defaults under the account's home. Every
+    destination lies under the client's own state directory (.claude, .codex), so one client's
+    files never land where the other client looks for its own (VELDO-0210)."""
+    clients = config.get('clients', {})
+    if name not in clients:
+        raise ValueError('unknown agent client: ' + str(name))
+    entry, home = clients[name], account_home()
+    places = {}
+    for place, (variable, default) in entry.get('places', {}).items():
+        value = os.environ.get(variable) or default
+        path = home / value[2:] if value.startswith('~/') else home if value == '~' else Path(value)
+        if not path.is_absolute():
+            raise ValueError('agent client place must be an absolute directory: ' + place)
+        places[place] = path
+    files = {}
+    for kind in ('credentials', 'seed_files', 'read_links'):
+        files[kind] = []
+        for source, relative in entry.get(kind, {}).items():
+            parts = Path(relative).parts
+            if Path(relative).is_absolute() or '..' in parts or len(parts) < 2 or parts[0] != '.' + name:
+                raise ValueError('agent client file must lie under .%s: %s' % (name, relative))
+            source = source.format(**places)
+            files[kind].append((home / source[2:] if source.startswith('~/') else Path(source), relative))
+    return files
+
+
+def credential_sources(config):
+    """Every client's credential sources, as they resolve for this run: never readable in place."""
+    sources = []
+    for name in config.get('clients', {}):
+        sources += [source for source, _ in client_files(config, name)['credentials']]
+    return sources
+
+
+def seed(scratch, source, relative, store, protected=None):
+    """Copy one private state file into the scratch. Returns (resolved source, bytes copied), or
+    None when the source is absent. A source in the store, or, for a credential that is written
+    back, in a protected path, refuses the start."""
+    if Path(relative).is_absolute() or '..' in Path(relative).parts:
+        raise ValueError('invalid private state seed')
+    if not source.is_file():
+        return None
+    real = source.resolve(strict=True)
+    if beneath(real, store):
+        raise ValueError('private state seed exposes the reuse store')
+    if protected is not None and any(beneath(real, p) for p in protected):
+        raise ValueError('credential source lies in a protected path: ' + str(real))
+    data = real.read_bytes()
+    destination = scratch / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    with os.fdopen(descriptor, 'wb') as handle:
+        handle.write(data)
+    return real, data
+
+
+def read_scratch_file(scratch, relative):
+    """The bytes of scratch/relative, opened one component at a time without following any link:
+    a link the confined tree planted anywhere on the path is refused, so only the file the launcher
+    copied in can be read back. One link, a regular file, at most CREDENTIAL_LIMIT bytes."""
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
+    directory = os.open(scratch, flags | os.O_DIRECTORY)
+    try:
+        parts = Path(relative).parts
+        for part in parts[:-1]:
+            inner = os.open(part, flags | os.O_DIRECTORY, dir_fd=directory)
+            os.close(directory)
+            directory = inner
+        descriptor = os.open(parts[-1], flags | os.O_NONBLOCK, dir_fd=directory)
+    finally:
+        os.close(directory)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > CREDENTIAL_LIMIT:
+            raise ValueError('not a private regular file')
+        data = b''
+        while len(data) <= CREDENTIAL_LIMIT:
+            chunk = os.read(descriptor, CREDENTIAL_LIMIT + 1 - len(data))
+            if not chunk:
+                return data
+            data += chunk
+        raise ValueError('larger than %d bytes' % CREDENTIAL_LIMIT)
+    finally:
+        os.close(descriptor)
+
+
+def replace_atomically(target, data):
+    """Replace `target` with `data`: a temporary file beside it, fsync, rename, fsync the directory.
+    A reader sees the old file or the new one, never a partial write. The mode stays the source's
+    owner bits (credentials are 0600)."""
+    try:
+        mode = stat.S_IMODE(os.stat(target).st_mode) & 0o700 or 0o600
+    except FileNotFoundError:
+        mode = 0o600
+    descriptor, temporary = tempfile.mkstemp(prefix='.' + target.name + '.', suffix='.veldo-tmp',
+                                             dir=target.parent)
+    try:
+        try:
+            os.fchmod(descriptor, mode)
+            view = memoryview(data)
+            while view:
+                view = view[os.write(descriptor, view):]
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        os.replace(temporary, target)
+    except BaseException:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+    directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+
+
+def write_back(scratch, credentials):
+    """After the run: each credential file the launcher copied in that the CLI changed (a token
+    refresh) and that is still one JSON object replaces its source atomically, so a refresh during
+    a run never logs the account out (VELDO-0210). Nothing else in the scratch is ever written back,
+    and an unchanged, unreadable or invalid copy leaves the source as it is."""
+    for real, relative, original in credentials:
+        try:
+            data = read_scratch_file(scratch, relative)
+        except (OSError, ValueError) as error:
+            print('agent sandbox: credential %s not written back: %s' % (relative, error),
+                  file=sys.stderr, flush=True)
+            continue
+        if data == original:
+            continue
+        try:
+            if not isinstance(json.loads(data.decode('utf-8')), dict):
+                raise ValueError('not a JSON object')
+        except ValueError as error:
+            print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
+                  file=sys.stderr, flush=True)
+            continue
+        try:
+            replace_atomically(real, data)
+        except OSError as error:
+            print('agent sandbox: credential %s write-back to %s failed: %s' % (relative, real, error),
+                  file=sys.stderr, flush=True)
+            continue
+        print('agent sandbox: credential %s refreshed during the run, written back to %s' % (relative, real),
+              file=sys.stderr, flush=True)
+
+
+def launch(config_path, worktree, command, profile="agent", client=None):
     with tempfile.TemporaryDirectory(prefix='veldo-agent-') as temporary:
-        return prepared_launch(config_path, worktree, command, profile, Path(temporary))
+        return prepared_launch(config_path, worktree, command, profile, Path(temporary), client)
 
 
-def prepared_launch(config_path, worktree, command, profile, scratch):
+def prepared_launch(config_path, worktree, command, profile, scratch, client=None):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -889,7 +1052,12 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
     store.mkdir(mode=0o700, parents=True, exist_ok=True)
     policy.private(store, directory=True)
     if profile == 'gate':
+        if client is not None:
+            raise ValueError('the gate profile takes no agent client')
         config = dict(config, write_roots=['{scratch}'], seed_files={})
+    # Credentials are copied in, never read in place: every client's sources are denied for the run.
+    config = dict(config, deny_read=[*config.get('deny_read', []), *map(str, credential_sources(config))])
+    files = client_files(config, client) if client is not None else {}
     grants, protected = grants_for(config, authority, worktree, scratch, config_path)
     if profile == 'agent':
         grants += resolver_grants()
@@ -897,17 +1065,17 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
     protected += [config_path, Path(policy.__file__).resolve()]
     if profile == "agent" and any(beneath(p, worktree) for p in protected):
         raise ValueError('launcher, configuration and authority must be outside the worktree')
+    store = Path(config['store']).resolve()
     for source, relative in config.get('seed_files', {}).items():
-        destination = scratch / relative
-        if Path(relative).is_absolute() or '..' in Path(relative).parts:
-            raise ValueError('invalid private state seed')
-        source = Path(source).expanduser()
-        if source.is_file():
-            if beneath(source.resolve(strict=True), store):
-                raise ValueError('private state seed exposes the reuse store')
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, destination)
-            destination.chmod(0o600)
+        seed(scratch, Path(source).expanduser(), relative, store)
+    for source, relative in files.get('seed_files', []):
+        seed(scratch, source, relative, store)
+    credentials = []
+    for source, relative in files.get('credentials', []):
+        copied = seed(scratch, source, relative, store, protected)
+        if copied is not None:
+            real, data = copied
+            credentials.append((real, relative, data))
     for name in ('.codex', '.claude', 'tmp'):
         (scratch / name).mkdir(exist_ok=True)
     env = dict(os.environ, HOME=str(scratch), CODEX_HOME=str(scratch / '.codex'),
@@ -939,6 +1107,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch):
                 pass
             if side is not None:
                 side.close()
+            # The confined group is gone: a refreshed credential goes back to its account.
+            write_back(scratch, credentials)
         return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
     # Only this child executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.
@@ -984,6 +1154,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profile', choices=('agent', 'gate'), default='agent')
+    parser.add_argument('--client', help='the agent CLI whose files the run receives (a key of '
+                        'clients in the configuration: claude, codex); none without it')
     parser.add_argument('--worktree', required=True)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -991,7 +1163,7 @@ def main():
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        return launch(args.config, args.worktree, command, args.profile)
+        return launch(args.config, args.worktree, command, args.profile, args.client)
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr)
         return 2
