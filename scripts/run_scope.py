@@ -441,14 +441,16 @@ def full_scope(manifest=None):
 
 
 def main(argv):
-    if argv[1:] == ["--emit-requires"]:
+    # --output PATH writes the table elsewhere: the freshness check regenerates into a private
+    # path and compares, so it never writes the tree it verifies.
+    if argv[1:2] == ["--emit-requires"] and (len(argv) == 2 or (len(argv) == 4 and argv[2] == "--output")):
         doc = requires_document()
-        REQUIRES_PATH.write_text(json.dumps(doc, indent=1) + "\n")
-        print("run_scope: wrote %s (%d suites)"
-              % (REQUIRES_PATH.relative_to(ROOT), len(doc["requires"])))
+        target = Path(argv[3]) if len(argv) == 4 else REQUIRES_PATH
+        target.write_text(json.dumps(doc, indent=1) + "\n")
+        print("run_scope: wrote %s (%d suites)" % (target, len(doc["requires"])))
         return 0
     print(__doc__.strip().splitlines()[0])
-    print("usage: run_scope.py --emit-requires")
+    print("usage: run_scope.py --emit-requires [--output PATH]")
     return 2
 
 

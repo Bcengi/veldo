@@ -6043,7 +6043,7 @@ with tempfile.TemporaryDirectory() as _s16_dir:
            "ASSERTED TO HAVE APPLIED (one each) before their results are believed, because a "
            "mutation that matched nothing produces a green run that looks like a caught one. Each "
            "mutant differs from a fresh emission and the fresh emission is unchanged, so "
-           "scripts/check_generated.sh reds on either corruption and regenerates it away",
+           "scripts/check_generated.sh reds on either corruption and names the one-command remedy",
            _s16_nv == 1 and _s16_nd == 1
            and _s16_mut_verdict != _s16_fresh and _s16_mut_digit != _s16_fresh
            and _s16_mut_verdict != _s16_sv.render_report(_s16_T)
@@ -6322,6 +6322,12 @@ with tempfile.TemporaryDirectory() as _s16_dir:
                                 capture_output=True, text=True)
             return _r.returncode, _r.stdout
 
+        def _s16_emit(hroot):
+            """The fixture tree's own emitter, run in that tree: the remedy the stage names."""
+            _r = subprocess.run([sys.executable, "scripts/suite_survey.py", "--emit-report"],
+                                cwd=str(hroot), capture_output=True, text=True)
+            return _r.stdout if _r.returncode == 0 else ""
+
         # EVERY step below is inside one try, and any exception becomes a recorded FAILURE
         # rather than a traceback. Measured on the `true ||` mutant: with the stage
         # short-circuited the bootstrap leaves the placeholder in place, the figure row this
@@ -6330,15 +6336,19 @@ with tempfile.TemporaryDirectory() as _s16_dir:
         _s16_h_error = None
         _s16_hbad, _s16_hn, _s16_hfresh = "", 0, ""
         _s16_h_bootstrap = _s16_h_clean = _s16_h_stale = _s16_h_again = (None, "")
-        _s16_h_repaired = ""
+        _s16_h_repaired = _s16_h_kept = ""
         try:
-            # The REFERENCE is what the fixture tree's own copy of the emitter produces, taken
-            # from the stage itself rather than recomputed in this process: the in-process
-            # module resolves paths against THIS repository root and would name the target
-            # differently, so a reference computed that way would make a clean run look stale.
-            _s16_hrep.write_text("a placeholder that is not the emitter's output\n")
+            # The REFERENCE is what the fixture tree's own copy of the emitter produces, run in
+            # that tree rather than recomputed in this process: the in-process module resolves
+            # paths against THIS repository root and would name the target differently, so a
+            # reference computed that way would make a clean run look stale. The stage never
+            # writes the tree it checks, so a placeholder stays a placeholder and stays red.
+            _s16_hplace = "a placeholder that is not the emitter's output\n"
+            _s16_hrep.write_text(_s16_hplace)
             _s16_h_bootstrap = _s16_stage(_s16_hroot)
-            _s16_hfresh = _s16_hrep.read_text()
+            _s16_h_kept = _s16_hrep.read_text()
+            _s16_hfresh = _s16_emit(_s16_hroot)
+            _s16_hrep.write_text(_s16_hfresh)
             _s16_h_clean = _s16_stage(_s16_hroot)
             # ONE digit of ONE figure, and the substitution count is checked before the
             # result of running the stage over it is believed.
@@ -6353,6 +6363,7 @@ with tempfile.TemporaryDirectory() as _s16_dir:
             _s16_hrep.write_text(_s16_hbad or "no figure row to corrupt\n")
             _s16_h_stale = _s16_stage(_s16_hroot)
             _s16_h_repaired = _s16_hrep.read_text()
+            _s16_hrep.write_text(_s16_emit(_s16_hroot))
             _s16_h_again = _s16_stage(_s16_hroot)
         except Exception as _s16_he:  # noqa: BLE001 - a crash must become a red, not a traceback
             _s16_h_error = "%s: %s" % (type(_s16_he).__name__, _s16_he)
@@ -6362,17 +6373,20 @@ with tempfile.TemporaryDirectory() as _s16_dir:
            "holding the survey, a tangled-fixture target and a correct report, exits ZERO; with "
            "ONE DIGIT of one figure row changed (the substitution count is asserted to be 1 "
            "first, because a mutation that matched nothing would make an untouched file look "
-           "like a caught one) it exits ONE, REWRITES the report back to the emitter's output, "
-           "and exits ZERO on the next run. Also that scripts/verify.sh declares CHECK_generated "
+           "like a caught one) it exits ONE and LEAVES THE FILE AS IT WAS, because the gate runs "
+           "it over a read-only candidate tree and a check never repairs what it checks; after "
+           "the remedy it names, it exits ZERO again. Also that scripts/verify.sh declares CHECK_generated "
            "REQUIRED rather than na: or waived:, since a stage nobody runs guards nothing. A "
            "first draft of this asserted the wiring as TEXT and was measured missing a mutant "
            "that left the path in the file and short-circuited the call",
            _s16_h_error is None
            and _s16_hn == 1 and _s16_hbad != _s16_hfresh
-           and _s16_h_bootstrap[0] == 1 and "## Verdict" in _s16_hfresh
+           and _s16_h_bootstrap[0] == 1 and _s16_h_kept == _s16_hplace
+           and "## Verdict" in _s16_hfresh
            and _s16_h_clean[0] == 0
            and _s16_h_stale[0] == 1 and "crossing-state.md was stale" in _s16_h_stale[1]
-           and _s16_h_repaired == _s16_hfresh
+           and "Nothing was rewritten" in _s16_h_stale[1]
+           and _s16_h_repaired == _s16_hbad
            and _s16_h_again[0] == 0
            and _s16_sv.REPORT_PATH == "proof/WARP-0716/crossing-state.md"
            and 'CHECK_generated="required:bash scripts/check_generated.sh"' in _s16_verify_sh)

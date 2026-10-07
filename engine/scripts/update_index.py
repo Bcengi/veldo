@@ -7,7 +7,7 @@ state comes from the spec files, the frontier is computed from shipped
 dependencies, and nothing here is ever hand-edited. Run after any spec or
 plan change, or let the /veldo:index skill do it.
 """
-import importlib.util, re
+import importlib.util, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -87,7 +87,9 @@ def plan_lines():
     return lines
 
 
-def main():
+def main(output=None):
+    """Write the index to specs/index.md, or to `output` (a freshness check regenerates into a
+    private path and compares, so it never writes the tree it verifies)."""
     rows = []
     for p in sorted(SPECS.glob("*.md")):
         if p.name.startswith("TEMPLATE") or p.name == "index.md":
@@ -126,9 +128,14 @@ def main():
     if not rows:
         lines.append("| - | no specifications yet | - | - | - | - | - |")
     lines.extend(plan_lines())
-    (SPECS / "index.md").write_text("\n".join(lines) + "\n")
+    Path(output or SPECS / "index.md").write_text("\n".join(lines) + "\n")
     print(f"index: {len(rows)} specification(s)")
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:2] == ["--output"] and len(sys.argv) == 3:
+        main(sys.argv[2])
+    elif sys.argv[1:]:
+        sys.exit("usage: update_index.py [--output PATH]")
+    else:
+        main()
