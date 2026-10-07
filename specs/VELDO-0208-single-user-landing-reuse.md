@@ -302,10 +302,17 @@ design of this specification, not by a defect in how the gate runs them:
 - Nested tracing. Suites 100 and 101 drive authority workers under strace; ptrace is refused
   inside the domain, so those rows cannot run when the unit stage itself is confined.
 
-Not yet classified (each needs its own look, not assumed to be either class): 62_0045 (pip
-wheel refusal rows), 65_0067 (the product's own nested worker confinement), 82_0085 (a
-multiprocessing Barrier, Lock and Queue across a fork, which need /dev/shm).
+Classified 2026-10-07 (VELDO-0209): 62_0045 and 82_0085 were simple confinement mismatches and are
+fixed in their suites: pip's uninstall stash fell back to an ungranted /tmp because the fixture's pip
+environment dropped TMPDIR, and multiprocessing's Barrier, Lock and Queue need /dev/shm (shared.py
+gains ForkLock and ForkBarrier on pipes). 65_0067 is not: the product's custody wrapper builds its
+allowlist by listing every ancestor of the protected directory up to /, which the domain cannot list.
+It joins the classes above.
 
 Neither open class can turn green inside the confinement without granting the escape it
 denies. The choice is the owner's: keep these legs outside the landing gate and say where they
 are proven, or have them stand down by name inside it.
+
+VELDO-0209 (draft) measures every option on this host and recommends running the unit and
+integration stages in a KVM guest that the authority launcher boots, with qemu itself inside this
+specification's Landlock domain.
