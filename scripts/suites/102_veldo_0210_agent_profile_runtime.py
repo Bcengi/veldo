@@ -220,7 +220,10 @@ print(json.dumps(seen))
         def reset():
             for directory in (account, codex_home):
                 for child in directory.iterdir():
-                    child.unlink()
+                    if child.is_dir() and not child.is_symlink():
+                        __import__('shutil').rmtree(child)
+                    else:
+                        child.unlink()
             (account / '.credentials.json').write_text(old_token)
             (account / '.credentials.json').chmod(0o600)
             (account / 'settings.json').write_text('{"theme": "auto"}')
@@ -419,6 +422,125 @@ print(json.dumps(seen))
             for name, entry in real['clients'].items()
             for kind in ('credentials', 'seed_files', 'read_links')
             for relative in entry.get(kind, {}).values()))
+
+        # ---- scratch: removed at exit and on stop signals; stale ones swept at the next start ----
+        import fcntl
+        import signal
+        import time
+        parent = top / 'tmp-parent'
+        parent.mkdir()
+        scratch_env = dict(client_env, TMPDIR=str(parent))
+        hold = worktree / 'hold.py'
+        # Records its private HOME (the scratch) and pid, refreshes the credential copy, then waits.
+        hold.write_text(r'''import json, os, signal, sys, time
+from pathlib import Path
+if sys.argv[1] == 'ignore-term':
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+credentials = Path(os.environ['CLAUDE_CONFIG_DIR'], '.credentials.json')
+temporary = credentials.with_name('fresh')
+temporary.write_text(sys.argv[3])
+os.replace(temporary, credentials)
+Path(sys.argv[2]).write_text(json.dumps({'home': os.environ['HOME'], 'pid': os.getpid()}))
+time.sleep(120)
+''')
+
+        def leftovers():
+            return sorted(p.name for p in parent.iterdir())
+
+        reset()
+        result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
+                     'import os; open("home-normal", "w").write(os.environ["HOME"])'],
+                     client='claude', env=scratch_env)
+        home = Path((worktree / 'home-normal').read_text()) if (worktree / 'home-normal').exists() else None
+        expect('VELDO-0210 scratch/removed-at-exit',
+               result.returncode == 0 and home is not None and home.parent == parent and not home.exists()
+               and leftovers() == [])
+        refused = run(client_config, worktree, ['/usr/bin/true'], client='gemini', env=scratch_env)
+        expect('VELDO-0210 scratch/removed-after-refusal', refused.returncode == 2 and leftovers() == [])
+        shim = ('import os, signal, sys; signal.signal(signal.SIGINT, getattr(signal, sys.argv[1])); '
+                'os.execv(sys.argv[2], sys.argv[2:])')
+
+        def stopped(number, mode='plain', patch=None, interrupt='SIG_DFL', settle=None):
+            '''Start a holding run, wait until it holds, send `number` to the launcher; returns the
+            launcher's exit code, what the confined process recorded and the seconds it took.'''
+            reset()
+            marker = worktree / ('held-%s-%d' % (mode, number))
+            marker.unlink(missing_ok=True)
+            argv = [sys.executable, '-c', shim, interrupt, sys.executable, '-I', '-S', '-c', wrapper,
+                    str(launcher), json.dumps(patch or {}), '--config', str(client_config),
+                    '--worktree', str(worktree), '--client', 'claude', '--', sys.executable, '-I', '-S',
+                    str(hold), mode, str(marker), json.dumps(new_token)]
+            process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, text=True, env=scratch_env)
+            deadline = time.time() + 30
+            while not marker.exists() and time.time() < deadline and process.poll() is None:
+                time.sleep(0.05)
+            held = json.loads(marker.read_text()) if marker.exists() else {}
+            started = time.time()
+            process.send_signal(number)
+            if settle is not None:
+                time.sleep(settle)
+                alive = process.poll() is None
+                process.send_signal(signal.SIGTERM)
+            try:
+                process.communicate(timeout=60)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.communicate()
+            code = process.returncode if settle is None else (alive, process.returncode)
+            return code, held, time.time() - started
+
+        def gone(held):
+            return (bool(held) and not Path(held['home']).exists()
+                    and not Path('/proc/%d' % held['pid']).exists())
+
+        for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            code, held, _ = stopped(number)
+            name = signal.Signals(number).name
+            expect('VELDO-0210 scratch/%s-removes-scratch-and-stops-tree: %s %s' % (name, code, held),
+                   code == 128 + number and gone(held) and leftovers() == [])
+            expect('VELDO-0210 scratch/%s-still-writes-back-refresh' % name,
+                   json.loads((account / '.credentials.json').read_text()) == new_token)
+        code, held, took = stopped(signal.SIGTERM, mode='ignore-term', patch={'GRACE_SECONDS': 1})
+        expect('VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: %s %.1fs' % (code, took),
+               code == 128 + signal.SIGTERM and gone(held) and took < 20 and leftovers() == [])
+        (alive, code), held, _ = stopped(signal.SIGINT, interrupt='SIG_IGN', settle=1.0)
+        expect('VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: %s %s' % (alive, code),
+               alive and code == 128 + signal.SIGTERM and gone(held) and leftovers() == [])
+
+        # Stale: a day-old scratch is swept at the next start; nothing else is.
+        day_old = time.time() - 2 * 24 * 60 * 60
+        stale = parent / 'veldo-agent-stale'
+        (stale / 'shut/inner').mkdir(parents=True)
+        (stale / 'shut/inner/credential.json').write_text('{}')
+        (stale / 'shut/inner').chmod(0)
+        (stale / 'shut').chmod(0)
+        recent = parent / 'veldo-agent-recent'
+        recent.mkdir()
+        held_stale = parent / 'veldo-agent-held'
+        held_stale.mkdir()
+        keep = top / 'keep'
+        keep.mkdir()
+        (keep / 'file').write_text('kept')
+        (parent / 'veldo-agent-link').symlink_to(keep)
+        (parent / 'veldo-agent-file').write_text('plain')
+        (parent / 'other-old').mkdir()
+        for path in (stale, held_stale, parent / 'veldo-agent-file', parent / 'other-old'):
+            os.utime(path, (day_old, day_old))
+        os.utime(parent / 'veldo-agent-link', (day_old, day_old), follow_symlinks=False)
+        locked = os.open(held_stale, os.O_RDONLY | os.O_DIRECTORY)
+        fcntl.flock(locked, fcntl.LOCK_EX)
+        try:
+            result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+        finally:
+            os.close(locked)
+        expect('VELDO-0210 scratch/stale-removed-at-next-start: %s' % leftovers(),
+               result.returncode == 0 and not stale.exists())
+        expect('VELDO-0210 scratch/recent-scratch-kept', recent.is_dir())
+        expect('VELDO-0210 scratch/live-scratch-kept', held_stale.is_dir())
+        expect('VELDO-0210 scratch/stale-link-and-file-untouched',
+               (parent / 'veldo-agent-link').is_symlink() and (keep / 'file').read_text() == 'kept'
+               and (parent / 'veldo-agent-file').read_text() == 'plain' and (parent / 'other-old').is_dir())
 
 
 if leg_runs():

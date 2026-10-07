@@ -12,6 +12,7 @@ repository with transfer.fsckObjects, re-hashing every object.
 import argparse
 import ctypes
 import errno
+import fcntl
 import importlib.util
 import json
 import os
@@ -25,6 +26,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import time
 
 READ = (1 << 0) | (1 << 2) | (1 << 3)
 WRITE = sum(1 << n for n in (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
@@ -1057,12 +1059,168 @@ def write_back(scratch, credentials):
               file=sys.stderr, flush=True)
 
 
+SCRATCH_PREFIX = 'veldo-agent-'
+STALE_SECONDS = 24 * 60 * 60
+GRACE_SECONDS = 10
+STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
+
+
+def remove_tree(path):
+    """Remove a scratch tree the confined process may have shut (directories made unreadable or
+    unwritable): every directory is opened up before it is entered, through descriptors and without
+    following a link, then shutil.rmtree removes the tree without following a link either."""
+    os.chmod(path, 0o700)
+    for _, directories, _, descriptor in os.fwalk(path, follow_symlinks=False):
+        for name in directories:
+            try:
+                # O_PATH opens a shut directory; O_NOFOLLOW makes sure it is one, not a link.
+                inner = os.open(name, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                dir_fd=descriptor)
+            except OSError:
+                continue
+            try:
+                os.chmod('/proc/self/fd/%d' % inner, 0o700)
+            except OSError:
+                pass
+            finally:
+                os.close(inner)
+    shutil.rmtree(path)
+
+
+def remove_stale_scratch(parent):
+    """Remove the scratch directories launchers killed outright left in `parent`: veldo-agent-*
+    directories this uid owns, untouched for more than a day and held by no live launcher (each
+    launcher holds an exclusive lock on its own scratch until it removes it). A link or any other
+    kind of entry is never followed or removed."""
+    try:
+        entries = list(os.scandir(parent))
+    except OSError:
+        return
+    for entry in entries:
+        if not entry.name.startswith(SCRATCH_PREFIX):
+            continue
+        try:
+            info = entry.stat(follow_symlinks=False)
+            if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid()
+                    or time.time() - info.st_mtime < STALE_SECONDS):
+                continue
+            descriptor = os.open(entry.path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        except OSError:
+            continue
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            os.close(descriptor)
+            continue
+        try:
+            remove_tree(entry.path)
+        except OSError as error:
+            print('agent sandbox: stale scratch %s not removed: %s' % (entry.path, error),
+                  file=sys.stderr, flush=True)
+        finally:
+            os.close(descriptor)
+
+
+class Interrupted(Exception):
+    pass
+
+
+class Stop:
+    """TERM, INT and HUP while a launch runs. Before the confined child exists, a signal ends the
+    launch (the scratch is still removed). After, it is forwarded to the child's process group, and a
+    group still alive GRACE_SECONDS later is killed; the launcher then writes back credentials,
+    removes its scratch and exits 128 plus the signal number. A signal the launcher inherited as
+    ignored stays ignored, for it and for the child."""
+
+    def __init__(self):
+        self.pid = self.number = None
+        self.reaped = self.closing = False
+        self.previous = {}
+
+    def __enter__(self):
+        threading = __import__('threading')
+        if threading.current_thread() is threading.main_thread():
+            for number in STOP_SIGNALS:
+                if signal.getsignal(number) != signal.SIG_IGN:
+                    self.previous[number] = signal.signal(number, self.stop)
+            self.previous[signal.SIGALRM] = signal.signal(signal.SIGALRM, self.kill)
+        return self
+
+    def __exit__(self, *_):
+        if self.previous:
+            signal.alarm(0)
+        for number, handler in self.previous.items():
+            signal.signal(number, handler)
+
+    def child(self, pid):
+        self.pid = pid
+
+    def in_child(self):
+        """In the forked child, before anything else: the default action for what this caught."""
+        for number in self.previous:
+            signal.signal(number, signal.SIG_DFL)
+
+    def signal_group(self, number):
+        if self.reaped:
+            return  # the child is reaped: its pid may name another process now
+        try:
+            os.killpg(self.pid, number)
+        except ProcessLookupError:
+            try:
+                os.kill(self.pid, number)  # not yet in its own session
+            except ProcessLookupError:
+                pass
+
+    def stop(self, number, _frame):
+        if self.number is not None:
+            # Asked again: stop the group now. Cleanup is already under way and is not interrupted.
+            if self.pid is not None:
+                self.signal_group(signal.SIGKILL)
+            return
+        self.number = number
+        if self.pid is None and not self.closing:
+            raise Interrupted(number)
+        if self.pid is None:
+            return
+        self.signal_group(number)
+        signal.alarm(GRACE_SECONDS)
+
+    def kill(self, _number, _frame):
+        if self.pid is not None:
+            self.signal_group(signal.SIGKILL)
+
+
 def launch(config_path, worktree, command, profile="agent", client=None):
-    with tempfile.TemporaryDirectory(prefix='veldo-agent-') as temporary:
-        return prepared_launch(config_path, worktree, command, profile, Path(temporary), client)
+    """Run `command` confined. The private scratch is created in the temporary directory, held
+    with an exclusive lock and removed when the launcher returns, raises or is stopped by TERM, INT
+    or HUP; one a launcher killed outright left behind is removed by the next start once it is a day
+    old (VELDO-0210)."""
+    parent = Path(tempfile.gettempdir())
+    remove_stale_scratch(parent)
+    scratch = lock = None
+    # The handlers stay installed until the scratch is gone, so a signal cannot cut the removal short.
+    with Stop() as stop:
+        try:
+            scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
+            lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
+        except Interrupted:
+            code = None
+        finally:
+            stop.closing = True
+            if scratch is not None:
+                try:
+                    remove_tree(scratch)
+                except OSError as error:
+                    print('agent sandbox: scratch %s not removed: %s' % (scratch, error),
+                          file=sys.stderr, flush=True)
+            if lock is not None:
+                os.close(lock)
+    return 128 + stop.number if stop.number else code
 
 
-def prepared_launch(config_path, worktree, command, profile, scratch, client=None):
+def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -1126,13 +1284,25 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     else:
         pid, side = os.fork(), None
     if pid:
+        status = None
         try:
+            if stop is not None:
+                stop.child(pid)
             _, status = os.waitpid(pid, 0)
         finally:
+            if stop is not None and status is not None:
+                stop.reaped = True
             try:
                 os.killpg(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
+            if status is None:
+                # Interrupted before the child was reaped (it may not have its own session yet).
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                    os.waitpid(pid, 0)
+                except (ProcessLookupError, ChildProcessError):
+                    pass
             if side is not None:
                 side.close()
             # The confined group is gone: a refreshed credential goes back to its account.
@@ -1141,6 +1311,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     # Only this child executes candidate/agent code. The parent only waits (and, for the gate,
     # brokers) and removes its own scratch using symlink-safe stdlib cleanup.
     try:
+        if stop is not None:
+            stop.in_child()
         os.setsid()
         close_descriptors(protected, keep=side.keep() if side else ())
         mode = landlock(grants, profile, broker=side)
