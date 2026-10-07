@@ -106,7 +106,7 @@ def _v160_suite():
     live_step = fake_formats.live_step
 
     started = time.monotonic()
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v160-', dir=fast))
     connections = []
     released = []

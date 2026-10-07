@@ -75,7 +75,16 @@ def _v168_suite():
             raise OSError('only loopback is allowed in this suite')
         return real_connect(address, *args, **kwargs)
 
-    with tempfile.TemporaryDirectory(prefix='v168-', dir='/dev/shm') as directory:
+    # /dev/shm only when this process can really write there: os.access answers for permission bits,
+    # not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev. Inline, because
+    # this source is also executed on its own by a proof fixture that supplies only ROOT.
+    fast = None
+    try:
+        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+        fast = '/dev/shm'
+    except OSError:
+        pass
+    with tempfile.TemporaryDirectory(prefix='v168-', dir=fast) as directory:
         base = Path(directory)
         organs = base / 'organs'
         organs.mkdir()

@@ -63,7 +63,7 @@ def _v54_suite():
         return fx_digest({'operation': scope.get('operation'), 'target': scope.get('target'),
                           'parameters': scope.get('parameters')})
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v54-', dir=fast) as directory, \
             __import__('contextlib').ExitStack() as _v54_exit:
         base = Path(directory) / 'repo'

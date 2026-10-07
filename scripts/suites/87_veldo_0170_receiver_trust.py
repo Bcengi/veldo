@@ -59,8 +59,8 @@ def _v170_suite():
                 files[str(path) + ':logical'] = tuple(db.iterdump())
         return files
 
-    base = Path(tempfile.mkdtemp(prefix='v170-', dir='/dev/shm'))
-    cache = Path(tempfile.mkdtemp(prefix='d170-', dir='/dev/shm'))
+    base = Path(tempfile.mkdtemp(prefix='v170-', dir=fast_temp()))
+    cache = Path(tempfile.mkdtemp(prefix='d170-', dir=fast_temp()))
     runtime = load('v170_runtime', ROOT / 'scripts/suites/support/setup_runtime.py')
     close_runtime = runtime.install(base, cache)
     prior_bytecode = sys.dont_write_bytecode

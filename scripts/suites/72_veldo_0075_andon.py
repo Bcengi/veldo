@@ -741,7 +741,7 @@ def _v75_checks(base):
 
 
 _v75_started = _v75_time.monotonic()
-_v75_fast = '/dev/shm' if _v75_Path('/dev/shm').is_dir() else None
+_v75_fast = fast_temp()
 with _v75_temp.TemporaryDirectory(prefix='v75-', dir=_v75_fast) as _v75_dir:
     _v75_rows = _v75_checks(_v75_Path(_v75_dir))
 for _v75_name, _v75_observed in _v75_rows.items():

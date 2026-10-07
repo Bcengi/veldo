@@ -156,7 +156,7 @@ sys.exit(4)
 '''
 
     servers, children = [], []
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v133-', dir=fast) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'

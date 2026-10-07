@@ -73,6 +73,23 @@ def expect(name, condition):
         print(f"  SELFTEST FAIL: {name}")
 
 
+_FAST_TEMP = []
+
+
+def fast_temp():
+    """/dev/shm for a fixture that only wants speed, when this process can really write there, else
+    None (the default temporary directory). It is probed by making a directory, because os.access
+    answers for permission bits and not for a confinement: the gate's (VELDO-0208) grants nothing
+    beneath /dev, so a suite that trusted os.access there died on its first mkdtemp."""
+    if not _FAST_TEMP:
+        try:
+            os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+            _FAST_TEMP.append('/dev/shm')
+        except OSError:
+            _FAST_TEMP.append(None)
+    return _FAST_TEMP[0]
+
+
 def tmpfile(dirpath, name, content):
     p = Path(dirpath) / name
     p.write_text(content)

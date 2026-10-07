@@ -73,7 +73,15 @@ def _v57_suite():
         except Exception as error:  # noqa: BLE001 - every outcome is recorded, then asserted
             return {'raised': '%s: %s' % (type(error).__name__, str(error)[:300])}
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    # /dev/shm only when this process can really write there: os.access answers for permission bits,
+    # not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev. Inline, because
+    # this source is also executed on its own by a proof fixture that supplies only ROOT.
+    fast = None
+    try:
+        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+        fast = '/dev/shm'
+    except OSError:
+        pass
     with tempfile.TemporaryDirectory(prefix='v57-', dir=fast) as directory:
         base = Path(directory)
         tree = base / 'installed'

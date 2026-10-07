@@ -104,7 +104,7 @@ def _v154_suite():
     # The reset row states the first minute that ends at least this far after its run starts, so the unit waits
     # longer than every interval the service uses before the reset (Codex states its reset to the minute).
     LEAD = 5.0
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v154-', dir=fast))
     run_id = os.urandom(4).hex()
     instances = []

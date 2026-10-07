@@ -48,7 +48,7 @@ def _v47_suite():
         spec.loader.exec_module(module)
         return module
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     run_id = os.urandom(4).hex()
     tools = dict(os.environ)
     tools['XDG_RUNTIME_DIR'] = tools.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()

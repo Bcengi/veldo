@@ -71,7 +71,7 @@ def _v134_suite():
     CONTRACT_PATH = '.veldo/architecture.yaml'
     OUTSIDE = ['sha256sum'] if shutil.which('sha256sum') else ['shasum', '-a', '256']
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v134-', dir=fast) as directory:
         top = Path(directory)
         mods = top / 'installed' / '.veldo'

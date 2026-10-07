@@ -79,7 +79,7 @@ def _v132_suite():
         finally:
             observed.setdefault('region_seconds', {})[labels[0]] = round(time.monotonic() - began, 2)
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v132-', dir=fast) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'

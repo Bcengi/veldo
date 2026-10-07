@@ -1759,7 +1759,7 @@ def _v65_checks(base):
 _v65_started = _v65_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere (the Mac) the platform's temporary directory is used.
-_v65_fast = '/dev/shm' if _v65_os.path.isdir('/dev/shm') and _v65_os.access('/dev/shm', _v65_os.W_OK) else None
+_v65_fast = fast_temp()
 with _v65_temp.TemporaryDirectory(prefix='v65-', dir=_v65_fast) as _v65_dir:
     _v65_rows = _v65_checks(_v65_Path(_v65_dir))
 for _v65_name, _v65_observed in _v65_rows.items():

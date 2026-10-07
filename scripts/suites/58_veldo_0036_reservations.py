@@ -28,8 +28,8 @@ def _v36_suite():
     runtime = load(ROOT / ".veldo" / "control_reservation_runtime.py")
     # Real files and SQLite locks on tmpfs avoid paying disk durability latency for
     # every mutation. Crash/durability qualification is explicitly outside Release 1.
-    fast_temp = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
-    with tempfile.TemporaryDirectory(prefix='v36-', dir=fast_temp) as directory:
+    fast_dir = fast_temp()
+    with tempfile.TemporaryDirectory(prefix='v36-', dir=fast_dir) as directory:
         base = Path(directory)
         serial = 0
         connections = []

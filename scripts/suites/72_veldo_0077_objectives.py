@@ -121,7 +121,7 @@ def _v77_suite():
             self.end_headers()
             self.wfile.write(payload)
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     connections, servers = [], []
     with tempfile.TemporaryDirectory(prefix='v77-', dir=fast) as directory:
         base = Path(directory)

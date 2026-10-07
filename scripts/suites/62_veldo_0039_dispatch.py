@@ -38,7 +38,7 @@ def _v39_suite():
         spec.loader.exec_module(module)
         return module
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v39-', dir=fast) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'

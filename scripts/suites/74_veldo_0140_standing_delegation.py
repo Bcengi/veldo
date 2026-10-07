@@ -64,7 +64,7 @@ def _v140_suite():
         return module
 
     started = time.monotonic()
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='b140-', dir=fast))
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)

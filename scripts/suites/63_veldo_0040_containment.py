@@ -42,7 +42,15 @@ def _v40_suite():
         spec.loader.exec_module(module)
         return module
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    # /dev/shm only when this process can really write there: os.access answers for permission bits,
+    # not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev. Inline, because
+    # this source is also executed on its own by a proof fixture that supplies only ROOT.
+    fast = None
+    try:
+        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+        fast = '/dev/shm'
+    except OSError:
+        pass
     run_id = os.urandom(4).hex()
     slices = ['v40%sa.slice' % run_id, 'v40%sb.slice' % run_id]
     tools = dict(os.environ)

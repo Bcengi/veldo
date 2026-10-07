@@ -869,7 +869,7 @@ def _v67_checks(base):
 _v67_started = _v67_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere the platform's temporary directory is used.
-_v67_fast = '/dev/shm' if _v67_os.path.isdir('/dev/shm') and _v67_os.access('/dev/shm', _v67_os.W_OK) else None
+_v67_fast = fast_temp()
 with _v67_temp.TemporaryDirectory(prefix='v67-', dir=_v67_fast) as _v67_dir:
     _v67_rows = _v67_checks(_v67_Path(_v67_dir))
 for _v67_name, _v67_observed in _v67_rows.items():

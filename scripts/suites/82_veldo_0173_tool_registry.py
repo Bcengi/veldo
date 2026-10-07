@@ -75,7 +75,7 @@ def _v173_suite():
     VERSION = '2.1.281'
 
     started = time.monotonic()
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v173-', dir=fast))
     connections = []
     try:

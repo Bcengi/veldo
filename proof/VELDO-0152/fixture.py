@@ -78,7 +78,14 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             self.end_headers()
             self.wfile.write(payload)
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    # /dev/shm only when this process can really write there: os.access answers for permission
+    # bits, not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev.
+    fast = None
+    try:
+        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+        fast = '/dev/shm'
+    except OSError:
+        pass
     connections, servers = [], []
     with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
         base = Path(directory)

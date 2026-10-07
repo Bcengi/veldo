@@ -90,7 +90,7 @@ def _v139_suite():
                 return value
             time.sleep(0.15)
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='b139-', dir=fast))
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)

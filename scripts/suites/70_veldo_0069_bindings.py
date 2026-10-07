@@ -102,7 +102,7 @@ def _v69_suite():
     def fx_target(rid, question):
         return dict(question, kind='governing_decision', ref=rid, digest=fx_digest(question))
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v69-', dir=fast) as directory:
         base = Path(directory)
         repo = base / 'repo'

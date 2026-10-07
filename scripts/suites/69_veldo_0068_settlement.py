@@ -907,7 +907,7 @@ def _v68_checks(base):
 _v68_started = _v68_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere the platform's temporary directory is used.
-_v68_fast = '/dev/shm' if _v68_os.path.isdir('/dev/shm') and _v68_os.access('/dev/shm', _v68_os.W_OK) else None
+_v68_fast = fast_temp()
 with _v68_temp.TemporaryDirectory(prefix='v68-', dir=_v68_fast) as _v68_dir:
     _v68_rows = _v68_checks(_v68_Path(_v68_dir))
 for _v68_name, _v68_observed in _v68_rows.items():

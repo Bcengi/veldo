@@ -48,7 +48,7 @@ def _v52_suite():
         spec.loader.exec_module(module)
         return module
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v52-', dir=fast) as directory:
         base = Path(directory) / 'repo'
         mods = base / '.veldo'

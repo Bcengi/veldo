@@ -1027,7 +1027,7 @@ def _v128_checks(base):
 
 
 _v128_started = _v128_time.monotonic()
-_v128_fast = '/dev/shm' if _v128_Path('/dev/shm').is_dir() else None
+_v128_fast = fast_temp()
 with _v128_temp.TemporaryDirectory(prefix='v128-', dir=_v128_fast) as _v128_dir:
     _v128_rows = _v128_checks(_v128_Path(_v128_dir))
 for _v128_name, _v128_observed in _v128_rows.items():

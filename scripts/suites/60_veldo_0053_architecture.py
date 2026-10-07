@@ -43,7 +43,7 @@ def _v53_suite():
     def sha(data):
         return 'sha256:' + hashlib.sha256(data).hexdigest()
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     with tempfile.TemporaryDirectory(prefix='v53-', dir=fast) as directory:
         top = Path(directory)
         base = top / 'repo'

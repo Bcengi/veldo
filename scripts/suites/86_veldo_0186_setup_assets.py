@@ -45,7 +45,7 @@ def _v186_suite():
         spec.loader.exec_module(module)
         return module
 
-    base = Path(tempfile.mkdtemp(prefix='v186-', dir='/dev/shm'))
+    base = Path(tempfile.mkdtemp(prefix='v186-', dir=fast_temp()))
     mods = base / 'src/.veldo'
     shutil.copytree(ROOT / '.veldo', mods, ignore=shutil.ignore_patterns('__pycache__'))
     for name, source in PRODUCTION.items():

@@ -213,7 +213,7 @@ def _v169_suite():
 
     with region('census/writers', 'census/planted'):
         census()
-    with tempfile.TemporaryDirectory(prefix='v169-', dir='/dev/shm') as directory:
+    with tempfile.TemporaryDirectory(prefix='v169-', dir=fast_temp()) as directory:
         base = Path(directory)
         mods = base / 'installed'
         mods.mkdir()

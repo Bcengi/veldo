@@ -111,7 +111,7 @@ def _v189_suite():
         import cProfile
         profiler = cProfile.Profile()
         profiler.enable()
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='b189-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v189_runtime', support_path)

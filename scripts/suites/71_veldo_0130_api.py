@@ -3293,7 +3293,7 @@ def _v130_service_checks(base):
 _v130_started = _v130_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the other
 # store suites do; elsewhere the platform's temporary directory is used.
-_v130_fast = '/dev/shm' if _v130_os.path.isdir('/dev/shm') and _v130_os.access('/dev/shm', _v130_os.W_OK) else None
+_v130_fast = fast_temp()
 with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir:
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
 with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir:

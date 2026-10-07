@@ -603,7 +603,7 @@ def _v136_checks(base):
 _v136_started = _v136_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere (the Mac) the platform's temporary directory is used.
-_v136_fast = '/dev/shm' if _v136_os.path.isdir('/dev/shm') and _v136_os.access('/dev/shm', _v136_os.W_OK) else None
+_v136_fast = fast_temp()
 with _v136_temp.TemporaryDirectory(prefix='v136-', dir=_v136_fast) as _v136_dir:
     _v136_rows = _v136_checks(_v136_Path(_v136_dir))
 for _v136_name, _v136_observed in _v136_rows.items():

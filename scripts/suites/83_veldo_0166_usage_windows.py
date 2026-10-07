@@ -45,7 +45,7 @@ def _v166_suite():
     # The spec's 2.1.281 source line, byte for byte, including its whitespace and all fields.
     raw = b'{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1790960400, "rateLimitType": "seven_day", "utilization": 0.7, "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.3, "resetsAt": 1790487000}, "seven_day": {"utilization": 0.7, "resetsAt": 1790960400}}}, "uuid": "531e8e6b-8253-4b0a-92dc-255c5111efee", "session_id": "918dd621-97a8-44cf-ab38-4d3e1b9e588e"}'
     account_logs = io.StringIO()
-    with tempfile.TemporaryDirectory(prefix='v166-', dir='/dev/shm') as directory, contextlib.redirect_stderr(account_logs):
+    with tempfile.TemporaryDirectory(prefix='v166-', dir=fast_temp()) as directory, contextlib.redirect_stderr(account_logs):
         base = Path(directory)
         mods = base / 'modules'
         mods.mkdir()

@@ -72,7 +72,7 @@ def _v76_suite():
                 if label not in emitted:
                     check(label, [('region raised', False)])
 
-    fast = '/dev/shm' if os.path.isdir('/dev/shm') and os.access('/dev/shm', os.W_OK) else None
+    fast = fast_temp()
     connections, launches = [], []
     with tempfile.TemporaryDirectory(prefix='v76-', dir=fast) as directory:
         base = Path(directory)
