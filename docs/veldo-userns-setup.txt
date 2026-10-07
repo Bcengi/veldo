@@ -1,0 +1,23 @@
+The agent sandbox's namespace helper: the owner's one-time setup
+
+Run once per host, as the owner (it asks for sudo), from the root of the repository checkout
+whose scripts/agent_sandbox.py the runners use, and again after any change to
+scripts/veldo_userns.c or scripts/veldo-userns.apparmor. Every refusal of the launcher prints
+the same command with the cd into its own checkout first. It is one line:
+
+d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$PWD"=. -o "$d/veldo-userns" scripts/veldo_userns.c && sudo install -D -o root -g root -m 0755 "$d/veldo-userns" /usr/local/lib/veldo/veldo-userns && sudo install -o root -g root -m 0644 scripts/veldo-userns.apparmor /etc/apparmor.d/veldo-userns && sudo apparmor_parser -r /etc/apparmor.d/veldo-userns && sudo rm -f /usr/local/lib/veldo/veldo-unshare && rm -r "$d" && python3 -I -S scripts/agent_sandbox.py namespace-selftest
+
+What it does, in order:
+1. Builds scripts/veldo_userns.c statically and reproducibly into a temporary directory.
+2. Installs the build root-owned, mode 0755, as /usr/local/lib/veldo/veldo-userns.
+3. Installs scripts/veldo-userns.apparmor root-owned, mode 0644, as
+   /etc/apparmor.d/veldo-userns. The file holds both AppArmor profiles: veldo-userns, which
+   lets only the helper create a user namespace, and its child profile veldo-userns-child,
+   which denies every capability, user namespace, mount and profile change to everything the
+   helper executes.
+4. Loads both profiles with apparmor_parser -r.
+5. Removes the unshare copy the first design installed, and the temporary directory.
+6. Runs the self-test (python3 -I -S scripts/agent_sandbox.py namespace-selftest), which prints
+   one PASS or FAIL line per row and exits 0 only when every row passed.
+
+Undo: sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns

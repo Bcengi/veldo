@@ -126,9 +126,11 @@ NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')
 NAMESPACE_PROFILE = 'veldo-userns-child'
 # How long the tree's init has to report that its namespace is as the helper must make it.
 NAMESPACE_START_SECONDS = 60
-# The owner's one-time setup, run from the authority checkout's root: build the helper reproducibly,
-# install it and its AppArmor policy root-owned, load the policy, retire the unshare copy the first
-# design used, and run the self-test.
+# The owner's one-time setup, run from the authority checkout's root (every refusal prints it with
+# the cd into this checkout first; docs/veldo-userns-setup.txt and the specification carry the same
+# text): build the helper reproducibly, install it root-owned, install the AppArmor policy file that
+# holds both profiles (veldo-userns and its child veldo-userns-child) root-owned, load both with
+# apparmor_parser -r, retire the unshare copy the first design used, and run the self-test.
 NAMESPACE_SETUP = ('d=$(mktemp -d) && cc -std=c11 -O2 -Wall -Wextra -Werror -static '
                    '-ffile-prefix-map="$PWD"=. -o "$d/veldo-userns" scripts/veldo_userns.c && '
                    'sudo install -D -o root -g root -m 0755 "$d/veldo-userns" /usr/local/lib/veldo/veldo-userns && '
@@ -918,8 +920,10 @@ def helper_problem(helper):
 
 
 def setup_text():
-    """The owner's one-time setup as a refusal names it."""
-    return 'the owner\'s one-time setup, from %s: %s' % (Path(__file__).resolve().parents[1], NAMESPACE_SETUP)
+    """The owner's one-time setup as a refusal names it: one line to paste into a shell, starting in
+    this checkout."""
+    return ('the owner\'s one-time setup, one command to paste into a shell:\ncd %s && %s'
+            % (__import__('shlex').quote(str(Path(__file__).resolve().parents[1])), NAMESPACE_SETUP))
 
 
 def apparmor_enabled():
@@ -2072,7 +2076,7 @@ def namespace_selftest():
     rows = {}
     problem = helper_problem(NAMESPACE_HELPER)
     if problem:
-        rows['helper-installed'] = [False, problem]
+        rows['helper-installed'] = [False, '%s; %s' % (problem, setup_text())]
     else:
         process = subprocess.Popen([str(NAMESPACE_HELPER), str(Path(__file__).resolve()), 'selftest'],
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={})

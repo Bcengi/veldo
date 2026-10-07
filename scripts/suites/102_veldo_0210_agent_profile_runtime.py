@@ -449,6 +449,22 @@ print(json.dumps(r))
         expect('VELDO-0210 namespace/setup-command-and-policy-in-spec',
                S.NAMESPACE_SETUP in spec_text and all(line.strip() in spec_text for line in policy_text.splitlines()
                                                       if line.strip() and not line.startswith('#')))
+        # One command, the same in the spec, the setup file and every refusal (there with the cd into
+        # the launcher's own checkout first), that a shell parses as it stands: build, root-owned
+        # install, the policy file with both profiles, apparmor_parser -r, then the self-test.
+        setup_file = (ROOT / 'docs/veldo-userns-setup.txt').read_text()
+        pasted = S.setup_text().split('\n')[-1]
+        parsed = subprocess.run(['bash', '-n', '-c', pasted], capture_output=True, text=True, timeout=30,
+                                stdin=subprocess.DEVNULL)
+        steps = ['cc -std=c11', 'sudo install -D -o root -g root -m 0755', 'scripts/veldo-userns.apparmor',
+                 'sudo apparmor_parser -r /etc/apparmor.d/veldo-userns', 'agent_sandbox.py namespace-selftest']
+        expect('VELDO-0210 namespace/setup-command-one-line-everywhere: %s' % parsed.stderr[-200:],
+               S.NAMESPACE_SETUP in setup_file.splitlines() and setup_file.isascii()
+               and pasted == 'cd %s && %s' % (__import__('shlex').quote(str(ROOT.resolve())), S.NAMESPACE_SETUP)
+               and parsed.returncode == 0 and '\n' not in S.NAMESPACE_SETUP
+               and [S.NAMESPACE_SETUP.find(step) for step in steps] == sorted(S.NAMESPACE_SETUP.find(step) for step in steps)
+               and min(S.NAMESPACE_SETUP.find(step) for step in steps) >= 0
+               and 'veldo-userns-child' in policy_text and 'profile veldo-userns ' in policy_text)
         # What the setup builds: the helper drops every capability and sets no_new_privs after the
         # procfs mount and before it executes the init, and relays the stops as the init expects.
         helper_source = (ROOT / 'scripts/veldo_userns.c').read_text()
