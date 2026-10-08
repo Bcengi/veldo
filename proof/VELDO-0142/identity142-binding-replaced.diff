@@ -1,0 +1,11 @@
+--- a/.veldo/control_git_identity.py
++++ b/.veldo/control_git_identity.py
+@@ -139,7 +139,7 @@
+                     if error.code != 'missing_authority:repository_identity':
+                         raise
+                 else:
+-                    if old['identity'] != target['identity']:
++                    if False:
+                         raise Refused('binding_mismatch:repository_identity_change')
+                     if old['path'] != target['path']:
+                         raise Refused('binding_mismatch:repository_identity_path')

@@ -1,0 +1,11 @@
+--- a/.veldo/control_git_identity.py
++++ b/.veldo/control_git_identity.py
+@@ -166,7 +166,7 @@
+ 
+ 
+ def environment(environment):
+-    return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}
++    return dict(environment)
+ 
+ 
+ def author(record):

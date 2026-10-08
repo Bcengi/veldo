@@ -1,0 +1,89 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0142",
+  "commit": "bba678d88bd37dd1150d43468d11ce0d0587c2e0",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-08T23:12:38.371042+00:00",
+  "plan": "PLAN-0019",
+  "work": "W102",
+  "plan_revision": 4,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: setup/full-command-and-rerun, setup/two-identities-and-replay, binding/missing, binding/second, binding/immutable, setup/reference-only-and-unchanged"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: launch/no-author-overrides, clone/identity-authors, clone/unbound-refused"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: lander/identity-and-reland-authors, lander/unbound-before-commit"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "Own suite only: 37 passed, 0 failed, partial exit 2. Not a gate verdict."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "detail": "Setup, clone and candidate authorship observations in observations.json; five falsifiers rejected in verification.json."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "detail": "Reserved for the reviewer by owner instruction."
+    },
+    {
+      "name": "consumer_suites",
+      "status": "not_run",
+      "detail": "Other specifications suites are prohibited by the owner token rule."
+    }
+  ],
+  "assumptions": [
+    "Existing consumer fixture migrations require reviewer regression execution.",
+    "The trusted setup account supplies keystore references; this concern does not resolve credentials or authorize pushes.",
+    "Independent critical-risk reviews and human approval remain outstanding."
+  ],
+  "rollback": "Stop new bindings. Keep recorded identities and bindings. Missing identity refuses; no automatic rollback is authorized.",
+  "proof_digest": "sha256:c3387e1ea72e5379"
+}

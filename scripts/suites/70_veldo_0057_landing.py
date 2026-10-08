@@ -383,6 +383,8 @@ def _v57_suite():
             extra = {'observations': observations} if 'observations' in accepts else {}
             if 'landing' in accepts and landing is not None:
                 extra['landing'] = landing
+            if 'identity_conn' in accepts:
+                extra['identity_conn'] = writer
             unit = {'spec': sid, 'dispatch': dispatch or 'dispatch/%s/land-1' % sid}
             ops = LD.GitLandOps(caller, builds[sid]['branch'], trunk='main', remote=remote_name, push=push,
                                 identity=LANDER, policy=authority_policy, domain=DOMAIN, repository=REPOSITORY, **extra)

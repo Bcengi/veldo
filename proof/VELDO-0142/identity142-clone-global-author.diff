@@ -1,0 +1,11 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -579,7 +579,7 @@
+                 pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
+                                       attachment['repository'], attachment['path'], attachment['commit'], clone_id))
+             _git('init', '-q', '--template=', work)
+-            for section in ('user', 'author', 'committer'):
++            for section in ():
+                 for field, value in zip(('name', 'email'), GI.author(accepted['identity'])):
+                     _git('-C', work, 'config', '--local', section + '.' + field, value)
+             info = work / '.git' / 'objects' / 'info'
