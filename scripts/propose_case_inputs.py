@@ -88,9 +88,15 @@ def history_reads(trace, common, scratch):
     return found
 
 
+RUNTIME_ROOTS = ('/usr', '/lib', '/lib64', '/etc')
+# Never granted whole: a probe of one of these stays a probe the coordinator refuses.
+BROAD = {'/', '/usr', '/usr/lib', '/usr/share', '/usr/local', '/usr/local/lib', '/usr/bin', '/usr/sbin',
+         '/usr/lib/x86_64-linux-gnu', '/lib', '/lib64', '/etc'}
+
+
 def trace_case(gate, case):
     files, absent, runtime, modes, directories = set(), set(), set(), [], set()
-    runtime_absent, history, host = set(), set(), set()
+    runtime_absent, history, host, probed = set(), set(), set(), set()
     common = Path(gate.common_directory(ROOT)).resolve()
     for mode in ('baseline', 'noop', 'mutant'):
         with tempfile.TemporaryDirectory(prefix='veldo-case-proposal-') as temporary:
@@ -178,32 +184,55 @@ def trace_case(gate, case):
                                      if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts)
                     if path.is_file(): files.add(name)
                     elif not is_directory and not path.exists(): absent.add(name)
-                elif path.is_file() and any(path.is_relative_to(p) for p in ('/usr', '/lib', '/lib64', '/etc')):
-                    runtime.add(str(path))
+                elif path.is_file() and any(path.is_relative_to(p) for p in RUNTIME_ROOTS):
+                    # The coordinator grants resolved paths: a link's target is the input it reads.
+                    runtime.update({str(path), str(path.resolve())})
+            # A runtime directory the case lists or opens is an input with its whole tree. One it
+            # only probes is granted in main, unless a granted path already lies under it.
+            for path, kind, success in confined:
+                path = path.resolve()
+                if (success and path.is_dir() and str(path) not in BROAD
+                        and any(path.is_relative_to(p) for p in RUNTIME_ROOTS)):
+                    (probed if kind == 'metadata' else runtime).add(str(path))
             modes.append(row)
     return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes, 'directories': sorted(directories),
             'runtime_absent': sorted(runtime_absent), 'history': sorted(history)[:20],
-            'host_inputs': sorted(host)[:20]}, runtime
+            'host_inputs': sorted(host)[:20], 'runtime_probed': sorted(probed)}, runtime
 
 
-def refusal(result, files):
-    """Why a traced case cannot qualify under VELDO-0207, or None when it may be proposed."""
+def identifiable(directory):
+    try:
+        M.R.tree_identity(directory)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def refusals(result, files, probed=()):
+    """Every reason a traced case cannot qualify under VELDO-0207; empty when it may be proposed."""
+    reasons = []
     modes = {row['mode']: row for row in result['modes']}
     if sorted(modes) != ['baseline', 'mutant', 'noop'] or any(
             row['exit'] != 0 or 'trace_error' in row or 'observation' not in row for row in modes.values()):
-        return 'worker_or_trace_failed'
-    failed = {mode: row['observation']['observation'].get('failed_rows') for mode, row in modes.items()}
-    if failed['baseline'] or failed['noop']:
-        return 'unclean_baseline'
-    if not failed['mutant']:
-        return 'mutant_survived'
+        reasons.append('worker_or_trace_failed')
+    else:
+        failed = {mode: row['observation']['observation'].get('failed_rows') for mode, row in modes.items()}
+        if failed['baseline'] or failed['noop']:
+            reasons.append('unclean_baseline')
+        if not failed['mutant']:
+            reasons.append('mutant_survived')
     if result['history']:
-        return 'reads_history'
+        reasons.append('reads_history')
     if result['host_inputs']:
-        return 'host_input'
+        reasons.append('host_input')
     if I.gate_entries(files):
-        return 'starts_a_gate'
-    return None
+        reasons.append('starts_a_gate')
+    # A probed runtime directory is granted with its whole tree; one the coordinator's runtime
+    # identity refuses (a dangling link, an unreadable file) cannot be keyed, so neither can the case.
+    unkeyable = [directory for directory in probed if not identifiable(directory)]
+    if unkeyable:
+        reasons.append('runtime_unkeyable:' + ','.join(unkeyable))
+    return reasons
 
 
 def main():
@@ -243,9 +272,16 @@ def main():
         else:
             result, runtime = trace_case(gate, case)
         proposed = sorted(set(result['files']) | set(I.MANDATORY) | set(I.DRIVERS))
-        reason = None if measured is not None else refusal(result, proposed)
+        current = document['toolchains'].get(case['driver'], {'paths': []})
+        paths = set(current['paths']) | runtime | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}
+        grants = [Path(p).resolve() for p in paths]
+        probed = [d for d in result.get('runtime_probed', [])
+                  if not any(g.is_relative_to(d) or Path(d).is_relative_to(g) for g in grants)]
+        reasons = [] if measured is not None else refusals(result, proposed, probed)
+        reason = reasons[0] if reasons else None
         report = [row for row in report if row.get('identity') != name]
-        report.append(dict(result, identity=name, refused=reason))
+        report.append(dict(result, identity=name, refused=reason, refusals=reasons,
+                           runtime=sorted(runtime), runtime_grants=sorted(probed)))
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(report, indent=2) + '\n')
@@ -257,7 +293,8 @@ def main():
         current = document['toolchains'].setdefault(case['driver'], {'paths': [], 'reviewed': False})
         current['reviewed'] = False
         current['absent'] = sorted(set(current.get('absent', [])) | set(result.get('runtime_absent', [])))
-        paths = set(current['paths']) | runtime | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}
+        # The coordinator grants resolved paths, so a link under a probed directory does not cover it.
+        paths.update(probed)
         current['paths'] = sorted(p for p in paths if not any(p != parent and Path(p).is_relative_to(parent) for parent in paths))
         document['cases'][name] = {
             'files': proposed,
