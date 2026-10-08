@@ -81,6 +81,20 @@ expect('fixture target', namespace['value'] == 1)
             expect('VELDO-0207 case/keys-shared-edit', all(session(changed).keys[n] != k for n,k in keys.items()))
             changed = dict(files); changed['unrelated'] = (0o644, b'unrelated commit')
             expect('VELDO-0207 case/keys-unrelated-commit', session(changed, head='second').keys == keys)
+            # Only the case that declares the helper depends on it: editing it misses that case
+            # alone, and an unrelated commit (new HEAD, new unrelated bytes) misses neither.
+            d = copy.deepcopy(declaration)
+            d['cases'][other['identity']]['files'] = []
+            for entry in d['cases'].values(): entry['directories'] = []
+            own = dict(files); own[I.DECLARATIONS] = (0o644, R.canonical(d))
+            before = session(own).keys
+            changed = dict(own); changed['shared-helper'] = (0o644, b'helper-v2')
+            after = session(changed, head='second').keys
+            changed = dict(own); changed['unrelated'] = (0o644, b'unrelated commit')
+            expect('VELDO-0207 case/keys-shared-edit-dependents-only',
+                   all(before.values()) and after[case['identity']] != before[case['identity']]
+                   and after[other['identity']] == before[other['identity']]
+                   and session(changed, head='third').keys == before)
             # Registry changes disappear only through the production AST projection.
             changed = dict(files)
             name = I.DRIVERS[0]
