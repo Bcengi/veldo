@@ -1,6 +1,169 @@
 """VELDO-0210: the agent profile runs a real builder and keeps today's capabilities."""
 
 
+
+def _v210_toolchains(S, run, real, live, skip):
+    """The reviewed toolchain declaration, with fixture boundaries and real Rust when installed."""
+    import json
+    import os
+    from pathlib import Path
+    import subprocess
+    import sys
+    import tempfile
+    from unittest.mock import patch
+
+    with tempfile.TemporaryDirectory(prefix='v210-rust-') as temporary:
+        top = Path(temporary)
+        worktree, scratch = top / 'worktree', top / 'scratch'
+        home = top / 'account'
+        rust, bins = home / '.rustup', home / '.cargo/bin'
+        for path in (worktree, scratch, rust, bins, home / '.cargo/registry', top / 'store'):
+            path.mkdir(parents=True)
+        for path in (rust / 'tool', bins / 'tool', home / '.cargo/registry/private',
+                     home / '.cargo/credentials', home / '.cargo/credentials.toml'):
+            path.write_text('private fixture')
+        config = dict(real, store=str(top / 'store'), clients={}, seed_files={},
+                      project_read_roots=[], deny_read=[], optional_read_roots=[str(rust), str(bins)],
+                      toolchains=[dict(real['toolchains'][0], root=str(rust), path=[str(bins)])])
+        config_path = top / 'config.json'
+        config_path.write_text(json.dumps(config))
+        grants, _ = S.grants_for(config, ROOT, worktree, scratch)
+        env = {'PATH': '/usr/bin:/bin', 'RUSTUP_HOME': '/wrong', 'CARGO_HOME': '/wrong'}
+        S.toolchain_environment(config, scratch, grants, env)
+        expect('VELDO-0210 rust/reviewed-roots-and-declaration',
+               {'~/.rustup', '~/.cargo/bin'} <= set(real['optional_read_roots'])
+               and real['toolchains'] == [{'root': '~/.rustup', 'environment': {
+                   'RUSTUP_HOME': '{root}', 'CARGO_HOME': '{scratch}/.cargo'}, 'path': ['~/.cargo/bin']}])
+        expect('VELDO-0210 rust/private-home-and-path', env['RUSTUP_HOME'] == str(rust)
+               and env['CARGO_HOME'] == str(scratch / '.cargo') and (scratch / '.cargo').is_dir()
+               and env['PATH'].split(os.pathsep)[0] == str(bins))
+        with patch.dict(os.environ, HOME=str(scratch)):
+            import pwd
+            expect('VELDO-0210 rust/account-home-independent-of-HOME',
+                   S.account_path('~/.rustup') == Path(pwd.getpwuid(os.getuid()).pw_dir) / '.rustup')
+        for kind, changed in (
+                ('absent', dict(config, optional_read_roots=[str(bins)])),
+                ('denied', dict(config, deny_read=[str(rust)]))):
+            adjusted, _ = S.grants_for(changed, ROOT, worktree, scratch)
+            inherited = dict(env)
+            S.toolchain_environment(changed, scratch, adjusted, inherited)
+            expect('VELDO-0210 rust/%s-root-clears-inherited-environment' % kind,
+                   'RUSTUP_HOME' not in inherited and 'CARGO_HOME' not in inherited)
+        writable = [*grants, (rust, S.READ | S.WRITE)]
+        inherited = dict(env)
+        S.toolchain_environment(config, scratch, writable, inherited)
+        expect('VELDO-0210 rust/writable-toolchain-never-activated', 'RUSTUP_HOME' not in inherited)
+        # A second runtime needs only a reviewed declaration, without a language branch in Python.
+        generic = dict(config, toolchains=[{'root': str(rust), 'environment': {
+            'OTHER_RUNTIME_HOME': '{root}', 'OTHER_CACHE': '{scratch}/other'}, 'path': [str(bins)]}])
+        other = {}
+        S.toolchain_environment(generic, scratch, grants, other)
+        expect('VELDO-0210 rust/declaration-supports-another-runtime',
+               other['OTHER_RUNTIME_HOME'] == str(rust) and other['OTHER_CACHE'] == str(scratch / 'other'))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('v210_rust_worker', ROOT / 'scripts/mutation_sandbox.py')
+        worker = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(worker)
+        with patch.object(S, 'policy_module') as policy, patch.dict(os.environ, {}, clear=False):
+            policy.return_value.configuration.return_value = (config_path, config)
+            fresh = worker.worker_grants(S, ROOT, worktree, scratch)
+            expect('VELDO-0210 rust/fresh-worker-grants-and-private-environment',
+                   (rust, S.READ) in fresh and (bins, S.READ) in fresh
+                   and os.environ['CARGO_HOME'] == str(scratch / '.cargo')
+                   and os.environ['RUSTUP_HOME'] == str(rust))
+            with patch.object(S, 'toolchain_environment') as apply:
+                declared = worker.worker_grants(S, ROOT, worktree, scratch, runtime_paths=[])
+                expect('VELDO-0210 rust/declared-worker-gets-no-extra-runtime',
+                       (rust, S.READ) not in declared and (bins, S.READ) not in declared and not apply.called)
+        if not live:
+            skip('rust/confined-fixture, absent-root and installed-toolchain rows')
+            return
+        probe = r"""import errno, json, os, sys
+from pathlib import Path
+home = Path(sys.argv[1])
+r = {}
+for name in ('.rustup', '.cargo', '.cargo/bin'):
+    target = home / name / 'forbidden'
+    try:
+        target.write_text('forged')
+        r['write:' + name] = False
+    except OSError as error:
+        r['write:' + name] = error.errno in (errno.EACCES, errno.EPERM, errno.EROFS)
+for name in ('.cargo/registry/private', '.cargo/credentials', '.cargo/credentials.toml'):
+    try:
+        (home / name).read_text()
+        r['read:' + name] = False
+    except OSError as error:
+        r['read:' + name] = error.errno in (errno.EACCES, errno.EPERM)
+r['toolchain-readable'] = (home / '.rustup/tool').read_text() == 'private fixture'
+r['proxy-readable'] = (home / '.cargo/bin/tool').read_text() == 'private fixture'
+r['env'] = os.environ.get('RUSTUP_HOME') == str(home / '.rustup')
+cargo = Path(os.environ['CARGO_HOME'])
+(cargo / 'download').write_text('private')
+r['private-cache'] = cargo.is_relative_to(Path(os.environ['HOME']))
+r['scratch'] = os.environ['HOME']
+print(json.dumps(r))
+"""
+        result = run(config_path, worktree, [sys.executable, '-I', '-S', '-c', probe, str(home)])
+        expect('VELDO-0210 rust/confined-fixture-starts: ' + result.stderr[-300:], result.returncode == 0)
+        found = json.loads(result.stdout) if result.returncode == 0 else {}
+        for name in ('write:.rustup', 'write:.cargo', 'write:.cargo/bin', 'read:.cargo/registry/private',
+                     'read:.cargo/credentials', 'read:.cargo/credentials.toml', 'toolchain-readable',
+                     'proxy-readable', 'env', 'private-cache'):
+            expect('VELDO-0210 rust/confined-' + name, found.get(name) is True)
+        expect('VELDO-0210 rust/private-cache-removed-with-scratch',
+               bool(found.get('scratch')) and not Path(found['scratch']).exists())
+        absent = dict(config, optional_read_roots=[str(home / 'missing-rustup'), str(bins)],
+                      toolchains=[dict(config['toolchains'][0], root=str(home / 'missing-rustup'))])
+        config_path.write_text(json.dumps(absent))
+        result = run(config_path, worktree, [sys.executable, '-I', '-S', '-c',
+                     "import os; assert 'RUSTUP_HOME' not in os.environ; assert 'CARGO_HOME' not in os.environ"])
+        expect('VELDO-0210 rust/absent-toolchain-profile-starts: ' + result.stderr[-300:], result.returncode == 0)
+        # The installed toolchain is optional. An outer profile cannot acquire new read grants;
+        # report that environment limitation distinctly from a host with no Rust installation.
+        try:
+            installed = S.account_path('~/.rustup')
+            list(installed.iterdir())
+            with (S.account_path('~/.cargo/bin') / 'rustup').open('rb') as handle:
+                handle.read(1)
+        except OSError as error:
+            print('  SELFTEST SKIP: VELDO-0210 rust/installed-versions-and-crates-io-build: ' + str(error))
+            return
+        config.update(optional_read_roots=real['optional_read_roots'], toolchains=real['toolchains'])
+        config_path.write_text(json.dumps(config))
+        # One small dependency fetched from crates.io. Both Cargo's locks and its registry live
+        # beneath the private CARGO_HOME; no account registry or credential is granted.
+        crate = worktree / 'crate'
+        (crate / 'src').mkdir(parents=True)
+        (crate / 'Cargo.toml').write_text('[package]\nname="sandbox_probe"\nversion="0.1.0"\nedition="2021"\n'
+                                         '[dependencies]\nitoa="=1.0.15"\n')
+        (crate / 'src/main.rs').write_text('fn main() { assert_eq!(itoa::Buffer::new().format(42), "42"); }\n')
+        build = r"""import json, os, subprocess, sys
+from pathlib import Path
+r = {}
+flag = '-' * 2
+for tool in ('cargo', 'rustc', 'rustfmt'):
+    result = subprocess.run([tool, flag + 'version'], capture_output=True, text=True)
+    r[tool] = result.returncode == 0
+result = subprocess.run(['cargo', 'clippy', flag + 'version'], capture_output=True, text=True)
+r['clippy'] = result.returncode == 0
+result = subprocess.run(['cargo', 'run', flag + 'manifest-path', sys.argv[1]], capture_output=True, text=True, timeout=120)
+r['build'] = result.returncode == 0
+r['diagnostic'] = result.stderr[-1500:]
+cargo = Path(os.environ['CARGO_HOME'])
+r['private-registry'] = cargo.is_relative_to(Path(os.environ['HOME'])) and any((cargo / 'registry/src').glob('*/itoa-1.0.15'))
+r['scratch'] = os.environ['HOME']
+print(json.dumps(r))
+"""
+        result = run(config_path, worktree, [sys.executable, '-I', '-S', '-c', build, str(crate / 'Cargo.toml')], timeout=150)
+        expect('VELDO-0210 rust/installed-toolchain-starts: ' + result.stderr[-300:], result.returncode == 0)
+        found = json.loads(result.stdout) if result.returncode == 0 else {}
+        for name in ('cargo', 'rustc', 'rustfmt', 'clippy', 'build', 'private-registry'):
+            expect('VELDO-0210 rust/installed-' + name + ': ' + found.get('diagnostic', '')[-300:], found.get(name) is True)
+        expect('VELDO-0210 rust/downloaded-registry-removed-at-exit',
+               bool(found.get('scratch')) and not Path(found['scratch']).exists())
+
+
 def _v210_agent_profile():
     import fcntl
     import importlib.util
@@ -261,6 +424,8 @@ print(json.dumps(r))
         def skip(what):
             print('  SELFTEST SKIP: VELDO-0210 %s: the installed namespace helper cannot make the tree\'s '
                   'namespace on this host (%s)' % (what, unavailable[:400]))
+
+        _v210_toolchains(S, run, real, live, skip)
 
         # runtime: /proc read only, the resolver directory and nothing else under /run
         resolve = top / 'run/systemd/resolve'

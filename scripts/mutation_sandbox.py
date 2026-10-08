@@ -77,6 +77,7 @@ def worker_grants(boundary, authority, root, scratch, runtime_paths=None, reads=
         # only its keyed runtime set, so it gets none of them.
         config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
         grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]
+        boundary.toolchain_environment(config, scratch, grants, os.environ)
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
     return grants
 

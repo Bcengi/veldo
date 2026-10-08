@@ -840,10 +840,8 @@ def grants_for(config, authority, worktree, scratch, config_path=None, extra_rea
 
     for path in [*config['read_roots'], '{worktree}', '{authority}', '{scratch}']:
         read(expand(path))
-    for value in config.get('optional_read_roots', []):
-        path = Path(value).expanduser()
-        if path.exists():
-            read(path.resolve(strict=True))
+    for path in installed_tools(config):
+        read(path)
     # The agent profile's own read-only additions (VELDO-0210): the reviewed project roots and the
     # selected client's plugin and skill directories, through the same filter as every read root.
     for path in extra_reads:
@@ -1099,21 +1097,58 @@ def exit_code(status):
     return os.waitstatus_to_exitcode(status) if os.WIFEXITED(status) else 1
 
 
+def account_path(value):
+    """Resolve account paths independently of a launcher's private HOME."""
+    home = Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
+    return home / value[2:] if value.startswith('~/') else Path(value)
+
+
+def toolchain_environment(config, scratch, grants, env):
+    """Apply reviewed toolchain settings only for roots actually granted read only.
+
+    Environment values name either the installed root or private scratch paths. Missing tools
+    clear inherited settings instead of forwarding another run's homes. PATH additions must
+    themselves be optional roots with a read-only grant. No runtime name is special here.
+    """
+    optional = set(installed_tools(config))
+    scratch = scratch.resolve(strict=True)
+
+    def granted(path):
+        return (path in optional and any(p == path and access & READ == READ for p, access in grants)
+                and not any(access & WRITE and (beneath(path, p) or beneath(p, path))
+                            for p, access in grants))
+
+    for tool in config.get('toolchains', []):
+        settings = tool.get('environment', {})
+        for name in settings:
+            env.pop(name, None)
+        root = account_path(tool['root']).resolve()
+        if not granted(root):
+            continue
+        for name, value in settings.items():
+            path = Path(value.format(root=root, scratch=scratch)).resolve()
+            if beneath(path, scratch) and path != scratch:
+                os.close(scratch_directory(scratch, path.relative_to(scratch).parts))
+            elif not beneath(path, root):
+                raise ValueError('toolchain environment must name its root or private scratch')
+            env[name] = str(path)
+        paths = [account_path(value).resolve() for value in tool.get('path', [])]
+        paths = [str(path) for path in paths if granted(path)]
+        if paths:
+            env['PATH'] = os.pathsep.join([*paths, env.get('PATH', os.defpath)])
+
+
 def installed_tools(config):
     """The installed tools and runtimes the configuration names (optional_read_roots: Node under
-    ~/.nvm, Claude Code, the langgraph runtime), as a fresh mutation worker's read-only grants, the
+    ~/.nvm, Claude Code, the langgraph runtime and Rust), as a fresh mutation worker's read-only grants, the
     ones the gate profile gives the same suites. '~' is the account's home, never the HOME a worker
     runs with (its private scratch). A root that is absent, or that holds, is or lies beneath the
     reuse store or a denied path, is not granted; nothing here is ever writable."""
-    home = Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
-
-    def expand(value):
-        return home / value[2:] if value.startswith('~/') else Path(value)
     blocked = [Path(config['store']).resolve()]
-    blocked += [expand(p).resolve() for p in config.get('deny_read', [])]
+    blocked += [account_path(p).resolve() for p in config.get('deny_read', [])]
     roots = []
     for value in config.get('optional_read_roots', []):
-        path = expand(value)
+        path = account_path(value)
         if not path.exists():
             continue
         path = path.resolve(strict=True)
@@ -1865,6 +1900,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                  'VELDO_EXPECTED_GIT_COMMON', 'CLAUDE_CODE_PROJECT_DIR_NAME'):
         # CLAUDE_CODE_PROJECT_DIR_NAME would name another projects/ folder than the one granted.
         env.pop(name, None)
+    toolchain_environment(config, scratch, grants, env)
     roots = None
     if profile == 'gate':
         # Gate commands run this repository's own suites, which serve and dial Unix sockets and

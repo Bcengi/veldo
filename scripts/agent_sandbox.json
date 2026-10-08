@@ -81,7 +81,19 @@
   "optional_read_roots": [
     "~/.nvm/versions/node",
     "~/.local/share/claude",
-    "~/.local/share/veldo/langgraph"
+    "~/.local/share/veldo/langgraph",
+    "~/.rustup",
+    "~/.cargo/bin"
+  ],
+  "toolchains": [
+    {
+      "root": "~/.rustup",
+      "environment": {
+        "RUSTUP_HOME": "{root}",
+        "CARGO_HOME": "{scratch}/.cargo"
+      },
+      "path": ["~/.cargo/bin"]
+    }
   ],
   "deny_read": [
     "~/.ssh",

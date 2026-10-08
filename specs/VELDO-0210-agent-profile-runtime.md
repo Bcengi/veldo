@@ -326,6 +326,47 @@ boundary and VELDO-0207's declarations once more (owner decision, 2026-10-07, AC
 mutation worker starts inside a tree the agent launcher makes and confines itself there, and a suite
 that starts a gate is never declared. Every other VELDO-0208 boundary is unchanged.
 
+## Rust toolchain amendment, 2026-10-08
+
+Owner approval: Telegram 32683, verbatim "approve rust in sandbox". This authorizes the
+protected profile and engine twin changes described here while the wider specification retains
+its existing lifecycle status.
+
+The reviewed optional_read_roots include the account's ~/.rustup and ~/.cargo/bin, read only.
+An absent installation grants nothing and never prevents a profile from starting. Account paths
+are resolved against the uid's home, independent of the scratch HOME, for agents, gates and fresh
+mutation workers alike. The rest of ~/.cargo, including registry, credentials and credentials.toml,
+remains unreadable and unwritable. No account registry cache is shared with Cargo.
+
+The reviewed toolchains block declares a root, environment values and PATH additions. A block
+activates only when its installed root has an actual read grant and no overlapping write grant.
+Each environment value names either that root through {root} or a private directory through
+{scratch}; private directories are created inside the scratch. Declared settings inherited from
+the caller are cleared even when the root is absent or denied. PATH additions must themselves
+be granted optional read roots. This mechanism contains no language-specific environment logic.
+Rust declares RUSTUP_HOME as {root}, CARGO_HOME as {scratch}/.cargo and ~/.cargo/bin on PATH.
+Cargo takes its locks and downloads its registry index and crates only in the private CARGO_HOME,
+which is removed with the scratch. Installed toolchain updates cannot write the account's roots.
+
+Fresh mutation workers already receive installed_tools, so they receive the same Rust roots and
+private environment settings. Workers with a declared runtime set receive no additional grants or
+settings. This amends the worker grants scope only for the existing optional runtime mechanism.
+
+Acceptance evidence is suite 102's rust rows: cargo, rustc, rustfmt and clippy run from the installed
+toolchain; a tiny executable uses the pinned itoa dependency fetched from crates.io over the
+profile's existing TCP/TLS access, with the downloaded source under scratch CARGO_HOME; writes
+into fixture account toolchain and Cargo directories are refused; existing fixture registry and
+both credential filenames cannot be read; scratch cleanup removes the cache; an absent toolchain
+still starts; inherited homes are cleared for absent or denied roots; fresh workers share the
+settings and declared workers do not. Installed Rust rows report a skip when Rust is absent or the
+outer sandbox cannot read it, with the actual filesystem error. They do not claim a Cargo or
+network pass in that environment. The fixture refusals use existing files so absence cannot pass
+as evidence of denial. Removing either root, the environment application or the private Cargo
+home makes the corresponding rows fail on a host with Rust installed.
+
+For this amendment run only suites 102, 98, 99 and 101, sequentially in the foreground. The reviewer
+runs the full gate and lands the real verification stamp; this branch records no gate pass.
+
 ## Design
 
 - Runtime. landlock() grants /proc read-only to every profile, as it did for gate and worker.
