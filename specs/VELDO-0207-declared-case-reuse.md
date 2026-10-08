@@ -132,3 +132,43 @@ The original open-only measurement has 21 of 30 unclean baselines and 19 univers
 files. About 10% time-weighted savings for single-module edits is an optimistic upper bound,
 not a measured speedup. The full-call-family sequential rerun and per-file reach are retained
 in proof/VELDO-0207; no failed baseline is a qualified declaration.
+
+## Design note: whole-suite result reuse (2026-10-08, not built)
+
+Measured on the 0210d gate (proof/VELDO-0207/gate-0210d-measurement.md): the selftest runs four
+times per gate, both legs in the unit stage and both again in the first-use integration stage,
+about 3836 of roughly 8200 seconds, with no reuse. This note proposes reusing a whole suite's
+result under exactly the rules above; it is a design for review, not a change to any criterion.
+
+Unit of reuse. One suite of one leg in one stage: its row names, pass and fail counts and
+failure details. A suite is reusable only in the confined leg; a suite the unconfined list names
+always runs fresh, as an unconfined mutation case does.
+
+Closure. A suite's declaration is proposed by tracing the suite once in a confined worker, as the
+case proposer traces a case, and admitted only on the same conditions: clean run, file-only, no
+history and no host input, not starting a gate, every runtime path keyable, reviewed by the owner.
+The declared inputs are the suite file, the shared preamble, every repository file it read after
+confinement, its declared directories and expected absent paths, and the per-leg runtime
+identity. The key has no HEAD or whole-tree term; it adds the selftest dispatcher and the stage's
+fixed environment, as a case key adds its projected driver and worker environment.
+
+Enforcement. A qualified suite runs in a fresh declared snapshot under Landlock with the
+coordinator's external trace, so an undeclared read fails the stage loudly; a missing declaration
+runs fresh in place, as today. Results are published to the authenticated store only when the
+suite passed and its trace was clean, and a forced fresh run publishes nothing it did not run.
+
+First use. The integration stage reruns the selftest after writing .veldo/events.jsonl through
+the estimation layer. That file is a declared input of every suite that reads it, so the two
+stages key separately; because its content carries times, the first-use run would rarely hit and
+stays fresh in practice unless that input is made deterministic.
+
+Expected saving. Today: none. The blockers measured for mutation cases apply unchanged: every
+suite runs Git at import through the shared preamble, every Git process probes an unkeyable runtime
+directory, many suites read host inputs, and most suites list specs/ and .veldo/ whole, so nearly
+every change misses them. After the preamble, runtime identity and Git identity fixes, the upper
+bound is the confined leg's share (1164 of 1917 seconds per selftest) times the fraction of
+confined suites an edit leaves untouched. With whole-directory closures that fraction is near 10%
+for a typical change (a spec plus a module), about 230 seconds per gate across both stages. With
+closures narrowed to the files actually opened, the earlier 30-case measurement puts a module's
+median reach near 60% of cases, so roughly 900 seconds per gate, about 11% of the gate. Neither
+figure is measured; both are bounds for deciding whether to build it.
