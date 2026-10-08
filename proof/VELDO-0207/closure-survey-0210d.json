@@ -1,0 +1,7896 @@
+{
+ "schema": "veldo.case-closure-survey/v1",
+ "source_commit": "48ca09fa",
+ "scope": "one traced case per control group (suite, module, fixture) of the 1602 confined cases the 0210d gate ran fresh without a reviewed declaration",
+ "groups": 200,
+ "first_refusal": {
+  "worker_or_trace_failed": 38,
+  "runtime_unkeyable": 99,
+  "reads_history": 8,
+  "host_input": 20,
+  "unclean_baseline": 12,
+  "starts_a_gate": 23
+ },
+ "any_refusal": {
+  "worker_or_trace_failed": 38,
+  "runtime_unkeyable": 180,
+  "reads_history": 8,
+  "starts_a_gate": 54,
+  "host_input": 37,
+  "unclean_baseline": 12
+ },
+ "only_runtime_unkeyable": 99,
+ "cases": [
+  {
+   "identity": "check_teeth_mutations.py:account-boundary-always-initial",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_reservation_runtime.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 848,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.585,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 60.583
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-claude-lists-ignored",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_engine_claude.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.538,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.377,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 61.183,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-codex-old-tables",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_engine_codex.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.44,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.467,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 60.827,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-fleet-codex-to-claude",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "fleet.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 848,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.93,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.637,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 60.775
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-profile-from-caller",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_accounts.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 848,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.784
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.635,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 60.683,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-rate-window-unchecked",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_reservations.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 848,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.587,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 60.774,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 61.73
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:account-settings-inherited",
+   "suite": "75_veldo_0062_accounts.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 60.532,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 62.029,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 60.684,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:activation-not-scaffolded",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.677
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.627
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:adoption-unchecked",
+   "suite": "77_veldo_0149_adopted_activation.py",
+   "module": "control_project.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.927
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.827
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.826
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:alias-checkout-maximum",
+   "suite": "59_veldo_0037_aliases.py",
+   "module": "control_alias.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 32.095
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 31.845
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 31.729
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:alias-floor-ignores-history",
+   "suite": "59_veldo_0037_aliases.py",
+   "module": "control_readset.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 32.142
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 32.049
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 31.898
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:andon-not-scaffolded",
+   "suite": "72_veldo_0075_andon.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.232
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.236
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.183
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:api-principal-from-edge",
+   "suite": "68_veldo_0126_intake.py",
+   "module": "control_intake.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.922
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 3.523
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 3.023
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-agent-run-signs",
+   "suite": "68_veldo_0134_acceptance.py",
+   "module": "control_architecture.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.283
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.28
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.134
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-decode-outside-refusal",
+   "suite": "60_veldo_0053_architecture.py",
+   "module": "arch.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.731
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.73
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.831
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-gate-policy-decides",
+   "suite": "68_veldo_0134_acceptance.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.282
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.278
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.281
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-generic-upsert-writes",
+   "suite": "68_veldo_0134_acceptance.py",
+   "module": "control_store.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.279
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.231
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.28
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-loader-malformed-as-absence",
+   "suite": "60_veldo_0053_architecture.py",
+   "module": "contract_loader.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.729
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.729
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.729
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:architecture-malformed-as-optional-absence",
+   "suite": "60_veldo_0053_architecture.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.782
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.679
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.73
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:authorization-reads-runtime-by-path",
+   "suite": "62_veldo_0045_runtime.py",
+   "module": "authorization.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/etc/cloud,/etc/credstore,/etc/credstore.encrypted,/etc/cups,/etc/fwupd,/etc/netplan,/etc/openvpn,/etc/polkit-1,/etc/ppp,/etc/security,/etc/ssh,/etc/sssd,/etc/sudoers.d,/etc/systemd,/etc/ufw,/usr/share/locale"
+   ],
+   "files": 654,
+   "directories": [
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 5,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local",
+    "/home/dmitry/.local/share",
+    "/home/dmitry/.local/share/veldo",
+    "/home/dmitry/.local/share/veldo/langgraph",
+    "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 27.437
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 27.187
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 27.588
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:backlog-classification-unchecked",
+   "suite": "73_veldo_0078_backlog.py",
+   "module": "control_backlog.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 11.542
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 11.492
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.642
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:backlog-not-scaffolded",
+   "suite": "73_veldo_0078_backlog.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 11.491
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 11.642
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.593
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:blocked-item-executable",
+   "suite": "73_veldo_0078_backlog.py",
+   "module": "control_backlog_priority.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 11.493
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 11.644
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.641
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:bot-unbound",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "control_channel_attribution.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.63
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.678
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:candidate-fetch-into-caller",
+   "suite": "67_veldo_0056_candidates.py",
+   "module": "lander.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 913,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 42.321
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.921
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.444
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:chosen-option-generic",
+   "suite": "69_veldo_0068_settlement.py",
+   "module": "control_request_settlement.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.343
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.395
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.395
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:claims-claim-ignores-park",
+   "suite": "60_veldo_0064_inbox.py",
+   "module": "control_claim.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.425
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.474
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.426
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:claims-ownership-without-unit",
+   "suite": "58_veldo_0031_claims.py",
+   "module": "control_claim.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var",
+    "/var/lib/dpkg/status",
+    "/var/tmp"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.931
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.881
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.731
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:claims-uncertainty-as-contention",
+   "suite": "58_veldo_0031_claims.py",
+   "module": "control_claim_client.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var",
+    "/var/lib/dpkg/status",
+    "/var/tmp"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.033
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.781
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.981
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:claims-unpark-keeps-parked-on",
+   "suite": "69_veldo_0133_dispositions.py",
+   "module": "control_claim.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 9.737
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 9.484
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 9.537
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:clone-local-store",
+   "suite": "46_veldo_0029_enrollment.py",
+   "module": "control_enrollment.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 418,
+   "directories": [
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 0.916
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 0.916
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 0.917
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:completion-manifest-verdict-landed",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "work_state.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.225
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.276
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:dead-socket-success",
+   "suite": "49_veldo_0109_unavailable.py",
+   "module": "control_client.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 424,
+   "directories": [
+    "scripts/suites/support",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.167
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.167
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.117
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decision-ask-reruns",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_account_limit.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 857,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 41.496
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 40.891
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 41.14,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-artifact-before-unit-validation",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "control_decomposition.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.281
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.183
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 3.774
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-checkout-maximum",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "control_alias.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.432
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.283
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 3.923
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-cross-item-authority",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "control_backlog.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/var/lib/dpkg/status"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.183
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.332
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.728
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-eligibility-unbound",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.232
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.281
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.182
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-service-not-installed",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.283
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.331
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.58
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:decomposition-stale-bytes-accepted",
+   "suite": "82_veldo_0085_decomposition.py",
+   "module": "control_decomposition_binding.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.231
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.182
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.232
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-membership-pins-versions",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_membership.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.605
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.657
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.053
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-non-owner-accepted",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_service_channel.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.458
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.559
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.56
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-renewal-built-as-grant",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_channel_activation.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.609
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.862
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.561
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-route-missing",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_service.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.71
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.653
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.955
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-setup-pinned-to-version-1",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_factory_setup.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.655
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.606
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.759
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:delegation-signer-pins-versions",
+   "suite": "74_veldo_0140_standing_delegation.py",
+   "module": "control_signer_answers.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 850,
+   "directories": [
+    ".veldo",
+    ".veldo/runtime",
+    "bin",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.56
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.506
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.156
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:disposition-every-question-to-project-owner",
+   "suite": "69_veldo_0133_dispositions.py",
+   "module": "control_assignment.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 9.484
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 9.335
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.681
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:doorbell-token-resolves-sends",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "request_doorbell.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.629
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.679
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:effects-network-profile-drops-transport-variables",
+   "suite": "58_veldo_0028_effects.py",
+   "module": "git_process.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 50.747
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 50.794
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 49.654
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:effects-receiver-refused-provider-only",
+   "suite": "58_veldo_0028_effects.py",
+   "module": "control_effect_executor.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 50.653
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 50.602
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 50.559
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:effects-worker-scope",
+   "suite": "58_veldo_0028_effects.py",
+   "module": "control_effects.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 50.751
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 50.45
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 50.703
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-executor-bypass",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "executor.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.177
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.177
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-frontier-bypass",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "frontier.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.177
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.176
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-plan-bypass",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "plan.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.225
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.178
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.125
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-review-bypass",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "dispatch.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.177
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.429
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-status-only-recheck",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.276
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.477
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:eligibility-work-no-preclaim-decision",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "work.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.225
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.176
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.276
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:enrolled-discovery-ignores-ancestors",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "git_process.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.576
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.376
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.225
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:entry-point-unlisted",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "control_channel_activation.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.678
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.675
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.679
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:events-emitter-forgets-run-done",
+   "suite": "66_veldo_0051_events.py",
+   "module": "events.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.73
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.732
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.68
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:events-historical-spelling-dropped",
+   "suite": "66_veldo_0051_events.py",
+   "module": "control_event_vocabulary.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.681
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.578
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.781
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:events-validator-forgets-run-done",
+   "suite": "66_veldo_0051_events.py",
+   "module": "validate.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.629
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.783
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.731
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:feature-admitted-on-acceptance",
+   "suite": "72_veldo_0077_objectives.py",
+   "module": "control_objective.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 682,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.329
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.229
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.48
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:floor-stations-skip-decisions",
+   "suite": "62_veldo_0054_decisions.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.982
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.985
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.883
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:formats172-binary-only",
+   "suite": "82_veldo_0172_live_formats.py",
+   "module": "extract_formats.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 587,
+   "directories": [
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.569
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.568
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:formats172-census-drops-conform",
+   "suite": "82_veldo_0172_live_formats.py",
+   "module": "79_veldo_0061_codex_adapter.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 587,
+   "directories": [
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.567
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.568
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:formats172-denylist-string",
+   "suite": "82_veldo_0172_live_formats.py",
+   "module": "scrub.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 587,
+   "directories": [
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.618
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.619
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:formats172-hygiene-answer-drops-provider",
+   "suite": "82_veldo_0165_launch_hygiene.py",
+   "module": "82_veldo_0165_launch_hygiene.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 851,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.718,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 19.665
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.362,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:framing-receipt-without-digest",
+   "suite": "62_veldo_0054_decisions.py",
+   "module": "control_decision_dependency.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.984
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.884
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.985
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:framing-signature-unchecked",
+   "suite": "62_veldo_0065_presentations.py",
+   "module": "control_channel_presentation.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 17.556
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 17.552
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.248
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:frontier-inline-decisions",
+   "suite": "62_veldo_0054_decisions.py",
+   "module": "frontier.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.884
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 9.034
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.835
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:frontier-offers-unprioritized",
+   "suite": "73_veldo_0078_backlog.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 11.642
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 11.641
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.544
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:gate-output-acceptance-skips-tree-equality",
+   "suite": "69_veldo_0058_gate_output.py",
+   "module": "control_verification.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "unresolved syscall descriptor: 1703558 fstat(4,  {st_mode=S_IFREG|0444, st_size=0, ...}) = 0"
+    },
+    {
+     "mode": "noop",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:gate-output-candidate-policy-launched",
+   "suite": "69_veldo_0058_gate_output.py",
+   "module": "lander.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "unresolved syscall descriptor: 2473823 fstat(4,  {st_mode=S_IFREG|0444, st_size=0, ...}) = 0"
+    },
+    {
+     "mode": "mutant",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:gate-output-live-loop-binds-refs",
+   "suite": "69_veldo_0058_gate_output.py",
+   "module": "executor.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:gate-output-range-base-ignored",
+   "suite": "69_veldo_0058_gate_output.py",
+   "module": "policy_check.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "unresolved syscall descriptor: 2500148 fstat(4,  {st_mode=S_IFREG|0444, st_size=0, ...}) = 0"
+    },
+    {
+     "mode": "noop",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "unresolved syscall descriptor: 2508060 fstat(4,  {st_mode=S_IFREG|0444, st_size=0, ...}) = 0"
+    },
+    {
+     "mode": "mutant",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:gate-output-stamp-written-to-candidate",
+   "suite": "69_veldo_0058_gate_output.py",
+   "module": "verify.sh",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "unresolved syscall descriptor: 1681968 fstat(4,  {st_mode=S_IFREG|0444, st_size=0, ...}) = 0"
+    },
+    {
+     "mode": "mutant",
+     "exit": 124,
+     "seconds": 120.001,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:graph-authorization-imports-langgraph",
+   "suite": "59_veldo_0043_graph.py",
+   "module": "authorization.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 16.604,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 16.605,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 16.558,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:graph-rebuild-no-restore",
+   "suite": "59_veldo_0043_graph.py",
+   "module": "control_graph_install.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 16.606,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 16.607,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 16.556,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:graph-runner-emits-langgraph-object",
+   "suite": "59_veldo_0043_graph.py",
+   "module": "control_graph_langgraph.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 16.657,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 16.354,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.551,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:graph-start-without-runtime-launches",
+   "suite": "59_veldo_0043_graph.py",
+   "module": "control_graph.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 16.508,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 16.509,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 16.404,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:grooming-decomposition-digest-unbound",
+   "suite": "76_veldo_0079_grooming.py",
+   "module": "control_grooming_request.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 684,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 24.425
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 24.578
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 24.428
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:grooming-live-binding-unchecked",
+   "suite": "76_veldo_0079_grooming.py",
+   "module": "control_backlog.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 684,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 24.228
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 24.576
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 24.427
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:grooming-not-scaffolded",
+   "suite": "76_veldo_0079_grooming.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 684,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 24.371
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 24.579
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 24.479
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:grooming-pending-request-not-revised",
+   "suite": "76_veldo_0079_grooming.py",
+   "module": "control_grooming.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 684,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 24.378
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 24.574
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 28.936
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:handout-null-claim-unchecked",
+   "suite": "84_veldo_0169_project_handouts.py",
+   "module": "control_claim.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 934,
+   "directories": [
+    ".veldo",
+    "engine/.veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 22.172
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 21.369
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 20.514
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:handout-store-invariant-skipped",
+   "suite": "84_veldo_0169_project_handouts.py",
+   "module": "control_store.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 934,
+   "directories": [
+    ".veldo",
+    "engine/.veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 21.668
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 21.263
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.964
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:handout-unlisted-resume",
+   "suite": "84_veldo_0169_project_handouts.py",
+   "module": "control_assignment.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 934,
+   "directories": [
+    ".veldo",
+    "engine/.veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 21.22
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 21.017
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 21.308
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:handout-unlisted-station-contract",
+   "suite": "84_veldo_0169_project_handouts.py",
+   "module": "control_andon.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 934,
+   "directories": [
+    ".veldo",
+    "engine/.veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 21.816
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 21.017
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 21.116
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:hint-names-first-only",
+   "suite": "68_veldo_0136_hints.py",
+   "module": "control_channel_presentation.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.532
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.481
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.531
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:hygiene-claude-strip-unqualified",
+   "suite": "82_veldo_0165_launch_hygiene.py",
+   "module": "control_engine_claude.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 851,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.064,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 19.161
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.414
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:hygiene-codex-strip-unqualified",
+   "suite": "82_veldo_0165_launch_hygiene.py",
+   "module": "control_engine_codex.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 851,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.26
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 19.258
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.464
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:hygiene-listed-names-only",
+   "suite": "82_veldo_0165_launch_hygiene.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 851,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.211
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 19.216
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.21
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:hygiene-parent-hand-list",
+   "suite": "82_veldo_0165_launch_hygiene.py",
+   "module": "extract_environment.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 851,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.16
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 19.259,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 18.858
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:inbox-answer-bypasses-settlement",
+   "suite": "69_veldo_0068_settlement.py",
+   "module": "control_assignment.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.394
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.892
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.294
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:inbox-retain-claim-while-waiting",
+   "suite": "60_veldo_0064_inbox.py",
+   "module": "control_assignment.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.475
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.426
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.175
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:inline-status-authority",
+   "suite": "70_veldo_0069_bindings.py",
+   "module": "plan.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.995
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.947
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.849
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:inline-status-authority-at-stations",
+   "suite": "70_veldo_0069_bindings.py",
+   "module": "control_decision_dependency.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.894
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.946
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.894
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:intake-attested-principal-not-compared",
+   "suite": "69_veldo_0133_dispositions.py",
+   "module": "control_intake.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 9.685
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 9.738
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 9.937
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:judgment-spend-recorded-unkinded",
+   "suite": "66_veldo_0051_events.py",
+   "module": "judgment_load.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.679
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.681
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.631
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:lander-factory-push-unleased",
+   "suite": "70_veldo_0057_landing.py",
+   "module": "lander.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 914,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.349
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.15
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.402
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:landing-candidate-objects-not-transferred",
+   "suite": "70_veldo_0057_landing.py",
+   "module": "control_landing.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 914,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.148
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.602
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.302
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:limit-claude-any-error-result",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_engine_claude.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 857,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 40.941
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.341,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 40.936,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:limit-codex-failed-turn-unread",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_engine_codex.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 40.638,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.335,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 41.228,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:limit-unreported",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 40.731,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.038,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 39.734,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:manifest-fallback",
+   "suite": "44_veldo_0105_startline.py",
+   "module": "fix_validation_record.py",
+   "refusals": [
+    "reads_history",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 4553,
+   "directories": [
+    "proof",
+    "proof/VELDO-0001",
+    "proof/VELDO-0002",
+    "proof/VELDO-0003",
+    "proof/VELDO-0004",
+    "proof/VELDO-0005",
+    "proof/VELDO-0006",
+    "proof/VELDO-0007",
+    "proof/VELDO-0008",
+    "proof/VELDO-0009",
+    "proof/VELDO-0010",
+    "proof/VELDO-0011",
+    "proof/VELDO-0012",
+    "proof/VELDO-0015",
+    "proof/VELDO-0016",
+    "proof/VELDO-0017",
+    "proof/VELDO-0018",
+    "proof/VELDO-0019",
+    "proof/VELDO-0020",
+    "proof/VELDO-0021",
+    "proof/VELDO-0022",
+    "proof/VELDO-0023",
+    "proof/VELDO-0024",
+    "proof/VELDO-0025",
+    "proof/VELDO-0026",
+    "proof/VELDO-0027",
+    "proof/VELDO-0028",
+    "proof/VELDO-0029",
+    "proof/VELDO-0031",
+    "proof/VELDO-0035",
+    "proof/VELDO-0036",
+    "proof/VELDO-0037",
+    "proof/VELDO-0039",
+    "proof/VELDO-0040",
+    "proof/VELDO-0041",
+    "proof/VELDO-0042",
+    "proof/VELDO-0043",
+    "proof/VELDO-0045",
+    "proof/VELDO-0046",
+    "proof/VELDO-0047",
+    "proof/VELDO-0049",
+    "proof/VELDO-0050",
+    "proof/VELDO-0051",
+    "proof/VELDO-0052",
+    "proof/VELDO-0053",
+    "proof/VELDO-0054",
+    "proof/VELDO-0056",
+    "proof/VELDO-0057",
+    "proof/VELDO-0058",
+    "proof/VELDO-0060",
+    "proof/VELDO-0061",
+    "proof/VELDO-0062",
+    "proof/VELDO-0064",
+    "proof/VELDO-0065",
+    "proof/VELDO-0066",
+    "proof/VELDO-0067",
+    "proof/VELDO-0068",
+    "proof/VELDO-0069",
+    "proof/VELDO-0073",
+    "proof/VELDO-0075",
+    "proof/VELDO-0076",
+    "proof/VELDO-0077",
+    "proof/VELDO-0078",
+    "proof/VELDO-0079",
+    "proof/VELDO-0085",
+    "proof/VELDO-0088",
+    "proof/VELDO-0089",
+    "proof/VELDO-0099",
+    "proof/VELDO-0101",
+    "proof/VELDO-0102",
+    "proof/VELDO-0103",
+    "proof/VELDO-0104",
+    "proof/VELDO-0105",
+    "proof/VELDO-0106",
+    "proof/VELDO-0107",
+    "proof/VELDO-0108",
+    "proof/VELDO-0109",
+    "proof/VELDO-0110",
+    "proof/VELDO-0118",
+    "proof/VELDO-0119",
+    "proof/VELDO-0120",
+    "proof/VELDO-0123",
+    "proof/VELDO-0126",
+    "proof/VELDO-0127",
+    "proof/VELDO-0128",
+    "proof/VELDO-0129",
+    "proof/VELDO-0130",
+    "proof/VELDO-0132",
+    "proof/VELDO-0133",
+    "proof/VELDO-0134",
+    "proof/VELDO-0135",
+    "proof/VELDO-0136",
+    "proof/VELDO-0137",
+    "proof/VELDO-0138",
+    "proof/VELDO-0139",
+    "proof/VELDO-0140",
+    "proof/VELDO-0141",
+    "proof/VELDO-0144",
+    "proof/VELDO-0148",
+    "proof/VELDO-0149",
+    "proof/VELDO-0150",
+    "proof/VELDO-0151",
+    "proof/VELDO-0152",
+    "proof/VELDO-0154",
+    "proof/VELDO-0155",
+    "proof/VELDO-0156",
+    "proof/VELDO-0158",
+    "proof/VELDO-0160",
+    "proof/VELDO-0162",
+    "proof/VELDO-0165",
+    "proof/VELDO-0166",
+    "proof/VELDO-0167",
+    "proof/VELDO-0168",
+    "proof/VELDO-0169",
+    "proof/VELDO-0170",
+    "proof/VELDO-0171",
+    "proof/VELDO-0172",
+    "proof/VELDO-0173",
+    "proof/VELDO-0185",
+    "proof/VELDO-0186",
+    "proof/VELDO-0189",
+    "proof/VELDO-0203",
+    "proof/VELDO-0204",
+    "proof/VELDO-0205",
+    "proof/VELDO-0207",
+    "proof/VELDO-0208",
+    "proof/WARP-0100",
+    "proof/WARP-0101",
+    "proof/WARP-0102",
+    "proof/WARP-0103",
+    "proof/WARP-0104",
+    "proof/WARP-0105",
+    "proof/WARP-0106",
+    "proof/WARP-0107",
+    "proof/WARP-0108",
+    "proof/WARP-0109",
+    "proof/WARP-0110",
+    "proof/WARP-0111",
+    "proof/WARP-0112",
+    "proof/WARP-0113",
+    "proof/WARP-0114",
+    "proof/WARP-0301",
+    "proof/WARP-0302",
+    "proof/WARP-0303",
+    "proof/WARP-0304",
+    "proof/WARP-0305",
+    "proof/WARP-0306",
+    "proof/WARP-0307",
+    "proof/WARP-0308",
+    "proof/WARP-0309",
+    "proof/WARP-0310",
+    "proof/WARP-0311",
+    "proof/WARP-0312",
+    "proof/WARP-0313",
+    "proof/WARP-0314",
+    "proof/WARP-0315",
+    "proof/WARP-0316",
+    "proof/WARP-0317",
+    "proof/WARP-0318",
+    "proof/WARP-0319",
+    "proof/WARP-0320",
+    "proof/WARP-0401",
+    "proof/WARP-0402",
+    "proof/WARP-0403",
+    "proof/WARP-0404",
+    "proof/WARP-0405",
+    "proof/WARP-0406",
+    "proof/WARP-0407",
+    "proof/WARP-0410",
+    "proof/WARP-0411",
+    "proof/WARP-0501",
+    "proof/WARP-0502",
+    "proof/WARP-0503",
+    "proof/WARP-0504",
+    "proof/WARP-0505",
+    "proof/WARP-0506",
+    "proof/WARP-0507",
+    "proof/WARP-0601",
+    "proof/WARP-0602",
+    "proof/WARP-0603",
+    "proof/WARP-0604",
+    "proof/WARP-0605",
+    "proof/WARP-0606",
+    "proof/WARP-0607",
+    "proof/WARP-0608",
+    "proof/WARP-0609",
+    "proof/WARP-0610",
+    "proof/WARP-0611",
+    "proof/WARP-0612",
+    "proof/WARP-0613",
+    "proof/WARP-0614",
+    "proof/WARP-0615",
+    "proof/WARP-0616",
+    "proof/WARP-0617",
+    "proof/WARP-0618",
+    "proof/WARP-0619",
+    "proof/WARP-0620",
+    "proof/WARP-0623",
+    "proof/WARP-0701",
+    "proof/WARP-0702",
+    "proof/WARP-0703",
+    "proof/WARP-0704",
+    "proof/WARP-0705",
+    "proof/WARP-0706",
+    "proof/WARP-0707",
+    "proof/WARP-0708",
+    "proof/WARP-0709",
+    "proof/WARP-0710",
+    "proof/WARP-0711",
+    "proof/WARP-0712",
+    "proof/WARP-0713",
+    "proof/WARP-0716",
+    "proof/WARP-0717",
+    "proof/WARP-0722",
+    "proof/WARP-0723",
+    "proof/WARP-0724",
+    "proof/WARP-0725",
+    "proof/WARP-0727",
+    "proof/WARP-0732",
+    "proof/WARP-0801",
+    "proof/WARP-0802",
+    "proof/WARP-0803",
+    "proof/WARP-0804",
+    "proof/WARP-0805",
+    "proof/WARP-0806",
+    "proof/WARP-0807",
+    "proof/WARP-0808",
+    "proof/WARP-0809",
+    "proof/WARP-0810",
+    "proof/WARP-0901",
+    "proof/WARP-0902",
+    "proof/WARP-0903",
+    "proof/WARP-0904",
+    "proof/WARP-0905",
+    "proof/WARP-0906",
+    "proof/WARP-0907",
+    "proof/WARP-0908",
+    "proof/WARP-0909",
+    "proof/WARP-1001",
+    "proof/WARP-1002",
+    "proof/WARP-1003",
+    "proof/WARP-1004",
+    "proof/WARP-1005",
+    "proof/WARP-1006",
+    "proof/WARP-1007",
+    "proof/WARP-1008",
+    "proof/WARP-1009",
+    "proof/WARP-1010",
+    "proof/WARP-1011",
+    "proof/WARP-1012",
+    "proof/WARP-1101",
+    "proof/WARP-1102",
+    "proof/WARP-1103",
+    "proof/WARP-1104",
+    "proof/WARP-1105",
+    "proof/WARP-1106",
+    "proof/WARP-1107",
+    "proof/WARP-1108",
+    "proof/WARP-1109",
+    "proof/WARP-1110",
+    "proof/WARP-1201",
+    "proof/WARP-1202",
+    "proof/WARP-1203",
+    "proof/WARP-1204",
+    "proof/WARP-1205",
+    "proof/WARP-1206",
+    "proof/WARP-1207",
+    "proof/WARP-1208",
+    "proof/WARP-1209",
+    "proof/WARP-1210",
+    "proof/WARP-1212",
+    "proof/WARP-1402",
+    "proof/WARP-1403",
+    "proof/WARP-1405",
+    "proof/WARP-1406",
+    "proof/WARP-1407",
+    "proof/WARP-1409",
+    "proof/WARP-1702",
+    "proof/WARP-1703",
+    "proof/decisions-archive",
+    "proof/fixes-20260922",
+    "proof/followups-20260922",
+    "proof/plan-0019-rev3",
+    "proof/plan-0019-rev4",
+    "proof/prose-20260922",
+    "proof/teeth-20260922",
+    "specs"
+   ],
+   "absent": 413,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 3.673
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 3.723
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 3.723
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-host-command-unwired",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_service.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.56
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.564
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 82.28
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-overwrite-revision",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_mcp_catalog.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.42
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.484
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 82.622
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-read-back-allowed",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_api.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.516
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.416
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 82.579
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-value-binding-off",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_api_authority.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.634
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.47
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 82.175
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-value-in-record",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_credential.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.32
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.617
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 82.476
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:mcp144-value-on-argv",
+   "suite": "82_veldo_0144_mcp_catalog.py",
+   "module": "control_credential_keystore.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "proof/VELDO-0144",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/opt"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 82.578
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 82.471
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 78.563
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:notify-stop-after-handler-failure",
+   "suite": "58_veldo_0046_notifications.py",
+   "module": "control_notify.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 420,
+   "directories": [
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.568
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:objective-not-scaffolded",
+   "suite": "72_veldo_0077_objectives.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 682,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.279
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.231
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.279
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:omit-duplicate-key",
+   "suite": "54_veldo_0118_grammar.py",
+   "module": "grammar_cases.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 421,
+   "directories": [
+    "scripts/fixtures",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.176
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.174
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.074
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:omit-store_uuid",
+   "suite": "47_veldo_0107_ipc.py",
+   "module": "control_client.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 424,
+   "directories": [
+    "scripts/suites/support",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.568
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.567
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.567
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:oracle-runtime-error",
+   "suite": "54_veldo_0118_grammar.py",
+   "module": "yaml_oracle.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 421,
+   "directories": [
+    "scripts/fixtures",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.224
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.174
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.174
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:own-message-non-owner-accepted",
+   "suite": "75_veldo_0150_own_message_acceptance.py",
+   "module": "control_objective.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.325
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.376
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.326
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:owners37-different-owner-adds",
+   "suite": "59_veldo_0037_aliases.py",
+   "module": "control_store.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 32.286
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 31.993
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 32.195
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:plain-message-not-hinted",
+   "suite": "68_veldo_0136_hints.py",
+   "module": "control_intake.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.482
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.432
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.082
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:plain-message-recorded-as-answer",
+   "suite": "68_veldo_0136_hints.py",
+   "module": "control_channel_attribution.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 7.731
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 7.482
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.08
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:plan-inline-resolution-honored",
+   "suite": "62_veldo_0054_decisions.py",
+   "module": "plan.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.984
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 9.035
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 9.035
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:platform-date-from-clock",
+   "suite": "63_veldo_0066_attribution.py",
+   "module": "control_channel_attribution.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.525
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.325
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.424
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:policy-digest-read-as-integer",
+   "suite": "68_veldo_0137_policy_revision.py",
+   "module": "policy_check.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 0.816
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 0.815
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 0.816
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:policy-omit-required-result",
+   "suite": "57_veldo_0120_policygrammar.py",
+   "module": "policy_agreement.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 936,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "scripts/fixtures",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 17.807
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 17.306
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 17.957
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:policy-strip-quoted-hash",
+   "suite": "57_veldo_0120_policygrammar.py",
+   "module": "yamlish.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 935,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 19.261
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 18.857
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 17.857
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:policy-syntax-becomes-absent",
+   "suite": "57_veldo_0120_policygrammar.py",
+   "module": "fix_validation_record.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 935,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 17.357
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 17.558
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 17.356
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:pool-launches-serialized",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_account_pool.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 857,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 41.434,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 40.939
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 48.831,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:pool-not-scaffolded",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 857,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 41.03,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.238
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 40.938,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:pool-selection-untraced",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_reservations.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 857,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 41.734
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.584,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 41.292,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:pool-shared-profile",
+   "suite": "78_veldo_0160_account_pool.py",
+   "module": "control_accounts.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 41.278,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 41.443,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 41.336,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:presentation-edge-bypasses-gate",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "control_channel_presentation.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.677
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.027
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:production-acquisition-ungated",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "control_channel_ingress.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.627
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.625
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:projection-discard-message-id",
+   "suite": "60_veldo_0064_inbox.py",
+   "module": "control_channel_projection.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.675
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.476
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.474
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:projection-notice-beside-presentation",
+   "suite": "62_veldo_0065_presentations.py",
+   "module": "control_channel_projection.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 17.556
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 17.454
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 17.412
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:projection-skips-committed-event",
+   "suite": "66_veldo_0051_events.py",
+   "module": "control_event_projection.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.78
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.781
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.728
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:publication-altered-bytes",
+   "suite": "59_veldo_0037_aliases.py",
+   "module": "control_document.py",
+   "refusals": [
+    "reads_history",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [
+    "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
+    "/home/dmitry/projects/veldo/.git",
+    "/home/dmitry/projects/veldo/.git/config"
+   ],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 31.994
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 32.15
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 31.49
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:question-not-sent",
+   "suite": "68_veldo_0126_intake.py",
+   "module": "control_intake_routes.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.921
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 2.92
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 2.922
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:raise-requires-resolving-role",
+   "suite": "72_veldo_0075_andon.py",
+   "module": "control_andon.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.131
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.234
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 3.974
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:reader-strip-quoted-hash",
+   "suite": "55_veldo_0119_agreement.py",
+   "module": "yamlish.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 421,
+   "directories": [
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.324
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.324
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.475
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:reader-unavailable-counts-as-compared",
+   "suite": "55_veldo_0119_agreement.py",
+   "module": "reader_agreement.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 422,
+   "directories": [
+    "scripts/fixtures",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.274
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.325
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.327
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:receipt-without-binding",
+   "suite": "70_veldo_0069_bindings.py",
+   "module": "control_request_settlement.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.947
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.847
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.041
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:receiver-gate-untrusted",
+   "suite": "70_veldo_0069_bindings.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.845
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.899,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.394
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:report-completion-handler-omitted",
+   "suite": "72_veldo_0128_reports.py",
+   "module": "control_telegram_report.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 682,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.233
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.184
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.484
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:report-not-scaffolded",
+   "suite": "72_veldo_0128_reports.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 682,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.236
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.232
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.382
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:report-not-wired",
+   "suite": "72_veldo_0128_reports.py",
+   "module": "control_service_channel.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 682,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.083
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.134
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.881
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:reservation-final-reuses-partial",
+   "suite": "58_veldo_0036_reservations.py",
+   "module": "control_reservations.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 13.299
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 13.399
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 13.495
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:reservation-report-before-enforcement",
+   "suite": "58_veldo_0036_reservations.py",
+   "module": "control_reservation_runtime.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 13.395
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 13.394
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 13.347
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:review-r1-command-crash",
+   "suite": "59_veldo_0031_review.py",
+   "module": "control_claim.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var/lib/dpkg/status"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.18
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.279
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.879
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:review-r3-publish-without-use",
+   "suite": "59_veldo_0031_review.py",
+   "module": "lander.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var/lib/dpkg/status"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.128
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.13
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.679
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:review-r4-cwd-selects-enrollment",
+   "suite": "59_veldo_0031_review.py",
+   "module": "claim.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var/lib/dpkg/status"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.03
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.128
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.378
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:review-r6-routing-wrong-exception",
+   "suite": "59_veldo_0031_review.py",
+   "module": "control_claim_client.py",
+   "refusals": [
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/var/lib/dpkg/status"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.13
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.128
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.127
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:review-role-not-required",
+   "suite": "73_veldo_0089_team.py",
+   "module": "control_team.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.625
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.575
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.528
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-default-omitted-image_generation",
+   "suite": "88_veldo_0127_feature_defaults.py",
+   "module": "control_agent_config_handoff.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 8.688,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.688,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.686,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-delivery-comparison-skipped",
+   "suite": "87_veldo_0127_codex_delivery.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 684,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 73.83,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 74.327,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 10.336
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-delivery-sleep-disabled",
+   "suite": "87_veldo_0127_codex_delivery.py",
+   "module": "control_agent_config_handoff.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 74.365,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 72.791,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 74.684,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-feature-default-off-skipped",
+   "suite": "89_veldo_0127_feature_listing.py",
+   "module": "control_agent_config_handoff.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/lib/ssl,/usr/share/locale"
+   ],
+   "files": 717,
+   "directories": [
+    ".veldo",
+    "proof/VELDO-0156",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex-code-mode-host",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-package.json",
+    "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.531,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.629
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.08,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-profile-cli-table-wiped",
+   "suite": "90_veldo_0127_feature_profile.py",
+   "module": "control_engine_codex.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.303,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.256,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.63,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-profile-mixed-feature-table",
+   "suite": "90_veldo_0127_feature_profile.py",
+   "module": "control_agent_config_handoff.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.352,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.255,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 13.049,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:role127-search-unsupported-accepted",
+   "suite": "87_veldo_0127_codex_delivery.py",
+   "module": "control_agent_config.py",
+   "refusals": [
+    "worker_or_trace_failed"
+   ],
+   "files": 0,
+   "directories": [],
+   "absent": 0,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 73.427,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 74.133,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 74.236,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:runtime-qualification-after-entry-point",
+   "suite": "62_veldo_0045_runtime.py",
+   "module": "control_runtime.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/etc/cloud,/etc/credstore,/etc/credstore.encrypted,/etc/cups,/etc/fwupd,/etc/netplan,/etc/openvpn,/etc/polkit-1,/etc/ppp,/etc/security,/etc/ssh,/etc/sssd,/etc/sudoers.d,/etc/systemd,/etc/ufw,/usr/share/locale"
+   ],
+   "files": 654,
+   "directories": [
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 5,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local",
+    "/home/dmitry/.local/share",
+    "/home/dmitry/.local/share/veldo",
+    "/home/dmitry/.local/share/veldo/langgraph",
+    "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 27.281
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 27.489
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 19.567
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:scaffold-omits-runtime-lock",
+   "suite": "62_veldo_0045_runtime.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/etc/cloud,/etc/credstore,/etc/credstore.encrypted,/etc/cups,/etc/fwupd,/etc/netplan,/etc/openvpn,/etc/polkit-1,/etc/ppp,/etc/security,/etc/ssh,/etc/sssd,/etc/sudoers.d,/etc/systemd,/etc/ufw,/usr/share/locale"
+   ],
+   "files": 654,
+   "directories": [
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 5,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local",
+    "/home/dmitry/.local/share",
+    "/home/dmitry/.local/share/veldo",
+    "/home/dmitry/.local/share/veldo/langgraph",
+    "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 27.485
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 27.33
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 9.838
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:scaffold-vocabulary-not-laid",
+   "suite": "66_veldo_0051_events.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.63
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.681
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.731
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:scope-string-inner-as-empty",
+   "suite": "61_scope_covers.py",
+   "module": "control_membership.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 0.365
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 0.465
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 0.465
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:settlement-not-scaffolded",
+   "suite": "69_veldo_0068_settlement.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.392
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.345
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.896
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:setup186-python-only",
+   "suite": "86_veldo_0186_setup_assets.py",
+   "module": "control_service.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.25
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.246
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.102
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:setup186-skip-claude-pin",
+   "suite": "86_veldo_0186_setup_assets.py",
+   "module": "control_factory_setup_engines.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.147
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.151
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.198
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:setup186-skip-setup-asset-check",
+   "suite": "86_veldo_0186_setup_assets.py",
+   "module": "control_factory_setup.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.201
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.248
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 7.233
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:setup186-unmeasured-bind-refusal",
+   "suite": "86_veldo_0186_setup_assets.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 14.451
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 14.403
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 14.348
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:signing-prelock-clock",
+   "suite": "56_veldo_0027_signing.py",
+   "module": "control_keys.py",
+   "refusals": [
+    "unclean_baseline",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 10.388
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 10.188
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 10.29
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:signing-remove-channel-restriction",
+   "suite": "56_veldo_0027_signing.py",
+   "module": "control_signer.py",
+   "refusals": [
+    "unclean_baseline",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 10.588
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 10.54
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 10.488
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:snapshot-checkout-bytes",
+   "suite": "58_veldo_0035_snapshots.py",
+   "module": "control_snapshot.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.244
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.401
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.547
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:snapshot-project-only",
+   "suite": "58_veldo_0035_snapshots.py",
+   "module": "control_readset.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.449
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.298
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.955
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:snapshot-unguarded-connection",
+   "suite": "58_veldo_0035_snapshots.py",
+   "module": "control_store.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 15.348
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 15.297
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 15.35
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:spend-records-as-spec-shipped",
+   "suite": "66_veldo_0051_events.py",
+   "module": "spend.py",
+   "refusals": [
+    "unclean_baseline",
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 915,
+   "directories": [
+    ".veldo",
+    "engine/.veldo/examples",
+    "specs"
+   ],
+   "absent": 4,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.cache",
+    "/home/dmitry/.cache/veldo",
+    "/home/dmitry/.cache/veldo/gate-reuse-v2",
+    "/home/dmitry/.claude",
+    "/home/dmitry/.claude/.credentials.json"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.681
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.632
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.681
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:status-reader-inline-decisions",
+   "suite": "62_veldo_0054_decisions.py",
+   "module": "runstatus.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 9.035
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 8.984
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.233
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:status-reader-reads-status-text",
+   "suite": "60_veldo_0052_eligibility.py",
+   "module": "runstatus.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.226
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.226
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.276
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:task-claim-skips-priority",
+   "suite": "73_veldo_0078_backlog.py",
+   "module": "tasks.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 11.542
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 11.538
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 11.591
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:team-not-scaffolded",
+   "suite": "73_veldo_0089_team.py",
+   "module": "init_scaffold.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 681,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.627
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.578
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.527
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-crlf-not-one-break",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_channel_presentation_text.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.427
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.923
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.874
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-decision-brief-collapsed",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_channel_presentation.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.926
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.926
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.925
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-inbox-brief-collapsed",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_channel_projection.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.926
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.977
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.925
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-legacy-chunker-changed",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_channel_presentation_v1.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.926
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.478
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.976
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-prompt-collapsed",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_intake.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    ".veldo/decision_reviews",
+    ".veldo/decisions",
+    ".veldo/examples",
+    ".veldo/keys",
+    ".veldo/runtime",
+    ".veldo/services",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.478
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.478
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.529
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-report-brief-collapsed",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_telegram_report.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.427
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.926
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.877
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:text168-unlisted-send",
+   "suite": "86_veldo_0168_text.py",
+   "module": "control_service_channel.py",
+   "refusals": [
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 1097,
+   "directories": [
+    ".veldo",
+    "engine",
+    "engine/.claude",
+    "engine/.github",
+    "engine/.github/workflows",
+    "engine/.veldo",
+    "engine/.veldo/decision_reviews",
+    "engine/.veldo/examples",
+    "engine/.veldo/keys",
+    "engine/.veldo/services",
+    "engine/bin",
+    "engine/plans",
+    "engine/proof",
+    "engine/releases",
+    "engine/runtime",
+    "engine/scripts",
+    "engine/scripts/runners",
+    "engine/scripts/runners/agent",
+    "engine/scripts/runners/agent/fixtures",
+    "engine/scripts/runners/api",
+    "engine/scripts/runners/api/fixtures",
+    "engine/scripts/runners/auth",
+    "engine/scripts/runners/auth/fixtures",
+    "engine/scripts/runners/cli",
+    "engine/scripts/runners/cli/fixtures",
+    "engine/scripts/runners/config",
+    "engine/scripts/runners/config/fixtures",
+    "engine/scripts/runners/contract",
+    "engine/scripts/runners/contract/fixtures",
+    "engine/scripts/runners/db",
+    "engine/scripts/runners/db/fixtures",
+    "engine/scripts/runners/design",
+    "engine/scripts/runners/design/fixtures",
+    "engine/scripts/runners/guardrail",
+    "engine/scripts/runners/guardrail/fixtures",
+    "engine/scripts/runners/guardrail/fixtures/fail",
+    "engine/scripts/runners/guardrail/fixtures/fail/api",
+    "engine/scripts/runners/guardrail/fixtures/fail/repository",
+    "engine/scripts/runners/guardrail/fixtures/fail/service",
+    "engine/scripts/runners/guardrail/fixtures/pass",
+    "engine/scripts/runners/guardrail/fixtures/pass/api",
+    "engine/scripts/runners/guardrail/fixtures/pass/repository",
+    "engine/scripts/runners/guardrail/fixtures/pass/service",
+    "engine/scripts/runners/integration",
+    "engine/scripts/runners/integration/fixtures",
+    "engine/scripts/runners/llm",
+    "engine/scripts/runners/llm/fixtures",
+    "engine/scripts/runners/mcp",
+    "engine/scripts/runners/mcp/fixtures",
+    "engine/scripts/runners/mobile",
+    "engine/scripts/runners/mobile/fixtures",
+    "engine/scripts/runners/mobile/fixtures/ios",
+    "engine/scripts/runners/perf",
+    "engine/scripts/runners/perf/fixtures",
+    "engine/scripts/runners/plugin",
+    "engine/scripts/runners/plugin/fixtures",
+    "engine/scripts/runners/process",
+    "engine/scripts/runners/process/fixtures",
+    "engine/scripts/runners/sandbox",
+    "engine/scripts/runners/sandbox/fixtures",
+    "engine/scripts/runners/security",
+    "engine/scripts/runners/security/fixtures",
+    "engine/scripts/runners/streaming",
+    "engine/scripts/runners/streaming/fixtures",
+    "engine/scripts/runners/terminal",
+    "engine/scripts/runners/terminal/fixtures",
+    "engine/scripts/runners/web",
+    "engine/scripts/runners/web/fixtures",
+    "engine/specs",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.426
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.975
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.976
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:ticket-collection-tuples",
+   "suite": "70_veldo_0069_bindings.py",
+   "module": "control_eligibility.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 12.896
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 12.947
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 12.445
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:tools173-extractor-drops-lazy",
+   "suite": "82_veldo_0173_tool_registry.py",
+   "module": "extract_tools.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.828
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.877,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.678
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:tools173-options-omitted",
+   "suite": "82_veldo_0173_tool_registry.py",
+   "module": "control_engine_claude.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.879,
+     "trace_error": "incomplete file-read trace"
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.88
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.827
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:tools173-receiver-revision-unread",
+   "suite": "82_veldo_0173_tool_registry.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "worker_or_trace_failed",
+    "host_input",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 849,
+   "directories": [
+    ".veldo",
+    "scripts/suites",
+    "specs"
+   ],
+   "absent": 2,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local/share/claude/versions/2.1.281"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.928
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.878
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.078,
+     "trace_error": "incomplete file-read trace"
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:ungated-edge-reaches-any-origin",
+   "suite": "70_veldo_0073_activation.py",
+   "module": "control_channel_projection.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 686,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 5.628
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 5.628
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:unreachable-newline",
+   "suite": "48_veldo_0108_relay.py",
+   "module": "control_relay.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 425,
+   "directories": [
+    "scripts/suites/support",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 1.768
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 1.768
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.718
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:v151-specialist-roster-unchecked",
+   "suite": "91_veldo_0151_specialists.py",
+   "module": "control_team.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 4.173
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 4.225
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 4.224
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:windows166-absent-status-refused",
+   "suite": "83_veldo_0166_usage_windows.py",
+   "module": "control_accounts.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.369
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 2.37
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 1.868
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:windows166-clear-signal-not-forwarded",
+   "suite": "83_veldo_0166_usage_windows.py",
+   "module": "control_launch.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.42
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 2.469
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 2.37
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:windows166-existing-chmod",
+   "suite": "83_veldo_0166_usage_windows.py",
+   "module": "accounts.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.42
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 2.419
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 2.37
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:windows166-named-only",
+   "suite": "83_veldo_0166_usage_windows.py",
+   "module": "control_engine_claude.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 680,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 2.469
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 2.419
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 2.02
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:worker129-runtime-architecture-bypassed",
+   "suite": "60_veldo_0053_architecture.py",
+   "module": "control_launch_work.py",
+   "refusals": [
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 679,
+   "directories": [
+    ".veldo",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 6.68
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 6.782
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 6.831
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:workflow-dangling-edge-accepted",
+   "suite": "65_veldo_0132_workflow.py",
+   "module": "control_workflow.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    ".veldo/runtime",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local",
+    "/home/dmitry/.local/share",
+    "/home/dmitry/.local/share/veldo",
+    "/home/dmitry/.local/share/veldo/langgraph",
+    "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 30.39
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 30.694
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 30.644
+    }
+   ]
+  },
+  {
+   "identity": "check_teeth_mutations.py:workflow-layout-reaches-runner",
+   "suite": "65_veldo_0132_workflow.py",
+   "module": "control_workflow_cycle.py",
+   "refusals": [
+    "host_input",
+    "starts_a_gate",
+    "runtime_unkeyable:/usr/share/locale"
+   ],
+   "files": 5694,
+   "directories": [
+    ".",
+    ".veldo",
+    ".veldo/runtime",
+    "specs"
+   ],
+   "absent": 1,
+   "history": [],
+   "host_inputs": [
+    "/home/dmitry/.local",
+    "/home/dmitry/.local/share",
+    "/home/dmitry/.local/share/veldo",
+    "/home/dmitry/.local/share/veldo/langgraph",
+    "/home/dmitry/.local/share/veldo/langgraph/b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37"
+   ],
+   "modes": [
+    {
+     "mode": "baseline",
+     "exit": 0,
+     "seconds": 30.643
+    },
+    {
+     "mode": "noop",
+     "exit": 0,
+     "seconds": 30.739
+    },
+    {
+     "mode": "mutant",
+     "exit": 0,
+     "seconds": 8.338
+    }
+   ]
+  }
+ ]
+}
