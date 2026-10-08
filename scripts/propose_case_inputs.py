@@ -97,6 +97,7 @@ BROAD = {'/', '/usr', '/usr/lib', '/usr/share', '/usr/local', '/usr/local/lib', 
 def trace_case(gate, case):
     files, absent, runtime, modes, directories = set(), set(), set(), [], set()
     runtime_absent, history, host, probed = set(), set(), set(), set()
+    external, worker_source = set(), set()
     common = Path(gate.common_directory(ROOT)).resolve()
     for mode in ('baseline', 'noop', 'mutant'):
         with tempfile.TemporaryDirectory(prefix='veldo-case-proposal-') as temporary:
@@ -140,13 +141,14 @@ def trace_case(gate, case):
             history.update(history_reads(trace, common, directory))
             for p, kind, success in confined:
                 # Ancestors of the Git common directory are the way to history, judged above.
-                if not success or p == common or common in p.parents or '.git' in p.parts or p in common.parents:
+                if p == common or common in p.parents or '.git' in p.parts or p in common.parents:
                     continue
-                if not (p == directory or directory in p.parents or p == ROOT or ROOT in p.parents
-                          or p in directory.parents or p in ROOT.parents
-                          or any(p == Path(b) or Path(b) in p.parents
-                                 for b in ('/usr', '/bin', '/sbin', '/lib', '/lib64', '/etc', '/proc', '/dev', '/sys'))):
-                    host.add(str(p))
+                if p == Path(__file__).resolve() and kind == 'content':
+                    # The gate's worker entry lies outside the snapshot (a traceback reads it).
+                    worker_source.add(str(p))
+                elif not (p == directory or directory in p.parents or p in directory.parents
+                          or p == ROOT or ROOT in p.parents or p in ROOT.parents):
+                    external.add((p, kind, success))
             # Proposed inputs are what the confined case read, the boundary the coordinator checks;
             # the authority's bootstrap before it is keyed as authority and mandatory inputs.
             reads = {(p, kind == 'listing') for p, kind, success in confined}
@@ -185,8 +187,11 @@ def trace_case(gate, case):
                     if path.is_file(): files.add(name)
                     elif not is_directory and not path.exists(): absent.add(name)
                 elif path.is_file() and any(path.is_relative_to(p) for p in RUNTIME_ROOTS):
-                    # The coordinator grants resolved paths: a link's target is the input it reads.
+                    # The coordinator grants resolved paths: a link's target is the input it reads,
+                    # and a target outside the runtime roots (resolv.conf into /run) is a host input.
                     runtime.update({str(path), str(path.resolve())})
+                    if not any(path.resolve().is_relative_to(p) for p in RUNTIME_ROOTS):
+                        host.add(str(path))
             # A runtime directory the case lists or opens is an input with its whole tree. One it
             # only probes is granted in main, unless a granted path already lies under it.
             for path, kind, success in confined:
@@ -195,7 +200,21 @@ def trace_case(gate, case):
                         and any(path.is_relative_to(p) for p in RUNTIME_ROOTS)):
                     (probed if kind == 'metadata' else runtime).add(str(path))
             modes.append(row)
+    # Outside the repository and scratch, the coordinator's rule (case_trace.check): a runtime grant
+    # or its ancestor's metadata, a declared absent runtime path, or one of three devices. Anything
+    # else (/proc/mounts, /selinux, credentials in a home) is a host input.
+    grants = [Path(p).resolve() for p in runtime | probed
+              | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}]
+    devices = {Path('/dev/null'), Path('/dev/urandom'), Path('/dev/ptmx')}
+    for p, kind, success in external:
+        resolved = p.resolve()
+        if ((not success and str(p) in runtime_absent) or resolved in devices
+                or any(resolved == g or g in resolved.parents for g in grants)
+                or (kind == 'metadata' and any(resolved in g.parents for g in grants))):
+            continue
+        host.add(str(p))
     return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes, 'directories': sorted(directories),
+            'worker_source': sorted(worker_source),
             'runtime_absent': sorted(runtime_absent), 'history': sorted(history)[:20],
             'host_inputs': sorted(host)[:20], 'runtime_probed': sorted(probed)}, runtime
 
@@ -225,6 +244,8 @@ def refusals(result, files, probed=()):
         reasons.append('reads_history')
     if result['host_inputs']:
         reasons.append('host_input')
+    if result.get('worker_source'):
+        reasons.append('reads_worker_source')
     if I.gate_entries(files):
         reasons.append('starts_a_gate')
     # A probed runtime directory is granted with its whole tree; one the coordinator's runtime
@@ -253,6 +274,9 @@ def main():
         parser.error('choose --case, --all or --from-measurement; no implicit registry drive')
     gate = load_gate()
     registry = {c['identity']: c for c in gate.inventory(ROOT, gate.common_directory(ROOT))}
+    # A snapshot holds only the coordinator's input closure: a file read outside it (a gate output,
+    # an ignored local file) is absent there, so it is proposed as absent.
+    closure = set(gate.read_inputs(ROOT, gate.common_directory(ROOT)))
     document = {'schema': 'veldo.case-inputs/v1', 'cases': {}, 'toolchains': {}}
     report = []
     if args.merge and args.output.exists():
@@ -271,6 +295,9 @@ def main():
             result, runtime = measured[name], set()
         else:
             result, runtime = trace_case(gate, case)
+            outside = sorted(set(result['files']) - closure)
+            result['files'] = sorted(set(result['files']) & closure)
+            result['absent'] = sorted(set(result['absent']) | set(outside))
         proposed = sorted(set(result['files']) | set(I.MANDATORY) | set(I.DRIVERS))
         current = document['toolchains'].get(case['driver'], {'paths': []})
         paths = set(current['paths']) | runtime | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}
