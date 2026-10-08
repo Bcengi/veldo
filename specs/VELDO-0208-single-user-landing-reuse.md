@@ -465,7 +465,11 @@ answered "Ok" (Telegram 32421, 2026-10-07T09:30:28Z).
   for the network, so the rules cannot drift. Every path that confines a mutation worker goes
   through mutation_sandbox.confine: the coordinator's workers (scripts/reuse_worker.py), the
   developer worker and the case-input proposal (check_gate_mutations.worker, which
-  scripts/propose_case_inputs.py probes). The worker-only socket filter
+  scripts/propose_case_inputs.py probes). Amended by VELDO-0210 AC7 (owner decision, 2026-10-07): a fresh
+  confined worker of the coordinator starts inside a tree the agent launcher makes, whose start
+  (agent_sandbox.run_tree) takes the same fork_gate_domain, and applies its Landlock there through
+  mutation_sandbox.confine_in_tree with the grants confine gives a fresh worker (worker_grants); a
+  declared case, the developer worker and the proposal keep mutation_sandbox.confine. The worker-only socket filter
   (mutation_sandbox.network_filter, in both forms) and mutation_sandbox.restrict are removed, and
   the broker has no no-network mode. confine keeps every non-network restriction: the worker reads
   only its root, its runtime set (and, fresh, the installed tools) and device null and random,

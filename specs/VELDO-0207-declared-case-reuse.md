@@ -110,6 +110,14 @@ running as the coordinator account outside the sandbox remains outside the threa
 
 ## Review correction contract, 2026-10-06
 
+Amended by VELDO-0210 AC7 (owner decision, 2026-10-07). A suite that starts a gate is never
+eligible for declaration: a declared case reads only its declared inputs, so it starts a gate only
+when they hold a gate entry (verify.sh, gate_candidate.py, gate_legs.py or agent_sandbox.py, any
+copy), and case_reuse refuses such a declaration with the reason starts_a_gate in the case's
+receipt; its cases always run fresh, because the gate nests in a fresh worker's tree, which no
+tracer may follow. Declared cases are otherwise unchanged: confined in place by
+mutation_sandbox.confine and traced by the coordinator.
+
 Metadata probes (including absent exists/is_file/stat/access/readlink) are inputs too.
 Directory listings require explicit directory declarations, keyed with their complete subtree.
 The proposer captures the same syscall family. Expected absent runtime paths are explicit,

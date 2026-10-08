@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208]
 placement: [enforcement]
-protected_paths: ["engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/gate_candidate.py", "scripts/gate_candidate.py", "engine/scripts/check_gate_mutations.py", "scripts/check_gate_mutations.py", "engine/scripts/gate_legs.py", "scripts/gate_legs.py", "scripts/check_first_use.py", "scripts/suites/shared.py", "engine/.veldo/control_verification.py", ".veldo/control_verification.py"]
+protected_paths: ["engine/scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.json", "scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/gate_candidate.py", "scripts/gate_candidate.py", "engine/scripts/check_gate_mutations.py", "scripts/check_gate_mutations.py", "engine/scripts/gate_legs.py", "scripts/gate_legs.py", "scripts/check_first_use.py", "scripts/suites/shared.py", "engine/.veldo/control_verification.py", ".veldo/control_verification.py", "scripts/mutation_sandbox.py", "engine/scripts/mutation_sandbox.py", "scripts/reuse_worker.py", "engine/scripts/reuse_worker.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/case_reuse.py", "engine/scripts/case_reuse.py"]
 footprint:
   - "docs/veldo-userns-setup.txt"
   - "engine/scripts/agent_sandbox.py"
@@ -19,6 +19,10 @@ footprint:
   - "engine/scripts/gate_candidate.py"
   - "engine/scripts/check_gate_mutations.py"
   - "engine/scripts/gate_legs.py"
+  - "engine/scripts/mutation_sandbox.py"
+  - "engine/scripts/reuse_worker.py"
+  - "engine/scripts/case_inputs.py"
+  - "engine/scripts/case_reuse.py"
   - "engine/.veldo/control_proof.py"
   - "engine/.veldo/control_verification.py"
   - ".veldo/control_proof.py"
@@ -30,6 +34,10 @@ footprint:
   - "scripts/gate_candidate.py"
   - "scripts/check_gate_mutations.py"
   - "scripts/gate_legs.py"
+  - "scripts/mutation_sandbox.py"
+  - "scripts/reuse_worker.py"
+  - "scripts/case_inputs.py"
+  - "scripts/case_reuse.py"
   - "scripts/check_first_use.py"
   - "scripts/check_install_and_run.py"
   - "scripts/migrate_to_veldo.py"
@@ -42,10 +50,13 @@ footprint:
   - "scripts/suites/66_veldo_0051_events.py"
   - "scripts/suites/69_veldo_0058_gate_output.py"
   - "scripts/suites/70_veldo_0057_landing.py"
+  - "scripts/suites/98_veldo_0204_mutation_receipts.py"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - "scripts/suites/102_veldo_0210_agent_profile_runtime.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "specs/VELDO-0207-declared-case-reuse.md"
+  - "specs/VELDO-0208-single-user-landing-reuse.md"
   - "specs/VELDO-0210-agent-profile-runtime.md"
   - "specs/index.md"
   - "proof/VELDO-0210/*"
@@ -63,7 +74,10 @@ observability:
     client's own state directory, a credential whose source lies in the store or a protected path,
     or a namespace helper that is unusable, cannot create the namespace, leaves a capability or does
     not report the tree's init ready within 60 seconds (the message names the owner's setup command)
-    refuses the start (exit 2) before any command runs.
+    refuses the start (exit 2) before any command runs A fresh mutation worker that is traced refuses
+    to start its tree (exit 2), and one in mode tree outside a tree refuses before any candidate code
+    runs; either is a worker error in the stage receipt. A declaration of a case whose inputs start a
+    gate is refused with the reason starts_a_gate, and the case runs fresh.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -119,8 +133,9 @@ acceptance_criteria:
       it; a scratch directory left behind is removed by the next start once it is more than a day
       old, unless a live launcher, its agent or a descendant that kept the agent's descriptors
       holds it. Set: each stop signal, a child that ignores TERM, a stop sent the instant the fork
-      returns, a launcher killed outright with a descendant that outlives the agent (in the tree's
-      own PID namespace the descendant ends with it), a live launcher's aged scratch, a stale directory with a shut subdirectory, a recent one, a stale one
+      returns, a launcher killed outright with a descendant that outlives the agent (it ends with
+      the tree: in the tree's own PID namespace with its init, nested by the init the killed relay
+      orphans, AC7), a live launcher's aged scratch, a stale directory with a shut subdirectory, a recent one, a stale one
       a live launcher holds, a stale link and a stale plain file. Completeness: every launch goes
       through launch(), which sweeps before creating its own scratch and holds a shared lock on it
       until removal; the confined command holds a second shared lock on its own descriptor. Test
@@ -239,6 +254,44 @@ acceptance_criteria:
       namespace/helper-execs-without-no-new-privs goes red. Skip the init's first check;
       namespace/init-sets-no-new-privs-first-and-holds-nothing goes red. Drop pass_fds from
       gate_candidate.py; namespace/gate-entry-hands-on-the-marker goes red.
+  - id: AC7
+    text: >
+      Claim: every fresh confined mutation worker starts inside a tree the agent launcher makes, the
+      same veldo-userns path and checks as the agent and gate profiles (run_tree: helper_problem, the
+      helper, namespace_init's checks, the init PID 1, the marker every process of the tree keeps;
+      nested, the outer tree's marker), and only then applies its worker Landlock and seccomp, so a
+      gate one of its cases starts nests exactly like any other nested launch. The coordinator's
+      bootstrap (reuse_worker.py worker) runs no candidate code: for a fresh job it starts the same
+      command in mode tree through mutation_sandbox.enter_tree and agent_sandbox.worker_tree, whose
+      agent takes the worker profile, the IPC filter alone, its listener served by the bootstrap
+      outside the tree (inside, the child profile denies tracing, so no process there could serve
+      it); inside, mutation_sandbox.confine_in_tree refuses unless the process is in such a tree and
+      applies the fresh worker's grants with Landlock, keeping the marker. A declared case (reuse,
+      traced under strace by the coordinator) stays as it was: mutation_sandbox.confine, outside
+      every tree; a traced process never starts a worker tree (tracer_problem), and no profile allows
+      tracing a process of a tree. A suite that starts a gate is never declared: a declared case
+      reads only its declared inputs, so it can start a gate only if they hold a gate entry
+      (verify.sh, gate_candidate.py, gate_legs.py or agent_sandbox.py, wherever a copy lies), and
+      case_reuse refuses such a declaration with the reason starts_a_gate in the case's receipt, so its
+      cases run fresh. A nested tree's init takes ORPHANED as its parent-death signal and, when the relay
+      that forked it is killed, ends every descendant before it exits, as the namespace's end does on
+      the host. The coordinator hands each worker the marker it holds (Workers.launcher_fds). Set: a
+      fresh fixture worker started as the coordinator starts it (PID 1 the namespace's init, the child
+      label, every capability set empty, no_new_privs, the marker held and handed to a child, a read
+      outside its grants refused); a launcher killed outright whose agent left a descendant in another
+      session holding a lock; a reviewed declaration of a case whose inputs hold verify.sh and one
+      holding an engine copy of gate_candidate.py, beside a declaration of a suite that starts none;
+      a traced and an untraced /proc status; one confined fresh case each of suites 66_0051, 67_0056,
+      69_0058 and 70_0057 through the real coordinator. Completeness: reuse_worker.py is the only
+      worker entry the coordinator starts, and every job without a declared runtime set enters a tree
+      there; case_reuse.Session is the only place a declaration becomes a snapshot. Test rows
+      workers/* in suite 102, on the host and in the gate's tree.
+    falsified_by: >
+      Confine a fresh worker in place (mutation_sandbox.confine) instead of entering its tree;
+      workers/fresh-worker-runs-in-a-tree and workers/gate-starting-suites-pass-confined-fresh go red.
+      Drop the gate entry check in case_reuse; workers/gate-starting-suite-refused-declaration goes
+      red. Keep SIGKILL as a nested init's parent-death signal; workers/killed-launcher-leaves-no-descendant
+      and scratch/killed-launcher-takes-its-descendants go red in the gate's tree.
 required_evidence: [unit]
 rollback: Revert the four protected files to a9fb11d6; runners fall back to their documented unconfined switch. On the host, `sudo rm /usr/local/lib/veldo/veldo-userns && sudo apparmor_parser -R /etc/apparmor.d/veldo-userns && sudo rm /etc/apparmor.d/veldo-userns`.
 ---
@@ -268,8 +321,10 @@ owner-installed, root-owned helper veldo-userns (built from this repository, not
 this account) and its AppArmor policy to create their namespaces, owner decision Telegram 32539.
 The first design (a root-owned copy of util-linux unshare under a profile flags=(unconfined)
 {userns}, installed 32542) let any program it ran keep user-namespace rights; the owner removed
-that profile (Telegram 32561-32562) and this design replaces it. Every other VELDO-0208 boundary is
-unchanged.
+that profile (Telegram 32561-32562) and this design replaces it. It amends VELDO-0208's worker
+boundary and VELDO-0207's declarations once more (owner decision, 2026-10-07, AC7): a fresh confined
+mutation worker starts inside a tree the agent launcher makes and confines itself there, and a suite
+that starts a gate is never declared. Every other VELDO-0208 boundary is unchanged.
 
 ## Design
 
@@ -500,6 +555,41 @@ unchanged.
   is reaped by it, and when A exits G kills every remaining descendant (each child in
   /proc/self/task/<pid>/children, then the ones that become its children) before it exits. The
   nested tree sees the outer tree's processes, never the host's.
+- Mutation workers (AC7, owner decision 2026-10-07). A confined mutation worker ran with
+  no_new_privs set and outside every tree, so when a case's suite started a gate the helper refused
+  (it refuses an inherited no_new_privs) and there was no marker to hand on: about 96 confined cases
+  of suites 70_0057, 67_0056, 66_0051 and 69_0058 failed, and one waited 120 seconds for a check
+  that never started, which cancelled the stage. Now reuse_worker.py, for a job with no declared
+  runtime set, loads only the launcher and mutation_sandbox, closes every descriptor but its ledger
+  and the marker it was handed, and calls mutation_sandbox.enter_tree, which repeats its own command
+  (interpreter options included, mode tree) through agent_sandbox.worker_tree. That is run_tree, the
+  start prepared_launch uses for the agent and gate profiles, factored out of it unchanged: the
+  child executes the helper (nested, forks the init), the init checks its namespace and reports
+  ready, the parent checks the helper's capabilities, and the agent keeps the marker. The worker
+  profile differs in one step only: its agent installs the IPC filter (Handoff) and execs without
+  Landlock, because the bootstrap it executes lives in the authority, which the worker's grants do
+  not include. The filter's listener goes to the bootstrap outside the tree, exactly as the gate
+  launcher serves its agent's; inside, the child profile denies every trace, so no process there
+  could serve it. In mode tree the bootstrap refuses unless nested_namespace holds (the child label,
+  a PID namespace not the host's, no capability, the marker), installs the ownership tracker, and
+  mutation_sandbox.confine_in_tree applies the fresh worker's grants (the same worker_grants as
+  confine) with Landlock beneath that filter, after launcher_write_problem, keeping the ledger and the
+  marker; only then does the observer load the candidate's suite. A gate the suite starts finds the
+  marker and nests (strict, since a listener is already above it). A traced process starts no worker
+  tree (tracer_problem reads TracerPid); a declared case is the only traced worker, and it keeps
+  mutation_sandbox.confine outside every tree, so nothing traces a process of a tree and neither
+  AppArmor profile changes. The unconfined list is unchanged. A declaration whose selected inputs
+  hold a gate entry (case_inputs.gate_entries: verify.sh, gate_candidate.py, gate_legs.py,
+  agent_sandbox.py, by file name, so engine copies and fixtures count) is refused in
+  case_reuse.Session with the reason starts_a_gate, which the stage writes into that case's receipt;
+  its cases run fresh. The rule is complete for declared cases: they read only their declared inputs
+  and the runtime set, which holds no gate. Teardown: the coordinator kills a worker's process group,
+  and the worker's tree has its own session, so its end comes from the parent-death chain. On the
+  host the namespace ends with its init. Nested (a coordinator inside a tree), the init has no
+  namespace of its own, so it takes ORPHANED (SIGRTMIN+3, blocked from the relay's start) as its
+  parent-death signal and on it kills the agent's group and every remaining descendant
+  (end_descendants) before exiting; that holds for every nested launch, not only workers. Cost: a
+  fresh worker starts a second interpreter, about 0.15 seconds more per worker on the owner's host.
 - Clients. agent_sandbox.json gains `clients`. Each client names its places (an environment variable
   the runner may set, else a default under the account's home), its `credentials`, its `seed_files`
   and its `read_links`. The launcher's client option selects one (claude or codex); without it no
