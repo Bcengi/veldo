@@ -180,11 +180,14 @@ print(json.dumps(r))
                                          '[dependencies]\nitoa="=1.0.15"\n')
         (crate / 'src/main.rs').write_text('fn main() { assert_eq!(itoa::forty_two(), 42); }\n')
         # The crates.io row fetches the same pin over the profile's TCP/TLS access. It runs only when
-        # this suite's own environment reaches crates.io, measured here outside the profile, so a
+        # this suite's own environment fetches from crates.io, measured here outside the profile, so a
         # gate domain without network reports a skip with the actual error instead of a pass or a fail.
-        import socket
+        # The measure is the request Cargo makes first, over HTTPS with the environment's proxy
+        # settings, so a reachable port behind a failing proxy is a skip too, never a false failure.
+        import urllib.request
         try:
-            socket.create_connection(('index.crates.io', 443), timeout=10).close()
+            with urllib.request.urlopen('https://index.crates.io/config.json', timeout=15) as answer:
+                answer.read(1)
             network = None
         except OSError as error:
             network = str(error)
