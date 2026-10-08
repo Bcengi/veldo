@@ -17,8 +17,11 @@ def _v210_toolchains(S, run, real, live, skip):
         worktree, scratch = top / 'worktree', top / 'scratch'
         home = top / 'account'
         rust, bins = home / '.rustup', home / '.cargo/bin'
-        for path in (worktree, scratch, rust, bins, home / '.cargo/registry', top / 'store'):
+        for path in (worktree, scratch, rust, bins, home / '.cargo/registry'):
             path.mkdir(parents=True)
+        # The launcher refuses a reuse store that is not private, so the fixture's is 0700.
+        (top / 'store').mkdir(mode=0o700)
+        (top / 'store').chmod(0o700)
         for path in (rust / 'tool', bins / 'tool', home / '.cargo/registry/private',
                      home / '.cargo/credentials', home / '.cargo/credentials.toml'):
             path.write_text('private fixture')
