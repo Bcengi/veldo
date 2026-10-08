@@ -24,17 +24,20 @@ comparison, and the difference lives in the enclosing flow, through helper calls
 shared namespace these fragments execute in (scripts/suites/manifest.json), and behind labels
 composed at runtime. A tree-walk could approximate it, would be wrong in both directions, and
 would be evadable by anybody who read it. So this check does the thing itself: it copies the
-repository, uses the sanctioned writer the way the layer exists to be used, runs the whole suite
+repository, uses the sanctioned writer the way the layer exists to be used, runs the affected suites
 over the result, and requires that NO assertion that passed before now fails. That is the property
 in one sentence and there is no spelling of the defect that survives it.
 
-WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest, measured at about
-90 seconds, plus two tree copies of about a second. The BASELINE run is LAZY: it happens only when
-the mutated run reports a failure, because with zero failures there is nothing to attribute. So
-the green path pays ONE nested run and the second run is paid only when the gate is about to be red
-anyway. That is why this sits in the `integration` slot of scripts/verify.sh, which was
-`na:no separate integration suite yet` and is now the one check in this repository that drives a
-sanctioned writer end to end and reads the whole suite's verdict over the result.
+WHAT IT COSTS. The former full nested run cost about 1919 seconds across the two gate
+legs in measurement 0210d. The unit dispatcher now records filesystem syscalls, including child
+processes, during its existing run. This check compares complete pristine and mutated inventories
+and reruns readers of the measured changes. Parent listings count. Missing or stale observations
+fall back to the full run; incomplete suite traces and gate readers rerun. Shared namespace
+influence propagates forward, and prerequisite closures preserve the dispatcher's execution model.
+This conservative boundary can reduce savings; it never treats a declaration as read evidence.
+The baseline is still LAZY and uses the same selection only after a mutated failure. Every run
+prints its selection reasons and wall time. The integration stage remains the sanctioned writer
+regression check, and kept suites retain the current unit stage's result.
 
 WHY BOTH TREES ARE COPIES, including the untouched one. Other lanes edit scripts/suites/ while this
 runs. Copying the pristine tree ONCE and then copying THAT copy makes the two trees byte-identical
@@ -266,10 +269,12 @@ def _child_env():
     diagnostic ordering would silently change what this measurement ran."""
     env = dict(os.environ)
     env.pop("VELDO_SUITE_ORDER", None)
+    env["VELDO_FIRST_USE_NESTED"] = "1"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     return env
 
 
-def _run_suite(tree, label):
+def _run_suite(tree, label, selected=None):
     """(passed, failed, [failure names]) from one full nested run, or CannotAnswer.
 
     THE FAILURE NAMES AND THE FAILURE COUNT COME FROM DIFFERENT LINES OF THE SAME OUTPUT, so they
@@ -278,7 +283,12 @@ def _run_suite(tree, label):
     those cases this check does not know what it measured and says so."""
     t0 = time.monotonic()
     try:
-        proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
+        argv = [sys.executable, "scripts/selftest.py"]
+        if selected is not None:
+            if not selected:
+                return 0, 0, []
+            argv += ["--suite", ",".join(selected)]
+        proc = subprocess.run(argv, cwd=str(tree),
                               capture_output=True, text=True, env=_child_env(),
                               timeout=RUN_TIMEOUT_S, pass_fds=launcher_fds())
     except subprocess.TimeoutExpired:
@@ -287,7 +297,8 @@ def _run_suite(tree, label):
         raise CannotAnswer("could not run the %s suite: %s" % (label, e))
     out = proc.stdout + proc.stderr
     names = [ln.split(FAIL_MARK, 1)[1].strip() for ln in out.splitlines() if FAIL_MARK in ln]
-    summary = [ln for ln in out.splitlines() if ln.startswith(SUMMARY_PREFIX) and "passed," in ln]
+    summary = [ln for ln in out.splitlines() if (ln.startswith(SUMMARY_PREFIX) or (selected is not None and
+               ln.startswith("selftest (PARTIAL,"))) and "passed," in ln]
     if len(summary) != 1:
         raise CannotAnswer("the %s run produced %d summary lines, expected exactly 1; its exit was "
                            "%d and its last output line was %r. Without the summary this check "
@@ -381,6 +392,42 @@ def _rmtree(path):
         print("   refusing to remove %s: not a tree this check created" % p, flush=True)
 
 
+def _selection(pristine, changes):
+    """Load fixed protected helpers only after flag validation, including shadow tests."""
+    spec = importlib.util.spec_from_file_location("first_use_reads", ROOT / "scripts/first_use_reads.py")
+    reads = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(reads)
+    spec = importlib.util.spec_from_file_location("first_use_scope", ROOT / "scripts/run_scope.py")
+    scope = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scope)
+    manifest = json.loads((pristine / "scripts/suites/manifest.json").read_text())
+    leg, listed = scope.gate_leg(os.environ)
+    names = [s["name"] for s in scope.fragments(manifest)]
+    if leg == "confined":
+        names = [n for n in names if n not in {n for n, rows in listed.items() if rows is None}]
+    elif leg == "unconfined":
+        names = [n for n in names if n in set(listed)]
+    decisions = reads.select(ROOT, changes, names)
+    selected = [n for n, reason in decisions.items() if reason]
+    if selected:
+        _, closure = scope.resolve(selected, manifest=manifest)
+        for name in names:
+            if name in closure and not decisions[name]:
+                decisions[name] = "prerequisite of selected suite"
+        selected = [n for n in names if decisions[n]]
+    for name, reason in decisions.items():
+        print("   %s %s%s" % ("rerun" if reason else "kept", name,
+                                  ": " + reason if reason else ""), flush=True)
+    return selected
+
+
+def _inventory(tree):
+    spec = importlib.util.spec_from_file_location("first_use_reads", ROOT / "scripts/first_use_reads.py")
+    reads = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(reads)
+    return reads.inventory(tree)
+
+
 def main(argv):
     keep = "--keep" in argv
     unknown = [a for a in argv if a.startswith("--") and a != "--keep"]
@@ -404,29 +451,39 @@ def main(argv):
         tmproot = Path(tempfile.mkdtemp(prefix=TMP_PREFIX))
         pristine = _copy(ROOT, tmproot / "pristine", "pristine")
         print("   pristine copy: %s" % pristine, flush=True)
-        baseline = None  # LAZY: only a failure needs attributing
+        baseline = {}  # LAZY, keyed by exactly the selection whose failures need attributing
 
         for mut in MUTATIONS:
             print("   family %s: %s" % (mut["family"], mut["why"]), flush=True)
             tree = _copy(pristine, tmproot / ("mutated-" + mut["family"]), "mutated")
+            before = _inventory(pristine)
             _apply(tree, mut)
-            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])
+            after = _inventory(tree)
+            changes = sorted(p for p in before.keys() | after.keys() if before.get(p) != after.get(p))
+            print("   changed paths: " + ", ".join(changes), flush=True)
+            try:
+                selected = _selection(pristine, changes)
+            except (OSError, ValueError, KeyError, TypeError, ImportError, subprocess.SubprocessError) as error:
+                print("   rerun all suites: incomplete trace: " + str(error), flush=True)
+                selected = None
+            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], selected)
             if not failed:
                 print("   %s: PASS. The suite is green with the layer in use." % mut["family"],
                       flush=True)
                 continue
-            if baseline is None:
+            key = None if selected is None else tuple(selected)
+            if key not in baseline:
                 print("   %d failure(s): running the untouched tree to separate a regression from "
                       "a failure that was already there" % failed, flush=True)
-                baseline = _run_suite(pristine, "baseline")[2]
-            regressions = [n for n in names if n not in baseline]
+                baseline[key] = _run_suite(pristine, "baseline", selected)[2]
+            regressions = [n for n in names if n not in baseline[key]]
             preexisting = len(names) - len(regressions)
             if preexisting:
                 notes.append("%s: %d failure(s) were already failing on the untouched tree; the "
                              "unit slot owns those" % (mut["family"], preexisting))
             for name in regressions:
                 verdict_red.append((mut, name, _locate(name)))
-    except CannotAnswer as e:
+    except (CannotAnswer, OSError, ValueError, ImportError) as e:
         print("", flush=True)
         print("FIRST USE: CANNOT ANSWER: %s" % e, flush=True)
         print("This is red, not a stand-down. The check could not measure its property, and a "
@@ -434,6 +491,7 @@ def main(argv):
               "refuses.", flush=True)
         return 2
     finally:
+        print("   wall time %.2fs" % (time.monotonic() - t0), flush=True)
         if tmproot is not None:
             if keep:
                 print("   kept: %s" % tmproot, flush=True)

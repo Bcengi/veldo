@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "103_veldo_0211_first_use_reads",
+   "file": "103_veldo_0211_first_use_reads.py",
+   "requires": [
+    "103_veldo_0211_first_use_reads"
+   ],
+   "regions": "Observed first use dependencies and conservative fallback.",
+   "requires_note": "Only ROOT and expect; isolated trace and writer fixtures."
   }
  ],
  "resource_capacities": {

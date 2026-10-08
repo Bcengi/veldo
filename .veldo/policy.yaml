@@ -63,6 +63,7 @@ protected_paths:
   # candidate is the safeguard for it.
   - {path: "scripts/selftest.py", floor: high}
   - {path: "scripts/check_first_use.py", floor: high}
+  - {path: "scripts/first_use_reads.py", floor: high}
   - {path: "scripts/run_scope.py", floor: high}
   - {path: "scripts/suites/shared.py", floor: high}
   - {path: "engine/.veldo/control_verification.py", floor: high}

@@ -36,7 +36,7 @@ def syscall_lines(trace):
         raise ValueError('incomplete file-read trace')
 
 
-def accesses(trace, *, cwd=None, after_confinement=False):
+def accesses(trace, *, cwd=None, after_confinement=False, on_line=None):
     """Yield (absolute path, content/metadata/listing, success) for every probe.
 
     FD annotations resolve *at calls and getdents. Track cwd for older path syscalls
@@ -46,6 +46,8 @@ def accesses(trace, *, cwd=None, after_confinement=False):
     directories = {}
     confined = not after_confinement
     for line in syscall_lines(trace):
+        if on_line is not None:
+            on_line(line)
         match = CALL.search(line)
         if not match:
             continue
