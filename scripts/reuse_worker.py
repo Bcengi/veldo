@@ -26,13 +26,14 @@ def load(path):
 def main():
     authority = Path(__file__).resolve().parents[1]
     mode, root = sys.argv[1], Path(sys.argv[2])
-    gate = load(authority / 'scripts/check_gate_mutations.py')
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
+        gate = load(authority / 'scripts/check_gate_mutations.py')
         print(json.dumps(gate.inventory_local(root)))
         return
-    # argv: worker|unconfined ROOT LEDGER_FD JOB. The ledger descriptor is the coordinator's
-    # append-only channel; the file it names lies outside this worker's write grants.
-    if mode not in ('worker', 'unconfined'):
+    # argv: worker|unconfined|tree ROOT LEDGER_FD JOB. The ledger descriptor is the coordinator's
+    # append-only channel; the file it names lies outside this worker's write grants. 'tree' is a
+    # fresh confined worker inside the tree its own 'worker' start made (VELDO-0210 AC7).
+    if mode not in ('worker', 'unconfined', 'tree'):
         raise ValueError('unknown worker mode: ' + mode)
     ledger, jobpath = int(sys.argv[3]), Path(sys.argv[4])
     if not stat.S_ISREG(os.fstat(ledger).st_mode) or not fcntl.fcntl(ledger, fcntl.F_GETFL) & os.O_APPEND:
@@ -40,10 +41,22 @@ def main():
     job = json.loads(jobpath.read_text())
     boundary = load(authority / 'scripts/agent_sandbox.py')
     sandbox = load(authority / 'scripts/mutation_sandbox.py')
+    # The tree's marker stays too: a coordinator inside a tree the agent launcher made hands it on,
+    # and a fresh worker's tree nests in that one (VELDO-0210 AC6).
+    boundary.close_descriptors([], keep=(ledger, *boundary.launcher_fds()))
+    fresh = 'runtime_paths' not in job and 'snapshot_root' not in job
+    if mode == 'worker' and fresh:
+        # A fresh confined worker starts inside a tree the agent launcher makes, the same helper,
+        # checks and init as the agent and gate profiles', and confines itself there (mode 'tree'),
+        # so a gate one of its cases starts nests like any other nested launch. A declared case,
+        # traced by the coordinator, never enters a tree. This process runs no candidate code.
+        sys.exit(sandbox.enter_tree(authority, root, Path(os.environ['TMPDIR']), 'tree', keep=(ledger,)))
+    if mode == 'tree' and not fresh:
+        raise ValueError('a declared case never runs inside a tree')
+    gate = load(authority / 'scripts/check_gate_mutations.py')
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.ROOT = root
     ownership = load(authority / 'scripts/mutation_ownership.py')
-    boundary.close_descriptors([], keep=(ledger,))
     # Ownership is persisted from the authority copy before any candidate code runs, so the
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
     # append to the same channel, so the coordinator validates every entry before acting.
@@ -58,9 +71,13 @@ def main():
         observe(gate, owner, job, root)
         return
     # Never load the candidate's sandbox or worker driver, even for fresh cases. The confinement is
-    # mutation_sandbox.confine, the gate profile's domain and network rule (VELDO-0208, owner
-    # decision Telegram 32421); this process returns from it only as the confined child.
-    sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=(ledger,))
+    # the gate profile's domain and network rule (VELDO-0208, owner decision Telegram 32421): for a
+    # fresh worker, inside its tree, mutation_sandbox.confine_in_tree; for a declared case
+    # mutation_sandbox.confine, from which this process returns only as the confined child.
+    if mode == 'tree':
+        sandbox.confine_in_tree(authority, root, Path(os.environ['TMPDIR']), keep=(ledger,), boundary=boundary)
+    else:
+        sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=(ledger,))
     observe(gate, owner, job, root)
 
 

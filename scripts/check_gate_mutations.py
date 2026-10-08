@@ -441,6 +441,13 @@ class Workers:
         self.leg = None
         self.legs = {}
 
+    boundary = None
+
+    def launcher_fds(self):
+        if self.boundary is None:
+            self.boundary = load(ROOT / 'scripts/agent_sandbox.py')
+        return self.boundary.launcher_fds()
+
     def check(self):
         if time.monotonic() >= self.deadline:
             raise Refused('mutation_budget_exceeded', 'combined deadline')
@@ -595,10 +602,13 @@ class Workers:
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
                         # A worker reads its job from its file, never from the coordinator's
                         # stdin, which may be a socket the worker's boundary would refuse.
+                        # Inside a tree the agent launcher made, a worker is handed its marker, so a
+                        # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=fixed_env(home, str(bindir) + ':/usr/bin:/bin'),
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
-                                                pass_fds=(ledger,), start_new_session=True)
+                                                pass_fds=(ledger, *self.launcher_fds()),
+                                                start_new_session=True)
                     except BaseException as error:
                         out.close()
                         err.close()
