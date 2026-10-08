@@ -10,6 +10,16 @@ MANDATORY = ('.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/
              'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/case_reuse.py',
              'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/suites/shared.py')
 
+# What starts a gate (VELDO-0210 AC7): the gate's entry, the launcher it starts and the leg runner
+# between them, wherever a copy lies (engine/, a fixture). A declared case reads only its declared
+# inputs, so one without any of these starts no gate, and one with any is refused declaration.
+GATE_ENTRIES = ('verify.sh', 'gate_candidate.py', 'gate_legs.py', 'agent_sandbox.py')
+
+
+def gate_entries(names):
+    """The declared inputs among `names` that start a gate, sorted; [] when none does."""
+    return sorted(name for name in names if Path(name).name in GATE_ENTRIES)
+
 
 def safe_name(name):
     path = Path(name)

@@ -64,6 +64,11 @@ class Session(M.Session):
                     self.runtime_checks[runtime] = M.runtime_identity(runtime, self.environment)
                     self.runtime_digests[runtime] = R.digest(self.runtime_checks[runtime])
                 chosen = I.selected(files, case, declaration)
+                if I.gate_entries(chosen):
+                    # A suite that starts a gate is never declared (VELDO-0210 AC7): its gate nests in
+                    # a fresh worker's tree, which no tracer may follow, so its cases run fresh.
+                    self.reasons[name] = 'starts_a_gate'
+                    continue
                 self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
                 value = {'schema': 'veldo.case-key/v1', 'files': I.identity(chosen), 'case': case,
                          'declaration': declaration, 'toolchain': toolchain,
