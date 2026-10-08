@@ -4,12 +4,18 @@
 --from-measurement imports baseline read sets as explicitly incomplete proposals.
 --case DRIVER:NAME traces baseline, noop and mutant; --all repeats that sequentially.
 All workers have a deadline and owned process group, removed with their temporary tree.
+A traced case is proposed only when it could qualify (admission): every mode ran and its trace
+parsed, baseline and noop are clean, it read no Git history and no host path outside the
+repository, runtime roots and its scratch, and none of its inputs starts a gate. Any other
+case is reported with its reason and not proposed. --merge keeps earlier proposals, so batches
+accumulate in one declarations file.
 """
 import argparse
 import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
@@ -44,9 +50,48 @@ def probe(jobfile, auditfile):
         print(json.dumps(gate.worker(json.loads(Path(jobfile).read_text()), keep=(audit.fileno(),))))
 
 
+# The shared suite preamble asks every suite's repository for its depth and root commits. In a
+# declared snapshot, which has no history, they answer 0 and none; every use of those answers
+# reads history again through its own command, which counts. Any other history access counts.
+PREAMBLE = (['git', '-C', str(ROOT), 'rev-list', '--count', 'HEAD'],
+            ['git', '-C', str(ROOT), 'rev-list', '--max-parents=0', 'HEAD'])
+
+
+def history_reads(trace, common, scratch):
+    """Successful accesses to this repository's Git history by the confined case, except the shared
+    preamble's. Repositories a suite builds in its own scratch are its outputs, not history."""
+    import ast
+    confined, preamble, found = False, set(), set()
+    for line in T.syscall_lines(trace):
+        pid = line.split(None, 1)[0]
+        if 'landlock_restrict_self(' in line and line.rstrip().endswith('= 0'):
+            confined = True
+        if not confined or ' = -1 ' in line:
+            continue
+        if 'execve(' in line:
+            argv = re.search(r'execve\("[^"]*", (\[.*?\]), ', line)
+            try:
+                if argv and ast.literal_eval(argv[1]) in [list(c) for c in PREAMBLE]:
+                    preamble.add(pid)
+                    continue
+            except (ValueError, SyntaxError):
+                pass
+            preamble.discard(pid)
+        if pid in preamble:
+            continue
+        for path in re.findall(r'"(/[^"]*)"|<(/[^<>]*)>', line):
+            path = Path(path[0] or path[1])
+            if scratch in path.parents:
+                continue
+            if path == common or common in path.parents or '.git' in path.parts:
+                found.add(str(path))
+    return found
+
+
 def trace_case(gate, case):
     files, absent, runtime, modes, directories = set(), set(), set(), [], set()
-    runtime_absent = set()
+    runtime_absent, history, host = set(), set(), set()
+    common = Path(gate.common_directory(ROOT)).resolve()
     for mode in ('baseline', 'noop', 'mutant'):
         with tempfile.TemporaryDirectory(prefix='veldo-case-proposal-') as temporary:
             directory = Path(temporary)
@@ -61,7 +106,7 @@ def trace_case(gate, case):
                 proc = subprocess.Popen(argv, env=gate.fixed_env(directory), cwd=ROOT, stdin=subprocess.DEVNULL,
                                         stdout=stdout, stderr=stderr, start_new_session=True)
                 try:
-                    code = proc.wait(timeout=90)
+                    code = proc.wait(timeout=gate.WORKER_BUDGET)
                 except subprocess.TimeoutExpired:
                     code = 124
                 finally:
@@ -76,8 +121,30 @@ def trace_case(gate, case):
                     row['observation'] = json.load(stdout)
                 except ValueError:
                     row['error'] = stderr.read().decode(errors='replace')[-1500:]
-            accesses = list(T.accesses(trace, cwd=ROOT))
-            reads = {(p, kind == 'listing') for p, kind, success in accesses}
+            try:
+                accesses = list(T.accesses(trace, cwd=ROOT))
+                # The authority's own bootstrap runs before the worker's Landlock; what the case
+                # itself read starts at that boundary, as in the coordinator's check.
+                confined = list(T.accesses(trace, cwd=ROOT, after_confinement=True))
+            except ValueError as error:
+                # An incomplete or undecodable trace proves nothing: the case is not proposed.
+                row['trace_error'] = str(error)[:300]
+                modes.append(row)
+                continue
+            history.update(history_reads(trace, common, directory))
+            for p, kind, success in confined:
+                # Ancestors of the Git common directory are the way to history, judged above.
+                if not success or p == common or common in p.parents or '.git' in p.parts or p in common.parents:
+                    continue
+                if not (p == directory or directory in p.parents or p == ROOT or ROOT in p.parents
+                          or p in directory.parents or p in ROOT.parents
+                          or any(p == Path(b) or Path(b) in p.parents
+                                 for b in ('/usr', '/bin', '/sbin', '/lib', '/lib64', '/etc', '/proc', '/dev', '/sys'))):
+                    host.add(str(p))
+            # Proposed inputs are what the confined case read, the boundary the coordinator checks;
+            # the authority's bootstrap before it is keyed as authority and mandatory inputs.
+            reads = {(p, kind == 'listing') for p, kind, success in confined}
+            seen = {p for p, kind, success in confined}
             runtime_absent.update(str(p) for p, kind, success in accesses
                                   if not success and not p.exists() and not p.is_relative_to(ROOT)
                                   and any(p.is_relative_to(base) for base in
@@ -93,6 +160,8 @@ def trace_case(gate, case):
                 for line in audit.read_text().splitlines():
                     event, name = json.loads(line)
                     path = Path(name)
+                    if path not in seen:
+                        continue
                     # A directory read is proposed as its complete repository subtree.
                     if event in ('os.listdir', 'os.scandir') and path.is_dir() and path.is_relative_to(ROOT):
                         reads.update((p, False) for p in path.rglob('*') if p.is_file())
@@ -113,7 +182,28 @@ def trace_case(gate, case):
                     runtime.add(str(path))
             modes.append(row)
     return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes, 'directories': sorted(directories),
-            'runtime_absent': sorted(runtime_absent)}, runtime
+            'runtime_absent': sorted(runtime_absent), 'history': sorted(history)[:20],
+            'host_inputs': sorted(host)[:20]}, runtime
+
+
+def refusal(result, files):
+    """Why a traced case cannot qualify under VELDO-0207, or None when it may be proposed."""
+    modes = {row['mode']: row for row in result['modes']}
+    if sorted(modes) != ['baseline', 'mutant', 'noop'] or any(
+            row['exit'] != 0 or 'trace_error' in row or 'observation' not in row for row in modes.values()):
+        return 'worker_or_trace_failed'
+    failed = {mode: row['observation']['observation'].get('failed_rows') for mode, row in modes.items()}
+    if failed['baseline'] or failed['noop']:
+        return 'unclean_baseline'
+    if not failed['mutant']:
+        return 'mutant_survived'
+    if result['history']:
+        return 'reads_history'
+    if result['host_inputs']:
+        return 'host_input'
+    if I.gate_entries(files):
+        return 'starts_a_gate'
+    return None
 
 
 def main():
@@ -125,6 +215,7 @@ def main():
     select.add_argument('--from-measurement', type=Path)
     parser.add_argument('--output', type=Path, default=ROOT / I.DECLARATIONS)
     parser.add_argument('--report', type=Path, default=ROOT / 'proof/VELDO-0207/proposals.json')
+    parser.add_argument('--merge', action='store_true', help='keep earlier proposals in --output and --report')
     args = parser.parse_args()
     if args.probe:
         probe(*args.probe)
@@ -135,6 +226,12 @@ def main():
     registry = {c['identity']: c for c in gate.inventory(ROOT, gate.common_directory(ROOT))}
     document = {'schema': 'veldo.case-inputs/v1', 'cases': {}, 'toolchains': {}}
     report = []
+    if args.merge and args.output.exists():
+        document = json.loads(args.output.read_text())
+        if document.get('schema') != 'veldo.case-inputs/v1':
+            parser.error('unknown declaration schema in ' + str(args.output))
+    if args.merge and args.report.exists():
+        report = json.loads(args.report.read_text())
     measured = None
     if args.from_measurement:
         measured = {r['identity']: r for r in json.loads(args.from_measurement.read_text())['cases']}
@@ -145,21 +242,30 @@ def main():
             result, runtime = measured[name], set()
         else:
             result, runtime = trace_case(gate, case)
+        proposed = sorted(set(result['files']) | set(I.MANDATORY) | set(I.DRIVERS))
+        reason = None if measured is not None else refusal(result, proposed)
+        report = [row for row in report if row.get('identity') != name]
+        report.append(dict(result, identity=name, refused=reason))
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps(report, indent=2) + '\n')
+        if reason:
+            document['cases'].pop(name, None)
+            args.output.write_text(json.dumps(document, indent=2) + '\n')
+            print(name, 'not proposed:', reason, flush=True)
+            continue
         current = document['toolchains'].setdefault(case['driver'], {'paths': [], 'reviewed': False})
+        current['reviewed'] = False
         current['absent'] = sorted(set(current.get('absent', [])) | set(result.get('runtime_absent', [])))
         paths = set(current['paths']) | runtime | {str(p) for p in M.required_runtime(gate.fixed_env('<scratch>'))}
         current['paths'] = sorted(p for p in paths if not any(p != parent and Path(p).is_relative_to(parent) for parent in paths))
         document['cases'][name] = {
-            'files': sorted(set(result['files']) | set(I.MANDATORY) | set(I.DRIVERS)),
+            'files': proposed,
             'absent': result.get('absent', []), 'directories': result.get('directories', []),
             'reviewed': False,
             'non_file_inputs': 'unreviewed', 'rationale': '',
             'trace_scope': 'baseline-only' if measured is not None else 'baseline-noop-mutant'}
-        report.append(dict(result, identity=name))
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.report.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(document, indent=2) + '\n')
-        args.report.write_text(json.dumps(report, indent=2) + '\n')
         print(name, len(result['files']), 'proposed', flush=True)
 
 
