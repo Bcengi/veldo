@@ -151,6 +151,9 @@ NS_GET_NSTYPE, NS_GET_PID_IN_PIDNS, CLONE_NEWPID = 0xb703, 0x8004b708, 0x2000000
 # receives itself (it shares the child's process group) is discarded, so the agent gets each once.
 RELAY = {signal.SIGTERM: signal.SIGRTMIN, signal.SIGINT: signal.SIGRTMIN + 1,
          signal.SIGHUP: signal.SIGRTMIN + 2}
+# A nested tree's init takes this as its parent-death signal: the relay that forked it is gone, so it
+# ends every descendant before it exits (no namespace of its own ends them with it).
+ORPHANED = signal.SIGRTMIN + 3
 # The namespace steps run before Landlock and use this handle, loaded once with the module.
 LIBC = ctypes.CDLL(None, use_errno=True)
 
@@ -1862,6 +1865,35 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                  'VELDO_EXPECTED_GIT_COMMON', 'CLAUDE_CODE_PROJECT_DIR_NAME'):
         # CLAUDE_CODE_PROJECT_DIR_NAME would name another projects/ folder than the one granted.
         env.pop(name, None)
+    roots = None
+    if profile == 'gate':
+        # Gate commands run this repository's own suites, which serve and dial Unix sockets and
+        # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
+        roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
+
+    def after():
+        # The confined group is gone: a refreshed credential goes back to its account. Nothing
+        # the write-back meets replaces the run's own exit status.
+        try:
+            write_back(scratch, credentials)
+        except Exception as error:
+            print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
+        # Before any unconfined CLI reads what the run left in its state.
+        try:
+            clean_state(state)
+        except Exception as error:
+            print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
+    return run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots, after=after)
+
+
+def run_tree(worktree, command, env, grants, profile, protected, scratch, stop=None, roots=None,
+             inherit=(), after=None):
+    """Run `command` as the agent of a tree (VELDO-0210 AC6) and return its exit status: the child
+    executes the helper (or, nested, forks the init), and the parent waits in await_start, then for
+    the tree, and calls `after` once the tree is gone. With `roots` the parent brokers the agent's
+    Unix sockets beneath them (fork_gate_domain); `inherit` names further descriptors the agent
+    keeps. The one way into a tree for every profile: prepared_launch (agent, gate) and worker_tree
+    (worker)."""
     # TERM, INT and HUP stay blocked from before the fork until the parent has registered its child:
     # a stop in between would otherwise end the launch, remove the scratch and leave the child running.
     launcher = os.getpid()
@@ -1869,10 +1901,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
     ready, report = os.pipe()
     mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
     try:
-        if profile == 'gate':
-            # Gate commands run this repository's own suites, which serve and dial Unix sockets and
-            # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
-            roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
+        if roots is not None:
             pid, side = fork_gate_domain(roots)
         else:
             pid, side = os.fork(), None
@@ -1921,17 +1950,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                     pass
             if side is not None:
                 side.close()
-            # The confined group is gone: a refreshed credential goes back to its account. Nothing
-            # the write-back meets replaces the run's own exit status.
-            try:
-                write_back(scratch, credentials)
-            except Exception as error:
-                print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
-            # Before any unconfined CLI reads what the run left in its state.
-            try:
-                clean_state(state)
-            except Exception as error:
-                print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
+            if after is not None:
+                after()
         if not started and reported != b'0' and (stop is None or stop.number is None):
             # Never a run with the host's /proc: the tree was killed before its command could start.
             print('agent sandbox refused to start: cannot create the PID namespace (%s: %s; any message above '
@@ -1955,7 +1975,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         for number in STOP_SIGNALS:
             signal.signal(number, signal.SIG_DFL if number in forward else signal.SIG_IGN)
         # The stops stay blocked here, in the helper and in the init: they take them with sigwaitinfo.
-        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD, *RELAY.values()})
+        signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGCHLD, *RELAY.values(), ORPHANED})
         os.setsid()
         # A launcher killed outright takes this child with it, and with it the init and the whole
         # namespace; a launcher gone before this point refuses the start.
@@ -1972,7 +1992,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         nested = marker is not None
         if not nested:
             marker = os.open('/proc/self/ns/pid', os.O_RDONLY)
-        keep = [held, marker, *(side.keep() if side else ())]
+        keep = [held, marker, *(side.keep() if side else ()), *inherit]
         # The launcher's procfs, before the namespace's covers it: the agent reads from it the pid the
         # launcher sees it by, for the gate profile's broker. The init watches the launcher and this
         # process (the helper, after its exec) through their pidfds.
@@ -2032,6 +2052,39 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         except OSError:
             pass
         os._exit(2)
+
+
+def tracer_problem(status=None):
+    """Why this process may not start a worker tree, or None: it is traced (its /proc status, or
+    `status`, names a tracer). No process of a tree the helper made is ever traced (VELDO-0210 AC7):
+    a traced worker is a declared case, which stays outside every tree."""
+    try:
+        status = Path('/proc/self/status').read_text() if status is None else status
+    except OSError as error:
+        return str(error)
+    fields = dict(line.split(':', 1) for line in status.splitlines() if ':' in line)
+    if fields.get('TracerPid', '').strip() != '0':
+        return 'it is traced (TracerPid %s); only a declared case runs traced' % fields.get('TracerPid', '').strip()
+    return None
+
+
+def worker_tree(command, env, cwd, scratch, inherit=()):
+    """Start a fresh confined mutation worker (VELDO-0210 AC7): run `command`, the authority's own
+    worker bootstrap, as the agent of a tree made exactly as the agent and gate profiles' trees are
+    (run_tree: the helper and its checks, or nested the outer tree's marker; the init PID 1; the
+    marker handed to every descendant), and return its exit status. The agent takes the worker
+    profile: the IPC filter only, whose listener this process, outside the tree, serves for Unix
+    addresses beneath `scratch`, as the gate launcher's does; the bootstrap then applies the worker's
+    Landlock itself (mutation_sandbox.confine_in_tree) before any candidate code runs, so a gate a
+    case starts nests like any other nested launch. A traced process starts none."""
+    problem = tracer_problem()
+    if problem:
+        print('agent sandbox refused to start a worker tree: ' + problem, file=sys.stderr, flush=True)
+        return 2
+    sys.stdout.flush()
+    sys.stderr.flush()
+    scratch = Path(scratch)
+    return run_tree(Path(cwd), command, env, [], 'worker', [], scratch, roots=[scratch], inherit=inherit)
 
 
 def init_entry_problem():
@@ -2289,7 +2342,9 @@ def confined_init(context):
     returns."""
     import select
     try:
-        if LIBC.prctl(1, signal.SIGKILL, 0, 0, 0):
+        # Nested, a relay killed outright leaves this init ORPHANED (blocked since the relay's start),
+        # and it ends every descendant first; in a namespace of its own the kernel ends them with it.
+        if LIBC.prctl(1, ORPHANED if context['nested'] else signal.SIGKILL, 0, 0, 0):
             raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
         alive = select.poll()
         for descriptor in context['alive']:
@@ -2320,7 +2375,14 @@ def confined_init(context):
             os.close(descriptor)
         relayed = {number: original for original, number in RELAY.items()}
         while True:
-            number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD, *relayed}).si_signo
+            number = signal.sigwaitinfo({*STOP_SIGNALS, signal.SIGCHLD, *relayed, ORPHANED}).si_signo
+            if number == ORPHANED:
+                try:
+                    os.killpg(agent, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                end_descendants()
+                os._exit(128 + signal.SIGKILL)
             if number in relayed:
                 try:
                     os.killpg(agent, relayed[number])
@@ -2358,7 +2420,12 @@ def confined_agent(launcher_proc, init, worktree, command, env, grants, profile,
         if side is not None:
             side.pid = int(os.readlink('self', dir_fd=launcher_proc))
         close_descriptors(protected, keep=keep)
-        mode = landlock(grants, profile, broker=side)
+        if profile == 'worker':
+            # A fresh mutation worker (worker_tree): the IPC filter now, served by the launcher
+            # outside the tree; the bootstrap this executes applies the worker's Landlock itself.
+            mode = side.install(LIBC)
+        else:
+            mode = landlock(grants, profile, broker=side)
         # PR_SET_PDEATHSIG is kept across exec; the init's death ends the namespace in any case.
         if ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != init:
             raise RuntimeError('the launcher is gone')
