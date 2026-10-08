@@ -386,18 +386,20 @@ class _Step:
 @_one_setup
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
-          tailscale=None, api_port=None):
+          tailscale=None, api_port=None, git_identities=None, workspace_identity=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
+    identity_options(git_identities, workspace_identity)
     options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
                    profile=profile, writable=writable, origin=origin)
     port = API.PORT if api_port is None else api_port
     runner = runner or organ('control_service').Systemctl()
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
         return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
-                     tailscale=tailscale, port=port, **options)
+                     tailscale=tailscale, port=port, git_identities=git_identities,
+                     workspace_identity=workspace_identity, **options)
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
     # Tailscale is read, with read-only commands, after every other check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
@@ -523,6 +525,10 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             binding = CE.enroll(workspace, ids['domain_uuid'], ids['store_uuid'], plan['store'], plan['host_identity'], 1,
                                 ACT.ssh_signer(plan['owner_key'], EL.ENROLLMENT_NAMESPACE), owner, clock(),
                                 repository_uuid=ids['repository_uuid'])
+        if git_identities is not None:
+            with step('git_identities'):
+                setup_identities(conn, ids['domain_uuid'], ids['repository_uuid'], workspace,
+                                 git_identities, workspace_identity)
         with step('ingress_configuration'):
             texts = ingress_files(plan, ids)
             signer_config = _private(os.path.join(host, 'signer.json'), texts[os.path.join(host, 'signer.json')])
@@ -744,7 +750,7 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
 
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
-          writable, origin, runner, clock, tailscale, port):
+          writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -771,6 +777,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     now = clock()
     reader = S.open_store(plan['store'], mode='r')
     try:
+        if git_identities is not None:
+            setup_identities(reader, ids['domain_uuid'], ids['repository_uuid'], workspace,
+                             git_identities, workspace_identity, check_only=True)
         reader.execute('BEGIN')
         state = CM.authority_state(S, reader)
         row = reader.execute('SELECT data FROM entities WHERE id=?', ('channel-enrollment:%s:%s' % (CHANNEL, owner),)).fetchone()
@@ -1076,6 +1085,38 @@ def upgrade_engine(plan, engine, runner, running):
                                commit=service_request(plan, {'operation': CS.OWNERSHIP_COMMIT})))
 
 
+def identity_options(identities, workspace_identity):
+    """A legacy setup can remain unbound; Git work refuses until explicitly bound.
+    Neither setup nor a consumer infers an identity from the workspace or account.
+    """
+    GI = organ('control_git_identity')
+    try:
+        if identities is None and workspace_identity is None:
+            return
+        found = GI.validate(identities)
+        if GI.one(workspace_identity) not in found:
+            raise GI.Refused('missing_authority:git_identity')
+    except GI.Refused as error:
+        raise Refused(error.code, 'Git identity configuration refused') from None
+
+
+def setup_identities(conn, domain, repository, workspace, identities, workspace_identity, *, check_only=False,
+                     observe=None):
+    """The setup identity step, also used by repository creation/adoption with explicit owner choices."""
+    GI = organ('control_git_identity')
+    identity_options(identities, workspace_identity)
+    try:
+        if check_only:
+            if GI.records(conn, domain) != sorted(identities, key=lambda r: r['id']):
+                raise GI.Refused('binding_mismatch:git_identity_change')
+            GI.resolve(conn, domain, repository, workspace)
+        return GI.configure(conn, domain, identities,
+                            {repository: dict(path=str(workspace), identity=workspace_identity)},
+                            check_only=check_only, observe=observe)
+    except GI.Refused as error:
+        raise Refused(error.code, 'Git identity configuration refused') from None
+
+
 def main(argv=None, **overrides):
     """veldo factory setup --state-root DIR --owner NAME --owner-key FILE --workspace CLONE --chat ID
     --token-file FILE. Prints one JSON answer; exit 0 set up, 1 refused by name, 2 usage."""
@@ -1094,6 +1135,8 @@ def main(argv=None, **overrides):
     parser.add_argument('--workspace', required=True, help='the Git clone the factory serves')
     parser.add_argument('--chat', required=True, type=int, help='his numeric Telegram user id')
     parser.add_argument('--token-file', required=True, help='this account\'s own 0600 bot token file; named, never copied')
+    parser.add_argument('--git-identities', help='JSON identity records containing only keystore references')
+    parser.add_argument('--workspace-identity', help='the explicit identity id for this repository')
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -1103,6 +1146,14 @@ def main(argv=None, **overrides):
         print(json.dumps(value, sort_keys=True))
         return code
     try:
+        if args.git_identities is not None:
+            try:
+                identities = json.loads(Path(args.git_identities).read_text())
+            except (OSError, ValueError):
+                raise Refused('invalid_input:git_identities_file', 'cannot read identity records') from None
+            overrides.update(git_identities=identities, workspace_identity=args.workspace_identity)
+        elif args.workspace_identity is not None:
+            overrides['workspace_identity'] = args.workspace_identity
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
                        **overrides)
     except Refused as exc:

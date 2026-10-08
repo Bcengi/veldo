@@ -348,15 +348,16 @@ class GitLandOps(LandOps):
                 default the watermark's own, laid down from Git objects outside the candidate.
     observations  where each land's observation directory (the sink and observation.json) is made;
                 by default the system temporary directory, removed with the workspace.
-    identity    (name, email) the candidate's merge and projection commits are made as; by
-                default the caller repository's own configured user.name and user.email.
+    identity_conn  authority store reader for explicit repository identity resolution. A factory
+                policy supplies its reader automatically. The legacy identity argument is ignored;
+                neither it nor the caller's Git configuration grants authorship authority.
     workspace_root  where candidate workspaces are made (the system temporary directory).
     observe     receives one event per stage: operation, repository, unit, candidate, the
                 accepted input versions, outcome, named refusal and its taxonomy."""
 
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
-                 repository=None, installation=None, observations=None, landing=None):
+                 repository=None, installation=None, observations=None, landing=None, identity_conn=None):
         self.repo_root = str(repo_root)
         self.build_ref = build_ref
         self.trunk = trunk
@@ -364,6 +365,8 @@ class GitLandOps(LandOps):
         self.push = push
         self.policy = policy
         self.identity = tuple(identity) if identity is not None else None
+        self.identity_conn = identity_conn
+        self.identity_record = None
         self.workspace_root = str(workspace_root) if workspace_root is not None else None
         self.observe = observe or (lambda event: None)
         self.domain = domain
@@ -412,18 +415,15 @@ class GitLandOps(LandOps):
                                    operation="merge-base")
 
     def _identity(self):
-        if self.identity is not None:
-            if len(self.identity) != 2 or not all(_text(v) for v in self.identity):
-                raise CandidateRefused("invalid_input:identity", "a name and an email")
-            return self.identity
-        found = []
-        for key in ("user.name", "user.email"):
-            value = self._git(self.repo_root, "config", "--get", key, ok=(0, 1))
-            found.append(value.stdout.strip() if value.returncode == 0 else "")
-        if not all(found):
-            raise CandidateRefused("missing_authority:identity",
-                                   "no identity is configured for the candidate's commits", operation="config")
-        return tuple(found)
+        module = _load('lander_git_identity', 'control_git_identity.py')
+        conn = self.identity_conn if self.identity_conn is not None else getattr(self.policy, 'conn', None)
+        if conn is None:
+            raise CandidateRefused('missing_authority:repository_identity', 'no repository identity record')
+        try:
+            self.identity_record = module.resolve(conn, self.domain, self.repository, self.repo_root)
+        except module.Refused as error:
+            raise CandidateRefused(error.code, 'repository identity refused') from None
+        return module.author(self.identity_record)
 
     # Observability.
 
@@ -434,6 +434,7 @@ class GitLandOps(LandOps):
                  "request": c.get("id"), "accepted_versions": {
                      k: c.get(k) for k in ("watermark", "implementation", "evidence", "commit", "tree") if c.get(k)},
                  "outcome": outcome}
+        event['identity'] = (self.identity_record or {}).get('id')
         if refusal is not None:
             event.update(refusal=refusal, taxonomy=taxonomy(refusal))
         event.update(extra)
@@ -478,6 +479,7 @@ class GitLandOps(LandOps):
                           "trunk": self.trunk, "remote": self.remote if self.push else None,
                           "workspace": None, "merges": [], "projections": {}}
         try:
+            self._identity()
             workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
             self.candidate["workspace"] = str(workspace)
             common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
