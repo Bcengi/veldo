@@ -705,6 +705,95 @@ runs the full gate and lands the real verification stamp; this branch records no
   namespace's init and the agent (the agent once confined, just before exec), so a launcher killed
   outright never leaves its agent running (AC6 has the chain).
 
+## Login sharing investigation, 2026-10-08
+
+Owner authorization: Telegram 32715, 2026-10-08, "agreed, fix the friction", in
+response to the proposal to fix login sharing. This authorizes work on the protected
+launcher, but is not a gate stamp or a landing approval. The requested outcome is
+concurrent confined runs sharing a login without a run refreshing an older credential.
+This section records a blocker to that outcome; it does not declare it implemented.
+The existing AC2 describes the copy and exit write-back implementation, whose delayed
+propagation is precisely the defect under investigation. Its claim that a refresh
+never logs the account out does not hold for concurrent runs.
+
+### Measured client behavior
+
+Codex CLI 0.154.0 uses FileAuthStorage for file credentials. Its save opens
+CODEX_HOME/auth.json with create, write and truncate and writes the JSON to that same
+inode; there is no temporary file or rename in this backend. Two successive API key
+logins using dummy keys in a throwaway CODEX_HOME both succeeded and retained the
+same auth.json inode. No real login was read or changed by this experiment.
+
+The matching upstream tag is rust-v0.154.0, commit
+6b9826e3aa83b1a5947db50f4332cb9c65f1b340. Relevant source:
+
+- [FileAuthStorage load and save](https://github.com/openai/codex/blob/6b9826e3aa83b1a5947db50f4332cb9c65f1b340/codex-rs/login/src/auth/storage.rs#L195).
+- [AuthManager refresh entry points](https://github.com/openai/codex/blob/6b9826e3aa83b1a5947db50f4332cb9c65f1b340/codex-rs/login/src/auth/manager.rs#L2784).
+- [Refresh and persistence](https://github.com/openai/codex/blob/6b9826e3aa83b1a5947db50f4332cb9c65f1b340/codex-rs/login/src/auth/manager.rs#L3031).
+
+AuthManager::refresh_token reloads storage, checks the account, and skips a refresh
+if the token changed. However, refresh_token_from_authority goes directly to
+refresh_token_from_authority_impl, which obtains auth_cached and sends that cached
+refresh token. UnauthorizedRecovery reload and authority refresh are separate steps.
+The refresh_lock is a Tokio Semaphore owned by one AuthManager, not a filesystem lock
+shared by processes. The file backend itself takes no process lock. Persisting tokens
+reloads storage after the network exchange, which cannot prevent reuse of a token
+already sent. Therefore sharing auth.json restores visibility, but does not establish
+the requested guarantee over every refresh path or simultaneous refreshes.
+
+Claude Code 2.1.290 was inspected from the embedded JavaScript in the installed Linux
+executable, whose SHA-256 is
+ea38ee1a1f946eea9bc6e97fb912dbe71fc379b25cc605d91b308afa1ca08be7.
+The plaintext backend C uses i() to resolve CLAUDE_CONFIG_DIR/.credentials.json.
+Its write method invokes Tn, which calls Ele. Ele creates an exclusive temporary file
+beside the destination, writes it, and publishes it by rename. Its fallback for some
+rename errors does not make this an in place writer: the ordinary path replaces the
+inode, and this call does not enable the fallback for denied temporary creation.
+
+Claude's Sl refresh path checks file mtime through uA, invalidates cached credentials,
+then takes ars(KS()). zPn names .oauth_refresh.lock inside the configuration directory;
+ars also acquires the legacy lock at the real configuration directory path plus .lock.
+While holding the refresh lock it invalidates the cache again, performs a strict
+storage read, and rechecks the access token before the refresh request. It holds the
+lock through Ocr's persistence and releases it in finally. The lock has heartbeat,
+stale detection and compromised-lock handling. Giving every run a private configuration
+directory also gives each its own lock names, so merely copying credentials sooner
+does not preserve this native transaction lock.
+
+System call tracing was attempted with strace and a throwaway Codex home, but the
+outer sandbox refused PTRACE_TRACEME. The statements about refresh and lock behavior
+are source findings, not a claim to have exercised a live OAuth exchange. The
+[official authentication documentation](https://learn.chatgpt.com/docs/auth)
+describes credential storage; the versioned implementation is the evidence for the
+precise write and refresh behavior above.
+
+### Design decision and blocker
+
+A single live file grant is mechanically compatible with Codex's file writes, but
+does not meet the stronger refresh guarantee. It is incompatible with Claude's
+ordinary atomic replacement. Granting either account directory would expose unrelated
+account state and is rejected. A polling or inotify copy broker also cannot establish
+the guarantee: another process can read before propagation, and neither mechanism
+invalidates a credential already cached by Codex. An exit write-back remains unsafe.
+
+Required design: coordinate the complete reload, refresh request and persistence
+transaction across runs of the selected login. Claude's native lock identity must
+be shared as well as its credential publication. Codex requires a cooperating client
+refresh hook or an authority that performs the refresh transaction on its behalf;
+a lock around file copies alone is insufficient. A synchronous file broker would
+also need to mediate reads and atomic publication before allowing either to complete,
+validate source identity and JSON under its lock, reject stale generations, and
+discard every unpublished write when a run dies. Its authority must be restricted to
+the selected client and login, with no account directory grant or access to another
+run's private scratch. These are requirements for a subsequent implementation, not
+properties of an implemented broker.
+
+Runtime changes are blocked on resolving that refresh coordination scope. Keep the
+per-login lease in place. Tests that only rewrite and reread JSON sequentially would
+prove propagation, but would not prove the cached-token and simultaneous-refresh
+cases exposed by the installed Codex. Acceptance must cover both cases in addition
+to the requested sequential refresh, killed run, and client isolation checks.
+
 ## Accepted residuals
 
 - A confined process can write any JSON object into its copy of the selected client's credential
