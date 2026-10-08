@@ -775,6 +775,10 @@ ordinary atomic replacement. Granting either account directory would expose unre
 account state and is rejected. A polling or inotify copy broker also cannot establish
 the guarantee: another process can read before propagation, and neither mechanism
 invalidates a credential already cached by Codex. An exit write-back remains unsafe.
+For example: A caches R0; B refreshes R0 and publishes R1; A's authority refresh entry
+point then sends cached R0. Even the guarded reload entry point can race when both
+processes reload R0 before either finishes its network request. A filesystem copy
+lock is not held across either client's network exchange.
 
 Required design: coordinate the complete reload, refresh request and persistence
 transaction across runs of the selected login. Claude's native lock identity must
@@ -793,6 +797,33 @@ per-login lease in place. Tests that only rewrite and reread JSON sequentially w
 prove propagation, but would not prove the cached-token and simultaneous-refresh
 cases exposed by the installed Codex. Acceptance must cover both cases in addition
 to the requested sequential refresh, killed run, and client isolation checks.
+
+### Local diagnostic runs
+
+The four requested suites were invoked sequentially, using their full manifest names,
+on the unchanged runtime. These partial runs are diagnostics, not gate evidence or
+proof of login sharing. No full gate or mutation coordinator was invoked directly.
+
+- Suite 102: 16 reported failure rows and 8 skipped groups, then an uncaught
+  PermissionError creating an AF_UNIX socket at suite line 1646. It printed 12 passing
+  Rust configuration checks but no final count. Live Rust, runtime, namespace,
+  credential, capability and persistent state groups were skipped. The outer process
+  has the child AppArmor label without the namespace marker descriptor, sees the
+  helper as not owned by root, and cannot create Unix sockets. Helper refusal tests
+  also observe /tmp owned by a different mapped uid and inherited no_new_privs.
+  Scratch lifecycle and worker rows after the exception were not reached.
+- Suite 98: 45 suite checks passed; with the shared prerequisite checks, 71 passed
+  and 0 failed. Exit 2 is the dispatcher's intentional partial-run status.
+- Suite 99: 28 suite checks passed; with shared prerequisites, 54 passed and 1 failed.
+  The worker and child store-access row failed because the sandbox broker was
+  unavailable. Exit 1.
+- Suite 101: 1 reported failure at candidate/planted-suite-publication-red, followed
+  by an uncaught PermissionError from os.openpty at suite line 176. No final count;
+  the subsequent live confinement and landing rows were not reached. Exit 1.
+
+The requested new concurrent refresh and killed-run regression cases have not been
+implemented. Existing live credential and isolation rows could not run in this
+sandbox. These results do not authorize lifting the external per-login lease.
 
 ## Accepted residuals
 
