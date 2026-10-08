@@ -149,14 +149,51 @@ print(json.dumps(r))
             return
         config.update(optional_read_roots=real['optional_read_roots'], toolchains=real['toolchains'])
         config_path.write_text(json.dumps(config))
-        # One small dependency fetched from crates.io. Both Cargo's locks and its registry live
-        # beneath the private CARGO_HOME; no account registry or credential is granted.
+        # The build rows are hermetic: the pinned itoa dependency comes from a local registry made
+        # here, so Cargo unpacks it into the private CARGO_HOME with no network. A gate domain without
+        # network therefore still proves the toolchain, the private registry and its cleanup.
+        import gzip
+        import hashlib
+        import io
+        import tarfile
+        registry = worktree / 'registry'
+        (registry / 'index/it/oa').mkdir(parents=True)
+        packed = io.BytesIO()
+        with tarfile.open(fileobj=packed, mode='w') as archive:
+            for name, text in (('Cargo.toml', '[package]\nname = "itoa"\nversion = "1.0.15"\nedition = "2018"\n'),
+                               ('src/lib.rs', 'pub fn forty_two() -> u8 { 42 }\n')):
+                data = text.encode()
+                member = tarfile.TarInfo('itoa-1.0.15/' + name)
+                member.size, member.mode = len(data), 0o644
+                archive.addfile(member, io.BytesIO(data))
+        crate_bytes = gzip.compress(packed.getvalue(), mtime=0)
+        (registry / 'itoa-1.0.15.crate').write_bytes(crate_bytes)
+        (registry / 'index/it/oa/itoa').write_text(json.dumps(
+            {'name': 'itoa', 'vers': '1.0.15', 'deps': [], 'cksum': hashlib.sha256(crate_bytes).hexdigest(),
+             'features': {}, 'yanked': False}) + '\n')
         crate = worktree / 'crate'
         (crate / 'src').mkdir(parents=True)
+        (crate / '.cargo').mkdir()
+        (crate / '.cargo/config.toml').write_text('[source.crates-io]\nreplace-with = "local"\n'
+                                                  '[source.local]\nlocal-registry = "%s"\n' % registry)
         (crate / 'Cargo.toml').write_text('[package]\nname="sandbox_probe"\nversion="0.1.0"\nedition="2021"\n'
                                          '[dependencies]\nitoa="=1.0.15"\n')
-        (crate / 'src/main.rs').write_text('fn main() { assert_eq!(itoa::Buffer::new().format(42), "42"); }\n')
-        build = r"""import json, os, subprocess, sys
+        (crate / 'src/main.rs').write_text('fn main() { assert_eq!(itoa::forty_two(), 42); }\n')
+        # The crates.io row fetches the same pin over the profile's TCP/TLS access. It runs only when
+        # this suite's own environment reaches crates.io, measured here outside the profile, so a
+        # gate domain without network reports a skip with the actual error instead of a pass or a fail.
+        import socket
+        try:
+            socket.create_connection(('index.crates.io', 443), timeout=10).close()
+            network = None
+        except OSError as error:
+            network = str(error)
+        online = worktree / 'online'
+        (online / 'src').mkdir(parents=True)
+        (online / 'Cargo.toml').write_text('[package]\nname="sandbox_online"\nversion="0.1.0"\nedition="2021"\n'
+                                          '[dependencies]\nitoa="=1.0.15"\n')
+        (online / 'src/main.rs').write_text('fn main() {}\n')
+        build = r'''import json, os, subprocess, sys
 from pathlib import Path
 r = {}
 flag = '-' * 2
@@ -165,19 +202,31 @@ for tool in ('cargo', 'rustc', 'rustfmt'):
     r[tool] = result.returncode == 0
 result = subprocess.run(['cargo', 'clippy', flag + 'version'], capture_output=True, text=True)
 r['clippy'] = result.returncode == 0
-result = subprocess.run(['cargo', 'run', flag + 'manifest-path', sys.argv[1]], capture_output=True, text=True, timeout=120)
+# Cargo reads .cargo/config.toml from its working directory, so the build runs in the crate.
+result = subprocess.run(['cargo', 'run', flag + 'offline', flag + 'manifest-path', sys.argv[1]],
+                        capture_output=True, text=True, timeout=120, cwd=str(Path(sys.argv[1]).parent))
 r['build'] = result.returncode == 0
 r['diagnostic'] = result.stderr[-1500:]
 cargo = Path(os.environ['CARGO_HOME'])
 r['private-registry'] = cargo.is_relative_to(Path(os.environ['HOME'])) and any((cargo / 'registry/src').glob('*/itoa-1.0.15'))
+if sys.argv[2] == 'online':
+    result = subprocess.run(['cargo', 'fetch', flag + 'manifest-path', sys.argv[3]], capture_output=True, text=True, timeout=120)
+    r['crates-io-fetch'] = result.returncode == 0 and any((cargo / 'registry/cache').glob('*crates.io*/itoa-1.0.15.crate'))
+    r['online-diagnostic'] = result.stderr[-1500:]
 r['scratch'] = os.environ['HOME']
 print(json.dumps(r))
-"""
-        result = run(config_path, worktree, [sys.executable, '-I', '-S', '-c', build, str(crate / 'Cargo.toml')], timeout=150)
+'''
+        result = run(config_path, worktree, [sys.executable, '-I', '-S', '-c', build, str(crate / 'Cargo.toml'),
+                                             'offline' if network else 'online', str(online / 'Cargo.toml')], timeout=270)
         expect('VELDO-0210 rust/installed-toolchain-starts: ' + result.stderr[-300:], result.returncode == 0)
         found = json.loads(result.stdout) if result.returncode == 0 else {}
         for name in ('cargo', 'rustc', 'rustfmt', 'clippy', 'build', 'private-registry'):
             expect('VELDO-0210 rust/installed-' + name + ': ' + found.get('diagnostic', '')[-300:], found.get(name) is True)
+        if network:
+            print('  SELFTEST SKIP: VELDO-0210 rust/installed-crates-io-fetch: this environment reaches no crates.io: ' + network)
+        else:
+            expect('VELDO-0210 rust/installed-crates-io-fetch: ' + found.get('online-diagnostic', '')[-300:],
+                   found.get('crates-io-fetch') is True)
         expect('VELDO-0210 rust/downloaded-registry-removed-at-exit',
                bool(found.get('scratch')) and not Path(found['scratch']).exists())
 

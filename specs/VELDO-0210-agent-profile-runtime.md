@@ -353,8 +353,11 @@ private environment settings. Workers with a declared runtime set receive no add
 settings. This amends the worker grants scope only for the existing optional runtime mechanism.
 
 Acceptance evidence is suite 102's rust rows: cargo, rustc, rustfmt and clippy run from the installed
-toolchain; a tiny executable uses the pinned itoa dependency fetched from crates.io over the
-profile's existing TCP/TLS access, with the downloaded source under scratch CARGO_HOME; writes
+toolchain; a tiny executable builds offline against the pinned itoa dependency from a local
+registry the suite makes, with the unpacked source under scratch CARGO_HOME, so the build rows
+need no network; the same pin is fetched from crates.io over the profile's existing TCP/TLS
+access whenever the suite's own environment reaches crates.io, measured outside the profile, and
+that one row reports a skip with the actual error where it does not (the gate's confined leg); writes
 into fixture account toolchain and Cargo directories are refused; existing fixture registry and
 both credential filenames cannot be read; scratch cleanup removes the cache; an absent toolchain
 still starts; inherited homes are cleared for absent or denied roots; fresh workers share the
