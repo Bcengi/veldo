@@ -4,7 +4,6 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import re
 import stat
 import subprocess
 import sys
@@ -21,25 +20,26 @@ NESTED = 'VELDO_FIRST_USE_NESTED'
 def inventory(root):
     """All repository paths, including absent versus present, types, mode and bytes.
 
-    Exclude Python bytecode created by observation itself. Git administration is included
-    in mutation inventories; neither a writer nor a selection can silently ignore it.
+    Git administration and existing bytecode are included in mutation inventories.
+    Symlinks are measured without following them; unreadable subtrees are refusals.
     """
     result = {}
-    for directory, dirs, files in os.walk(root, followlinks=False):
+    def unreadable(error):
+        raise error
+
+    for directory, dirs, files in os.walk(root, followlinks=False, onerror=unreadable):
         dirs[:] = sorted(dirs)
         for name in sorted(dirs + files):
             path = Path(directory) / name
             info = path.lstat()
             mode = info.st_mode
-            value = [mode]
+            value = [mode, info.st_uid, info.st_gid]
             if stat.S_ISLNK(mode):
                 value.append(os.readlink(path))
             elif stat.S_ISREG(mode):
                 value.append(hashlib.sha256(path.read_bytes()).hexdigest())
             elif not stat.S_ISDIR(mode):
                 raise ValueError('unmeasurable special file: ' + str(path))
-            # Directory timestamps change when unrelated runtime files are created.
-            # Content and permissions are the observable mutation contract here.
             value.append(info.st_mtime_ns)
             if not stat.S_ISDIR(mode):
                 value.append(info.st_size)
@@ -102,8 +102,9 @@ def collect(trace, root, directory, names):
     syscall, unknown process or gate reader is uncertainty. The common parser follows
     cwd, descriptors and failed probes across fork and exec, including native children.
     """
-    owners, current, rows, reasons = {}, ['startup'], {n: set() for n in names}, {}
+    owners, rows, reasons = {}, {n: set() for n in names}, {}
     startup, seen = set(), []
+    boundaries = {str(directory / ('boundary-' + n)): n for n in [*names, 'complete']}
     state = {'owner': 'startup', 'finished': False, 'root_pid': None}
 
     def line_observed(line):
@@ -119,23 +120,22 @@ def collect(trace, root, directory, names):
             owners[pid] = 'startup'
         if pid not in owners:
             raise ValueError('trace has an unattributed process')
-        if pid == state['root_pid']:
-            for name in [*names, 'complete']:
-                if json.dumps(str(directory / ('boundary-' + name))) in args:
-                    if name == 'complete':
-                        state['finished'] = True
-                    else:
-                        if name in seen:
-                            raise ValueError('duplicate suite boundary')
-                        seen.append(name)
-                        current[0] = name
-                        owners[pid] = name
-                    break
+        if pid == state['root_pid'] and str(directory / 'boundary-') in args:
+            quoted = T.QUOTED.search(args)
+            boundary = json.loads(quoted[0]) if quoted else None
+            name = boundaries.get(boundary)
+            if name == 'complete':
+                state['finished'] = True
+            elif name is not None:
+                if name in seen:
+                    raise ValueError('duplicate suite boundary')
+                seen.append(name)
+                owners[pid] = name
         owner = owners[pid]
         state['owner'] = owner
         if call in ('fork', 'vfork', 'clone', 'clone3') and result.split()[0].isdigit():
             owners[result.split()[0]] = owner
-        if call in ('ptrace', 'io_uring_setup'):
+        if 'CLONE_FS' in args or call in ('ptrace', 'io_uring_setup', 'chroot', 'pivot_root', 'setns', 'unshare'):
             reasons[owner] = 'unsupported nested tracing or asynchronous filesystem access'
 
     for path, kind, success in T.accesses(trace, cwd=root, on_line=line_observed):
@@ -188,7 +188,8 @@ def unit_wrapper(root, names, pass_fds=()):
             rows = collect(trace, root, directory, names)
             target.write_text(json.dumps({'root': str(root), 'fingerprint': before,
                                           'names': names, 'rows': rows}))
-        except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+        except Exception as error:
+            # Observation is optional; an observer defect cannot authorize a skip.
             print('first use reads: incomplete: ' + str(error), flush=True)
         return run.returncode
 

@@ -16,22 +16,26 @@ FD_READS = {'fstat', 'fstatfs', 'getdents', 'getdents64', 'fchdir'}
 def command(trace, argv):
     # file includes metadata probes, even failed ones. getdents is not in file.
     return ['/usr/bin/strace', '-f', '-qq', '-yy', '-s', '65535',
-            '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
+            '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self,ptrace,io_uring_setup,unshare,setns',
             '-o', str(trace), *argv]
 
 
 def syscall_lines(trace):
     pending = {}
-    for line in Path(trace).read_text(errors='replace').splitlines():
-        pid = line.split(None, 1)[0]
-        if '<unfinished ...>' in line:
-            pending[pid] = line.replace('<unfinished ...>', '')
-            continue
-        if ' resumed>' in line:
-            if pid not in pending:
-                raise ValueError('unmatched resumed syscall')
-            line = pending.pop(pid) + line.split(' resumed>', 1)[1]
-        yield line
+    with Path(trace).open(errors='replace') as stream:
+        for line in stream:
+            line = line.rstrip('\n')
+            if not line.strip():
+                raise ValueError('empty syscall record')
+            pid = line.split(None, 1)[0]
+            if '<unfinished ...>' in line:
+                pending[pid] = line.replace('<unfinished ...>', '')
+                continue
+            if ' resumed>' in line:
+                if pid not in pending:
+                    raise ValueError('unmatched resumed syscall')
+                line = pending.pop(pid) + line.split(' resumed>', 1)[1]
+            yield line
     if pending:
         raise ValueError('incomplete file-read trace')
 
@@ -56,7 +60,7 @@ def accesses(trace, *, cwd=None, after_confinement=False, on_line=None):
         if not confined:
             # Only authority bootstrap runs before this boundary. Never skip
             # candidate accesses or a later, candidate-installed ruleset.
-            if call == 'landlock_restrict_self' and result.strip() == '0':
+            if call == 'landlock_restrict_self,ptrace,io_uring_setup,unshare,setns' and result.strip() == '0':
                 confined = True
             continue
         current = directories.setdefault(pid, initial)
@@ -128,6 +132,10 @@ def accesses(trace, *, cwd=None, after_confinement=False, on_line=None):
         if call in ('chdir', 'fchdir') and success:
             directories[pid] = path
         yield path, kind, success
+        if call.startswith('open') and success:
+            target = re.search(r'^\d+<(/[^<>]*)>', result)
+            if target:
+                yield Path(os.path.normpath(target[1])), kind, success
     if not confined:
         raise ValueError('missing authority worker confinement boundary')
 

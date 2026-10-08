@@ -312,6 +312,9 @@ def _run_suite(tree, label, selected=None):
     except (ValueError, IndexError):
         raise CannotAnswer("could not read counts from the %s summary line %r"
                            % (label, summary[0][:200]))
+    if passed < 0 or failed < 0 or passed + failed == 0 or proc.returncode not in (0, 1):
+        raise CannotAnswer("the %s run has no valid assertion verdict (exit %d)"
+                           % (label, proc.returncode))
     if len(names) != failed:
         raise CannotAnswer("the %s run printed %d failure names and a summary saying %d failed. "
                            "These are one set counted twice and they disagree, so this check does "
@@ -456,15 +459,22 @@ def main(argv):
         for mut in MUTATIONS:
             print("   family %s: %s" % (mut["family"], mut["why"]), flush=True)
             tree = _copy(pristine, tmproot / ("mutated-" + mut["family"]), "mutated")
-            before = _inventory(pristine)
-            _apply(tree, mut)
-            after = _inventory(tree)
-            changes = sorted(p for p in before.keys() | after.keys() if before.get(p) != after.get(p))
-            print("   changed paths: " + ", ".join(changes), flush=True)
             try:
+                before = _inventory(pristine)
+            except (OSError, ValueError, ImportError) as error:
+                before = None
+                print("   inventory unavailable: " + str(error), flush=True)
+            _apply(tree, mut)
+            try:
+                if before is None:
+                    raise ValueError("changed path inventory unavailable")
+                after = _inventory(tree)
+                changes = sorted(p for p in before.keys() | after.keys() if before.get(p) != after.get(p))
+                print("   changed paths: " + ", ".join(changes), flush=True)
                 selected = _selection(pristine, changes)
             except (OSError, ValueError, KeyError, TypeError, ImportError, subprocess.SubprocessError) as error:
                 print("   rerun all suites: incomplete trace: " + str(error), flush=True)
+                print("   kept suites: none", flush=True)
                 selected = None
             _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], selected)
             if not failed:
@@ -492,6 +502,13 @@ def main(argv):
         return 2
     finally:
         print("   wall time %.2fs" % (time.monotonic() - t0), flush=True)
+        receipt = os.environ.get("VELDO_REUSE_RECEIPT")
+        if receipt:
+            observation = Path(receipt + ".first-use-" + os.environ.get("VELDO_GATE_LEG", "whole"))
+            try:
+                observation.unlink(missing_ok=True)
+            except OSError as error:
+                print("   observation cleanup: " + str(error), flush=True)
         if tmproot is not None:
             if keep:
                 print("   kept: %s" % tmproot, flush=True)

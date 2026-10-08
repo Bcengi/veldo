@@ -39,6 +39,8 @@ def _v211_first_use():
         receipt.touch()
         names = ['independent', 'reader', 'later']
         env = {k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')}
+        for key in (R.ACTIVE, R.NESTED, 'VELDO_FIRST_USE_OWNER'):
+            env.pop(key, None)
         env['VELDO_REUSE_RECEIPT'] = str(receipt)
 
         def call(pid, syscall):
@@ -69,7 +71,8 @@ def _v211_first_use():
                            % (tree / '.veldo')) + call(
                                10, 'getdents64(3<%s>, [], 32768) = 0' % (tree / '.veldo'))
             metadata = call(10, 'newfstatat(AT_FDCWD, ".veldo/events.jsonl", {}, 0) = 0')
-            for label, body in [('direct', direct), ('native-child', child),
+            for label, body in [('direct', direct), ('python-child', child.replace('/usr/bin/cat', '/usr/bin/python3')),
+                                ('native-child', child),
                                 ('directory-listing', listing), ('metadata', metadata)]:
                 result = decision(observed(body))
                 expect('VELDO-0211 %s reruns changed path reader' % label,
@@ -78,6 +81,12 @@ def _v211_first_use():
                        result['independent'] is None)
                 expect('VELDO-0211 %s propagates shared namespace influence' % label,
                        result['later'] is not None)
+            resumed = direct.replace(' = 3<', ' <unfinished ...>\n10 <... openat resumed> ) = 3<')
+            expect('VELDO-0211 resumed child syscall remains observed',
+                   '.veldo/events.jsonl' in decision(observed(resumed))['reader'])
+            alias = call(10, 'openat(AT_FDCWD, "gone-alias", O_RDONLY) = 3<%s>' % events)
+            expect('VELDO-0211 returned descriptor preserves a removed alias target',
+                   '.veldo/events.jsonl' in decision(observed(alias))['reader'])
             rows = observed('')
             expect('VELDO-0211 disjoint observations keep all suites',
                    all(v is None for v in decision(rows).values()))
@@ -172,7 +181,7 @@ def _v211_first_use():
             'if failed: print("SELFTEST FAIL: recorded spend must be empty")\n'
             'print("selftest: %d passed, %d failed" % (1-failed, failed))\n')
         output = io.StringIO()
-        with patch.object(F, 'ROOT', tree), patch.object(F, 'SELFTEST', tree / 'scripts/selftest.py'), \
+        with patch.object(F, 'ROOT', tree), patch.object(F, 'SUITES', tree / 'scripts/suites'), patch.object(F, 'SELFTEST', tree / 'scripts/selftest.py'), \
                 patch.object(F, '_inventory', R.inventory), patch.object(F, 'launcher_fds', return_value=()), \
                 patch.object(F, '_selection', return_value=['reader']), \
                 contextlib.redirect_stdout(output):
@@ -185,13 +194,21 @@ def _v211_first_use():
         def run_record(tree, label, selected=None):
             calls.append((label, selected))
             return 1, 0, []
-        with patch.object(F, 'ROOT', tree), patch.object(F, 'SELFTEST', tree / 'scripts/selftest.py'), \
+        with patch.object(F, 'ROOT', tree), patch.object(F, 'SUITES', tree / 'scripts/suites'), patch.object(F, 'SELFTEST', tree / 'scripts/selftest.py'), \
                 patch.object(F, '_inventory', R.inventory), patch.object(F, 'launcher_fds', return_value=()), \
                 patch.object(F, '_selection', side_effect=ValueError('tracing unavailable')), \
                 patch.object(F, '_run_suite', side_effect=run_record), \
                 contextlib.redirect_stdout(io.StringIO()):
             verdict = F.main([])
         expect('VELDO-0211 unavailable tracing falls back to full run and baseline stays lazy',
+               verdict == 0 and calls == [('mutated(spend_recorded)', None)])
+        calls.clear()
+        with patch.object(F, 'ROOT', tree), patch.object(F, 'SELFTEST', tree / 'scripts/selftest.py'), \
+                patch.object(F, '_inventory', side_effect=OSError('unreadable inventory')), \
+                patch.object(F, '_run_suite', side_effect=run_record), \
+                contextlib.redirect_stdout(io.StringIO()):
+            verdict = F.main([])
+        expect('VELDO-0211 unreadable inventory falls back to full run',
                verdict == 0 and calls == [('mutated(spend_recorded)', None)])
 
         (tree / 'scripts/selftest.py').write_text('print("crashed without a summary")\n')

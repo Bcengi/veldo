@@ -233,12 +233,19 @@ if LEG:
               "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
         sys.exit(2)
 
-FR = _protected("first_use_reads", HERE / "first_use_reads.py")
-if SELECTOR is None and not ENV_ORDER:
-    _launcher = _protected("first_use_launcher", HERE / "agent_sandbox.py")
-    _traced = FR.unit_wrapper(HERE.parent, [s["name"] for s in RUN], _launcher.launcher_fds())
-    if _traced is not None:
-        sys.exit(_traced)
+FR = None
+if not os.environ.get("VELDO_FIRST_USE_NESTED") and (
+        os.environ.get("VELDO_FIRST_USE_TRACE") or
+        (SELECTOR is None and not ENV_ORDER and os.environ.get("VELDO_REUSE_RECEIPT"))):
+    try:
+        FR = _protected("first_use_reads", HERE / "first_use_reads.py")
+    except (OSError, ImportError) as error:
+        print("first use reads: unavailable: %s" % error, flush=True)
+    if FR is not None and SELECTOR is None and not ENV_ORDER:
+        _launcher = _protected("first_use_launcher", HERE / "agent_sandbox.py")
+        _traced = FR.unit_wrapper(HERE.parent, [s["name"] for s in RUN], _launcher.launcher_fds())
+        if _traced is not None:
+            sys.exit(_traced)
 
 SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
@@ -255,7 +262,8 @@ T0 = time.monotonic()
 PER_SUITE = []
 _LEG_FLOOR = shared.PASS + shared.FAIL
 for _s in RUN:
-    FR.marker(_s["name"])
+    if FR is not None:
+        FR.marker(_s["name"])
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
@@ -264,7 +272,8 @@ for _s in RUN:
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
 
-FR.marker("complete")
+if FR is not None:
+    FR.marker("complete")
 
 if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR:
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "

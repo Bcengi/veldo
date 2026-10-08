@@ -9,6 +9,18 @@ human_approval: required
 lane: standalone
 placement: [enforcement]
 protected_paths: [scripts/check_first_use.py, scripts/selftest.py, scripts/first_use_reads.py, scripts/case_trace.py, engine/scripts/case_trace.py, .veldo/policy.yaml]
+footprint:
+  - scripts/check_first_use.py
+  - scripts/selftest.py
+  - scripts/first_use_reads.py
+  - scripts/case_trace.py
+  - engine/scripts/case_trace.py
+  - scripts/suites/103_veldo_0211_first_use_reads.py
+  - scripts/suites/manifest.json
+  - scripts/suites/requires.json
+  - .veldo/policy.yaml
+  - specs/index.md
+  - proof/VELDO-0211/working-notes.md
 acceptance_criteria:
   - id: AC1
     text: For every suite in the current gate leg, selection uses syscall observations from that gate's unit run, including Python and other children, metadata probes and parent directory listings. Only complete evidence bound to the same repository contents permits keeping a result; selected suites include their prerequisite closure.
