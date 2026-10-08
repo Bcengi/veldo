@@ -129,7 +129,6 @@ def trace_case(gate, case):
                 except ValueError:
                     row['error'] = stderr.read().decode(errors='replace')[-1500:]
             try:
-                accesses = list(T.accesses(trace, cwd=ROOT))
                 # The authority's own bootstrap runs before the worker's Landlock; what the case
                 # itself read starts at that boundary, as in the coordinator's check.
                 confined = list(T.accesses(trace, cwd=ROOT, after_confinement=True))
@@ -153,7 +152,7 @@ def trace_case(gate, case):
             # the authority's bootstrap before it is keyed as authority and mandatory inputs.
             reads = {(p, kind == 'listing') for p, kind, success in confined}
             seen = {p for p, kind, success in confined}
-            runtime_absent.update(str(p) for p, kind, success in accesses
+            runtime_absent.update(str(p) for p, kind, success in confined
                                   if not success and not p.exists() and not p.is_relative_to(ROOT)
                                   and any(p.is_relative_to(base) for base in
                                           ('/usr', '/lib', '/lib64', '/etc', '/proc', '/sys')))
