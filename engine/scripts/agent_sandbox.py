@@ -1099,8 +1099,7 @@ def exit_code(status):
 
 def account_path(value):
     """Resolve account paths independently of a launcher's private HOME."""
-    home = Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
-    return home / value[2:] if value.startswith('~/') else Path(value)
+    return account_home() / value[2:] if value.startswith('~/') else Path(value)
 
 
 def toolchain_environment(config, scratch, grants, env):

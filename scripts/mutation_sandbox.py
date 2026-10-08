@@ -73,7 +73,7 @@ def worker_grants(boundary, authority, root, scratch, runtime_paths=None, reads=
                for p in (RUNTIME if runtime_paths is None else runtime_paths) if Path(p).exists()]
     if runtime_paths is None:
         # A fresh worker reads the installed tools the gate profile grants the same suites (the
-        # Codex and Claude Code binaries, the langgraph runtime), read only. A declared case runs
+        # Codex and Claude Code binaries, the langgraph runtime and Rust), read only. A declared case runs
         # only its keyed runtime set, so it gets none of them.
         config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
         grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]

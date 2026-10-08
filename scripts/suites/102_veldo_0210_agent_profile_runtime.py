@@ -7,11 +7,11 @@ def _v210_toolchains(S, run, real, live, skip):
     import json
     import os
     from pathlib import Path
-    import subprocess
     import sys
     import tempfile
     from unittest.mock import patch
 
+    passed_before, failed_before = PASS, FAIL
     with tempfile.TemporaryDirectory(prefix='v210-rust-') as temporary:
         top = Path(temporary)
         worktree, scratch = top / 'worktree', top / 'scratch'
@@ -49,6 +49,19 @@ def _v210_toolchains(S, run, real, live, skip):
             S.toolchain_environment(changed, scratch, adjusted, inherited)
             expect('VELDO-0210 rust/%s-root-clears-inherited-environment' % kind,
                    'RUSTUP_HOME' not in inherited and 'CARGO_HOME' not in inherited)
+        ungranted = dict(env)
+        S.toolchain_environment(config, scratch, [(scratch, S.READ | S.WRITE)], ungranted)
+        expect('VELDO-0210 rust/root-needs-an-actual-read-grant', 'RUSTUP_HOME' not in ungranted)
+        path_env = {'PATH': '/usr/bin'}
+        S.toolchain_environment(config, scratch, [(rust, S.READ)], path_env)
+        expect('VELDO-0210 rust/path-needs-an-actual-read-grant', path_env['PATH'] == '/usr/bin')
+        unsafe = dict(config, toolchains=[{'root': str(rust), 'environment': {'CACHE': str(top / 'outside')}}])
+        refused = False
+        try:
+            S.toolchain_environment(unsafe, scratch, grants, {})
+        except ValueError:
+            refused = True
+        expect('VELDO-0210 rust/environment-outside-root-and-scratch-refused', refused)
         writable = [*grants, (rust, S.READ | S.WRITE)]
         inherited = dict(env)
         S.toolchain_environment(config, scratch, writable, inherited)
@@ -75,6 +88,8 @@ def _v210_toolchains(S, run, real, live, skip):
                 declared = worker.worker_grants(S, ROOT, worktree, scratch, runtime_paths=[])
                 expect('VELDO-0210 rust/declared-worker-gets-no-extra-runtime',
                        (rust, S.READ) not in declared and (bins, S.READ) not in declared and not apply.called)
+        print('  VELDO-0210 rust/configuration checks: %d passed, %d failed' %
+              (PASS - passed_before, FAIL - failed_before))
         if not live:
             skip('rust/confined-fixture, absent-root and installed-toolchain rows')
             return
