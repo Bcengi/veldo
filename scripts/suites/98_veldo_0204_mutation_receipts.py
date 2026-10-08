@@ -107,8 +107,9 @@ def _v204_mutation_receipts():
                     'git': lambda *a: 'head', 'snapshot': snapshot,
                     'inputs_unchanged': lambda *a: True, 'budget_for': lambda *a: 10000,
                     # The real reuse session runs: these controlled cases declare no inputs,
-                    # so every one is a fresh miss and no cache is opened.
-                    'load': lambda path: (real_load(path) if Path(path).name == 'case_reuse.py' else
+                    # so every one is a fresh miss and no cache is opened. The real launcher names
+                    # the marker each worker is handed (VELDO-0210 AC7).
+                    'load': lambda path: (real_load(path) if Path(path).name in ('case_reuse.py', 'agent_sandbox.py') else
                                           types.SimpleNamespace(cleanup=cleanup, mutate=teeth.mutate)),
                 }
                 for key, value in overrides.items():

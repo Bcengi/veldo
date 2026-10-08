@@ -43,8 +43,14 @@ if module != ROOT / '.veldo/fixture.py' and (ROOT / 'scripts/crash').exists():
     raise RuntimeError('controlled worker crash')
 if (ROOT / 'scripts/hang').exists():
     import os, subprocess, sys, time
-    child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])
-    (Path(os.environ['TMPDIR']) / 'child.pid').write_text(str(child.pid))
+    # The child holds a lock on a file in the home until it ends: a pid means nothing outside the
+    # worker's own PID namespace (VELDO-0210 AC7), a lock any process can test.
+    lock = Path(os.environ['TMPDIR']) / 'child.lock'
+    child = subprocess.Popen([sys.executable, '-c', 'import fcntl, sys, time; f = open(sys.argv[1], "w"); '
+                              'fcntl.flock(f, fcntl.LOCK_EX); open(sys.argv[2], "w").close(); time.sleep(30)',
+                              str(lock), str(lock) + '.held'])
+    while not Path(str(lock) + '.held').exists():
+        time.sleep(0.01)
     time.sleep(30)
 expect('fixture/teeth', 'answer = True' in module.read_text())
 expect('fixture/control', True)
@@ -280,7 +286,8 @@ def qualification(module, repository, selected=None):
                     evidence[row] = hits
                     continue
                 (root / 'scripts/hang').touch()
-                worker = module.Workers(_m123_time.monotonic() + 0.4)
+                # Long enough for the worker to start its tree (VELDO-0210 AC7) and reach the hang.
+                worker = module.Workers(_m123_time.monotonic() + 2.0)
                 started = _m123_time.monotonic()
                 timed_out = False
                 case = module.inventory(root, common)[0]
@@ -289,15 +296,19 @@ def qualification(module, repository, selected=None):
                 except module.Refused as error:
                     timed_out = error.code == 'mutation_budget_exceeded'
                 child_dead = False
-                pidfile = worker.homes['hung'] / 'child.pid' if 'hung' in worker.homes else root / 'absent'
-                if pidfile.exists():
-                    pid = int(pidfile.read_text())
-                    status = _m123_Path('/proc') / str(pid) / 'stat'
-                    try:
-                        child_dead = status.read_text().split()[2] == 'Z'
-                    except (FileNotFoundError, ProcessLookupError):
-                        # Reaping may race the read, including after /proc opens the file.
-                        child_dead = True
+                lockfile = worker.homes['hung'] / 'child.lock' if 'hung' in worker.homes else root / 'absent'
+                if _m123_Path(str(lockfile) + '.held').exists():
+                    # The child held the lock; it is free once the child has ended (a zombie holds no
+                    # descriptor). The kill reaches it through its tree, so allow it a moment.
+                    import fcntl as _m123_fcntl
+                    with open(lockfile) as held:
+                        for _ in range(200):
+                            try:
+                                _m123_fcntl.flock(held, _m123_fcntl.LOCK_EX | _m123_fcntl.LOCK_NB)
+                                child_dead = True
+                                break
+                            except BlockingIOError:
+                                _m123_time.sleep(0.01)
                 detail.append(dict(deadline_hits=hits, worker_limit=worker_limit,
                                    timed_out=timed_out, child_dead=child_dead,
                                    cleanup_seconds=_m123_time.monotonic() - started,

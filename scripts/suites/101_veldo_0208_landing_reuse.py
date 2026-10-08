@@ -856,7 +856,10 @@ def _v208_traced_workers():
         for mode in ('baseline', 'noop', 'mutant'):
             scratch = worker_home / mode; scratch.mkdir()
             job = top / (mode + '-job.json')
-            job.write_text(json.dumps(dict(case=controlled_case, mode=mode)))
+            # Traced, so a declared case's shape: its keyed runtime set. A fresh worker starts inside a
+            # tree the agent launcher makes, which no tracer may follow (VELDO-0210 AC7).
+            job.write_text(json.dumps(dict(case=controlled_case, mode=mode,
+                                           runtime_paths=['/usr', '/lib', '/lib64', '/etc'])))
             trace = top / (mode + '.trace')
             argv, channel = worker_argv(job)
             try:
@@ -1159,9 +1162,10 @@ print(json.dumps(r))
             job.write_text(json.dumps(dict(case=case, mode=mode)))
             channel = os.open(top / (mode + '.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
             try:
+                # Handed the tree's marker inside a gate, as the coordinator hands it (VELDO-0210 AC7).
                 run = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'), 'worker',
                                       str(worker_root), str(channel), str(job)], cwd=worker_root,
-                                     pass_fds=(channel,), env=gate.fixed_env(scratch),
+                                     pass_fds=(channel, *launcher_fds()), env=gate.fixed_env(scratch),
                                      capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
             finally:
                 os.close(channel)
@@ -1979,7 +1983,7 @@ def network_rule_probe(port, inherited, abstract, scratch):
             argv, channel = worker_argv(job)
             try:
                 ran = subprocess.run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
-                                     pass_fds=(channel, inherited), stdin=subprocess.DEVNULL,
+                                     pass_fds=(channel, inherited, *launcher_fds()), stdin=subprocess.DEVNULL,
                                      capture_output=True, text=True, timeout=60)
             finally:
                 os.close(channel)
