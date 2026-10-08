@@ -114,35 +114,45 @@ by the spec's own terms; none was ever reviewed. A proposal grants no reuse.
 The proposer (scripts/propose_case_inputs.py) was run, traced, sequentially and in the foreground,
 over one case of every control group (suite, module, fixture) of the 1602 confined cases the gate
 ran fresh without a reviewed declaration: 200 groups covering every confined suite and module, in
-batches under 10 minutes. Not every one of the 1602 cases was traced. Tracing all of them is about
-24 hours of sequential work (the 0210d receipts hold 86451 worker seconds for their three modes),
-and the first groups showed a blocker that holds for every case running Git, so the per-group
-sample answers the admission question at a twelfth of the cost. Per-case results are in
-closure-survey-0210d.json.
+batches under 10 minutes, about 3.5 hours in all. Not every one of the 1602 cases was traced: that
+is about 24 hours of sequential tracing (the 0210d receipts hold 86451 worker seconds for their
+three modes), and the first groups showed blockers that hold for every case running Git, so the
+per-group sample answers the admission question at about a seventh of the cost. Per-case results
+are in closure-survey-0210d.json.
 
-Before the run the proposer was corrected so its proposals match what the coordinator enforces:
-it judges and proposes only what the case read after its Landlock (the coordinator's
-after_confinement boundary; the authority's own bootstrap before it was being proposed, including a
-listing of all of scripts/ that made every case look gate-starting); it grants runtime links by
-their targets and the runtime directories a case lists or probes; it records a failed or
-incomplete trace per case instead of stopping the batch; it merges batches; and it refuses, with
-every reason, a case that cannot qualify.
+The proposer was corrected so its proposals match what the coordinator enforces: it judges and
+proposes only what the case read after its Landlock (the coordinator's after_confinement boundary;
+before, the authority's own bootstrap was proposed, including a listing of all of scripts/ that
+made every case look gate-starting); it judges paths outside the repository by the coordinator's
+own rule (case_trace.check); it grants runtime links by their targets and the runtime directories
+a case lists or probes; it proposes files outside the coordinator's input closure (gate outputs)
+as absent; it records a failed or incomplete trace per case instead of stopping the batch; it
+merges batches; and it refuses, with every reason, a case that cannot qualify.
 
-Result: **0 of 200 groups qualify. scripts/mutation_case_inputs.json now holds no proposal**; its
-30 earlier baseline-only proposals were each superseded by a traced refusal of the same group (11
-of them belong to unconfined suites).
+Result: **0 of 200 groups qualify. scripts/mutation_case_inputs.json holds no proposal**; its 30
+earlier baseline-only proposals were each superseded by a traced refusal of the same group (11 of
+them belong to unconfined suites).
 
-| Reason (any, a case can have several) | Groups |
+| Reason (any; a case can have several) | Groups |
 | - | - |
 | runtime_unkeyable: Git probes /usr/share/locale, whose tree has dangling links | 180 |
+| host_input: DNS configuration (resolv.conf into /run, from Git's default identity), credential files in the home directory, /var/lib/dpkg/status, /proc/mounts | 114 |
 | starts_a_gate: the inputs include verify.sh, gate_candidate.py, gate_legs.py or agent_sandbox.py | 54 |
 | worker_or_trace_failed: a worker timed out, or descendants were killed mid-syscall (incomplete trace) | 38 |
-| host_input: probes outside repository, runtime and scratch (credential files in the home directory, /var/lib/dpkg/status) | 37 |
 | unclean_baseline: a baseline or noop row failed when traced | 12 |
-| reads_history: reads this repository's Git objects beyond the preamble | 8 |
+| reads_history: reads this repository's Git objects beyond the shared preamble | 8 |
 
-99 groups fail on runtime_unkeyable alone: they are clean, file-only, read no history or host
-path, and start no gate.
+46 groups fail on runtime_unkeyable alone. Run by the coordinator one at a time in the throwaway
+clone described below, only 4 of those 46 pass. The other 42 are refused by the coordinator's own
+checks on paths the traced proposal could not see or the earlier proposer let through:
+/proc/mounts (21), the gate worker's own source read after confinement (11, reuse_worker.py,
+which lies outside the snapshot), /selinux (5), /proc/net/unix (1), /bin/sshd (1), a .git probe in the snapshot
+(2), and one mutant that survives in the snapshot although it is killed in place
+(reader/generated-grammar-agrees: a row that needs what the snapshot lacks).
+
+Declared closures are large. 180 groups list specs/ and 151 list .veldo/, so those whole
+subtrees are declared inputs; the median proposal holds 684 repository files. Of the 99 groups
+the first pass found clean, 87 declare .veldo/control_launch.py, the most edited module.
 
 ### Why every Git-running case is blocked today
 
@@ -156,7 +166,33 @@ path, and start no gate.
    grant, and gate_reuse.tree_identity refuses its tree because it holds dangling links
    (for example af/LC_MESSAGES/coreutils.mo). Identifying a dangling link by its link text
    (a target appearing later still changes the identity) would make it keyable.
+3. Suites that commit in scratch repositories leave Git to derive the committer from the host
+   name, which reads the DNS configuration. A fixed committer identity in the worker environment
+   would remove that host input.
 
-Neither change is made here: the first needs a specification, the second changes a protected
-identity rule. Both were applied only in a throwaway clone under /tmp to measure their effect
-(below).
+None of these changes is made here: the first and third need a specification, the second changes
+a protected identity rule. The first two were applied only in a throwaway clone under /tmp to
+measure their effect.
+
+## Measured saving (throwaway clone, 2026-10-08)
+
+Setup: a clone of 7d5f0897 under /tmp with the lazy preamble and dangling-link identity, a
+declarations copy holding the 4 cases that pass the coordinator marked as if reviewed (never
+committed), a private cache under /tmp, and the coordinator run as the gate runs it
+(`python3 -I -S scripts/check_gate_mutations.py`), selected by case name. The whole stage could
+not be run: only these 4 cases (groups of 20 cases, about 32 of the stage's 69282 worker seconds)
+can be reused even with both changes.
+
+| Run | Executed | Reused | Workers | Wall |
+| - | - | - | - | - |
+| cold | 4 | 0 | 12 | 16.0 s |
+| unchanged rerun | 0 | 4 | 0 | 2.5 s |
+| after editing .veldo/control_launch.py | 0 | 4 | 0 | 2.4 s |
+| after editing one spec | 4 | 0 | 12 | 15.9 s |
+
+The machinery works: an unrelated edit keeps every hit and a declared input misses exactly its
+dependents. The saving it buys on this gate today is nil: the reusable set is about 0.05% of the
+stage's worker time, and every one of those cases declares all of specs/, which nearly every
+change edits. A realistic stage saving needs, in order: the three fixes above, then narrower
+closures than whole directory listings (specs/, .veldo/), and an answer for the 892 unconfined
+cases (49% of the stage), which VELDO-0207 leaves fresh by design.

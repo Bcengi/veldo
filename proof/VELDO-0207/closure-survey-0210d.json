@@ -5,21 +5,21 @@
  "groups": 200,
  "first_refusal": {
   "worker_or_trace_failed": 38,
-  "runtime_unkeyable": 99,
+  "host_input": 73,
   "reads_history": 8,
-  "host_input": 20,
+  "runtime_unkeyable": 46,
   "unclean_baseline": 12,
   "starts_a_gate": 23
  },
  "any_refusal": {
   "worker_or_trace_failed": 38,
   "runtime_unkeyable": 180,
+  "host_input": 114,
   "reads_history": 8,
   "starts_a_gate": 54,
-  "host_input": 37,
   "unclean_baseline": 12
  },
- "only_runtime_unkeyable": 99,
+ "only_runtime_unkeyable": 46,
  "cases": [
   {
    "identity": "check_teeth_mutations.py:account-boundary-always-initial",
@@ -29,13 +29,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 848,
+   "files": 846,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -131,13 +131,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 848,
+   "files": 846,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -168,13 +168,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 848,
+   "files": 846,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -205,13 +205,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 848,
+   "files": 846,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -272,16 +272,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -305,16 +309,20 @@
    "suite": "77_veldo_0149_adopted_activation.py",
    "module": "control_project.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -342,12 +350,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
@@ -381,12 +389,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
@@ -416,16 +424,20 @@
    "suite": "72_veldo_0075_andon.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -449,9 +461,10 @@
    "suite": "68_veldo_0126_intake.py",
    "module": "control_intake.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -462,9 +475,12 @@
     ".veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -490,12 +506,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -514,7 +530,11 @@
      "exit": 0,
      "seconds": 8.134
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:architecture-decode-outside-refusal",
@@ -523,12 +543,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -547,7 +567,11 @@
      "exit": 0,
      "seconds": 6.831
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:architecture-gate-policy-decides",
@@ -556,12 +580,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -580,7 +604,11 @@
      "exit": 0,
      "seconds": 7.281
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:architecture-generic-upsert-writes",
@@ -589,12 +617,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -613,7 +641,11 @@
      "exit": 0,
      "seconds": 7.28
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:architecture-loader-malformed-as-absence",
@@ -622,12 +654,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -646,7 +678,11 @@
      "exit": 0,
      "seconds": 6.729
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:architecture-malformed-as-optional-absence",
@@ -655,12 +691,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -679,7 +715,11 @@
      "exit": 0,
      "seconds": 6.73
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:authorization-reads-runtime-by-path",
@@ -727,16 +767,20 @@
    "suite": "73_veldo_0078_backlog.py",
    "module": "control_backlog.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -760,16 +804,20 @@
    "suite": "73_veldo_0078_backlog.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -793,16 +841,20 @@
    "suite": "73_veldo_0078_backlog.py",
    "module": "control_backlog_priority.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -826,16 +878,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "control_channel_attribution.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -864,13 +920,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 913,
+   "files": 911,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -903,17 +959,21 @@
    "module": "control_request_settlement.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -937,16 +997,20 @@
    "suite": "60_veldo_0064_inbox.py",
    "module": "control_claim.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -973,12 +1037,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var",
@@ -1011,12 +1075,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var",
@@ -1047,17 +1111,21 @@
    "module": "control_claim.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1106,7 +1174,11 @@
      "exit": 0,
      "seconds": 0.917
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/veldo-mutations-mhahwf56/.git (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:completion-manifest-verdict-landed",
@@ -1115,12 +1187,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1139,7 +1211,11 @@
      "exit": 0,
      "seconds": 5.276
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:dead-socket-success",
@@ -1172,7 +1248,11 @@
      "exit": 0,
      "seconds": 1.117
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/net/unix (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:decision-ask-reruns",
@@ -1182,13 +1262,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 857,
+   "files": 855,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1216,17 +1296,21 @@
    "module": "control_decomposition.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1251,17 +1335,21 @@
    "module": "control_alias.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1289,13 +1377,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/var/lib/dpkg/status"
@@ -1324,17 +1412,21 @@
    "module": "control_eligibility.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1359,17 +1451,21 @@
    "module": "init_scaffold.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1394,17 +1490,21 @@
    "module": "control_decomposition_binding.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1428,9 +1528,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_membership.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1438,9 +1539,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1464,9 +1568,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_service_channel.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1474,9 +1579,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1500,9 +1608,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_channel_activation.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1510,9 +1619,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1536,9 +1648,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_service.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1546,9 +1659,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1572,9 +1688,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_factory_setup.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1582,9 +1699,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1608,9 +1728,10 @@
    "suite": "74_veldo_0140_standing_delegation.py",
    "module": "control_signer_answers.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 850,
+   "files": 848,
    "directories": [
     ".veldo",
     ".veldo/runtime",
@@ -1618,9 +1739,12 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1645,17 +1769,21 @@
    "module": "control_assignment.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1679,16 +1807,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "request_doorbell.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1714,20 +1846,24 @@
    "refusals": [
     "reads_history",
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
     "/home/dmitry/projects/veldo/.git/config"
    ],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1753,20 +1889,24 @@
    "refusals": [
     "reads_history",
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
     "/home/dmitry/projects/veldo/.git/config"
    ],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1792,20 +1932,24 @@
    "refusals": [
     "reads_history",
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
     "/home/dmitry/projects/veldo/.git/config"
    ],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -1831,12 +1975,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1855,7 +1999,11 @@
      "exit": 0,
      "seconds": 5.177
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:eligibility-frontier-bypass",
@@ -1864,12 +2012,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1888,7 +2036,11 @@
      "exit": 0,
      "seconds": 5.176
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:eligibility-plan-bypass",
@@ -1897,12 +2049,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1921,7 +2073,11 @@
      "exit": 0,
      "seconds": 5.125
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:eligibility-review-bypass",
@@ -1930,12 +2086,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1954,7 +2110,11 @@
      "exit": 0,
      "seconds": 5.429
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:eligibility-status-only-recheck",
@@ -1963,12 +2123,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -1987,7 +2147,11 @@
      "exit": 0,
      "seconds": 5.477
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:eligibility-work-no-preclaim-decision",
@@ -1996,12 +2160,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -2020,7 +2184,11 @@
      "exit": 0,
      "seconds": 5.276
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:enrolled-discovery-ignores-ancestors",
@@ -2029,12 +2197,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -2053,23 +2221,31 @@
      "exit": 0,
      "seconds": 5.225
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:entry-point-unlisted",
    "suite": "70_veldo_0073_activation.py",
    "module": "control_channel_activation.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2098,13 +2274,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -2141,13 +2317,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -2184,13 +2360,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -2222,16 +2398,20 @@
    "suite": "72_veldo_0077_objectives.py",
    "module": "control_objective.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 682,
+   "files": 680,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2257,12 +2437,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -2281,7 +2461,11 @@
      "exit": 0,
      "seconds": 8.883
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:formats172-binary-only",
@@ -2314,7 +2498,11 @@
      "exit": 0,
      "seconds": 1.568
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "passed",
+    "detail": ""
+   }
   },
   {
    "identity": "check_teeth_mutations.py:formats172-census-drops-conform",
@@ -2347,7 +2535,11 @@
      "exit": 0,
      "seconds": 1.568
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "passed",
+    "detail": ""
+   }
   },
   {
    "identity": "check_teeth_mutations.py:formats172-denylist-string",
@@ -2380,7 +2572,11 @@
      "exit": 0,
      "seconds": 1.619
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "passed",
+    "detail": ""
+   }
   },
   {
    "identity": "check_teeth_mutations.py:formats172-hygiene-answer-drops-provider",
@@ -2391,13 +2587,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 851,
+   "files": 849,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281",
@@ -2430,12 +2626,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -2454,23 +2650,31 @@
      "exit": 0,
      "seconds": 8.985
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:framing-signature-unchecked",
    "suite": "62_veldo_0065_presentations.py",
    "module": "control_channel_presentation.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2496,12 +2700,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -2520,23 +2724,31 @@
      "exit": 0,
      "seconds": 8.835
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:frontier-offers-unprioritized",
    "suite": "73_veldo_0078_backlog.py",
    "module": "control_eligibility.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2857,16 +3069,20 @@
    "suite": "76_veldo_0079_grooming.py",
    "module": "control_grooming_request.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 684,
+   "files": 682,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2890,16 +3106,20 @@
    "suite": "76_veldo_0079_grooming.py",
    "module": "control_backlog.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 684,
+   "files": 682,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2923,16 +3143,20 @@
    "suite": "76_veldo_0079_grooming.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 684,
+   "files": 682,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2956,16 +3180,20 @@
    "suite": "76_veldo_0079_grooming.py",
    "module": "control_grooming.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 684,
+   "files": 682,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -2989,17 +3217,21 @@
    "suite": "84_veldo_0169_project_handouts.py",
    "module": "control_claim.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 934,
+   "files": 932,
    "directories": [
     ".veldo",
     "engine/.veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3023,17 +3255,21 @@
    "suite": "84_veldo_0169_project_handouts.py",
    "module": "control_store.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 934,
+   "files": 932,
    "directories": [
     ".veldo",
     "engine/.veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3057,17 +3293,21 @@
    "suite": "84_veldo_0169_project_handouts.py",
    "module": "control_assignment.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 934,
+   "files": 932,
    "directories": [
     ".veldo",
     "engine/.veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3091,17 +3331,21 @@
    "suite": "84_veldo_0169_project_handouts.py",
    "module": "control_andon.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 934,
+   "files": 932,
    "directories": [
     ".veldo",
     "engine/.veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3125,16 +3369,20 @@
    "suite": "68_veldo_0136_hints.py",
    "module": "control_channel_presentation.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3162,13 +3410,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 851,
+   "files": 849,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281",
@@ -3201,13 +3449,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 851,
+   "files": 849,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281",
@@ -3239,13 +3487,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 851,
+   "files": 849,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281",
@@ -3278,13 +3526,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 851,
+   "files": 849,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281",
@@ -3315,17 +3563,21 @@
    "module": "control_assignment.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3349,16 +3601,20 @@
    "suite": "60_veldo_0064_inbox.py",
    "module": "control_assignment.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3382,16 +3638,20 @@
    "suite": "70_veldo_0069_bindings.py",
    "module": "plan.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3415,16 +3675,20 @@
    "suite": "70_veldo_0069_bindings.py",
    "module": "control_decision_dependency.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3449,9 +3713,10 @@
    "module": "control_intake.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
@@ -3463,9 +3728,12 @@
     ".veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -3494,13 +3762,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -3537,13 +3805,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 914,
+   "files": 912,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -3580,13 +3848,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 914,
+   "files": 912,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -3621,13 +3889,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 857,
+   "files": 855,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4048,14 +4316,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4087,14 +4355,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4126,14 +4394,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4165,14 +4433,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4204,14 +4472,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4243,14 +4511,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "proof/VELDO-0144",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/opt"
@@ -4303,23 +4571,31 @@
      "exit": 0,
      "seconds": 1.568
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /selinux (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:objective-not-scaffolded",
    "suite": "72_veldo_0077_objectives.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 682,
+   "files": 680,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4369,7 +4645,11 @@
      "exit": 0,
      "seconds": 4.074
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:omit-store_uuid",
@@ -4402,7 +4682,11 @@
      "exit": 0,
      "seconds": 1.567
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "passed",
+    "detail": ""
+   }
   },
   {
    "identity": "check_teeth_mutations.py:oracle-runtime-error",
@@ -4435,23 +4719,31 @@
      "exit": 0,
      "seconds": 4.174
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:own-message-non-owner-accepted",
    "suite": "75_veldo_0150_own_message_acceptance.py",
    "module": "control_objective.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4479,12 +4771,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
@@ -4514,9 +4806,10 @@
    "suite": "68_veldo_0136_hints.py",
    "module": "control_intake.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -4527,9 +4820,12 @@
     ".veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4553,16 +4849,20 @@
    "suite": "68_veldo_0136_hints.py",
    "module": "control_channel_attribution.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4588,12 +4888,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4612,23 +4912,31 @@
      "exit": 0,
      "seconds": 9.035
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:platform-date-from-clock",
    "suite": "63_veldo_0066_attribution.py",
    "module": "control_channel_attribution.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4654,12 +4962,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4678,7 +4986,11 @@
      "exit": 0,
      "seconds": 0.816
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared input read: .git/config (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:policy-omit-required-result",
@@ -4687,7 +4999,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 936,
+   "files": 934,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -4704,7 +5016,7 @@
     "scripts/fixtures",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4723,7 +5035,11 @@
      "exit": 0,
      "seconds": 17.957
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:policy-strip-quoted-hash",
@@ -4732,7 +5048,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 935,
+   "files": 933,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -4748,7 +5064,7 @@
     "engine/.veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4767,7 +5083,11 @@
      "exit": 0,
      "seconds": 17.857
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:policy-syntax-becomes-absent",
@@ -4776,7 +5096,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 935,
+   "files": 933,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -4792,7 +5112,7 @@
     "engine/.veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4811,7 +5131,11 @@
      "exit": 0,
      "seconds": 17.356
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:pool-launches-serialized",
@@ -4821,13 +5145,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 857,
+   "files": 855,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4858,13 +5182,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 857,
+   "files": 855,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4895,13 +5219,13 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 857,
+   "files": 855,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -4962,16 +5286,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "control_channel_presentation.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -4995,16 +5323,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "control_channel_ingress.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5028,16 +5360,20 @@
    "suite": "60_veldo_0064_inbox.py",
    "module": "control_channel_projection.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5061,16 +5397,20 @@
    "suite": "62_veldo_0065_presentations.py",
    "module": "control_channel_projection.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5099,13 +5439,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -5141,12 +5481,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [
     "/home/dmitry/projects/veldo-worktrees/case-closures/.git",
     "/home/dmitry/projects/veldo/.git",
@@ -5176,16 +5516,20 @@
    "suite": "68_veldo_0126_intake.py",
    "module": "control_intake_routes.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5209,16 +5553,20 @@
    "suite": "72_veldo_0075_andon.py",
    "module": "control_andon.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5267,7 +5615,11 @@
      "exit": 0,
      "seconds": 4.475
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "mutation survived: mutation survived: reader/generated-grammar-agrees"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:reader-unavailable-counts-as-compared",
@@ -5300,23 +5652,31 @@
      "exit": 0,
      "seconds": 4.327
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:receipt-without-binding",
    "suite": "70_veldo_0069_bindings.py",
    "module": "control_request_settlement.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5341,16 +5701,20 @@
    "module": "control_launch.py",
    "refusals": [
     "worker_or_trace_failed",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5375,16 +5739,20 @@
    "suite": "72_veldo_0128_reports.py",
    "module": "control_telegram_report.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 682,
+   "files": 680,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5408,16 +5776,20 @@
    "suite": "72_veldo_0128_reports.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 682,
+   "files": 680,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5441,16 +5813,20 @@
    "suite": "72_veldo_0128_reports.py",
    "module": "control_service_channel.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 682,
+   "files": 680,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5477,7 +5853,7 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
@@ -5489,7 +5865,7 @@
     ".veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -5518,12 +5894,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -5552,12 +5928,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var/lib/dpkg/status"
@@ -5588,12 +5964,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var/lib/dpkg/status"
@@ -5624,12 +6000,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var/lib/dpkg/status"
@@ -5660,12 +6036,12 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/var/lib/dpkg/status"
@@ -5693,16 +6069,20 @@
    "suite": "73_veldo_0089_team.py",
    "module": "control_team.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -5762,12 +6142,12 @@
     "worker_or_trace_failed",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 684,
+   "files": 682,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -5832,13 +6212,13 @@
     "host_input",
     "runtime_unkeyable:/usr/lib/ssl,/usr/share/locale"
    ],
-   "files": 717,
+   "files": 715,
    "directories": [
     ".veldo",
     "proof/VELDO-0156",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin",
@@ -6058,13 +6438,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -6098,7 +6478,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -6109,7 +6489,7 @@
     ".veldo/services",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6128,7 +6508,11 @@
      "exit": 0,
      "seconds": 0.465
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:settlement-not-scaffolded",
@@ -6136,17 +6520,21 @@
    "module": "init_scaffold.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6172,7 +6560,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -6184,7 +6572,7 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6203,7 +6591,11 @@
      "exit": 0,
      "seconds": 14.102
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:setup186-skip-claude-pin",
@@ -6212,7 +6604,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -6224,7 +6616,7 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6243,7 +6635,11 @@
      "exit": 0,
      "seconds": 14.198
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:setup186-skip-setup-asset-check",
@@ -6252,7 +6648,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -6264,7 +6660,7 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6283,7 +6679,11 @@
      "exit": 0,
      "seconds": 7.233
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:setup186-unmeasured-bind-refusal",
@@ -6292,7 +6692,7 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -6304,7 +6704,7 @@
     "scripts/suites",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6323,7 +6723,11 @@
      "exit": 0,
      "seconds": 14.348
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /tmp/cc-gate/scripts/reuse worker.py (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:signing-prelock-clock",
@@ -6332,16 +6736,20 @@
    "refusals": [
     "unclean_baseline",
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6367,16 +6775,20 @@
    "refusals": [
     "unclean_baseline",
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6403,12 +6815,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6437,12 +6849,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6471,12 +6883,12 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6507,13 +6919,13 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 915,
+   "files": 913,
    "directories": [
     ".veldo",
     "engine/.veldo/examples",
     "specs"
    ],
-   "absent": 4,
+   "absent": 6,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.cache",
@@ -6547,12 +6959,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6571,7 +6983,11 @@
      "exit": 0,
      "seconds": 8.233
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:status-reader-reads-status-text",
@@ -6580,12 +6996,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -6604,23 +7020,31 @@
      "exit": 0,
      "seconds": 5.276
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:task-claim-skips-priority",
    "suite": "73_veldo_0078_backlog.py",
    "module": "tasks.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6644,16 +7068,20 @@
    "suite": "73_veldo_0089_team.py",
    "module": "init_scaffold.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 681,
+   "files": 679,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6678,9 +7106,10 @@
    "module": "control_channel_presentation_text.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -6753,9 +7182,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6780,9 +7212,10 @@
    "module": "control_channel_presentation.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -6855,9 +7288,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6882,9 +7318,10 @@
    "module": "control_channel_projection.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -6957,9 +7394,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -6984,9 +7424,10 @@
    "module": "control_channel_presentation_v1.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -7059,9 +7500,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7086,9 +7530,10 @@
    "module": "control_intake.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     ".veldo/decision_reviews",
@@ -7167,9 +7612,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7194,9 +7642,10 @@
    "module": "control_telegram_report.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -7269,9 +7718,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7296,9 +7748,10 @@
    "module": "control_service_channel.py",
    "refusals": [
     "starts_a_gate",
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 1097,
+   "files": 1095,
    "directories": [
     ".veldo",
     "engine",
@@ -7371,9 +7824,12 @@
     "engine/specs",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7397,16 +7853,20 @@
    "suite": "70_veldo_0069_bindings.py",
    "module": "control_eligibility.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7434,13 +7894,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281"
@@ -7473,13 +7933,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281"
@@ -7512,13 +7972,13 @@
     "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 849,
+   "files": 847,
    "directories": [
     ".veldo",
     "scripts/suites",
     "specs"
    ],
-   "absent": 2,
+   "absent": 4,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local/share/claude/versions/2.1.281"
@@ -7547,16 +8007,20 @@
    "suite": "70_veldo_0073_activation.py",
    "module": "control_channel_projection.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 686,
+   "files": 684,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7606,23 +8070,31 @@
      "exit": 0,
      "seconds": 1.718
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /bin/sshd (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:v151-specialist-roster-unchecked",
    "suite": "91_veldo_0151_specialists.py",
    "module": "control_team.py",
    "refusals": [
+    "host_input",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
-   "host_inputs": [],
+   "host_inputs": [
+    "/etc/resolv.conf",
+    "/run/systemd/resolve/stub-resolv.conf"
+   ],
    "modes": [
     {
      "mode": "baseline",
@@ -7648,12 +8120,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -7672,7 +8144,11 @@
      "exit": 0,
      "seconds": 1.868
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /selinux (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:windows166-clear-signal-not-forwarded",
@@ -7681,12 +8157,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -7705,7 +8181,11 @@
      "exit": 0,
      "seconds": 2.37
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /selinux (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:windows166-existing-chmod",
@@ -7714,12 +8194,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -7738,7 +8218,11 @@
      "exit": 0,
      "seconds": 2.37
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /selinux (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:windows166-named-only",
@@ -7747,12 +8231,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 680,
+   "files": 678,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -7771,7 +8255,11 @@
      "exit": 0,
      "seconds": 2.02
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /selinux (metadata)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:worker129-runtime-architecture-bypassed",
@@ -7780,12 +8268,12 @@
    "refusals": [
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 679,
+   "files": 677,
    "directories": [
     ".veldo",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [],
    "modes": [
@@ -7804,7 +8292,11 @@
      "exit": 0,
      "seconds": 6.831
     }
-   ]
+   ],
+   "clone_coordinator_run": {
+    "status": "failed",
+    "detail": "undeclared runtime read: /proc/mounts (content)"
+   }
   },
   {
    "identity": "check_teeth_mutations.py:workflow-dangling-edge-accepted",
@@ -7815,14 +8307,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     ".veldo/runtime",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local",
@@ -7858,14 +8350,14 @@
     "starts_a_gate",
     "runtime_unkeyable:/usr/share/locale"
    ],
-   "files": 5694,
+   "files": 5692,
    "directories": [
     ".",
     ".veldo",
     ".veldo/runtime",
     "specs"
    ],
-   "absent": 1,
+   "absent": 3,
    "history": [],
    "host_inputs": [
     "/home/dmitry/.local",
@@ -7892,5 +8384,7 @@
     }
    ]
   }
- ]
+ ],
+ "clone_coordinator_passed": 4,
+ "notes": "host_input includes runtime links resolving outside the runtime roots (resolv.conf into /run), applied to the recorded traces; files outside the coordinator input closure (.veldo/events.jsonl, .veldo/last_verify) are counted as absent; clone_coordinator_run is the coordinator alone on that case in a throwaway clone with the lazy preamble and dangling-link identity, the case marked as if reviewed"
 }
