@@ -845,6 +845,7 @@ sys.exit(payload.get('code', 0))
                 if CL is None:
                     raise RuntimeError('control_clone.py (VELDO-0042) is not installed')
                 S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
+                __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
                 provisioner = CL.Clones(dispatches, clones=str(state / 'clones'), caches=str(state / 'caches'),
                                         protected=[str(private)])
                 config('clone', MAIN, {'engine': {'argv': provisioner.adapter(engine_argv)}})

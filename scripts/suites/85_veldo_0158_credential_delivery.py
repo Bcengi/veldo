@@ -618,6 +618,7 @@ err.close()
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)],
                            engines=[str(factory / 'engines'), str(base / 'packages')])
 

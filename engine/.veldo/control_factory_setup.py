@@ -391,7 +391,6 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
-    identity_options(git_identities, workspace_identity)
     options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
                    profile=profile, writable=writable, origin=origin)
     port = API.PORT if api_port is None else api_port
@@ -401,6 +400,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                      tailscale=tailscale, port=port, git_identities=git_identities,
                      workspace_identity=workspace_identity, **options)
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
+    identity_options(git_identities, workspace_identity)
     # Tailscale is read, with read-only commands, after every other check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
     transport = _api(lambda: API.transport(cli, port))
@@ -1086,13 +1086,9 @@ def upgrade_engine(plan, engine, runner, running):
 
 
 def identity_options(identities, workspace_identity):
-    """A legacy setup can remain unbound; Git work refuses until explicitly bound.
-    Neither setup nor a consumer infers an identity from the workspace or account.
-    """
+    """A new factory requires explicit identities before any write."""
     GI = organ('control_git_identity')
     try:
-        if identities is None and workspace_identity is None:
-            return
         found = GI.validate(identities)
         if GI.one(workspace_identity) not in found:
             raise GI.Refused('missing_authority:git_identity')

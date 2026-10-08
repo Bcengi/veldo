@@ -151,6 +151,7 @@ def _v42_suite():
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPO, principal='runner', signer='runner',
                                   sign=sign)
         clones_root, caches_root = state / 'clones', state / 'caches'
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
         C = CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root), protected=[str(private)])
 
         ATTACH = [{'name': 'lib', 'domain': DOMAIN, 'repository': 'attrepo', 'commit': att_commit}]

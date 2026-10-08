@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "103_veldo_0142_git_identities",
+   "file": "103_veldo_0142_git_identities.py",
+   "requires": [
+    "103_veldo_0142_git_identities"
+   ],
+   "regions": "Explicit Git identities, immutable repository bindings and clone and lander authorship.",
+   "requires_note": "Only ROOT and expect. Real SQLite and Git; controlled verification seams, no gate or provider."
   }
  ],
  "resource_capacities": {

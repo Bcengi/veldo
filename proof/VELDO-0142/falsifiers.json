@@ -1,0 +1,57 @@
+[
+  {
+    "finding": 142,
+    "name": "identity142-binding-replaced",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "if old['identity'] != target['identity']:",
+    "new": "if False:",
+    "rows": [
+      "binding/immutable"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-clone-global-author",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_clone.py",
+    "old": "for section in ('user', 'author', 'committer'):",
+    "new": "for section in ():",
+    "rows": [
+      "clone/identity-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-lander-caller-author",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "lander.py",
+    "old": "return module.author(self.identity_record)",
+    "new": "return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))",
+    "rows": [
+      "lander/identity-and-reland-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-environment-overrides-kept",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}",
+    "new": "return dict(environment)",
+    "rows": [
+      "launch/no-author-overrides"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-setup-binding-omitted",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_factory_setup.py",
+    "old": "        if git_identities is not None:\n            with step('git_identities'):",
+    "new": "        if False:\n            with step('git_identities'):",
+    "rows": [
+      "setup/full-command-and-rerun"
+    ]
+  }
+]

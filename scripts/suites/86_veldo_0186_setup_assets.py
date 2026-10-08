@@ -98,6 +98,7 @@ def _v186_suite():
                 identity=('Fixture', 'fixture@example.invalid'), check=True, capture_output=True)
         kwargs = dict(host_trust=str(home / 'trust/host.json'), install_root=str(home / 'install'),
                       unit_dir=str(home / 'units'), profile={}, writable=[], runner=manager, tailscale=[tailscale.path])
+        kwargs.update(__import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['options'](home))
         args = (str(state), 'owner', str(owner_key), str(workspace), 12345, str(token))
         return home, args, kwargs
 

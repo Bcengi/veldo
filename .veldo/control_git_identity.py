@@ -117,6 +117,8 @@ def configure(conn, domain, identities, repositories, *, check_only=False, obser
             if set(record) != {'path', 'identity'} or not text(record['path']):
                 raise Refused('invalid_input:repository_identity')
             targets[repository] = dict(path=os.path.realpath(record['path']), identity=identity)
+        if len({target['path'] for target in targets.values()}) != len(targets):
+            raise Refused('binding_mismatch:repository_identity_path')
         conn.execute('BEGIN' if check_only else 'BEGIN IMMEDIATE')
         try:
             prior = {r['id']: r for r in records(conn, domain)}
@@ -169,3 +171,15 @@ def environment(environment):
 
 def author(record):
     return record['author_name'], record['author_email']
+
+
+def metrics(observations):
+    counts = {}
+    for event in observations:
+        row = counts.setdefault(event.get('identity'), {'accepted': 0, 'refusals': {}})
+        if event.get('outcome') == 'accepted':
+            row['accepted'] += 1
+        if event.get('refusal'):
+            reason = event['refusal']
+            row['refusals'][reason] = row['refusals'].get(reason, 0) + 1
+    return counts

@@ -375,6 +375,7 @@ class GitLandOps(LandOps):
         self.observations = str(observations) if observations is not None else None
         self.landing = landing
         self.counts = {"accepted": 0, "refused": 0}
+        self.identity_counts = {}
         self.candidate = None
 
     # The one checked Git step.
@@ -384,6 +385,9 @@ class GitLandOps(LandOps):
         the candidate naming the operation; the completed process is returned otherwise."""
         name = operation or args[0]
         try:
+            before_commit = None
+            if identity is not None and args[0] in ('merge', 'commit'):
+                before_commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
             result = _git_process.run(["git", "-C", str(repo), *args], capture_output=True, text=text,
                                       timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, profile=profile,
                                       identity=identity)
@@ -392,6 +396,14 @@ class GitLandOps(LandOps):
         if ok is not None and result.returncode not in ok:
             stderr = result.stderr if isinstance(result.stderr, str) else (result.stderr or b"").decode("utf-8", "replace")
             raise CandidateRefused("unavailable_service:git/" + name, _first_line(stderr), operation=name)
+        if before_commit is not None and result.returncode == 0:
+            commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
+            if commit != before_commit:
+                actual = self._git(repo, 'show', '-s', '--format=%an%n%ae%n%cn%n%ce', commit).stdout.splitlines()
+                if actual != list(identity) * 2:
+                    raise CandidateRefused('binding_mismatch:commit_identity', 'author or committer differs', operation=name)
+                operation = 'lander_merge' if args[0] == 'merge' or '--no-edit' in args else 'projection_commit'
+                self._event(operation, 'accepted', commit=commit)
         return result
 
     def _absolute(self, url):
@@ -437,6 +449,11 @@ class GitLandOps(LandOps):
         event['identity'] = (self.identity_record or {}).get('id')
         if refusal is not None:
             event.update(refusal=refusal, taxonomy=taxonomy(refusal))
+        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'refusals': {}})
+        if operation in ('lander_merge', 'projection_commit') and outcome == 'accepted':
+            counts['commits'] += 1
+        if refusal is not None:
+            counts['refusals'][refusal] = counts['refusals'].get(refusal, 0) + 1
         event.update(extra)
         self.counts["refused" if outcome == "refused" else "accepted"] += 1
         self.observe(event)
@@ -455,7 +472,7 @@ class GitLandOps(LandOps):
         decided), if any."""
         c = self.candidate or {}
         pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
-        return dict(self.counts, pending=pending)
+        return dict(self.counts, pending=pending, identities=self.identity_counts)
 
     def record(self):
         """The current candidate's record: its identity, fixed inputs, merges, projections and state."""

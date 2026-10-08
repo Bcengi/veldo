@@ -10467,6 +10467,13 @@ def cases():
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
 
+    # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
+    add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
+    add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
+    add(142, 'identity142-lander-caller-author', '103_veldo_0142_git_identities.py', 'lander.py', 'return module.author(self.identity_record)', "return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))", ['lander/identity-and-reland-authors'])
+    add(142, 'identity142-environment-overrides-kept', '103_veldo_0142_git_identities.py', 'control_git_identity.py', 'return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}', 'return dict(environment)', ['launch/no-author-overrides'])
+    add(142, 'identity142-setup-binding-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "        if git_identities is not None:\n            with step('git_identities'):", "        if False:\n            with step('git_identities'):", ['setup/full-command-and-rerun'])
+
     return result
 
 

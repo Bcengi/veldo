@@ -245,6 +245,7 @@ def _v57_suite():
         db = base / 'authority' / 'control.sqlite3'
         db.parent.mkdir()
         writer = S.open_store(str(db))
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, writer, DOMAIN, REPOSITORY, caller, LANDER)
         serial = [0]
 
         def sign(data):

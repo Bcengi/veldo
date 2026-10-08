@@ -507,6 +507,7 @@ sys.exit(payload.get('code', 0))
                                   signer='runner', sign=sign)
         # The engines directories (the pinned copies, the Codex packages) are write-protected in every clone.
         engines_dirs = [str(factory / 'engines'), str(base / 'packages')]
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones, _ = attempt(lambda: CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root),
                                               protected=[str(private)], engines=engines_dirs))
         if clones is None:

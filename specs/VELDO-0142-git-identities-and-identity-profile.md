@@ -33,6 +33,23 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0142_*.py"
+  - "scripts/suites/04_run_status_reader_veldo.py"
+  - "scripts/suites/66_veldo_0042_clones.py"
+  - "scripts/suites/67_veldo_0041_heartbeat.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/69_veldo_0058_gate_output.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
+  - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/80_veldo_0155_claude_baseline.py"
+  - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/85_veldo_0158_credential_delivery.py"
+  - "scripts/suites/86_veldo_0148_re_land.py"
+  - "scripts/suites/86_veldo_0186_setup_assets.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
+  - "scripts/suites/87_veldo_0170_receiver_trust.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -165,3 +182,31 @@ formerly AC3 and AC4, are VELDO-0153.
 2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `git_process.py`, which VELDO-0153
 owns since the `identity` push profile moved there; no criterion of this specification changes it.
 Criteria and status unchanged.
+
+2026-10-08 implementation on agent/codex/veldo-0142: setup accepts an identity JSON file
+and an explicit workspace identity. Each record has id, label, author_name, author_email,
+remote_host (github.com), remote_owner, api_token (a keychain reference), push_credential
+(kind token or ssh and a keychain reference), projects_root and default_visibility.
+For an SSH credential, the referenced keystore value names the key path. Setup does not
+resolve either credential. New setup refuses omitted identities before writing. An old
+setup rerun can retain its old unbound state, but no clone or land can commit from it.
+No legacy author is inferred and no migration of a previously bound identity is allowed.
+
+The new control_git_identity module owns transactional local identity metadata beside
+the store's repository path registry. Repository creation/adoption calls configure with
+an explicit repository id, path and identity; missing, multiple, unknown and changed
+identities refuse. Clone provisioning reads that record and sets local user, author and
+committer names and emails. The receiver strips both Git identity variable prefixes,
+including adapter overrides. GitLandOps resolves the repository record from its authority
+policy's reader (or an explicit identity_conn), never its legacy identity argument or the
+caller's Git configuration. Each new merge or projection commit is read back, checked and
+observed with the repository, identity, candidate and unit. Re-lands use this same path.
+
+The footprint adds the existing clone, lander and setup consumer suite files because their
+fixtures must now supply explicit identity records. Their assertions are retained. The
+fixture helper lives in proof/VELDO-0142; it chooses test identities and is never installed.
+The canonical module and scaffold changes are synchronized with this checkout. No pack
+copy exists in the source tree. Suite 103 and finding 142 register the behavior and its
+falsifiers. The owner reserves the full gate, mutation drivers and other specifications'
+suites for review; only this specification's named suite is run here. Criteria, readiness,
+risk and approval requirements are unchanged.

@@ -220,6 +220,7 @@ def _v61_suite():
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones = CL.Clones(dispatches, clones=str(state / 'clones'), caches=str(state / 'caches'), protected=[str(private)])
 
         # The fake Codex and its descendants. Each process marks <tag>.<name> with its pid, start time and

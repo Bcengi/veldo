@@ -311,7 +311,8 @@ def _v58_suite():
             # no observations directory), so a red row is an assertion, never a TypeError.
             accepts = __import__('inspect').signature(LD.GitLandOps.__init__).parameters
             extra = {'observations': observations} if 'observations' in accepts else {}
-            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER, **extra)
+            identity_conn = __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, None, 'gate-fixture', 'repository', caller, LANDER)
+            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER, identity_conn=identity_conn, domain='gate-fixture', repository='repository', **extra)
             try:
                 out = {'trunk_before': remote_tip()}
                 out['sync'] = ops.sync_main()

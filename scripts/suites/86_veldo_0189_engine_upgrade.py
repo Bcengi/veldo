@@ -610,6 +610,8 @@ def _v189_suite():
                          profile=profile, writable=[], origin=url)
             if current:
                 found.update(tailscale=[ts.path], api_port=port)
+            if current and not list(self.root.glob('authority/*.sqlite3')):
+                found.update(__import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['options'](self.root))
             return found
 
         def setup(self, module=None, stderr=None):

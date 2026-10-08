@@ -579,8 +579,9 @@ class Clones(EP.EnvProvisioner):
                 pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
                                       attachment['repository'], attachment['path'], attachment['commit'], clone_id))
             _git('init', '-q', '--template=', work)
-            for key, value in zip(('user.name', 'user.email'), GI.author(accepted['identity'])):
-                _git('-C', work, 'config', '--local', key, value)
+            for section in ('user', 'author', 'committer'):
+                for field, value in zip(('name', 'email'), GI.author(accepted['identity'])):
+                    _git('-C', work, 'config', '--local', section + '.' + field, value)
             info = work / '.git' / 'objects' / 'info'
             info.mkdir(parents=True, exist_ok=True)
             (info / 'alternates').write_text(''.join('%s\n' % (Path(p['cache']) / 'objects') for p in pins))
@@ -615,7 +616,8 @@ class Clones(EP.EnvProvisioner):
         except Refused as error:
             self._event(operation, {'dispatch_id': (contract or {}).get('dispatch_id') if isinstance(contract, dict)
                                     else None, 'unit': (contract or {}).get('unit') if isinstance(contract, dict)
-                                    else None}, 'refused', refusal=error.code)
+                                    else None, 'repository': (contract or {}).get('repository')
+                                    if isinstance(contract, dict) else None}, 'refused', refusal=error.code)
             raise
 
     @staticmethod
@@ -787,7 +789,7 @@ class Clones(EP.EnvProvisioner):
             manifest = json.loads(path.read_text())
             pending.append({'clone_id': manifest['clone_id'], 'unit': manifest['unit'],
                             'users': [u['dispatch_id'] for u in manifest['users']], 'pins': len(manifest['pins'])})
-        return dict(self.counts, pending=pending)
+        return dict(self.counts, pending=pending, identities=GI.metrics(self.observations))
 
 
 def main(argv=None):

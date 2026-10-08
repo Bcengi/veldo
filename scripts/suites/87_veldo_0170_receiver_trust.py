@@ -125,6 +125,8 @@ def _v170_suite():
                        profile=profile, writable=[], runner=manager, origin=url,
                        tailscale=[ts.path], api_port=TS.free_port())
 
+        options.update(__import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['options'](base))
+
         def setup():
             try:
                 with contextlib.redirect_stdout(io.StringIO()):

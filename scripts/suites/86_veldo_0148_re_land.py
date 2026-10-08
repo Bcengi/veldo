@@ -363,6 +363,7 @@ with open(log, 'a') as f:
         verify_packet = EL.HostTrust(HOST_ID, str(signers_file)).verifier('owner', str(caller))
         ids = {'domain_uuid': DOMAIN, 'repository_uuid': REPO, 'store_uuid': STORE}
         setup = S.open_store(str(store_path))
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, setup, DOMAIN, REPO, caller, LANDER_ID)
         connections.append(setup)
         setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                      'writes': ('entities', 'journal', 'commands', 'nonces')}
@@ -613,7 +614,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         git(caller, 'fetch', '-q', 'origin', '+refs/heads/main:refs/heads/main')
         dry = LD.GitLandOps(str(caller), builds[G]['evidence'], trunk='main', remote='origin', push=False,
                             identity=tuple(LANDER_ID), workspace_root=str(base / 'candidates'), domain=DOMAIN,
-                            repository=REPO)
+                            repository=REPO, identity_conn=setup)
         dry.sync_main()
         dry.reconcile({'spec': G})
         tree_one = (dry.record() or {}).get('tree')
