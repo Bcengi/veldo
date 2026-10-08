@@ -482,9 +482,9 @@ def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None)
     command = ["bash", str(root / GATE_PATH), "--candidate", str(candidate), "--sink", str(sink)]
     started = time.time()
     try:
-        # The installation's own launcher finds the marker a nested gate needs (VELDO-0210 AC6).
+        # Inside a tree the agent launcher made, the gate's launcher needs the marker (VELDO-0210 AC6).
         run = subprocess.run(command, cwd=str(candidate), capture_output=True, stdin=subprocess.DEVNULL,
-                             env=gate_env(), timeout=timeout, pass_fds=CP.launcher_fds(root))
+                             env=gate_env(), timeout=timeout, pass_fds=CP.launcher_fds())
         exit_code, out, err = run.returncode, run.stdout, run.stderr
     except subprocess.TimeoutExpired as error:
         exit_code, out, err = None, error.stdout or b"", (error.stderr or b"") + b"\ngate timed out"

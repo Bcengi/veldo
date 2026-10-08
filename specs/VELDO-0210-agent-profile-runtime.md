@@ -488,7 +488,9 @@ unchanged.
   nothing outside a tree: gate_candidate.py; gate_legs.py's confined leg; the mutation coordinator's
   inventory; check_install_and_run.py, check_first_use.py and migrate_to_veldo.py; the installed
   verifier control_verification.observe_gate runs and the head gate control_proof.capture_gate runs,
-  each taking launcher_fds from the launcher that gate runs; and every suite row that starts a
+  with control_proof.launcher_fds, which loads no module (a factory installation's closure names
+  every module it loads by a literal, and scripts/ is not in it) and hands on every namespace
+  descriptor the process inherited, for the gate's launcher to check; and every suite row that starts a
   gate, the launcher or a nested dispatcher (shared.launcher_fds). Handing it on grants nothing the
   nested launcher does not check again. A launcher whose AppArmor label is NAMESPACE_LABEL but which
   holds no marker refuses before helper_problem, naming the closed marker: below the child profile
