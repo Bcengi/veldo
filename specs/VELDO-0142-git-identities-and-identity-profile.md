@@ -72,6 +72,17 @@ footprint:
   - "specs/index.md"
   - "proof/VELDO-0142/*"
   - "scripts/suites/support/git_identity.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/64_veldo_0050_proof.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/68_veldo_0134_acceptance.py"
+  - "scripts/suites/72_veldo_0077_objectives.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "proof/VELDO-0088/setup_fixture.py"
+  - "proof/VELDO-0162/setup_fixture.py"
+  - "proof/VELDO-0204/host.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -234,3 +245,16 @@ and after engine overrides. Check every incoming worker commit before merging. S
 add missing bindings and identities without replacement. Store path registration refuses
 unbound records before writing, including both service registration callers. Scoped suite rows
 and registered falsifiers cover the review findings; the full gate remains reviewer-owned.
+
+2026-10-08 gate followup (gate-v0142a at dfec87a1 RED): every fixture, harness and helper that binds a
+repository now configures its identity first through the one shared helper,
+scripts/suites/support/git_identity.py (bind, bind_paths, options, setup_options). Its fixture record
+is call-site independent, so setup and later fixture binds on one store replay the same record. Product
+defects the gate exposed are fixed: a clone retire event raised on a manifest's identity id; a setup
+rerun checked identities before comparing its arguments, opened the store for writing when nothing was
+absent and wrote while the service held the store (now refused service_running:git_identities, and
+reported after the VELDO-0139 steps); the landing station's lander read its identity reader from a
+replaceable policy (now the station's store reader, explicitly). The identity writer is named
+configure_identities so the VELDO-0204 census of Reservations.configure stays exact. Fixtures that read
+a set-up factory's repository use the workspace setup bound it to. The VELDO-0127 live captures pin
+control_launch.py, which this specification changes; their refresh is the owner's.
