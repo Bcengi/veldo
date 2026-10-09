@@ -67,7 +67,7 @@ def fixture(root, production):
                 artifact_digests=[], nonce='seed-' + str(counter)), 'fixture', sign, 1)
         def put(identity, kind, **data):
             return commit({identity:dict(kind=kind, data=data)})
-        for principal, scope in (('owner','*'), ('reader',['A']), ('outside',['C']), ('other',['B'])):
+        for principal, scope in (('owner','*'), ('reader',['A']), ('outside',['C']), ('other',['B']), ('factory-reader',['factory'])):
             put(principal, 'membership', principal_type='person', roles=['project_owner'], scope=scope,
                 revoked_at=None, expires_at=None)
         for kind in ('role_configuration', 'tool_configuration'):
@@ -89,7 +89,12 @@ def fixture(root, production):
             proposal = 'proposal-' + project
             row('project', dict(name=project, execution_repository=project), 'project:' + project)
             row('objective', dict(project=project))
-            row('intake_proposal', dict(project=project, state='PROPOSED'), proposal)
+            context = dict(candidates=['A','B'], projects=[
+                dict(id=p, name=p, ticket_key_prefixes=['AAA' if p=='A' else 'BBB']) for p in ('A','B')],
+                project_versions={'project:A':1, 'project:B':1, 'project:factory':1})
+            row('intake_proposal', dict(project=project, proposal='objective', state='PROPOSED',
+                context=context, decision=dict(context, hints=['A','B'], shared_ticket_keys=['A','B']),
+                hints=['A','B']), proposal)
             row('intake_question', dict(proposal_id=proposal))
             row('backlog_item', dict(project=project))
             for kind in ('accepted_document','document_version','accepted_revision'):
@@ -101,8 +106,9 @@ def fixture(root, production):
             row('workflow_cycle', dict(subject=unit))
             row('assignment', dict(scope=[project], subject={'ref':'settlement_terms:' + project}), request)
             row('settlement_terms', dict(target={'ref':unit}))
-            for kind in ('request_settlement', 'decision_settlement','channel_presentation'):
+            for kind in ('request_settlement','channel_presentation'):
                 row(kind, dict(request_id=request))
+            row('decision_settlement', dict(settlement={'request_id':request}))
             row('decision', dict(subject={'kind':'spec','id':unit}))
             row('proof_bundle', dict(unit=unit))
             row('gate_observation', dict(repository=project))
@@ -116,12 +122,23 @@ def fixture(root, production):
             workflows[project].save(dict(definition=definition,layout={}),principal='owner',base=0)
             expected[project][WF.REVISION_KIND] = WF.revision_id('domain',project,'build',1)
             expected[project][WF.HEAD_KIND] = WF.head_id('domain',project,'build')
-        put('unrouted', 'intake_proposal', project=None, state='AWAITING_ROUTE')
-        put('inbox-factory', 'intake_proposal', project='A', state='AWAITING_ROUTE')
+        put('project:factory','project',name='factory',execution_repository='factory')
+        inbox_ids = []
+        for state in ('AWAITING_ROUTE','AWAITING_PROJECT','NEW_PROJECT','ROUTED'):
+            pid = 'unrouted' if state == 'AWAITING_ROUTE' else 'inbox-' + state
+            inbox_ids.append(pid)
+            put(pid, 'intake_proposal', project='factory', proposal='inbox', state=state,
+                text='Unrouted private request', context=context,
+                resolved_to='proposal-B' if state=='ROUTED' else None)
+            qid = 'question-' + state
+            inbox_ids.append(qid)
+            put(qid, 'intake_question', proposal_id=pid, candidates=['A','B','a new project'],
+                project='B' if state=='ROUTED' else None,
+                prompt='Which project is this for? A, B, a new project')
         put('account-policy','subscription_reservation',type='policy',scope='account',subject='account')
         publication = EP.Projection(S, db, domain='domain',repository='A',root=base)
         authority = A.ApiAuthority(S,CM,conn,ids=dict(domain_uuid='domain',repository_uuid='A',store_uuid='store'),
-            domain='domain',edge='edge',intake=SimpleNamespace(projects=['A','B']),settlement=None,credentials=None,
+            domain='domain',edge='edge',intake=SimpleNamespace(projects=['A','B','factory']),settlement=None,credentials=None,
             publication=publication,workflows=workflows['A'],authority_lock=lock)
         try:
             yield SimpleNamespace(**locals())

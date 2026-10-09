@@ -15,7 +15,7 @@ def _v164_suite():
     spec = importlib.util.spec_from_file_location('v164_fixture', here / 'fixture.py')
     helper = importlib.util.module_from_spec(spec); spec.loader.exec_module(helper)
     names = ('reads/registration', 'reads/member-A', 'reads/workflow', 'reads/team-route',
-             'reads/no-project', 'reads/withheld-problems', 'reads/rule-variants', 'reads/observations',
+             'reads/unrouted-intake', 'reads/decision-settlement', 'reads/proposal-context', 'reads/no-project', 'reads/withheld-problems', 'reads/rule-variants', 'reads/observations',
              'events/member-A', 'events/registration', 'events/publication', 'events/own-revocations', 'events/cursor',
              'events/edge-unchanged', 'owner/unchanged', 'install/assets')
     rows = {name:[] for name in names}
@@ -51,6 +51,26 @@ def _v164_suite():
                           [m['host'] for m in actual['machines']] == ['host-A'])
                 old = dict(legacy['read_model'](S,conn,model.name),ok=True)
                 check('owner/unchanged',model.name + ' exactly matches the old reader',authority.read(model.name,'owner') == old)
+            for principal in ('reader','factory-reader'):
+                objectives = authority.read('objectives',principal)
+                check('reads/unrouted-intake',principal+' sees no inbox state or question',
+                      objectives['ok'] and not (set(f.inbox_ids) & {
+                          i['id'] for items in objectives['items'].values() for i in items}))
+                inbox_feed = authority.events(principal,0,256)
+                check('reads/unrouted-intake',principal+' receives no inbox change',
+                      not (set(f.inbox_ids) & {i['id'] for e in inbox_feed['events'] for i in e['entities']}))
+            settlements = authority.read('decisions','reader')['items']['decision_settlement']
+            check('reads/decision-settlement','writer-shaped nested request resolves to A',
+                  [i['id'] for i in settlements]==[f.expected['A']['decision_settlement']]
+                  and all('request_id' not in i['data'] for i in settlements))
+            proposal = next(i['data'] for i in authority.read('objectives','reader')['items']['intake_proposal']
+                            if i['id']==f.expected['A']['intake_proposal'])
+            check('reads/proposal-context','other projects and ticket prefixes are absent',
+                  '"B"' not in json.dumps(proposal) and 'BBB' not in json.dumps(proposal)
+                  and 'project:B' not in json.dumps(proposal) and 'project:factory' not in json.dumps(proposal))
+            check('reads/proposal-context','allowed project names and prefixes remain',
+                  proposal['context']['candidates']==['A']
+                  and proposal['context']['projects']==[dict(id='A',name='A',ticket_key_prefixes=['AAA'])])
             check('owner/unchanged','unrouted intake and account policy are retained',
                   'unrouted' in json.dumps(authority.read('objectives','owner'))
                   and 'account-policy' in json.dumps(authority.read('spend','owner')))
@@ -65,9 +85,9 @@ def _v164_suite():
             # Exercise the actual separate team GET handler with its authority seam.
             api = object.__new__(f.API.ControlApi); api.authority = authority
             api._inspect = lambda ids: authority.inspect(ids)['entities']
-            for p in ('A','B','default'):
+            for p in ('A','B','default','absent'):
                 result = api._team_read(None,{'project':p},{'principal':'reader'},None,None)[1]
-                check('reads/team-route',p+' team is scoped', (result['team'] is not None) == (p!='B'))
+                check('reads/team-route',p+' team is scoped', (result['team'] is not None) == (p in ('A','default')))
             for operation in (lambda:authority.read('objectives','outside'),
                               lambda:authority.workflow('outside','build'), lambda:authority.events('outside',0)):
                 check('reads/no-project','existing no project refusal remains',operation().get('reason')=='unauthorized:no_project')
@@ -138,8 +158,9 @@ def _v164_suite():
                   and revoked['cursor']==other)
             # A future-effective own membership revocation leaves the reader current for this answer.
             membership = f.put('reader','membership',principal_type='person',scope=['A'],revoked_at=authority.clock()+60)['seq']
+            membership_events = authority.events('reader',other)['events']
             check('events/own-revocations','own membership revocation retained',
-                  set(authority.events('reader',other)['events'][0]['revocations'])=={'reader'})
+                  len(membership_events)==1 and set(membership_events[0]['revocations'])=={'reader'})
             hidden = f.commit(changed('B'))['seq']
             visible = f.commit(changed('A'))['seq']
             page = authority.events('reader',membership,1)

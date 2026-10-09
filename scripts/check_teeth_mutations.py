@@ -10468,29 +10468,29 @@ def cases():
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
 
     # VELDO-0164: every project rule is applied at reads and journal delivery.
-    add(164, 'v164-model-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-model-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         'answer = MO.read_model(self.S, self.conn, model, scope=scope)',
         'answer = MO.read_model(self.S, self.conn, model)', ['reads/member-A'])
-    add(164, 'v164-events-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-events-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         'if scope is not None and not scope.universal:', 'if False:', ['events/member-A'])
-    add(164, 'v164-universal-projectless-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+    add(164, 'v164-universal-projectless-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
         'if self.universal:', 'if self.universal and self.projects(identity, kind, data):', ['owner/unchanged'])
-    add(164, 'v164-workflow-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-workflow-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         "if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):",
         'if False:', ['reads/workflow'])
-    add(164, 'v164-shared-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+    add(164, 'v164-shared-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
         "if self.rules.get(kind) == ('shared',):", 'if False:', ['reads/member-A'])
-    add(164, 'v164-published-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-published-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         "or e.get('receipt') in visible", 'or True', ['events/publication'])
-    add(164, 'v164-own-revocations-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-own-revocations-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         'reason = None if own else scope.reason(eid, kind, data)',
         'reason = scope.reason(eid, kind, data)', ['events/own-revocations'])
-    add(164, 'v164-cursor-stalls', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+    add(164, 'v164-cursor-stalls', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         "{'cursor': rows[-1][0] if rows else after}", "{'cursor': after}", ['events/cursor'])
-    add(164, 'v164-team-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api.py',
+    add(164, 'v164-team-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api.py',
         "row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)",
         "row = self._inspect([identity]).get(identity)", ['reads/team-route'])
-    add(164, 'v164-unrouted-factory-visible', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+    add(164, 'v164-unrouted-factory-visible', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
         "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')",
         "return data.get('project')", ['reads/member-A'])
 
