@@ -74,9 +74,18 @@ acceptance_criteria:
       effective engine-native and MCP capabilities at launch and compare set equality and settings
       with the accepted role revision in both directions. Selecting at least one MCP server grants
       exactly list_mcp_resources, list_mcp_resource_templates and read_mcp_resource on Codex 0.154;
-      selecting no MCP server grants none of them, and their presence fails closed. Remove a reader
-      with a server selected or expect readers with no server selected: the corresponding equality
-      row must fail. Include a configured Jira-capable MCP tool
+      selecting no MCP server grants none of them, and their presence fails closed. One exception,
+      owner Telegram 32962: on Codex 0.162.0 a Code Mode model (qualified tool mode code_mode_only)
+      with no MCP server selected is expected to offer exactly these three readers, because that
+      version offers them with no switch to remove them and, with no server selected, they reach no
+      resource. The exception is the 0.162.0 qualification record's resource rule; a record whose
+      rule is not its version's own binds nothing. On 0.154.0, for a model outside Code Mode, and
+      for every tool other than the three readers, nothing changes: an unexpected tool still
+      refuses the launch. Remove a reader
+      with a server selected or expect readers with no server selected outside that exception: the
+      corresponding equality row must fail. Falsifier: Expect the readers with no server selected on
+      0.154.0 or for a model outside Code Mode; the no-server equality row must fail.
+      Include a configured Jira-capable MCP tool
       as an ordinary tool, with no special factory channel. Verify each server authenticates
       using exactly its configured credential delivery, including the Atlassian catalog server's
       keystore credential, without gaining another server's credentials.
@@ -92,6 +101,8 @@ acceptance_criteria:
     falsified_by: >
       Remove one configured MCP tool while allowing launch; the exact-handoff comparison must fail.
       Restore mixed dotted feature keys and an inline features table; the profile parse row must fail.
+      Expect the MCP resource readers with no server selected on 0.154.0 or for a model outside Code
+      Mode; the no-server equality row must fail.
   - id: AC3
     text: >
       Claim: The dispatch records the configuration revision actually used and refuses an
@@ -473,3 +484,19 @@ mutation, its diff and red record, and restore the earlier profile red driver.
 No new behavior row or falsifier is introduced, so no new red replay applies.
 Normal and empty gate-environment measurements are recorded in
 proof/VELDO-0127/timing-row-removal-checks.json. No footprint expansion is needed.
+
+2026-10-09, owner Telegram 32962 ("allow readers"), amending Telegram 29400/29401 for one case
+only. Codex 0.162.0 offers list_mcp_resources, list_mcp_resource_templates and read_mcp_resource to
+every Code Mode model (gpt-6.1-sol included) even when the role selects no MCP server, and no switch
+removes them (proof/VELDO-0061/README.md, the open owner decision). Their sources are the MCP servers
+configured for the role, so with none selected they can read nothing; refusing every such launch would
+leave a 0.162.0 pin able to run Code Mode roles only with a server. AC2 therefore expects the three
+readers for a Code Mode model on 0.162.0 with no server selected. The allowance lives in the version's
+qualification record (`mcp_resource_rule` gains `code_mode_otherwise` for 0.162.0 only), the record
+must carry exactly its version's rule to bind, and the expected set is computed from the bound record
+and the model's qualified tool mode, never a blanket allow. On 0.154.0 nothing changes; a model outside
+Code Mode still expects no readers without a server; any other unexpected tool, on any version, still
+refuses the launch. New falsifiers: the allowance applied on 0.154.0 or to a model outside Code Mode
+must turn the no-server equality row red. The existing footprint covers the production modules, suites
+and proof files; no paths added. Production digests change, so the live captures are recaptured with
+the pin transition.
