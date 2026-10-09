@@ -1,0 +1,16 @@
+{
+  "canonical_copies": {
+    "control_api.py": true,
+    "control_api_authority.py": true,
+    "control_api_models.py": true,
+    "control_api_models_scope.py": true,
+    "init_scaffold.py": true
+  },
+  "syntax": "passed",
+  "diff_check_exit": 2,
+  "diff_check_output": "proof/VELDO-0164/v164-team-unfiltered.diff:11: trailing whitespace.\n+ \nproof/VELDO-0164/v164-team-unfiltered.diff:11: new blank line at EOF.\nproof/VELDO-0164/v164-universal-projectless-hidden.diff:5: trailing whitespace.\n+ \n",
+  "outside_footprint": []
+}
+Traceback (most recent call last):
+  File "<stdin>", line 12, in <module>
+AssertionError
