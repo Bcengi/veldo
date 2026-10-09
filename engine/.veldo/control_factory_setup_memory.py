@@ -37,8 +37,10 @@ def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
         return _apply(plan, memory, ids, S, conn, journal, owner_sign, send)
     except Exception as error:
         if hasattr(error, 'code'):
-            error.report = dict(step='memory', outcome='refused', reason=error.code,
-                                metrics=dict(memory_steps_refused=1, memory_checks_refused=1))
+            metrics = dict(memory_steps_refused=1)
+            if getattr(error, 'check', False):
+                metrics['memory_checks_refused'] = 1
+            error.report = dict(step='memory', outcome='refused', reason=error.code, metrics=metrics)
         raise
 
 
@@ -52,11 +54,15 @@ def _apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
     if memory['outcome'] == 'already_done':
         return report
     checks = []
-    for part in M.PARTS:
-        checks.append(CHECK.check(plan['root'], previous['definition'] if previous else definition, part, 'before'))
-    # The candidate must preserve memory before any run can read its revision.
-    for part in M.PARTS:
-        checks.append(CHECK.check(plan['root'], definition, part, 'after'))
+    try:
+        for part in M.PARTS:
+            checks.append(CHECK.check(plan['root'], previous['definition'] if previous else definition, part, 'before'))
+        # The candidate must preserve memory before any run can read its revision.
+        for part in M.PARTS:
+            checks.append(CHECK.check(plan['root'], definition, part, 'after'))
+    except CHECK.M.Refused as error:
+        error.check = True
+        raise
     base = previous['revision'] if previous else 0
     command = dict(ids, command_id='memory-' + uuid.uuid4().hex, operation=M.SAVE, principal=plan['owner'],
                    parameters=dict(definition=definition, base=base))
@@ -128,8 +134,8 @@ def main(argv=None):
     except (M.Refused, CHECK.M.Refused, OSError, ValueError) as error:
         print(json.dumps(dict(outcome='refused', reason=getattr(error, 'code', 'invalid_input:memory'),
                               detail=getattr(error, 'detail', ''),
-                              memory=getattr(error, 'report', dict(step='memory', outcome='refused',
-                                  metrics=dict(memory_steps_refused=1))))))
+                              memory=getattr(error, 'report', dict(step='memory', outcome='refused', metrics={
+                                  'memory_checks_refused' if args.action == 'check' else 'memory_steps_refused': 1})))))
         return 1
     finally:
         if conn is not None:

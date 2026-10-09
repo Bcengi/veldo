@@ -1,7 +1,9 @@
 """Read captured source in place; exercise it over synthetic data and backend doubles.
 
 Nothing is copied from the captures, and no live memory, credential or model is used.
-This optional local check is separate from the portable synthetic fixtures.
+This optional local check is separate from the portable synthetic fixtures. claude-mem has no capture
+step: its check runs the installed plugin's own worker and search server, proven read only against the
+owner's real store (README, "Round 2").
 """
 import importlib.util
 import json
@@ -66,30 +68,6 @@ def run(part, capture, entry, adapter):
         sys.modules['kb.embeddings']=types.SimpleNamespace(get_embedding_function=lambda:None)
         # Public synthetic documents need no encryption dependency.
         sys.modules['kb.crypto']=types.SimpleNamespace(decrypt=lambda text:text)
-    elif part=='claude_mem':
-        W=load('worker_fixture',Path(__file__).with_name('worker_fixture.py'))
-        import shutil
-        import tempfile
-        F=load('fixtures',Path(__file__).with_name('fixtures.py'))
-        node=shutil.which('node')
-        assert node
-        with tempfile.TemporaryDirectory() as tmp:
-            other=F.build(Path(tmp)/'other',count=1)['parts']['claude_mem']
-            with W.worker(other['data'],chroma=False) as settings:
-                (Path(entry['data'])/'settings.json').write_text(json.dumps(settings))
-                os.environ.update(settings,HOME=str(Path(entry['data']).parent))
-                routed=dict(entry,code=str(capture),command=[node,str(capture/'scripts/mcp-server.cjs')])
-                client=W.MCPClient(routed)
-                try:
-                    rows=client.all()
-                    assert len(rows)==3 and not client.search(rows[0])
-                    before=A.inspect(dict(part=part,entry=routed,operation='before'))
-                    after=A.inspect(dict(part=part,entry=routed,operation='after',sample=before['sample']))
-                    assert before['count']==9 and after['found']
-                finally:client.close()
-            # No worker is running now. The same recorded store remains readable.
-            assert A.inspect(dict(part=part,entry=routed,operation='after',sample=before['sample']))['found']
-        return
     before=A.inspect(dict(part=part,entry=entry,operation='before'))
     after=A.inspect(dict(part=part,entry=entry,operation='after',sample=before['sample']))
     assert before['count'] and after['count']==before['count'] and after['found']

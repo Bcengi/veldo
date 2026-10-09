@@ -352,7 +352,7 @@ def engine_environment(environment):
     handed = environment.pop('VELDO_MEMORY', None)
     environment.update({name: value for name, value in
                         json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()
-                        if not name.startswith('VELDO_')})
+                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})
     if handed is not None:
         environment['VELDO_MEMORY'] = handed
     environment['XDG_RUNTIME_DIR'] = runtime
@@ -967,6 +967,7 @@ class Receiver:
         self.sign = lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE)
         self.host = config.get('host') or socket.gethostname()
         self.login = None
+        self.memory = None
         self.metering = None
         self.binding = None
         self.token = None
@@ -1112,7 +1113,7 @@ class Receiver:
             memory = _organ('control_memory')
             reader = S.open_store(self.config['store'], mode='r')
             try:
-                self.memory = memory.handoff(reader)
+                self.memory = memory.handoff(reader, self.host)
             except memory.Refused as error:
                 refusal = error.code
             finally:

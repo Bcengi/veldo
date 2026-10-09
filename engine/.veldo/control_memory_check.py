@@ -1,7 +1,6 @@
 """One private safety copy and a fresh light check around every memory switch."""
+import contextlib
 import fcntl
-from contextlib import contextmanager
-import signal
 import json
 import os
 from pathlib import Path
@@ -10,6 +9,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import time
 
 from importlib.util import spec_from_file_location, module_from_spec
 _spec = spec_from_file_location('check_memory', Path(__file__).with_name('control_memory.py'))
@@ -24,89 +24,152 @@ def private_dir(path):
         raise M.Refused('invalid_input:memory:copies:permissions')
 
 
-def copy_data(source, target):
+SIDECARS = ('-wal', '-shm', '-journal')
+CHROMA = 'chroma.sqlite3'
+QUIET, ATTEMPTS = 1.0, 8
+
+
+def idle(source):
+    """A WAL database no one holds open: no shared memory, and no WAL or an empty one, so its file holds
+    every commit. Any open but an immutable one would create the missing files in the owner's directory."""
+    source = Path(source)
+    wal, shm = Path(str(source) + '-wal'), Path(str(source) + '-shm')
+    with source.open('rb') as stream:
+        return (stream.read(20)[18:20] == b'\x02\x02' and not shm.exists()
+                and (not wal.exists() or wal.stat().st_size == 0))
+
+
+def source_uri(source):
+    """How a store's SQLite database is opened without writing beside it: a live store's shared memory
+    read-only, an idle one as it lies. Returns the URI and whether it is idle."""
+    quiet = idle(source)
+    return Path(source).as_uri() + ('?mode=ro&immutable=1' if quiet else '?mode=ro&readonly_shm=1'), quiet
+
+
+def backup(source, target, part='copy', sleep=time.sleep):
+    """SQLite's online backup in one step, which holds one read transaction, so the copy is whole while the
+    owner's assistant commits. An idle database read as it lies is kept only when no writer opened or
+    changed it meanwhile; otherwise it is read again."""
     source, target = Path(source), Path(target)
-    M.checked(str(source), 'copy', 'directory' if source.is_dir() else 'file')
-    if source.is_dir():
+    for attempt in range(ATTEMPTS):
+        uri, quiet = source_uri(source)
+        before = source.stat()
+        with contextlib.closing(sqlite3.connect(uri, uri=True)) as src:
+            with contextlib.closing(sqlite3.connect(target)) as dst:
+                src.backup(dst)
+        after = source.stat()
+        if not quiet or ((before.st_size, before.st_mtime_ns) == (after.st_size, after.st_mtime_ns) and idle(source)):
+            target.chmod(0o600)
+            return
+        target.unlink()
+        sleep(QUIET)
+    raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, str(source))
+
+
+def is_sqlite(path):
+    with Path(path).open('rb') as stream:
+        return stream.read(16) == b'SQLite format 3\x00'
+
+
+def copy_data(source, target, part='copy'):
+    source, target = Path(source), Path(target)
+    M.checked(str(source), part, 'directory' if source.is_dir() else 'file')
+    if source.is_dir() and (source / CHROMA).is_file():
+        copy_chroma(source, target, part)
+    elif source.is_dir():
         target.mkdir(mode=0o700)
         for child in source.iterdir():
-            if child.name.endswith(('-wal', '-shm', '-journal')):
-                continue
-            copy_data(child, target / child.name)
+            if child.is_symlink():
+                # A link inside a store is copied as the link, never followed.
+                os.symlink(os.readlink(child), target / child.name)
+            elif not child.name.endswith(SIDECARS):
+                copy_data(child, target / child.name, part)
+    elif is_sqlite(source):
+        backup(source, target, part)
     else:
-        with source.open('rb') as stream:
-            sqlite = stream.read(16) == b'SQLite format 3\x00'
-        if sqlite:
-            # Include committed WAL rows while the assistant still has a connection.
-            with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as src:
-                with sqlite3.connect(target) as dst:
-                    src.backup(dst)
-        else:
-            shutil.copyfile(source, target)
+        shutil.copyfile(source, target)
         target.chmod(0o600)
 
 
-@contextmanager
-def index_guard(source, part, detail):
-    """Read leases keep Chroma segment files immutable across the SQLite backup.
-
-    SQLite supports online backup; HNSW does not. An open writer or writable mmap
-    refuses a lease. A new writer requests a lease break, which aborts this copy.
-    Unsupported hosts fail closed only when raw index files actually exist.
-    """
-    files = []
-    for database in Path(source).rglob('chroma.sqlite3'):
-        for path in database.parent.rglob('*'):
-            if path.is_file() and path != database and not path.name.endswith(('-wal', '-shm', '-journal')):
-                files.append(path)
-    held, previous = [], None
-    try:
-        if files:
-            if not hasattr(fcntl, 'F_SETLEASE'):
-                raise OSError('index lease unavailable')
-            def interrupted(signum, frame):
-                raise OSError('index writer requested lease break')
-            previous = signal.signal(signal.SIGIO, interrupted)
-            for path in files:
-                fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
-                held.append(fd)
-                fcntl.fcntl(fd, fcntl.F_SETOWN, os.getpid())
-                fcntl.fcntl(fd, fcntl.F_SETLEASE, fcntl.F_RDLCK)
-        yield
-    except (OSError, ValueError):
-        raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail) from None
-    finally:
-        for fd in held:
-            os.close(fd)
-        if previous is not None:
-            signal.signal(signal.SIGIO, previous)
+def segment_stamps(source):
+    """Chroma's index segment files: everything beside its SQLite database except SQLite's own."""
+    stamps = {}
+    for path in Path(source).rglob('*'):
+        if path.is_file() and path.name != CHROMA and not path.name.endswith(SIDECARS):
+            info = path.lstat()
+            stamps[str(path.relative_to(source))] = (info.st_ino, info.st_size, info.st_mtime_ns)
+    return stamps
 
 
-def copy_version(source):
-    source = Path(source)
-    paths = [source] + (list(source.rglob('*')) if source.is_dir() else [])
-    return {str(p): (p.lstat().st_ino, p.lstat().st_size, p.lstat().st_mtime_ns,
-                     p.lstat().st_ctime_ns) for p in paths}
+def copy_chroma(source, target, part, attempts=None, sleep=time.sleep):
+    """A consistent copy of a Chroma directory that another Chroma may hold open.
+
+    Chroma rewrites its index segment files only when it persists them and replays newer writes from its
+    SQLite log. So the segment files are copied first, then the SQLite database through the online backup,
+    and the copy is kept only when no segment file changed from before the first byte to after the backup
+    and none changed within QUIET seconds before it; otherwise it is retried."""
+    for attempt in range(attempts or ATTEMPTS):
+        before = segment_stamps(source)
+        newest = max((stamp[2] for stamp in before.values()), default=0)
+        if time.time_ns() - newest >= QUIET * 1e9:
+            if target.exists():
+                shutil.rmtree(target)
+            target.mkdir(mode=0o700)
+            for name in before:
+                destination = target / name
+                for parent in reversed(destination.relative_to(target).parents[:-1]):
+                    (target / parent).mkdir(mode=0o700, exist_ok=True)
+                shutil.copyfile(source / name, destination)
+                destination.chmod(0o600)
+            backup(source / CHROMA, target / CHROMA, part)
+            if segment_stamps(source) == before:
+                return attempt + 1
+        sleep(min(QUIET * 2 ** attempt, 30))
+    if target.exists():
+        shutil.rmtree(target)
+    raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, str(source))
 
 
 def preflight(definition):
     """Exercise readers and search dependencies before setup writes host state."""
-    M.no_nested_links(definition)
     for part, entry in definition['parts'].items():
         try:
-            before = probe(part, entry, 'before')
-            after = probe(part, entry, 'after', before['sample'])
-        except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+            result = probe(part, entry, 'preflight')
+        except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError):
             raise M.Refused('unavailable_service:memory:%s:adapter' % part) from None
-        if after['count'] < before['count'] or not after['found']:
+        if not result['found']:
             raise M.Refused('missing_evidence:memory:%s:lost' % part)
 
 
-def probe(part, entry, operation, sample=None):
+def snapshot(entry, scratch):
+    """claude-mem's search runs in a worker that writes its data directory, so it gets its own private
+    home holding a consistent copy of the named store, never the store itself."""
+    home = Path(scratch) / 'home'
+    data = home / '.claude-mem'
+    data.mkdir(mode=0o700, parents=True)
+    backup(Path(entry['data']) / 'claude-mem.db', data / 'claude-mem.db', 'claude_mem')
+    if (Path(entry['data']) / 'chroma').is_dir():
+        copy_chroma(Path(entry['data']) / 'chroma', data / 'chroma', 'claude_mem')
+    return home
+
+
+def probe(part, entry, operation, sample=None, scratch=None):
     interpreter = entry.get('interpreter', sys.executable)
     request = dict(part=part, entry=entry, operation=operation, sample=sample or [])
-    result = subprocess.run([interpreter, '-B', str(Path(__file__).with_name('control_memory_adapter.py'))],
-                            input=json.dumps(request), capture_output=True, text=True, timeout=180)
+    adapter = Path(__file__).with_name('control_memory_adapter.py')
+    with tempfile.TemporaryDirectory(prefix='probe-', dir=scratch) as private:
+        try:
+            if part == 'claude_mem':
+                request['home'] = str(snapshot(entry, private))
+            result = subprocess.run([interpreter, '-B', str(adapter)], input=json.dumps(request), capture_output=True,
+                                    text=True, timeout=3600 if part == 'claude_mem' else 180)
+        finally:
+            if 'home' in request:
+                # The worker runs in sessions of its own, so a check cut short leaves it to this sweep.
+                spec = spec_from_file_location('memory_adapter', adapter)
+                module = module_from_spec(spec)
+                spec.loader.exec_module(module)
+                module.stop(request['home'])
     if result.returncode:
         raise ValueError('adapter failed')
     answer = json.loads(result.stdout)
@@ -132,15 +195,14 @@ def check(root, definition, part, phase):
             if not target.exists():
                 staging = Path(tempfile.mkdtemp(prefix='copy-', dir=copies))
                 try:
-                    initial = copy_version(entry['data'])
-                    with index_guard(entry['data'], part, detail):
-                        copy_data(entry['data'], staging / part)
-                        if copy_version(entry['data']) != initial:
-                            raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail)
-                        (staging / part).rename(target)
+                    try:
+                        copy_data(entry['data'], staging / part, part)
+                    except M.Refused as error:
+                        raise M.Refused(error.code, detail) from None
+                    (staging / part).rename(target)
                 finally:
                     shutil.rmtree(staging)
-            result = probe(part, entry, 'before')
+            result = probe(part, entry, 'before', scratch=directory)
             saved = dict(result, source=entry['data'])
             tmpfd, temporary = tempfile.mkstemp(dir=copies)
             with os.fdopen(tmpfd, 'w') as out:
@@ -149,13 +211,13 @@ def check(root, definition, part, phase):
             sample_size = len(result['sample'])
         else:
             saved = json.loads(evidence.read_text())
-            result = probe(part, entry, 'after', saved['sample'])
+            result = probe(part, entry, 'after', saved['sample'], scratch=directory)
             if result['count'] < saved['count'] or not result['found']:
                 raise M.Refused('missing_evidence:memory:%s:lost' % part, detail)
             sample_size = len(saved['sample'])
         return dict(part=part, phase=phase, outcome='passed', path=entry['data'], copy=str(target),
                     count=result['count'], sample_size=sample_size, metrics=dict(memory_checks_passed=1))
-    except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+    except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError):
         raise M.Refused('unavailable_service:memory:%s:adapter' % part, detail) from None
     finally:
         os.close(fd)

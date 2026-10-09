@@ -10,8 +10,11 @@ def _v182_suite():
     import subprocess
     import sys
     import tempfile
+    import contextlib
+    import threading
     import time
     import traceback
+    import unittest.mock
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, path)
@@ -27,6 +30,12 @@ def _v182_suite():
     INTEGRATION = load('v182_integration', ROOT / 'proof/VELDO-0182/integration_fixtures.py')
     INTEGRATION.ROOT, INTEGRATION.fast_temp = ROOT, fast_temp
     rows = {}
+    # The claude-mem worker runs as `bun <plugin>/scripts/worker-service.cjs`: the fixture's bun runs the
+    # stand-in beside it, for every fixture this suite builds.
+    bun_dir = Path(tempfile.mkdtemp(prefix='v182-bun-', dir=fast_temp()))
+    FIX.bun(bun_dir)
+    saved_path = os.environ['PATH']
+    os.environ['PATH'] = str(bun_dir) + os.pathsep + saved_path
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -44,13 +53,24 @@ def _v182_suite():
     def head(conn):
         return conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
 
+    def report_of(fn):
+        try:
+            fn()
+        except Exception as e:
+            return getattr(e, 'report', None)
+        return None
+
+    def facts_queue(path):
+        with contextlib.closing(sqlite3.connect(path)) as c:
+            return c.execute('SELECT COUNT(*) FROM embeddings_queue').fetchone()[0]
+
     with tempfile.TemporaryDirectory(prefix='v182-', dir=fast_temp()) as tmp:
         base = Path(tmp)
         manifest = FIX.build(base / 'stores')
         definition = M.normalize(manifest)
         captures=ROOT/'.interface-captures'
         if captures.exists():
-            for part,path in [('ava_memory','myday/mem0_memory'),('knowledge_graph','myday/knowledge_graph'),('memory_kb','myday/memory_kb'),('claude_mem','claude-mem-10.6.2')]:
+            for part,path in [('ava_memory','myday/mem0_memory'),('knowledge_graph','myday/knowledge_graph'),('memory_kb','myday/memory_kb')]:
                 request=dict(part=part,capture=str(captures/path),entry=definition['parts'][part],adapter=str(ROOT/'.veldo/control_memory_adapter.py'))
                 result=subprocess.run([sys.executable,'-B',str(ROOT/'proof/VELDO-0182/capture_conformance.py')],input=json.dumps(request),capture_output=True,text=True,timeout=90)
                 if result.returncode: print('capture conformance:',part,result.stderr[-1000:])
@@ -95,9 +115,10 @@ def _v182_suite():
                     if mutated:
                         import inspect,textwrap
                         code=textwrap.dedent(inspect.getsource(original))
-                        block="    for part in M.PARTS:\n        checks.append(CHECK.check(plan['root'], definition, part, 'after'))\n"
+                        block="        for part in M.PARTS:\n            checks.append(CHECK.check(plan['root'], definition, part, 'after'))\n"
+                        late="    for part in M.PARTS:\n        checks.append(CHECK.check(plan['root'], definition, part, 'after'))\n"
                         assert code.count(block)==1
-                        code=code.replace(block,'').replace('    return dict(report, revision=',block+'    return dict(report, revision=')
+                        code=code.replace(block,'').replace('    return dict(report, revision=',late+'    return dict(report, revision=')
                         ns={};exec(compile(code,F.__file__,'exec'),F.__dict__,ns);F._apply=ns['_apply']
                     attempts=[];original_check=F.CHECK.check
                     def observe(*args):
@@ -116,6 +137,7 @@ def _v182_suite():
                             check('switch/refused-unchanged',first=='missing_evidence:memory:file_memory:lost' and unchanged)
                             check('switch/retry-rechecks',retry==first and ('file_memory','after') in attempts)
                             check('switch/original-setup',accepted and apply(F.prepare(manifest,auth.conn))['outcome']=='already_done')
+                            check('metrics/check-refusal',report_of(lambda: apply(F.prepare(lossy,auth.conn,revise=True)))['metrics']==dict(memory_steps_refused=1,memory_checks_refused=1))
                     finally:
                         F.CHECK.check=original_check;F._apply=original
                 finally:auth.conn.close()
@@ -135,6 +157,9 @@ def _v182_suite():
             check('setup/idempotent', unchanged['outcome']=='already_done' and head(conn)==journal_head and M.read(conn)['revision']==1)
             different = dict(manifest, host='different-host')
             check('setup/differs', refusal(lambda: F.prepare(different,conn))=='invalid_input:state_root:differs:memory' and head(conn)==journal_head)
+            stale=F.prepare(different,conn,revise=True);stale['previous']=dict(stale['previous'],revision=0)
+            stale_report=report_of(lambda: F.apply(plan,stale,authority.ids,S,conn,('authority',authority.journal_sign),sign))
+            check('metrics/step-refusal-only',stale_report['reason'].startswith('stale_version') and stale_report['metrics']==dict(memory_steps_refused=1) and head(conn)==journal_head)
             old = M.read(conn)
             check('record/stale', refusal(lambda: writer.admit(packet()))=='stale_version' and M.read(conn)==old)
             fresh = packet(M.normalize(different),base=1)
@@ -156,33 +181,96 @@ def _v182_suite():
             check('profile/setup-refused', refusal(lambda: F.prepare(wide,conn,revise=True))=='invalid_input:memory:contains_account_profile:file_memory' and head(conn)==at)
             alias=base/'alias';alias.symlink_to(inner,target_is_directory=True)
             check('profile/real-paths', refusal(lambda: accounts.register('alias','alias','codex','alias',{'fixture-host':str(alias)},now=time.time()))=='invalid_input:account_profile:inside_memory:knowledge_graph')
-            nested=Path(definition['parts']['file_memory']['data'])/'login-alias'
-            nested.symlink_to(profile,target_is_directory=True)
-            check('profile/handoff-nested-link',refusal(lambda: M.handoff(conn))=='invalid_input:memory:file_memory:link')
+            # The link rule is the spec's: a location is not a link, checked by normalize in setup, revise,
+            # the signed transition and handoff alike; a link inside a location is the store's own.
+            files=Path(definition['parts']['file_memory']['data'])
+            nested=files/'login-alias';nested.symlink_to(profile,target_is_directory=True)
+            current=M.read(conn)
+            signed=packet(definition,base=current['revision'])
+            transition=lambda value: writer.transition(conn,dict(signed_command=value['command'],signature=value['signature']),None)
+            check('link/nested-same-everywhere',refusal(lambda: F.prepare(manifest,conn)) is None and refusal(lambda: F.prepare(manifest,conn,revise=True)) is None
+                  and refusal(lambda: transition(signed)) is None and refusal(lambda: M.handoff(conn)) is None and M.handoff(conn)['definition']==definition)
             nested.unlink()
-            code_alias=Path(definition['parts']['knowledge_graph']['code'])/'login-alias'
-            code_alias.symlink_to(profile,target_is_directory=True)
-            check('profile/handoff-code-link',refusal(lambda: M.handoff(conn))=='invalid_input:memory:knowledge_graph:link')
-            code_alias.unlink()
-            A=load('v182_adapter',ROOT/'.veldo/control_memory_adapter.py')
-            plugin=A.Plugin(definition['parts']['claude_mem'])
+            linked=base/'files-link';linked.symlink_to(files,target_is_directory=True)
+            relinked=json.loads(json.dumps(manifest));relinked['parts']['file_memory']['data']=str(linked)
+            bent=json.loads(json.dumps(definition));bent['parts']['file_memory']['data']=str(linked)
+            moved=files.with_name('files-moved');files.rename(moved);files.symlink_to(moved,target_is_directory=True)
             try:
-                row=plugin.all()[0]
-                check('check/search-required-claude_mem',plugin.get(row) and plugin.search(row) and not plugin.search(dict(row,text='absent synthetic text')))
-            finally:plugin.close()
+                link_codes={refusal(lambda: F.prepare(relinked,conn)),refusal(lambda: F.prepare(relinked,conn,revise=True)),
+                            refusal(lambda: transition(packet(bent,base=current['revision']))),refusal(lambda: M.handoff(conn))}
+            finally:
+                files.unlink();moved.rename(files)
+            check('link/location-same-everywhere',link_codes=={'invalid_input:memory:file_memory:link'} and M.read(conn)==current)
+            # Containment compares real paths and never walks a location's tree.
+            with unittest.mock.patch.object(os,'walk',side_effect=AssertionError('walked')), \
+                    unittest.mock.patch.object(Path,'rglob',side_effect=AssertionError('walked')):
+                walked=[refusal(lambda: M.handoff(conn)),refusal(lambda: F.prepare(manifest,conn))]
+            check('profile/no-walk',walked==[None,None] and M.handoff(conn)['definition']==definition and F.prepare(manifest,conn)['outcome']=='already_done')
+            check('launch/host-differs',refusal(lambda: M.handoff(conn,'another-host'))=='invalid_input:memory:host:differs'
+                  and M.handoff(conn,manifest['host'])['definition']==definition)
+            L=load('v182_launch',ROOT/'.veldo/control_launch.py')
+            engine_env=L.engine_environment({L.ENGINE_RUNTIME:'/run/fixture','VELDO_MEMORY':'handed',L.ENGINE_OVERRIDES:json.dumps(dict(
+                VELDO_MCP_ATLASSIAN_AUTHORIZATION='Bearer synthetic',CODEX_HOME='/codex',VELDO_MEMORY='configured',VELDO_FUTURE_INTERNAL='x'))})
+            check('launch/engine-overrides',engine_env.get('VELDO_MCP_ATLASSIAN_AUTHORIZATION')=='Bearer synthetic' and engine_env.get('CODEX_HOME')=='/codex'
+                  and engine_env.get('VELDO_MEMORY')=='handed' and 'VELDO_FUTURE_INTERNAL' not in engine_env)
+            # claude-mem: its own search server and a dedicated worker over a private copy, never the owner's.
             W=load('v182_worker',ROOT/'proof/VELDO-0182/worker_fixture.py')
-            other=FIX.build(base/'other-worker',count=1)['parts']['claude_mem']
             entry=definition['parts']['claude_mem']
-            with W.worker(other['data'],chroma=False) as settings:
-                (Path(entry['data'])/'settings.json').write_text(json.dumps(settings))
-                client=W.MCPClient(entry)
-                try:
-                    remote=client.all()
-                    check('worker/real-routing',len(remote)==3 and not client.search(remote[0]))
-                    direct=C.probe('claude_mem',entry,'before')
-                    check('worker/named-store-chroma-off',direct['count']==9 and C.probe('claude_mem',entry,'after',direct['sample'])['found'])
-                finally:client.close()
-            check('worker/missing-not-lost',C.probe('claude_mem',entry,'after',direct['sample'])['found'])
+            observed=Path(entry['code'])/'observed.jsonl'
+            def store_state(path):
+                return {str(p):(p.read_bytes(),p.stat().st_mtime_ns) for p in Path(path).rglob('*') if p.is_file()}
+            def running(home):
+                marker=('HOME=%s'%home).encode();found=[]
+                for proc in Path('/proc').iterdir():
+                    with contextlib.suppress(OSError):
+                        if proc.name.isdigit() and marker in (proc/'environ').read_bytes().split(b'\0'):found.append(proc.name)
+                return found
+            with W.worker() as (owner_port,hits):
+                (Path(entry['data'])/'settings.json').write_text(json.dumps(dict(CLAUDE_MEM_WORKER_PORT=str(owner_port))))
+                stored=store_state(entry['data'])
+                observed.unlink(missing_ok=True)
+                result=C.probe('claude_mem',entry,'preflight')
+                seen=[json.loads(line) for line in observed.read_text().splitlines()]
+                own=seen[0] if len(seen)==1 else {}
+                check('worker/dedicated',result['found'] and result['count']==12 and own.get('port') not in (owner_port,37777)
+                      and own.get('home')!=os.environ.get('HOME') and own.get('data')==str(Path(own.get('home','/'))/'.claude-mem')
+                      and not Path(own.get('home','/')).exists())
+                check('worker/owner-worker-untouched',not hits)
+                check('worker/kills-nothing',own.get('ps')==['PID COMMAND'] and own.get('pending')==0 and not Path(own.get('claude') or '/').exists())
+                check('worker/stopped',not running(own.get('home')) and not Path('/proc/%d'%own.get('child',0)).exists())
+                check('worker/read-only',store_state(entry['data'])==stored)
+                (Path(entry['data'])/'settings.json').unlink()
+            snap=C.probe('claude_mem',entry,'before')
+            texts={(r['collection'],r['id']):r['text'] for r in snap['sample']}
+            check('worker/facts-and-untexted',snap['count']==12 and texts[('observations',4)]=='Second synthetic fact' and texts[('observations',5)] is None
+                  and texts[('sessions',4)] is None and C.probe('claude_mem',entry,'after',snap['sample'])['found'])
+            # The search is the server's: a title claude-mem never indexes is not found by a query for it.
+            titled=[dict(r,text='Synthetic title only') if (r['collection'],r['id'])==('observations',5) else r for r in snap['sample']]
+            check('worker/search-is-claude-mems',not C.probe('claude_mem',entry,'after',titled)['found'])
+            # The process safeguards are audited for 10.6.2; another version is not started.
+            package=Path(entry['code'])/'package.json';audited=package.read_text()
+            package.write_text(json.dumps(dict(name='claude-mem-plugin',version='10.7.0')))
+            observed.unlink(missing_ok=True)
+            try:
+                unaudited=refusal(lambda: C.probe('claude_mem',entry,'before'))
+            finally:package.write_text(audited)
+            check('worker/unaudited-version-refused',unaudited=='ValueError' and not observed.exists())
+            # A check cut short while its worker runs in sessions of its own leaves no process behind.
+            worker_source=Path(entry['code'])/'fixture_worker.py';worker_text=worker_source.read_text()
+            ready="            if path.path == '/api/readiness':\n                return self.send(dict(status='ready'))\n"
+            assert worker_text.count(ready)==1
+            worker_source.write_text(worker_text.replace(ready,ready.replace("dict(status='ready'))","dict(status='starting'), 503)")))
+            original_run=C.subprocess.run
+            def cut_short(*args,**kwargs):
+                return original_run(*args,**dict(kwargs,timeout=4))
+            observed.unlink(missing_ok=True);C.subprocess.run=cut_short
+            try:
+                cut=refusal(lambda: C.probe('claude_mem',entry,'before'))
+            finally:
+                C.subprocess.run=original_run;worker_source.write_text(worker_text)
+            started=json.loads(observed.read_text().splitlines()[0]) if observed.exists() else {}
+            check('worker/cut-short-stopped',cut=='TimeoutExpired' and started and not running(started['home'])
+                  and not Path('/proc/%d'%started['child']).exists() and not Path(started['home']).exists())
             db=Path(manifest['parts']['knowledge_graph']['code'])/'knowledge_graph.db';db.rename(db.with_suffix('.saved'))
             check('setup/missing-database', refusal(lambda: F.prepare(manifest,conn))=='invalid_input:memory:knowledge_graph:missing')
             check('launch/missing-refused', refusal(lambda: M.handoff(conn))=='invalid_input:memory:knowledge_graph:missing')
@@ -198,7 +286,7 @@ def _v182_suite():
                 C.check(plan['root'],definition,part,'before')
                 evidence=json.loads((copy.parent/(part+'.json')).read_text())
                 check('check/sample-'+part, len(evidence['sample'])==min(20,evidence['count']) and evidence['count']>0)
-                if part not in ('file_memory','claude_mem'):
+                if part!='file_memory':
                     code=Path(definition['parts'][part]['code'])
                     if part=='ava_memory':
                         source=code/'memory_store.py';needle="    def search(self, query, limit=10, category=None):\n";extra='        return []\n'
@@ -207,9 +295,9 @@ def _v182_suite():
                     elif part=='memory_kb':
                         source=code/'kb/search.py';needle='def search(query,collections=None,n_results=5,classifications=None):\n';extra='    return []\n'
                     else:
-                        source=code/'search.py';needle="            offset=a.get('offset',0);found=found[offset:offset+a.get('limit',20)]\n";extra="            if a.get('query'): found=[]\n"
+                        source=code/'fixture_worker.py';needle="                    result[kind] = found[:int(args.get('limit', 20))]\n";extra="                    found = []\n"
                     original_source=source.read_text();assert original_source.count(needle)==1
-                    source.write_text(original_source.replace(needle,needle+extra))
+                    source.write_text(original_source.replace(needle,extra+needle if part=='claude_mem' else needle+extra))
                     try:
                         check('check/search-required-'+part,refusal(lambda: C.check(plan['root'],definition,part,'after'))=='missing_evidence:memory:'+part+':lost')
                     finally:
@@ -238,34 +326,99 @@ def _v182_suite():
                     check('falsifier/copy-passes', C.probe(part,dict(data=str(copy)),'after',evidence['sample'])['found'])
                 C.check(plan['root'],definition,part,'before')
                 check('check/copy-once-'+part, fingerprint(copy)==original)
-            # A committed WAL row must be in the independent SQLite copy.
-            source=base/'wal.db';live=sqlite3.connect(source);live.execute('PRAGMA journal_mode=WAL')
-            live.execute('CREATE TABLE facts(text TEXT)');live.execute("INSERT INTO facts VALUES ('WAL-only synthetic fact')");live.commit()
-            C.copy_data(source,base/'wal-copy.db')
-            with sqlite3.connect(base/'wal-copy.db') as copied:
-                check('copy/sqlite-online',copied.execute('SELECT COUNT(*) FROM facts').fetchone()[0]==1)
-            live.close()
-            busy=base/'busy';busy.mkdir();(busy/'MEMORY.md').write_text('Index')
-            (busy/'segment.bin').write_bytes(b'synthetic HNSW bytes')
-            busydef=json.loads(json.dumps(definition));busydef['parts']['file_memory']['data']=str(busy)
-            busyroot=base/'busy-state';busyroot.mkdir(mode=0o700)
-            original_copy=C.copy_data
-            def moving_copy(source,target):
-                original_copy(source,target)
-                if Path(source)==busy:(busy/'segment.bin').write_bytes(b'writer changed index')
-            C.copy_data=moving_copy
+            # SQLite is copied through the online backup while a writer commits every 50 ms. Its WAL and
+            # shared memory are never copied or stamped, and a log being appended is copied as it is.
+            live_dir=base/'live';live_dir.mkdir()
+            live=sqlite3.connect(live_dir/'wal.db',check_same_thread=False);live.execute('PRAGMA journal_mode=WAL')
+            live.execute('CREATE TABLE facts(text TEXT)');live.commit()
+            stop=threading.Event()
+            def commit(connection,table,log=None):
+                n=0
+                while not stop.is_set():
+                    connection.execute('INSERT INTO '+table+' VALUES (?)',('WAL synthetic fact %d'%n,));connection.commit();n+=1
+                    if log:
+                        with open(log,'a') as out:out.write('commit\n')
+                    time.sleep(0.05)
+            thread=threading.Thread(target=commit,args=(live,'facts(text)',live_dir/'worker.log'));thread.start()
+            copied=[]
             try:
-                check('copy/moving-index-refused',refusal(lambda: C.check(busyroot,busydef,'file_memory','before'))=='unavailable_service:memory:file_memory:copy_busy' and not (busyroot/'memory/copies/file_memory').exists())
-            finally:C.copy_data=original_copy
-            indexroot=base/'index-state';indexroot.mkdir(mode=0o700)
-            segments=Path(definition['parts']['memory_kb']['data'])/'segment';segments.mkdir()
-            hnsw=segments/'data_level0.bin';hnsw.write_bytes(b'synthetic HNSW')
-            with hnsw.open('r+b') as writer:
-                check('copy/open-index-writer-refused',refusal(lambda: C.check(indexroot,definition,'memory_kb','before'))=='unavailable_service:memory:memory_kb:copy_busy' and not (indexroot/'memory/copies/memory_kb').exists())
-            if sys.platform=='linux':
-                result=C.check(indexroot,definition,'memory_kb','before')
-                check('copy/quiescent-index',result['outcome']=='passed' and (indexroot/'memory/copies/memory_kb/segment/data_level0.bin').read_bytes()==b'synthetic HNSW')
-            hnsw.unlink();segments.rmdir()
+                time.sleep(0.3)
+                for i in range(5):
+                    copied.append(base/('wal-copy-%d'%i));C.copy_data(live_dir,copied[-1],'claude_mem');time.sleep(0.12)
+            finally:
+                stop.set();thread.join();live.close()
+            def facts(path):
+                try:
+                    with contextlib.closing(sqlite3.connect(path)) as c:
+                        return c.execute('PRAGMA integrity_check').fetchone()[0],c.execute('SELECT COUNT(*) FROM facts').fetchone()[0]
+                except sqlite3.Error as error:
+                    return str(error),0
+            counted=[facts(t/'wal.db') for t in copied]
+            check('copy/sqlite-writer-50ms',all(ok=='ok' for ok,_ in counted) and counted[-1][1]>counted[0][1]>0
+                  and [n for _,n in counted]==sorted(n for _,n in counted) and all((t/'worker.log').exists() for t in copied)
+                  and not any((t/name).exists() for t in copied for name in ('wal.db-wal','wal.db-shm')))
+            # A WAL database no one holds open is copied whole without creating a WAL or shared memory beside it.
+            idle_dir=base/'idle';idle_dir.mkdir()
+            with contextlib.closing(sqlite3.connect(idle_dir/'graph.db')) as c:
+                c.execute('PRAGMA journal_mode=WAL');c.execute('CREATE TABLE facts(text TEXT)');c.execute("INSERT INTO facts VALUES ('idle synthetic fact')");c.commit()
+            idle_before=sorted(p.name for p in idle_dir.iterdir())
+            C.copy_data(idle_dir,base/'idle-copy','knowledge_graph')
+            unchanged_idle=sorted(p.name for p in idle_dir.iterdir())==idle_before
+            # SQLite may leave an empty WAL behind after the last connection closes.
+            (idle_dir/'graph.db-wal').write_bytes(b'')
+            C.copy_data(idle_dir,base/'idle-copy-left','knowledge_graph')
+            check('copy/idle-wal-no-sidecars',idle_before==['graph.db'] and unchanged_idle and facts(base/'idle-copy/graph.db')==('ok',1)
+                  and sorted(p.name for p in idle_dir.iterdir())==['graph.db','graph.db-wal'] and facts(base/'idle-copy-left/graph.db')==('ok',1))
+            # The whole check runs while the owner's assistant writes its store every 50 ms.
+            livedef=M.normalize(FIX.build(base/'live-store'));live_entry=livedef['parts']['claude_mem']
+            writer_conn=sqlite3.connect(Path(live_entry['data'])/'claude-mem.db',check_same_thread=False)
+            writer_conn.execute('PRAGMA journal_mode=WAL');stop=threading.Event()
+            thread=threading.Thread(target=commit,args=(writer_conn,'user_prompts(prompt_text)'));thread.start()
+            liveroot=base/'live-state';liveroot.mkdir(mode=0o700)
+            try:
+                time.sleep(0.2)
+                passed=[C.check(liveroot,livedef,'claude_mem',phase)['outcome'] for phase in ('before','after')]
+            finally:
+                stop.set();thread.join();writer_conn.close()
+            check('copy/check-while-assistant-writes',passed==['passed','passed'] and (liveroot/'memory/copies/claude_mem/claude-mem.db').exists())
+            # Chroma: its index files open in another Chroma are copied; a persist during the copy is detected
+            # and the copy retried; an index that never settles is refused by name with nothing left behind.
+            quiet=C.QUIET;C.QUIET=0.05
+            try:
+                chroma=base/'chroma-live';segment=chroma/'segment';segment.mkdir(parents=True)
+                with contextlib.closing(sqlite3.connect(chroma/'chroma.sqlite3')) as c:
+                    c.execute('CREATE TABLE embeddings_queue(seq_id INTEGER, text TEXT)');c.execute("INSERT INTO embeddings_queue VALUES (1,'one')");c.commit()
+                index=segment/'data_level0.bin';index.write_bytes(b'persisted index 1');os.utime(index,(time.time()-10,)*2)
+                with index.open('r+b'):
+                    opened=C.copy_chroma(chroma,base/'chroma-copy-open','memory_kb')
+                check('copy/chroma-open-writer',opened==1 and (base/'chroma-copy-open/segment/data_level0.bin').read_bytes()==b'persisted index 1'
+                      and facts_queue(base/'chroma-copy-open/chroma.sqlite3')==1)
+                original_backup=C.backup;persisted=[]
+                def persist_during(source,target,*rest):
+                    original_backup(source,target,*rest)
+                    if not persisted:
+                        index.write_bytes(b'persisted index 2');persisted.append(1)
+                C.backup=persist_during
+                try:
+                    retried=C.copy_chroma(chroma,base/'chroma-copy-retry','memory_kb')
+                finally:C.backup=original_backup
+                check('copy/chroma-persist-retried',retried==2 and (base/'chroma-copy-retry/segment/data_level0.bin').read_bytes()==b'persisted index 2')
+                busydef=M.normalize(FIX.build(base/'busy-store'))
+                busy_index=Path(busydef['parts']['memory_kb']['data'])/'segment';busy_index.mkdir()
+                stop=threading.Event()
+                def persist():
+                    while not stop.is_set():
+                        (busy_index/'data_level0.bin').write_bytes(os.urandom(16));time.sleep(0.01)
+                thread=threading.Thread(target=persist);thread.start()
+                busyroot=base/'busy-state';busyroot.mkdir(mode=0o700)
+                attempts=C.ATTEMPTS;C.ATTEMPTS=3
+                try:
+                    busy=refusal(lambda: C.check(busyroot,busydef,'memory_kb','before'))
+                finally:
+                    C.ATTEMPTS=attempts;stop.set();thread.join()
+                check('copy/chroma-busy-refused',busy=='unavailable_service:memory:memory_kb:copy_busy' and not any((busyroot/'memory/copies').iterdir()))
+            finally:
+                C.QUIET=quiet
             source=Path(definition['parts']['ava_memory']['code'])/'memory_store.py'
             saved_source=source.read_text();source.write_text("raise ImportError('fixture')\n")
             try:
@@ -326,6 +479,23 @@ def _v182_suite():
         if code: print('setup old refusal:', initial)
         check('integration/older-host',code==0)
         if code: return
+        # A re-run that will write the memory step exercises its readers first, as a fresh setup does.
+        reader=Path(manifest['parts']['ava_memory']['code'])/'memory_store.py'
+        original_reader=reader.read_text();reader.write_text("raise ImportError('fixture missing dependency')\n")
+        # The store's own read on every re-run refreshes SQLite's sidecars; its content is the journal head.
+        def laid_files():
+            return {k:v for k,v in ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent).items() if not k.endswith(('-wal','-shm'))}
+        rerun_files=laid_files()
+        with sqlite3.connect(root/'authority/control.sqlite3') as conn:
+            rerun_head=head(conn)
+        try:
+            code,report=setup('rerun-unavailable',root,clone,trust,**{'--memory':str(path)})
+        finally:reader.write_text(original_reader)
+        unchanged_files=rerun_files==laid_files()
+        with sqlite3.connect(root/'authority/control.sqlite3') as conn:
+            unrecorded=M.read(conn) is None and head(conn)==rerun_head
+        check('integration/rerun-preflight',code==1 and report.get('reason')=='unavailable_service:memory:ava_memory:adapter' and unrecorded
+              and unchanged_files and not (root/'memory').exists())
         CS,setup_module=ctx['CS'],ctx['F']
         config=CS.load_config(Path(initial['home'])/'config/service.json')
         lock=CS.acquire(config['lock'],config)
@@ -504,7 +674,7 @@ def _v182_suite():
         observed=ctx['markers_of'](launch.dispatch_id) if launch else []
         check('launch/current-revision',error is None and record.get('state')=='exited' and json.loads(observed[0]['env']['VELDO_MEMORY'])['revision']==2)
         module=ctx['mods']/'control_launch.py';source=module.read_text()
-        anchor='                self.memory = memory.handoff(reader)'
+        anchor='                self.memory = memory.handoff(reader, self.host)'
         assert source.count(anchor)==1
         module.write_text(source.replace(anchor,anchor+"\n                self.memory['definition']['parts']['file_memory']['data'] = ACC.profile(self.login['record'], self.host)[1]"))
         wrong=[]
@@ -525,6 +695,8 @@ def _v182_suite():
         except Exception:
             traceback.print_exc(limit=18)
             check('integration/'+name+'-completed',False)
+    os.environ['PATH'] = saved_path
+    shutil.rmtree(bun_dir)
     if os.environ.get('VELDO_0182_REPORT'):
         Path(os.environ['VELDO_0182_REPORT']).write_text(json.dumps({name:dict(assertions=len(checks),passed=bool(checks) and all(checks)) for name,checks in rows.items()},indent=2)+'\n')
     for name,checks in rows.items():

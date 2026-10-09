@@ -67,8 +67,11 @@ def search(collection,query,n_results=5,classifications=None):
 '''
 PLUGIN = '''import json,os,sys,urllib.request
 from pathlib import Path
-settings=json.loads((Path(os.environ['CLAUDE_MEM_DATA_DIR'])/'settings.json').read_text())
-base='http://'+settings.get('CLAUDE_MEM_WORKER_HOST','127.0.0.1')+':'+str(settings.get('CLAUDE_MEM_WORKER_PORT',37777))
+# As 10.6.2 does: the environment overrides settings.json, which names the worker's port.
+try:settings=json.loads((Path(os.environ['CLAUDE_MEM_DATA_DIR'])/'settings.json').read_text())
+except OSError:settings={}
+port=os.environ.get('CLAUDE_MEM_WORKER_PORT') or settings.get('CLAUDE_MEM_WORKER_PORT',37777)
+base='http://127.0.0.1:'+str(port);timeout=int(os.environ.get('CLAUDE_MEM_HEALTH_TIMEOUT_MS','3000'))/1000
 for line in sys.stdin:
     r=json.loads(line)
     if 'id' not in r:continue
@@ -78,10 +81,10 @@ for line in sys.stdin:
         a=r['params']['arguments'];name=r['params']['name']
         try:
             if name=='search':
-                with urllib.request.urlopen(base+'/api/search?'+urlencode(a),timeout=2) as response:result=json.load(response)
+                with urllib.request.urlopen(base+'/api/search?'+urlencode(a),timeout=timeout) as response:result=json.load(response)
             else:
                 req=urllib.request.Request(base+'/api/observations/batch',data=json.dumps(a).encode(),headers={'Content-Type':'application/json'})
-                with urllib.request.urlopen(req,timeout=2) as response:result=dict(content=[dict(type='text',text=response.read().decode())])
+                with urllib.request.urlopen(req,timeout=timeout) as response:result=dict(content=[dict(type='text',text=response.read().decode())])
         except Exception:result=dict(isError=True)
     print(json.dumps(dict(jsonrpc='2.0',id=r['id'],result=result)),flush=True)
 '''
@@ -96,6 +99,14 @@ def vector(path, collections):
         for i, collection in enumerate(collections):
             c.execute('INSERT INTO embeddings VALUES (?,?,?,?,?)',(i+1,collection,'document-'+str(i),b'1','2020-01-01'))
             c.execute('INSERT INTO embedding_metadata(id,key,string_value) VALUES (?,?,?)',(i+1,'chroma:document','Synthetic durable fact '+str(i)))
+
+
+def bun(directory):
+    """A `bun` that runs the stand-in beside the worker-service.cjs it is given, for any fixture plugin."""
+    directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
+    (directory/'bun').write_text('#!/bin/sh\nexec %s -B "$(dirname "$1")/../fixture_worker.py" "$@"\n'%Path(sys.executable).resolve())
+    (directory/'bun').chmod(0o700)
+    return directory
 
 
 def build(root, host='fixture-host', count=3):
@@ -121,17 +132,27 @@ def build(root, host='fixture-host', count=3):
     (kb/'kb/store.py').write_text(KB)
     (kb/'kb/embeddings.py').write_text('def get_embedding_function():return None\n')
     (kb/'kb/search.py').write_text('from kb.store import search as store_search\ndef search(query,collections=None,n_results=5,classifications=None):\n    return [r for c in collections for r in store_search(c,query,n_results,classifications)]\n')
-    plugin=root/'claude-mem';plugin.mkdir();(plugin/'package.json').write_text(json.dumps(dict(name='claude-mem-plugin',version='10.6.2')))
+    plugin=root/'claude-mem';(plugin/'scripts').mkdir(parents=True);(plugin/'package.json').write_text(json.dumps(dict(name='claude-mem-plugin',version='10.6.2')))
     (plugin/'search.py').write_text(PLUGIN)
+    # The worker runs as `bun <plugin>/scripts/worker-service.cjs --daemon`; the fixture's bun runs the stand-in.
+    (plugin/'scripts/worker-service.cjs').write_text('// fixture: bin/bun runs fixture_worker.py\n')
+    shutil.copyfile(Path(__file__).with_name('worker_fixture.py'),plugin/'fixture_worker.py')
+    bun(root/'bin')
     data=root/'claude-mem-data';data.mkdir()
     with sqlite3.connect(data/'claude-mem.db') as c:
-        c.executescript('CREATE TABLE observations(id INTEGER PRIMARY KEY,memory_session_id TEXT,project TEXT,text TEXT,type TEXT,title TEXT,narrative TEXT,created_at TEXT,created_at_epoch INTEGER);'
-                       'CREATE TABLE session_summaries(id INTEGER PRIMARY KEY,memory_session_id TEXT,project TEXT,request TEXT,investigated TEXT,learned TEXT,completed TEXT,next_steps TEXT,created_at TEXT,created_at_epoch INTEGER);'
-                       'CREATE TABLE user_prompts(id INTEGER PRIMARY KEY,content_session_id TEXT,prompt_number INTEGER,prompt_text TEXT,created_at TEXT,created_at_epoch INTEGER);')
+        c.executescript('CREATE TABLE observations(id INTEGER PRIMARY KEY,memory_session_id TEXT,project TEXT,text TEXT,type TEXT,title TEXT,subtitle TEXT,facts TEXT,narrative TEXT,created_at TEXT,created_at_epoch INTEGER);'
+                       'CREATE TABLE session_summaries(id INTEGER PRIMARY KEY,memory_session_id TEXT,project TEXT,request TEXT,investigated TEXT,learned TEXT,completed TEXT,next_steps TEXT,notes TEXT,created_at TEXT,created_at_epoch INTEGER);'
+                       'CREATE TABLE user_prompts(id INTEGER PRIMARY KEY,content_session_id TEXT,prompt_number INTEGER,prompt_text TEXT,created_at TEXT,created_at_epoch INTEGER);'
+                       "CREATE TABLE pending_messages(id INTEGER PRIMARY KEY,status TEXT);INSERT INTO pending_messages(status) VALUES ('pending');"
+                       "CREATE TABLE sdk_sessions(id INTEGER PRIMARY KEY,status TEXT);INSERT INTO sdk_sessions(status) VALUES ('active');")
         for i in range(count):
-            c.execute('INSERT INTO observations VALUES (?,?,?,?,?,?,?,?,?)',(i+1,'memory-session','fixture','Synthetic observation '+str(i),'discovery','Title '+str(i),'Synthetic observation '+str(i),'2020-01-01',1577836800000+i))
+            c.execute('INSERT INTO observations(id,memory_session_id,project,type,title,narrative,created_at,created_at_epoch) VALUES (?,?,?,?,?,?,?,?)',(i+1,'memory-session','fixture','discovery','Title '+str(i),'Synthetic observation '+str(i),'2020-01-01',1577836800000+i))
             c.execute('INSERT INTO session_summaries(id,memory_session_id,project,request,created_at,created_at_epoch) VALUES (?,?,?,?,?,?)',(i+1,'session-'+str(i),'fixture','Synthetic summary '+str(i),'2020-01-01',1577836800000+i))
             c.execute('INSERT INTO user_prompts VALUES (?,?,?,?,?,?)',(i+1,'content-session',i,'Synthetic prompt '+str(i),'2020-01-01',1577836800000+i))
+        # The owner's store holds these too: text only in facts, a title only, and an empty summary.
+        c.execute('INSERT INTO observations(id,memory_session_id,project,type,title,subtitle,facts,created_at,created_at_epoch) VALUES (?,?,?,?,?,?,?,?,?)',(count+1,'memory-session','fixture','discovery',None,'Synthetic subtitle',json.dumps(['Synthetic fact only','Second synthetic fact']),'2020-01-01',1577836800000))
+        c.execute('INSERT INTO observations(id,memory_session_id,project,type,title,created_at,created_at_epoch) VALUES (?,?,?,?,?,?,?)',(count+2,'memory-session','fixture','discovery','Synthetic title only','2020-01-01',1577836800000))
+        c.execute('INSERT INTO session_summaries(id,memory_session_id,project,created_at,created_at_epoch) VALUES (?,?,?,?,?)',(count+1,'session-empty','fixture','2020-01-01',1577836800000))
     mcp=root/'assistant.mcp.json';mcp.write_text('{}')
     return dict(host=host,assistant_mcp=str(mcp),parts=dict(file_memory=dict(data=str(file)),
         ava_memory=dict(code=str(mem),interpreter=str(interpreter)),knowledge_graph=dict(code=str(graph),interpreter=str(interpreter)),

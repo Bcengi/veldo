@@ -851,6 +851,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
     base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY))), **ingress_files(plan, ids))
     base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
+    # The memory step's readers and searches, exercised as a fresh setup does, when the step will write.
+    if memory_plan is not None and memory_plan['outcome'] == 'done':
+        _memory(lambda: organ('control_memory_check').preflight(memory_plan['definition']))
     # Tailscale, read-only, after every argument check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
     transport = _api(lambda: API.transport(cli, port))

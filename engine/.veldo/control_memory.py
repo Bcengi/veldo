@@ -126,29 +126,14 @@ def read(conn):
     return json.loads(row[0]) if row else None
 
 
-def no_nested_links(definition):
-    # Do not traverse links: even a nested alias can expose a profile at handoff.
-    for part, entry in definition['parts'].items():
-        path = entry['data']
-        if Path(path).is_dir():
-            for parent, dirs, files in os.walk(path, followlinks=False):
-                for name in dirs + files:
-                    if (Path(parent) / name).is_symlink():
-                        raise Refused('invalid_input:memory:%s:link' % part)
-
-
 def profiles_outside(conn, definition):
+    """No location contains a registered profile, compared by real path. The locations are compared, never
+    walked: their code trees hold tens of thousands of files."""
     for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='account'"):
         for directory in json.loads(raw).get('profiles', {}).values():
             for part, path in locations(definition):
                 if within(directory, path):
                     raise Refused('invalid_input:memory:contains_account_profile:' + part)
-                if Path(path).is_dir():
-                    for parent, dirs, files in os.walk(path, followlinks=False):
-                        for name in dirs + files:
-                            alias = Path(parent) / name
-                            if alias.is_symlink() and (within(directory, alias) or within(alias, directory)):
-                                raise Refused('invalid_input:memory:%s:link' % part)
 
 
 def account_outside(conn, profiles):
@@ -161,13 +146,16 @@ def account_outside(conn, profiles):
                     raise Refused('invalid_input:account_profile:inside_memory:' + part)
 
 
-def handoff(conn):
+def handoff(conn, host=None):
+    """The record's current revision, its locations checked again as setup, revise and the signed transition
+    check them (normalize: present, the owner's own, not a link), and on the host the manifest names."""
     record = read(conn)
     if record is None:
         return None
+    if host is not None and record['definition']['host'] != host:
+        raise Refused('invalid_input:memory:host:differs', host)
     definition = normalize(manifest_of(record['definition']))
     profiles_outside(conn, definition)
-    no_nested_links(definition)
     return dict(revision=record['revision'], definition=definition)
 
 
