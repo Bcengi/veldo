@@ -1,0 +1,330 @@
+{
+  "schema": "veldo.local-targeted-tests/v1",
+  "spec_id": "VELDO-0182",
+  "implementation_commit": "ab7b777b6144260c3f58747233f92cba6df8160f",
+  "observed_at": "2026-10-09T02:12:08.365927+00:00",
+  "command": "python3 scripts/selftest.py --suite 105_veldo_0182_memory",
+  "exit_code": 2,
+  "specification_rows": 78,
+  "total_passed": 104,
+  "total_failed": 0,
+  "elapsed_seconds": 23.64,
+  "scope": "Diagnostic observations only. The scoped runner deliberately returns 2 and cannot supply aggregate unit evidence or authorize landing. The run preceded the implementation commit; tested production and suite bytes were committed unchanged.",
+  "gate_run": false,
+  "other_suites_run": [],
+  "mutation_runner_run": false,
+  "rows": {
+    "capture/ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "capture/knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "capture/memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "capture/claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/owner-signature": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/five-parts": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/idempotent": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/stale": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/revise": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/later-registration": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/memory-inside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/setup-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/real-paths": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/missing-database": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/missing-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/link-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-passes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/sqlite-online": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/rewrite-rerun": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/setup-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/twenty": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/count-drop": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/older-host": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/service-lock": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/record": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/identical-files": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-repeat": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/preflight": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/fresh-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/check-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/revise-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/differs-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/register": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/acct-c1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/durable-receipt": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/recorded": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/acct-c2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/same-on-every-account": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/current-revision": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/account-derived": {
+      "assertions": 1,
+      "passed": true
+    }
+  }
+}

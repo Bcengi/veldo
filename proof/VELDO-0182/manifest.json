@@ -1,0 +1,94 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0182",
+  "commit": "ab7b777b6144260c3f58747233f92cba6df8160f",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-09T02:12:08.366169+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Owner signature, immutable revisions, fixed paths, missing graph database, two accounts per engine, identical locations and current revision, durable launch receipts. Counterexample: falsifier/account-derived. No aggregate unit-evidence pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Older-host addition, service-held authority lock, no setup writable handle, identical journal and files on rerun, differing manifest writes nothing. Counterexample: falsifier/rewrite-rerun. No aggregate unit-evidence pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Every native-layout copy, SQLite WAL backup, sample size, fresh before count, unchanged-count loss for five stores, independent search failure and count loss, CLI check and revise. Counterexample: falsifier/copy for each part. No aggregate unit-evidence pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "pending",
+      "detail": "The owner reserves aggregate verification. No partial-run log or diagnostic result is used as passing proof evidence."
+    },
+    {
+      "name": "integration",
+      "status": "pending",
+      "detail": "The reviewer must run the canonical gate and affected regression suites. Live owner memory was not used."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0182/interface-contract.json",
+    "proof/VELDO-0182/fixtures.py",
+    "proof/VELDO-0182/capture_conformance.py",
+    "proof/VELDO-0182/integration_fixtures.py"
+  ],
+  "rollback": "Stop handing memory to runs while retaining its record and all original bytes. No automatic memory rollback is authorized.",
+  "review": "Pending independent review and owner approval. This manifest records the executable proof contract and capture provenance; it is not a gate stamp or landing approval."
+}
