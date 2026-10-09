@@ -239,3 +239,17 @@ checks distinguish unavailable adapters from measured loss. Review rows and
 executed falsifiers are recorded in proof/VELDO-0182. The ready status and
 acceptance-criterion text are unchanged; this History records the owner's
 explicit operational clarifications.
+
+2026-10-09, second review repairs (review of 00b27f77..78ca3687). Decision made by the owner's
+assistant, not by the owner: claude-mem's check uses claude-mem's own search, through a claude-mem
+worker started for the check against the named data directory (a private copy of it), on its own
+port, and stopped afterwards; it never uses the owner's running worker. This replaces the direct
+SQLite read recorded on 2026-10-08, whose "the owner authorized" came from that round's fix brief,
+not from the owner. Repairs: VELDO_MCP_ header credentials reach Codex again (VELDO-0158); claude-mem
+memories whose only text is in facts, and those with none, are checked; safety copies work while the
+assistant runs (SQLite by online backup, Chroma by a verified, retried copy); profile containment
+compares real paths without walking; the link rule is "not a link" in setup, revise, the signed
+transition and handoff alike; a re-run that will write the memory step runs setup's preflight; the
+check metric counts check refusals only; handoff refuses a record made for another host. Rows,
+falsifiers and read-only runs against the owner's real stores are in proof/VELDO-0182, Round 2. The
+ready status and acceptance-criterion text are unchanged.

@@ -1,116 +1,286 @@
 {
   "schema": "veldo.local-targeted-tests/v1",
   "spec_id": "VELDO-0182",
-  "implementation_commit": "f0767b5b5d7a618abeb0e269eeb729a33ad167d8",
-  "observed_at": "2026-10-09T03:30:23.377572+00:00",
+  "implementation_commit": "7b577314a40d8148676a0bf08c634ff0264580b3",
+  "observed_at": "2026-10-09T13:54:22+00:00",
   "command": "python3 scripts/selftest.py --suite 105_veldo_0182_memory",
   "exit_code": 2,
-  "specification_rows": 101,
-  "total_passed": 127,
+  "specification_rows": 111,
+  "total_passed": 137,
   "total_failed": 0,
-  "elapsed_seconds": 27.51,
+  "elapsed_seconds": 63.78,
   "scope": "Diagnostic observations only. Scoped selftest returns 2 on a clean partial run and cannot supply aggregate unit evidence or authorize landing. Tested implementation and suite bytes match the recorded implementation commit.",
   "gate_run": false,
   "other_suites_run": [
     {
-      "suite": "73_veldo_0139_factory_setup",
-      "total_passed": 27,
-      "total_failed": 16,
-      "elapsed_seconds": 0.75,
-      "failed_rows": [
-        "VELDO-0139 install/assets",
-        "VELDO-0139 setup/lays-down",
-        "VELDO-0139 refuse/writes-nothing",
-        "VELDO-0139 refuse/existing-store",
-        "VELDO-0139 edge/enrolled-with-possession",
-        "VELDO-0139 chat/enrolled",
-        "VELDO-0139 ingress/configuration",
-        "VELDO-0139 token/never-copied",
-        "VELDO-0139 service/starts-inert",
-        "VELDO-0139 journey/qualified-and-active",
-        "VELDO-0139 genesis/owner-signed",
-        "VELDO-0139 qualification/one-request-across-restart",
-        "VELDO-0139 rollback/rerun",
-        "VELDO-0139 store/private-and-closed",
-        "VELDO-0139 host-trust/directory-checked",
-        "VELDO-0139 qualification/opening-retried"
-      ],
-      "exit_code": 1,
-      "diagnosis": "unavailable_service:profile:user_manager, same failures reported on base by reviewer"
-    },
-    {
-      "suite": "75_veldo_0062_accounts",
-      "total_passed": 49,
-      "total_failed": 0,
-      "elapsed_seconds": 32.29,
-      "failed_rows": [],
-      "exit_code": 2,
-      "diagnosis": "No failures"
-    },
-    {
-      "suite": "78_veldo_0160_account_pool",
-      "total_passed": 60,
-      "total_failed": 0,
-      "elapsed_seconds": 23.06,
-      "failed_rows": [],
-      "exit_code": 2,
-      "diagnosis": "No failures"
-    },
-    {
-      "suite": "82_veldo_0165_launch_hygiene",
-      "total_passed": 48,
-      "total_failed": 1,
-      "elapsed_seconds": 13.63,
-      "failed_rows": [
-        "VELDO-0165 evidence/completeness"
-      ],
-      "exit_code": 1,
-      "diagnosis": "Codex evidence/completeness, same row reported on base by reviewer"
+      "suite": "85_veldo_0158_credential_delivery",
+      "passed_rows": 23,
+      "elapsed_seconds": 4.46,
+      "failed_rows": []
     },
     {
       "suite": "85_veldo_0171_setup_api",
-      "total_passed": 29,
-      "total_failed": 15,
-      "elapsed_seconds": 1.76,
+      "passed_rows": 18,
+      "elapsed_seconds": 9.28,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0141_execution_record",
+      "passed_rows": 40,
+      "elapsed_seconds": 19.37,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0173_tool_registry",
+      "passed_rows": 8,
+      "elapsed_seconds": 1.37,
       "failed_rows": [
-        "VELDO-0171 tailscale/refusals",
-        "VELDO-0171 tailscale/serve-bg",
-        "VELDO-0171 api-edge/enrolled-by-owner",
-        "VELDO-0171 api/service-configuration",
-        "VELDO-0171 api/unit",
-        "VELDO-0171 rerun/changes-nothing",
-        "VELDO-0171 rerun/arguments-compared",
-        "VELDO-0171 rerun/differs-refused",
-        "VELDO-0171 api-edge/installed-api-call",
-        "VELDO-0171 api/loopback-only",
-        "VELDO-0171 passkey/first-enrollment",
-        "VELDO-0171 api/content-security-policy",
-        "VELDO-0171 api-edge/running-service",
-        "VELDO-0171 rerun/over-0139-host",
-        "VELDO-0171 api/start-rules"
+        "VELDO-0173 evidence/registry",
+        "VELDO-0173 evidence/classification",
+        "VELDO-0173 fixture/extraction"
       ],
-      "exit_code": 1,
-      "diagnosis": "unavailable_service:profile:user_manager, same failures reported on base by reviewer"
+      "note": "Same three rows fail on the unmodified head 78ca3687 (host Claude binary extraction)."
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "passed_rows": 21,
+      "elapsed_seconds": 7.24,
+      "failed_rows": [
+        "VELDO-0165 evidence/completeness",
+        "VELDO-0165 evidence/outside-scan"
+      ],
+      "note": "Same two rows fail on the unmodified head 78ca3687 (host Claude binary extraction)."
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "passed_rows": 29,
+      "elapsed_seconds": 21.28,
+      "failed_rows": []
+    },
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "passed_rows": 17,
+      "elapsed_seconds": 22.95,
+      "failed_rows": []
+    },
+    {
+      "suite": "91_veldo_0167_setup_records",
+      "passed_rows": 9,
+      "elapsed_seconds": 12.82,
+      "failed_rows": [],
+      "note": "Failed 8 rows on 78ca3687 (Receiver had no memory field when _spawn is driven directly); passes at 7b577314."
+    },
+    {
+      "suite": "78_veldo_0160_account_pool",
+      "passed_rows": 34,
+      "elapsed_seconds": 21.85,
+      "failed_rows": []
+    },
+    {
+      "suite": "75_veldo_0062_accounts",
+      "passed_rows": 23,
+      "elapsed_seconds": 30.88,
+      "failed_rows": []
+    },
+    {
+      "suite": "78_veldo_0060_claude_adapter",
+      "passed_rows": 35,
+      "elapsed_seconds": 18.63,
+      "failed_rows": []
+    },
+    {
+      "suite": "80_veldo_0155_claude_baseline",
+      "passed_rows": 18,
+      "elapsed_seconds": 10.7,
+      "failed_rows": []
+    },
+    {
+      "suite": "81_veldo_0156_codex_baseline",
+      "passed_rows": 22,
+      "elapsed_seconds": 2.7,
+      "failed_rows": []
+    },
+    {
+      "suite": "79_veldo_0061_codex_adapter",
+      "passed_rows": 21,
+      "elapsed_seconds": 12.12,
+      "failed_rows": []
+    },
+    {
+      "suite": "83_veldo_0154_factory_loop",
+      "passed_rows": 13,
+      "elapsed_seconds": 62.19,
+      "failed_rows": []
+    },
+    {
+      "suite": "83_veldo_0166_usage_windows",
+      "passed_rows": 19,
+      "elapsed_seconds": 0.55,
+      "failed_rows": []
+    },
+    {
+      "suite": "86_veldo_0186_setup_assets",
+      "passed_rows": 11,
+      "elapsed_seconds": 11.65,
+      "failed_rows": []
+    },
+    {
+      "suite": "86_veldo_0189_engine_upgrade",
+      "passed_rows": 33,
+      "elapsed_seconds": 44.86,
+      "failed_rows": []
+    },
+    {
+      "suite": "87_veldo_0170_receiver_trust",
+      "passed_rows": 12,
+      "elapsed_seconds": 5.95,
+      "failed_rows": []
+    },
+    {
+      "suite": "87_veldo_0127_codex_delivery",
+      "passed_rows": 176,
+      "elapsed_seconds": 51.18,
+      "failed_rows": []
+    },
+    {
+      "suite": "86_veldo_0127_agent_configuration",
+      "passed_rows": 25,
+      "elapsed_seconds": 40.2,
+      "failed_rows": [
+        "VELDO-0127 live/claude",
+        "VELDO-0127 live/codex"
+      ],
+      "note": "live/claude and live/codex: missing or stale live capture; same on the unmodified head 78ca3687."
+    },
+    {
+      "suite": "86_veldo_0168_text",
+      "passed_rows": 26,
+      "elapsed_seconds": 3.03,
+      "failed_rows": []
+    },
+    {
+      "suite": "86_veldo_0148_re_land",
+      "passed_rows": 25,
+      "elapsed_seconds": 61.0,
+      "failed_rows": []
+    },
+    {
+      "suite": "74_veldo_0140_standing_delegation",
+      "passed_rows": 9,
+      "elapsed_seconds": 10.88,
+      "failed_rows": []
+    },
+    {
+      "suite": "72_veldo_0128_reports",
+      "passed_rows": 18,
+      "elapsed_seconds": 3.2,
+      "failed_rows": []
+    },
+    {
+      "suite": "60_veldo_0053_architecture",
+      "passed_rows": 39,
+      "elapsed_seconds": 2.23,
+      "failed_rows": []
+    },
+    {
+      "suite": "66_veldo_0047_authority",
+      "passed_rows": 30,
+      "elapsed_seconds": 9.85,
+      "failed_rows": []
+    },
+    {
+      "suite": "65_veldo_0132_workflow",
+      "passed_rows": 16,
+      "elapsed_seconds": 15.26,
+      "failed_rows": []
+    },
+    {
+      "suite": "67_veldo_0135_offers",
+      "passed_rows": 9,
+      "elapsed_seconds": 5.92,
+      "failed_rows": []
+    },
+    {
+      "suite": "60_veldo_0052_eligibility",
+      "passed_rows": 54,
+      "elapsed_seconds": 1.04,
+      "failed_rows": []
+    },
+    {
+      "suite": "63_veldo_0049_floor",
+      "passed_rows": 20,
+      "elapsed_seconds": 10.35,
+      "failed_rows": []
+    },
+    {
+      "suite": "64_veldo_0050_proof",
+      "passed_rows": 14,
+      "elapsed_seconds": 14.18,
+      "failed_rows": []
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "passed_rows": 11,
+      "elapsed_seconds": 40.91,
+      "failed_rows": []
+    },
+    {
+      "suite": "63_veldo_0040_containment",
+      "passed_rows": 57,
+      "elapsed_seconds": 7.01,
+      "failed_rows": []
+    },
+    {
+      "suite": "67_veldo_0041_heartbeat",
+      "passed_rows": 23,
+      "elapsed_seconds": 11.22,
+      "failed_rows": []
+    },
+    {
+      "suite": "71_veldo_0076_projects",
+      "passed_rows": 32,
+      "elapsed_seconds": 3.14,
+      "failed_rows": []
+    },
+    {
+      "suite": "92_veldo_0088_pm_cycles",
+      "passed_rows": 25,
+      "elapsed_seconds": 45.48,
+      "failed_rows": []
+    },
+    {
+      "suite": "94_veldo_0162_configuration_routes",
+      "passed_rows": 26,
+      "elapsed_seconds": 7.44,
+      "failed_rows": []
+    },
+    {
+      "suite": "62_veldo_0039_dispatch",
+      "passed_rows": 21,
+      "elapsed_seconds": 8.57,
+      "failed_rows": []
+    },
+    {
+      "suite": "70_veldo_0069_bindings",
+      "passed_rows": 10,
+      "elapsed_seconds": 5.82,
+      "failed_rows": []
+    },
+    {
+      "suite": "93_veldo_0152_intake_routes",
+      "passed_rows": 22,
+      "elapsed_seconds": 41.27,
+      "failed_rows": []
+    },
+    {
+      "suite": "95_veldo_0203_owner_revisions",
+      "passed_rows": 36,
+      "elapsed_seconds": 4.79,
+      "failed_rows": []
     }
   ],
   "mutation_runner_run": false,
   "rows": {
-    "capture/ava_memory": {
-      "assertions": 1,
-      "passed": true
-    },
-    "capture/knowledge_graph": {
-      "assertions": 1,
-      "passed": true
-    },
-    "capture/memory_kb": {
-      "assertions": 1,
-      "passed": true
-    },
-    "capture/claude_mem": {
-      "assertions": 1,
-      "passed": true
-    },
     "record/owner-signature": {
       "assertions": 1,
       "passed": true
@@ -131,6 +301,10 @@
       "assertions": 1,
       "passed": true
     },
+    "metrics/check-refusal": {
+      "assertions": 1,
+      "passed": true
+    },
     "falsifier/commit-before-check": {
       "assertions": 1,
       "passed": true
@@ -148,6 +322,10 @@
       "passed": true
     },
     "setup/differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "metrics/step-refusal-only": {
       "assertions": 1,
       "passed": true
     },
@@ -175,27 +353,59 @@
       "assertions": 1,
       "passed": true
     },
-    "profile/handoff-nested-link": {
+    "link/nested-same-everywhere": {
       "assertions": 1,
       "passed": true
     },
-    "profile/handoff-code-link": {
+    "link/location-same-everywhere": {
       "assertions": 1,
       "passed": true
     },
-    "check/search-required-claude_mem": {
+    "profile/no-walk": {
       "assertions": 1,
       "passed": true
     },
-    "worker/real-routing": {
+    "launch/host-differs": {
       "assertions": 1,
       "passed": true
     },
-    "worker/named-store-chroma-off": {
+    "launch/engine-overrides": {
       "assertions": 1,
       "passed": true
     },
-    "worker/missing-not-lost": {
+    "worker/dedicated": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/owner-worker-untouched": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/kills-nothing": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/stopped": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/read-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/facts-and-untexted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/search-is-claude-mems": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/unaudited-version-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/cut-short-stopped": {
       "assertions": 1,
       "passed": true
     },
@@ -331,6 +541,10 @@
       "assertions": 1,
       "passed": true
     },
+    "check/search-required-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
     "check/named-claude_mem": {
       "assertions": 1,
       "passed": true
@@ -347,19 +561,27 @@
       "assertions": 1,
       "passed": true
     },
-    "copy/sqlite-online": {
+    "copy/sqlite-writer-50ms": {
       "assertions": 1,
       "passed": true
     },
-    "copy/moving-index-refused": {
+    "copy/idle-wal-no-sidecars": {
       "assertions": 1,
       "passed": true
     },
-    "copy/open-index-writer-refused": {
+    "copy/check-while-assistant-writes": {
       "assertions": 1,
       "passed": true
     },
-    "copy/quiescent-index": {
+    "copy/chroma-open-writer": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-persist-retried": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-busy-refused": {
       "assertions": 1,
       "passed": true
     },
@@ -384,6 +606,10 @@
       "passed": true
     },
     "integration/older-host": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/rerun-preflight": {
       "assertions": 1,
       "passed": true
     },
@@ -500,5 +726,107 @@
       "passed": true
     }
   },
-  "execution_note": "An early suite 78 invocation overlapped the end of suite 75 and was interrupted. The recorded suite 78 result is its subsequent standalone run. All other recorded suite invocations were sequential."
+  "execution_note": "Every suite ran on its own, one at a time, in the foreground. Rows passed in other_suites_run are from the final tree unless the entry is absent from the final pass, in which case it ran on the same code before the receiver's memory field was initialized. Each round_two_falsifiers entry applied one mutation to the shipped module, ran the suite, and restored the module; each failed exactly the rows listed, by assertion.",
+  "round_two_falsifiers": [
+    {
+      "mutation": "item1-drop-all-veldo",
+      "suite": "85_veldo_0158_credential_delivery",
+      "failed_rows": [
+        "VELDO-0158 delivery/codex-environment"
+      ]
+    },
+    {
+      "mutation": "item1-drop-all-veldo",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 launch/engine-overrides"
+      ]
+    },
+    {
+      "mutation": "item2-search-not-server",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/search-is-claude-mems",
+        "VELDO-0182 check/search-required-claude_mem"
+      ]
+    },
+    {
+      "mutation": "item2-no-ps-shim",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/kills-nothing"
+      ]
+    },
+    {
+      "mutation": "item2-no-sweep",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/stopped"
+      ]
+    },
+    {
+      "mutation": "item3-open-idle-normally",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/idle-wal-no-sidecars"
+      ]
+    },
+    {
+      "mutation": "item3-raw-sqlite",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/sqlite-writer-50ms"
+      ]
+    },
+    {
+      "mutation": "item3-no-verify",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/chroma-persist-retried"
+      ]
+    },
+    {
+      "mutation": "item4-walk",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 profile/no-walk"
+      ]
+    },
+    {
+      "mutation": "item5-nested-links",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 link/nested-same-everywhere",
+        "VELDO-0182 profile/no-walk"
+      ]
+    },
+    {
+      "mutation": "item6-no-rerun-preflight",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 integration/rerun-preflight"
+      ]
+    },
+    {
+      "mutation": "item8-metric-always",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 metrics/step-refusal-only"
+      ]
+    },
+    {
+      "mutation": "item9-no-host",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 launch/host-differs"
+      ]
+    },
+    {
+      "mutation": "item2-no-parent-sweep",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/cut-short-stopped"
+      ]
+    }
+  ]
 }
