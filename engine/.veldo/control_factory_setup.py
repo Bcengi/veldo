@@ -105,7 +105,9 @@ SETTLEMENT_PRINCIPAL = 'settlement'
 _CHANNEL = organ('control_service_channel')
 REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUESTER_KEY, _CHANNEL.REQUESTER_SCOPE
 PROJECT_MANAGER = 'pm'
-RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER)
+# The owner's name is none of them, nor a default team worker setup enrolls (VELDO-0185).
+RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER,
+            *organ('control_factory_setup_dispatch').TEAM_WORKERS)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -627,16 +629,20 @@ DEFERRED = {'step': 'dispatch', 'outcome': 'deferred',
 
 def enroll_reservation(plan, admin, S, K, conn, projection):
     """AC2: the owner's signed enroll_principal of `authority` and `launch-receiver` with the reservation_service
-    role, each co-signed by the journal key both sign with, on this run's own connection under its lock."""
+    role, and of each default team worker besides the PM (control_factory_setup_dispatch TEAM_WORKERS), each
+    co-signed by the journal key they sign with, on this run's own connection under its lock: only those the
+    store does not hold yet (enrollments_due)."""
     D, ACT = organ('control_factory_setup_dispatch'), organ('control_channel_activation')
     key = os.path.join(plan['keys'], JOURNAL_KEY)
-    for principal in D.RESERVATION_PRINCIPALS:
-        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': [D.RESERVATION_ROLE],
+    due = D.enrollments_due(conn)
+    for principal, roles in due:
+        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': roles,
                                    'public_key': public_key(key), 'independence_group': principal, 'scope': '*'},
               enrollee=ACT.ssh_signer(key))
     K.publish(S, conn, projection)
     os.chmod(projection, 0o600)
-    return {'principals': list(D.RESERVATION_PRINCIPALS), 'role': D.RESERVATION_ROLE}
+    return {'principals': [p for p, _roles in due if p in D.RESERVATION_PRINCIPALS], 'role': D.RESERVATION_ROLE,
+            'workers': [p for p, _roles in due if p in D.TEAM_WORKERS]}
 
 
 def store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sign, clock, prefix, missing=None):

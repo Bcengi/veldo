@@ -17,7 +17,14 @@ and no usage its CLI reported in the ledger) admits one run at a time until its 
 because unknown is never zero. The VELDO-0036 account caps are checked for each candidate in turn
 (`check`), so an account at its cap is passed over too; a project or unit cap refuses the dispatch.
 
-THE ORDER: the lowest last reported utilization on the tightest window (the highest utilization among
+LOGIN (VELDO-0185 AC4): an account a dispatch's `request` excludes (`exclude`, the accounts the Line found still
+not logged in when it read their login again) is passed over (`account_login:excluded`). An account whose
+latest receiver login check refused it (a dispatch record refused `missing_authority:account_login:<account>`
+with no later dispatch on it its receiver accepted) is still a candidate, ranked after every account that has
+no such refusal: a logged-out account is never chosen while another can take the work, and an account logged
+in again is chosen when it is the one left, its receiver checking its login again before acceptance.
+
+THE ORDER: after LOGIN, the lowest last reported utilization on the tightest window (the highest utilization among
 the account's windows whose reported reset has not passed), an account whose utilization is unknown
 after every account whose utilization is known; then the fewest active runs; then the least recently
 used (the latest slot or invocation the ledger holds for it); then the account id.
@@ -46,6 +53,10 @@ def _organ(name):
 
 ACC = _organ('control_accounts')
 SCHEMA = 'veldo.account_selection/v1'
+# VELDO-0185 AC4: the receiver's refusal of a dispatch on an account not logged in (control_launch.ACCOUNT_LOGIN),
+# read from the dispatch records (control_dispatch.RECORD_KIND) in the pool's own transaction.
+ACCOUNT_LOGIN = 'missing_authority:account_login:'
+DISPATCH_KIND = 'dispatch'
 # The refusal an account at an account-scoped limit gets from VELDO-0036's check: passed over, not fatal.
 ACCOUNT_REFUSALS = ('usage_cap:account:', 'missing_ceiling:account', 'rate_limited:', 'window_exhausted',
                     'unknown_window', 'unknown_allowance:')
@@ -78,6 +89,28 @@ def _uses(records, account):
     return active, last, observed
 
 
+def _at(record, state):
+    """When the dispatch record entered `state` (its history), 0 when it carries no time."""
+    times = [h.get('at') for h in record.get('history') or () if isinstance(h, dict) and h.get('state') == state]
+    return max((t for t in times if _number(t)), default=0)
+
+
+def login_refused(conn):
+    """The accounts whose latest receiver login check refused them: a dispatch refused ACCOUNT_LOGIN on the
+    account, and no dispatch on it its receiver accepted after that refusal."""
+    refused, accepted = {}, {}
+    for (data,) in conn.execute('SELECT data FROM entities WHERE kind=?', (DISPATCH_KIND,)):
+        record = json.loads(data)
+        account = (((record or {}).get('contract') or {}).get('reservation') or {}).get('account')
+        if not isinstance(account, str):
+            continue
+        if record.get('state') == 'refused' and record.get('refusal') == ACCOUNT_LOGIN + account:
+            refused[account] = max(refused.get(account, 0), _at(record, 'refused'))
+        elif any(isinstance(h, dict) and h.get('state') == 'accepted' for h in record.get('history') or ()):
+            accepted[account] = max(accepted.get(account, 0), _at(record, 'accepted'))
+    return {account for account, at in refused.items() if account not in accepted or accepted[account] < at}
+
+
 def observed(record, records):
     """Whether the account has its first observation: a window its CLI reported, or usage its CLI reported."""
     return bool((record or {}).get('windows')) or _uses(records, (record or {}).get('id'))[2]
@@ -99,12 +132,14 @@ def bound(record, records):
 def choose(conn, records, request, now, check):
     """The account a dispatch runs on, chosen inside its reservation transaction.
 
-    `request` is {engine, host}; `records` the reservation records of the transaction; `check(account)`
-    VELDO-0036's check of the slot against that account's caps, raising a refusal with a `code`.
+    `request` is {engine, host}, with `exclude` (the accounts passed over for their login) when a login retry
+    names it; `records` the reservation records of the transaction; `check(account)` VELDO-0036's check of the
+    slot against that account's caps, raising a refusal with a `code`.
     Returns {account, trace} or {account: None, passed, until}: `passed` names each account's reason for
     being passed over, `until` the earliest reported reset among the accounts at their limit."""
     engine, host = request.get('engine'), request.get('host')
     passed, ranked, until, windows = {}, [], None, {}
+    excluded, refused = set(request.get('exclude') or ()), login_refused(conn)
     for record in accounts(conn):
         name = record['id']
         if record.get('provider') != engine:
@@ -115,6 +150,9 @@ def choose(conn, records, request, now, check):
             continue
         if not (record.get('profiles') or {}).get(host):
             passed[name] = 'account_profile:%s' % host
+            continue
+        if name in excluded:
+            passed[name] = 'account_login:excluded'
             continue
         limited = ACC.blocking(record, now)
         if limited:
@@ -129,9 +167,10 @@ def choose(conn, records, request, now, check):
             passed[name] = 'account_unobserved:one_run' if not observed(record, records) else 'account_concurrency'
             continue
         used = utilization(record, now)
-        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))
-    candidates = [{'account': name, 'utilization': key[1] if key[0] == 0 else None, 'active': active, 'last_used': last}
-                  for key, active, last, name in sorted(ranked)]
+        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))
+    candidates = [dict({'account': name, 'utilization': key[1] if key[0] == 0 else None, 'active': active,
+                        'last_used': last}, **({'login_refused': True} if login else {}))
+                  for login, key, active, last, name in sorted(ranked)]
     for candidate in candidates:
         try:
             check(candidate['account'])
@@ -166,13 +205,16 @@ class Pool:
             raise ACC.Refused('invalid_input', 'each adapter names its engine and host')
         self.adapters = copy.deepcopy(adapters)
 
-    def reserve(self, reservations, command_id, dispatch_id, project, unit, *, adapter, now):
-        """Choose the account and reserve the dispatch's slot on it, in one transaction; the account."""
+    def reserve(self, reservations, command_id, dispatch_id, project, unit, *, adapter, now, exclude=()):
+        """Choose the account and reserve the dispatch's slot on it, in one transaction; the account. `exclude`
+        names the accounts a login retry passes over (VELDO-0185 AC4)."""
         target = self.adapters.get(adapter)
         if target is None:
             raise ACC.Refused('unregistered_adapter:' + str(adapter), 'the pool has no engine for this adapter')
-        reservations.reserve_pooled(command_id, dispatch_id, {'engine': target['engine'], 'host': target['host']},
-                                    project, unit, now=now)
+        request = {'engine': target['engine'], 'host': target['host']}
+        if exclude:
+            request['exclude'] = sorted(set(exclude))
+        reservations.reserve_pooled(command_id, dispatch_id, request, project, unit, now=now)
         return reservations.worker(dispatch_id)['context']['account']
 
 

@@ -42,10 +42,14 @@ def _v185_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
+        'control_account_pool.py': ROOT / ".veldo" / "control_account_pool.py",
+        'control_reservations.py': ROOT / ".veldo" / "control_reservations.py",
     }
     ROWS = ('fresh/team', 'fresh/adapters', 'fresh/one-engine', 'loop/configured', 'reservation/principals',
             'reservation/state-root', 'fresh/registered', 'login/named', 'login/receiver-refuses', 'every-account',
-            'rerun/changes-nothing', 'rerun/over-earlier-host', 'install/asset', 'format/fake-lines')
+            'rerun/changes-nothing', 'rerun/over-earlier-host', 'install/asset', 'format/fake-lines',
+            # The Codex review of e016df9b (R1 to R4), and the Codex roles' model.
+            'login/retry-excludes', 'login/recheck', 'rerun/missing-state-root', 'team/workers', 'team/newest-model')
     rows = {name: [] for name in ROWS}
     # The engine before this change: the whole .veldo of main at 294e1933 (VELDO-0139, 0171, 0186, 0189, 0203, 0204).
     BEFORE = '294e1933'
@@ -85,6 +89,19 @@ def _v185_suite():
         grants = load('v185_grants', path).NATIVE_TOOLS['codex']['independent_review']
         mapping = load('v185_codex_mapping', PRODUCTION['control_engine_codex.py']).NATIVE_TOOL_MAPPING
         return sorted({name for grant in grants for name in mapping.get(grant, [grant])})
+
+    def code_mode():
+        """The qualified catalog's code-mode models, whose runs the binary also gives its runner tools."""
+        modes = load('v185_codex_modes', PRODUCTION['control_engine_codex.py']).MODEL_TOOL_MODES
+        return sorted(slug for slug, mode in modes.items() if mode == 'code_mode_only')
+
+    def newest_model():
+        """The newest model of the shipped qualified Codex catalog, read here independently of setup: of its listed
+        models not retired in favour of another (no `upgrade`), the one of the lowest priority, the catalog's own
+        order, newest first."""
+        record = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-qualification.json').read_text())
+        listed = [m for m in record['model_catalog']['models'] if m.get('visibility') == 'list' and not m.get('upgrade')]
+        return min(listed, key=lambda m: m['priority'])['slug'], listed
     helper = load('v185_fixture', here / 'proof/VELDO-0185/fixture.py')
     conform_formats = load('v185_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
     fake_formats = load('v185_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
@@ -123,8 +140,10 @@ if sys.argv[1:2] == ['exec']:
         # A role-bound run's tool observation (VELDO-0127): the definitions the pinned binary sends its model
         # for the reviewer's grants, posted once to the receiver's loopback endpoint, which refuses the turn.
         provider = config['model_providers']['role_observation']
+        # A code-mode model's binary also sends its runner tools, as the qualified binary does (VELDO-0127).
+        names = @@CODEX_TOOLS@@ + (['exec', 'wait'] if config.get('model') in @@CODE_MODE@@ else [])
         body = json.dumps({'model': config.get('model'), 'tools': [{'type': 'function', 'name': name}
-                                                                    for name in @@CODEX_TOOLS@@]}).encode()
+                                                                    for name in names]}).encode()
         try:
             urllib.request.urlopen(urllib.request.Request(provider['base_url'] + '/responses', data=body,
                                                           headers={'Content-Type': 'application/json'}), timeout=10)
@@ -187,7 +206,8 @@ else:
     emit({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': 'done'}})
     print(json.dumps({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0,
           'cache_write_input_tokens': 0, 'output_tokens': 2, 'reasoning_output_tokens': 0}}), flush=True)
-'''.replace('@@PYTHON@@', sys.executable).replace('@@CODEX_TOOLS@@', repr(codex_tools())))
+'''.replace('@@PYTHON@@', sys.executable).replace('@@CODEX_TOOLS@@', repr(codex_tools()))
+       .replace('@@CODE_MODE@@', repr(code_mode())))
     fake_capture = (['teardown not reached'], [])
     # The owner's accounts as his case has them: three Claude Code and one Codex, one Claude Code logged out.
     ACCOUNTS = (('claude-a', 'claude_code', True), ('claude-b', 'claude_code', False), ('claude-c', 'claude_code', True),
@@ -333,6 +353,22 @@ else:
                       'work_configuration', 'reservation_principals', 'factory_project', 'default_team',
                       'account_registration', 'reservation_policies')))
 
+        with section('team/newest-model'):
+            # The Codex roles start on the newest model of the qualified catalog, never an older one by default.
+            newest, listed = newest_model()
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
+            try:
+                saved_model = (CG.read(conn, ids['domain_uuid'], repository, 'independent_review', 1).get('settings')
+                               or {}).get('model')
+            finally:
+                conn.close()
+            priority = {m['slug']: m['priority'] for m in listed}
+            check('team/newest-model', 'the Codex reviewer\'s saved configuration names the newest model of the qualified '
+                  'catalog, no listed model newer [%s; newest %s; listed %s]'
+                  % (saved_model, newest, sorted((m['priority'], m['slug']) for m in listed)),
+                  saved_model == newest and saved_model in priority
+                  and all(m['priority'] >= priority[saved_model] for m in listed))
+
         with section('fresh/adapters'):
             # AC1: the adapters and the work configuration, through the installer's options.
             engines186 = h['engines186']
@@ -453,6 +489,91 @@ else:
             finally:
                 main['manager'].stop(unit)
 
+        with section('login/retry-excludes', 'login/recheck'):
+            # R1, R2: the production Line and pool over a store of their own, with the main host's receiver adapters
+            # and state root, so the Line reads each account's login with the pinned engine as the receiver does.
+            from types import SimpleNamespace
+            CSm = h['CS']
+            POOL = CSm.L.D.RES.POOL
+            receiver = receivers[sorted(receivers)[0]]
+
+            def memory(accounts, refused_on):
+                conn = sqlite3.connect(':memory:')
+                conn.execute('CREATE TABLE entities (id TEXT PRIMARY KEY, kind TEXT, data TEXT)')
+                for name, utilization, profile in accounts:
+                    windows = ({'five_hour': dict(status='allowed', utilization=utilization, reset_at=time.time() + 86400)}
+                               if utilization is not None else {})
+                    conn.execute('INSERT INTO entities VALUES (?, ?, ?)', (CSm.L.ACC.entity_id(name), CSm.L.ACC.KIND, json.dumps(
+                        dict(id=name, provider='claude_code', status='active', concurrency=1,
+                             profiles={hostname: str(profile)}, windows=windows))))
+                contract = dict(repository=repository, unit='v185-r', station='build', reservation={'account': refused_on},
+                                capability={'adapter': 'claude_code', 'configuration': {}},
+                                input={'context': {'holder': 'builder'}, 'payload': {}}, source={'commit': 'abc'})
+                record = dict(dispatch_id='v185-refused', state='refused', contract=contract,
+                              refusal=CSm.L.ACCOUNT_LOGIN + refused_on, history=[{'state': 'refused', 'at': 1}])
+                conn.execute('INSERT INTO entities VALUES (?, ?, ?)', ('v185-refused', CSm.L.D.RECORD_KIND, json.dumps(record)))
+                return conn, record
+
+            def line_on(conn):
+                line = CSm.Line.__new__(CSm.Line)
+                line.service, line.repository = SimpleNamespace(conn=conn), repository
+                line.engines = {name: adapter['engine'] for name, adapter in receiver['adapters'].items()}
+                line.adapters, line.state_root, line.host = receiver['adapters'], receiver['state_root'], hostname
+                line.roles = {'builder': {'identity': 'builder'}}
+                offers = []
+                line.offer = lambda report, unit, station, role, **kwargs: offers.append(kwargs)
+                return line, offers
+
+            # R1: the review's case, the logged-out account at a lower utilization than the healthy one.
+            profiles = base / 'v185-retry-profiles'
+            for name in ('v185-out', 'v185-healthy'):
+                (profiles / name).mkdir(parents=True, mode=0o700)
+            (profiles / 'v185-healthy' / '.credentials.json').write_text('{}\n')
+            conn, record = memory([('v185-out', 0.1, profiles / 'v185-out'), ('v185-healthy', 0.8, profiles / 'v185-healthy')],
+                                  'v185-out')
+            line, offers = line_on(conn)
+            line.limited(record, {'refused': []})
+            check('login/retry-excludes', 'the retry reads the refused account\'s login again and passes it, still not '
+                  'logged in, to the pool as excluded [%s]' % offers, len(offers) == 1 and offers[0].get('exclude') == ['v185-out'])
+            ledger, chosen = {}, []
+            for request in ({'engine': 'claude_code', 'host': hostname},
+                            {'engine': 'claude_code', 'host': hostname, 'exclude': ['v185-out']}):
+                for n in range(3):
+                    choice = POOL.choose(conn, ledger, request, time.time(), lambda account: None)
+                    chosen.append(choice['account'])
+                    ledger['v185-%d' % len(chosen)] = dict(type='worker', context={'account': choice['account']},
+                                                           retired=True, reserved_seq=100 + len(chosen))
+            excluded = POOL.choose(conn, {}, {'engine': 'claude_code', 'host': hostname, 'exclude': ['v185-out']},
+                                   time.time(), lambda account: None)
+            check('login/retry-excludes', 'the pool never chooses the login-refused account while the healthy one can '
+                  'take the work, though its utilization is lower, excluded or not [%s; passed %s]'
+                  % (chosen, excluded.get('trace', {}).get('passed')),
+                  chosen == ['v185-healthy'] * 6
+                  and excluded.get('trace', {}).get('passed', {}).get('v185-out') == 'account_login:excluded')
+            conn.close()
+
+            # R2: the only account refuses, logs in, and is offered the unit again.
+            only = base / 'v185-recheck-profile'
+            only.mkdir(mode=0o700)
+            conn, record = memory([('v185-only', None, only)], 'v185-only')
+            line, offers = line_on(conn)
+            waiting = {'refused': []}
+            line.limited(record, waiting)
+            named = (waiting['refused'] or [{}])[0]
+            check('login/recheck', 'not logged in when read again, the only account is excluded and the unit waits, named '
+                  'with the login read [%s; offers %s]' % (named, offers),
+                  not offers and named.get('refusals') == [CSm.L.ACCOUNT_LOGIN + 'none_left']
+                  and named.get('logins') == {'v185-only': 'not_logged_in'})
+            (only / '.credentials.json').write_text('{}\n')
+            again = {'refused': []}
+            line.limited(record, again)
+            check('login/recheck', 'logged in again, the same account is offered the unit again with nothing excluded '
+                  '[%s; %s]' % (offers, again), len(offers) == 1 and not offers[0].get('exclude') and not again['refused'])
+            picked = POOL.choose(conn, {}, {'engine': 'claude_code', 'host': hostname}, time.time(), lambda account: None)
+            check('login/recheck', 'the pool chooses it, the one account left, despite its earlier refusal [%s]'
+                  % picked.get('account'), picked.get('account') == 'v185-only')
+            conn.close()
+
         with section('reservation/principals'):
             # AC2: a slot reserved as each principal, through the production authorization.
             writer = S.open_store(str(store))
@@ -496,6 +617,48 @@ else:
                   again.get('pins_made') == 0)
             check('rerun/changes-nothing', 'the journal head is unchanged [%s]'
                   % [r['command_id'] for r in journal(store)[len(head):]], journal(store) == head)
+
+        with section('rerun/missing-state-root'):
+            # R3: a receiver that lacks the state_root key is repaired as one holding it as null.
+            lacking = sorted(receivers)[0]
+            held = json.loads(Path(lacking).read_text())
+            held.pop('state_root', None)
+            Path(lacking).write_text(json.dumps(held, indent=1, sort_keys=True) + '\n')
+            code, repaired = h['setup'](*main['args'])
+            added = (steps_of(repaired).get('receiver_configuration') or {}).get('added') or []
+            check('rerun/missing-state-root', 'setup run again over a receiver lacking its state_root key succeeds and adds '
+                  'it [%s %s %s]' % (code, repaired.get('reason'), added),
+                  code == 0 and json.loads(Path(lacking).read_text()).get('state_root') == str(root)
+                  and {'path': lacking, 'keys': ['state_root']} in added)
+
+        with section('team/workers'):
+            # R4: every worker the default team names is enrolled, so the owner's application of it staffs a project.
+            records = journal(store)
+            for worker in ('elaborator', 'builder', 'reviewer'):
+                kind, member = entity(store, worker)
+                journaled = [r for r in records if r['principal'] == owner and worker in r['transition']
+                             and 'enroll_principal' in r['command_id']]
+                check('team/workers', '%s is enrolled, a service principal of its own independence group, by the owner\'s '
+                      'signed command [%s]' % (worker, {k: (member or {}).get(k) for k in ('principal_type', 'independence_group',
+                                                                                          'scope', 'revoked_at')}),
+                      kind == 'membership' and member.get('principal_type') == 'service'
+                      and member.get('independence_group') == worker and member.get('revoked_at') is None and len(journaled) == 1)
+            D = load('v185_team_dispatch', h['mods'] / 'control_factory_setup_dispatch.py')
+            ACT = load('v185_team_activation', h['mods'] / 'control_channel_activation.py')
+            owner_sign = ACT.ssh_signer(h['owner_key'])
+            lock = h['F'].take_lock(str(root))
+            writer = D.Store(Path(report['home']) / 'bin', root / 'host' / 'ingress.json', owner, owner_sign, lock)
+            try:
+                routes = writer.revisions()[1].team_routes
+                default = routes.read_default(1)
+                command = dict(writer.ids, operation='propose', project='factory', principal=owner, command_id='v185-team',
+                               nonce='v185-team', team_version=0, team=default['team'])
+                answer = routes.teams.apply(dict(command=command, signature=owner_sign(writer.S.canonical_bytes(command))))
+            finally:
+                writer.close()
+                os.close(lock)
+            check('team/workers', 'the owner\'s signed proposal staffing factory with the saved default team is accepted '
+                  '[%s %s]' % (answer.get('reason'), answer.get('problems')), answer.get('ok') is True)
 
         with section('fresh/one-engine'):
             # ---- AC1, one engine: a registry naming only Claude Code puts all four roles on it -------------------
@@ -640,6 +803,18 @@ else:
               len(reruns) == len(refused_ids)
               and all(any(r['dispatch_id'] == o.get('dispatch_id') and r['contract']['reservation']['account'] != LOGGED_OUT
                           for r in found) for o in reruns))
+        # R1: the installed service read the refused account's login again and passed it to the pool as excluded.
+        conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
+        try:
+            workers = {w.get('dispatch'): w for w in (json.loads(d) for (d,) in conn.execute(
+                "SELECT data FROM entities WHERE kind='subscription_reservation'")) if w.get('type') == 'worker'}
+        finally:
+            conn.close()
+        traces = [(workers.get(o.get('dispatch_id')) or {}).get('selection') or {} for o in reruns]
+        check('login/retry-excludes', 'each retry of a dispatch refused for its login chose another account, the refused '
+              'one passed over as excluded [%s]' % [(t.get('chosen'), (t.get('passed') or {}).get(LOGGED_OUT)) for t in traces],
+              traces and all(t.get('chosen') not in (None, LOGGED_OUT)
+                             and (t.get('passed') or {}).get(LOGGED_OUT) == 'account_login:excluded' for t in traces))
 
         # AC2: both principals reserved through the reservation service in the journey.
         records = h['journal'](store)

@@ -26,6 +26,8 @@ footprint:
   - ".veldo/control_accounts.py"
   - "engine/.veldo/control_account_pool*.py"
   - ".veldo/control_account_pool*.py"
+  - "engine/.veldo/control_reservations.py"
+  - ".veldo/control_reservations.py"
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "engine/.veldo/control_engine_codex*.py"

@@ -207,9 +207,12 @@ class Reservations:
     def reserve_pooled(self, command_id, dispatch, request, project, unit, *, now):
         """VELDO-0160: a worker slot on the account the pool chooses for `request` ({engine, host}) in this
         same transaction; refused `no_account_until:<reset>` (or `no_account`) when no account is a
-        candidate, with each account's reason on the refusal's `passed`."""
-        if (not isinstance(request, dict) or set(request) != {'engine', 'host'}
-                or not all(isinstance(request[k], str) and request[k].strip() for k in request)):
+        candidate, with each account's reason on the refusal's `passed`. A login retry's request also names
+        `exclude`, the accounts the pool passes over for their login (VELDO-0185 AC4)."""
+        if (not isinstance(request, dict) or not {'engine', 'host'} <= set(request) <= {'engine', 'host', 'exclude'}
+                or not all(isinstance(request[k], str) and request[k].strip() for k in ('engine', 'host'))
+                or ('exclude' in request and not (isinstance(request['exclude'], list) and request['exclude'] and all(
+                    isinstance(a, str) and a.strip() for a in request['exclude'])))):
             raise Refused('invalid_input')
         return self._run(command_id, 'pooled_worker', entity('worker', [self.domain, identity(dispatch)]),
                          dict(dispatch=dispatch, request=dict(request), project=identity(project), unit=identity(unit)),

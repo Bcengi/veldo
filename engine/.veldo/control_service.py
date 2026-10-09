@@ -218,6 +218,8 @@ ROLE_FIELDS = ('identity', 'adapter', 'configuration', 'seconds', 'payload')
 NEXT_STATION = {'build': 'review'}
 ASK_KIND = 'account_limit_rerun'
 ASK_CHOICES = ('rerun', 'stop')
+# VELDO-0185 AC4: a login the Line cannot read here (Line.login_now), left to the pool and the receiver's check.
+UNCHECKED = 'unchecked:'
 ASK_SECONDS = 7 * 86400
 # VELDO-0148: the question a land awaiting a fresh grant for its re-merged tree raises.
 GRANT_KIND = 'land_approval'
@@ -1605,6 +1607,8 @@ class Line:
         self.engines = {name: adapter['engine'] for name, adapter in sorted((receiver.get('adapters') or {}).items())
                         if isinstance(adapter, dict) and adapter.get('engine') in L.ENGINES}
         self.hosts = {name: host for name in self.engines}
+        # VELDO-0185 AC4: what a login retry reads each refused account's login again with, as the receiver does.
+        self.adapters, self.state_root, self.host = receiver.get('adapters') or {}, receiver.get('state_root'), host
         trust = EL.load_host_trust(receiver['host_trust']) if receiver.get('host_trust') else None
         common = dict(domain=service.domain, repository=repository, principal=service.principal,
                       signer=service.principal, sign=service.sign, generation=service.generation)
@@ -1883,10 +1887,11 @@ class Line:
         return owner, inbox.apply({'command': command, 'signature': signature})
 
     def offer(self, report, unit, station, role, *, revision, holder=None, context=None, payload=None,
-              adapter=None, configuration=None, follows=None, rerun_of=None):
+              adapter=None, configuration=None, follows=None, rerun_of=None, exclude=()):
         """Offer one station of one unit to the Runner: the Gate's decision for it first, then Runner.submit,
-        whose preparation takes the account the pool selects on the adapter's host. A unit no account can take
-        now waits, with the earliest reset that frees one when an account's reported limit is why."""
+        whose preparation takes the account the pool selects on the adapter's host, passing over the accounts
+        `exclude` names (a login retry's, VELDO-0185 AC4). A unit no account can take now waits, with the earliest
+        reset that frees one when an account's reported limit is why."""
         holder = holder or role['identity']
         context = dict(context or {}, holder=holder)
         adapter = adapter or role['adapter']
@@ -1902,7 +1907,8 @@ class Line:
             launch = self.runner.submit(unit, station, holder=holder, source=self.workspace, revision=revision,
                                         payload=payload, adapter=adapter,
                                         configuration=role['configuration'] if configuration is None else configuration,
-                                        deadline=time.time() + role['seconds'], context=context)
+                                        deadline=time.time() + role['seconds'], context=context,
+                                        **({'exclude': list(exclude)} if exclude else {}))
         except Exception as error:  # noqa: BLE001 - a refused offer is named in the pass, never the end of the service
             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
             if code.startswith('no_account'):
@@ -1952,9 +1958,12 @@ class Line:
 
     def another_account(self, record, report):
         """VELDO-0185 AC4: the unit's station again (a re-run) after its receiver refused the dispatch before spawn
-        because its account is not logged in, while an active account of the engine has not refused this station
-        of this unit for its login; the pool takes another account, the refused one being its most recently used.
-        With none left the unit waits, named in the pass (missing_authority:account_login:none_left)."""
+        because its account is not logged in. Each account that has refused this station of this unit for its login
+        has its login read again now (login_now, the check its receiver runs): one logged in again is a candidate
+        again, one still not logged in is excluded from the pool's choice, and one whose login cannot be read here is
+        left to the pool, which ranks it after every account with no login refusal, and to its receiver's own check.
+        With no active account of the engine left the unit waits, named in the pass
+        (missing_authority:account_login:none_left) with each login read."""
         contract = record['contract']
         engine = self.engines.get(contract['capability']['adapter'])
         refused = {(r.get('contract') or {}).get('reservation', {}).get('account')
@@ -1962,14 +1971,35 @@ class Line:
                    if (r.get('contract') or {}).get('repository') == self.repository
                    and r['contract'].get('unit') == contract['unit'] and r['contract'].get('station') == contract['station']
                    and r.get('state') == 'refused' and str(r.get('refusal') or '').startswith(L.ACCOUNT_LOGIN)}
+        logins = {account: self.login_now(account, contract['capability']['adapter'])
+                  for account in sorted(a for a in refused if isinstance(a, str))}
+        excluded = sorted(a for a, kind in logins.items() if kind is not None and not kind.startswith(UNCHECKED))
         left = [a for a in L.D.RES.POOL.accounts(self.service.conn)
-                if a.get('provider') == engine and a.get('status') == 'active' and a.get('id') not in refused]
+                if a.get('provider') == engine and a.get('status') == 'active' and a.get('id') not in excluded]
         if not left:
             report['refused'].append({'repository': self.repository, 'unit': contract['unit'],
                                       'station': contract['station'], 'dispatch_id': record['dispatch_id'],
-                                      'refusals': [L.ACCOUNT_LOGIN + 'none_left']})
+                                      'refusals': [L.ACCOUNT_LOGIN + 'none_left'], 'logins': logins})
             return None
-        return self.rerun(record, report)
+        return self.rerun(record, report, exclude=excluded)
+
+    def login_now(self, account, adapter):
+        """The account's login read now, as its receiver reads it before acceptance (control_launch
+        _account_login, the engine module's `account_login` in the account's profile environment): None when it
+        is logged in to its subscription, else the kind its engine reports; `unchecked:<reason>` when it cannot be
+        read here (no adapter, state root or profile on this host)."""
+        config = (getattr(self, 'adapters', None) or {}).get(adapter)
+        module = L.ENGINES.get(self.engines.get(adapter))
+        account_record = L.ACC.read(self.service.conn, account)
+        if not isinstance(config, dict) or module is None or account_record is None:
+            return UNCHECKED + 'adapter'
+        try:
+            bound = module.bind(config, getattr(self, 'state_root', None))
+            environment = L.ACC.login_environment(dict(os.environ), account_record, getattr(self, 'host', None),
+                                                  L.STRIPPED, config.get('environment') or {}, L.CREDENTIALS)
+            return module.account_login(bound, environment, None)
+        except (module.Refused, L.ACC.Refused) as error:
+            return UNCHECKED + str(error.code)
 
     def decide(self, record):
         """VELDO-0160's decision over the run's committed execution record, in the form its Notes give."""
@@ -1994,17 +2024,18 @@ class Line:
         return next((role for role in self.roles['reviewers'] if role['identity'] == context.get('reviewer')),
                     self.roles['reviewers'][0])
 
-    def rerun(self, record, report):
+    def rerun(self, record, report, exclude=()):
         """The same station again under a new dispatch identity, from the same accepted commit, with the same
         adapter, payload and configuration; the pool takes another account, since the exhausted one is inside
-        its reported window until its reset."""
+        its reported window until its reset (and passes over `exclude`, a login retry's)."""
         contract = record['contract']
         context = dict(contract['input']['context'] or {})
         return self.offer(report, contract['unit'], contract['station'], self.role(contract['station'], context),
                           revision=contract['source']['commit'], holder=context.get('holder'), context=context,
                           payload=contract['input']['payload'], adapter=contract['capability']['adapter'],
                           configuration=contract['capability']['configuration'],
-                          follows=(contract['input']['payload'] or {}).get('follows'), rerun_of=record['dispatch_id'])
+                          follows=(contract['input']['payload'] or {}).get('follows'), rerun_of=record['dispatch_id'],
+                          **({'exclude': list(exclude)} if exclude else {}))
 
     def ask(self, record, decision, invocation, report):
         """The owner's question (VELDO-0064): opened once, naming the calls; nothing is dispatched until his

@@ -238,7 +238,7 @@ ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
 ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
 # VELDO-0185 AC4: the refusal of a dispatch on an account its engine reports not logged in to its subscription.
-ACCOUNT_LOGIN = 'missing_authority:account_login:'
+ACCOUNT_LOGIN = D.RES.POOL.ACCOUNT_LOGIN
 # Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
 # adapter configuring one is refused. STRIPPED adds each binary's settings of the owner's shell, which
 # the inherited environment loses and an adapter may configure.
@@ -555,8 +555,9 @@ class Runner:
         return self.clear_runs()
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
-                deadline, context=None):
-        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract."""
+                deadline, context=None, exclude=()):
+        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract. `exclude`
+        names the accounts a login retry's pool passes over (VELDO-0185 AC4)."""
         # Pending retirements first: a slot whose obligations have since completed is released before
         # this preparation reserves another.
         self.sweep()
@@ -588,7 +589,7 @@ class Runner:
             # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
             # reservation, reading the pool now: an account registered while work runs takes this dispatch.
             account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
-                                      adapter=adapter, now=now)
+                                      adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
         else:
             self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:

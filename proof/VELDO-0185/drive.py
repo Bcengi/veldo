@@ -3,6 +3,7 @@
 
 Run: python3 proof/VELDO-0185/drive.py --mutations
      python3 proof/VELDO-0185/drive.py --red <pre-change commit>
+     python3 proof/VELDO-0185/drive.py --red <commit before a fix> <row> [<row> ...]
 
 --mutations runs scripts/check_teeth_mutations.py's own worker for every finding-185 case: once on the
 unchanged production modules (the baseline every VELDO-0185 row must pass), then once per case on a copy of
@@ -12,7 +13,8 @@ the worker profile through the host's user manager, which that domain does not r
 setup there with unavailable_service:profile:user_manager, as it does for suite 87's setup baselines).
 
 --red replays the current suite against an unchanged `git archive` of the named commit, as VELDO-0186's
-driver does, and records that every behavior row is false there by assertion.
+driver does, and records that every behavior row is false there by assertion. With rows named (the rows a fix
+adds), it records that each of those is false there by assertion, the others as they are.
 """
 import ast
 import contextlib
@@ -112,7 +114,7 @@ def one(root):
             'by_assertion': not any('raised' in detail for _name, _ok, detail in found)}
 
 
-def red(commit):
+def red(commit, named=()):
     git = load('v185_git', ROOT / '.veldo/git_process.py')
     resolved = git.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
                        capture_output=True, text=True, check=True).stdout.strip()
@@ -131,6 +133,16 @@ def red(commit):
     expected = next(ast.literal_eval(node.value) for node in ast.walk(suite_tree)
                     if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'ROWS' for t in node.targets))
     behavior = [name for name in expected if name != 'format/fake-lines']
+    if named:
+        unknown = [name for name in named if name not in behavior]
+        if unknown:
+            raise SystemExit('not rows of the suite: %s' % unknown)
+        report['named_rows'] = list(named)
+        report['all_named_rows_red'] = all(PREFIX + name in report['failed_rows'] for name in named)
+        report['named_details'] = {name: report['details'].get(PREFIX + name) for name in named}
+        (HERE / ('red-at-' + commit + '.json')).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+        print(json.dumps({key: report[key] for key in ('commit', 'failed_rows', 'by_assertion', 'all_named_rows_red')}))
+        return 0 if report['by_assertion'] and report['all_named_rows_red'] else 1
     report['behavior_rows'] = behavior
     report['all_behavior_rows_red'] = all(PREFIX + name in report['failed_rows'] for name in behavior)
     (HERE / ('red-at-' + commit + '.json')).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
@@ -141,8 +153,8 @@ def red(commit):
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == '--one':
         print(json.dumps(one(Path(sys.argv[2]))))
-    elif len(sys.argv) == 3 and sys.argv[1] == '--red':
-        raise SystemExit(red(sys.argv[2]))
+    elif len(sys.argv) >= 3 and sys.argv[1] == '--red':
+        raise SystemExit(red(sys.argv[2], sys.argv[3:]))
     elif sys.argv[1:] == ['--mutations']:
         raise SystemExit(mutations())
     else:

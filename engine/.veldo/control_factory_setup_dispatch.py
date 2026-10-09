@@ -12,7 +12,10 @@ served workspace's Git common directory, or VELDO_RUNS_ROOT as `veldo account ad
                       `implementation` role and its reviewer from `independent_review`, each with
                       control_service's ROLE_FIELDS.
   principals          the owner's signed enroll_principal of `authority` and `launch-receiver` with the
-                      reservation_service role (their key is the journal key both sign with).
+                      reservation_service role, and of each default team worker besides the PM setup enrolls
+                      first (`elaborator`, `builder`, `reviewer`, service principals with no role, each its own
+                      independence group), so the saved default team staffs a project (control_team's roster
+                      check); their key is the journal key all of them sign with. Only those the store lacks.
   factory project     the owner's signed control_project `activate` of `factory` when there is none.
   default team        one capability configuration revision per role and one default team revision, each the
                       owner's signed command through VELDO-0203's OwnerRevisions, its nonce its command id:
@@ -54,6 +57,8 @@ WALKTHROUGH = {'project_manager': 'claude_code', 'elaboration': 'claude_code', '
 # The default team's workers: the enrolled PM, and one agent identity per other role.
 WORKERS = {'project_manager': 'pm', 'elaboration': 'elaborator', 'implementation': 'builder',
            'independent_review': 'reviewer'}
+# The workers the principals step enrolls: every one but the PM, whom setup's project_manager_enrollment enrolls.
+TEAM_WORKERS = tuple(worker for role, worker in WORKERS.items() if role != 'project_manager')
 PERMISSIONS = {'project_manager': ['objective', 'feature', 'backlog_item', 'decision_request', 'finding'],
                'elaboration': ['feature', 'backlog_item', 'finding'], 'implementation': ['finding'],
                'independent_review': ['finding']}
@@ -136,14 +141,20 @@ def definition(role, engine, models):
                 skills=[], instructions=[], settings=settings)
 
 
+def catalog_models(record):
+    """The models of a Codex qualification's bundled catalog a role may start on: listed, not retired in favour
+    of another (no `upgrade`), and carrying the fields a role-bound run selects from."""
+    return [m for m in ((record.get('model_catalog') or {}).get('models') or [])
+            if isinstance(m, dict) and m.get('visibility') == 'list' and not m.get('upgrade')
+            and all(k in m for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))]
+
+
 def codex_model(Refused):
-    """The model a Codex role starts on: of the installed qualification's bundled catalog, the listed model of
-    the lowest priority that is not code-mode only and carries the fields a role-bound run selects from."""
+    """The model a Codex role starts on: the newest of the installed qualification's bundled catalog, its model
+    of the lowest priority (the catalog's own order, newest first) among catalog_models, whatever its tool mode
+    (a code-mode model's runner tools are part of its expected tool set, control_agent_config_handoff)."""
     record = organ('control_engine_codex').load_qualification(Path(__file__).parent / 'runtime' / 'codex-qualification.json')
-    modes = record.get('model_tool_modes') or {}
-    models = [m for m in ((record.get('model_catalog') or {}).get('models') or [])
-              if isinstance(m, dict) and m.get('visibility') == 'list' and modes.get(m.get('slug')) != 'code_mode_only'
-              and all(k in m for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))]
+    models = catalog_models(record)
     if not models:
         raise Refused('missing_evidence:codex_model_catalog', 'the Codex qualification names no model a role can bind')
     return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']
@@ -203,12 +214,24 @@ def held(conn):
         found = conn.execute('SELECT kind, data FROM entities WHERE id=?', (identity,)).fetchone()
         return (found[0], json.loads(found[1])) if found else (None, None)
     PJ, ACC, TR = organ('control_project'), organ('control_accounts'), organ('control_team_routes')
-    principals = all(RESERVATION_ROLE in ((row(p)[1] or {}).get('roles') or []) for p in RESERVATION_PRINCIPALS)
+    principals = not enrollments_due(conn)
     project = row(PJ.project_id(PJ.FACTORY_PROJECT))[0] is not None
     head = row(TR.HEAD)[0] is not None
     accounts = {json.loads(d)['id'] for (d,) in conn.execute('SELECT data FROM entities WHERE kind=?', (ACC.KIND,))}
     return {'reservation_principals': principals, 'factory_project': project, 'default_team': head,
             'accounts': accounts}
+
+
+def enrollments_due(conn):
+    """[(principal, roles)] of the principals step the store does not hold yet, read only: each reservation
+    principal without the reservation_service role, each team worker with no membership in force."""
+    def member(principal):
+        found = conn.execute('SELECT kind, data FROM entities WHERE id=?', (principal,)).fetchone()
+        data = json.loads(found[1]) if found and found[0] == 'membership' else None
+        return data if data is not None and data.get('revoked_at') is None else None
+    due = [(p, [RESERVATION_ROLE]) for p in RESERVATION_PRINCIPALS
+           if RESERVATION_ROLE not in ((member(p) or {}).get('roles') or [])]
+    return due + [(worker, []) for worker in TEAM_WORKERS if member(worker) is None]
 
 
 def policies_due(conn, domain):

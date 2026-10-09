@@ -10471,8 +10471,9 @@ def cases():
     add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',
         '                                   work=work)\n', '                                   work=None)\n',
         ['loop/configured'], ())
-    add(185, 'v185-principals-without-role', S185, 'control_factory_setup.py',
-        "'roles': [D.RESERVATION_ROLE],", "'roles': [],", ['reservation/principals'], ())
+    add(185, 'v185-principals-without-role', S185, 'control_factory_setup_dispatch.py',
+        '    due = [(p, [RESERVATION_ROLE]) for p in RESERVATION_PRINCIPALS', '    due = [(p, []) for p in RESERVATION_PRINCIPALS',
+        ['reservation/principals'], ())
     add(185, 'v185-enrollments-every-run', S185, 'control_factory_setup.py',
         "    missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}\n",
         "    missing = {'reservation_principals'} | {name for name in ('factory_project',) if not held[name]}\n",
@@ -10498,10 +10499,35 @@ def cases():
         "        if actual.get('state_root') is None:\n", "        if 'state_root' not in actual:\n",
         ['rerun/over-earlier-host'], ())
     add(185, 'v185-records-null-refused', S185, 'control_factory_setup_records.py',
-        "        if 'state_root' in held and held['state_root'] is None:\n            expected['state_root'] = None\n", '',
+        "        if held.get('state_root') is None:\n            expected.pop('state_root', None)\n"
+        "            if 'state_root' in held:\n                expected['state_root'] = None\n", '',
         ['rerun/over-earlier-host'], ())
     add(185, 'v185-scaffold-absent', S185, 'init_scaffold.py',
         '    ".veldo/control_factory_setup_dispatch.py",\n', '', ['install/asset'], ())
+    # The Codex review of e016df9b: each defect it found, put back, and the Codex roles' model.
+    add(185, 'v185-retry-excludes-nothing', S185, 'control_service.py',
+        '        return self.rerun(record, report, exclude=excluded)\n', '        return self.rerun(record, report)\n',
+        ['login/retry-excludes'], ())
+    add(185, 'v185-pool-ignores-exclude', S185, 'control_account_pool.py',
+        "        if name in excluded:\n            passed[name] = 'account_login:excluded'\n            continue\n", '',
+        ['login/retry-excludes'], ())
+    add(185, 'v185-pool-ranks-by-utilization-first', S185, 'control_account_pool.py',
+        '        ranked.append((name in refused, ', '        ranked.append((False, ', ['login/retry-excludes'], ())
+    add(185, 'v185-login-refusal-forever', S185, 'control_service.py',
+        '        excluded = sorted(a for a, kind in logins.items() if kind is not None and not kind.startswith(UNCHECKED))\n',
+        '        excluded = sorted(logins)\n', ['login/recheck'], ())
+    add(185, 'v185-records-missing-refused', S185, 'control_factory_setup_records.py',
+        "        if held.get('state_root') is None:\n            expected.pop('state_root', None)\n"
+        "            if 'state_root' in held:\n                expected['state_root'] = None\n",
+        "        if 'state_root' in held and held['state_root'] is None:\n            expected['state_root'] = None\n",
+        ['rerun/missing-state-root'], ())
+    add(185, 'v185-workers-not-enrolled', S185, 'control_factory_setup_dispatch.py',
+        '    return due + [(worker, []) for worker in TEAM_WORKERS if member(worker) is None]\n', '    return due\n',
+        ['team/workers'], ())
+    add(185, 'v185-codex-model-oldest', S185, 'control_factory_setup_dispatch.py',
+        "    return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
+        "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
+        ['team/newest-model'], ())
 
     return result
 
