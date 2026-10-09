@@ -116,6 +116,22 @@ def _v182_suite():
                 C.check(plan['root'],definition,part,'before')
                 evidence=json.loads((copy.parent/(part+'.json')).read_text())
                 check('check/sample-'+part, len(evidence['sample'])==min(20,evidence['count']) and evidence['count']>0)
+                if part!='file_memory':
+                    code=Path(definition['parts'][part]['code'])
+                    if part=='ava_memory':
+                        source=code/'memory_store.py';needle="    def search(self, query, limit=10, category=None):\n";extra='        return []\n'
+                    elif part=='knowledge_graph':
+                        source=code/'db.py';needle='def search_entities(query,type=None,db_path=DB_PATH):\n';extra='    return []\n'
+                    elif part=='memory_kb':
+                        source=code/'kb/search.py';needle='def search(query,collections=None,n_results=5,classifications=None):\n';extra='    return []\n'
+                    else:
+                        source=code/'search.py';needle="            offset=a.get('offset',0);found=found[offset:offset+a.get('limit',20)]\n";extra="            if a.get('query'): found=[]\n"
+                    original_source=source.read_text();assert original_source.count(needle)==1
+                    source.write_text(original_source.replace(needle,needle+extra))
+                    try:
+                        check('check/search-required-'+part,refusal(lambda: C.check(plan['root'],definition,part,'after'))=='missing_evidence:memory:'+part+':lost')
+                    finally:
+                        source.write_text(original_source)
                 FIX.replace_sample(part,definition['parts'][part],evidence['sample'][0])
                 now=C.probe(part,definition['parts'][part],'before')
                 reason=refusal(lambda: C.check(plan['root'],definition,part,'after'))
@@ -177,6 +193,15 @@ def _v182_suite():
             many=FIX.build(base/'many',count=25)
             snap=C.probe('file_memory',M.normalize(many)['parts']['file_memory'],'before')
             check('check/twenty',snap['count']==25 and len(snap['sample'])==20 and len({r['id'] for r in snap['sample']})==20)
+            manydef=M.normalize(many);manyroot=base/'many-state';manyroot.mkdir(mode=0o700)
+            C.check(manyroot,manydef,'file_memory','before')
+            saved=json.loads((manyroot/'memory/copies/file_memory.json').read_text())
+            sampled={r['id'] for r in saved['sample']}
+            removed=next(p for p in Path(manydef['parts']['file_memory']['data']).glob('fact-*') if p.name not in sampled)
+            removed.unlink()
+            probe=C.probe('file_memory',manydef['parts']['file_memory'],'after',saved['sample'])
+            check('check/count-drop',probe['found'] and probe['count']==24 and refusal(lambda: C.check(manyroot,manydef,'file_memory','after'))=='missing_evidence:memory:file_memory:lost')
+
         except Exception:
             traceback.print_exc(limit=5)
             check('unit/completed',False)
@@ -211,16 +236,33 @@ def _v182_suite():
                 return result.get('ok') is True
             return send
         original_manager_run=ctx['manager'].run
-        ctx['manager'].run=lambda args: (0,'','') if args[0]=='start' else original_manager_run(args)
+        def manager_run(args):
+            if args[0]=='start': return (0,'','')
+            if args[0]=='show' and args[-1].startswith('veldo-api-'):
+                return (0,'LoadState=loaded\nActiveState=active\nSubState=running\nMainPID=%d\nNRestarts=0\nResult=success\n'%os.getpid(),'')
+            return original_manager_run(args)
+        ctx['manager'].run=manager_run
         setup_module.service_request=transport
-        ctx['S'].open_store=reader_only
+        original_organ=setup_module.organ
+        observed_modules=set()
+        def observe_opens(name):
+            module=original_organ(name)
+            if name=='control_claim' and id(module.S) not in observed_modules:
+                observed_modules.add(id(module.S))
+                open_store=module.S.open_store
+                def observed_open(path,mode=None):
+                    if mode!='r': writes.append(str(path))
+                    return open_store(path,mode=mode) if mode else open_store(path)
+                module.S.open_store=observed_open
+            return module
+        setup_module.organ=observe_opens
         try:
             code, report=setup('memory',root,clone,trust,**{'--memory':str(path)})
             check('integration/service-lock',code==0 and len(packets)==1 and not writes)
         finally:
             ctx['manager'].run=original_manager_run
             setup_module.service_request=original_send
-            ctx['S'].open_store=original_open
+            setup_module.organ=original_organ
             service_conn.close();os.close(lock)
         if code: print('setup memory refusal:', report)
         check('integration/setup-memory',code==0 and any(r['step']=='memory' and r['outcome']=='done' for r in report.get('steps',[])))
@@ -244,6 +286,24 @@ def _v182_suite():
         # Same manifest on a fresh root proves initial setup names and copies all parts.
         code,report=setup('fresh',fresh,workspace2,trust2,**{'--memory':str(path)})
         check('integration/fresh-setup',code==0 and report.get('memory',{}).get('outcome')=='done')
+        import contextlib
+        import io
+        cli=ctx['F'].organ('control_factory_setup_memory')
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            result=cli.main(['check','file_memory','after','--state-root',str(root)])
+        check('integration/check-cli',result==0 and json.loads(out.getvalue())['outcome']=='passed')
+        revised=json.loads(json.dumps(manifest))
+        moved=base/'revised-files';shutil.copytree(manifest['parts']['file_memory']['data'],moved)
+        revised['parts']['file_memory']['data']=str(moved)
+        revision_path=base/'revision.json';revision_path.write_text(json.dumps(revised))
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            result=cli.main(['revise',str(revision_path),'--state-root',str(root),'--owner-key',str(ctx['owner_key'])])
+        with sqlite3.connect(db) as conn:
+            check('integration/revise-cli',result==0 and M.read(conn)['revision']==2 and M.read(conn)['definition']==M.normalize(revised))
+        at_files=ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent)
+        code,report=setup('different',root,clone,trust,**{'--memory':str(path)})
+        check('integration/differs-no-writes',code==1 and report.get('reason')=='invalid_input:state_root:differs:memory' and at_files==ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent))
+
 
 
     def launch_rows(ctx):
@@ -305,6 +365,8 @@ def _v182_suite():
         except Exception:
             traceback.print_exc(limit=18)
             check('integration/'+name+'-completed',False)
+    if os.environ.get('VELDO_0182_REPORT'):
+        Path(os.environ['VELDO_0182_REPORT']).write_text(json.dumps({name:dict(assertions=len(checks),passed=bool(checks) and all(checks)) for name,checks in rows.items()},indent=2)+'\n')
     for name,checks in rows.items():
         expect('VELDO-0182 '+name, bool(checks) and all(checks))
 

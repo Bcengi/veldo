@@ -217,18 +217,14 @@ same check. The title names it. Asked by the owner; back to draft: the owner mus
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
 
-2026-10-08, implementation preflight on agent/codex/veldo-0182 at 294e1933:
-blocked at AC4 before production changes. The permitted checkout contains no
-source or located interface captures for myday's mem0_memory, knowledge_graph
-and memory_kb or the installed claude-mem search server. Read probes of candidate
-myday source paths and the Claude plugin cache returned EACCES; these paths
-could not be confirmed as the actual installations. The function names in AC4
-do not establish their signatures, initialization, result shapes, enumeration
-and count interfaces, or the plugin search protocol. Inventing those contracts
-and matching fixtures would not prove that the owner's memories survive a
-switch. A readable source location was requested. Resume with version-identified
-source snapshots or authoritative interface captures, without live memory or
-credentials. The access observations, operational criteria and planned
-falsifiers are in proof/VELDO-0182/. No suite, mutation runner or gate was run,
-and no criterion is claimed proven. Acceptance criteria and ready status are
-unchanged.
+2026-10-08, continuation on agent/codex/veldo-0182: the owner supplied read-only,
+version-identified source captures, resolving the interface-access blocker recorded
+at 264b3d2f. Implemented the signed memory record and revision command, setup's
+idempotent memory step, profile exclusion at both boundaries, current-revision
+launch handoff and durable metadata receipts, and private safety copies with
+sampled loss checks. Suite 105 uses synthetic native-layout stores and reads the
+captured interfaces in place for additional conformance checks. No captured file,
+live memory or credential was copied into the repository. Capture versions,
+operational commands, criterion rows, falsifiers and validation limits are in
+proof/VELDO-0182/. The canonical gate, independent review and approval remain the
+reviewer's and owner's work. Acceptance criteria and ready status are unchanged.

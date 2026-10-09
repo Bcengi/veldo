@@ -1,93 +1,114 @@
-# VELDO-0182 blocked preflight
+# VELDO-0182 implementation and review handoff
 
-This is a blocker record, not implementation proof. The attempt started at
-294e1933 on agent/codex/veldo-0182. No acceptance criterion is proven.
+The interface-access blocker is resolved. The implementation keeps one signed,
+versioned memory record, refuses profiles contained by memory locations, hands
+its current locations to every launch, and provides before/after loss checks.
+The specification remains ready. Independent review, approval and the canonical
+gate are pending; no gate stamp or passing aggregate unit evidence is claimed.
 
-Read before implementation: README.md, VELDO.md, CLAUDE.md, engine/AGENTS.md,
-engine/VELDO.md, engine/CLAUDE.md, VELDO-0182 and its four direct dependencies
-(VELDO-0139, VELDO-0144, VELDO-0160 and VELDO-0171). The account registry,
-setup, service and launch integration points were inspected. VELDO-0183's
-memory references were also checked for an existing store interface contract.
+## Interfaces and provenance
 
-## Blocker
+`interface-contract.json` records each adapter's captured version and source
+hashes. No capture file was copied into this repository.
 
-AC4 requires counts and sampled retrieval through the stores' own functions:
-mem0_memory's memory_store get and search, knowledge_graph's db get_entity and
-search_entities, memory_kb's collection get and kb search, and claude-mem's
-search server. The specification supplies names and fixed data locations, but
-not the callable signatures, initialization, result shapes, enumeration and
-count interfaces, or claude-mem search protocol needed to implement those
-adapters and representative fixtures.
+- ava_memory: myday mem0_memory at b641e2ad6c01deb54888ffc7be27b72f029941f7.
+- knowledge_graph: myday knowledge_graph at 81541d04ea30c30808145f7498516033ee6cd14a.
+- memory_kb: myday memory_kb at 879a46b2b8eb127f525cffd22c9e508b36db5546.
+- claude_mem: installed plugin 10.6.2.
+- file_memory: the specification's auto-memory layout, MEMORY.md plus fact files.
 
-The tracked checkout has no implementation of those four stores and no located
-capture of their interfaces. Direct read probes of candidate source locations
-and the Claude plugin cache all returned EACCES. The exact candidate paths,
-errors and tracked-source inventory are retained in preflight.json. These are
-candidate paths, not verified installation locations: permission denial proves
-neither existence nor absence. No memory content or credentials were read or
-retained. A readable source location was requested during the attempt and none
-was supplied before this blocker was recorded.
+The portable fixtures use synthetic content and the fixed directory layouts,
+SQLite graph tables, Chroma document/metadata subset, and plugin observations,
+session summaries and user prompts. They replace embeddings and semantic ranking
+with deterministic matching. When the excluded captures are present, the suite
+also imports the actual captured Python wrappers in place, with synthetic backend
+APIs, and drives the actual captured MCP script against a loopback worker API.
+These are interface tests, not a claim about live memory or embedding quality.
+Without captures, that optional conformance step reports itself unavailable.
 
-Inventing get, search and count protocols and generating fixtures that implement
-those same inventions would not demonstrate AC4's required behavior against
-the owner's stores. In particular, it could report a successful switch without
-testing the memory the assistant actually uses. The user's explicit instruction
-is to stop and record a blocker when the specification cannot be met safely.
-Implementation therefore stopped before production edits or partial delivery.
+mem0 enumeration grows its limit until exhausted instead of trusting the
+captured stats function's 10000-item ceiling. The knowledge graph samples entities,
+as the specified get_entity/search_entities pair requires, while backing up all
+tables. The KB enumerates full documents across all seven collections, decrypts
+through the captured store helper, and refuses unavailable plaintext. The plugin
+checks all three searchable memory types and explicitly disables its default
+90-day search cutoff. Version 10.6.2 has no summary/prompt get tool; its filter-only
+search supplies full records for lookup by typed id. Observations use the dedicated
+get_observations tool. A failed or unavailable search is a refusal, never success.
 
-To resume, provide readable, version-identified source snapshots for myday's
-mem0_memory, knowledge_graph and memory_kb packages, and the installed
-claude-mem search server, or equivalent authoritative interface captures covering
-initialization, enumeration/count, lookup by id and search by text. Include
-the stores' data-layout contracts needed for the safety copy. Source or captures
-must exclude live memory content, account profiles and credentials. No change
-to the acceptance criteria is requested.
+## Operational interface
 
-## Operational criteria and planned proof
+Add the memory option to factory setup, naming a JSON manifest with these fields:
 
-These are planned behavior rows, not tests that exist or have run. Suite number
-105 remains the number requested for the resumed implementation; no suite or
-manifest registration was added for this blocker-only change.
+```json
+{
+  "host": "owner-host",
+  "assistant_mcp": "/absolute/myday/.mcp.json",
+  "parts": {
+    "file_memory": {"data": "/absolute/profile/project/memory"},
+    "ava_memory": {"code": "/absolute/myday/mem0_memory", "interpreter": "/absolute/owned/python"},
+    "knowledge_graph": {"code": "/absolute/myday/knowledge_graph", "interpreter": "/absolute/owned/python"},
+    "memory_kb": {"code": "/absolute/myday/memory_kb", "interpreter": "/absolute/owned/python"},
+    "claude_mem": {
+      "code": "/absolute/plugin/10.6.2",
+      "command": ["/absolute/owned/node", "/absolute/plugin/10.6.2/scripts/mcp-server.cjs"],
+      "data": "/absolute/claude-mem-data"
+    }
+  }
+}
+```
 
-AC1: Owner-signed setup creates the five-part record with fixed data paths and assistant MCP configuration; two accounts of each engine receive identical locations and the current revision; missing knowledge_graph.db refuses before writes; revisions require the owner's signed command.
+Use absolute, existing, owned paths without symlinks, including the executable
+paths. The host field is descriptive; it cannot bypass profile exclusion. Profile
+comparisons inspect every registered profile path against both the handed code
+and data directories using real paths. Memory inside a profile is permitted.
+The first three server data paths are derived from their code locations, so the
+manifest cannot redirect them. Setup names existing bytes and never migrates them.
 
-Falsifier: Derive file memory from each run's account profile; the same-locations row must fail.
+The memory command has check and revise subcommands. Check takes the part name
+above and before or after, plus the state-root option. Revise takes a new manifest,
+state-root and owner-key options. Initial setup and revision surround the record
+switch with checks. A differing setup manifest refuses and writes nothing.
+The revise command uses the original owner's signature and an expected revision.
+A live authority receives the signed command through setup's existing transport;
+an offline writer must hold authority.lock. An identical setup does not declare
+ownership again, refresh a sample, copy data or advance the journal.
 
-Result: Not implemented or run.
+Each engine receives VELDO_MEMORY containing the revision and normalized locations.
+The receiver emits the same metadata and saves a private per-dispatch receipt under
+memory/launches. It ignores any inherited VELDO_MEMORY. This implements location
+handoff; configuring the memory servers and the engines' native file-memory behavior
+belongs to VELDO-0183 and VELDO-0184, respectively.
 
-AC2: Setup rejects each location containing a registered profile without writes; later registration inside a memory location rejects without registration; file memory inside a profile succeeds; comparisons use real paths.
+The first before check copies data to memory/copies/part. SQLite files use online
+backup, including committed WAL rows. Subsequent before checks refresh the private
+count/sample file without replacing that copy. After reads the current store,
+requires at least the saved count and every sampled id and own-text search, and
+names the part, live location and safety copy on refusal. A copy is never handed
+to a launch. A failed after stops the switch operation; it does not automatically
+roll back the owner's record or memory.
 
-Falsifier: Remove the registration-time check; the later-registration row must fail.
+## Acceptance criteria and counterexamples
 
-Result: Not implemented or run.
+| Criterion | Proving rows in suite 105 | Executed falsifier |
+| --- | --- | --- |
+| AC1 | setup/five-parts, record/owner-signature, record/revise, integration/fresh-setup, setup/missing-database, launch/same-on-every-account, launch/current-revision, launch/durable-receipt | falsifier/account-derived changes the scratch receiver to derive file memory from each account profile. Two real Codex turns receive different locations, violating the same-location assertion. |
+| AC2 | profile/setup-refused, profile/later-registration, profile/real-paths, profile/memory-inside-accepted | falsifier/setup-only removes the registration-time check. The forbidden profile registers, violating the no-registration assertion. |
+| AC3 | setup/idempotent, integration/setup-repeat, integration/identical-files, integration/service-lock, integration/differs-no-writes | falsifier/rewrite-rerun always writes the otherwise identical record. The journal advances, violating the unchanged-head assertion. |
+| AC4 | check/loss for each part, check/search-required for each server, check/count-drop, check/twenty, check/copy-once for each part, copy/sqlite-online, integration/check-cli, integration/revise-cli | falsifier/copy for each part checks the unchanged safety copy after deleting a sampled live id and adding another. It wrongly passes, violating the loss-refusal assertion. |
 
-AC3: Identical setup leaves files and journal head unchanged; an older host gains only the missing memory step under the setup lock rule; a differing manifest refuses without writes and requires the owner's revise command.
+`local-results.json` retains row-level diagnostics. The suite number is 105 and
+its manifest declares no prerequisite suite. Only the shared harness and this
+specification's rows run. Scoped selftest deliberately returns exit 2 when all
+rows pass and cannot produce passing unit evidence. The proof manifest maps every
+criterion to its test source and leaves verification pending. It is not a landing
+approval and does not turn partial results into a full gate result.
 
-Falsifier: Write a revision on every setup; the second-run journal-head assertion must fail.
+The setup fixtures use an isolated user-manager stand-in. This environment refuses
+Unix datagram sockets, so the running-service row uses the real Service admission
+and authority.lock with an explicit in-process transport stand-in. It asserts that
+setup opens no writable store handle. The full socket/service-manager lifecycle
+remains the reviewer's gate coverage. Launch rows use the real Runner, receiver,
+account registry and wrapper, with qualified fake engine binaries and no real login.
 
-Result: Not implemented or run.
-
-AC4: Setup over all five fixture stores leaves a single private safety copy per part, using SQLite online backup for databases; repeated before checks refresh count and random sample without replacing the copy; after checks the live store's count and every sampled id and text through its own functions; remove a sample and add a replacement for each part, retaining the count, and require the named refusal with store and copy paths.
-
-Falsifier: Check the copy instead of the switched store; the removed-memory row must fail because the broken check passes.
-
-Result: Blocked by unavailable store interface evidence; not implemented or run.
-
-The safety copies must never appear in the memory record or launch handoff.
-Launches must read the current revision and refuse missing locations by name.
-Setup's initial memory step must run the before and after checks around the
-first naming of each part. Future switches in VELDO-0183 and myday consume the
-same check interface, as the unchanged specification requires.
-
-## Validation and scope
-
-Only source discovery, permission probes and static repository reads were run.
-No suite, mutation runner, canonical gate, external service or memory switch
-was run. No gate stamp, independent review, unit evidence or integration evidence
-is claimed. No success proof manifest was created: the required behavioral
-evidence does not exist. The retained JSON is explicitly a blocked preflight
-record, not a veldo.proof/v1 bundle.
-
-Changes are limited to this record, preflight.json and the specification's
-History. Acceptance criteria, ready status, production code, suite registrations
-and other branches and worktrees remain unchanged.
+No full selftest, gate, mutation runner, push, merge or live memory switch was run.

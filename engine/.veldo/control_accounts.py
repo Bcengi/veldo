@@ -255,8 +255,10 @@ class Accounts:
                     continue
                 self.counts['refused'] += 1
                 raise
-            except Refused:
+            except Refused as error:
                 self.counts['refused'] += 1
+                if error.code.startswith('invalid_input:account_profile:inside_memory:'):
+                    self.counts['memory_profile_refused'] = self.counts.get('memory_profile_refused', 0) + 1
                 raise
             self.counts['accepted'] += 1
             return result

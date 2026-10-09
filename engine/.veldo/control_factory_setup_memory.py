@@ -57,7 +57,12 @@ def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
             spec = importlib.util.spec_from_file_location('installed_memory_writer', binding[0])
             writer_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(writer_module)
-        writer_module.Memory(S, conn, ids, *journal).admit(packet)
+        try:
+            writer_module.Memory(S, conn, ids, *journal).admit(packet)
+        except Exception as error:
+            if hasattr(error, 'code'):
+                raise M.Refused(error.code, getattr(error, 'detail', '')) from None
+            raise
     for part in M.PARTS:
         checks.append(CHECK.check(plan['root'], definition, part, 'after'))
     return dict(report, revision=base + 1, command_id=command['command_id'], checks=checks,
