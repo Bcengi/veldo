@@ -312,16 +312,20 @@ class Plugin:
             if any(r.get('id') == row['id'] for r in self.client.call('search', arguments).get(row['collection'], [])):
                 return True
             if attempt == 0:
-                self.backfilled()
+                self.backfilled(row)
         return False
 
-    BACKFILL = 120
+    STALL = 60
+    DOC_TYPES = {'observations': 'observation', 'sessions': 'session_summary', 'prompts': 'user_prompt'}
 
-    def backfilled(self):
-        """A memory written just before the copy may not be in Chroma yet; the worker adds it at start and logs
-        the end, complete or failed (claude-mem 10.6.2 has no other signal). Bounded, and refused by name."""
-        deadline = time.monotonic() + self.BACKFILL
-        while time.monotonic() < deadline:
+    def backfilled(self, row):
+        """A memory written just before the copy may not be in Chroma yet; the worker adds it at start, after
+        paging through every id Chroma holds. The wait ends when the memory's own document is in the copy's
+        Chroma, or when claude-mem says its backfill ended; it is refused by name when the backfill failed,
+        the worker stopped, or the check's own processes made no progress (CPU) for STALL seconds."""
+        kind = self.DOC_TYPES[row['collection']]
+        mark, since = self.cpu(), time.monotonic()
+        while not self.indexed(row['id'], kind):
             logs = b''
             for log in (self.data / 'logs').glob('*.log'):
                 with contextlib.suppress(OSError):
@@ -332,9 +336,36 @@ class Plugin:
                 return
             if self.processes[0].poll() is not None:
                 raise Unavailable('claude-mem worker stopped before its backfill ended')
+            used = self.cpu()
+            if used - mark >= 1:
+                mark, since = used, time.monotonic()
+            elif time.monotonic() - since > self.STALL:
+                raise Unavailable('claude-mem backfill made no progress for %d s' % self.STALL)
+            mark = min(mark, used)
             time.sleep(1)
-        raise Unavailable('claude-mem backfill did not end within %d s' % self.BACKFILL)
 
+    def indexed(self, identity, kind):
+        """Whether claude-mem's document for a memory is in the copy's Chroma (its own metadata names it)."""
+        import sqlite3
+        database = self.data / 'chroma' / 'chroma.sqlite3'
+        if not database.is_file():
+            return False
+        try:
+            with contextlib.closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True, timeout=5)) as conn:
+                return conn.execute("SELECT 1 FROM embedding_metadata a JOIN embedding_metadata b ON a.id = b.id "
+                                    "WHERE a.key = 'sqlite_id' AND a.int_value = ? AND b.key = 'doc_type' "
+                                    "AND b.string_value = ? LIMIT 1", (identity, kind)).fetchone() is not None
+        except sqlite3.Error:
+            return False
+
+    def cpu(self):
+        """CPU seconds the processes carrying this private HOME have used."""
+        ticks = 0
+        for pid in carrying(self.home):
+            with contextlib.suppress(OSError, ValueError, IndexError):
+                fields = Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()
+                ticks += int(fields[11]) + int(fields[12])
+        return ticks / os.sysconf('SC_CLK_TCK')
 
 def owner_cache():
     """Where the owner's uvx keeps its cache, as uv itself finds it."""

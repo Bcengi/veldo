@@ -369,16 +369,32 @@ def _v182_suite():
                 plugin.port=int(own.stdout.readline());ours=raised(plugin.ready) is None and plugin.ready()
             finally:own.kill();own.wait();own.stdout.close()
             check('worker/port-listener-verified',taken is not None and taken.startswith('Unavailable: claude-mem worker port') and ours is True)
-            # The backfill wait is bounded and refused by name, never a silent pass into a loss verdict.
+            # The backfill wait ends on the memory's own document in the copy's Chroma or claude-mem's end of
+            # backfill, and is refused by name when the check's processes make no progress; never a silent pass.
             class Alive:
                 def poll(self):return None
-            plugin.data=plugin.home/'.claude-mem';(plugin.data/'logs').mkdir(parents=True);plugin.processes=[Alive()];plugin.BACKFILL=1
-            started=time.monotonic();silent=raised(plugin.backfilled);waited=time.monotonic()-started
-            (plugin.data/'logs/worker.log').write_text('Backfill failed (non-blocking)\n');failed=raised(plugin.backfilled)
-            (plugin.data/'logs/worker.log').write_text('Backfill check complete for all projects\n');ended=raised(plugin.backfilled)
-            check('worker/backfill-bounded',silent=='Unavailable: claude-mem backfill did not end within 1 s' and waited<5
-                  and failed=='Unavailable: claude-mem backfill failed' and ended is None)
-            (plugin.data/'logs/worker.log').unlink()
+            plugin.data=plugin.home/'.claude-mem';(plugin.data/'logs').mkdir(parents=True);plugin.processes=[Alive()];plugin.STALL=1
+            missed=dict(collection='observations',id=7)
+            started=time.monotonic();stalled=raised(lambda: plugin.backfilled(missed));waited=time.monotonic()-started
+            log=plugin.data/'logs/worker.log'
+            log.write_text('Backfill failed (non-blocking)\n');failed=raised(lambda: plugin.backfilled(missed))
+            log.write_text('Backfill check complete for all projects\n');ended=raised(lambda: plugin.backfilled(missed))
+            log.unlink();(plugin.data/'chroma').mkdir()
+            with contextlib.closing(sqlite3.connect(plugin.data/'chroma/chroma.sqlite3')) as c:
+                c.execute('CREATE TABLE embedding_metadata(id INTEGER, key TEXT, string_value TEXT, int_value INTEGER)')
+                c.executemany('INSERT INTO embedding_metadata VALUES (?,?,?,?)',[(1,'sqlite_id',None,7),(1,'doc_type','observation',None),
+                              (2,'sqlite_id',None,8),(2,'doc_type','user_prompt',None)]);c.commit()
+            landed=raised(lambda: plugin.backfilled(missed))
+            other=raised(lambda: plugin.backfilled(dict(collection='prompts',id=7)))
+            # While the check's own processes work, the wait goes on until claude-mem's backfill ends.
+            burner=subprocess.Popen([sys.executable,'-c','import time\nend=time.time()+4\nwhile time.time()<end:pass\n'],env=dict(os.environ,HOME=str(plugin.home)))
+            threading.Timer(3,lambda: log.write_text('Backfill check complete for all projects\n')).start()
+            started=time.monotonic();working=raised(lambda: plugin.backfilled(dict(collection='sessions',id=9)));worked=time.monotonic()-started
+            burner.wait()
+            check('worker/backfill-bounded',stalled=='Unavailable: claude-mem backfill made no progress for 1 s' and waited<5
+                  and failed=='Unavailable: claude-mem backfill failed' and ended is None and landed is None
+                  and other=='Unavailable: claude-mem backfill made no progress for 1 s' and working is None and worked>=2.5)
+            log.unlink()
             def unbounded(self,timeout=1):
                 deadline=time.monotonic()+timeout
                 while time.monotonic()<deadline:
