@@ -4,7 +4,7 @@
 
 The production pin and the global install stay 0.154.0. 0.162.0 is qualified beside it: its record,
 tables, fixtures and fixes are in the tree, and moving the pin is one reviewed change (below). It is
-**not** ready to pin yet: one owner decision is open and the live captures are not run.
+**not** ready to pin yet: the live captures are not run. The reader decision is taken (Telegram 32962).
 
 ### The 0.155 to 0.162 audit
 
@@ -30,19 +30,18 @@ loopback model endpoint with no login (`loopback_lines.py`, every other connecti
 | `exec --cyber-access-program <standard\|daybreak_blue\|daybreak_red>` (also `exec resume`) | the argv is the record's flags exactly | No change: the receiver's argv check refuses any flag the record does not list; omitted means server defaults |
 | `cli_auth_credentials_store`: still `file` by default, still `file`, `keyring`, `ephemeral`; a new encrypted secrets store (`codex_auth.age`, its key in the keyring) and new keyring guidance | the baseline forces `file`, so the login is the profile's `auth.json` | No break: VELDO-0156's baseline extraction passes on 0.162.0 (same options, keys, values and the eight `login status` messages). The write-back of a refreshed login is the live capture's to show |
 | Auto-update: `check_for_update_on_startup` still named; new managed daemon updater (`codex app-server daemon update`) | FLAGS turn the startup check off | The flag is unchanged; the daemon updater runs only with the daemon, which is off |
-| Code Mode now offers `list_mcp_resources`, `list_mcp_resource_templates` and `read_mcp_resource` with no MCP server selected | readers only with a selected server (owner, Telegram 29400/29401) | **Open owner decision**, below. Veldo refuses each such launch (`configuration_stop:codex_unexpected_tool`) |
+| Code Mode now offers `list_mcp_resources`, `list_mcp_resource_templates` and `read_mcp_resource` with no MCP server selected | readers only with a selected server (owner, Telegram 29400/29401) | Owner decision, Telegram 32962, below: expected for Code Mode on 0.162.0 with no server; every other unexpected tool still refuses (`configuration_stop:codex_unexpected_tool`) |
 
-### The open owner decision
+### The owner decision on the resource readers (Telegram 32962, 2026-10-09: "allow readers")
 
 Under 0.162.0 every Code Mode model (`gpt-6.1-sol` included) offers the three MCP resource readers even
-when the role selects no MCP server. No 0.162.0 switch was found (the readers stay with every listed
-feature off and with `tools.*` overrides). Veldo fails closed: such a launch is refused, so a 0.162.0
-pin can run Code Mode roles only when they select an MCP server. With no server the readers have nothing
-to read (their sources are configured MCP servers; the apps connectors are off). The two choices are to
-keep refusing, or to amend the rule for Code Mode on 0.162.0 (the readers come with the runner, as `exec`
-and `wait` do). A probe of the second choice in the working tree only (never committed) turned suites 87,
-88 and 90 fully green on 0.162.0; the only rows left red were the ones that state the rule (86
-`wire/no-server`, 89's `{exec, wait}` oracle).
+when the role selects no MCP server, and no switch removes them. Their sources are the MCP servers
+configured for the role, so with none selected they read nothing. The owner allowed them for that case
+only, amending Telegram 29400/29401 (VELDO-0127 AC2 and History). The allowance is the 0.162.0 record's
+`mcp_resource_rule` (`code_mode_otherwise: mcp_server`, `QUALIFIED_MCP_RESOURCE_RULES`); a record binds
+only with its own version's rule, and the expected set is computed from the bound record and the model's
+qualified tool mode (`codex_resource_readers`). 0.154.0 is unchanged, a model outside Code Mode still
+expects none without a server, and any other unexpected tool still refuses the launch.
 
 ### Selecting the binary
 
@@ -66,7 +65,26 @@ the selection in their source: before that, a launch environment dropped the var
   `codex-loopback-0.162.0.json`), `codex-exec-0.162.0.json` (`extract_items.py --output`).
 - `proof/VELDO-0127/codex-0.162.0/`: features listing, bundled catalog, model-mode probe (loopback).
 
-### Results (2026-10-09, `python3 scripts/selftest.py --suite <name>`, serial)
+### Results after the reader decision (2026-10-09, `python3 scripts/selftest.py --suite <name>`, serial)
+
+| Suite | 0.154.0 (installed) | 0.162.0 (`VELDO_CODEX_BINARY`) |
+|---|---|---|
+| 79_veldo_0061_codex_adapter | 51 passed | 51 passed |
+| 86_veldo_0127_agent_configuration | 51 passed, 2 failed: `live/claude`, `live/codex` | 51 passed, 2 failed: the two `live/*` |
+| 87_veldo_0127_codex_delivery | 218 passed | 186 passed |
+| 88_veldo_0127_feature_defaults | 62 passed | 62 passed |
+| 89_veldo_0127_feature_listing | 37 passed | 37 passed |
+| 90_veldo_0127_feature_profile | 28 passed | 28 passed |
+
+On 0.154.0 the other suites loading a changed module pass (75_0062, 78_0060, 78_0160, 81_0156, 82_0141,
+82_0165, 82_0173, 83_0154, 83_0166, 85_0158, 86_0148, 102_0210); 101_0208 keeps its two base sandbox
+failures. Reader falsifiers: `role127-resource-readers-any-version`, `role127-resource-readers-any-model`,
+`role127-resource-rule-unbound` rejected by `check_teeth_mutations.py` (confined, 0.154.0); the updated
+`role127-resource-grant-omitted`, `role127-resource-grant-without-server` and
+`role127-catalog-resource-readers-hidden` turn their suite 86 rows red when applied by hand (the confined
+leg cannot run suite 86's baseline).
+
+Before the decision:
 
 | Suite | 0.154.0 (installed) | 0.162.0 (`VELDO_CODEX_BINARY`) |
 |---|---|---|
@@ -120,7 +138,8 @@ python3 proof/VELDO-0127/live.py \
 ```
 
 2. At the pin move (after step 2 above): the 0.162.0 capture with `gpt-6.1-sol`. Its roles select the
-   `jira` MCP server, so the open reader decision does not stop them. The resolver checks the private
+   `jira` MCP server, so they capture the server case; the no-server reader allowance
+   (Telegram 32962) is proved offline by suites 86, 87 and 89. The resolver checks the private
    vendor binary against the reviewed record:
 
 ```bash
