@@ -1,17 +1,98 @@
 {
   "schema": "veldo.local-targeted-tests/v1",
   "spec_id": "VELDO-0182",
-  "implementation_commit": "ab7b777b6144260c3f58747233f92cba6df8160f",
-  "observed_at": "2026-10-09T02:12:08.365927+00:00",
+  "implementation_commit": "f0767b5b5d7a618abeb0e269eeb729a33ad167d8",
+  "observed_at": "2026-10-09T03:30:23.377572+00:00",
   "command": "python3 scripts/selftest.py --suite 105_veldo_0182_memory",
   "exit_code": 2,
-  "specification_rows": 78,
-  "total_passed": 104,
+  "specification_rows": 101,
+  "total_passed": 127,
   "total_failed": 0,
-  "elapsed_seconds": 23.64,
-  "scope": "Diagnostic observations only. The scoped runner deliberately returns 2 and cannot supply aggregate unit evidence or authorize landing. The run preceded the implementation commit; tested production and suite bytes were committed unchanged.",
+  "elapsed_seconds": 27.51,
+  "scope": "Diagnostic observations only. Scoped selftest returns 2 on a clean partial run and cannot supply aggregate unit evidence or authorize landing. Tested implementation and suite bytes match the recorded implementation commit.",
   "gate_run": false,
-  "other_suites_run": [],
+  "other_suites_run": [
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "total_passed": 27,
+      "total_failed": 16,
+      "elapsed_seconds": 0.75,
+      "failed_rows": [
+        "VELDO-0139 install/assets",
+        "VELDO-0139 setup/lays-down",
+        "VELDO-0139 refuse/writes-nothing",
+        "VELDO-0139 refuse/existing-store",
+        "VELDO-0139 edge/enrolled-with-possession",
+        "VELDO-0139 chat/enrolled",
+        "VELDO-0139 ingress/configuration",
+        "VELDO-0139 token/never-copied",
+        "VELDO-0139 service/starts-inert",
+        "VELDO-0139 journey/qualified-and-active",
+        "VELDO-0139 genesis/owner-signed",
+        "VELDO-0139 qualification/one-request-across-restart",
+        "VELDO-0139 rollback/rerun",
+        "VELDO-0139 store/private-and-closed",
+        "VELDO-0139 host-trust/directory-checked",
+        "VELDO-0139 qualification/opening-retried"
+      ],
+      "exit_code": 1,
+      "diagnosis": "unavailable_service:profile:user_manager, same failures reported on base by reviewer"
+    },
+    {
+      "suite": "75_veldo_0062_accounts",
+      "total_passed": 49,
+      "total_failed": 0,
+      "elapsed_seconds": 32.29,
+      "failed_rows": [],
+      "exit_code": 2,
+      "diagnosis": "No failures"
+    },
+    {
+      "suite": "78_veldo_0160_account_pool",
+      "total_passed": 60,
+      "total_failed": 0,
+      "elapsed_seconds": 23.06,
+      "failed_rows": [],
+      "exit_code": 2,
+      "diagnosis": "No failures"
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "total_passed": 48,
+      "total_failed": 1,
+      "elapsed_seconds": 13.63,
+      "failed_rows": [
+        "VELDO-0165 evidence/completeness"
+      ],
+      "exit_code": 1,
+      "diagnosis": "Codex evidence/completeness, same row reported on base by reviewer"
+    },
+    {
+      "suite": "85_veldo_0171_setup_api",
+      "total_passed": 29,
+      "total_failed": 15,
+      "elapsed_seconds": 1.76,
+      "failed_rows": [
+        "VELDO-0171 tailscale/refusals",
+        "VELDO-0171 tailscale/serve-bg",
+        "VELDO-0171 api-edge/enrolled-by-owner",
+        "VELDO-0171 api/service-configuration",
+        "VELDO-0171 api/unit",
+        "VELDO-0171 rerun/changes-nothing",
+        "VELDO-0171 rerun/arguments-compared",
+        "VELDO-0171 rerun/differs-refused",
+        "VELDO-0171 api-edge/installed-api-call",
+        "VELDO-0171 api/loopback-only",
+        "VELDO-0171 passkey/first-enrollment",
+        "VELDO-0171 api/content-security-policy",
+        "VELDO-0171 api-edge/running-service",
+        "VELDO-0171 rerun/over-0139-host",
+        "VELDO-0171 api/start-rules"
+      ],
+      "exit_code": 1,
+      "diagnosis": "unavailable_service:profile:user_manager, same failures reported on base by reviewer"
+    }
+  ],
   "mutation_runner_run": false,
   "rows": {
     "capture/ava_memory": {
@@ -35,6 +116,30 @@
       "passed": true
     },
     "setup/five-parts": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/refused-unchanged": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/retry-rechecks": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/original-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/commit-before-check": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/venv-interpreter": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/system-interpreter": {
       "assertions": 1,
       "passed": true
     },
@@ -67,6 +172,30 @@
       "passed": true
     },
     "profile/real-paths": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/handoff-nested-link": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/handoff-code-link": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/real-routing": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/named-store-chroma-off": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/missing-not-lost": {
       "assertions": 1,
       "passed": true
     },
@@ -202,10 +331,6 @@
       "assertions": 1,
       "passed": true
     },
-    "check/search-required-claude_mem": {
-      "assertions": 1,
-      "passed": true
-    },
     "check/named-claude_mem": {
       "assertions": 1,
       "passed": true
@@ -223,6 +348,22 @@
       "passed": true
     },
     "copy/sqlite-online": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/moving-index-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/open-index-writer-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/quiescent-index": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/unavailable-not-lost": {
       "assertions": 1,
       "passed": true
     },
@@ -270,6 +411,14 @@
       "assertions": 1,
       "passed": true
     },
+    "integration/adapter-preflight-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/refused-outcome": {
+      "assertions": 1,
+      "passed": true
+    },
     "integration/fresh-setup": {
       "assertions": 1,
       "passed": true
@@ -288,6 +437,30 @@
     },
     "launch/register": {
       "assertions": 2,
+      "passed": true
+    },
+    "launch/reserved-config-claude": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/reserved-config-codex": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-codex": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-codex": {
+      "assertions": 1,
       "passed": true
     },
     "launch/acct-c1": {
@@ -326,5 +499,6 @@
       "assertions": 1,
       "passed": true
     }
-  }
+  },
+  "execution_note": "An early suite 78 invocation overlapped the end of suite 75 and was interrupted. The recorded suite 78 result is its subsequent standalone run. All other recorded suite invocations were sequential."
 }

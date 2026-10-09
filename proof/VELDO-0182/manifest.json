@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0182",
-  "commit": "ab7b777b6144260c3f58747233f92cba6df8160f",
+  "commit": "f0767b5b5d7a618abeb0e269eeb729a33ad167d8",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-09T02:12:08.366169+00:00",
+  "produced_at": "2026-10-09T03:30:23.377572+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -13,7 +13,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/105_veldo_0182_memory.py",
-          "detail": "Executable proving rows prepared for canonical verification: Owner signature, immutable revisions, fixed paths, missing graph database, two accounts per engine, identical locations and current revision, durable launch receipts. Counterexample: falsifier/account-derived. No aggregate unit-evidence pass is claimed."
+          "detail": "Executable proving rows prepared for canonical verification: Owner signature, immutable revisions, fixed paths, missing graph database, two accounts per engine, identical locations and current revision, durable launch receipts. Counterexample: falsifier/account-derived. No aggregate unit-evidence pass is claimed. Review repair rows: launch/reserved-config, launch/config-precedence, and falsifier/config-precedence for both engines include actual launches and durable receipts."
         },
         {
           "type": "integration",
@@ -29,7 +29,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/105_veldo_0182_memory.py",
-          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed."
+          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed. Review repair rows: profile/handoff-nested-link and profile/handoff-code-link reject profile aliases at handoff."
         },
         {
           "type": "integration",
@@ -45,7 +45,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/105_veldo_0182_memory.py",
-          "detail": "Executable proving rows prepared for canonical verification: Older-host addition, service-held authority lock, no setup writable handle, identical journal and files on rerun, differing manifest writes nothing. Counterexample: falsifier/rewrite-rerun. No aggregate unit-evidence pass is claimed."
+          "detail": "Executable proving rows prepared for canonical verification: Older-host addition, service-held authority lock, no setup writable handle, identical journal and files on rerun, differing manifest writes nothing. Counterexample: falsifier/rewrite-rerun. No aggregate unit-evidence pass is claimed. Review repair row: switch/original-setup accepts the original manifest after refusal."
         },
         {
           "type": "integration",
@@ -61,7 +61,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/105_veldo_0182_memory.py",
-          "detail": "Executable proving rows prepared for canonical verification: Every native-layout copy, SQLite WAL backup, sample size, fresh before count, unchanged-count loss for five stores, independent search failure and count loss, CLI check and revise. Counterexample: falsifier/copy for each part. No aggregate unit-evidence pass is claimed."
+          "detail": "Executable proving rows prepared for canonical verification: Every native-layout copy, SQLite WAL backup, sample size, fresh before count, unchanged-count loss for five stores, independent search failure and count loss, CLI check and revise. Counterexample: falsifier/copy for each part. No aggregate unit-evidence pass is claimed. Review repair rows: switch/refused-unchanged, switch/retry-rechecks, falsifier/commit-before-check, worker/real-routing, worker/named-store-chroma-off, worker/missing-not-lost, integration/adapter-preflight-no-writes, copy/open-index-writer-refused and copy/quiescent-index."
         },
         {
           "type": "integration",
@@ -80,14 +80,15 @@
     {
       "name": "integration",
       "status": "pending",
-      "detail": "The reviewer must run the canonical gate and affected regression suites. Live owner memory was not used."
+      "detail": "Canonical gate remains reserved to the reviewer. Scoped affected-suite diagnostics are separate and do not constitute passing proof. Live owner memory was not used."
     }
   ],
   "artifacts": [
     "proof/VELDO-0182/interface-contract.json",
     "proof/VELDO-0182/fixtures.py",
     "proof/VELDO-0182/capture_conformance.py",
-    "proof/VELDO-0182/integration_fixtures.py"
+    "proof/VELDO-0182/integration_fixtures.py",
+    "proof/VELDO-0182/worker_fixture.py"
   ],
   "rollback": "Stop handing memory to runs while retaining its record and all original bytes. No automatic memory rollback is authorized.",
   "review": "Pending independent review and owner approval. This manifest records the executable proof contract and capture provenance; it is not a gate stamp or landing approval."

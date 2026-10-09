@@ -157,3 +157,9 @@ copy/quiescent-index. The KB fixture raises if a check creates a
 collection. System interpreter ownership is represented as root in its focused
 row because this sandbox maps the system filesystem owner to uid 65534; that uid
 is never accepted by production validation.
+
+The repair diagnostics report 101 passing specification rows in suite 105.
+Suites 75 and 78 have no failures. Suites 73 and 85 retain the reviewer-reported
+user-manager refusals (16 and 15 rows), and suite 82 retains its single Codex
+evidence/completeness failure. These scoped runs are diagnostics, not aggregate
+verification. The gate and mutation runner remain reserved to the reviewer.
