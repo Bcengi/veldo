@@ -215,6 +215,14 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
 
+2026-10-09, build on veldo-0185 from 244784bc, on the host: the user manager answers there, so the
+installed-host fixture qualifies the worker profile and the 2026-10-08 blocker no longer holds; its record
+and preflight file are replaced by the proof in proof/VELDO-0185/README.md. Setup lays the dispatch
+configuration down, suite 106 proves AC1 to AC4, and every declared falsifier was executed on the host
+(two fail their row by another mechanism than the criterion text names; both are recorded there).
+Criteria and ready status are unchanged. The VELDO-0127 live captures bind modules this change edits and
+need the lead's recapture.
+
 2026-10-08, preflight on agent/codex/veldo-0185 at 294e1933: the owner revision
 and reservation policy prerequisites are present. The installed-host fixture
 cannot pass the existing containment qualification in this execution environment:

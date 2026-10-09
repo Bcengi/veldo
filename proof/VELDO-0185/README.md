@@ -1,123 +1,173 @@
-# VELDO-0185 current build blocker
+# VELDO-0185 builder evidence
 
-2026-10-08, branch agent/codex/veldo-0185 at 294e1933. The earlier
-owner revision and reservation policy prerequisites are present. This attempt
-stopped at host qualification, before its new dispatch setup steps could run.
-No implementation or acceptance proof is claimed.
+Built on branch veldo-0185 from 244784bc (main at 294e1933 plus the earlier
+blocker record), in a plain worktree on the host, where the user manager
+answers and the installed-host fixture qualifies the worker profile. This
+record replaces the 2026-10-08 host-qualification blocker record and its
+preflight file: that blocker was the execution environment, and it does not
+hold here. Implementation commits: 0a66d3b9, 15a602bc, ef048899; evidence
+9abff9b2. No push, merge, real model, real login, real token or real account
+profile was used. Independent review and the canonical gate remain the
+owner session's.
 
-The installed-host fixture reused the real setup and installation machinery
-from VELDO-0171 and the generated CLI assets used by VELDO-0203. The first run
-of draft suite `106_veldo_0185_dispatch_setup` refused setup with
-`unavailable_service:profile:user_manager`. The unchanged
-`control_containment._host_problems` queries the user's systemd manager before
-setup writes the factory. The socket at `/run/user/1000/bus` exists, but a direct
-systemctl query returns `Failed to connect to bus: Operation not permitted`.
-Repeating the read-only query with explicit runtime-directory and bus-address
-environment variables returns the same error.
+## The criteria, operationally
 
-The machine-readable [preflight record](host-preflight-2026-10-08.json) preserves
-the commands and selected failure output. The draft run reported 26 shared
-harness assertions passed and five failed checks. Four failures depended on
-the host qualification refusal. The fifth was a separate incorrect call to
-the fake-format observer in the incomplete test draft, not host evidence.
-The unverified production draft, suite and registrations were removed. No
-qualification bypass or replacement of the real host check was retained.
+* AC1. On a fresh host whose account registry names accounts, setup (with the
+  store's lock) activates `factory` owned by the owner if absent, saves one
+  capability configuration revision per required role and one default team
+  revision by owner-signed VELDO-0203 packets (nonce = command id), writes one
+  receiver adapter per registry engine (Claude Code: pinned version; Codex:
+  vendor binary) and a `veldo.factory_work/v1` configuration (builder from
+  `implementation`, reviewer from `independent_review`, ROLE_FIELDS), passing
+  both through the installer. Started, the service reports its loop
+  `available` and `configured` with no refusal. One engine in the registry puts
+  all four roles on it.
+* AC2. Setup enrolls `authority` and `launch-receiver` with
+  `reservation_service` by the owner's signed `enroll_principal`, under the
+  lock; every receiver configuration carries `state_root`, under which records,
+  runs and the pinned engine resolve; both principals reserve through the
+  reservation service.
+* AC3. A second run with the same arguments over a complete host answers
+  `already_set_up`, every file under the state root, install root and unit
+  directory is byte for byte the same, nothing is pinned or installed, the
+  journal head is unchanged. Over a host laid down by the engine before this
+  change, only these steps write; a receiver lacking or nulling `state_root`
+  gains it; any other difference is refused by name.
+* AC4. Setup registers each registry account the store lacks
+  (`register/<account>`, the registration fields, concurrency 1) after the
+  `authority` enrollment and before VELDO-0204's provisioning, runs each
+  account's own login status in its profile environment, names each failing
+  account with its login step and `missing_authority:account_login:<account>`,
+  and carries on. The receiver runs the same check before acceptance; a dispatch
+  on a logged-out account is refused before spawn and the Line offers the unit
+  on another account. Units submitted after setup are built and reviewed through
+  the installed service and receiver, every logged-in account running work, the
+  Codex account among them.
 
-Resume requires an authorized execution environment in which the existing
-installed-host fixture can query the systemd user manager. This is an execution
-environment blocker, not a finding that the specification is contradictory or
-that a new product prerequisite is missing. Suite 106 still needs to be built
-and registered when implementation resumes.
+## What changed
 
-The acceptance criteria remain unchanged and unproven:
+* `control_factory_setup_dispatch.py` (new, in the scaffold inventory): the
+  registry read (accounts.py, under the workspace's Git common directory or
+  VELDO_RUNS_ROOT, as `veldo account add` writes it), the team, adapters and work
+  configuration, the store steps through the installed engine's own writers
+  (`IN.open_ingress`, OwnerRevisions, Projects, Accounts, the provisioning), the
+  login checks, and the re-run's receiver repair.
+* `control_factory_setup.py`: the fresh steps `work_configuration`,
+  `reservation_principals`, `factory_project`, `default_team`,
+  `account_registration`, `reservation_policies` and `account_login`, all under
+  the lock and before the service starts; a re-run preflight (read only, before
+  any write) and additive steps; with the service running, the default team goes
+  to it over the socket, the policies are left to its next pass, and any other
+  missing store step is refused `invalid_input:state_root:service_running:<step>`.
+* `control_factory_setup_trust.py`, `control_factory_setup_records.py`: a
+  receiver holding `state_root` as null is no longer refused as differing; the
+  re-run adds it (also when the registry is empty).
+* `control_engine_claude.py`: `account_login` runs the qualified `login_status`
+  command (2.1.281: `auth status` with its JSON output) and requires `loggedIn`
+  true with `authMethod` `claude.ai`. The command, both fields and the exit codes
+  were read from the 2.1.281 bytes and its answers in an empty profile
+  (`extract_login_status.py`, `login-status.json`) and recorded in the
+  qualification record (both copies).
+* `control_engine_codex.py`: `account_login` reads `login status` exactly as
+  VELDO-0156's `login_problem`.
+* `control_launch.py`: for an adapter marked `account_login` (setup marks both
+  of its adapters), the receiver checks the account's own login first, before
+  acceptance, and refuses `missing_authority:account_login:<account>`.
+* `control_service.py`: a dispatch so refused is re-run on another account at
+  the next pass while an active account of the engine has not refused that
+  station of that unit; with none left the pass names
+  `missing_authority:account_login:none_left`.
 
-| Criterion | Operational proof still required | Required falsifier |
-| --- | --- | --- |
-| AC1 | Read four saved role configurations and the default team; verify both installed adapters and an available, configured loop. | Omit the installer's work option; loop configured must be false. |
-| AC2 | Reserve as authority and launch-receiver; launch through installed receivers with the shared state root. | Enroll both principals without reservation_service; reservations must be refused. |
-| AC3 | Compare all file bytes and the journal head after a second run; check additive upgrades and named differing-file refusals. | Repeat both enrollments; the changed journal head must fail the second-run row. |
-| AC4 | Register every host account, read its policy, refuse a logged-out account before spawn, and build and review through every logged-in account. | Omit Codex to fail every-account coverage; omit registration to fail fresh account read-back. |
+## Rows, falsifiers and what they showed
 
-Only the draft specification suite was run. No full selftest, mutation driver,
-canonical gate, real engine login, push or merge ran. There is no green gate
-stamp, proof manifest or independent review for this attempt. The spec remains
-ready; this record does not mark it shipped.
+Suite `106_veldo_0185_dispatch_setup` (registered in manifest.json with the
+`systemd_user_manager` resource, requires.json regenerated). Every falsifier
+is a registered case in `scripts/check_teeth_mutations.py` (finding 185);
+`drive.py` (its mutations mode) executed all 13 with the driver's own worker, the
+baseline passing every row first (`mutations.json`, one diff per case).
 
-## Historical signed-command blocker
+| Criterion | Proving rows | Declared falsifier (case) | Observed |
+| --- | --- | --- | --- |
+| AC1 | fresh/team, fresh/adapters, fresh/one-engine, loop/configured | install without `work` (v185-work-not-installed) | loop/configured false: `available` False, `configured` False |
+| AC2 | reservation/principals, reservation/state-root | enroll both without the role (v185-principals-without-role) | reservation/principals false: neither principal holds the role |
+| AC3 | rerun/changes-nothing, rerun/over-earlier-host | send both enrollments every run (v185-enrollments-every-run) | rerun/changes-nothing false, see below |
+| AC4 | fresh/registered, login/named, login/receiver-refuses, every-account | adapters without `codex` (v185-adapters-without-codex); registration left out (v185-registration-left-out) | every-account false, see below; fresh/registered false on the missing store records |
 
+The further cases each make their named row false: the receiver skipping the
+login check, the Line stranding a refused unit, setup reading every login as
+good, a re-run not recording `work`, a team saved again, the null state root
+refused by the trust or the records step, and the scaffold missing the module.
 
-Preflight on f63d86e5f596da178d5c43aaf8d258eec674c498, branch
-build-veldo-0185b. This records a dependency gap, not implementation evidence.
+Two declared falsifiers fail their row by a different mechanism than the
+criterion text predicts. The criteria are unchanged; this is what was observed:
 
-The earlier attempt's missing revision writers have landed. The remaining AC1
-gap is their authenticated entry point for fresh factory setup, which has the
-owner's SSH key but no enrolled passkey or API session yet.
+* AC3: a re-sent `enroll_principal` of an enrolled principal is refused by the
+  store (`transition_refused`, reported
+  `setup_incomplete:reservation_principals:store_refused`), so the second run is
+  refused and rerun/changes-nothing fails on its `already_set_up` assertion; the
+  store cannot record a second enrollment, so the journal head does not move.
+* AC4: without a `codex` adapter the installer's own check refuses the work
+  configuration whose reviewer runs on Codex
+  (`setup_incomplete:work_configuration:invalid_input:work:role:adapter`), so no
+  account runs, the Codex account included, and every-account fails on that.
 
-The actual VELDO-0162 interfaces are:
+`red-at-244784bc.json`: the current suite against an unchanged archive of the
+pre-change tree; every behavior row is false by assertion.
 
-- `control_agent_config.Configurations.save`: writes immutable capability
-  revisions through `save_agent_configuration`, checking the principal's
-  authority. It accepts a principal, definition, base and command identity,
-  but no owner command signature.
-- `control_team_routes.TeamRoutes.save_default`: writes immutable default
-  revisions through `save_default_team_revision`, checking the factory owner,
-  roster, capabilities and base. It accepts an assertion digest, but no owner
-  command signature. `read_default` provides the required revision read-back.
-- `control_api_authority.ApiAuthority._apply`: the authenticated production route
-  to those writers verifies an API-edge signature and requires a current
-  credential through `control_api_credentials.current`. The HTTP edge builds
-  that assertion from the owner's authenticated session. An owner SSH signature
-  cannot substitute for the API-edge signature or the passkey credential.
+## Interpretations recorded for the reviewer
 
-These observations come from the checked-in production code, not a failing
-fixture or a missing method-name guess. The relevant boundaries are
-`control_agent_config.py:165`, `control_team_routes.py:179`,
-`control_api_authority.py:342`, and `control_api.py:752`, with byte-identical
-engine counterparts.
+* A registry that names no account means nothing to dispatch to: setup lays
+  none of the dispatch configuration down and answers a `dispatch` step
+  `deferred` naming what to do; a later run adds it (AC3's path). This keeps the
+  hosts every earlier setup suite lays down unchanged.
+* A receiver's `adapters` held empty (what every earlier setup wrote) is
+  treated as absent and filled; differing non-empty adapters are refused by name.
+* The adapter mark `account_login` scopes the new receiver check to adapters
+  setup writes; adapters written otherwise keep their existing checks (Codex's
+  `login_problem` already refuses a missing login). An account using a
+  configured subscription token logs in with it and is not checked this way.
+* The starting grants: Claude Code roles get Read, Glob, Grep and Bash (plus
+  Edit and Write except the reviewer); Codex roles get shell and update_plan
+  (plus apply_patch except the reviewer) and the lowest-priority listed,
+  non-code-mode model of the qualified catalog (gpt-5.5 in the shipped record);
+  each role's budget is capacity 1, 20 invocations, 3600 seconds; the factory
+  project's is capacity 4, 400 invocations, 7 days. The owner changes them in
+  the role form.
+* Observability: setup's answer records each step with its paths, saved
+  revisions, enrolled principals, registered accounts, configured policies and
+  every account's login; per-dispatch engine and account stay in the dispatch
+  records and the loop's pass records (VELDO-0154); no new log line was added.
 
-Neither of setup's existing signed-command paths fills this gap:
+## What ran
 
-- `control_factory_setup.py:420` sends the owner's signed envelope through
-  `control_membership.admit`. Its `ADMIN_OPERATIONS` contains only membership
-  and delegation commands. A configuration or default-team operation is
-  refused as `policy_refused` before admission.
-- `control_service.Service.apply` routes API calls, MCP commands, enrollment,
-  channel, inbox and claim operations, then falls back to `mutate`.
-  `mutate` accepts only `MUTATIONS`, the store's generic command snapshot.
-  Neither revision operation is in that snapshot; it is refused as
-  `invalid_input:operation`. The revision writers register their transitions
-  on the connection, which does not expand that external command boundary.
+`scripts/selftest.py`, one suite selected each time, on the host, each foreground, green on the final
+tree: 106_veldo_0185_dispatch_setup (14 rows), 73_veldo_0139_factory_setup,
+85_veldo_0171_setup_api, 86_veldo_0186_setup_assets, 86_veldo_0189_engine_upgrade,
+87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records,
+95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies; earlier in the
+build, also green: 82_veldo_0172_live_formats, 83_veldo_0154_factory_loop,
+78_veldo_0060_claude_adapter, 78_veldo_0160_account_pool,
+80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline,
+82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record,
+82_veldo_0173_tool_registry, 85_veldo_0158_credential_delivery,
+75_veldo_0062_accounts, 83_veldo_0166_usage_windows, 91_veldo_0151_specialists,
+92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes,
+94_veldo_0162_configuration_routes, 24_veldo_0007_install_and_run,
+66_veldo_0047_authority, 62_veldo_0039_dispatch. Template sync passes.
 
-AC1 explicitly requires the owner's signed commands. Calling a writer with
-the owner's principal string or supplying an assertion digest does not meet
-that requirement. Generating an API credential or inventing an owner-signed
-command adapter here would supply the missing prerequisite rather than consume
-the promised interface. The user's instruction explicitly requires stopping
-when that interface is absent or unusable.
+Failing, and the same on the unchanged base 244784bc (run there too): 82_veldo_0165
+evidence/completeness, 86_veldo_0127 wire/no-server, 87_veldo_0127 (77 rows),
+88_veldo_0127 (24), 89_veldo_0127 (11), 90_veldo_0127 (1).
 
-Required prerequisite: an authenticated owner-key command entry point for both
-revision writers, usable before passkey enrollment, preserving their existing
-authorization, versioning and schema checks. A running-service use must also
-obey VELDO-0171's lock rule. Alternatively, the owner can explicitly assign
-that missing command integration to this specification.
+Newly failing, by design, until the lead recaptures: 86_veldo_0127 live/claude
+and live/codex. Their captures bind the digests of control_launch.py,
+control_engine_claude.py and control_engine_codex.py, which this change edits;
+`proof/VELDO-0127/live.py` is a lead-only subscription capture, not run here.
 
-No production files, VELDO-0167 files, acceptance criteria, status or protected
-paths changed. AC1 to AC4 remain unimplemented by this attempt. There is no
-behavior suite, red record or mutation rejection claim. No fake engine was
-added. No real engine, credential, external host or service manager was used.
+The repository's mutation stage cannot execute these cases on this host: its
+confined workers do not reach the user manager, so setup refuses
+`unavailable_service:profile:user_manager` in every baseline (a suite 87 case's
+baseline also fails there, its setup rows false). `drive.py` runs the same worker unconfined.
 
-Checks of this blocker-only change:
-
-- Suite `82_veldo_0172_live_formats` passes normally and in the specified empty
-  gate environment: four suite rows, 30 assertions including harness checks,
-  zero failures in each run. Its census lists the existing 16 producers; there
-  is no 0185 producer to qualify. These partial runs prove no 0185 criterion.
-- The supplied anchor checker reports 0 bad anchors. Git boundary passes.
-- The four cited production modules have identical engine counterparts.
-- The supplied footprint checker compares with local `origin/main` and reports
-  65 changed paths, 48 outside this spec, inherited from the supplied base.
-  The actual attempt's delta from f63d86e5 contains only this README and the
-  spec History entry, both inside the declared footprint. No footprint was
-  expanded to absorb inherited changes.
-- Repository validation of all records passes. The full selftest, mutation
-  runners and canonical gate were not run. No gate stamp is claimed.
+Not run: the full selftest, `scripts/verify.sh`, the canonical gate. No gate
+stamp, review or landing is claimed. The specification stays `ready`.
