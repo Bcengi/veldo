@@ -218,5 +218,26 @@
     }
   },
   "owner_processes": "The owner's claude-mem worker (pid 10845, started 2026-09-01), its two mcp-server.cjs and three chroma-mcp process pairs were listed before and after every run and were unchanged; no process carrying a check's private HOME remained.",
-  "incident": "During the first copy verification, a read-only count opened ~/projects/myday/knowledge_graph/knowledge_graph.db (WAL mode, held open by no one) with mode=ro&readonly_shm=1, and SQLite created an empty knowledge_graph.db-wal beside it (0 bytes, 2026-10-09 08:48:18 local). Nothing else was written. The file was left in place for the owner. The copy now reads such an idle database immutably (copy/idle-wal-no-sidecars), and every later traced run opened nothing under the stores for writing except SQLite's read-only connection opening the existing claude-mem.db-wal, through which nothing was written."
+  "incident": "During the first copy verification, a read-only count opened ~/projects/myday/knowledge_graph/knowledge_graph.db (WAL mode, held open by no one) with mode=ro&readonly_shm=1, and SQLite created an empty knowledge_graph.db-wal beside it (0 bytes, 2026-10-09 08:48:18 local). Nothing else was written. The file was left in place for the owner. The copy now reads such an idle database immutably (copy/idle-wal-no-sidecars), and every later traced run opened nothing under the stores for writing except SQLite's read-only connection opening the existing claude-mem.db-wal, through which nothing was written.",
+  "round_three": {
+    "implementation_commit": "f7353efdbc358023e2a9bc5941795198c8303d35",
+    "observed_at": "2026-10-09T15:40:00+00:00",
+    "how": "control_memory_check.check for claude_mem, before then after, from env -i with HOME, LANG and PATH only (no UV_ setting), against private copies under a scratch directory, while the owner's worker and chroma-mcp ran. Diagnostic, not gate evidence; not traced this round.",
+    "pins": "Read from the owner's running chroma-mcp environment in its uv cache: chroma-mcp==0.2.6, chromadb==1.5.9, pydantic<2.14; resolved into a uv cache inside the check's private home.",
+    "before": {
+      "outcome": "passed",
+      "count": 79550,
+      "sample_size": 20,
+      "seconds": 33.5
+    },
+    "after": {
+      "outcome": "passed",
+      "count": 79551,
+      "sample_size": 20,
+      "seconds": 248.5
+    },
+    "owner_uv_cache_entries_changed": 0,
+    "link_rule": "links_inside over the four data locations (ava_memory data, knowledge_graph.db, memory_kb data/chromadb, ~/.claude-mem): accepted, none holds a link; the code trees are not listed.",
+    "indexed_layout": "The copy's Chroma names each claude-mem document by embedding_metadata sqlite_id (int_value) and doc_type (string_value), the layout the bounded backfill wait reads."
+  }
 }

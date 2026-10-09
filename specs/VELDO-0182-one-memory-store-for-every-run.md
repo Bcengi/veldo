@@ -253,3 +253,14 @@ transition and handoff alike; a re-run that will write the memory step runs setu
 check metric counts check refusals only; handoff refuses a record made for another host. Rows,
 falsifiers and read-only runs against the owner's real stores are in proof/VELDO-0182, Round 2. The
 ready status and acceptance-criterion text are unchanged.
+
+2026-10-09, third review repairs (review of round 2), decisions given in the fix brief: a link inside a
+store is accepted only while its resolved target stays inside the same store, refused otherwise in
+setup, revise, the signed transition and handoff alike, with only link targets compared and code trees
+never listed; this replaces round 2's "a link inside a location is the store's own". Setup and revise
+refuse a manifest for another host with handoff's refusal. The claude-mem check pins its own chroma-mcp
+resolution in a uv cache of its own and names the cause when chroma-mcp cannot start; it uses its
+worker's port only once the listener is proven its own; its backfill wait is bounded by observable state.
+The Chroma copy's ordering argument was verified against chromadb 1.5.9's Rust writer, with copies
+checked through the HNSW index. Rows, falsifiers and a read-only real store run are in
+proof/VELDO-0182, Round 3. The ready status and acceptance-criterion text are unchanged.

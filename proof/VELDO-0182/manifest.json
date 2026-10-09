@@ -29,7 +29,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/105_veldo_0182_memory.py",
-          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed. Second review: profile/no-walk compares profiles by real path without walking a location; link/location-same-everywhere and link/nested-same-everywhere apply the specification's \"not a link\" alike in setup, revise, the signed transition and handoff."
+          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed. Second review: profile/no-walk compares profiles by real path without walking a location; link/location-same-everywhere applies the specification's \"not a link\" alike in setup, revise, the signed transition and handoff. Third review: link/nested-same-everywhere refuses a link inside a store whose target leads out of it, in all four alike, and link/inside-accepted keeps one that stays inside."
         },
         {
           "type": "integration",

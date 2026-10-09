@@ -63,9 +63,13 @@ Add the memory option to factory setup, naming a JSON manifest with these fields
 ```
 
 Use absolute, existing, owned code and data paths; a location is not a link, nor
-is any directory above it. A link inside a location is the store's own: it is
-copied as a link and never followed. The same rule applies in setup, revise, the
-signed transition and handoff, all through one normalization. Interpreter
+is any directory above it. A link inside a store's data is the store's own only
+while its resolved target stays inside that store; one leading anywhere else (a
+profile, live data) is refused. Only data locations are listed for links, never
+code trees. An inside link is copied as a link and never followed. The same rule
+applies in setup, revise, the signed transition and handoff, all through one
+normalization. Setup and revise refuse a manifest whose host is not the host
+running them, as handoff does. Interpreter
 paths may use venv or system symlinks; their resolved executable must belong to
 the owner or root and must not be group or world writable. The invocation path
 is preserved so Python still discovers its venv. A launch is handed memory only
@@ -119,7 +123,7 @@ and is retried otherwise. WAL, shared memory and log files are never stamped.
 | Criterion | Proving rows in suite 105 | Executed falsifier |
 | --- | --- | --- |
 | AC1 | setup/five-parts, record/owner-signature, record/revise, integration/fresh-setup, setup/missing-database, launch/same-on-every-account, launch/current-revision, launch/durable-receipt | falsifier/account-derived changes the scratch receiver to derive file memory from each account profile. Two real Codex turns receive different locations, violating the same-location assertion. |
-| AC2 | profile/setup-refused, profile/later-registration, profile/real-paths, profile/memory-inside-accepted, profile/no-walk, link/location-same-everywhere, link/nested-same-everywhere | falsifier/setup-only removes the registration-time check. The forbidden profile registers, violating the no-registration assertion. |
+| AC2 | profile/setup-refused, profile/later-registration, profile/real-paths, profile/memory-inside-accepted, profile/no-walk, link/location-same-everywhere, link/nested-same-everywhere, link/inside-accepted (Round 3) | falsifier/setup-only removes the registration-time check. The forbidden profile registers, violating the no-registration assertion. |
 | AC3 | setup/idempotent, integration/setup-repeat, integration/identical-files, integration/service-lock, integration/differs-no-writes | falsifier/rewrite-rerun always writes the otherwise identical record. The journal advances, violating the unchanged-head assertion. |
 | AC4 | check/loss for each part, check/search-required for each server, check/count-drop, check/twenty, check/copy-once for each part, worker/* (Round 2), copy/* (Round 2), integration/check-cli, integration/revise-cli | falsifier/copy for each part checks the unchanged safety copy after deleting a sampled live id and adding another. It wrongly passes, violating the loss-refusal assertion. |
 
@@ -255,9 +259,62 @@ holding pydantic<2.14. Without such a constraint the check refuses
 unavailable_service:memory:claude_mem:adapter, as claude-mem's own search is
 unavailable; the owner's claude-mem meets the same failure at its next restart.
 
+## Round 3: third review repairs
+
+The third review (round 2) found nothing blocking and named six items, with the
+decisions made. Each repair, its rows in suite 105 and the mutation of the
+shipped module that turns them red (local-results.json, round_three_falsifiers)
+are below. Each item also has an in-suite falsifier row.
+
+| Item | Repair | Rows | Mutation that fails them |
+| --- | --- | --- | --- |
+| 1 | A link inside a store is accepted only while its target stays in that store, in setup, revise, the signed transition and handoff; the safety copy keeps inside links; the Chroma copy keeps an inside link inside the copy and refuses one leading out | link/nested-same-everywhere (now a refusal), link/inside-accepted, link/safety-copy-keeps-links, copy/chroma-link-outside-refused, copy/chroma-link-inside-kept; falsifier/link-outside-accepted, falsifier/chroma-link-followed | no link target check; the Chroma copy follows links |
+| 2 | Setup and revise refuse a manifest for another host with handoff's refusal, invalid_input:memory:host:differs | host/setup-revise-differs, integration/host-differs-no-writes; falsifier/host-unchecked | no host check at setup |
+| 3 | The adapter pins its own chroma-mcp resolution (chroma-mcp and chromadb as the owner's running chroma-mcp has them, read from its uv cache; pydantic<2.14) in a uv cache inside the check's private home, resolves it before the worker starts, and names the cause | worker/own-resolution, worker/chroma-mcp-cause-named; falsifier/caller-pins-only | the caller's UV_ settings only: the unit section stops at the first claude-mem probe and every setup integration row fails |
+| 4 | The Rust writer's ordering verified; the stamp argument holds, recorded in copy_chroma | chroma_rust_copy.py, chroma-rust-copy-results.json | its own falsifier, below |
+| 5 | The worker's port is used only once every socket listening on it is held by a process carrying the check's private HOME | worker/port-listener-verified; falsifier/port-unverified | no listener check |
+| 6 | The backfill wait ends on observable state and is refused by name | worker/backfill-bounded; falsifier/backfill-silent | a stall passes silently |
+
+Item 4. chromadb 1.5.9's Rust local HNSW writer (rust/segment/src/local_hnsw.rs,
+apply_log_chunk, from the 1.5.9 source) writes header.bin, data_level0.bin,
+length.bin and link_lists.bin in place with write(2), never mmap or rename, then
+truncates and rewrites index_metadata.pickle, and only then records the persisted
+sequence in SQLite's max_seq_id table. rust/log/src/sqlite_log.rs purges the log
+after that, never past the lowest persisted sequence, and on open the writer
+replays the log above it. An strace of a scratch writer showed that order. So a
+SQLite copy taken after unchanged index files never claims a sequence those
+files lack. The evidence covers the index itself: chroma_rust_copy.py runs a
+chromadb 1.5.9 writer persisting every 20 adds in bursts while copy_chroma copies
+25 times. In each copy every id its SQLite holds is its own nearest neighbour
+through the HNSW index (33 to 322 ids, 1 to 3 attempts). The falsifier copies the
+index files, waits for the next persist and backs up SQLite unchecked: 20 ids go
+missing from the index each time (chroma-rust-copy-results.json).
+
+Item 6. claude-mem 10.6.2 backfills after paging every id its Chroma holds,
+which took minutes on the owner's store with no writes and no log line, so a
+short fixed timeout would refuse the owner's real check. The wait ends as soon as
+the missed memory's own document is in the copy's Chroma (its embedding_metadata
+sqlite_id and doc_type), or claude-mem logs the backfill's end. It is refused by
+name when the backfill failed, the worker stopped, or the check's own processes
+used under one CPU second in 60 s.
+
+Real store, read only (real-store-results.json, round_three): from env -i with
+HOME, LANG and PATH only, no UV_ setting, claude-mem before passed in 33.5 s
+(79550 memories) and after in 248.5 s. The pins were read from the owner's
+running chroma-mcp (0.2.6, chromadb 1.5.9), and nothing in the owner's uv cache
+changed. The link rule accepts the four real data locations, which hold no link.
+
 ### Suites
 
-Suites 105 (111 rows), 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api,
+Round 3: suite 105 (127 rows) and 85_veldo_0158_credential_delivery,
+85_veldo_0171_setup_api, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry
+(Claude Code 2.1.281 installed again), 73_veldo_0139_factory_setup,
+91_veldo_0167_setup_records, 75_veldo_0062_accounts, 82_veldo_0141_execution_record,
+82_veldo_0129_worker_wiring, 78_veldo_0160_account_pool, 87_veldo_0170_receiver_trust,
+86_veldo_0186_setup_assets and 95_veldo_0203_owner_revisions pass, one at a time in
+the foreground. Template sync passes. The gate was not run.
+
+Round 2: suites 105 (111 rows), 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api,
 82_veldo_0141_execution_record, 82_veldo_0129_worker_wiring and every other suite
 that loads a changed module pass, one at a time in the foreground. Suite
 91_veldo_0167_setup_records failed 8 rows on 78ca3687 because the receiver had no
