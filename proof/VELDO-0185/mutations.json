@@ -3,7 +3,7 @@
  "baseline": {
   "all_passed": true,
   "rows": 14,
-  "seconds": 10.924
+  "seconds": 11.027
  },
  "mutations": [
   {
@@ -20,7 +20,7 @@
     "reservation/principals"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "eb82690ac5cda98616b82a85813bb4a84e98be7233e2340b7d0b7337d542484f",
+   "mutant_sha256": "2856e6ae4ee3e8e04836dcffa9fb04cbfd7f1c020291fc67347fde51bc141dc3",
    "name": "v185-work-not-installed",
    "named_row_details": {
     "loop/configured": "the running service's loop is available and configured, with no refusal [{'available': False, 'configured': False, 'refusal': None}]"
@@ -28,8 +28,8 @@
    "named_rows": [
     "loop/configured"
    ],
-   "seconds": 36.959,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 6.942,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -44,7 +44,7 @@
     "reservation/principals"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "0553ebca3b477c546c631398fb4f6787d2ef0ee6c37284eb05c4fb5a307d677e",
+   "mutant_sha256": "1e949243c292831db45b5a223811553b164f08027a592180763af691099859ea",
    "name": "v185-principals-without-role",
    "named_row_details": {
     "reservation/principals": "authority holds reservation_service, enrolled by the owner's signed command [[]]"
@@ -52,8 +52,8 @@
    "named_rows": [
     "reservation/principals"
    ],
-   "seconds": 37.012,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 36.994,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -64,7 +64,7 @@
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "b22b0548a380fc06bb114948fa2652357a41ca4876cdb8218f98759bd3811934",
+   "mutant_sha256": "2151c172982829a030272b55f0c87eae68fe61ad4b16b8fe4d67aaf5935059dc",
    "name": "v185-enrollments-every-run",
    "named_row_details": {
     "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:reservation_principals:store_refused []]"
@@ -72,8 +72,8 @@
    "named_rows": [
     "rerun/changes-nothing"
    ],
-   "seconds": 10.952,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 10.941,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -94,7 +94,7 @@
     "reservation/state-root"
    ],
    "module": ".veldo/control_factory_setup_dispatch.py",
-   "mutant_sha256": "23f3e2552315285c11d06e42efe1c803825d61de8b7ca47ea370204286615142",
+   "mutant_sha256": "74bba31060341654eaadaef2310d01e3cdbca03f18384bffac2c31cea86dc828",
    "name": "v185-adapters-without-codex",
    "named_row_details": {
     "every-account": "setup laid the owner's host down [refused setup_incomplete:work_configuration:invalid_input:work:role:adapter]"
@@ -102,8 +102,8 @@
    "named_rows": [
     "every-account"
    ],
-   "seconds": 1.882,
-   "source_sha256": "c94f1f4b34621fc9cece0e331696bab1f2de98ecec7823413b54c10f40ce253f"
+   "seconds": 1.885,
+   "source_sha256": "d3189288888874628c433de96d3ebfdfbac58843cb2529ba08b8abc809a93238"
   },
   {
    "detected": true,
@@ -120,7 +120,7 @@
     "reservation/principals"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "dc8f312f45bc0b058eab9db2ff30558f9fb5f4ef6c999a3773a05a86366cf97e",
+   "mutant_sha256": "65f6695b8b33c04a2d950f59c4f69d12c11a7ab35cb6a8b9d1e8a43bf4ce0bb0",
    "name": "v185-registration-left-out",
    "named_row_details": {
     "fresh/registered": "claude-a: one store record with the fields registration prints [{'provider': None, 'label': None, 'concurrency': None}]"
@@ -128,8 +128,8 @@
    "named_rows": [
     "fresh/registered"
    ],
-   "seconds": 36.549,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 36.467,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -147,7 +147,7 @@
    "named_rows": [
     "login/receiver-refuses"
    ],
-   "seconds": 10.951,
+   "seconds": 10.957,
    "source_sha256": "dd47167f7f0cf1583ffeb41ca89d08225271fb8141da831bb2eb1abc44f87a1d"
   },
   {
@@ -169,7 +169,7 @@
     "login/receiver-refuses",
     "every-account"
    ],
-   "seconds": 39.969,
+   "seconds": 39.968,
    "source_sha256": "44a568f2c51aff737e3f0145b100c91c3bf50eb2c7ff93892c461e1c84dd68df"
   },
   {
@@ -181,7 +181,7 @@
     "rerun/changes-nothing"
    ],
    "module": ".veldo/control_factory_setup_dispatch.py",
-   "mutant_sha256": "9446654e7194f4aac038357baf2623717b7bb7e4fc2dc390906d753d040cdec2",
+   "mutant_sha256": "ed5dd88d1f158d610ff40af6e38f288caf35d53966a9d6e3209451bd4f1cbbaa",
    "name": "v185-setup-login-unchecked",
    "named_row_details": {
     "login/named": "setup checked every account's own login [{'claude-a': ('logged_in', None), 'claude-b': ('logged_in', None), 'claude-c': ('logged_in', None), 'codex-a': ('logged_in', None)}]"
@@ -189,8 +189,8 @@
    "named_rows": [
     "login/named"
    ],
-   "seconds": 11.011,
-   "source_sha256": "c94f1f4b34621fc9cece0e331696bab1f2de98ecec7823413b54c10f40ce253f"
+   "seconds": 10.934,
+   "source_sha256": "d3189288888874628c433de96d3ebfdfbac58843cb2529ba08b8abc809a93238"
   },
   {
    "detected": true,
@@ -200,16 +200,16 @@
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "c2d5b3e72d2b3387d5f8ff504a8fbffd1dfbb35398432784be3ee4ac70360465",
+   "mutant_sha256": "78371fac9d6bc75dfd4d259df26d57176947e732f2e7caf8d92bb5388edf0964",
    "name": "v185-rerun-work-not-recorded",
    "named_row_details": {
-    "rerun/over-earlier-host": "the installation gained its work configuration, the receiver its adapters and the state root it held as null [[{'keys': ['adapters', 'state_root'], 'path': '/dev/shm/b171-7gt3dcmh/install-earlier/36e207404c556a67/config/receiver-c70ce4d353d095dd.json'}]]"
+    "rerun/over-earlier-host": "the installation gained its work configuration, the receiver its adapters and the state root it held as null [[{'keys': ['adapters', 'state_root'], 'path': '/dev/shm/b171-3r9es9v1/install-earlier/63ff31f64e89f570/config/receiver-71f73a391027ff07.json'}]]"
    },
    "named_rows": [
     "rerun/over-earlier-host"
    ],
-   "seconds": 10.925,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 10.942,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -220,7 +220,7 @@
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "2061cab54365c8a1468298d78ecb1bc9ee970e1c05d2e255e7570e8366006253",
+   "mutant_sha256": "d976a7a51b4edc4e79a7fdf052d336a15565735689fe7b62aa9f66398e45fba4",
    "name": "v185-team-saved-again",
    "named_row_details": {
     "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:default_team:stale_version:default_team []]"
@@ -228,8 +228,8 @@
    "named_rows": [
     "rerun/changes-nothing"
    ],
-   "seconds": 10.973,
-   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+   "seconds": 10.954,
+   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
   },
   {
    "detected": true,
@@ -242,13 +242,32 @@
    "mutant_sha256": "39c0058e969ef8e42089c6fd2b3bb7b61a85c6f0ebb9c3150776d274997ef245",
    "name": "v185-null-state-root-refused",
    "named_row_details": {
-    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-d27an66f/install-earlier/c7d87fcd8571867d/config/receiver-cd8694d3942c809f.json []]"
+    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-puxj86mr/install-earlier/f6c9524ef5dfa47e/config/receiver-cb24637ecf8621ed.json []]"
    },
    "named_rows": [
     "rerun/over-earlier-host"
    ],
-   "seconds": 10.437,
+   "seconds": 10.423,
    "source_sha256": "7b6935d58eb17b5a1c7bd1b91c5a4d0563517fc3cb2c45429ff1808e48cc38bf"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-records-null-refused.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "eb35f2eb5dbf21e0feb4d197030336464c4708315fa3d671895228ac0c5070b4",
+   "name": "v185-records-null-refused",
+   "named_row_details": {
+    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-n5pi7sj0/install-earlier/73bb26eff4eb2461/config/receiver-1372301c0933c42c.json []]"
+   },
+   "named_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "seconds": 10.44,
+   "source_sha256": "08fadd0c15facb049a6522bf90641d587193d05dd77e1473b905e13797f64478"
   },
   {
    "detected": true,
@@ -266,7 +285,7 @@
    "named_rows": [
     "install/asset"
    ],
-   "seconds": 10.972,
+   "seconds": 10.965,
    "source_sha256": "27b5bc0811f9655da2a5635c01175e1f5ad25bc09bc22c17abdf7ef037eedfdd"
   }
  ],

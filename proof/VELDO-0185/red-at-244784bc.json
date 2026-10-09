@@ -31,7 +31,7 @@
   "VELDO-0185 rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [already_set_up None [('api_edge_enrollment', 'already_done'), ('api_edge_key', 'already_done'), ('api_process_configuration', 'already_done'), ('api_service_configuration', 'already_done'), ('api_service_install', '",
   "VELDO-0185 rerun/over-earlier-host": "the engine of 294e1933 is in history",
   "VELDO-0185 reservation/principals": "authority holds reservation_service, enrolled by the owner's signed command [None]",
-  "VELDO-0185 reservation/state-root": "the receiver carries the state root, and its records, runs and pinned engine resolve under it [/dev/shm/b171-hzdlhc_h/state-main]"
+  "VELDO-0185 reservation/state-root": "the receiver carries the state root, and its records, runs and pinned engine resolve under it [/dev/shm/b171-557cc13r/state-main]"
  },
  "failed_rows": [
   "VELDO-0185 fresh/team",
@@ -108,7 +108,7 @@
   ]
  ],
  "schema": "veldo.proof-red/v1",
- "seconds": 3.8,
+ "seconds": 3.818,
  "spec_id": "VELDO-0185",
  "suite": "scripts/suites/106_veldo_0185_dispatch_setup.py",
  "tree": "unchanged git archive of the pre-change commit"
