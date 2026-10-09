@@ -9732,7 +9732,8 @@ def cases():
         "model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']}",
         "model_tool_modes={}", ['review/codex-mode'])
     add(127, 'role127-model-baseline-unchecked', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
-        "    if record.get('model_tool_modes') != MODEL_TOOL_MODES:", "    if False:", ['review/codex-mode'])
+        "    if record.get('model_tool_modes') != QUALIFIED_MODEL_TOOL_MODES.get(record.get('version')):", "    if False:",
+        ['review/codex-mode'])
     add(127, 'role127-code-mode-refusal-bypassed', '86_veldo_0127_agent_configuration.py', 'control_agent_config_handoff.py',
         "        raise Refused('configuration_stop:codex_code_mode_model')", "        return None", ['review/codex-mode'])
     add(127, 'role127-lead-model-mode-ignored', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',

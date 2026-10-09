@@ -12,7 +12,10 @@ executed, no model runs, nothing logs in and no profile, credential or configura
     python3 -B proof/VELDO-0061/extract_items.py --check [--codex PATH]   # exit 1 when it moved
 
 The anchors are the exact text of Codex 0.154.0's exec literals. A version that moved one fails by name
-rather than yielding a guessed table.
+rather than yielding a guessed table. Codex 0.162.0 has its own reviewed anchors (VERSIONS), read from its
+bytes: its binary keeps none of exec's event struct names, so each run is anchored by its literal neighbours.
+
+    python3 -B proof/VELDO-0061/extract_items.py --codex PATH --output proof/VELDO-0061/codex-exec-0.162.0.json
 
 WHAT THE BYTES SHOW AND WHAT THEY DO NOT. A Rust binary keeps each literal once, so a long name that only
 exec uses sits in exec's own run and a short common one (`text`, `tool`, `path`, `kind`) is merged with the
@@ -74,6 +77,33 @@ FIELDS = {
 }
 UNBOUND = ['text', 'tool', 'path', 'kind', 'command', 'sender_thread_id', 'error']
 
+# Codex 0.162.0: the same kinds, statuses, change kinds, agent states and collab tools. Its exec run now holds
+# `command` between the status values and `aggregated_output` (the command item's own field, no longer merged
+# elsewhere), `results` after the web search's `action`, and `result` beside `id` at the head of exec's run. That
+# head also holds `model` and `HighRiskCyberActivity`, whose item the strings do not name: they are listed as
+# `unplaced` and no fake prints them.
+RUNS_0162 = dict(RUNS,
+    collab=(b'', b'collab_tool_call', b'reasoning effortturn interrupted'),
+    collab_fields=(b'default', b'receiver_thread_idspromptagents_statesstatus', b'thread_idusage'),
+    command=(b'usagein_progresscompletedfailed', b'commandaggregated_outputexit_codemessage', b'content_meta'),
+    status=(b'thread_idusage', b'in_progresscompletedfailed', b'commandaggregated_output'),
+    id=(b'HighRiskCyberActivity', b'idresult', b'modeldefaultreceiver_thread_ids'),
+    fields=(b'item.completederror', b'itemsqueryactionresultschangesserverarguments', b'adddeleteupdate'),
+    change_kinds=(b'serverarguments', b'adddeleteupdate', b'pending_init'),
+    agent_states=(b'adddeleteupdate', b'pending_initrunninginterruptederrorednot_found', b'agent_message'),
+    collab_tools=(b'reasoning_output_tokens', b'spawn_agentsend_inputclose_agent', b'ThreadEvent'))
+VERSIONS = {
+    '0.154.0': {'runs': RUNS, 'fields': FIELDS, 'unbound': UNBOUND,
+                'pieces': {'fields': ['items', 'query', 'action', 'changes', 'server', 'arguments', 'result'],
+                           'command': ['aggregated_output', 'exit_code', 'message'], 'id': ['id']}},
+    '0.162.0': {'runs': RUNS_0162,
+                'fields': dict(FIELDS, command_execution=['command', 'aggregated_output', 'exit_code', 'status'],
+                               web_search=['query', 'action', 'results']),
+                'unbound': [n for n in UNBOUND if n != 'command'], 'unplaced': ['model', 'HighRiskCyberActivity'],
+                'pieces': {'fields': ['items', 'query', 'action', 'results', 'changes', 'server', 'arguments'],
+                           'command': ['command', 'aggregated_output', 'exit_code', 'message'], 'id': ['id', 'result']}},
+}
+
 
 def _pieces(run, names):
     """`names` in the order they are packed in `run`, which must be exactly their concatenation."""
@@ -82,8 +112,12 @@ def _pieces(run, names):
     return names
 
 
-def items(path):
+def items(path, version='0.154.0'):
     raw = Path(path).read_bytes()
+    if version not in VERSIONS:
+        raise FORMATS.Moved('codex %s: no reviewed exec item anchors for this version' % version)
+    spec = VERSIONS[version]
+    RUNS, FIELDS = spec['runs'], spec['fields']
     offsets = {}
     for name, (before, run, after) in RUNS.items():
         at = raw.find(before + run + after)
@@ -93,10 +127,10 @@ def items(path):
     kinds = _pieces(RUNS['kinds'][1], KINDS[:7]) + _pieces(RUNS['collab'][1], ['collab_tool_call'])
     status = _pieces(RUNS['status'][1], ['in_progress', 'completed', 'failed'])
     change = _pieces(RUNS['change_kinds'][1], ['add', 'delete', 'update'])
-    found = set(_pieces(RUNS['fields'][1], ['items', 'query', 'action', 'changes', 'server', 'arguments', 'result'])
-                + _pieces(RUNS['command'][1], ['aggregated_output', 'exit_code', 'message'])
+    found = set(_pieces(RUNS['fields'][1], spec['pieces']['fields'])
+                + _pieces(RUNS['command'][1], spec['pieces']['command'])
                 + _pieces(RUNS['collab_fields'][1], ['receiver_thread_ids', 'prompt', 'agents_states', 'status'])
-                + _pieces(RUNS['id'][1], ['id']))
+                + _pieces(RUNS['id'][1], spec['pieces']['id']))
     for kind, fields in FIELDS.items():
         missing = [f for f in fields if f not in found]
         if missing:
@@ -105,12 +139,13 @@ def items(path):
         {'id': {'type': 'string'}, 'type': {'type': 'literal', 'value': kind}},
         **{f: ({'type': 'enum', 'values': status, 'optional': True} if f == 'status' else {'type': 'any', 'optional': True})
            for f in FIELDS[kind]})} for kind in kinds + ['error']}
-    return {'kinds': kinds + ['error'], 'items': table, 'status': status, 'change_kinds': change,
+    extra = {'unplaced': spec['unplaced']} if 'unplaced' in spec else {}
+    return dict(extra, **{'kinds': kinds + ['error'], 'items': table, 'status': status, 'change_kinds': change,
             'agent_states': _pieces(RUNS['agent_states'][1], ['pending_init', 'running', 'interrupted', 'errored', 'not_found']),
             'collab_tools': _pieces(RUNS['collab_tools'][1], ['spawn_agent', 'send_input', 'close_agent']),
-            'unbound': UNBOUND, 'offsets': offsets,
+            'unbound': spec['unbound'], 'offsets': offsets,
             'source': "the exec crate's literal runs: the ThreadItem kinds (tag 'type'), the item structs' long field "
-                      "names, the status and change-kind values; `error` is both an event and an item kind, one literal"}
+                      "names, the status and change-kind values; `error` is both an event and an item kind, one literal"})
 
 
 def extract(codex_path):
@@ -118,7 +153,7 @@ def extract(codex_path):
     return {'schema': 'veldo.codex-exec/v1', 'spec_id': 'VELDO-0061',
             'generated_by': 'proof/VELDO-0061/extract_items.py (reads the binary\'s bytes only)',
             'binary': events['binary'], 'version': events['version'], 'sha256': events['sha256'],
-            'events': sorted(events['events']), 'item': items(codex_path)}
+            'events': sorted(events['events']), 'item': items(codex_path, events['version'])}
 
 
 def main():

@@ -3,7 +3,9 @@
 Every format and name here is the installed CLI's own (Codex 0.154.0), read from the literals of its
 binary: the serde names of `codex exec --json` events and their payloads, its usage-limit message
 and its credential tables; the extraction is proof/VELDO-0062/extract_formats.py and its table
-cli-formats.json.
+cli-formats.json. Codex 0.162.0, qualified beside it (proof/VELDO-0061/codex-formats-0.162.0.json, the
+same extraction over its bytes), prints the same events and payloads; what it changed is named where it
+is read: its usage-limit message's apostrophe, its bundled models and its feature defaults.
 
 LOGIN. A Codex run logs in only through its subscription account's profile, the directory CODEX_HOME
 names (control_accounts sets it from the account the dispatch recorded, and strips the OPENAI_ and
@@ -68,7 +70,8 @@ THE LIMIT SIGNAL. `codex exec --json` prints no rate-limit snapshot (its `rate_l
 an internal event that exec does not emit). What it prints when the subscription's allowance is
 exhausted is the usage-limit error, as an `error` event and the failed turn's `error.message`:
 "You've hit your usage limit." (with a plan-specific sentence), then either " Try again at <time>."
-(or " or try again at <time>.") or " Try again later.". The time is the engine's LOCAL time, "%-I:%M %p"
+(or " or try again at <time>.") or " Try again later.". Codex 0.162.0 prints the message with a
+typographic apostrophe (U+2019), so the apostrophe is read as either. The time is the engine's LOCAL time, "%-I:%M %p"
 for a reset later the same day and "%b %-d<st|nd|rd|th>, %Y %-I:%M %p" otherwise. That message is a
 `usage_limit` window, exhausted (`rejected`), with its reset at the END of the stated minute (the
 message truncates to the minute, so the window never reopens before the time it stated), in the zone
@@ -117,7 +120,7 @@ each, the flags of the qualified configuration and the environment the engine is
 PINNED EXECUTABLE. The adapter launches the vendor binary inside its npm package (the `executable` its
 configuration names), never the package manager's `codex` link, a Node shim the next install replaces.
 `qualification(executable)` writes the record of one installed binary (runtime/codex-qualification.json
-for Codex 0.154.0 on Linux x64): its package, version, package-relative path, digest and flags, the
+for the pinned Codex on Linux x64): its package, version, package-relative path, digest and flags, the
 terminal protocol and usage it is read with. `bind(adapter, state_root)` checks the configured executable
 against that record before anything is accepted or spawned: an absolute path, no link on the way to it,
 inside a package of the recorded name and version at the recorded relative path, with the recorded
@@ -163,10 +166,15 @@ CREDENTIALS = frozenset((
     'CODEX_APP_SERVER_LOGIN_ISSUER', 'CODEX_AUTHAPI_BASE_URL', 'CODEX_OSS_BASE_URL', 'CODEX_OSS_PORT',
     'CODEX_REFRESH_TOKEN_URL_OVERRIDE', 'CODEX_REVOKE_TOKEN_URL_OVERRIDE', 'CODEX_SQLITE_HOME',
     'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_FEDERATION_RULE_ID', 'OPENAI_IDENTITY_TOKEN_FILE',
-    'OPENAI_ORGANIZATION'))
+    'OPENAI_ORGANIZATION',
+    # Codex 0.162.0's new table beside its exec server's remote connection: the workload identity context and
+    # the API key it reads for the guardian's decisions (proof/VELDO-0061/codex-formats-0.162.0.json).
+    'CODEX_GUARDIAN_DECISIONS_API_KEY', 'OPENAI_WORKLOAD_IDENTITY_CONTEXT'))
 # No Codex list holds a non-login setting that the families would not already strip.
 SETTINGS = frozenset()
 LIMIT_MESSAGE = "You've hit your usage limit"
+# Codex 0.162.0 prints its error table's apostrophes as U+2019; the limit is read with either.
+APOSTROPHES = {ord('\u2019'): "'"}
 LIMIT_WINDOW = 'usage_limit'
 # The other messages of the binary's error table that say the account's allowance is exhausted, each with
 # the window it is recorded as; none states a reset (proof/VELDO-0062/cli-formats.json, codex errors).
@@ -363,6 +371,7 @@ class Meter:
         the reset it states (or none), every other with no reset. The same statement again adds nothing."""
         if not isinstance(message, str):
             return []
+        message = message.translate(APOSTROPHES)
         if LIMIT_MESSAGE in message:
             window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)
         else:
@@ -431,8 +440,15 @@ NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
 # Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
 # This mapping key is conditional on the selected server set, not a native role tool.
 NATIVE_TOOL_MAPPING['mcp_server'] = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
-# Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
-MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
+# Each qualified version's debug models under an empty profile; absent tool_mode is JSON null. A record
+# binds only with its own version's table, so the pin decides which models a run may name.
+QUALIFIED_MODEL_TOOL_MODES = {
+    '0.154.0': {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'},
+    '0.162.0': {'gpt-6-astra': 'code_mode_only', 'gpt-6.1-sol': 'code_mode_only', 'gpt-6-sol': 'code_mode_only', 'gpt-6-luna': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'codex-auto-review': 'code_mode_only'},
+}
+# A model's runner is its own in every qualified version (the tables agree where they overlap), so a slug
+# reads its mode here whichever version is pinned; the record still decides which slugs exist.
+MODEL_TOOL_MODES = {m: mode for modes in QUALIFIED_MODEL_TOOL_MODES.values() for m, mode in modes.items()}
 
 
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
@@ -552,7 +568,8 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
-            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': MODEL_TOOL_MODES,
+            'native_tool_mapping': NATIVE_TOOL_MAPPING,
+            'model_tool_modes': QUALIFIED_MODEL_TOOL_MODES.get(version.split('-', 1)[0]),
             'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
@@ -729,7 +746,7 @@ def qualified_baseline(bound, record=None):
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
     if not isinstance(record.get('session_environment'), list):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
-    if record.get('model_tool_modes') != MODEL_TOOL_MODES:
+    if record.get('model_tool_modes') != QUALIFIED_MODEL_TOOL_MODES.get(record.get('version')):
         raise Refused('missing_evidence:codex_model_tool_modes')
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))

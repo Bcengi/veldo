@@ -1,0 +1,880 @@
+{
+ "anchors": "0.162.0's binary keeps none of exec's event struct names and names no exec JSON processor source file; each run is anchored by its neighbours in 0.162.0's bytes (proof/VELDO-0062/extract_formats.py, CODEX_ANCHORS), and its error table prints apostrophes as U+2019",
+ "binary": "/home/dmitry/.local/share/veldo-engines/codex-0.162.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+ "capture": {
+  "changes": [
+   {
+    "change": "known",
+    "field": "item.agent_message",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.id",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.agent_message.type",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.id",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.text",
+    "lines": [
+     3
+    ]
+   },
+   {
+    "change": "known",
+    "field": "item.completed.item.type",
+    "lines": [
+     3
+    ]
+   }
+  ],
+  "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME; thread ids fixed",
+  "path": "codex-loopback-0.162.0.json",
+  "sha256": "sha256:3263ee2b7ddd779159fbbe9a9cbd786f529e77ee9ee8799682be75c857c26d28"
+ },
+ "credential_tables": [
+  {
+   "decision": "strip",
+   "name": "auth_env",
+   "names": [
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY",
+    "CODEX_ACCESS_TOKEN"
+   ],
+   "offset": 240296120,
+   "reason": "the auth variables Codex reads instead of its stored login"
+  },
+  {
+   "decision": "strip",
+   "name": "agent_identity",
+   "names": [
+    "CODEX_ACCESS_TOKEN",
+    "OPENAI_FEDERATION_RULE_ID",
+    "OPENAI_IDENTITY_TOKEN_FILE"
+   ],
+   "offset": 240002655,
+   "reason": "the agent identity login"
+  },
+  {
+   "decision": "keep",
+   "name": "bedrock_provider",
+   "names": [
+    "AWS_BEARER_TOKEN_BEDROCK",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY"
+   ],
+   "offset": 239681699,
+   "reason": "the Bedrock provider credentials: AWS_BEARER_TOKEN_BEDROCK is stripped (a model key both CLIs name); the general AWS keys are the worker's tools' own cloud login, and Codex selects Bedrock only through the model_provider of the owner-prepared profile"
+  },
+  {
+   "decision": "keep",
+   "name": "exec_server_scrub",
+   "names": [
+    "OPENAI_FEDERATION_RULE_ID",
+    "OPENAI_IDENTITY_TOKEN_FILE",
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY",
+    "CODEX_ACCESS_TOKEN",
+    "CODEX_CONNECTORS_TOKEN",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_SESSION_TOKEN",
+    "AZURE_CLIENT_SECRET",
+    "AZURE_FEDERATED_TOKEN_FILE",
+    "GOOGLE_APPLICATION_CREDENTIALS"
+   ],
+   "offset": 242637685,
+   "reason": "the secrets the exec server withholds from remote requests: its OpenAI and Codex names are stripped by prefix, the cloud names are tool credentials"
+  },
+  {
+   "decision": "keep",
+   "name": "shell_env_scrub",
+   "names": [
+    "CODEX_EXEC_SERVER_NOISE_AUTH_TOKEN",
+    "NODE_REPL_AUTH_TOKEN",
+    "OPENAI_FEDERATION_RULE_ID",
+    "OPENAI_IDENTITY_TOKEN_FILE"
+   ],
+   "offset": 244217874,
+   "reason": "the default exclusions of Codex's shell environment policy for its tool children: its Codex and OpenAI names are stripped by prefix, NODE_REPL_AUTH_TOKEN is a tool's own"
+  },
+  {
+   "decision": "strip",
+   "name": "agent_identity_endpoints",
+   "names": [
+    "CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL",
+    "CODEX_AGENT_IDENTITY_JWKS_BASE_URL"
+   ],
+   "offset": 243110434,
+   "reason": "the agent identity login endpoints"
+  },
+  {
+   "decision": "strip",
+   "name": "auth_endpoint",
+   "names": [
+    "CODEX_AGENT_IDENTITY_JWKS_BASE_URL",
+    "CODEX_AUTHAPI_BASE_URL"
+   ],
+   "offset": 239643979,
+   "reason": "the account login endpoint"
+  },
+  {
+   "decision": "strip",
+   "name": "refresh_override",
+   "names": [
+    "CODEX_REFRESH_TOKEN_URL_OVERRIDE"
+   ],
+   "offset": 239082336,
+   "reason": "the token refresh endpoint"
+  },
+  {
+   "decision": "strip",
+   "name": "login_client",
+   "names": [
+    "CODEX_APP_SERVER_LOGIN_CLIENT_ID"
+   ],
+   "offset": 239082368,
+   "reason": "the login client id"
+  },
+  {
+   "decision": "strip",
+   "name": "login_issuer",
+   "names": [
+    "CODEX_APP_SERVER_LOGIN_ISSUER"
+   ],
+   "offset": 239682720,
+   "reason": "the login issuer"
+  },
+  {
+   "decision": "strip",
+   "name": "revoke_override",
+   "names": [
+    "CODEX_REVOKE_TOKEN_URL_OVERRIDE"
+   ],
+   "offset": 243067474,
+   "reason": "the token revocation endpoint"
+  },
+  {
+   "decision": "strip",
+   "name": "chatgpt_base",
+   "names": [
+    "CODEX_APP_SERVER_CHATGPT_BASE_URL"
+   ],
+   "offset": 241890332,
+   "reason": "the ChatGPT backend the subscription login talks to"
+  },
+  {
+   "decision": "strip",
+   "name": "openai_base",
+   "names": [
+    "OPENAI_BASE_URL"
+   ],
+   "offset": 243992400,
+   "reason": "the model endpoint of the built-in OpenAI provider"
+  },
+  {
+   "decision": "strip",
+   "name": "oss_provider",
+   "names": [
+    "CODEX_OSS_PORT",
+    "CODEX_OSS_BASE_URL"
+   ],
+   "offset": 243470803,
+   "reason": "the endpoint of the local model provider"
+  },
+  {
+   "decision": "strip",
+   "name": "organization",
+   "names": [
+    "OPENAI_ORGANIZATION"
+   ],
+   "offset": 243470090,
+   "reason": "the organization an API-key login bills"
+  },
+  {
+   "decision": "strip",
+   "name": "sqlite_home",
+   "names": [
+    "CODEX_SQLITE_HOME"
+   ],
+   "offset": 238264342,
+   "reason": "where Codex keeps its thread state, a redirect of the profile beside CODEX_HOME"
+  },
+  {
+   "decision": "strip",
+   "name": "exec_server_remote",
+   "names": [
+    "OPENAI_WORKLOAD_IDENTITY_CONTEXT",
+    "CODEX_GUARDIAN_DECISIONS_API_KEY"
+   ],
+   "offset": 239081536,
+   "reason": "the workload identity context and the guardian decisions' API key the exec server reads (new in 0.162.0)"
+  }
+ ],
+ "errors": [
+  {
+   "message": "turn aborted. Something went wrong? Hit `/feedback` to report the issue.",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "shared rollout token budget exhausted",
+   "offset": 244222530,
+   "reason": "Codex's own budget for one rollout, a local setting, not the account's",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "stream disconnected before completion: Incomplete response returned, reason: content_filter",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "Codex ran out of room in the model's context window. Start a new thread or clear earlier history before retrying.",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "agent thread limit reached",
+   "offset": 244222530,
+   "reason": "Codex's own cap on concurrent agent threads",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "session configured event was not the first event in the stream",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "timeout waiting for child process to exit",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "request timed out",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "spawn failed: child stdout/stderr not captured",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "interrupted (Ctrl-C). Something went wrong? Hit `/feedback` to report the issue.",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "Image poisoning",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "Selected model is at capacity. Please try a different model.",
+   "offset": 244222530,
+   "reason": "the service is busy; transient",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "Flex capacity unavailable.",
+   "offset": 244222530,
+   "reason": "the flex service tier is busy; transient",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "Quota exceeded. Check your plan and billing details.",
+   "offset": 244222530,
+   "reset": "none: blocked until observed otherwise",
+   "source": "fixed",
+   "window": "quota"
+  },
+  {
+   "message": "To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.",
+   "offset": 244222530,
+   "reset": "none: blocked until observed otherwise",
+   "source": "fixed",
+   "window": "plan"
+  },
+  {
+   "message": "We\u2019re currently experiencing high demand, which may cause temporary errors.",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "internal error; agent loop died unexpectedly",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "codex-linux-sandbox was required but not provided",
+   "offset": 244222530,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "fixed",
+   "window": null
+  },
+  {
+   "message": "sandbox denied exec error, exit code: {}, stdout: {}, stderr: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "Missing environment variable: `{}`.",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "stream disconnected before completion: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "no thread with id: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "duplicate tool: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "sandbox error: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "unsupported operation: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "Fatal error: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "Error while reading the server response: {}{}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": ", request id: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "Connection failed: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "exceeded retry limit, last status: {}{}",
+   "offset": 238386890,
+   "reason": "a request that failed its retries; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "You\u2019ve hit your usage limit for {}. Switch to another model now,{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit. {},{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus),{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit. Visit https://chatgpt.com/settings/usage to purchase more credits{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit. To get more access now, send a request to your admin{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit.{}",
+   "offset": 238386890,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  },
+  {
+   "message": "unexpected status {}: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": ", auth error: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": ", auth error code: {}",
+   "offset": 238386890,
+   "reason": "a local, request or transient error; it states no allowance",
+   "source": "template",
+   "window": null
+  },
+  {
+   "message": "Your workspace is out of credits. Add credits to continue.",
+   "offset": 244224590,
+   "reset": "none: blocked until observed otherwise",
+   "source": "workspace",
+   "window": "workspace_credits"
+  },
+  {
+   "message": "Your workspace is out of credits. Ask your workspace owner to refill in order to continue.",
+   "offset": 244224590,
+   "reset": "none: blocked until observed otherwise",
+   "source": "workspace",
+   "window": "workspace_credits"
+  },
+  {
+   "message": "You hit your spend cap set in your workspace. Increase your spend cap to continue.",
+   "offset": 244224590,
+   "reset": "none: blocked until observed otherwise",
+   "source": "workspace",
+   "window": "workspace_spend_cap"
+  },
+  {
+   "message": "You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.",
+   "offset": 244224590,
+   "reset": "none: blocked until observed otherwise",
+   "source": "workspace",
+   "window": "workspace_spend_cap"
+  },
+  {
+   "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits{}",
+   "offset": 244224931,
+   "reset": "stated or none (its retry phrase)",
+   "source": "template",
+   "window": "usage_limit"
+  }
+ ],
+ "events": {
+  "error": {
+   "fields": {
+    "message": {
+     "type": "string"
+    },
+    "type": {
+     "type": "literal",
+     "value": "error"
+    }
+   },
+   "type": "object"
+  },
+  "item.completed": {
+   "fields": {
+    "item": {
+     "observed": {
+      "capture_lines": [
+       3
+      ],
+      "fields": {
+       "id": {
+        "capture_lines": [
+         3
+        ],
+        "source": "codex-loopback-0.162.0.json:streams.codex",
+        "type": "string"
+       },
+       "text": {
+        "capture_lines": [
+         3
+        ],
+        "source": "codex-loopback-0.162.0.json:streams.codex",
+        "type": "string"
+       },
+       "type": {
+        "capture_lines": [
+         3
+        ],
+        "source": "codex-loopback-0.162.0.json:streams.codex",
+        "type": "string"
+       }
+      },
+      "source": "codex-loopback-0.162.0.json:streams.codex",
+      "type": "object"
+     },
+     "type": "any"
+    },
+    "type": {
+     "type": "literal",
+     "value": "item.completed"
+    }
+   },
+   "type": "object"
+  },
+  "item.started": {
+   "fields": {
+    "item": {
+     "type": "any"
+    },
+    "type": {
+     "type": "literal",
+     "value": "item.started"
+    }
+   },
+   "type": "object"
+  },
+  "item.updated": {
+   "fields": {
+    "item": {
+     "type": "any"
+    },
+    "type": {
+     "type": "literal",
+     "value": "item.updated"
+    }
+   },
+   "type": "object"
+  },
+  "thread.started": {
+   "fields": {
+    "thread_id": {
+     "type": "string"
+    },
+    "type": {
+     "type": "literal",
+     "value": "thread.started"
+    }
+   },
+   "type": "object"
+  },
+  "turn.completed": {
+   "fields": {
+    "type": {
+     "type": "literal",
+     "value": "turn.completed"
+    },
+    "usage": {
+     "fields": {
+      "cache_write_input_tokens": {
+       "int": true,
+       "optional": true,
+       "type": "number"
+      },
+      "cached_input_tokens": {
+       "int": true,
+       "optional": true,
+       "type": "number"
+      },
+      "input_tokens": {
+       "int": true,
+       "optional": true,
+       "type": "number"
+      },
+      "output_tokens": {
+       "int": true,
+       "optional": true,
+       "type": "number"
+      },
+      "reasoning_output_tokens": {
+       "int": true,
+       "optional": true,
+       "type": "number"
+      }
+     },
+     "type": "object"
+    }
+   },
+   "type": "object"
+  },
+  "turn.failed": {
+   "fields": {
+    "error": {
+     "fields": {
+      "message": {
+       "type": "string"
+      }
+     },
+     "type": "object"
+    },
+    "type": {
+     "type": "literal",
+     "value": "turn.failed"
+    }
+   },
+   "type": "object"
+  },
+  "turn.started": {
+   "fields": {
+    "type": {
+     "type": "literal",
+     "value": "turn.started"
+    }
+   },
+   "type": "object"
+  }
+ },
+ "items": {
+  "agent_message": {
+   "capture_lines": [
+    3
+   ],
+   "fields": {
+    "id": {
+     "capture_lines": [
+      3
+     ],
+     "source": "codex-loopback-0.162.0.json:streams.codex",
+     "type": "string"
+    },
+    "text": {
+     "capture_lines": [
+      3
+     ],
+     "source": "codex-loopback-0.162.0.json:streams.codex",
+     "type": "string"
+    },
+    "type": {
+     "capture_lines": [
+      3
+     ],
+     "source": "codex-loopback-0.162.0.json:streams.codex",
+     "type": "string"
+    }
+   },
+   "source": "codex-loopback-0.162.0.json:streams.codex",
+   "type": "object"
+  },
+  "mcp_tool_call": {
+   "fields": {
+    "arguments": {
+     "type": "any"
+    },
+    "error": {
+     "nullable": true,
+     "optional": true,
+     "type": "any"
+    },
+    "id": {
+     "type": "string"
+    },
+    "result": {
+     "nullable": true,
+     "optional": true,
+     "type": "any"
+    },
+    "server": {
+     "type": "string"
+    },
+    "status": {
+     "type": "enum",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ]
+    },
+    "tool": {
+     "type": "string"
+    },
+    "type": {
+     "type": "literal",
+     "value": "mcp_tool_call"
+    }
+   },
+   "type": "object"
+  }
+ },
+ "items_source": "exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag `type`): the type names, the field names server, arguments and result, and the status values in_progress, completed and failed are the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer, which the compiler places in code, not in the literal pool, and `result` and `error` are present only when the call has one",
+ "notes": {
+  "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
+ },
+ "sha256": "sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38",
+ "source": "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the binary's literals; the strings show field names, not which are always present, so every usage field is marked optional",
+ "tool_forms": {
+  "exec_items": [
+   "agent_message",
+   "reasoning",
+   "command_execution",
+   "file_change",
+   "mcp_tool_call",
+   "web_search",
+   "todo_list",
+   "collab_tool_call",
+   "error"
+  ],
+  "in_run": {
+   "collab": {
+    "field": "tool",
+    "item": "collab_tool_call",
+    "tools": [
+     "spawn_agent",
+     "send_input",
+     "wait",
+     "close_agent"
+    ]
+   },
+   "items": [
+    "agent_message",
+    "collab_tool_call",
+    "command_execution",
+    "error",
+    "file_change",
+    "mcp_tool_call",
+    "reasoning",
+    "todo_list",
+    "web_search"
+   ],
+   "source": "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases load its variant literals: the run between its usage field run and its item id field, and `wait`, whose literal the compiler shares), each an agent thread of this process or a wait on one (the core's wait tool waits on agent ids from spawn_agent, or on a live agent of the current root thread tree); an item or collab tool these do not list is not a known in-run kind"
+  },
+  "nested_work": {
+   "collab": [
+    "collab_agent_tool_call",
+    "collab_tool_call"
+   ],
+   "source": "the items through which a run does work in another agent's thread: exec's own sub-agent call (collab_tool_call) and the core's items whose struct names another thread (a collab agent call's receiver_thread_ids, a sub-agent activity's agent_thread_id)",
+   "sub_agent": [
+    "sub_agent_activity"
+   ]
+  },
+  "source": "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as unknown",
+  "thread_items": [
+   "user_message",
+   "function_call_output",
+   "hook_prompt",
+   "agent_message",
+   "reasoning",
+   "command_execution",
+   "dynamic_tool_call",
+   "collab_agent_tool_call",
+   "sub_agent_activity",
+   "web_search",
+   "image_view",
+   "extension",
+   "entered_review_mode",
+   "exited_review_mode",
+   "file_change",
+   "mcp_tool_call",
+   "context_compaction"
+  ]
+ },
+ "usage_limit": {
+  "formats": [
+   "%-I:%M %p",
+   "%b %-d{suffix}, %Y %-I:%M %p"
+  ],
+  "message": "You\u2019ve hit your usage limit",
+  "retry_at": [
+   " Try again at ",
+   " or try again at "
+  ],
+  "retry_later": [
+   " Try again later.",
+   " or try again later."
+  ],
+  "source": "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset",
+  "suffixes": [
+   "st",
+   "nd",
+   "rd",
+   "th"
+  ]
+ },
+ "version": "0.162.0"
+}

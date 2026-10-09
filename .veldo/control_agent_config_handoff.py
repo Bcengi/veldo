@@ -267,6 +267,10 @@ def codex_model(bound, revision):
     catalog = bound.get('model_catalog')
     entries = catalog.get('models', []) if isinstance(catalog, dict) else []
     entry = next((m for m in entries if m.get('slug') == model), None)
+    # Codex 0.162.0's catalog names a default service tier for some models (gpt-6-sol: `priority`, which its
+    # catalog says spends usage faster). No role setting chooses a tier yet, so such a model is a named stop.
+    if entry and entry.get('default_service_tier') is not None:
+        raise Refused('configuration_stop:codex_service_tier:%s:%s' % (model, entry['default_service_tier']))
     if (not entry or bound.get('model_catalog_digest') != X.catalog_digest(catalog)
             or not all(k in entry for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))):
         if bound.get('model_tool_modes', {}).get(model) == 'code_mode_only':
@@ -302,6 +306,13 @@ def codex_features(listing, grants):
         'computer_use', 'goals', 'hooks', 'image_generation', 'in_app_browser',
         'in_app_local_automation', 'mentions_v2', 'plugins', 'remote_plugin',
         'skill_mcp_dependency_install', 'skill_search', 'tool_suggest', 'workspace_dependencies',
+        # Every feature Codex 0.162.0 turns on that 0.154.0 did not, so it runs with the feature set 0.154.0
+        # was qualified with: among them a shared background server that outlives the run (and its updater),
+        # git worktrees beside the clone, browser annotation, the realtime conversation and the faster tier
+        # that spends more usage (proof/VELDO-0061/README.md, the 0.155 to 0.162 audit).
+        'api_key_model_discovery', 'browser_annotation_api', 'daemon_auto_start',
+        'guardian_reuse_parent_compaction', 'in_app_voice', 'instant_interrupt', 'realtime_conversation',
+        'system_proxy_fallback', 'ultrafast_mode', 'worktrees', 'write_stdin_approval',
     }
     # These defaults change protocol, UI, transport or execution implementation;
     # they do not register another tool. Code Mode's runner is model-selected.

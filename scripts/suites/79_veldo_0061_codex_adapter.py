@@ -569,7 +569,8 @@ sys.exit(payload.get('code', 0))
 
         def get_run(name):
             return runs[name][1]
-        LIMIT = "You've hit your usage limit. Try again later."
+        # The selected version's own form: 0.162.0 prints its apostrophe as U+2019.
+        LIMIT = FORMATS['usage_limit']['message'] + '. Try again later.'
         runs, ended = {}, {}
         try:
             # Phase 1: every independent launch, submitted one after another, then each waited for.

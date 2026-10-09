@@ -15,6 +15,12 @@ table, and the suite's fixture rows then say which fake line no longer matches.
 
 The anchors below are the exact text each table starts from in these versions (Claude Code 2.1.281,
 Codex 0.154.0). A version that moved one fails here by name rather than yielding a guessed table.
+
+Codex 0.162.0, qualified beside the pinned 0.154.0, has its own reviewed anchors (CODEX_ANCHORS) and its
+table alone, with no capture to reconcile:
+
+    python3 -B proof/VELDO-0062/extract_formats.py --codex PATH --codex-table proof/VELDO-0061/codex-formats-0.162.0.json \
+        --codex-capture proof/VELDO-0061/codex-loopback-0.162.0.json      # write; --check before --codex compares
 """
 import argparse
 import hashlib
@@ -1285,9 +1291,17 @@ def _rel32(raw, at):
     return int.from_bytes(raw[at:at + 4], 'little', signed=True)
 
 
-def _switch_cases(raw, segments, at, virtual):
+# Codex 0.162.0's serializer writes each variant as a quoted JSON string: every case first writes the opening quote
+# (mov rbx, [rsi]; ... mov byte [rax+rsi], 0x22; inc rsi; mov [rbx+0x10], rsi: 31 bytes), then loads the literal
+# (lea rsi) and its length (mov edx), here or at the case it jumps to.
+QUOTED_CASE = (31, b'\xc6\x04\x30\x22', b'\x48\x8d\x35', 0xba)
+
+
+def _switch_cases(raw, segments, at, virtual, quoted=False):
     """[(file offset, literal)]: the literals the switch at file offset `at` (virtual address `virtual`) loads, case by
-    case, or None when it is not a switch whose every case loads a literal and its length."""
+    case, or None when it is not a switch whose every case loads a literal and its length. `quoted`: each case writes
+    the opening quote first (QUOTED_CASE)."""
+    skip, quote, load, length_op = QUOTED_CASE if quoted else (0, b'', b'\x48\x8d\x15', 0xb9)
     table = virtual + 7 + _rel32(raw, at + 3)
     table_at, start = _file_offset(segments, table), virtual + 16
     if table_at is None:
@@ -1296,14 +1310,15 @@ def _switch_cases(raw, segments, at, virtual):
     while len(cases) < 64:
         target = table + _rel32(raw, table_at + 4 * len(cases))
         case = _file_offset(segments, target)
-        if not start <= target < start + 256 or case is None or raw[case:case + 3] != b'\x48\x8d\x15':
+        if not start <= target < start + 256 or case is None or raw[case + skip:case + skip + 3] != load \
+                or quote not in raw[case:case + skip]:
             break
-        literal = target + 7 + _rel32(raw, case + 3)
-        after = case + 7
+        literal = target + skip + 7 + _rel32(raw, case + skip + 3)
+        after = case + skip + 7
         if raw[after] == 0xeb:
             after = after + 2 + int.from_bytes(raw[after + 1:after + 2], 'little', signed=True)
         literal_at = _file_offset(segments, literal)
-        if raw[after] != 0xb9 or literal_at is None:
+        if raw[after] != length_op or literal_at is None:
             return None
         length = int.from_bytes(raw[after + 1:after + 5], 'little')
         text = raw[literal_at:literal_at + length]
@@ -1313,12 +1328,12 @@ def _switch_cases(raw, segments, at, virtual):
     return cases or None
 
 
-def codex_collab_tools(raw, tools):
+def codex_collab_tools(raw, tools, anchors=None):
     """The variants of exec's CollabTool enum, read from its serializer: the one switch whose cases load the literals of
     the variant run itself (`tools`, at their places in the run; the core's own collab enum loads its own copies); the
     variants beyond the run are the waits the core's wait tool describes."""
     segments = _segments(raw)
-    at = raw.find(CODEX_IN_RUN_COLLAB[0]) + len(b'reasoning_output_tokens')
+    at = raw.find(_anchors(anchors)['in_run_collab'][0]) + len(b'reasoning_output_tokens')
     places = set()
     for tool in tools:
         places.add((at, tool))
@@ -1328,7 +1343,8 @@ def codex_collab_tools(raw, tools):
         if not executable:
             continue
         for match in CODEX_COLLAB_SWITCH.finditer(raw, offset, offset + size):
-            cases = _switch_cases(raw, segments, match.start(), virtual + match.start() - offset)
+            cases = _switch_cases(raw, segments, match.start(), virtual + match.start() - offset,
+                                  _anchors(anchors).get('quoted_cases', False))
             if cases is not None and places <= set(cases):
                 found.append([tool for _, tool in cases])
     if len(found) != 1 or len(set(found[0])) != len(found[0]) \
@@ -1338,13 +1354,13 @@ def codex_collab_tools(raw, tools):
     return found[0]
 
 
-def codex_in_run(raw, exec_items):
-    run, tools = CODEX_IN_RUN_COLLAB
-    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools) + 'idThreadEvent').encode() != run \
-            or raw.count(CODEX_IN_RUN_SPAWN) != 1 or 'collab_tool_call' not in exec_items:
+def codex_in_run(raw, exec_items, anchors=None):
+    run, tools = _anchors(anchors)['in_run_collab']
+    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools)).encode() + _anchors(anchors)['in_run_tail'] != run \
+            or raw.count(CODEX_IN_RUN_SPAWN) != _anchors(anchors)['spawn_templates'] or 'collab_tool_call' not in exec_items:
         raise Moved('codex collab tools moved')
     return {'items': sorted(exec_items),
-            'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': codex_collab_tools(raw, tools)},
+            'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': codex_collab_tools(raw, tools, anchors)},
             'source': "exec's own items, each the run's own work (a shell command, a file change, a web search, an MCP "
                       "call the configuration judges, a message, reasoning, a to-do list, an error, its own sub-agent "
                       "call), and the collab tools of exec's CollabTool enum (read from its serializer, whose cases "
@@ -1354,11 +1370,12 @@ def codex_in_run(raw, exec_items):
                       "current root thread tree); an item or collab tool these do not list is not a known in-run kind"}
 
 
-def codex_forms(raw):
+def codex_forms(raw, anchors=None):
     head, run, names = CODEX_EXEC_ITEMS
     if head not in raw or run not in raw or ''.join(names).encode() != run:
         raise Moved('codex exec item types moved')
-    if raw.count(CODEX_EXEC_COLLAB[0]) != 1 or not CODEX_EXEC_COLLAB[0].endswith(CODEX_EXEC_COLLAB[1].encode()):
+    before, tag, after = _anchors(anchors)['exec_collab']
+    if raw.count(before + tag.encode() + after) != 1 or tag != CODEX_EXEC_COLLAB[1]:
         raise Moved('codex exec collab_tool_call moved')
     thread, thread_names = CODEX_THREAD_ITEMS
     if thread not in raw or ''.join(thread_names).encode() != thread:
@@ -1374,7 +1391,7 @@ def codex_forms(raw):
                         "(collab_tool_call) and the core's items whose struct names another thread (a collab agent "
                         "call's receiver_thread_ids, a sub-agent activity's agent_thread_id)")
     return {'exec_items': list(names) + [CODEX_EXEC_COLLAB[1], 'error'], 'thread_items': list(thread_names),
-            'nested_work': nested, 'in_run': codex_in_run(raw, list(names) + [CODEX_EXEC_COLLAB[1], 'error']),
+            'nested_work': nested, 'in_run': codex_in_run(raw, list(names) + [CODEX_EXEC_COLLAB[1], 'error'], anchors),
             'source': "exec's ThreadItem tags (its literal run, `collab_tool_call`, the literal after exec's "
                       "ItemUpdatedEvent and ThreadErrorEvent names, and `error`, the literal heading its field run) "
                       "and the core's ThreadItem tags (its literal run); a tag exec's table does not list reads as "
@@ -1488,6 +1505,8 @@ CODEX_NOT_EXHAUSTION = {
     'agent thread limit reached': "Codex's own cap on concurrent agent threads",
     'exceeded retry limit, last status: {}{}': 'a request that failed its retries; it states no allowance',
     'Selected model is at capacity. Please try a different model.': 'the service is busy; transient',
+    # Codex 0.162.0: the flex service tier is busy, a transient state of the service, not the account's allowance.
+    'Flex capacity unavailable.': 'the flex service tier is busy; transient',
 }
 ALLOWANCE_WORDS = re.compile(r'limit|credit|quota|spend|plan|billing|budget|capacity', re.I)
 
@@ -1518,7 +1537,8 @@ def _templates(block):
 
 
 def _classify(message):
-    if message.startswith("You've hit your usage limit"):
+    # Codex 0.162.0 prints the apostrophe as U+2019; the message is the same.
+    if message.replace('\u2019', "'").startswith("You've hit your usage limit"):
         return {'window': 'usage_limit', 'reset': 'stated or none (its retry phrase)'}
     if message in CODEX_EXHAUSTION:
         return {'window': CODEX_EXHAUSTION[message], 'reset': 'none: blocked until observed otherwise'}
@@ -1529,9 +1549,9 @@ def _classify(message):
     return {'window': None, 'reason': 'a local, request or transient error; it states no allowance'}
 
 
-def codex_errors(raw):
+def codex_errors(raw, anchors=None):
     entries = []
-    before, after, messages = CODEX_ERROR_FIXED
+    before, after, messages = _anchors(anchors)['error_fixed']
     run = before + ''.join(messages).encode() + after
     if raw.count(run) != 1:
         raise Moved('codex error table: the fixed messages moved')
@@ -1543,12 +1563,12 @@ def codex_errors(raw):
     if at < 0 or first < 0 or last < 0 or last - first > 4096:
         raise Moved('codex error table: the templates moved')
     entries += [('template', m, first) for m in _templates(raw[first + 1:last + 1])]
-    before, after, messages = CODEX_ERROR_WORKSPACE
+    before, after, messages = _anchors(anchors)['error_workspace']
     run = before + ''.join(messages).encode() + after
     if raw.count(run) != 1:
         raise Moved('codex error table: the workspace messages moved')
     entries += [('workspace', m, raw.index(run) + len(before)) for m in messages]
-    pro = raw.find(CODEX_ERROR_PRO)
+    pro = raw.find(_anchors(anchors)['error_pro'])
     entries += [('template', m, pro) for m in _templates(raw[pro:raw.index(b'\xc0\x00', pro) + 2])]
     table = []
     for source, message, offset in entries:
@@ -1565,6 +1585,94 @@ CODEX_USAGE_SOURCE = (b'exec/src/event_processor_with_jsonl_output.rs', b'thread
                       b'struct TokenUsageInfo with 3 elements', b'last_token_usage')
 
 
+# Codex 0.162.0 prints the same exec events, payloads, item kinds, usage-limit forms and credential names (one table
+# more), but its binary keeps none of exec's event struct names (ThreadStartedEvent, TurnCompletedEvent,
+# ItemCompletedEvent, ItemUpdatedEvent, ThreadErrorEvent, TurnFailedEvent), names the exec JSON processor's source
+# file nowhere, prints its error table's apostrophes as U+2019 and moved several literals. Each run is anchored by
+# its neighbours in 0.162.0's own bytes instead; the runs themselves are read exactly as for 0.154.0.
+CODEX_0162_TABLES = []
+for _table in CODEX_TABLES:
+    _moved = {
+        'auth_env': (b'auth.json', b', no Codex credentials were found'),
+        'agent_identity': (b'TUI task-tools MCP server stopped', b'auth.json'),
+        'agent_identity_endpoints': (b'max_attempts', b'https://auth.openai.com/api/accounts'),
+        'refresh_override': (b'login/src/auth/default_client.rs', b'CODEX_APP_SERVER_LOGIN_CLIENT_ID'),
+        'login_client': (b'CODEX_REFRESH_TOKEN_URL_OVERRIDE', b'login/src/auth/agent_identity.rs'),
+        'openai_base': (b'CODEX_NETWORK_PROXY_BROKERED_CREDENTIALS', b'sk-svcacct-'),
+        'oss_provider': (b'provider aws cannot be combined with supports_websockets', b'responses'),
+        'organization': (b'OpenAI-Organization', b'only supports changing `base_url`'),
+    }.get(_table[0])
+    CODEX_0162_TABLES.append(_table if _moved is None else (_table[0], _moved[0], _table[2], _moved[1]) + _table[4:])
+CODEX_0162_TABLES.append(
+    ('exec_server_remote', b'struct WalkError with 2 elements',
+     b'OPENAI_WORKLOAD_IDENTITY_CONTEXTCODEX_GUARDIAN_DECISIONS_API_KEY', b'codex.exec_server.remote.connect', 'strip',
+     "the workload identity context and the guardian decisions' API key the exec server reads (new in 0.162.0)"))
+CODEX_ANCHORS = {
+    '0.154.0': {'exec_run': CODEX_EXEC_RUN, 'item_runs': CODEX_ITEM_RUNS, 'limit_message': CODEX_LIMIT['message'],
+                'usage_source': CODEX_USAGE_SOURCE, 'tables': CODEX_TABLES,
+                'exec_collab': (b'ItemUpdatedEventThreadErrorEvent', 'collab_tool_call', b''),
+                'in_run_collab': CODEX_IN_RUN_COLLAB, 'in_run_tail': b'idThreadEvent', 'spawn_templates': 1,
+                'error_fixed': CODEX_ERROR_FIXED, 'error_workspace': CODEX_ERROR_WORKSPACE, 'error_pro': CODEX_ERROR_PRO},
+    '0.162.0': {
+        'exec_run': (b'thread_idusagein_progresscompletedfailedcommandaggregated_outputexit_codemessagecontent_meta'
+                     b'structured_contentinput_tokenscached_input_tokenscache_write_input_tokensoutput_tokens'
+                     b'reasoning_output_tokens'),
+        'item_runs': (b'item.completederroritemsqueryactionresultschangesserverarguments',
+                      CODEX_ITEM_RUNS[1], CODEX_ITEM_RUNS[2]),
+        'limit_message': "You\u2019ve hit your usage limit".encode(),
+        'usage_source': (b'failed to serialize exec json event: ',) + CODEX_USAGE_SOURCE[1:],
+        'tables': CODEX_0162_TABLES,
+        'exec_collab': (b'', 'collab_tool_call', b'reasoning effortturn interrupted'),
+        'in_run_collab': (b'reasoning_output_tokensspawn_agentsend_inputclose_agentThreadEvent', CODEX_IN_RUN_COLLAB[1]),
+        'in_run_tail': b'ThreadEvent',
+        # Both of 0.162.0's spawn_agent descriptions are templates of the one multi-agent spec.
+        'spawn_templates': 2,
+        'quoted_cases': True,
+        'error_fixed': (CODEX_ERROR_FIXED[0], CODEX_ERROR_FIXED[1], (
+            'turn aborted. Something went wrong? Hit `/feedback` to report the issue.',
+            'shared rollout token budget exhausted',
+            'stream disconnected before completion: Incomplete response returned, reason: content_filter',
+            "Codex ran out of room in the model's context window. Start a new thread or clear earlier history before "
+            "retrying.",
+            'agent thread limit reached',
+            'session configured event was not the first event in the stream',
+            'timeout waiting for child process to exit',
+            'request timed out',
+            'spawn failed: child stdout/stderr not captured',
+            'interrupted (Ctrl-C). Something went wrong? Hit `/feedback` to report the issue.',
+            'Image poisoning',
+            'Selected model is at capacity. Please try a different model.',
+            'Flex capacity unavailable.',
+            'Quota exceeded. Check your plan and billing details.',
+            'To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.',
+            "We\u2019re currently experiencing high demand, which may cause temporary errors.",
+            'internal error; agent loop died unexpectedly',
+            'codex-linux-sandbox was required but not provided')),
+        'error_workspace': (b'representationmax', b'\x80\x92\x00You\xe2\x80\x99ve hit your usage limit. Upgrade to Pro',
+                            CODEX_ERROR_WORKSPACE[2]),
+        'error_pro': b'\x80\x92\x00You\xe2\x80\x99ve hit your usage limit. Upgrade to Pro',
+        'note': ("0.162.0's binary keeps none of exec's event struct names and names no exec JSON processor source file; "
+                 "each run is anchored by its neighbours in 0.162.0's bytes (proof/VELDO-0062/extract_formats.py, "
+                 "CODEX_ANCHORS), and its error table prints apostrophes as U+2019"),
+    },
+}
+
+
+def _anchors(anchors):
+    return anchors or CODEX_ANCHORS['0.154.0']
+
+
+def codex_version(path):
+    """The version of the @openai/codex vendor package the binary lies in, its platform suffix dropped."""
+    for parent in Path(path).resolve().parents:
+        manifest = parent / 'package.json'
+        if manifest.is_file():
+            data = json.loads(manifest.read_text())
+            if data.get('name') == '@openai/codex':
+                return str(data.get('version') or '').split('-', 1)[0] or None
+    return None
+
+
 ENV_NAME_START = re.compile(rb'(?<=[A-Z0-9])(?=(?:OPENAI|CODEX|AWS|AZURE|GOOGLE|NODE)_)')
 
 
@@ -1574,22 +1682,26 @@ def _split(run):
 
 def codex(path):
     raw = Path(path).read_bytes()
-    for run in (CODEX_EXEC_RUN, CODEX_TAGS_RUN):
+    version = codex_version(path)
+    anchors = CODEX_ANCHORS.get(version)
+    if anchors is None:
+        raise Moved('codex %s: no reviewed anchors for this version' % version)
+    for run in (anchors['exec_run'], CODEX_TAGS_RUN):
         if run not in raw:
             raise Moved('codex exec event literals moved')
     limit = {}
-    for key, value in CODEX_LIMIT.items():
+    for key, value in dict(CODEX_LIMIT, message=anchors['limit_message']).items():
         for piece in (value if isinstance(value, tuple) else (value,)):
             if piece not in raw:
                 raise Moved('codex usage-limit literal moved: %r' % piece)
-    limit = {'message': CODEX_LIMIT['message'].decode(),
+    limit = {'message': anchors['limit_message'].decode(),
              'retry_at': [p.decode() for p in CODEX_LIMIT['retry_at']],
              'retry_later': [p.decode() for p in CODEX_LIMIT['retry_later']],
              'formats': ['%-I:%M %p', '%b %-d{suffix}, %Y %-I:%M %p'],
              'suffixes': ['st', 'nd', 'rd', 'th'],
              'source': "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; "
                        "else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset"}
-    for run in CODEX_ITEM_RUNS:
+    for run in anchors['item_runs']:
         if run not in raw:
             raise Moved('codex exec item literals moved: %r' % run[:40])
     items = {'mcp_tool_call': {'type': 'object', 'fields': {
@@ -1598,11 +1710,11 @@ def codex(path):
         'result': {'type': 'any', 'optional': True, 'nullable': True},
         'error': {'type': 'any', 'optional': True, 'nullable': True},
         'status': {'type': 'enum', 'values': ['in_progress', 'completed', 'failed']}}}}
-    for piece in CODEX_USAGE_SOURCE:
+    for piece in anchors['usage_source']:
         if piece not in raw:
             raise Moved('codex usage source moved: %r' % piece)
     tables = []
-    for name, before, run, after, decision, reason in CODEX_TABLES:
+    for name, before, run, after, decision, reason in anchors['tables']:
         at = raw.find(before + run + after)
         if at < 0:
             raise Moved('codex credential table moved: ' + name)
@@ -1625,18 +1737,12 @@ def codex(path):
     events = {name: {'type': 'object', 'fields': dict({'type': {'type': 'literal', 'value': name}}, **fields)}
               for name, fields in events.items()}
     package = Path(path).resolve()
-    version = None
-    for parent in package.parents:
-        manifest = parent / 'package.json'
-        if manifest.is_file() and parent.name == 'codex':
-            version = json.loads(manifest.read_text()).get('version')
-            break
-    return {'binary': str(package), 'version': version, 'sha256': _digest(path),
+    table = {'binary': str(package), 'version': version, 'sha256': _digest(path),
             'source': "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the "
                       "binary's literals; the strings show field names, not which are always present, so every usage "
                       "field is marked optional",
-            'events': events, 'usage_limit': limit, 'errors': codex_errors(raw), 'credential_tables': tables,
-            'items': items, 'tool_forms': codex_forms(raw),
+            'events': events, 'usage_limit': limit, 'errors': codex_errors(raw, anchors), 'credential_tables': tables,
+            'items': items, 'tool_forms': codex_forms(raw, anchors),
             'items_source': ("exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag "
                              "`type`): the type names, the field names server, arguments and result, and the status "
                              "values in_progress, completed and failed are the binary's literal runs; `id`, `type` and "
@@ -1649,6 +1755,9 @@ def codex(path):
                 "and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed "
                 "thread is never subtracted: the sum of the invocation's own completed turns never counts less "
                 "than the CLI recorded under either reading")}}
+    if 'note' in anchors:
+        table['anchors'] = anchors['note']
+    return table
 
 
 CAPTURE = HERE.parent / 'VELDO-0172' / 'capture.json'
@@ -1751,6 +1860,27 @@ def reconcile(table, capture_path=CAPTURE):
     return table
 
 
+def reconcile_codex(table, capture_path):
+    """A later Codex's table alone, with the lines its binary printed on loopback (proof/VELDO-0061/loopback_lines.py):
+    the observed fields join the binary's, as reconcile() does for the pinned versions' live capture."""
+    capture = json.loads(Path(capture_path).read_text())
+    if capture.get('sha256') != table['sha256'] or capture.get('version') != table['version']:
+        raise Moved('codex loopback capture is not of this binary')
+    source = '%s:streams.codex' % Path(capture_path).name
+    changes, groups = [], {}
+    for number, line in enumerate(capture['streams']['codex'], 1):
+        groups.setdefault(event_name(line), []).append((number, line))
+        if isinstance(line.get('item'), dict):
+            item = line['item']
+            observe_schema(table['items'].setdefault(item['type'], {}), [(number, item)], source,
+                           'item.' + item['type'], changes)
+    for event, samples in groups.items():
+        observe_schema(table['events'].setdefault(event, {}), samples, source, event, changes)
+    table['capture'] = {'path': Path(capture_path).name, 'sha256': _digest(capture_path), 'changes': changes,
+                        'network': capture.get('network')}
+    return table
+
+
 def extract(claude_path, codex_path):
     table = {'schema': 'veldo.cli-formats/v1', 'spec_id': 'VELDO-0062',
             'generated_by': 'proof/VELDO-0062/extract_formats.py (reads binary schemas and the allowlist-scrubbed live capture)',
@@ -1763,7 +1893,23 @@ def main():
     parser.add_argument('--claude', default=str(DEFAULT_CLAUDE))
     parser.add_argument('--codex', default=str(DEFAULT_CODEX))
     parser.add_argument('--check', action='store_true')
+    # A later Codex qualified beside the pinned one (proof/VELDO-0061/codex-formats-<version>.json): its table alone,
+    # read from its bytes; its absolute path may differ from where it is installed later, nothing else may.
+    parser.add_argument('--codex-table', type=Path)
+    parser.add_argument('--codex-capture', type=Path)
     args = parser.parse_args()
+    if args.codex_table:
+        table = codex(args.codex)
+        if args.codex_capture:
+            table = reconcile_codex(table, args.codex_capture)
+        if args.check:
+            recorded = json.loads(args.codex_table.read_text()) if args.codex_table.is_file() else {}
+            same = bool(recorded) and dict(recorded, binary=table['binary']) == json.loads(json.dumps(table))
+            print('%s %s the binary' % (args.codex_table.name, 'matches' if same else 'DIFFERS FROM'))
+            return 0 if same else 1
+        args.codex_table.write_text(json.dumps(table, indent=1, sort_keys=True) + '\n')
+        print('wrote %s' % args.codex_table)
+        return 0
     table = extract(args.claude, args.codex)
     text = json.dumps(table, indent=1, sort_keys=True) + '\n'
     if args.check:

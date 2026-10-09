@@ -1,0 +1,190 @@
+{
+ "generated_by": "proof/VELDO-0061/loopback_lines.py",
+ "network": "loopback stand-in only; empty temporary HOME and CODEX_HOME; thread ids fixed",
+ "runs": [
+  {
+   "answer": "completed",
+   "lines": [
+    {
+     "thread_id": "00000000-0000-7000-8000-000000000000",
+     "type": "thread.started"
+    },
+    {
+     "type": "turn.started"
+    },
+    {
+     "item": {
+      "id": "item_0",
+      "text": "ready",
+      "type": "agent_message"
+     },
+     "type": "item.completed"
+    },
+    {
+     "type": "turn.completed",
+     "usage": {
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 0,
+      "input_tokens": 1,
+      "output_tokens": 1,
+      "reasoning_output_tokens": 0
+     }
+    }
+   ],
+   "returncode": 0
+  },
+  {
+   "answer": "usage_limit",
+   "lines": [
+    {
+     "thread_id": "00000000-0000-7000-8000-000000000000",
+     "type": "thread.started"
+    },
+    {
+     "type": "turn.started"
+    },
+    {
+     "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again later.",
+     "type": "error"
+    },
+    {
+     "error": {
+      "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again later."
+     },
+     "type": "turn.failed"
+    }
+   ],
+   "returncode": 1
+  },
+  {
+   "answer": "quota",
+   "lines": [
+    {
+     "thread_id": "00000000-0000-7000-8000-000000000000",
+     "type": "thread.started"
+    },
+    {
+     "type": "turn.started"
+    },
+    {
+     "message": "Quota exceeded. Check your plan and billing details.",
+     "type": "error"
+    },
+    {
+     "error": {
+      "message": "Quota exceeded. Check your plan and billing details."
+     },
+     "type": "turn.failed"
+    }
+   ],
+   "returncode": 1
+  },
+  {
+   "answer": "request_error",
+   "lines": [
+    {
+     "thread_id": "00000000-0000-7000-8000-000000000000",
+     "type": "thread.started"
+    },
+    {
+     "type": "turn.started"
+    },
+    {
+     "message": "{\"error\": {\"type\": \"server_error\", \"message\": \"loopback\"}}",
+     "type": "error"
+    },
+    {
+     "error": {
+      "message": "{\"error\": {\"type\": \"server_error\", \"message\": \"loopback\"}}"
+     },
+     "type": "turn.failed"
+    }
+   ],
+   "returncode": 1
+  }
+ ],
+ "schema": "veldo.codex-loopback-lines/v1",
+ "sha256": "sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38",
+ "spec_id": "VELDO-0061",
+ "streams": {
+  "codex": [
+   {
+    "thread_id": "00000000-0000-7000-8000-000000000000",
+    "type": "thread.started"
+   },
+   {
+    "type": "turn.started"
+   },
+   {
+    "item": {
+     "id": "item_0",
+     "text": "ready",
+     "type": "agent_message"
+    },
+    "type": "item.completed"
+   },
+   {
+    "type": "turn.completed",
+    "usage": {
+     "cache_write_input_tokens": 0,
+     "cached_input_tokens": 0,
+     "input_tokens": 1,
+     "output_tokens": 1,
+     "reasoning_output_tokens": 0
+    }
+   },
+   {
+    "thread_id": "00000000-0000-7000-8000-000000000000",
+    "type": "thread.started"
+   },
+   {
+    "type": "turn.started"
+   },
+   {
+    "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again later.",
+    "type": "error"
+   },
+   {
+    "error": {
+     "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again later."
+    },
+    "type": "turn.failed"
+   },
+   {
+    "thread_id": "00000000-0000-7000-8000-000000000000",
+    "type": "thread.started"
+   },
+   {
+    "type": "turn.started"
+   },
+   {
+    "message": "Quota exceeded. Check your plan and billing details.",
+    "type": "error"
+   },
+   {
+    "error": {
+     "message": "Quota exceeded. Check your plan and billing details."
+    },
+    "type": "turn.failed"
+   },
+   {
+    "thread_id": "00000000-0000-7000-8000-000000000000",
+    "type": "thread.started"
+   },
+   {
+    "type": "turn.started"
+   },
+   {
+    "message": "{\"error\": {\"type\": \"server_error\", \"message\": \"loopback\"}}",
+    "type": "error"
+   },
+   {
+    "error": {
+     "message": "{\"error\": {\"type\": \"server_error\", \"message\": \"loopback\"}}"
+    },
+    "type": "turn.failed"
+   }
+  ]
+ },
+ "version": "0.162.0"
+}

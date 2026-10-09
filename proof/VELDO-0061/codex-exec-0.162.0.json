@@ -1,0 +1,285 @@
+{
+ "binary": "/home/dmitry/.local/share/veldo-engines/codex-0.162.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+ "events": [
+  "error",
+  "item.completed",
+  "item.started",
+  "item.updated",
+  "thread.started",
+  "turn.completed",
+  "turn.failed",
+  "turn.started"
+ ],
+ "generated_by": "proof/VELDO-0061/extract_items.py (reads the binary's bytes only)",
+ "item": {
+  "agent_states": [
+   "pending_init",
+   "running",
+   "interrupted",
+   "errored",
+   "not_found"
+  ],
+  "change_kinds": [
+   "add",
+   "delete",
+   "update"
+  ],
+  "collab_tools": [
+   "spawn_agent",
+   "send_input",
+   "close_agent"
+  ],
+  "items": {
+   "agent_message": {
+    "fields": {
+     "id": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "agent_message"
+     }
+    },
+    "type": "object"
+   },
+   "collab_tool_call": {
+    "fields": {
+     "agents_states": {
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "prompt": {
+      "optional": true,
+      "type": "any"
+     },
+     "receiver_thread_ids": {
+      "optional": true,
+      "type": "any"
+     },
+     "status": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "type": {
+      "type": "literal",
+      "value": "collab_tool_call"
+     }
+    },
+    "type": "object"
+   },
+   "command_execution": {
+    "fields": {
+     "aggregated_output": {
+      "optional": true,
+      "type": "any"
+     },
+     "command": {
+      "optional": true,
+      "type": "any"
+     },
+     "exit_code": {
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "status": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "type": {
+      "type": "literal",
+      "value": "command_execution"
+     }
+    },
+    "type": "object"
+   },
+   "error": {
+    "fields": {
+     "id": {
+      "type": "string"
+     },
+     "message": {
+      "optional": true,
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "error"
+     }
+    },
+    "type": "object"
+   },
+   "file_change": {
+    "fields": {
+     "changes": {
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "status": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "type": {
+      "type": "literal",
+      "value": "file_change"
+     }
+    },
+    "type": "object"
+   },
+   "mcp_tool_call": {
+    "fields": {
+     "arguments": {
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "result": {
+      "optional": true,
+      "type": "any"
+     },
+     "server": {
+      "optional": true,
+      "type": "any"
+     },
+     "status": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "in_progress",
+       "completed",
+       "failed"
+      ]
+     },
+     "type": {
+      "type": "literal",
+      "value": "mcp_tool_call"
+     }
+    },
+    "type": "object"
+   },
+   "reasoning": {
+    "fields": {
+     "id": {
+      "type": "string"
+     },
+     "type": {
+      "type": "literal",
+      "value": "reasoning"
+     }
+    },
+    "type": "object"
+   },
+   "todo_list": {
+    "fields": {
+     "id": {
+      "type": "string"
+     },
+     "items": {
+      "optional": true,
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "todo_list"
+     }
+    },
+    "type": "object"
+   },
+   "web_search": {
+    "fields": {
+     "action": {
+      "optional": true,
+      "type": "any"
+     },
+     "id": {
+      "type": "string"
+     },
+     "query": {
+      "optional": true,
+      "type": "any"
+     },
+     "results": {
+      "optional": true,
+      "type": "any"
+     },
+     "type": {
+      "type": "literal",
+      "value": "web_search"
+     }
+    },
+    "type": "object"
+   }
+  },
+  "kinds": [
+   "agent_message",
+   "reasoning",
+   "command_execution",
+   "file_change",
+   "mcp_tool_call",
+   "web_search",
+   "todo_list",
+   "collab_tool_call",
+   "error"
+  ],
+  "offsets": {
+   "agent_states": 242585041,
+   "change_kinds": 242585026,
+   "collab": 238926560,
+   "collab_fields": 242584517,
+   "collab_tools": 242584762,
+   "command": 242584601,
+   "fields": 242584981,
+   "id": 242584497,
+   "kinds": 242585087,
+   "mcp_result": 242584641,
+   "status": 242584575
+  },
+  "source": "the exec crate's literal runs: the ThreadItem kinds (tag 'type'), the item structs' long field names, the status and change-kind values; `error` is both an event and an item kind, one literal",
+  "status": [
+   "in_progress",
+   "completed",
+   "failed"
+  ],
+  "unbound": [
+   "text",
+   "tool",
+   "path",
+   "kind",
+   "sender_thread_id",
+   "error"
+  ],
+  "unplaced": [
+   "model",
+   "HighRiskCyberActivity"
+  ]
+ },
+ "schema": "veldo.codex-exec/v1",
+ "sha256": "sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38",
+ "spec_id": "VELDO-0061",
+ "version": "0.162.0"
+}
