@@ -1,67 +1,34 @@
 {
   "date": "2026-10-09",
-  "status": "blocked; 0.162.0 is not qualified",
+  "status": "0.162.0 qualified beside the 0.154.0 pin; not pinned: one owner decision open, live captures not run",
   "production_pin": "0.154.0",
-  "scope": "Informational scoped runs only; not gate evidence or a landing decision.",
+  "scope": "Scoped selftest runs on the host, serial; not gate evidence or a landing decision (scripts/verify.sh not run).",
   "private_package": "/home/dmitry/.local/share/veldo-engines/codex-0.162.0",
-  "private_package_status": "PermissionError reading directory and package.json; no private-binary suite or live capture run.",
-  "runs": [
-    {
-      "command": "python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter",
-      "version": "0.154.0",
-      "status": "blocked before lifecycle setup",
-      "suite_rows_passed": null,
-      "exit_code": 1,
-      "note": "PermissionError creating suite temporary directory under /run/user/1000."
+  "candidate": {
+    "version": "0.162.0",
+    "record": "proof/VELDO-0061/codex-qualification-0.162.0.json",
+    "sha256": "sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38"
+  },
+  "selection": "VELDO_CODEX_BINARY=<vendor executable>; unset selects the installed global binary",
+  "runs": {
+    "0.154.0": {
+      "79_veldo_0061_codex_adapter": "51 passed",
+      "86_veldo_0127_agent_configuration": "51 passed, 2 failed (live/claude, live/codex: stale live capture)",
+      "87_veldo_0127_codex_delivery": "203 passed",
+      "88_veldo_0127_feature_defaults": "62 passed",
+      "89_veldo_0127_feature_listing": "37 passed",
+      "90_veldo_0127_feature_profile": "28 passed"
     },
-    {
-      "command": "python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration",
-      "version": "0.154.0",
-      "status": "blocked before lifecycle setup",
-      "suite_rows_passed": null,
-      "exit_code": 1,
-      "note": "PermissionError creating suite temporary directory under /run/user/1000."
-    },
-    {
-      "command": "python3 scripts/selftest.py --suite 87_veldo_0127_codex_delivery",
-      "version": "0.154.0",
-      "status": "passed (partial run)",
-      "suite_rows_passed": 176,
-      "exit_code": 2,
-      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
-    },
-    {
-      "command": "python3 scripts/selftest.py --suite 88_veldo_0127_feature_defaults",
-      "version": "0.154.0",
-      "status": "passed (partial run)",
-      "suite_rows_passed": 25,
-      "exit_code": 2,
-      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
-    },
-    {
-      "command": "python3 scripts/selftest.py --suite 89_veldo_0127_feature_listing",
-      "version": "0.154.0",
-      "status": "passed (partial run)",
-      "suite_rows_passed": 11,
-      "exit_code": 2,
-      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
-    },
-    {
-      "command": "python3 scripts/selftest.py --suite 90_veldo_0127_feature_profile",
-      "version": "0.154.0",
-      "status": "passed (partial run)",
-      "suite_rows_passed": 2,
-      "exit_code": 2,
-      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
+    "0.162.0": {
+      "79_veldo_0061_codex_adapter": "51 passed",
+      "86_veldo_0127_agent_configuration": "50 passed, 3 failed (live/claude, live/codex, wire/no-server)",
+      "87_veldo_0127_codex_delivery": "85 passed, 88 failed (configuration_stop:codex_unexpected_tool)",
+      "88_veldo_0127_feature_defaults": "27 passed, 35 failed (configuration_stop:codex_unexpected_tool)",
+      "89_veldo_0127_feature_listing": "26 passed, 11 failed (configuration_stop:codex_unexpected_tool)",
+      "90_veldo_0127_feature_profile": "27 passed, 1 failed (configuration_stop:codex_unexpected_tool)"
     }
-  ],
-  "suite_79_selection": "The selected-record, binary-table extraction, changed-digest and unknown-version checks ran before runtime directory creation; no SELFTEST FAIL was printed.",
-  "live_captures": "Not run, as instructed. VELDO-0127 command and remaining VELDO-0061 capture work are in README.md.",
-  "remaining": [
-    "Read private vendor package, help/features/catalog and 0.155-0.162 vendor changelogs.",
-    "Extract 0.162.0 event/item/credential/configuration tables and fix changed assumptions.",
-    "Make model-mode binding and 0127 wire fixtures version-aware; qualify gpt-6.1-sol.",
-    "Switch synchronized production pin to the reviewed 0.162.0 record and verify both versions.",
-    "Run host subscription captures and reviewer-owned full gate."
-  ]
+  },
+  "open_decision": "0.162.0 Code Mode offers list_mcp_resources, list_mcp_resource_templates and read_mcp_resource with no MCP server selected; Veldo refuses (owner rule, Telegram 29400/29401). Keep refusing, or amend the rule for 0.162.0 Code Mode.",
+  "falsifiers": "25 mutants on suites 75 and 87 to 90 rejected (confined); finding 61 and suite 86 mutants need the gate's unconfined leg",
+  "live_captures": "Not run, as instructed. Commands in README.md: the 0.154.0 recapture of VELDO-0127 live evidence (production modules changed), then the 0.162.0 gpt-6.1-sol capture at the pin move."
 }

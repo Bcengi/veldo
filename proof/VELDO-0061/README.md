@@ -1,62 +1,127 @@
 # VELDO-0061 proof: the Codex adapter qualified on Linux
 
-## 0.162.0 qualification in progress (2026-10-09)
+## Codex 0.162.0 qualified beside the 0.154.0 pin (2026-10-09)
 
-The production pin and global install remain 0.154.0. This work does **not**
-qualify 0.162.0 or authorize upgrading the global install. The runner cannot
-read the supplied private package at
-`/home/dmitry/.local/share/veldo-engines/codex-0.162.0`: both directory access
-and reading `node_modules/@openai/codex/package.json` return PermissionError.
-It also cannot create the runtime directories under `/run/user/1000` required
-by suites 79 and 86. These are execution-environment blockers, not passing
-qualification evidence.
+The production pin and the global install stay 0.154.0. 0.162.0 is qualified beside it: its record,
+tables, fixtures and fixes are in the tree, and moving the pin is one reviewed change (below). It is
+**not** ready to pin yet: one owner decision is open and the live captures are not run.
 
-The exact 0.154.0 runtime record is preserved in
-`codex-qualification-0.154.0.json`; the original `codex-exec.json` and the
-0062 format table remain unchanged. `qualification.py` selects a retained
-record using the vendor package manifest, checks package-relative path and
-SHA-256, and refuses an unknown version or inconsistent evidence. Suite 79
-uses that record for its actual-binary launch and its table checks. It also
-checks that the active production record equals its canonical engine copy
-and its retained history. Production binding still uses its configured pin;
-the test selector does not auto-qualify or switch production engines.
+### The 0.155 to 0.162 audit
 
-For a private binary, set `VELDO_CODEX_BINARY` to the **vendor executable**,
-not `node_modules/.bin/codex`, before running a scoped suite. Suite 79 now
-supports this selection; the 0127 wire fixtures still need the same change.
-`extract_items.py --output PATH` permits a second version's extracted item
-record without overwriting the historical one. No 0.162.0 record has been
-invented from the old table.
+No changelog ships in the package (`@openai/codex` and `@openai/codex-linux-x64` hold only a README),
+so the audit is the two binaries side by side, offline: `--help`, `exec --help`, `exec resume --help`,
+`sandbox --help`, `app-server --help`, `login --help`, `login status`, `features list` and
+`debug models --bundled` under an empty temporary HOME and CODEX_HOME; their literal pools
+(`strings -a -n 6`, and the extractors below); and what each binary prints on `exec --json` against a
+loopback model endpoint with no login (`loopback_lines.py`, every other connection denied).
 
-`qualification-progress.json` records the scoped results: 87-90 passed their
-176/25/11/2 rows on 0.154.0; 79 and 86 could not create their runtime directories.
-The selector, extraction and two negative checks in 79 ran before that failure.
-The item comparison permits relocation from a private install to a global install
-while retaining exact version, digest and extracted-table equality.
+| Change in 0.162.0 | Veldo assumption | What was done |
+|---|---|---|
+| The usage-limit message prints its apostrophe as U+2019 (`You` U+2019 `ve`); its usage URL moved | `LIMIT_MESSAGE` with an ASCII apostrophe | Broke: an exhausted account would stay launchable. The Meter reads either apostrophe (`APOSTROPHES`); suite 75 reads all 44 messages of 0.162.0's error table |
+| An exhausted quota now prints `Quota exceeded. Check your plan and billing details.` (was a retry-limit text) | `EXHAUSTED` | Already the `quota` window; seen on loopback |
+| Exec event and payload shapes | `EVENTS`, `USAGE_FIELDS`, `ITEM_KINDS` | Unchanged: same eight events, payload fields and item kinds, in the bytes and on loopback (normal turn, usage limit, quota, request error) |
+| Item literals: `command` (command item), `results` (web search), `result` beside `id`; `model` and `HighRiskCyberActivity` with no named owner | items read for `id` and `type` only | No break. Recorded in `codex-exec-0.162.0.json` (`unplaced` lists the last two; no fake prints them) |
+| The binary keeps no exec struct names and no exec JSON source path; CollabTool is serialized as a quoted string | the extractors' anchors | Per-version anchors (`CODEX_ANCHORS`, `VERSIONS`, `QUOTED_CASE`); 0.154.0's tables are byte for byte unchanged |
+| New credential table: `OPENAI_WORKLOAD_IDENTITY_CONTEXT`, `CODEX_GUARDIAN_DECISIONS_API_KEY` | `CREDENTIALS` | Both refused when an adapter configures them (the families strip them from the inherited environment already) |
+| Bundled models: `gpt-6.1-sol`, `gpt-6-sol`, `gpt-6-luna` added, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.2` gone | `MODEL_TOOL_MODES` was 0.154.0's only, so a 0.162.0 record could not bind | Per version (`QUALIFIED_MODEL_TOOL_MODES`); a record binds only with its own version's table. `gpt-6.1-sol` is `code_mode_only` with the clock and asynchronous input, like `gpt-6-astra` |
+| `gpt-6-sol`'s entry sets `default_service_tier: priority` ("2x speed, increased usage") | no role chooses a tier | Named stop `configuration_stop:codex_service_tier:<model>:<tier>`; `gpt-6.1-sol` sets none |
+| Eleven features newly default on: `api_key_model_discovery`, `browser_annotation_api`, `daemon_auto_start`, `guardian_reuse_parent_compaction`, `in_app_voice`, `instant_interrupt`, `realtime_conversation`, `system_proxy_fallback`, `ultrafast_mode`, `worktrees`, `write_stdin_approval` | an unknown default-on feature stops every launch | All forced off, so 0.162.0 runs with 0.154.0's qualified feature set (among them a shared background server that outlives the run and its updater, git worktrees beside the clone, the faster tier). Suite 88 has a row each |
+| Global `--no-daemon`; `daemon_auto_start` | the engine's processes stay in its scope | `exec` left no daemon on loopback, and `daemon_auto_start` is forced off. `--no-daemon` is not an exec option, so it is not added |
+| `exec --cyber-access-program <standard\|daybreak_blue\|daybreak_red>` (also `exec resume`) | the argv is the record's flags exactly | No change: the receiver's argv check refuses any flag the record does not list; omitted means server defaults |
+| `cli_auth_credentials_store`: still `file` by default, still `file`, `keyring`, `ephemeral`; a new encrypted secrets store (`codex_auth.age`, its key in the keyring) and new keyring guidance | the baseline forces `file`, so the login is the profile's `auth.json` | No break: VELDO-0156's baseline extraction passes on 0.162.0 (same options, keys, values and the eight `login status` messages). The write-back of a refreshed login is the live capture's to show |
+| Auto-update: `check_for_update_on_startup` still named; new managed daemon updater (`codex app-server daemon update`) | FLAGS turn the startup check off | The flag is unchanged; the daemon updater runs only with the daemon, which is off |
+| Code Mode now offers `list_mcp_resources`, `list_mcp_resource_templates` and `read_mcp_resource` with no MCP server selected | readers only with a selected server (owner, Telegram 29400/29401) | **Open owner decision**, below. Veldo refuses each such launch (`configuration_stop:codex_unexpected_tool`) |
 
-Remaining work requires readable/executable access to the supplied package:
+### The open owner decision
 
-- Identify the vendor path and digest; retain offline help, bundled model
-  catalog and feature listing; extract and compare event/item, credential and
-  configuration tables. Update extraction anchors from the actual bytes.
-- Audit each vendor changelog from 0.155 through 0.162, including event output,
-  sandbox options, credential/keyring guidance and file layout, update behavior,
-  and `--cyber-access-program`. No version-specific compatibility claim has yet
-  been established for these changes.
-- Replace the fixed 0.154 model-mode assumption with validated per-pin catalog
-  data, qualify `gpt-6.1-sol`, and make 0127 fixtures select the same reviewed
-  binary, catalog and feature defaults. Fix all observed behavior differences.
-- Commit the 0.162 record and synchronized production pin in one reviewed change,
-  preserving 0.154 history. Run suites 79 and 86-90 serially on both versions.
-- Have the owner's assistant perform subscription captures on the host. Do not
-  treat offline help or loopback results as a substitute for these captures.
+Under 0.162.0 every Code Mode model (`gpt-6.1-sol` included) offers the three MCP resource readers even
+when the role selects no MCP server. No 0.162.0 switch was found (the readers stay with every listed
+feature off and with `tools.*` overrides). Veldo fails closed: such a launch is refused, so a 0.162.0
+pin can run Code Mode roles only when they select an MCP server. With no server the readers have nothing
+to read (their sources are configured MCP servers; the apps connectors are off). The two choices are to
+keep refusing, or to amend the rule for Code Mode on 0.162.0 (the readers come with the runner, as `exec`
+and `wait` do). A probe of the second choice in the working tree only (never committed) turned suites 87,
+88 and 90 fully green on 0.162.0; the only rows left red were the ones that state the rule (86
+`wire/no-server`, 89's `{exec, wait}` oracle).
 
-### Host live-capture handoff (after qualification is completed)
+### Selecting the binary
 
-The following resolver deliberately fails until the new reviewed record exists.
-It resolves the private vendor executable from the recorded relative path and
-verifies its digest; it does not run the package-manager shim or install anything.
-Run it from this checkout on the host:
+`VELDO_CODEX_BINARY` names a vendor executable (never `node_modules/.bin/codex`); unset, the installed
+global binary is used. Suite 79 selects its record and tables through `qualification.py`; the VELDO-0127
+suites through `proof/VELDO-0127/wire_fixture.py`, which reads the version from the vendor package and
+serves that version's captures (0.162.0's in `proof/VELDO-0127/codex-0.162.0/`). The fake engines carry
+the selection in their source: before that, a launch environment dropped the variable and suites 87 to
+89 forwarded to 0.154.0 unnoticed.
+
+    VELDO_CODEX_BINARY=/home/dmitry/.local/share/veldo-engines/codex-0.162.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex \
+        python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter
+
+### Evidence for 0.162.0
+
+- `codex-qualification-0.162.0.json`: the production writer's record (`qualification(binary, catalog=True)`),
+  package `@openai/codex` `0.162.0-linux-x64`, `vendor/x86_64-unknown-linux-musl/bin/codex`,
+  `sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38`; flags, environment,
+  baseline and terminal protocol identical to 0.154.0's.
+- `codex-formats-0.162.0.json` (`extract_formats.py --codex-table`, reconciled with
+  `codex-loopback-0.162.0.json`), `codex-exec-0.162.0.json` (`extract_items.py --output`).
+- `proof/VELDO-0127/codex-0.162.0/`: features listing, bundled catalog, model-mode probe (loopback).
+
+### Results (2026-10-09, `python3 scripts/selftest.py --suite <name>`, serial)
+
+| Suite | 0.154.0 (installed) | 0.162.0 (`VELDO_CODEX_BINARY`) |
+|---|---|---|
+| 79_veldo_0061_codex_adapter | 51 passed | 51 passed |
+| 86_veldo_0127_agent_configuration | 51 passed, 2 failed: `live/claude`, `live/codex` | 50 passed, 3 failed: the two `live/*`, `wire/no-server` |
+| 87_veldo_0127_codex_delivery | 203 passed | 85 passed, 88 failed: all the reader refusal |
+| 88_veldo_0127_feature_defaults | 62 passed | 27 passed, 35 failed: all the reader refusal |
+| 89_veldo_0127_feature_listing | 37 passed | 26 passed, 11 failed: all the reader refusal |
+| 90_veldo_0127_feature_profile | 28 passed | 27 passed, 1 failed: the reader refusal |
+
+`live/*` is red on 0.154.0 because the live captures bind the digests of the five production modules
+this change edits; they need the recapture below. Every other suite that loads a changed module ran on
+0.154.0: green, except three failures that are identical at the base commit 273313ff (82_veldo_0165
+and 82_veldo_0173: the host no longer has Claude Code 2.1.281; 101_veldo_0208: two sandbox rows) and
+102_veldo_0210 `scratch/stop-during-fork-forwarded-to-child`, which also fails at the base (two of
+three runs).
+
+Falsifiers (`check_teeth_mutations.py`, confined): `account-codex-limit-apostrophe-ignored`,
+`account-codex-0162-credentials-dropped`, `role127-default-0162-omitted-daemon_auto_start`,
+`role127-default-0162-omitted-worktrees`, `role127-service-tier-unchecked`, the existing
+`account-codex-limit-unobserved` and all 19 other mutants of suites 87 to 90: all rejected. Finding 61's
+and the suite 86 mutants need the gate's unconfined leg (`/run/user/1000`), and suite 86's baseline is
+red until the recapture.
+
+### Moving the pin to 0.162.0 (one reviewed change, after the decision and the captures)
+
+1. Upgrade the global install to 0.162.0 (the owner's act) and check the installed binary is the
+   qualified one: `python3 -B proof/VELDO-0061/extract_items.py --check --codex <global vendor codex>
+   --output proof/VELDO-0061/codex-exec-0.162.0.json` and the same `--check` of `extract_formats.py
+   --codex-table` (both compare everything but the absolute path).
+2. Copy `proof/VELDO-0061/codex-qualification-0.162.0.json` over `engine/runtime/codex-qualification.json`
+   and `.veldo/runtime/codex-qualification.json` (suite 79 requires the three identical).
+3. Recapture the VELDO-0127 live evidence on the new pin (below), then run the gate.
+
+### Live captures for the owner's assistant (not run here)
+
+Nothing here ran against a real login. After the login write-back fix lands:
+
+1. Now, on the 0.154.0 pin: the VELDO-0127 live evidence must be recaptured because this change edits
+   the production modules it is bound to (`control_engine_codex.py`, `control_agent_config_handoff.py`),
+   for both engines, with the models the current captures used. The driver's `--claude` is the pinned Claude Code 2.1.281, which is no longer under
+   `~/.local/share/claude/versions` on this host (2.1.286 to 2.1.295 are).
+
+```bash
+python3 proof/VELDO-0127/live.py \
+  --claude /home/dmitry/.local/share/claude/versions/2.1.281 \
+  --codex /home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex \
+  --claude-profile /home/dmitry/.claude --codex-profile /home/dmitry/.codex \
+  --claude-model claude-haiku-4-5-20251001 --codex-model gpt-6-astra \
+  > /run/user/1000/veldo-0127-0.154.0-live.log 2>&1
+```
+
+2. At the pin move (after step 2 above): the 0.162.0 capture with `gpt-6.1-sol`. Its roles select the
+   `jira` MCP server, so the open reader decision does not stop them. The resolver checks the private
+   vendor binary against the reviewed record:
 
 ```bash
 codex_vendor=$(python3 - <<'PYCODEX'
@@ -79,20 +144,18 @@ python3 proof/VELDO-0127/live.py \
   --codex "$codex_vendor" \
   --claude-profile /home/dmitry/.claude \
   --codex-profile /home/dmitry/.codex \
-  --claude-model claude-opus-4-6 \
+  --claude-model claude-haiku-4-5-20251001 \
   --codex-model gpt-6.1-sol --only codex \
   > /run/user/1000/veldo-0127-codex-0.162.0-live.log 2>&1
 ```
 
-The supplied profiles must contain the owner's existing file-backed subscription
-logins (`.credentials.json` and `auth.json`). The driver requires both profiles
-even with `--only codex`; it links login files into temporary profiles. The
-command above has **not** been executed or qualified for 0.162.0. The current
-model table will refuse the new model until the remaining implementation lands.
-The 0061 bundle has no subscription-capture driver today; a vetted command for
-normal/nonzero/signal terminal evidence and byte perturbations remains part of
-the blocked qualification work. Historical help-only evidence below must not be
-relabeled as new live evidence.
+   The capture is judged against the pinned record's digest, so it is evidence only once the pin is
+   0.162.0. What it shows that loopback cannot: the real model's stream (items beyond `agent_message`,
+   whether `model` or `HighRiskCyberActivity` ever appear on a line), the usage-limit line from the
+   real backend, and that the file login is read and written back to `auth.json` under the new
+   keyring guidance.
+3. The 0061 bundle has no subscription-capture driver; none was added.
+
 
 Built on branch build-veldo-0061, then integrated with VELDO-0060 on build-veldo-0060-0061, where both
 engine modules were put on one engine protocol and both reviews' filed items were done. This README
