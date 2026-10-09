@@ -1,0 +1,119 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0185",
+  "commit": "be20297abdf6617221f2523871e0e557c318ba76",
+  "producer": "Claude Code implementation agent (builder; not a reviewer)",
+  "produced_at": "2026-10-09T06:33:41.008385+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+          "detail": "Rows fresh/team, fresh/adapters, fresh/one-engine, loop/configured pass on the host (14 rows, suite 106); installing without the work option leaves the loop available False and configured False."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0185/mutations.json",
+          "detail": "Executed falsifier cases v185-work-not-installed each make their named row false; the unmutated baseline passes every row. Red replay: proof/VELDO-0185/red-at-244784bc.json."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+          "detail": "Rows reservation/principals, reservation/state-root pass on the host (14 rows, suite 106); enrolling both principals without the role fails the reservation row."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0185/mutations.json",
+          "detail": "Executed falsifier cases v185-principals-without-role each make their named row false; the unmutated baseline passes every row. Red replay: proof/VELDO-0185/red-at-244784bc.json."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+          "detail": "Rows rerun/changes-nothing, rerun/over-earlier-host pass on the host (14 rows, suite 106); sending both enrollments on every run fails the second-run row (the store refuses the second enrollment, so the run is refused; recorded in README.md)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0185/mutations.json",
+          "detail": "Executed falsifier cases v185-enrollments-every-run, v185-team-saved-again, v185-rerun-work-not-recorded, v185-null-state-root-refused, v185-records-null-refused each make their named row false; the unmutated baseline passes every row. Red replay: proof/VELDO-0185/red-at-244784bc.json."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+          "detail": "Rows fresh/registered, login/named, login/receiver-refuses, every-account pass on the host (14 rows, suite 106); adapters without codex fail the every-account row (the installer refuses the Codex reviewer, so no account runs; recorded in README.md); leaving registration out fails fresh/registered on the missing records."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0185/mutations.json",
+          "detail": "Executed falsifier cases v185-adapters-without-codex, v185-registration-left-out, v185-receiver-login-unchecked, v185-refused-unit-stranded, v185-setup-login-unchecked each make their named row false; the unmutated baseline passes every row. Red replay: proof/VELDO-0185/red-at-244784bc.json."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0185_dispatch_setup",
+      "ref": "scripts/suites/106_veldo_0185_dispatch_setup.py"
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "python3 -B proof/VELDO-0185/drive.py --mutations",
+      "ref": "proof/VELDO-0185/mutations.json"
+    },
+    {
+      "name": "red",
+      "status": "passed",
+      "command": "python3 -B proof/VELDO-0185/drive.py --red 244784bc",
+      "ref": "proof/VELDO-0185/red-at-244784bc.json"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0185/README.md",
+    "proof/VELDO-0185/__pycache__",
+    "proof/VELDO-0185/drive.py",
+    "proof/VELDO-0185/extract_login_status.py",
+    "proof/VELDO-0185/fixture.py",
+    "proof/VELDO-0185/login-status.json",
+    "proof/VELDO-0185/mutations.json",
+    "proof/VELDO-0185/red-at-244784bc.json",
+    "proof/VELDO-0185/v185-adapters-without-codex.diff",
+    "proof/VELDO-0185/v185-enrollments-every-run.diff",
+    "proof/VELDO-0185/v185-null-state-root-refused.diff",
+    "proof/VELDO-0185/v185-principals-without-role.diff",
+    "proof/VELDO-0185/v185-receiver-login-unchecked.diff",
+    "proof/VELDO-0185/v185-records-null-refused.diff",
+    "proof/VELDO-0185/v185-refused-unit-stranded.diff",
+    "proof/VELDO-0185/v185-registration-left-out.diff",
+    "proof/VELDO-0185/v185-rerun-work-not-recorded.diff",
+    "proof/VELDO-0185/v185-scaffold-absent.diff",
+    "proof/VELDO-0185/v185-setup-login-unchecked.diff",
+    "proof/VELDO-0185/v185-team-saved-again.diff",
+    "proof/VELDO-0185/v185-work-not-installed.diff"
+  ],
+  "rollback": "Reinstall the service without the work configuration, so the loop stops offering work, and revoke the two role grants with the owner's signed commands; accepted records, the default team among them, are unchanged. No automatic rollback is authorized.",
+  "review": "Implementation evidence only. Independent review, the canonical gate and the VELDO-0127 live recapture belong to the owner session; no gate stamp is claimed."
+}
