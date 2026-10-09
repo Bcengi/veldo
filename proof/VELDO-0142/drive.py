@@ -29,6 +29,7 @@ def run(name, observations):
     lines = log.read_text().splitlines()
     return dict(exit=result.returncode, summary=[line for line in lines if line.startswith('selftest (PARTIAL')],
                 failing_rows=[line.strip() for line in lines if 'SELFTEST FAIL:' in line],
+                diagnostics=[line for line in lines if 'VELDO-0142 diagnostic' in line],
                 log_sha256=digest(log.read_bytes()))
 
 

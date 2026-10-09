@@ -10481,6 +10481,7 @@ def cases():
     add(142, 'identity142-reference-too-loose', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None", "return text(value) and value.startswith('keychain:') and bool(value[9:].strip())", ['setup/keychain-reference-pattern'])
     add(142, 'identity142-setup-log-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "observe=lambda event: done.append(dict(step='git_identity_configured', **event))", 'observe=None', ['setup/configured-log'])
     add(142, 'identity142-caller-identity-ignored', '103_veldo_0142_git_identities.py', 'lander.py', '        if self.identity is not None:', '        if False:', ['lander/caller-identity-refused'])
+    add(142, 'identity142-engine-config-reinjected', '103_veldo_0142_git_identities.py', 'control_launch.py', "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']", "    environment['XDG_RUNTIME_DIR']", ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
 
     return result
 

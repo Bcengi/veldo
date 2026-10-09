@@ -304,7 +304,9 @@ def _v142_suite():
                 environments.append(L.engine_environment(dict(polluted, **{
                     L.ENGINE_RUNTIME: str(base / 'runtime'),
                     L.ENGINE_OVERRIDES: json.dumps(dict(injection, KEEP='yes'))}, **injection)))
-            check('launch/no-config-overrides', all(GI.environment(env) == env for env in environments)
+            check('launch/no-config-overrides', all(not any(key in ('GIT_CONFIG_COUNT', 'GIT_CONFIG_PARAMETERS') or
+                      __import__('re').fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key) for key in env)
+                      for env in environments)
                   and all(env['KEEP'] == 'yes' for env in environments[1::2]))
 
         dispatches = SimpleNamespace(store=S, conn=conn, domain=domain)

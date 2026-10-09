@@ -143,5 +143,17 @@
     "rows": [
       "lander/caller-identity-refused"
     ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-engine-config-reinjected",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_launch.py",
+    "old": "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']",
+    "new": "    environment['XDG_RUNTIME_DIR']",
+    "rows": [
+      "launch/no-config-overrides",
+      "launch/spawn-config-commit-authors"
+    ]
   }
 ]
