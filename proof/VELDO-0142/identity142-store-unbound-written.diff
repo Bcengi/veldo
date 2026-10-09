@@ -1,0 +1,11 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -1012,7 +1012,7 @@
+                 prior = bound_repository(conn, domain_uuid, repository)
+                 if prior is not None and prior != target:
+                     raise StoreRefused('repository_binding_conflict', 'repository path cannot change')
+-                identity_module.resolve(conn, domain_uuid, repository, target)
++                pass
+         except identity_module.Refused as error:
+             raise StoreRefused(error.code, 'repository binding requires its configured identity') from None
+         conn.execute(_BINDINGS_DDL)

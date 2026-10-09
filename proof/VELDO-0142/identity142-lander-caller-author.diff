@@ -1,6 +1,6 @@
 --- a/.veldo/lander.py
 +++ b/.veldo/lander.py
-@@ -435,7 +435,7 @@
+@@ -447,7 +447,7 @@
              self.identity_record = module.resolve(conn, self.domain, self.repository, self.repo_root)
          except module.Refused as error:
              raise CandidateRefused(error.code, 'repository identity refused') from None

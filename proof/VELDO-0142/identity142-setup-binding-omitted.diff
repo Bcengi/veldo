@@ -8,4 +8,4 @@
 +        if False:
              with step('git_identities'):
                  setup_identities(conn, ids['domain_uuid'], ids['repository_uuid'], workspace,
-                                  git_identities, workspace_identity)
+                                  git_identities, workspace_identity,

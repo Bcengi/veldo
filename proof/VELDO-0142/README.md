@@ -1,45 +1,71 @@
 # VELDO-0142 scoped proof
 
-The implementation is bound to bba678d8. Specification status stays ready. No independent
-review, approval, full gate, mutation driver, push or merge was performed.
+The review fixes implement immutable setup additions, store refusals, complete launch scrubbing
+and validation of incoming worker commits. The implementation and fixture commits are d439af66, 90293601, e04a8f0a, b6d1790a 30e97110 and 1242de16.
+Specification status stays ready. The full gate, independent approval, push and merge remain
+reserved for the reviewer and owner.
 
-| Criterion | Proving rows in suite 103 | Driven falsifier |
+| Review item | Suite 103 rows | Registered falsifiers |
 | --- | --- | --- |
-| AC1 | setup/full-command-and-rerun; setup/two-identities-and-replay; binding/missing; binding/second; binding/immutable; setup/reference-only-and-unchanged | identity142-binding-replaced makes binding/immutable fail; identity142-setup-binding-omitted makes setup/full-command-and-rerun fail |
-| AC2 | launch/no-author-overrides; clone/identity-authors; clone/unbound-refused | identity142-clone-global-author makes clone/identity-authors fail; identity142-environment-overrides-kept makes launch/no-author-overrides fail |
-| AC3 | lander/identity-and-reland-authors; lander/unbound-before-commit | identity142-lander-caller-author makes lander/identity-and-reland-authors fail |
+| 1. Environment configuration injection, including spawn and engine overrides | launch/no-config-overrides; launch/spawn-config-commit-authors; launch/no-author-overrides | identity142-config-overrides-kept; identity142-spawn-strip-omitted; identity142-engine-config-reinjected; identity142-environment-overrides-kept |
+| 2. Every incoming implementation, evidence and ancestor commit must match | lander/worker-commit-mismatch; lander/identity-and-reland-authors | identity142-worker-authors-unchecked; identity142-lander-caller-author |
+| 3. Existing setup adds missing bindings and identities, preserving existing records | setup/existing-store-adds-binding; setup/rerun-adds-identity; setup/rerun-change-refused; setup/full-command-and-rerun; binding/immutable | identity142-rerun-binding-not-written; identity142-setup-binding-omitted; identity142-binding-replaced |
+| 4. Store records and both registration callers refuse an absent identity without writes | binding/store-and-callers-missing; binding/missing | identity142-store-unbound-written |
+| Keychain references follow VELDO-0144 | setup/keychain-reference-pattern; setup/reference-only-and-unchanged | identity142-reference-too-loose |
+| Setup emits each configured identity | setup/configured-log | identity142-setup-log-omitted |
+| Land station uses only its repository record | lander/station-record-authority | identity142-station-caller-config |
+| Caller supplied lander identity refuses | lander/caller-identity-refused | identity142-caller-identity-ignored |
+| Independent clone refusal fixture and direct author comparison | clone/unbound-refused; clone/identity-authors | identity142-clone-global-author |
 
-The full setup command runs over a real SQLite store, real signing keys, workspace enrollment
-and the real installer, with the existing engine and Tailscale stand-ins and a controlled
-service manager and host qualification. It creates two identity records, binds the workspace,
-and replays. The credential values are never resolved: only keychain references are input.
-Additional binding tests compare logical database contents before and after every refusal.
+Rerun identity additions now succeed and report the git_identities step as done; changes to an
+existing identity retain binding_mismatch:git_identity_change. Existing repository bindings
+retain binding_mismatch:repository_identity_change. Missing store identity metadata refuses
+missing_authority:repository_identity before DDL, rows or caller ownership registration.
 
-Worker tests provision two real clones, set a conflicting global user, author and committer,
-and pass caller author and committer variables to the launch environment function. Real Git
-commands in those clones use the returned environment. The assertions read both local settings
-and actual commit authors and committers. The environment test includes unknown future names
-under both prefixes and an adapter override reintroduced after the first environment strip.
+The land station no longer accepts an identity configuration or supplies one to GitLandOps.
+Suite 103 lander/station-record-authority constructs the station against the real identity
+store, reads its bound author, accepts a configuration without a caller identity and refuses
+a legacy caller identity. identity142-station-caller-config restores the dead configuration
+read and fails that row. The VELDO-0148 install/land-station consumer assertions are retained. The lander docstring describes the
+authority reader requirement. The specification explicitly scopes out control_replica's
+standalone authority audit exports; it is not wired into the factory. These documentation
+changes do not require a behavioral falsifier.
 
-Landing tests use the real candidate constructor, merges, projection generator and leased
-publication against disposable local bare remotes. For each identity they land one unit,
-construct another candidate, move trunk with a colleague's commit, observe a lost lease and
-construct and publish a new candidate. They inspect twelve landed commits, six merges and
-projections per identity. Gate observation and policy acceptance are controlled seams here;
-this proves authorship without running a gate. VELDO-0148's dispatch scheduling and approval
-logic are not requalified by this suite. The existing re-land fixture now binds its repository
-explicitly so the reviewer can run that integration suite against the stricter consumer.
+The setup fixture uses a real SQLite store, signing keys, enrollment and installer. Tailscale,
+engine binaries, service management and host qualification are controlled local stand-ins.
+It removes identity tables from a completed store to model a VELDO-0139 factory, then proves
+that rerunning setup writes its explicit binding. It adds one identity and refuses an edit
+without changing stored contents. Tokens and key values are never resolved.
 
-observations.json records the actual identity records and worker and landed commit authors.
-verification.json records the honest partial suite exit, each mutant source digest, exact diff,
-exit and failed assertions. All five mutations were applied individually to this checkout's
-installed source, tested with only suite 103 and restored in finally. Their definitions are
-registered as finding 142 in scripts/check_teeth_mutations.py; that driver was not executed.
-The scoped replay is proof/VELDO-0142/drive.py. It runs only this specification's suite serially.
+Worker fixtures provision real clones under two identities with a conflicting global identity.
+They make real Git commits with counted and parameterized environment configuration injections.
+The actual Receiver._spawn runs with both engine bindings and unbound adapters, each through
+local and reported launch paths. Credential resolution, execution recording, baseline construction
+and containment are controlled seams; actual processes and commits are real. The environment
+assertions enumerate forbidden names independently of the implementation scrubber.
 
-The honest result is 37 passed, zero failed: 11 criterion rows plus 26 shared preamble checks.
-Subset mode deliberately exits 2. This is scoped behavioral evidence, not a full gate verdict
-or a landing approval. Consumer suite fixtures were updated to supply explicit identity
-records, with their assertions retained. The landing fixture's policy wrapper also passes its explicit identity reader.
-Other specifications' suites remain unrun here under
-the owner's token rule. The reviewer must run those and the full gate before landing.
+The lander inspects every commit reachable from evidence but absent from the trunk watermark,
+including earlier worker ancestors. Negative controls separately alter author and committer for
+implementation and evidence, plus an earlier ancestor. Refusal precedes all merge commits.
+Positive fixtures land and re-land units for both identities, inspecting twelve merge and
+projection commits. Gates and policy acceptance are controlled seams, not gate verdicts.
+
+observations.json records actual identity records and worker and landed authors. verification.json
+records suite results, each exact mutant diff and source digest, named failed rows and diagnostics.
+The clone mutant fails on the author comparison showing Global Stranger, before local settings
+are read. The scoped drive.py invokes only suite 103 serially and restores each mutated source
+in finally; the repository mutation drivers are never invoked. consumer-verification.json records
+the permitted touched consumer suites individually, with honest failure lines and log digests.
+Partial suite exits and scoped assertions do not establish a full gate result or landing approval.
+
+The first fourteen negative controls ran at 90293601; the final station row and its control
+ran at 30e97110. Each mutation records its suite digest, allowing exact replay of either
+checkpoint. One premature identity suite attempt was stopped after it overlapped a consumer
+retry. It supplies no result; the final identity checks were rerun after the consumer process
+finished. Consumer results retain the initial startup failures and owned-runtime retries.
+
+The final suite has 22 identity rows plus 26 shared checks: 48 passed, zero failed. All
+fifteen registered negative controls failed their named rows at their recorded checkpoints.
+Of 24 consumer suites, six passed and eighteen failed. They include containment, permission,
+runtime and gate-observation failures; none is certified as a non-regression without reviewer
+execution. No full gate or independent approval is claimed.

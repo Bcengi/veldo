@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0142",
-  "commit": "bba678d88bd37dd1150d43468d11ce0d0587c2e0",
+  "commit": "1242de164b88d59ea5813e39c2c9a271022d8125",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-08T23:12:38.371042+00:00",
+  "produced_at": "2026-10-09T00:59:49.885502+00:00",
   "plan": "PLAN-0019",
   "work": "W102",
   "plan_revision": 4,
@@ -15,7 +15,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0142/observations.json",
-          "detail": "Scoped assertions: setup/full-command-and-rerun, setup/two-identities-and-replay, binding/missing, binding/second, binding/immutable, setup/reference-only-and-unchanged"
+          "detail": "Scoped assertions: setup/full-command-and-rerun, setup/configured-log, setup/existing-store-adds-binding, setup/rerun-adds-identity, setup/rerun-change-refused, setup/two-identities-and-replay, binding/missing, binding/second, binding/immutable, setup/reference-only-and-unchanged, binding/store-and-callers-missing, setup/keychain-reference-pattern"
         },
         {
           "type": "integration",
@@ -31,7 +31,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0142/observations.json",
-          "detail": "Scoped assertions: launch/no-author-overrides, clone/identity-authors, clone/unbound-refused"
+          "detail": "Scoped assertions: launch/no-author-overrides, launch/no-config-overrides, clone/identity-authors, launch/spawn-config-commit-authors, clone/unbound-refused"
         },
         {
           "type": "integration",
@@ -47,7 +47,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0142/observations.json",
-          "detail": "Scoped assertions: lander/identity-and-reland-authors, lander/unbound-before-commit"
+          "detail": "Scoped assertions: lander/identity-and-reland-authors, lander/worker-commit-mismatch, lander/station-record-authority, lander/caller-identity-refused, lander/unbound-before-commit"
         },
         {
           "type": "integration",
@@ -61,12 +61,12 @@
     {
       "name": "unit",
       "status": "passed",
-      "detail": "Own suite only: 37 passed, 0 failed, partial exit 2. Not a gate verdict."
+      "detail": "Own suite: 48 passed, zero failed, partial exit 2. Not a gate verdict."
     },
     {
       "name": "integration",
       "status": "passed",
-      "detail": "Setup, clone and candidate authorship observations in observations.json; five falsifiers rejected in verification.json."
+      "detail": "Real setup, clone and lander identity observations; 15 exact falsifiers rejected at their recorded suite revisions."
     },
     {
       "name": "gate",
@@ -75,15 +75,15 @@
     },
     {
       "name": "consumer_suites",
-      "status": "not_run",
-      "detail": "Other specifications suites are prohibited by the owner token rule."
+      "status": "failed",
+      "detail": "24 permitted consumer suites ran individually. Six passed, 18 failed in this host environment. Exact failures, startup errors and runtime retries are recorded in consumer-verification.json."
     }
   ],
   "assumptions": [
-    "Existing consumer fixture migrations require reviewer regression execution.",
+    "Failed consumer suites require reviewer qualification and regression execution; their failures are not certified as non-regressions here.",
     "The trusted setup account supplies keystore references; this concern does not resolve credentials or authorize pushes.",
     "Independent critical-risk reviews and human approval remain outstanding."
   ],
   "rollback": "Stop new bindings. Keep recorded identities and bindings. Missing identity refuses; no automatic rollback is authorized.",
-  "proof_digest": "sha256:c3387e1ea72e5379"
+  "proof_digest": "sha256:9e5894645b809a2e"
 }

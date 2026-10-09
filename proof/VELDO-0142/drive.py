@@ -71,7 +71,7 @@ def main(selected=None):
     packet = dict(schema='veldo.identity_scoped_checks/v1',
                   commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                   suite=SUITE, suite_sha256=digest((ROOT / 'scripts/suites' / (SUITE + '.py')).read_bytes()),
-                  baseline=baseline, mutations=records, full_gate_run=False, other_suites_run=False)
+                  baseline=baseline, mutations=records, full_gate_run=False, other_suites_run=(PROOF / 'consumer-verification.json').exists())
     (PROOF / 'verification.json').write_text(json.dumps(packet, indent=2) + '\n')
     print('Honest suite passes; selected falsifiers fail their required assertion rows.', flush=True)
 

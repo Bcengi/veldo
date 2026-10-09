@@ -1,22 +1,33 @@
 {
   "rows": {
     "setup/full-command-and-rerun": true,
+    "setup/configured-log": true,
+    "setup/existing-store-adds-binding": true,
+    "setup/rerun-adds-identity": true,
+    "setup/rerun-change-refused": true,
     "setup/two-identities-and-replay": true,
     "binding/missing": true,
     "binding/second": true,
     "binding/immutable": true,
     "setup/reference-only-and-unchanged": true,
+    "binding/store-and-callers-missing": true,
+    "setup/keychain-reference-pattern": true,
     "launch/no-author-overrides": true,
+    "launch/no-config-overrides": true,
     "clone/identity-authors": true,
+    "launch/spawn-config-commit-authors": true,
     "clone/unbound-refused": true,
     "lander/identity-and-reland-authors": true,
+    "lander/worker-commit-mismatch": true,
+    "lander/station-record-authority": true,
+    "lander/caller-identity-refused": true,
     "lander/unbound-before-commit": true
   },
   "facts": {
     "worker_commits": [
       {
         "identity": "bcengi",
-        "commit": "ddf9f642f4f75a8d3aa8d6802b70cdd5586d08c2",
+        "commit": "f48e5b3f73479ea01fc622833ed23841294a2773",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -26,7 +37,7 @@
       },
       {
         "identity": "personal",
-        "commit": "d49a473e068527685183a8289934bd1a68ebf8ad",
+        "commit": "0dae16d4ed990de5acce4abadd4f4854028692a7",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -39,7 +50,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "1c6f67ddb18e502a19f224a1ec58c447984acaab",
+        "commit": "78ccaac351dab889d1775739c5adb5b654df8c3b",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -50,7 +61,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "2449f9224b1b5dfe8ab7e5bcd2d26f4563f7cb34",
+        "commit": "01a5de92699df0799f83a551793b87366693d939",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -61,7 +72,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "0b5dc6aab0bd217c3f2ae63d9ca3554b05a863b3",
+        "commit": "a623eefb51e680ba34dce68a89583c6429aa4d22",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -72,7 +83,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "0df018d4b3566f76d5b91622f1e766c7d352dfd8",
+        "commit": "dcff0324c9d5d93eef46b43405e87cbcc1ffeabf",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -83,7 +94,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "02b042dc90e9a9098eec4308a5debeebaaa68289",
+        "commit": "7d66e115ead773842cb402655b111825a81a4268",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -94,7 +105,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "a0eb06241ecfa0b3bdf7b31d9ebed5c00a2ba324",
+        "commit": "10520faaee3ece397c060099001521d73e43cd9a",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -105,7 +116,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "df9771147844f170fd9036dde6dca1e2af01f0ed",
+        "commit": "3ceafe01f94a8ce7539d5896b889d0349b345c30",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -116,7 +127,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "fcbb775e0eb20a0916120521e9d5fcce9ff260e9",
+        "commit": "e7f64eca7e9e87a43d8739965e174d67b8a524dc",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -127,7 +138,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "58162fece504c05404b19c54ddc6ef9111e70f45",
+        "commit": "4a1024b21beaca96a09736cd6a08be7ff88ab374",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -138,7 +149,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "a8a12af0dc3d38895f5e9d9dabdb6b54d82b13f7",
+        "commit": "897d7881627f945e5e86b1949e668f8520c032f5",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -149,7 +160,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "4c7bb7ca1d6957888da8ec588cbaba0baa00e8ae",
+        "commit": "52080395df8b77c1dc3009163ce39e499ef4daa5",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -160,7 +171,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "2a50ba497392457e80cd67248ee116bead2ad160",
+        "commit": "1f2e1da52af04d580f13e3b9209da78495b1b2e1",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -177,7 +188,7 @@
         "default_visibility": "private",
         "id": "bcengi",
         "label": "Work",
-        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-tmqiaia7/bcengi",
+        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-65ql5q2i/bcengi",
         "push_credential": {
           "kind": "token",
           "reference": "keychain:fixture/bcengi/token"
@@ -192,7 +203,7 @@
         "default_visibility": "public",
         "id": "personal",
         "label": "Personal",
-        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-tmqiaia7/personal",
+        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-65ql5q2i/personal",
         "push_credential": {
           "kind": "ssh",
           "reference": "keychain:fixture/personal/ssh"
