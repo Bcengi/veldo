@@ -1061,7 +1061,10 @@ def cases():
             '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
             'aliases/revision-in-enrolled-repository')
     aliases('repository-binding-unchecked', 'control_store.py',
-            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+            # VELDO-0142 checks the persisted path before resolving its Git identity. The later
+            # insert-loop check is now unreachable for a conflicting binding in this transaction.
+            '                if prior is not None and prior != target:', '                if False:',
+            'aliases/revision-in-enrolled-repository')
     aliases('store-owner-by-name', 'control_store.py',
             '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
     aliases('store-owner-ignores-digest', 'control_store.py',
