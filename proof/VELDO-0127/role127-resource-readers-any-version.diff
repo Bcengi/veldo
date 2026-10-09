@@ -1,0 +1,5 @@
+--- a/.veldo/control_engine_codex.py
++++ b/.veldo/control_engine_codex.py
+@@ -448 +448 @@
+-    '0.154.0': MCP_RESOURCE_RULE,
++    '0.154.0': dict(MCP_RESOURCE_RULE, code_mode_otherwise='mcp_server'),

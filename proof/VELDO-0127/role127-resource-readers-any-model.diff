@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -441 +441 @@
+-    if rule.get('code_mode_otherwise') and (bound.get('model_tool_modes') or {}).get(wanted.get('model')) == 'code_mode_only':
++    if rule.get('code_mode_otherwise'):

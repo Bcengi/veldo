@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -437 +437 @@
+-    if rule is None or rule != X.QUALIFIED_MCP_RESOURCE_RULES.get(bound.get('version')):
++    if rule is None:
