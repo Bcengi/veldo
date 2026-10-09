@@ -305,6 +305,12 @@ def _v58_suite():
         observations = base / 'observations'
         observations.mkdir()
 
+        # VELDO-0142: the lander resolves its author from the repository's identity record, never from
+        # its caller; the record is configured once, here, for the caller repository every land reads.
+        IDENTITY_DOMAIN, IDENTITY_REPOSITORY = 'gate-fixture', 'repository'
+        identity_conn = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](
+            mods, None, IDENTITY_DOMAIN, IDENTITY_REPOSITORY, caller, LANDER)
+
         def land(branch, unit, between=None):
             """sync, reconcile, gate and finalize one unit through GitLandOps, recording the candidate's
             state (this suite's own reading) around the gate; `between` runs after the gate and before
@@ -313,8 +319,9 @@ def _v58_suite():
             # no observations directory), so a red row is an assertion, never a TypeError.
             accepts = __import__('inspect').signature(LD.GitLandOps.__init__).parameters
             extra = {'observations': observations} if 'observations' in accepts else {}
-            identity_conn = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, None, 'gate-fixture', 'repository', caller, LANDER)
-            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity_conn=identity_conn, domain='gate-fixture', repository='repository', **extra)
+            if 'identity_conn' in accepts:
+                extra.update(identity_conn=identity_conn, domain=IDENTITY_DOMAIN, repository=IDENTITY_REPOSITORY)
+            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, **extra)
             try:
                 out = {'trunk_before': remote_tip()}
                 out['sync'] = ops.sync_main()
