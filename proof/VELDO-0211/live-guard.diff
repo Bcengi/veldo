@@ -1,6 +1,6 @@
 --- proof/VELDO-0127/live.py
 +++ proof/VELDO-0127/live.py
-@@ -67,7 +67,7 @@
+@@ -77,7 +77,7 @@
                  code = 0
                  if os.read(read, 1) != b'1':
                      try:
