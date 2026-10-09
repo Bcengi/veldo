@@ -180,14 +180,21 @@ class ApiAuthority:
     def inspect(self, entity_ids):
         self._authority()
         ids = entity_ids if isinstance(entity_ids, list) and len(entity_ids) <= 64 else []
-        entities = {}
-        for identity in ids:
-            row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (identity,)).fetchone() \
-                if isinstance(identity, str) else None
-            if row:
-                entities[identity] = {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
-        head = self.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
-        return {'ok': True, 'reason': 'inspect', 'watermark': head, 'entities': entities}
+        opened = not self.conn.in_transaction
+        if opened:
+            self.conn.execute('BEGIN')
+        try:
+            entities = {}
+            for identity in ids:
+                row = self.conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (identity,)).fetchone() \
+                    if isinstance(identity, str) else None
+                if row:
+                    entities[identity] = {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
+            head = self.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+            return {'ok': True, 'reason': 'inspect', 'watermark': head, 'entities': entities}
+        finally:
+            if opened:
+                self.conn.execute('ROLLBACK')
 
     # the read models and the live feed (AC2)
 

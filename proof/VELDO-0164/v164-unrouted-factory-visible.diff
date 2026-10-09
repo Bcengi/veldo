@@ -1,5 +1,5 @@
 --- .veldo/control_api_models_scope.py
 +++ .veldo/control_api_models_scope.py
-@@ -43 +43 @@
--            return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')
-+            return data.get('project')
+@@ -44 +44 @@
+-            return None if data.get('proposal') == 'inbox' else data.get('project')
++            return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')

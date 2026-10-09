@@ -1,5 +1,5 @@
 --- .veldo/control_api_models_scope.py
 +++ .veldo/control_api_models_scope.py
-@@ -73 +73 @@
+@@ -99 +99 @@
 -        if self.universal:
 +        if self.universal and self.projects(identity, kind, data):

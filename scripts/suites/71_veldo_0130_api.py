@@ -1754,6 +1754,9 @@ def _v130_checks(base):
                 'implementation': role(['w-build', 'w-build2'], 'implement', ('finding',)),
                 'independent_review': role(['w-rev1', 'w-rev2'], 'review', ('finding',), ('claude_code', 'codex'),
                                            distinct=('implementation',))}}))
+            default_team = staffed['team']['team'] or staffed['team']['proposal']['team']
+            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),
+                                              S.digest_of(default_team))
             written = {'project': ('objectives', 'project:project-a', activated),
                        'objective': ('objectives', oid, accepted),
                        'backlog_item': ('work', taken.get('item_id'), taken),
@@ -3067,7 +3070,7 @@ def _v130_service_checks(base):
             cookie2, token2 = sign_in(desktop)
             check(SP, 'both passkeys sign in, the credentials read through the service', bool(cookie) and bool(cookie2))
             mark, seen = head(), len(observations())
-            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'Plan the socket phase.'}, cookie, token)
+            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'Plan the socket phase.', 'project': 'project-a'}, cookie, token)
             made = sent[2].get('proposal_id') or sent[2].get('question_id') if isinstance(sent[2], dict) else None
             check(SP, 'a message through the socket is accepted and committed by the service into the intake [%s %s]'
                   % (sent[0], refusal(sent)), sent[0] == 200 and bool(made) and head() > mark

@@ -83,11 +83,17 @@ def _v164_suite():
                       answer.get('workflow') == ('build' if p=='A' else None) and answer['ok'])
             authority.workflows = f.workflows['A']
             # Exercise the actual separate team GET handler with its authority seam.
-            api = object.__new__(f.API.ControlApi); api.authority = authority
-            api._inspect = lambda ids: authority.inspect(ids)['entities']
+            class InspectOnly:
+                def inspect(self, ids):
+                    return authority.inspect(ids)
+            api = object.__new__(f.API.ControlApi); api.authority = InspectOnly(); api.clock = authority.clock
             for p in ('A','B','default','absent'):
-                result = api._team_read(None,{'project':p},{'principal':'reader'},None,None)[1]
-                check('reads/team-route',p+' team is scoped', (result['team'] is not None) == (p in ('A','default')))
+                try:
+                    result = api._team_read(None,{'project':p},{'principal':'reader'},None,None)[1]
+                    check('reads/team-route',p+' team is scoped through inspect',
+                          (result['team'] is not None) == (p in ('A','default')))
+                except Exception as error:
+                    check('reads/team-route',p+' inspect interface succeeds: '+repr(error),False)
             for operation in (lambda:authority.read('objectives','outside'),
                               lambda:authority.workflow('outside','build'), lambda:authority.events('outside',0)):
                 check('reads/no-project','existing no project refusal remains',operation().get('reason')=='unauthorized:no_project')

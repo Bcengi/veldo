@@ -169,3 +169,13 @@ intake routing reports runtime_unavailable; execution-record fixtures cannot wri
 /run/user/1000. These verification blockers and logs are retained in proof/VELDO-0164.
 Ten falsifiers are registered with exact diffs; their execution and the gate belong to
 the reviewer. No criterion, risk or readiness change, approval, push or merge is claimed.
+
+2026-10-08: host review found two real regressions behind the builder's local service
+blockers. Suite 71 now writes its default team through the owning command and its
+named-scope socket reader sends a project-routed message. Team GET uses the existing
+inspect interface, reading team and current membership in one transaction; no change
+to proof/VELDO-0162/fixture.py or to the authority interface is required. Inbox
+proposals are projectless by their proposal marker at every state. Decision settlements
+resolve settlement.request_id, and visible proposal project metadata is projected to
+the reader's scope before redaction. The writer-shaped regressions were observed failing
+before the fixes. Suite 104 replaces 103 to leave that number to VELDO-0142.

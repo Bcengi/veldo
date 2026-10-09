@@ -1,5 +1,5 @@
 --- .veldo/control_api.py
 +++ .veldo/control_api.py
-@@ -842 +842 @@
--        row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)
-+        row = self._inspect([identity]).get(identity)
+@@ -849 +849 @@
+-        if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):
++        if False:

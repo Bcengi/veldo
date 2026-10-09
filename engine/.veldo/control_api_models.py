@@ -91,7 +91,7 @@ READ_MODELS = (
         Kind('assignment', 'control_assignment', 'ENTITY_KIND', 'VELDO-0064', ('field', 'scope')),
         Kind('settlement_terms', 'control_request_settlement', 'TERMS_KIND', 'VELDO-0068', ('request',)),
         Kind('request_settlement', 'control_request_settlement', 'SETTLEMENT_KIND', 'VELDO-0068', ('reference', 'request_id')),
-        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')),
+        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'settlement.request_id')),
         Kind('decision', 'control_request_settlement', 'GOVERNING_RECORD_KIND', 'VELDO-0069', ('reference', 'subject.id')),
         Kind('channel_presentation', 'control_channel_presentation', 'RECEIPT_KIND', 'VELDO-0065', ('reference', 'request_id')))),
     ReadModel('proof', 'reads.proof', 'gate/review/proof', (
@@ -176,7 +176,7 @@ def watermark(conn):
         {'seq': 0, 'record_digest': None, 'committed_at': None}
 
 
-def _item(store, conn, row):
+def _item(store, conn, row, scope=None):
     """(served item, redacted paths), or (None, the problem) for an entity that does not verify."""
     identity, kind, version, digest, text = row
     data = json.loads(text)
@@ -190,7 +190,8 @@ def _item(store, conn, row):
             return None, {'id': identity, 'kind': kind, 'refusal': error.code}
         if checked['id'] != identity:
             return None, {'id': identity, 'kind': kind, 'refusal': 'missing_evidence:revision_identity'}
-    served, paths = redact(data, '$.' + identity)
+    served_data = scope.project_data(kind, data) if scope is not None else data
+    served, paths = redact(served_data, '$.' + identity)
     # A route's dispatch is a public authority identity, even when its random suffix
     # resembles entropy in a credential. Retain only a dispatch that the store owns.
     route = data.get('route') if kind == 'intake_proposal' else None
@@ -216,7 +217,7 @@ def read_model(store, conn, name, scope=None):
                                 'ORDER BY kind, id' % ','.join('?' * len(kinds)), kinds).fetchall():
             if scope is not None and not scope.visible(row[0], row[1], json.loads(row[4])):
                 continue
-            item, extra = _item(store, conn, row)
+            item, extra = _item(store, conn, row, scope=scope)
             if item is None:
                 problems.append(extra)
                 continue

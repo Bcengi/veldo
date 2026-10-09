@@ -10488,11 +10488,23 @@ def cases():
     add(164, 'v164-cursor-stalls', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
         "{'cursor': rows[-1][0] if rows else after}", "{'cursor': after}", ['events/cursor'])
     add(164, 'v164-team-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api.py',
-        "row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)",
-        "row = self._inspect([identity]).get(identity)", ['reads/team-route'])
+        "if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):",
+        "if False:", ['reads/team-route'])
     add(164, 'v164-unrouted-factory-visible', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
-        "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')",
-        "return data.get('project')", ['reads/member-A'])
+        "return None if data.get('proposal') == 'inbox' else data.get('project')",
+        "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')", ['reads/unrouted-intake'])
+
+
+    add(164, 'v164-decision-request-at-top-level', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'settlement.request_id')",
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')", ['reads/decision-settlement'])
+    add(164, 'v164-proposal-context-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        'served_data = scope.project_data(kind, data) if scope is not None else data',
+        'served_data = data', ['reads/proposal-context'])
+    add(164, 'v164-team-requires-model-read', '104_veldo_0164_scoped_reads.py', 'control_api.py',
+        'entities = self._inspect([identity, principal])',
+        "self._ask(self.authority.read, 'configuration', principal)\n        entities = self._inspect([identity, principal])",
+        ['reads/team-route'])
 
     return result
 

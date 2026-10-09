@@ -838,8 +838,16 @@ class ControlApi:
             identity = teams.default_id(revision)
         else:
             identity = 'team:' + project
-        answer = self._ask(self.authority.read, 'configuration', session['principal'])
-        row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)
+        # The shared inspect interface reads the team and current membership in one snapshot.
+        principal = session['principal']
+        entities = self._inspect([identity, principal])
+        member = entities.get(principal)
+        data = member['data'] if member and member['kind'] == 'membership' else None
+        if not AC.active_member(data, self.clock())[0] or data.get('principal_type') != 'person':
+            raise Refused('unauthenticated:member_not_current')
+        row = entities.get(identity)
+        if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):
+            row = None
         served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)
         return 200, {'team': served, 'redacted': redacted}
 

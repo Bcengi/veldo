@@ -1,5 +1,5 @@
 --- .veldo/control_api_authority.py
 +++ .veldo/control_api_authority.py
-@@ -246 +246 @@
+@@ -253 +253 @@
 -            answer = MO.read_model(self.S, self.conn, model, scope=scope)
 +            answer = MO.read_model(self.S, self.conn, model)
