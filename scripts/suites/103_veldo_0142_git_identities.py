@@ -41,12 +41,19 @@ def _v142_suite():
         expect('VELDO-0142 ' + name, bool(condition))
 
     @contextlib.contextmanager
-    def row(name):
+    def row(name, *later):
+        """One block of rows. `later` names the further rows the block checks after `name`: an
+        exception that ends the block early fails `name` and emits each of them not yet checked, as
+        failed, so a defect never removes a baseline row (the mutation stage refuses a mutant whose
+        run lost one as missing_target)."""
         try:
             yield
         except Exception as error:
             print('VELDO-0142 diagnostic', name, type(error).__name__, str(error)[:300])
             check(name, False)
+            for unreached in later:
+                if unreached not in observations:
+                    check(unreached, False)
 
     def refusal(call):
         try:
@@ -137,7 +144,8 @@ def _v142_suite():
         GI.configure_identities(conn, domain, identities, {key: dict(path=str(value), identity=key) for key, value in repos.items()})
         S.bind_repositories(conn, domain, {key: str(value) for key, value in repos.items()})
 
-        with row('setup/full-command-and-rerun'):
+        with row('setup/full-command-and-rerun', 'setup/configured-log', 'setup/existing-store-adds-binding',
+                 'setup/rerun-adds-identity', 'setup/rerun-change-refused'):
             import io
             engines = load('identity142_engines', ROOT / 'proof/VELDO-0186/fixtures.py').install(ROOT, base, mods)
             TS = load('identity142_tailscale', ROOT / 'scripts/suites/support/v171_tailscale.py')
