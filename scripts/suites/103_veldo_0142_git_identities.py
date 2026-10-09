@@ -55,11 +55,18 @@ def _v142_suite():
             return getattr(error, 'code', type(error).__name__)
         return None
 
-    # Clones correctly refuse a protected root under /tmp. Use this checkout's scratch.
-    scratch = ROOT / '.veldo' / 'tmp'
-    scratch.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='identity142-', dir=scratch) as temporary:
+    # The fixture tree lives in the process's temporary directory, the one place every leg can write
+    # (the confined gate domain grants its scratch only, a mutation worker's checkout is read-only, and
+    # first use runs a copy under /tmp). The VELDO-0042 clone layout refuses a protected target beneath
+    # a temporary directory, so this tree is a world of its own, as suite 66 lays out production's:
+    # its own temporary directories (`world_temporary`) stand for the system's while the provisioner
+    # runs, and the clone/layout-refused row proves the rule refuses a protected target beneath them
+    # and beneath the real system's.
+    with tempfile.TemporaryDirectory(prefix='identity142-') as temporary:
         base = Path(temporary)
+        world_temporary = tuple(base / name for name in ('tmp', 'var-tmp', 'shm'))
+        for made in world_temporary:
+            made.mkdir()
         mods = base / 'installed'
         mods.mkdir()
         for source in (ROOT / '.veldo').iterdir():
@@ -76,6 +83,16 @@ def _v142_suite():
         LD = load('identity142_lander', mods / 'lander.py')
         S = load('identity142_store', mods / 'control_store.py')
         GP = load('identity142_git', mods / 'git_process.py')
+
+        @contextlib.contextmanager
+        def fixture_world():
+            """While the provisioner runs, this tree's temporary directories are the system's: the
+            clone module's TEMPORARY, the process temporary directory and TMPDIR, which together are
+            every directory control_clone.temporary_directories reads."""
+            with patch.object(CL, 'TEMPORARY', tuple(str(p) for p in world_temporary)), \
+                    patch.object(tempfile, 'tempdir', str(world_temporary[0])), \
+                    patch.dict(os.environ, TMPDIR=str(world_temporary[0])):
+                yield
         state = base / 'store'
         state.mkdir()
         conn = S.open_store(str(state / 'control.sqlite3'))
@@ -312,17 +329,35 @@ def _v142_suite():
                   and all(env['KEEP'] == 'yes' for env in environments[1::2]))
 
         dispatches = SimpleNamespace(store=S, conn=conn, domain=domain)
-        clones = CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches')
+        with row('clone/layout-refused'):
+            # The rule holds for the real system's temporary directories (this tree is beneath one)
+            # and for the world's: a clone root, cache root or store beneath either is refused, and
+            # nothing is made.
+            outside = refusal(lambda: CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches'))
+            with fixture_world():
+                inside = [refusal(lambda: CL.Clones(dispatches, clones=world / 'clones', caches=base / 'caches'))
+                          for world in world_temporary]
+                inside.append(refusal(lambda: CL.Clones(dispatches, clones=base / 'clones',
+                                                        caches=world_temporary[0] / 'caches')))
+                temporary_store = S.open_store(str(world_temporary[0] / 'store' / 'control.sqlite3'))
+                try:
+                    inside.append(refusal(lambda: CL.Clones(SimpleNamespace(store=S, conn=temporary_store, domain=domain),
+                                                            clones=base / 'clones', caches=base / 'caches')))
+                finally:
+                    temporary_store.close()
+            check('clone/layout-refused', [outside] + inside == ['invalid_input:layout'] * 6
+                  and not (base / 'clones').exists() and not (base / 'caches').exists())
+
         with row('clone/identity-authors'):
-            dispatches = SimpleNamespace(store=S, conn=conn, domain=domain)
-            clones = CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches')
+            with fixture_world():
+                clones = CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches')
             seen = []
             for record in identities:
                 repo = repos[record['id']]
                 contract = dict(domain=domain, repository=record['id'], dispatch_id='worker/' + record['id'],
                                 unit='VELDO-0142', source=dict(commit=git(repo, 'rev-parse', 'HEAD'),
                                                              tree=git(repo, 'rev-parse', 'HEAD^{tree}')))
-                with patch.dict(os.environ, polluted, clear=True):
+                with patch.dict(os.environ, polluted, clear=True), fixture_world():
                     handle = clones._create(contract)
                 # Find through the dispatch contract, as the worker entrance does.
                 manifest, _user = CL.find(clones.clones, contract['dispatch_id'])
@@ -375,7 +410,8 @@ def _v142_suite():
             # A legacy store path has no identity, as on an upgrade before setup is rerun.
             conn.execute('INSERT INTO repository_bindings VALUES (?,?,?)', (domain, 'unbound', str(repos['bcengi'])))
             before = sorted(str(p) for p in clones.clones.iterdir())
-            code = refusal(lambda: clones._create(contract))
+            with fixture_world():
+                code = refusal(lambda: clones._create(contract))
             check('clone/unbound-refused', code == 'missing_authority:repository_identity'
                   and before == sorted(str(p) for p in clones.clones.iterdir()))
 
