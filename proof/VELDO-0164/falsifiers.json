@@ -139,7 +139,7 @@
       ],
       "module": "71_veldo_0130_api.py",
       "diff": "v164-api-default-team-unseeded.diff",
-      "source_sha256": "69825ede4f1a8f864ded3a9b1a81ab26da6e7579e96ab2e6b2a5cb14c6a91b4f",
+      "source_sha256": "d9db1347cbe2460a9e2da23d423946ff813621d320c26c00325b4bac0dfccd87",
       "status": "registered; execution reserved for reviewer"
     },
     {
@@ -149,7 +149,7 @@
       ],
       "module": "71_veldo_0130_api.py",
       "diff": "v164-socket-message-unrouted.diff",
-      "source_sha256": "69825ede4f1a8f864ded3a9b1a81ab26da6e7579e96ab2e6b2a5cb14c6a91b4f",
+      "source_sha256": "d9db1347cbe2460a9e2da23d423946ff813621d320c26c00325b4bac0dfccd87",
       "status": "registered; execution reserved for reviewer"
     }
   ],

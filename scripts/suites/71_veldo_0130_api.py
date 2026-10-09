@@ -3300,15 +3300,23 @@ _v130_started = _v130_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the other
 # store suites do; elsewhere the platform's temporary directory is used.
 _v130_fast = fast_temp()
+def _v130_report(observed_rows):
+    for name, observed in observed_rows.items():
+        passed = bool(observed) and all(ok for _, ok in observed)
+        if not passed:
+            for label, ok in observed:
+                if not ok:
+                    print('  VELDO-0130 %s detail: %s' % (name, label))
+        expect('VELDO-0130 ' + name, passed)
+        print('VELDO-0130 row:', name, 'passed' if passed else 'failed')
+
+
 with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir:
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
+_v130_report(_v130_rows)
+# Report completed API assertions before a service setup exception can hide them.
 with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir:
-    _v130_rows.update(_v130_service_checks(_v130_Path(_v130_dir)))
-for _v130_name, _v130_observed in _v130_rows.items():
-    _v130_ok = bool(_v130_observed) and all(ok for _, ok in _v130_observed)
-    if not _v130_ok:
-        for _v130_label, _v130_one in _v130_observed:
-            if not _v130_one:
-                print('  VELDO-0130 %s detail: %s' % (_v130_name, _v130_label))
-    expect('VELDO-0130 ' + _v130_name, _v130_ok)
+    _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
+_v130_report(_v130_service_rows)
+_v130_rows.update(_v130_service_rows)
 print('VELDO-0130 suite seconds: %.3f' % (_v130_time.monotonic() - _v130_started))
