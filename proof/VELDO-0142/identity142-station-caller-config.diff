@@ -1,6 +1,6 @@
 --- a/.veldo/control_landing_station.py
 +++ b/.veldo/control_landing_station.py
-@@ -306,7 +306,7 @@
+@@ -308,7 +308,7 @@
                               signer=self.signer, sign=self.sign, generation=self.generation, call=self.call,
                               observe=self.observe)
          return LD.GitLandOps(land['repository'], evidence, trunk=land['trunk'], remote=land['remote'], push=True,
@@ -8,4 +8,4 @@
 +                             policy=policy, identity=tuple(land['identity']), workspace_root=land.get('workspace_root'),
                               observe=self.observe, domain=self.domain, repository=self.repository,
                               installation=land.get('installation'), observations=land.get('observations'),
-                              landing=landing)
+                              landing=landing, identity_conn=self.conn)

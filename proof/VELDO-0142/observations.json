@@ -27,7 +27,7 @@
     "worker_commits": [
       {
         "identity": "bcengi",
-        "commit": "f48e5b3f73479ea01fc622833ed23841294a2773",
+        "commit": "6c42e030cdb94a03195caeb86be1b730a6a22e11",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -37,7 +37,7 @@
       },
       {
         "identity": "personal",
-        "commit": "0dae16d4ed990de5acce4abadd4f4854028692a7",
+        "commit": "e23904db50a26f79023c64d64081d84e10f6a762",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -50,7 +50,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "78ccaac351dab889d1775739c5adb5b654df8c3b",
+        "commit": "5c62b263cada8d72a67a6e9c7a0ac4cfcc1178b7",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -61,7 +61,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "01a5de92699df0799f83a551793b87366693d939",
+        "commit": "2705f460156dc42a31309576058b54c5b112693a",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -72,7 +72,7 @@
       {
         "identity": "bcengi",
         "reland": false,
-        "commit": "a623eefb51e680ba34dce68a89583c6429aa4d22",
+        "commit": "08af69b5de33867948d390e1f871ae782ed12020",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -83,7 +83,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "dcff0324c9d5d93eef46b43405e87cbcc1ffeabf",
+        "commit": "74357aa567040f818f1485939edf4dc401bbd8b8",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -94,7 +94,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "7d66e115ead773842cb402655b111825a81a4268",
+        "commit": "de902db3859931c12dc8301e027c868e0af4edb8",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -105,7 +105,7 @@
       {
         "identity": "bcengi",
         "reland": true,
-        "commit": "10520faaee3ece397c060099001521d73e43cd9a",
+        "commit": "430bc47132befde183a6a04bb4d00edd04127636",
         "authors": [
           "Work Author",
           "bcengi@example.invalid",
@@ -116,7 +116,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "3ceafe01f94a8ce7539d5896b889d0349b345c30",
+        "commit": "fb6db41dfb5c878bb929fd6158f50fc3758d1150",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -127,7 +127,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "e7f64eca7e9e87a43d8739965e174d67b8a524dc",
+        "commit": "f0e04e44f31cea482eaf6c5118ac993f37723e7b",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -138,7 +138,7 @@
       {
         "identity": "personal",
         "reland": false,
-        "commit": "4a1024b21beaca96a09736cd6a08be7ff88ab374",
+        "commit": "a31ecebf84c3ff3c53ed000ce40cf6b5dfb88809",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -149,7 +149,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "897d7881627f945e5e86b1949e668f8520c032f5",
+        "commit": "1a5828b799b9ad50101ac37e4dcdcc7407d40c93",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -160,7 +160,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "52080395df8b77c1dc3009163ce39e499ef4daa5",
+        "commit": "b2dfb638ff99b59f012ac5ede2731b3e2a93991e",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -171,7 +171,7 @@
       {
         "identity": "personal",
         "reland": true,
-        "commit": "1f2e1da52af04d580f13e3b9209da78495b1b2e1",
+        "commit": "895e1563dac4926d624f1f0d309c3f36c445fa33",
         "authors": [
           "Personal Author",
           "personal@example.invalid",
@@ -188,7 +188,7 @@
         "default_visibility": "private",
         "id": "bcengi",
         "label": "Work",
-        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-65ql5q2i/bcengi",
+        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-6dumh_4y/bcengi",
         "push_credential": {
           "kind": "token",
           "reference": "keychain:fixture/bcengi/token"
@@ -203,7 +203,7 @@
         "default_visibility": "public",
         "id": "personal",
         "label": "Personal",
-        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-65ql5q2i/personal",
+        "projects_root": "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/.veldo/tmp/identity142-6dumh_4y/personal",
         "push_credential": {
           "kind": "ssh",
           "reference": "keychain:fixture/personal/ssh"

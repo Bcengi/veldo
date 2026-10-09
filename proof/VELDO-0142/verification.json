@@ -1,22 +1,24 @@
 {
   "schema": "veldo.identity_scoped_checks/v1",
-  "commit": "1242de164b88d59ea5813e39c2c9a271022d8125",
+  "commit": "22d8c9db5f8859d8d9f46a1fea657a19952c8f02",
   "suite": "103_veldo_0142_git_identities",
-  "suite_sha256": "sha256:55c321627302646b5e626e0e09a71eb0e54889c332af176eaf17cd3dda581b61",
+  "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
   "baseline": {
     "exit": 2,
     "summary": [
-      "selftest (PARTIAL, 1 of 157 suites): 48 passed, 0 failed in 14.03s"
+      "selftest (PARTIAL, 1 of 157 suites): 48 passed, 0 failed in 14.95s"
     ],
     "failing_rows": [],
-    "log_sha256": "sha256:05b602fdcf9bbcb5d595be44b03958a534e70579d3d80b57f8294a042d5a2b86"
+    "diagnostics": [],
+    "log_sha256": "sha256:69166be8ad73d08af5a6351c67deaf8d11893502179afbea75ef98af5adcbe94"
   },
   "mutations": [
     {
       "name": "identity142-binding-replaced",
       "module": "control_git_identity.py",
-      "source_sha256": "sha256:211a07b29bf1dbf16e7eb7825a5276461994552c23f19875238f8a6be6baa8cc",
-      "mutant_sha256": "sha256:22ce692e117e28eeed54eb5f80422f3cd1fa1bb8d72551515e67cb985c0cb65d",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:897870d0bce22aea9c28feb503ac858871a853176c4a237f5858dfd89558c288",
+      "mutant_sha256": "sha256:62dc29f335af8a153d2070331bcb2872dbe0c033c65f19e3684c3c6c871236b4",
       "diff": "identity142-binding-replaced.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 binding/immutable"
@@ -24,20 +26,20 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 18.95s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 15.06s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 binding/immutable"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:d5b59b418ac624396df46af3838afee8b3eae8487331aa58d4d7ff10e8b6738f",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:1132b6da5634f9341e699d1fd549bc6769bbe85d0aa2f0e53b46a37f1c320dff"
     },
     {
       "name": "identity142-clone-global-author",
       "module": "control_clone.py",
-      "source_sha256": "sha256:6f7b36acadb3e715a7ea3e0ac3b78c4e8d2451746ed31b3781c493ab7ce55284",
-      "mutant_sha256": "sha256:087e0833766ed7a7b007c049888d96c52bbb145955dfb13cd72bd197209c2587",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:46ad349b3b658226df93c453742d569affa325ff3dedc7dea512ab910f2c7ace",
+      "mutant_sha256": "sha256:cb752875346299b2d97f40cfdb17480b748cc27406035ce2b2361ac92c809bcb",
       "diff": "identity142-clone-global-author.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 clone/identity-authors"
@@ -45,7 +47,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 45 passed, 2 failed in 17.11s"
+        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 2 failed in 15.06s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 clone/identity-authors",
@@ -55,12 +57,12 @@
         "VELDO-0142 diagnostic clone/identity-authors AssertionError ('author comparison', ['Global Stranger', 'global@example.invalid', 'Global Stranger', 'global@example.invalid'], ['Work Author', 'bcengi@example.invalid', 'Work Author', 'bcengi@example.invalid'])",
         "VELDO-0142 diagnostic launch/spawn-config-commit-authors Refused invalid_input:clone_unknown: no single clone names this dispatch"
       ],
-      "log_sha256": "sha256:1d13bcca08c39d44a1eff0efab9a3a52992b2226b0a0d2a67fe8d0ee719cc713",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:0479f6bccdfe1a2bc6b15f4c6221350ce9a4fd694b995004221dd20b6736c9da"
     },
     {
       "name": "identity142-lander-caller-author",
       "module": "lander.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:bd10b479cf84e347135185ac75bab51f50d6160c9af6f3d3cb934a84999d63ff",
       "mutant_sha256": "sha256:9306a66234256b6a3f7e936060d8f3af9832b1eb67e474068b47341393effefa",
       "diff": "identity142-lander-caller-author.diff",
@@ -70,22 +72,23 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 21.72s"
+        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 2 failed in 14.54s"
       ],
       "failing_rows": [
-        "SELFTEST FAIL: VELDO-0142 lander/identity-and-reland-authors"
+        "SELFTEST FAIL: VELDO-0142 lander/identity-and-reland-authors",
+        "SELFTEST FAIL: VELDO-0142 lander/station-record-authority"
       ],
       "diagnostics": [
         "VELDO-0142 diagnostic lander/identity-and-reland-authors AssertionError "
       ],
-      "log_sha256": "sha256:81f862a5f98fc92a82d621bcaa7009f2b8c69afe72a16b215e2ffa916e28b60a",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:a033439b2304d1cbee66374814e448dec2dbc672e68742ab02b961ef3ebe924c"
     },
     {
       "name": "identity142-environment-overrides-kept",
       "module": "control_git_identity.py",
-      "source_sha256": "sha256:211a07b29bf1dbf16e7eb7825a5276461994552c23f19875238f8a6be6baa8cc",
-      "mutant_sha256": "sha256:2e32db204886850b30ffa2420dbfee51153e869658965708be13ad834a24b9e0",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:897870d0bce22aea9c28feb503ac858871a853176c4a237f5858dfd89558c288",
+      "mutant_sha256": "sha256:4c90d225f7197b7b118b106bb37e482eea04c59fe55f04f6cfe5396f15fa8da5",
       "diff": "identity142-environment-overrides-kept.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-author-overrides"
@@ -93,7 +96,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 43 passed, 4 failed in 15.93s"
+        "selftest (PARTIAL, 1 of 157 suites): 44 passed, 4 failed in 15.26s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-author-overrides",
@@ -105,14 +108,14 @@
         "VELDO-0142 diagnostic clone/identity-authors AssertionError ('author comparison', ['Environment Stranger', 'env@example.invalid', 'Environment Stranger', 'env@example.invalid'], ['Work Author', 'bcengi@example.invalid', 'Work Author', 'bcengi@example.invalid'])",
         "VELDO-0142 diagnostic launch/spawn-config-commit-authors Refused invalid_input:clone_unknown: no single clone names this dispatch"
       ],
-      "log_sha256": "sha256:b2feb2ec24219a89d1ef42a06606c7f1cd2d5d3d47547dbc5fe9d651d037c33c",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:c287883c9640986aa736c30a90d8a50c1add3d0888a7e15925c4ab80ec25495a"
     },
     {
       "name": "identity142-setup-binding-omitted",
       "module": "control_factory_setup.py",
-      "source_sha256": "sha256:d2881767fe8639ddd29a0f00a4f2982276021ef27a6783267d8947f7c5da7a56",
-      "mutant_sha256": "sha256:ca762df33f54b54d25db9f5da8ead06652523be832252a40e0b08bf5d23c4e8d",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:79ed78d9a1d717c80758ec9a0a489e611bcf8b906143a4f5b243ea0b2afca7d3",
+      "mutant_sha256": "sha256:d9d03fac3024c0a94a54260e138a14a6eff58e464531d393bf21e433aafb58c3",
       "diff": "identity142-setup-binding-omitted.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/full-command-and-rerun"
@@ -120,7 +123,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 42 passed, 1 failed in 5.91s"
+        "selftest (PARTIAL, 1 of 157 suites): 43 passed, 1 failed in 5.82s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/full-command-and-rerun"
@@ -128,14 +131,14 @@
       "diagnostics": [
         "VELDO-0142 diagnostic setup/full-command-and-rerun Refused missing_authority:repository_identity"
       ],
-      "log_sha256": "sha256:a7f14098a785742b7fde6758910c81496c9aa160d875791be08839107fa0a7c0",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:4ef6cf27eafb6a9933117e5a61fa569b841d4374fa1bb8c66bb6fc1397d97f1a"
     },
     {
       "name": "identity142-config-overrides-kept",
       "module": "control_git_identity.py",
-      "source_sha256": "sha256:211a07b29bf1dbf16e7eb7825a5276461994552c23f19875238f8a6be6baa8cc",
-      "mutant_sha256": "sha256:7f619c43c1766a2c6dec4f4ba38cc70a94c754863fd0ea15703d2ec3d4d77848",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:897870d0bce22aea9c28feb503ac858871a853176c4a237f5858dfd89558c288",
+      "mutant_sha256": "sha256:8fa3b2a9875eda61202aafbc384699c0ea06baa93e5212ee893a88cbdf9c5130",
       "diff": "identity142-config-overrides-kept.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-config-overrides",
@@ -144,19 +147,19 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 45 passed, 2 failed in 16.40s"
+        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 2 failed in 14.95s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-config-overrides",
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:98dbb13097e1b483f387685bdd7fdf624ac2097041518f0e9292189125a11e3e",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:010f1cf732a30fc2c287c1c1f649f432ff3b6e859a677d4a46e6cb9eb425e57e"
     },
     {
       "name": "identity142-spawn-strip-omitted",
       "module": "control_launch.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:4879116df90bd21da529d4d5f579763fc67c9462f848080a77a954fc1e3c33b9",
       "mutant_sha256": "sha256:ccf80477314450a5f9b5af2ba2f3e792373c96f043e37f28c5d5ca931750ee41",
       "diff": "identity142-spawn-strip-omitted.diff",
@@ -166,18 +169,18 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 20.58s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 15.06s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:182e2f0e04d63ed989a6bf35a156ed313952fcbb54516956dddf03fda950a688",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:461021b7727a8aa474555d6c4f7391ed64d7988f949395c2989a9dfa8677dcb4"
     },
     {
       "name": "identity142-worker-authors-unchecked",
       "module": "lander.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:bd10b479cf84e347135185ac75bab51f50d6160c9af6f3d3cb934a84999d63ff",
       "mutant_sha256": "sha256:e8d3420701305b79545413c0e2fb0567f8b0db7c98c3256008d967ad88c1e2b3",
       "diff": "identity142-worker-authors-unchecked.diff",
@@ -187,20 +190,20 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 15.84s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 15.31s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/worker-commit-mismatch"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:ced4e537e2f9485782986e0add9183c0c9b937bed083af0edcf497ca59e4357c",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:a25b0c2c9a9b5b395b020fa3ec9e7784f0a3465cc0e76803270c2b2d7bacaf81"
     },
     {
       "name": "identity142-rerun-binding-not-written",
       "module": "control_factory_setup.py",
-      "source_sha256": "sha256:d2881767fe8639ddd29a0f00a4f2982276021ef27a6783267d8947f7c5da7a56",
-      "mutant_sha256": "sha256:9789896359bd7fc1980a34f46bc5b0409ca48b53cc6c44e13800980dcd9dbc70",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:79ed78d9a1d717c80758ec9a0a489e611bcf8b906143a4f5b243ea0b2afca7d3",
+      "mutant_sha256": "sha256:a9d44bb8eec86bfd955101a97c0ad097a782552354ba88f673eb7f3997cae58e",
       "diff": "identity142-rerun-binding-not-written.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/existing-store-adds-binding",
@@ -209,7 +212,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 44 passed, 3 failed in 16.61s"
+        "selftest (PARTIAL, 1 of 157 suites): 45 passed, 3 failed in 16.21s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/existing-store-adds-binding",
@@ -217,12 +220,12 @@
         "SELFTEST FAIL: VELDO-0142 setup/rerun-change-refused"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:23df1ca1a6df8f5c40709a3699cee6e0f6c355abb2bd3a3f306cab40b7adebc2",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:b15f1d575c47a134325c90ac48aba1de0126682b6aeba016f0e91a13d1bde13e"
     },
     {
       "name": "identity142-store-unbound-written",
       "module": "control_store.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:ed4f96154d29a091852e498901a6455b84c85ef74123a79537277e419e4e3f24",
       "mutant_sha256": "sha256:c201350ef4958ef9041e3298e215881a23fa1ca92eb9957d238422d0b17369f4",
       "diff": "identity142-store-unbound-written.diff",
@@ -232,7 +235,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 45 passed, 2 failed in 15.05s"
+        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 2 failed in 14.92s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 binding/store-and-callers-missing",
@@ -241,14 +244,14 @@
       "diagnostics": [
         "VELDO-0142 diagnostic clone/unbound-refused IntegrityError UNIQUE constraint failed: repository_bindings.domain_uuid, repository_bindings.repository_uuid"
       ],
-      "log_sha256": "sha256:70df093b553f92160fc4edb111fa1d708d793c80515fe586fdbe76fb185088b1",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:0b639fb1b710a77d3963a17769202452ab04c7743b8bbc1ea7a8c75f289e5bb2"
     },
     {
       "name": "identity142-reference-too-loose",
       "module": "control_git_identity.py",
-      "source_sha256": "sha256:211a07b29bf1dbf16e7eb7825a5276461994552c23f19875238f8a6be6baa8cc",
-      "mutant_sha256": "sha256:d95c34d68a49dac4bd13c46bfb3eeef6501065b4141b09d30e4df4db60bfc27f",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:897870d0bce22aea9c28feb503ac858871a853176c4a237f5858dfd89558c288",
+      "mutant_sha256": "sha256:89699e37d024831523cccd22179eac33d763cc4c903d8d198b627e86a90f3753",
       "diff": "identity142-reference-too-loose.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/keychain-reference-pattern"
@@ -256,20 +259,20 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 14.88s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 14.97s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/keychain-reference-pattern"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:3a0d182eb503497e3aa6ef61d47297345dca8740262a730753b2f5c307d919b4",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:bc62b2a7d50f21bf490e947e9d728e9ea6ee0dd46d12c8e2ef49b68bbffcb613"
     },
     {
       "name": "identity142-setup-log-omitted",
       "module": "control_factory_setup.py",
-      "source_sha256": "sha256:d2881767fe8639ddd29a0f00a4f2982276021ef27a6783267d8947f7c5da7a56",
-      "mutant_sha256": "sha256:b2292f482afb16276912386bac5261a05614a509992f73fa2d1ad243d68a510c",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:79ed78d9a1d717c80758ec9a0a489e611bcf8b906143a4f5b243ea0b2afca7d3",
+      "mutant_sha256": "sha256:a6108e6340cfc0bffbddefe28b477c0e3dc82be7af9643b34c56bae01bb3f852",
       "diff": "identity142-setup-log-omitted.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/configured-log"
@@ -277,18 +280,18 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 14.99s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 14.98s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/configured-log"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:a50fb29c97cb1cb0e1aef0a3153da7cbdf8e0e460c11869111ad21c2eee2972e",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:50c1a75ffe4411f0b2ceb9a052268e925701532f2f936db80e5244811ec31a21"
     },
     {
       "name": "identity142-caller-identity-ignored",
       "module": "lander.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:bd10b479cf84e347135185ac75bab51f50d6160c9af6f3d3cb934a84999d63ff",
       "mutant_sha256": "sha256:ae4f95ccb8e292b162ea9fe00bfc73101ee5aabb9a8d6e4d0586d30ade232a24",
       "diff": "identity142-caller-identity-ignored.diff",
@@ -298,18 +301,18 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 46 passed, 1 failed in 14.97s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 14.90s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/caller-identity-refused"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:572331625b7312771777952de9184d87463cef15170d85c64415309d86880022",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:4f253fe9c23ca9561f7f02e647cf52ee6c7fc5d5a0c90cc143d8fcad351447ef"
     },
     {
       "name": "identity142-engine-config-reinjected",
       "module": "control_launch.py",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
       "source_sha256": "sha256:4879116df90bd21da529d4d5f579763fc67c9462f848080a77a954fc1e3c33b9",
       "mutant_sha256": "sha256:9c162f04efced3440a244d0f62f3e7cd91c195365f157b0e539d32f1552f132c",
       "diff": "identity142-engine-config-reinjected.diff",
@@ -320,7 +323,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 44 passed, 3 failed in 15.94s"
+        "selftest (PARTIAL, 1 of 157 suites): 45 passed, 3 failed in 14.80s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-author-overrides",
@@ -328,15 +331,14 @@
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:3ee054c1b6839a0129872681c918f1a322631e3276963e4c9eca4f07e2270c7a",
-      "suite_sha256": "sha256:c82ac3d9ace5071d20ca4e6e460d7b7458c6b834a7bfb89b61423369e5a98a70"
+      "log_sha256": "sha256:76023ec5307b8f5a52aa1192cd85dc9123e44101af7515179eeecb66e22d7f10"
     },
     {
       "name": "identity142-station-caller-config",
       "module": "control_landing_station.py",
-      "suite_sha256": "sha256:54a77978a7058d22a0ca20c213e9826af81713c187d020fbd1f2350e8d208eb9",
-      "source_sha256": "sha256:d52a6a1ba9c5ae1dca6853c70a841000ca98a01bfb9fedc48f8c75f5c465e594",
-      "mutant_sha256": "sha256:c0718b59598451542e9378ef82df0727ce8170f89eff7d5351091c09031003d3",
+      "suite_sha256": "sha256:c383f7f7923c5f488695aa2ac68940408cfecddfbdd486c19da600103f8bf22e",
+      "source_sha256": "sha256:8bfbbcf9faca41ceb0a5ae602046e6f8d55d39a733996d7d3fe4df9f72af64b4",
+      "mutant_sha256": "sha256:fded6fdd310efd7125c38c2f191d60ba1ce2a85923138852fd378b9dd00081cd",
       "diff": "identity142-station-caller-config.diff",
       "expected_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/station-record-authority"
@@ -344,7 +346,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 15.79s"
+        "selftest (PARTIAL, 1 of 157 suites): 47 passed, 1 failed in 14.99s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/station-record-authority"
@@ -352,24 +354,9 @@
       "diagnostics": [
         "VELDO-0142 diagnostic lander/station-record-authority KeyError 'identity'"
       ],
-      "log_sha256": "sha256:cddcd53fbb4f3fc631a48f3bb030e3105a91acf9852656b1398c7c4493e7a335"
+      "log_sha256": "sha256:0c7d8baefd8c16a9de6b9dc4131663c29a83efa483d14a23fc04e34bd9be44a9"
     }
   ],
   "full_gate_run": false,
-  "other_suites_run": true,
-  "baseline_history": [
-    {
-      "commit": "30e971105d137ecefccaa0eb7a2ca142e44d52e4",
-      "suite_sha256": "sha256:54a77978a7058d22a0ca20c213e9826af81713c187d020fbd1f2350e8d208eb9",
-      "baseline": {
-        "exit": 2,
-        "summary": [
-          "selftest (PARTIAL, 1 of 157 suites): 48 passed, 0 failed in 15.61s"
-        ],
-        "failing_rows": [],
-        "diagnostics": [],
-        "log_sha256": "sha256:ad497981852a21094b7d6b6751cb55e94e47c2602c1892ad538c3137e7638bfa"
-      }
-    }
-  ]
+  "other_suites_run": true
 }
