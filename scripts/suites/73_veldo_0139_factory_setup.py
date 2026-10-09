@@ -351,7 +351,7 @@ def _v139_suite():
         ts_overrides = {}
 
     if F is not None and 'git_identities' in __import__('inspect').signature(F.setup).parameters:
-        ts_overrides.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['options'](base))
+        ts_overrides.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['options']())
 
     def setup(tag, state_root, workspace, host_trust, **replace):
         """veldo factory setup through the module's own command surface, into this run's scratch, with the

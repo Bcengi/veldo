@@ -85,6 +85,7 @@ def setup(root, base, mods, owner_key):
                 raise AssertionError('setup must not start services')
             return 0, '', ''
 
+    identities = load('v142_setup_identities', root / 'scripts/suites/support/git_identity.py').setup_options(F.setup)
     previous = os.environ.get('PATH', '')
     ts = tailscale.stand_in(root / 'proof/VELDO-0171/tailscale-capture.json', sys.executable)
     try:
@@ -92,7 +93,9 @@ def setup(root, base, mods, owner_key):
         return F.setup(str(state), 'steward', str(owner_key), str(workspace), 88001, str(token),
             host_trust=str(base / 'setup-host/host_trust.json'), install_root=str(base / 'setup-install'),
             unit_dir=str(base / 'setup-units'), profile=profile, writable=[], runner=Manager(),
-            origin='http://127.0.0.1:1', tailscale=[ts.path], api_port=tailscale.free_port())
+            origin='http://127.0.0.1:1', tailscale=[ts.path], api_port=tailscale.free_port(),
+            # VELDO-0142: setup records the workspace repository with its configured Git identity.
+            **identities)
     finally:
         os.environ['PATH'] = previous
         ts.close()

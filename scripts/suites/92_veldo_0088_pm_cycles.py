@@ -73,8 +73,10 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             if setup_only:
                 setup_checks = load('v88_setup_checks', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/setup_fixture.py')
                 setup_checks.observe_pm_authority(f, check)
-            source = base / 'source'
-            source.mkdir()
+            # VELDO-0142: a repository is read from the one path its identity record binds. A factory setup
+            # bound this repository to the workspace it laid the factory down for, so that is the source.
+            source = Path(f['setup_report']['workspace']) if setup_only else base / 'source'
+            source.mkdir(exist_ok=True)
             (source / 'README').write_text('Accepted project source.\n')
             for args in (('init', '-q'), ('add', 'README'), ('commit', '-qm', 'Accepted source')):
                 GP.run(['git', '-C', str(source), *args], check=True, capture_output=True,
