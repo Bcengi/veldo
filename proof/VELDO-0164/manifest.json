@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0164",
-  "commit": "7ef2c615f88121c1e98541b40a4d2c9f71c21fa9",
+  "commit": "ebaa4755377199328ee560dca3e4833b38f5ef0b",
   "producer": "Codex implementation agent",
   "produced_at": "2026-10-08",
   "veldo_version": "3.10.1",
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0164/suite.log",
-          "detail": "Selected suite observations only: reads/registration, reads/member-A, reads/workflow, reads/team-route, reads/no-project, reads/withheld-problems, reads/rule-variants. Required gate evidence pending."
+          "detail": "Selected suite 104: 19 behavior rows pass, including writer-shaped inbox states, nested decision settlements, scoped proposal metadata and the inspect-only team route. Required gate evidence pending."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0164/README.md",
-          "detail": "Real store, signed journal and publication readers; blocked regression and full-gate qualification are pending."
+          "detail": "Real store, signed journal and publication readers. Host validation of locally blocked regressions, falsifiers and merged-tree gate remains pending."
         },
         {
           "type": "falsification",
@@ -39,7 +39,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0164/README.md",
-          "detail": "Real store, signed journal and publication readers; blocked regression and full-gate qualification are pending."
+          "detail": "Real store, signed journal and publication readers. Host validation of locally blocked regressions, falsifiers and merged-tree gate remains pending."
         },
         {
           "type": "falsification",
@@ -60,7 +60,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0164/README.md",
-          "detail": "Real store, signed journal and publication readers; blocked regression and full-gate qualification are pending."
+          "detail": "Real store, signed journal and publication readers. Host validation of locally blocked regressions, falsifiers and merged-tree gate remains pending."
         },
         {
           "type": "falsification",
@@ -72,70 +72,99 @@
   ],
   "checks": [
     {
-      "name": "selected:103_veldo_0164_scoped_reads",
+      "name": "selected:104_veldo_0164_scoped_reads",
       "status": "passed",
-      "command": "python3 scripts/selftest.py --suite 103_veldo_0164_scoped_reads",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0164_scoped_reads",
       "ref": "proof/VELDO-0164/suite.log",
-      "detail": "16 selected suite rows; partial exit 2, no gate claim."
+      "detail": "19 behavior rows pass; selected run exits 2."
     },
     {
       "name": "selected:65_veldo_0132_workflow",
       "status": "passed",
       "command": "python3 scripts/selftest.py --suite 65_veldo_0132_workflow",
       "ref": "proof/VELDO-0164/regression-0132.log",
-      "detail": "16 selected suite rows; partial exit 2, no gate claim."
+      "detail": "16 behavior rows pass; selected run exits 2."
+    },
+    {
+      "name": "selected:68_veldo_0126_intake",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0126_intake",
+      "ref": "proof/VELDO-0164/regression-0126.log",
+      "detail": "18 behavior rows pass; selected run exits 2."
     },
     {
       "name": "selected:71_veldo_0130_api",
       "status": "blocked",
       "command": "python3 scripts/selftest.py --suite 71_veldo_0130_api",
       "ref": "proof/VELDO-0164/regression-0130.log",
-      "detail": "Fixture service refuses unavailable_service:profile:user_manager."
-    },
-    {
-      "name": "selected:94_veldo_0162_configuration_routes",
-      "status": "blocked",
-      "command": "python3 scripts/selftest.py --suite 94_veldo_0162_configuration_routes",
-      "ref": "proof/VELDO-0164/regression-0162.log",
-      "detail": "25 assertions fail after setup profile refusal; one format row passes."
-    },
-    {
-      "name": "selected:93_veldo_0152_intake_routes",
-      "status": "failed",
-      "command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
-      "ref": "proof/VELDO-0164/regression-0152.log",
-      "detail": "11 pass, 11 fail; routing cycles report runtime_unavailable."
+      "detail": "reads/authoritative and reads/implemented-writers pass. events/retry-after-failure fails with PermissionError. Service installation then refuses unavailable_service:profile:user_manager before service/socket-path can run."
     },
     {
       "name": "selected:82_veldo_0141_execution_record",
       "status": "blocked",
       "command": "python3 scripts/selftest.py --suite 82_veldo_0141_execution_record",
       "ref": "proof/VELDO-0164/regression-0141.log",
-      "detail": "Fixture PermissionError under /run/user/1000."
+      "detail": "Fixture creation raises PermissionError under /run/user/1000."
+    },
+    {
+      "name": "selected:82_veldo_0144_mcp_catalog",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0144_mcp_catalog",
+      "ref": "proof/VELDO-0164/regression-0144.log",
+      "detail": "29 behavior rows pass; selected run exits 2."
+    },
+    {
+      "name": "selected:85_veldo_0158_credential_delivery",
+      "status": "blocked",
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0158_credential_delivery",
+      "ref": "proof/VELDO-0164/regression-0158.log",
+      "detail": "Fixture creation raises PermissionError under /run/user/1000."
+    },
+    {
+      "name": "selected:85_veldo_0171_setup_api",
+      "status": "blocked",
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0171_setup_api",
+      "ref": "proof/VELDO-0164/regression-0171.log",
+      "detail": "3 rows pass, 15 fail after setup refuses unavailable_service:profile:user_manager."
+    },
+    {
+      "name": "selected:93_veldo_0152_intake_routes",
+      "status": "blocked",
+      "command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+      "ref": "proof/VELDO-0164/regression-0152.log",
+      "detail": "11 rows pass, 11 fail; routing cycles report runtime_unavailable."
+    },
+    {
+      "name": "selected:94_veldo_0162_configuration_routes",
+      "status": "blocked",
+      "command": "python3 scripts/selftest.py --suite 94_veldo_0162_configuration_routes",
+      "ref": "proof/VELDO-0164/regression-0162.log",
+      "detail": "1 row passes, 25 fail after setup refuses unavailable_service:profile:user_manager."
     },
     {
       "name": "unit",
       "status": "pending",
-      "detail": "Full gate reserved for reviewer."
+      "detail": "Full gate reserved for reviewer under user token rules."
     },
     {
       "name": "integration",
       "status": "pending",
-      "detail": "Blocked regressions and full gate reserved for reviewer."
+      "detail": "Host regression qualification and full gate remain pending."
     },
     {
       "name": "falsification",
       "status": "pending",
       "ref": "proof/VELDO-0164/falsifiers.json",
-      "detail": "Ten registrations; no mutation execution."
+      "detail": "15 exact registered falsifiers; execution prohibited by the user token rules unless clarified."
     },
     {
       "name": "mutation-anchors",
       "status": "passed",
       "command": "python3 proof/VELDO-0164/anchors.py",
-      "ref": "proof/VELDO-0164/anchors.log"
+      "ref": "proof/VELDO-0164/anchors.log",
+      "detail": "15 registered exact replacements, zero anchor errors. No mutant execution."
     }
   ],
   "rollback": "Explicitly revert the scoped API reader change, retaining evidence. No automatic rollback is authorized.",
-  "review": "Pending independent review, falsifier execution, blocked regression qualification and merged-tree gate. No approval or full verification claim."
+  "review": "Pending independent review, host validation of blocked suites, falsifier execution and the merged-tree gate. No approval or full verification claim."
 }

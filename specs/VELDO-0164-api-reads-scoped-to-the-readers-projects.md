@@ -179,3 +179,12 @@ proposals are projectless by their proposal marker at every state. Decision sett
 resolve settlement.request_id, and visible proposal project metadata is projected to
 the reader's scope before redaction. The writer-shaped regressions were observed failing
 before the fixes. Suite 104 replaces 103 to leave that number to VELDO-0142.
+
+2026-10-08: suite 71 now reports completed API rows before starting its service
+fixture, preserving assertion identities and order. reads/authoritative and
+reads/implemented-writers pass locally. events/retry-after-failure fails with
+PermissionError; the socket fixture still stops at unavailable_service:profile:user_manager.
+Suite 104's 19 rows and regressions 65, 68 and 82 (MCP catalog) pass. Other requested
+regressions require host qualification; exact outcomes are retained in the proof.
+Fifteen falsifiers are registered with valid anchors; the mutation runner and gate
+remain unexecuted under the user's token rules. No approval or completion claim.

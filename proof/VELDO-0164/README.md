@@ -1,79 +1,107 @@
-# VELDO-0164 implementation and verification record
+# VELDO-0164 review fixes and verification record
 
-Built from 294e1933 on agent/codex/veldo-0164. The specification remains ready.
-No gate, mutation harness, push, merge, service activation or external account ran.
-This is builder evidence, not independent approval or a merged-tree verification stamp.
+Veldo delivers specifications, implementation and evidence together. This branch fixes
+API reads scoped to the reader's current projects under the ready VELDO-0164 spec.
+Implementation commit: ebaa4755377199328ee560dca3e4833b38f5ef0b.
+This is builder evidence. No approval, gate stamp, push or merge is claimed.
 
-## Operational criteria
+The host review identified real regressions in suites 71 and 94. The earlier builder
+record described local environment blockers, which did not establish that those suites
+were green on a host. Those regression defects have now been corrected; host validation
+is still required because this environment stops the affected service fixtures.
 
-| Criterion | Behavior observed | Proving rows | Declared falsifier |
-| --- | --- | --- | --- |
-| AC1 | An A member receives exactly the A records of every registered project kind, shared role and tool configurations and the default team. B and projectless records are withheld. Workflow reads use the repository scope checked for editing. | reads/registration, reads/member-A, reads/workflow, reads/team-route, reads/no-project, reads/withheld-problems, reads/rule-variants | v164-model-unfiltered removes the scope argument at the authority read; reads/member-A must fail on B records. |
-| AC2 | A-only records and the A half of mixed records are delivered. Other members' revocations and B publications are withheld. Own revocations remain visible. Head watermark and publication freshness remain unchanged, and cursors pass hidden records. | events/member-A, events/registration, events/publication, events/own-revocations, events/cursor, events/edge-unchanged | v164-events-unfiltered retains every journal change; events/member-A must fail on B records. |
-| AC3 | Universal readers retain all entities, problems, redactions, machines, workflow revisions and journal records, including unrouted proposals and account policies. | owner/unchanged | v164-universal-projectless-hidden removes the universal exception for projectless data; owner/unchanged must fail on unrouted intake. |
+## Review items, proving rows and falsifiers
 
-The three declared falsifiers and seven additional negative controls are registered
-as finding 164 in scripts/check_teeth_mutations.py. falsifiers.json binds their
-exact diffs to production source hashes and names the expected failing rows.
-anchors.py only evaluates registry declarations and checks exact replacement anchors;
-it neither invokes the mutation harness nor executes a mutant. Execution and rejection
-of these falsifiers remain reviewer work. Existing affected finding 130 anchors were
-updated for the expanded kind registrations and filtered entity variable, preserving
-their original defects and expected assertions.
+1. Suite 71 seeds its default team through TeamRoutes.save_default, the exclusive writer.
+   Its named-scope socket owner sends a message explicitly routed to project-a, so the
+   committed objective is visible to her. Existing rows: reads/authoritative and
+   service/socket-path. Falsifiers: v164-api-default-team-unseeded and
+   v164-socket-message-unrouted restore the two fixture defects.
+   Team GET uses inspect, the authority interface shared by the 0162 fixture and production.
+   inspect now reads all requested entities and the watermark in one transaction. The
+   route requests team and current membership together and filters the project team to
+   that membership's scope. Missing and withheld teams both return None. No change to
+   proof/VELDO-0162/fixture.py or to the interface was needed. Row: reads/team-route in
+   suite 104, exercised through an authority exposing only inspect. Falsifiers:
+   v164-team-requires-model-read and v164-team-unfiltered. Suite 94's team/roundtrip,
+   default/history and default/named-revision retain their real production proxy checks.
 
-## Implementation boundaries
+2. A proposal with proposal=inbox is projectless regardless of its state or holding area.
+   The trusted-store fixture now mirrors control_intake and control_intake_routes:
+   project=factory in AWAITING_ROUTE, AWAITING_PROJECT, NEW_PROJECT and ROUTED,
+   with linked questions and their real candidates. Neither an A reader nor a factory
+   reader receives those proposals, questions or journal changes. Row:
+   reads/unrouted-intake. Falsifier: v164-unrouted-factory-visible restores the old
+   state-based rule. This row was observed failing against the old implementation.
 
-Each Kind declares its project rule beside its writer. The new scope resolver reads
-fields, unit or request references, or the projects whose execution_repository matches
-a repository record. Repository-wide data requires coverage of every project sharing
-that repository. Workflow revisions use their repository name directly, as their
-editor check does. Assignment scopes must be covered in full. Unresolved references,
-unregistered kinds and account policies are universal-only. An AWAITING_ROUTE intake
-proposal remains projectless even if its holding area is the factory project.
+3. Decision settlements resolve their request through settlement.request_id, matching
+   control_request_settlement. The fixture has no top-level request_id on that kind.
+   Rows: reads/decision-settlement, reads/member-A and events/registration.
+   Falsifier: v164-decision-request-at-top-level restores the incorrect field path.
+   The decision row was observed failing before the fix.
 
-Filtering precedes integrity validation and redaction, so hidden rows cannot leak
-through problem identities, redaction paths or derived machines. Current membership,
-model data and project references are read in one authority read transaction.
-Observations contain principal, model or cursor, scope, watermark and counts by reason,
-never withheld identities. Member feeds retain published events only for visible
-receipt entities. The edge feed remains unfiltered for session revocation.
+4. A visible intake proposal's structured project metadata is projected before redaction:
+   context.projects, candidates, project_versions, decision metadata and project hints
+   retain only covered projects. Ticket prefixes stay with their visible project. A shared
+   ticket prefix is retained as shared only if at least two visible projects share it.
+   The fixture seeds the writer's repeated context and decision metadata and real prefix
+   shapes. An A reader sees A and its prefixes; a named A+B reader retains both projects
+   and their shared prefix. Universal answers still compare exactly with legacy.py.
+   Row: reads/proposal-context. Falsifier: v164-proposal-context-unfiltered.
+   This row was observed failing before the fix.
 
-The separate team GET now uses the scoped configuration model. Member event answers
-carry a consumed journal cursor; the stream uses it even on an empty page, so a hidden
-page cannot stall delivery or cause later visible records to be skipped. Universal
-answers and the edge feed retain their old representation. These two API changes are
-recorded in the specification footprint without changing any criterion.
+5. Both own-revocation checks guard the event list before indexing it. The membership
+   check asserts its length first, so withholding the event produces a false assertion
+   rather than an IndexError. Row: events/own-revocations. Falsifier:
+   v164-own-revocations-hidden. Mutant execution remains pending.
+
+6. The suite is 104_veldo_0164_scoped_reads throughout active registrations: suite file,
+   manifest.json, requires.json, finding 164 registrations and proof manifest. This
+   leaves 103 to VELDO-0142. Registration anchors were checked for all 15 falsifiers.
+   Historical suite-initial.log and suite-second.log retain their original output and
+   original suite number; they are archived development runs, not current checks.
 
 ## Test method and results
 
-Run each named suite through scripts/selftest.py with its suite selector, one at a
-time. Suite 103 has 16 behavior rows. It uses a real SQLite control store, actual signed
-journal commits with a generated OpenSSH key, the real authority lock, real stored
-workflow revisions saved by Workflows.save, and the actual publication journal and log
-readers. Other entity rows are trusted-store seeds shaped like their owning writers;
-they do not certify those writers' admission policies. Default team seeds use the
-VELDO-0162 kind, revision identity and head. Published event seeds exercise the actual
-bounded log reader, not the landing publisher's acceptance checks. No live engine runs.
+Suite 104 has 19 behavior rows. It uses real SQLite state, signed journal commits,
+current membership, stored workflow revisions and the real publication readers.
+legacy.py preserves the base reader bodies, comparing full universal answers and the
+unchanged edge feed. Trusted-store seeds judge the read policy rather than writer
+admission. Before the production fixes, review-before.log reports five failed rows:
+reads/member-A, reads/unrouted-intake, reads/decision-settlement,
+reads/proposal-context and events/registration. All 19 rows now pass.
 
-legacy.py retains verbatim reader function bodies extracted from 294e1933. The old
-read_model body uses the current kind registration, including the newly published
-default team, to compare behavior over the same entity universe. The old workflow and
-feed functions compare complete answers. The suite compares the full seeded journal
-as well as the explicit A, B, mixed and other-member revocation sequence.
+Each requested suite was attempted individually through the suite selector:
 
-| Suite | Result | Kept output |
-| --- | --- | --- |
-| 103_veldo_0164_scoped_reads | 16 suite rows passed, zero failures; 42 including shared checks | suite.log |
-| 65_veldo_0132_workflow | 16 suite rows passed, zero failures; 42 including shared checks | regression-0132.log |
-| 71_veldo_0130_api | Aborted during service fixture construction: unavailable_service:profile:user_manager | regression-0130.log |
-| 94_veldo_0162_configuration_routes | 25 rows fail after setup refuses unavailable_service:profile:user_manager; one format row passes | regression-0162.log |
-| 93_veldo_0152_intake_routes | 11 pass, 11 fail; routing cycles report runtime_unavailable | regression-0152.log |
-| 82_veldo_0141_execution_record | Aborted creating its fixture under /run/user/1000: PermissionError | regression-0141.log |
+* 104_veldo_0164_scoped_reads: 19 passed, zero failed. Output: suite.log.
+* 65_veldo_0132_workflow: 16 passed, zero failed. Output: regression-0132.log.
+* 68_veldo_0126_intake: 18 passed, zero failed. Output: regression-0126.log.
+* 71_veldo_0130_api: reads/authoritative and reads/implemented-writers pass.
+  Completed API rows now report before service setup, preserving their original
+  assertions and order. events/retry-after-failure fails on PermissionError,
+  followed by a service installation abort with unavailable_service:profile:user_manager.
+  service/socket-path cannot run here. Output: regression-0130.log.
+* 82_veldo_0141_execution_record: stops creating a fixture under /run/user/1000
+  with PermissionError. Output: regression-0141.log.
+* 82_veldo_0144_mcp_catalog: 29 passed, zero failed. Output: regression-0144.log.
+* 85_veldo_0158_credential_delivery: stops creating a fixture under /run/user/1000
+  with PermissionError. Output: regression-0158.log.
+* 85_veldo_0171_setup_api: 3 passed, 15 failed after setup reports
+  unavailable_service:profile:user_manager. Output: regression-0171.log.
+* 93_veldo_0152_intake_routes: 11 passed, 11 failed; routing cycles report
+  runtime_unavailable. Output: regression-0152.log.
+* 94_veldo_0162_configuration_routes: 1 passed, 25 failed after fixture setup
+  reports unavailable_service:profile:user_manager. Output: regression-0162.log.
 
-Passing selected suites exit 2 by the repository's partial-run contract. These results
-are not a passed unit gate. The manifest leaves acceptance and required evidence pending
-until the reviewer can run the blocked regressions, falsifiers and merged-tree gate.
-No check was weakened to accommodate this environment. Initial scope-suite failures
-were fixture mistakes: workflow ownership registration, a missing default-team head,
-and an incorrectly composed legacy-reader namespace. The corrected fixture passes;
-suite-initial.log and suite-second.log retain those development runs.
+Passing selected runs exit 2 by the repository's partial-run contract. These results
+cannot stand in for the unit gate or establish that blocked suites are green on a host.
+All suites ran in the foreground. No environment checks were weakened.
+
+The user token rules prohibit the mutation runner, while a later sentence requests
+finding 164. Clarification was requested; no exception was received. The mutation
+runner and gate were therefore not executed. anchors.py checks declarative registry
+anchors and generates exact diffs only. It reports 15 registrations and zero anchor
+errors, but proves no mutant rejection. Existing finding 130 and 162 anchors affecting
+these modules still resolve. The three spec falsifiers remain registered:
+v164-model-unfiltered, v164-events-unfiltered and v164-universal-projectless-hidden.
+Host runs of the blocked suites, all falsifiers and the merged-tree gate remain pending.
