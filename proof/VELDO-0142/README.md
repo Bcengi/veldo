@@ -1,5 +1,45 @@
 # VELDO-0142 scoped proof
 
+## Mutation-stage follow-ups
+
+VELDO-0142 added the repository path-conflict check before Git identity resolution in
+`control_store.bind_repositories`. The original mutation disabled the later insert-loop check,
+which cannot see a conflict after that preflight in the same transaction. The case now disables
+the preflight check. The existing alias row is unchanged and still requires the exact
+`repository_binding_conflict` refusal for foreign repositories and clones.
+
+The account cap-stop row used the ordinary `run` helper's wait, with no row-specific timeout,
+while each fake engine slept for 30 seconds. Its Claude and Codex cases now pump the launch
+pipe with a five-second deadline, request cleanup on expiry, and bound the final receiver wait
+to five seconds. Every original cap, cancellation, usage and charge assertion remains. Failure
+diagnostics are included in the assertion label so the gate's worker retains them in its receipt.
+
+Scoped results are recorded in `mutation-followups.json`:
+
+- `python3 scripts/selftest.py --suite 59_veldo_0037_aliases`: 79 passed, zero failed.
+- `python3 scripts/selftest.py --suite 75_veldo_0062_accounts`: 49 passed, zero failed.
+- Both suite commands returned 2, the self-test dispatcher's successful partial-run status.
+- Direct gate workers: both cases passed baseline and no-op controls, and their mutants failed
+  only the required row. Alias mutant: 20.7 seconds. Cap mutant: 59.1 seconds for the whole suite;
+  the cap cases timed out and cleaned up in 5.4 seconds (Claude) and 5.5 seconds (Codex).
+- Confined workers: both attempts stopped before executing tests because this agent's outer
+  launcher did not preserve the tree marker. An explicit-runtime confinement diagnostic also
+  failed before tests with `agent sandbox broker unavailable`. Confined kills remain unverified.
+
+Replay one case and leg at a time with the same worker launcher, ownership cleanup and result
+validator that the gate uses (the output directory must not already exist):
+
+```sh
+python3 proof/VELDO-0142/mutation_followups.py --case repository-binding-unchecked --leg direct --output "$TMPDIR/alias-direct" > "$TMPDIR/alias-direct.log" 2>&1
+python3 proof/VELDO-0142/mutation_followups.py --case account-cap-stop-ignored --leg direct --output "$TMPDIR/cap-direct" > "$TMPDIR/cap-direct.log" 2>&1
+```
+
+Use `--leg confined` and a fresh output path for each confined replay from a launcher that
+preserves its tree marker. The scoped helper imports the registry and driver APIs; it never
+invokes either full mutation-stage entry point. No full self-test, mutation stage or gate ran.
+
+## Earlier scoped proof
+
 The review fixes implement immutable setup additions, store refusals, complete launch scrubbing
 and validation of incoming worker commits. The implementation and fixture commits are d439af66, 90293601, e04a8f0a, b6d1790a 30e97110 and 1242de16.
 Specification status stays ready. The full gate, independent approval, push and merge remain
