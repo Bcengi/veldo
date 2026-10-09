@@ -63,7 +63,7 @@ def main():
                   suite=SUITE, suite_sha256=digest((ROOT / 'scripts/suites' / (SUITE + '.py')).read_bytes()),
                   baseline=baseline, mutations=records, full_gate_run=False, other_suites_run=False)
     (PROOF / 'verification.json').write_text(json.dumps(packet, indent=2) + '\n')
-    print('Honest suite passes; all five falsifiers fail their required assertion rows.', flush=True)
+    print('Honest suite passes; all registered falsifiers fail their required assertion rows.', flush=True)
 
 
 if __name__ == '__main__':

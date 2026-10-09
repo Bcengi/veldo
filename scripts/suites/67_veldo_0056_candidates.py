@@ -194,7 +194,7 @@ packet = json.loads(sys.stdin.read() or '{}')
 unit, mode = packet['unit'], packet['mode']
 def git(*args):
     return _git_process.run(['git', '-C', str(work), *args], check=True, capture_output=True, text=True,
-                            identity=('Builder A', 'builder-a@example.invalid')).stdout.strip()
+                            identity=('Lander', 'lander@example.invalid')).stdout.strip()
 def sha(path):
     return 'sha256:' + hashlib.sha256((work / path).read_bytes()).hexdigest()
 git('checkout', '-q', '-B', 'build/' + unit, base)
@@ -515,7 +515,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             boundary.calls, boundary.fail_at = [], fault
             unit = {'spec': sid, 'holder': BUILDER, 'generation': generations.get(sid)}
             ops = outcome_of(lambda: make(Observed, str(caller), ref or 'build/' + sid, trunk=trunk, remote=remote_name,
-                                          push=True, policy=policy if authority else None, identity=LANDER_ID,
+                                          push=True, policy=policy if authority else None,
                                           observe=events.append, workspace_root=str(spaces), domain=DOMAIN,
                                           repository=REPOSITORY, identity_conn=writer))
             if ops[0] == 'ok':

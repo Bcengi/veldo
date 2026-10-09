@@ -14,6 +14,20 @@ depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0139, VELDO-0
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/59_veldo_0037_aliases.py"
+  - "scripts/suites/69_veldo_0068_settlement.py"
+  - "scripts/suites/65_veldo_0132_workflow.py"
+  - "scripts/suites/92_veldo_0088_pm_cycles.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
+  - "scripts/suites/82_veldo_0085_decomposition.py"
+  - "scripts/suites/77_veldo_0149_adopted_activation.py"
+  - "scripts/suites/103_veldo_0142_git_identities.py"
+  - "engine/.veldo/control_landing_station.py"
+  - ".veldo/control_landing_station.py"
+  - "engine/.veldo/control_readset.py"
+  - ".veldo/control_readset.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "engine/.veldo/control_git_identity*.py"
   - ".veldo/control_git_identity*.py"
   - "packs/*/.veldo/control_git_identity*.py"
@@ -141,7 +155,9 @@ every push's use of it.
 
 Pushing with the identity's credential and the remote owner check (VELDO-0153); Git hosts other than
 GitHub, an identity spanning two remote owners, moving a repository between identities (refused), and
-the UI form for identities (VELDO-0131 shows them read-only).
+the UI form for identities (VELDO-0131 shows them read-only). The standalone control_replica
+audit exports on refs/veldo/audit use their authority identity. They are not factory source
+commits and are not wired into factory setup; their authorship is outside this specification.
 
 ## What the reviewer judges
 
@@ -188,17 +204,17 @@ and an explicit workspace identity. Each record has id, label, author_name, auth
 remote_host (github.com), remote_owner, api_token (a keychain reference), push_credential
 (kind token or ssh and a keychain reference), projects_root and default_visibility.
 For an SSH credential, the referenced keystore value names the key path. Setup does not
-resolve either credential. New setup refuses omitted identities before writing. An old
-setup rerun can retain its old unbound state, but no clone or land can commit from it.
+resolve either credential. New setup refuses omitted identities before writing. Setup reruns add missing identities
+and repository bindings, including in an existing VELDO-0139 store, and never change an existing binding.
 No legacy author is inferred and no migration of a previously bound identity is allowed.
 
 The new control_git_identity module owns transactional local identity metadata beside
 the store's repository path registry. Repository creation/adoption calls configure with
 an explicit repository id, path and identity; missing, multiple, unknown and changed
 identities refuse. Clone provisioning reads that record and sets local user, author and
-committer names and emails. The receiver strips both Git identity variable prefixes,
+committer names and emails. The receiver strips both Git identity variable prefixes and injected Git configuration,
 including adapter overrides. GitLandOps resolves the repository record from its authority
-policy's reader (or an explicit identity_conn), never its legacy identity argument or the
+policy's reader (or an explicit identity_conn), refuses a caller identity argument and never uses the
 caller's Git configuration. Each new merge or projection commit is read back, checked and
 observed with the repository, identity, candidate and unit. Re-lands use this same path.
 

@@ -30,7 +30,7 @@ def identifier(value):
 
 
 def reference(value):
-    return text(value) and value.startswith('keychain:') and bool(value[9:].strip())
+    return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None
 
 
 def validate(identities):
@@ -150,7 +150,7 @@ def configure(conn, domain, identities, repositories, *, check_only=False, obser
                     conn.execute('INSERT OR IGNORE INTO git_identities VALUES (?,?,?)',
                                  (domain, identity, json.dumps(record, sort_keys=True)))
                 for repository, target in targets.items():
-                    conn.execute('INSERT OR REPLACE INTO git_identity_repositories VALUES (?,?,?,?)',
+                    conn.execute('INSERT OR IGNORE INTO git_identity_repositories VALUES (?,?,?,?)',
                                  (domain, repository, target['path'], target['identity']))
             conn.execute('ROLLBACK' if check_only else 'COMMIT')
         except BaseException:
@@ -166,7 +166,9 @@ def configure(conn, domain, identities, repositories, *, check_only=False, obser
 
 
 def environment(environment):
-    return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}
+    return {key: value for key, value in environment.items()
+            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')
+                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}
 
 
 def author(record):

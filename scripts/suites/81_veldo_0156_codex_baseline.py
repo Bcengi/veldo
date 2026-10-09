@@ -236,6 +236,7 @@ def _v156_suite():
             GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', branch], check=True,
                    capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
         GP.run(['git', '-C', str(src), 'checkout', '-q', main_branch], check=True, capture_output=True)
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
 
         # The engine's HOME, a directory of this run's, and another whose .agents holds a skill.

@@ -115,6 +115,7 @@ def _v142_suite():
             git(repo, 'add', '.')
             git(repo, 'commit', '-qm', 'fixture base')
             repos[record['id']] = repo
+        GI.configure(conn, domain, identities, {key: dict(path=str(value), identity=key) for key, value in repos.items()})
         S.bind_repositories(conn, domain, {key: str(value) for key, value in repos.items()})
 
         with row('setup/full-command-and-rerun'):
@@ -173,6 +174,49 @@ def _v142_suite():
                         replay = F.main(argv, **options)
                     assert replay == 0, output.getvalue()
                     check('setup/full-command-and-rerun', actual == identities and bound['identity'] == 'bcengi')
+                    check('setup/configured-log', {e.get('identity') for e in report['steps']
+                          if e.get('step') == 'git_identity_configured' and e.get('outcome') == 'accepted'}
+                          == {'bcengi', 'personal'})
+                    # Model an existing VELDO-0139 store with repository paths but no identity metadata.
+                    writer = S.open_store(report['store'])
+                    writer.execute('DROP TABLE git_identity_repositories')
+                    writer.execute('DROP TABLE git_identities')
+                    writer.close()
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        rebound = F.main(argv, **options)
+                    assert rebound == 0, output.getvalue()
+                    upgraded = json.loads(output.getvalue())
+                    reader = S.open_store(report['store'], mode='r')
+                    check('setup/existing-store-adds-binding', GI.records(reader, report['authority_ids']['domain_uuid']) == identities
+                          and GI.resolve(reader, report['authority_ids']['domain_uuid'],
+                                         report['authority_ids']['repository_uuid'], repos['bcengi']) == identities[0]
+                          and any(e['step'] == 'git_identities' and e['outcome'] == 'done' for e in upgraded['steps']))
+                    before = list(reader.iterdump())
+                    reader.close()
+                    added = dict(identities[1], id='extra', label='Extra')
+                    config_file.write_text(json.dumps(identities + [added]))
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        code = F.main(argv, **options)
+                    assert code == 0, output.getvalue()
+                    reader = S.open_store(report['store'], mode='r')
+                    check('setup/rerun-adds-identity', GI.records(reader, report['authority_ids']['domain_uuid'])
+                          == sorted(identities + [added], key=lambda r: r['id'])
+                          and GI.resolve(reader, report['authority_ids']['domain_uuid'],
+                                         report['authority_ids']['repository_uuid']) == identities[0])
+                    unchanged = list(reader.iterdump())
+                    reader.close()
+                    added['author_name'] = 'Changed Extra'
+                    config_file.write_text(json.dumps(identities + [added]))
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        code = F.main(argv, **options)
+                    reader = S.open_store(report['store'], mode='r')
+                    check('setup/rerun-change-refused', code == 1
+                          and json.loads(output.getvalue())['reason'] == 'binding_mismatch:git_identity_change'
+                          and unchanged == list(reader.iterdump()))
+                    reader.close()
             finally:
                 tailscale.close()
                 setup_temp.cleanup()
@@ -210,6 +254,22 @@ def _v142_suite():
             check('setup/reference-only-and-unchanged', changed == 'binding_mismatch:git_identity_change'
                   and literal == 'invalid_input:git_identity' and before == list(conn.iterdump()))
 
+        with row('binding/store-and-callers-missing'):
+            AL = load('identity142_alias', mods / 'control_alias.py')
+            RS = load('identity142_readset', mods / 'control_readset.py')
+            before = list(conn.iterdump())
+            missing = {'bcengi': str(repos['bcengi']), 'unbound': str(repos['personal'])}
+            codes = [refusal(call) for call in (
+                lambda: S.bind_repositories(conn, domain, missing),
+                lambda: AL.attach(S, conn, domain, missing),
+                lambda: RS.attach_revisions(S, conn, domain, missing))]
+            check('binding/store-and-callers-missing', codes == ['missing_authority:repository_identity'] * 3
+                  and before == list(conn.iterdump()))
+
+        with row('setup/keychain-reference-pattern'):
+            check('setup/keychain-reference-pattern', all(GI.reference(v) for v in ('keychain:a', 'keychain:a/b.c-d_0'))
+                  and not any(GI.reference(v) for v in ('keychain: a', 'keychain:a b', 'keychain:/a', 'keychain:a@b')))
+
         polluted = dict(os.environ)
         global_config = base / 'global.gitconfig'
         global_config.write_text(''.join('[' + role + ']\n name = Global Stranger\n email = global@example.invalid\n'
@@ -230,6 +290,25 @@ def _v142_suite():
                                                      for k in list(normal) + list(stripped))
                   and stripped['KEEP'] == 'yes')
 
+        injections = [
+            {'GIT_CONFIG_COUNT': '4', **{'GIT_CONFIG_KEY_' + str(i): key for i, key in enumerate(
+                ('author.name', 'author.email', 'committer.name', 'committer.email'))},
+             **{'GIT_CONFIG_VALUE_' + str(i): value for i, value in enumerate(
+                ('Injected Stranger', 'inject@example.invalid', 'Injected Stranger', 'inject@example.invalid'))}},
+            {'GIT_CONFIG_PARAMETERS': "'author.name=Param Stranger' 'author.email=param@example.invalid' "
+                                      "'committer.name=Param Stranger' 'committer.email=param@example.invalid'"}]
+        with row('launch/no-config-overrides'):
+            environments = []
+            for injection in injections:
+                environments.append(L.engine_environment(dict(polluted, **injection)))
+                environments.append(L.engine_environment(dict(polluted, **{
+                    L.ENGINE_RUNTIME: str(base / 'runtime'),
+                    L.ENGINE_OVERRIDES: json.dumps(dict(injection, KEEP='yes'))}, **injection)))
+            check('launch/no-config-overrides', all(GI.environment(env) == env for env in environments)
+                  and all(env['KEEP'] == 'yes' for env in environments[1::2]))
+
+        dispatches = SimpleNamespace(store=S, conn=conn, domain=domain)
+        clones = CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches')
         with row('clone/identity-authors'):
             dispatches = SimpleNamespace(store=S, conn=conn, domain=domain)
             clones = CL.Clones(dispatches, clones=base / 'clones', caches=base / 'caches')
@@ -249,6 +328,8 @@ def _v142_suite():
                 done = subprocess.run(['git', '-C', str(work), 'commit', '--allow-empty', '-qm', 'worker tool'],
                                       env=environment, capture_output=True, text=True, timeout=20)
                 expected = list(GI.author(record)) * 2
+                assert done.returncode == 0, done.stderr
+                assert authors(work) == expected, ('author comparison', authors(work), expected)
                 local = [git(work, 'config', '--local', '--get', key) for key in ('user.name', 'user.email')]
                 seen.append(done.returncode == 0 and local == expected[:2] and authors(work) == expected
                             and manifest['identity'] == record['id'])
@@ -256,9 +337,39 @@ def _v142_suite():
                                                      authors=authors(work)))
             check('clone/identity-authors', seen == [True, True])
 
+        with row('launch/spawn-config-commit-authors'):
+            seen = []
+            for record in identities:
+                manifest, _ = CL.find(clones.clones, 'worker/' + record['id'])
+                work = Path(manifest['work'])
+                for injection in injections:
+                    for bound in (False, True):
+                        for transport in ('local', 'reported'):
+                            receiver = object.__new__(L.Receiver)
+                            receiver.login = None
+                            receiver.binding = (dict(argv=['git', '-C', str(work), 'commit', '--allow-empty', '-qm', 'spawn worker'],
+                                environment=dict(injection, **{L.ENGINE_RUNTIME: str(base / 'runtime'),
+                                    L.ENGINE_OVERRIDES: json.dumps(injection)}), path='fixture', sha256='fixture')
+                                if bound else None)
+                            receiver._resolve_credentials = lambda adapter: None
+                            receiver._baseline = lambda dispatch, argv, env, reported: (argv, env)
+                            receiver._record = lambda adapter, env: None
+                            receiver._contained = lambda dispatch, argv, env: subprocess.Popen(argv,
+                                env=L.engine_environment(env), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            adapter = dict(argv=['git', '-C', str(work), 'commit', '--allow-empty', '-qm', 'spawn worker'],
+                                           environment=injection, identity=transport)
+                            with patch.dict(os.environ, dict(polluted, **injection), clear=True):
+                                process = receiver._spawn('spawn/' + record['id'], None, adapter)
+                                out, err = process.communicate(timeout=20)
+                            seen.append(process.returncode == 0 and authors(work) == list(GI.author(record)) * 2)
+            check('launch/spawn-config-commit-authors', len(seen) == 16 and all(seen))
+
         with row('clone/unbound-refused'):
-            contract['repository'] = 'unbound'
-            S.bind_repositories(conn, domain, {'unbound': str(repos['bcengi'])})
+            contract = dict(domain=domain, repository='unbound', dispatch_id='unbound-worker', unit='VELDO-0142',
+                            source=dict(commit=git(repos['bcengi'], 'rev-parse', 'HEAD'),
+                                        tree=git(repos['bcengi'], 'rev-parse', 'HEAD^{tree}')))
+            # A legacy store path has no identity, as on an upgrade before setup is rerun.
+            conn.execute('INSERT INTO repository_bindings VALUES (?,?,?)', (domain, 'unbound', str(repos['bcengi'])))
             before = sorted(str(p) for p in clones.clones.iterdir())
             code = refusal(lambda: clones._create(contract))
             check('clone/unbound-refused', code == 'missing_authority:repository_identity'
@@ -277,18 +388,18 @@ def _v142_suite():
                     git(repo, 'checkout', '-q', '-B', 'build' + str(index), 'main')
                     (repo / ('unit' + str(index))).write_text('implementation\n')
                     git(repo, 'add', '.')
-                    git(repo, 'commit', '-qm', 'implementation')
+                    git(repo, 'commit', '-qm', 'implementation', identity=GI.author(record))
                     implementation = git(repo, 'rev-parse', 'HEAD')
                     proof = repo / 'proof' / sid
                     proof.mkdir(parents=True)
                     (proof / 'manifest.json').write_text(json.dumps({'commit': implementation}))
                     git(repo, 'add', '.')
-                    git(repo, 'commit', '-qm', 'evidence')
+                    git(repo, 'commit', '-qm', 'evidence', identity=GI.author(record))
                     evidence = git(repo, 'rev-parse', 'HEAD')
 
                     def candidate():
                         ops = LD.GitLandOps(repo, evidence, domain=domain, repository=record['id'],
-                                            identity=outsider, identity_conn=conn,
+                                            identity_conn=conn,
                                             policy=lambda *_: {'ok': True}, observe=events.append)
                         assert ops.sync_main()['ok']
                         assert ops.reconcile({'spec': sid})['ok']
@@ -329,8 +440,55 @@ def _v142_suite():
             check('lander/identity-and-reland-authors', len(seen) == 12 and all(seen)
                   and {e.get('identity') for e in events if e['operation'] == 'reconcile'} == {'bcengi', 'personal'})
 
-        with row('lander/unbound-before-commit'):
+        with row('lander/worker-commit-mismatch'):
+            repo = repos['bcengi']
+            expected = GI.author(identities[0])
+            results = []
+            # Both roles and both author fields, including a hidden implementation ancestor.
+            for bad_role, bad_field in (('implementation', 'author'), ('implementation', 'committer'),
+                                       ('evidence', 'author'), ('evidence', 'committer'), ('ancestor', 'author')):
+                git(repo, 'fetch', '-q', 'origin', 'main')
+                git(repo, 'checkout', '-q', '-B', 'bad-worker', 'FETCH_HEAD')
+                sid = 'VELDO-9999'
+                def commit(message, bad=False):
+                    env = {}
+                    if bad:
+                        prefix = 'GIT_AUTHOR_' if bad_field == 'author' else 'GIT_COMMITTER_'
+                        env = {prefix + 'NAME': outsider[0], prefix + 'EMAIL': outsider[1]}
+                    environment = dict(os.environ, GIT_AUTHOR_NAME=expected[0], GIT_AUTHOR_EMAIL=expected[1],
+                                       GIT_COMMITTER_NAME=expected[0], GIT_COMMITTER_EMAIL=expected[1])
+                    environment.update(env)
+                    result = subprocess.run(['git', '-C', str(repo), 'commit', '--allow-empty', '-qm', message],
+                                            env=environment, capture_output=True, text=True, timeout=20)
+                    assert result.returncode == 0, result.stderr
+                    return git(repo, 'rev-parse', 'HEAD')
+                if bad_role == 'ancestor':
+                    commit('hidden wrong ancestor', True)
+                implementation = commit('implementation', bad_role == 'implementation')
+                proof = repo / 'proof' / sid
+                proof.mkdir(parents=True, exist_ok=True)
+                (proof / 'manifest.json').write_text(json.dumps({'commit': implementation}))
+                git(repo, 'add', '.')
+                evidence = commit('evidence', bad_role == 'evidence')
+                ops = LD.GitLandOps(repo, evidence, domain=domain, repository='bcengi', identity_conn=conn)
+                assert ops.sync_main()['ok']
+                watermark = ops.record()['watermark']
+                result = ops.reconcile({'spec': sid})
+                results.append(result.get('refusal') == 'binding_mismatch:worker_commit_identity'
+                               and git(ops.record()['workspace'], 'rev-parse', 'HEAD') == watermark
+                               and not ops.record()['merges'])
+                ops.discard()
+            check('lander/worker-commit-mismatch', results == [True] * 5)
+
+        with row('lander/caller-identity-refused'):
             ops = LD.GitLandOps(repos['bcengi'], 'HEAD', push=False, identity=outsider,
+                                identity_conn=conn, domain=domain, repository='bcengi')
+            result = ops.sync_main()
+            check('lander/caller-identity-refused', result.get('refusal') == 'invalid_input:caller_git_identity'
+                  and ops.record()['workspace'] is None)
+
+        with row('lander/unbound-before-commit'):
+            ops = LD.GitLandOps(repos['bcengi'], 'HEAD', push=False,
                                 identity_conn=conn, domain=domain, repository='unbound')
             result = ops.sync_main()
             check('lander/unbound-before-commit', result.get('refusal') == 'missing_authority:repository_identity'

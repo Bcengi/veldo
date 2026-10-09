@@ -188,6 +188,7 @@ def _v132_suite():
         put('blocker-9604', 'blocker', dict(unit='VELDO-9604', reason='fixture blocker'))
 
         # A real accepted VELDO-0035 snapshot of the workspace commit, on its own connection.
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, snapshots_conn, DOMAIN, {REPOSITORY: str(work)})
         revisions = RS.attach_revisions(S, snapshots_conn, DOMAIN, {REPOSITORY: str(work)})
         revisions.accept('revision-132', REPOSITORY, commit, 'owner', documents={'README': sha((work / 'README').read_bytes())},
                          statuses={}, signer='owner', sign=sign, authority_generation=1)

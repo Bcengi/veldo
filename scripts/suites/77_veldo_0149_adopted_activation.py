@@ -366,6 +366,7 @@ def _v149_suite():
                 resolved[label] = EN.resolve_store(str(path), enroll_verify, HOST, domain_uuid=domain, store_uuid=STORE)
                 binding = EN.read_binding(str(path))
                 if bind:
+                    __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](Path(S.__file__).parent, conn, domain, {binding['repository_uuid']: str(path)})
                     S.bind_repositories(conn, domain, {binding['repository_uuid']: str(path)})
                 workspaces[label] = os.path.realpath(str(path))
                 return binding['repository_uuid']

@@ -217,7 +217,7 @@ def _v57_suite():
             source = 'src/%s.py' % unit.replace('-', '_').lower()
             (caller / source).write_text('OK = True\nUNIT = %r\n' % unit)
             git(caller, 'add', '-A')
-            git(caller, 'commit', '-q', '-m', 'Implement ' + unit, who=BUILDER)
+            git(caller, 'commit', '-q', '-m', 'Implement ' + unit, who=LANDER)
             implementation = git(caller, 'rev-parse', 'HEAD')
             manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': 'builder-a', 'commit': implementation,
                         'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [
@@ -226,7 +226,7 @@ def _v57_suite():
             (caller / 'proof' / unit).mkdir(parents=True, exist_ok=True)
             (caller / 'proof' / unit / 'manifest.json').write_text(json.dumps(manifest, indent=1, sort_keys=True) + '\n')
             git(caller, 'add', '--', 'proof/' + unit)
-            git(caller, 'commit', '-q', '-m', 'Proof for ' + unit, who=BUILDER)
+            git(caller, 'commit', '-q', '-m', 'Proof for ' + unit, who=LANDER)
             evidence = git(caller, 'rev-parse', 'HEAD')
             builds[unit] = {'branch': 'build/' + unit, 'implementation': implementation, 'evidence': evidence,
                             'proof': sha(blob(caller, evidence, 'proof/%s/manifest.json' % unit))}
@@ -387,7 +387,7 @@ def _v57_suite():
                 extra['identity_conn'] = writer
             unit = {'spec': sid, 'dispatch': dispatch or 'dispatch/%s/land-1' % sid}
             ops = LD.GitLandOps(caller, builds[sid]['branch'], trunk='main', remote=remote_name, push=push,
-                                identity=LANDER, policy=authority_policy, domain=DOMAIN, repository=REPOSITORY, **extra)
+                                policy=authority_policy, domain=DOMAIN, repository=REPOSITORY, **extra)
             try:
                 out = {'unit': unit, 'ops': ops}
                 out['sync'] = ops.sync_main()

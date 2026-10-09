@@ -87,7 +87,7 @@ FOLLOWED = (TRUNK_MOVED, AWAITING)
 CONFLICTS = ('conflict:', 'union_unsafe:')
 # The floor record the CandidatePolicy and the Landing read (dispatch.FLOOR_KIND and dispatch.floor_id).
 FLOOR_KIND = 'floor_unit'
-# The work configuration's `land` entry: required text fields, the lander's commit identity, optional paths.
+# The work configuration's `land` entry: required text fields and optional paths.
 REQUIRED = ('repository', 'trunk', 'remote', 'effects', 'target', 'principal', 'connection_key', 'events_root',
             'claims')
 OPTIONAL = ('installation', 'observations', 'workspace_root')
@@ -131,15 +131,14 @@ def floor_id(repository, unit):
 
 def config_problem(land):
     """Why a work configuration's `land` entry cannot run a land, or None: exactly the REQUIRED text fields,
-    the lander's commit identity [name, email] and any OPTIONAL paths."""
-    if not isinstance(land, dict) or not set(REQUIRED) | {'identity'} <= set(land) \
-            or not set(land) <= set(REQUIRED) | set(OPTIONAL) | {'identity'}:
+    and any OPTIONAL paths. Authorship comes only from the repository record."""
+    if isinstance(land, dict) and 'identity' in land:
+        return 'identity'
+    if not isinstance(land, dict) or not set(REQUIRED) <= set(land) \
+            or not set(land) <= set(REQUIRED) | set(OPTIONAL):
         return 'fields'
     if not all(_text(land[k]) for k in REQUIRED) or not all(_text(land[k]) for k in OPTIONAL if k in land):
         return 'text'
-    identity = land['identity']
-    if not isinstance(identity, list) or len(identity) != 2 or not all(_text(v) for v in identity):
-        return 'identity'
     return None
 
 
@@ -223,7 +222,7 @@ class LandStation:
     land               the work configuration's `land` entry (config_problem): the repository holding the
                        builds, the trunk and the remote name there, the VELDO-0028 executor's configuration
                        and receiver, the lander's effect principal and its connection key, the VELDO-0051
-                       projection's root, the land lock's ledger, the candidate commits' identity, and
+                       projection's root, the land lock's ledger, and
                        optionally the trusted installation, the observation and workspace roots.
     settlement_trust   the Gate's settlement signers (CandidatePolicy); call the executor adapter
                        (control_effect_executor.call by default); observe receives one event per land step."""
@@ -307,7 +306,7 @@ class LandStation:
                              signer=self.signer, sign=self.sign, generation=self.generation, call=self.call,
                              observe=self.observe)
         return LD.GitLandOps(land['repository'], evidence, trunk=land['trunk'], remote=land['remote'], push=True,
-                             policy=policy, identity=tuple(land['identity']), workspace_root=land.get('workspace_root'),
+                             policy=policy, workspace_root=land.get('workspace_root'),
                              observe=self.observe, domain=self.domain, repository=self.repository,
                              installation=land.get('installation'), observations=land.get('observations'),
                              landing=landing)

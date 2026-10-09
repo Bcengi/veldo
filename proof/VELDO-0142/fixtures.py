@@ -29,3 +29,8 @@ def bind(mods, conn, domain, repository, path, author=('Fixture Identity', 'fixt
 def bind_all(mods, conn):
     for domain, repository, path in conn.execute('SELECT domain_uuid, repository_uuid, path FROM repository_bindings').fetchall():
         bind(mods, conn, domain, repository, path)
+
+
+def bind_paths(mods, conn, domain, repositories, author=('Fixture Identity', 'fixture@example.invalid')):
+    for repository, path in repositories.items():
+        bind(mods, conn, domain, repository, path, author)

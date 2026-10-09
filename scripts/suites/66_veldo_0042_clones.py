@@ -147,6 +147,7 @@ def _v42_suite():
         unnamed = home / 'projects' / 'unnamed'
         un_commit, un_tree = make_repo(unnamed, {'secret': 'unnamed-secret\n'}, 'secret')
 
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPO: str(src), 'attrepo': str(att), 'unnamedrepo': str(unnamed)})
         S.bind_repositories(writer, DOMAIN, {REPO: str(src), 'attrepo': str(att), 'unnamedrepo': str(unnamed)})
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPO, principal='runner', signer='runner',
                                   sign=sign)

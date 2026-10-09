@@ -528,7 +528,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if git_identities is not None:
             with step('git_identities'):
                 setup_identities(conn, ids['domain_uuid'], ids['repository_uuid'], workspace,
-                                 git_identities, workspace_identity)
+                                 git_identities, workspace_identity,
+                                 observe=lambda event: done.append(dict(step='git_identity_configured', **event)))
         with step('ingress_configuration'):
             texts = ingress_files(plan, ids)
             signer_config = _private(os.path.join(host, 'signer.json'), texts[os.path.join(host, 'signer.json')])
@@ -589,7 +590,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
-            'steps': [{'step': name, 'outcome': 'done'} for name in done]
+            'steps': [name if isinstance(name, dict) else {'step': name, 'outcome': 'done'} for name in done]
             + [{'step': 'api_start', 'outcome': 'deferred'}],
             'api': api_report(transport['name'], port, api_files, through_service=False),
             'next': 'start it explicitly: systemctl --user start %s (the API unit %s starts with it), then veldo channel '
@@ -897,6 +898,18 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         installed = json.loads(Path(api['service_json']).read_text())
         outcomes = [upgraded] + [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
 
+        if git_identities is not None:
+            writer = S.open_store(plan['store'])
+            try:
+                before_identities = list(writer.iterdump())
+                setup_identities(writer, ids['domain_uuid'], ids['repository_uuid'], workspace,
+                                 git_identities, workspace_identity,
+                                 observe=lambda event: outcomes.append(dict(step='git_identity_configured', **event)))
+                identities_added = before_identities != list(writer.iterdump())
+            finally:
+                writer.close()
+            outcomes.append(dict(step='git_identities', outcome='done' if identities_added else 'already_done'))
+
         def mark(step, wrote, **extra):
             outcomes.append(dict({'step': step, 'outcome': 'done' if wrote else 'already_done'}, **extra))
 
@@ -1102,10 +1115,6 @@ def setup_identities(conn, domain, repository, workspace, identities, workspace_
     GI = organ('control_git_identity')
     identity_options(identities, workspace_identity)
     try:
-        if check_only:
-            if GI.records(conn, domain) != sorted(identities, key=lambda r: r['id']):
-                raise GI.Refused('binding_mismatch:git_identity_change')
-            GI.resolve(conn, domain, repository, workspace)
         return GI.configure(conn, domain, identities,
                             {repository: dict(path=str(workspace), identity=workspace_identity)},
                             check_only=check_only, observe=observe)
