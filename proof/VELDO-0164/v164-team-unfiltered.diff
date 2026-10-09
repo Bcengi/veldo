@@ -1,11 +1,5 @@
 --- .veldo/control_api.py
 +++ .veldo/control_api.py
-@@ -839,7 +839,7 @@
-         else:
-             identity = 'team:' + project
-         answer = self._ask(self.authority.read, 'configuration', session['principal'])
+@@ -842 +842 @@
 -        row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)
 +        row = self._inspect([identity]).get(identity)
-         served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)
-         return 200, {'team': served, 'redacted': redacted}
- 

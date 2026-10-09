@@ -1,11 +1,5 @@
 --- .veldo/control_api_authority.py
 +++ .veldo/control_api_authority.py
-@@ -341,7 +341,7 @@
-                     own = data.get('revoked_at') is not None and (
-                         (kind == 'membership' and eid == principal)
-                         or (kind == CR.KIND and data.get('principal') == principal))
+@@ -344 +344 @@
 -                    reason = None if own else scope.reason(eid, kind, data)
 +                    reason = scope.reason(eid, kind, data)
-                     if reason is None:
-                         visible[eid] = change
-                     else:

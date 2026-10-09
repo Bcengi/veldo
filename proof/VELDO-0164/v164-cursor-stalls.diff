@@ -1,11 +1,5 @@
 --- .veldo/control_api_authority.py
 +++ .veldo/control_api_authority.py
-@@ -360,7 +360,7 @@
-                         'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],
-                         'revocations': revocations, 'published': [e['id'] for e in by_seq.get(seq, [])
-                             if scope is None or scope.universal or e.get('receipt') in visible]})
+@@ -363 +363 @@
 -        cursor = {'cursor': rows[-1][0] if rows else after} if scope is not None and not scope.universal else {}
 +        cursor = {'cursor': after} if scope is not None and not scope.universal else {}
-         return dict({'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
-                 'watermark': {'seq': head, 'record_digest': top['record_digest']},
-                 'publication': {'watermark': published, 'head': head, 'pending_records': max(0, head - published),

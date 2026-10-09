@@ -1,11 +1,5 @@
 --- .veldo/control_api_models_scope.py
 +++ .veldo/control_api_models_scope.py
-@@ -72,7 +72,7 @@
-     def reason(self, identity, kind, data):
-         if self.universal:
-             return None
+@@ -75 +75 @@
 -        if self.rules.get(kind) == ('shared',):
 +        if False:
-             return None
-         projects = self.projects(identity, kind, data)
-         if not projects:
