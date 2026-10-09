@@ -211,7 +211,9 @@ for raw in sys.stdin:
         package = base / 'package'
         vendored = package / 'vendor/x86_64-unknown-linux-musl/bin/codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        # The fake stands in for the selected binary's version (proof/VELDO-0127/wire_fixture.py), whose fixtures it serves.
+        version = load('v127_factory_wire', Path(__file__).with_name('wire_fixture.py')).VERSION
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': version + '-linux-x64'}))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o700)
     codex_qualification = base / 'codex-qualification.json'

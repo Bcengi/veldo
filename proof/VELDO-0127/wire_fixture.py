@@ -1,14 +1,30 @@
 """Credential-free pinned-binary observations for the role suites."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
-BINARY = Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/'
-              'codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')
+# The installed vendor binary of today's pin, unless VELDO_CODEX_BINARY selects another vendor executable
+# (the reviewed pin transition runs these suites against both). The version is its vendor package's own.
+INSTALLED = Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/'
+                 'codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')
+BINARY = Path(os.environ.get('VELDO_CODEX_BINARY') or INSTALLED)
+VERSION = next((json.loads((p / 'package.json').read_text()).get('version', '') for p in BINARY.parents
+                if (p / 'package.json').is_file()), '').split('-', 1)[0]
+# 0.154.0's retained captures stay where they were made; a later version's sit in their own directory.
+FIXTURES = ROOT / 'proof/VELDO-0127' / ('' if VERSION == '0.154.0' else 'codex-' + VERSION)
+
+
+def fixture(name):
+    """The retained capture `name` of the selected binary's version; none retained is a stop, never 0.154.0's."""
+    path = FIXTURES / name
+    if not path.is_file():
+        raise FileNotFoundError('missing_evidence:codex_fixture:%s:%s' % (VERSION, name))
+    return path
 
 
 def load(name, path):
@@ -43,8 +59,10 @@ def capture(configuration):
 
 def engine_source(catalog, fault):
     return '''#!PYTHON
-import importlib.util, json, sys, tomllib
+import importlib.util, json, os, sys, tomllib
 from pathlib import Path
+# The selected Codex, whatever environment the launch passed on.
+os.environ['VELDO_CODEX_BINARY'] = SELECTED
 args = sys.argv[1:]
 if args[:2] == ['debug', 'models']:
     print(Path(CATALOG).read_text())
@@ -77,4 +95,5 @@ spec.loader.exec_module(wire)
 Path(FAULT).with_suffix('.args.json').write_text(json.dumps(args))
 sys.exit(wire.forward(args, config, Path(FAULT).with_suffix('.log')))
 '''.replace('PYTHON', sys.executable).replace('CATALOG', repr(str(catalog))).replace(
-        'FAULT', repr(str(fault))).replace('HELPER', repr(str(Path(__file__).resolve())))
+        'FAULT', repr(str(fault))).replace('HELPER', repr(str(Path(__file__).resolve()))).replace(
+        'SELECTED', repr(str(BINARY)))

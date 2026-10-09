@@ -38,6 +38,8 @@ def _v127_suite():
         spec.loader.exec_module(module)
         return module
     ff = load('v127_formats', TREE / 'proof/VELDO-0172/fake_formats.py')
+    # The Codex these runs observe (VELDO_CODEX_BINARY, else the installed pin) and its version's fixtures.
+    SELECTED_WIRE = load('v127_selected_wire', TREE / 'proof/VELDO-0127/wire_fixture.py')
     conform_formats = load('v127_conform', TREE / 'proof/VELDO-0172/compare_formats.py')
     live_step = ff.live_step
     base = Path(tempfile.mkdtemp(prefix='v127-', dir='/run/user/' + str(os.getuid())))
@@ -194,6 +196,8 @@ if engine == 'claude':
 else:
     own['configuration'] = config
     import importlib.util
+    # The suite's selected Codex, whatever environment the launch passed on.
+    os.environ['VELDO_CODEX_BINARY'] = SELECTED_CODEX
     spec = importlib.util.spec_from_file_location('wire_fixture', WIRE_FIXTURE)
     wire = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(wire)
@@ -220,7 +224,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
 '''
     fake = ff.embed(fake.replace('PYTHON', sys.executable))
     def fake_engine(name):
-        return fake.replace('WIRE_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/wire_fixture.py'))).replace('CATALOG_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/catalog-fixture.json'))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
+        return fake.replace('WIRE_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/wire_fixture.py'))).replace('CATALOG_FIXTURE', repr(str(SELECTED_WIRE.fixture('catalog-fixture.json')))).replace('SELECTED_CODEX', repr(str(SELECTED_WIRE.BINARY))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
     @live_step
     def c_msg(mid, inp, out):
         return {'line': {'type': 'assistant', 'message': {'id': mid, 'usage': {'input_tokens': inp, 'output_tokens': out}}}}
@@ -454,7 +458,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     extra.setdefault('tools', []).append({'type':'function', 'name':resource})
                     check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
                           compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
-            modes = json.loads((TREE / 'proof/VELDO-0127/codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
+            modes = json.loads(SELECTED_WIRE.fixture('codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
             check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
                   bool(modes) and qualified.get('model_tool_modes') == modes)
             absent_modes = dict(qualified); absent_modes.pop('model_tool_modes', None)
@@ -463,7 +467,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   absent_stop == 'missing_evidence:codex_model_tool_modes')
             catalog = qualified.get('model_catalog') or {}
             check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
-                  catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
+                  catalog == json.loads(SELECTED_WIRE.fixture('catalog-fixture.json').read_text())
                   and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
             role_model = getattr(L.HANDOFF, 'codex_model', None)
             for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):

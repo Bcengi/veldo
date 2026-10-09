@@ -29,10 +29,17 @@ def _v127_feature_defaults():
              'in_app_local_automation', 'mentions_v2', 'plugins', 'remote_plugin',
              'skill_mcp_dependency_install', 'skill_search', 'tool_suggest', 'workspace_dependencies',
              'sleep_tool', 'unified_exec', 'unified_exec_tty']
+    # Codex 0.162.0's newly enabled defaults (its retained listing against 0.154.0's), each forced off so it runs
+    # with the feature set 0.154.0 was qualified with: from that listing whichever binary is selected, and in the
+    # launch itself when the selected binary lists it.
+    added_0162 = ['api_key_model_discovery', 'browser_annotation_api', 'daemon_auto_start',
+                  'guardian_reuse_parent_compaction', 'in_app_voice', 'instant_interrupt', 'realtime_conversation',
+                  'system_proxy_fallback', 'ultrafast_mode', 'worktrees', 'write_stdin_approval']
     mapped = {'shell': ['shell_tool', 'unified_exec', 'unified_exec_tty'],
               'clock': ['sleep_tool'], 'view_image': ['view_image'],
               'multi_agent': ['multi_agent'], 'sub_agents': ['multi_agent']}
-    names = ['defaults/' + n for n in added] + ['mapped/' + n for n in mapped] + ['defaults/unknown']
+    names = (['defaults/' + n for n in added + added_0162] + ['mapped/' + n for n in mapped]
+             + ['defaults/unknown'])
     rows = {name: [] for name in names}
     def check(row, condition, detail=''):
         rows[row].append(bool(condition))
@@ -45,9 +52,9 @@ def _v127_feature_defaults():
         base = Path(temp)
         fault = base / 'fault'
         fault.write_text('')
-        fixture = json.loads((TREE / 'proof/VELDO-0127/features-fixture.json').read_text())
+        fixture = json.loads(wire.fixture('features-fixture.json').read_text())
         catalog = base / 'catalog-fixture.json'
-        catalog.write_bytes((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_bytes())
+        catalog.write_bytes(wire.fixture('catalog-fixture.json').read_bytes())
         listing = base / 'features-fixture.json'
         listing.write_text(json.dumps(fixture))
         defaults = {line.split()[0] for line in fixture['stdout'].splitlines() if line.split()[-1] == 'true'}
@@ -99,6 +106,15 @@ def _v127_feature_defaults():
             for feature in added:
                 check('defaults/' + feature, feature in defaults and error is None
                       and flags.get(feature) is False, str((error, flags.get(feature))))
+            listing_0162 = json.loads((TREE / 'proof/VELDO-0127/codex-0.162.0/features-fixture.json').read_text())['stdout']
+            on_0162 = {line.split()[0] for line in listing_0162.splitlines() if line.split()[-1] == 'true'}
+            features_0162, error_0162 = attempt(lambda: f.L.HANDOFF.codex_features(listing_0162, set()))
+            for feature in added_0162:
+                check('defaults/' + feature, feature in on_0162 and error_0162 is None
+                      and (features_0162 or {}).get('features.' + feature) is False, str((error_0162, feature)))
+                if feature in defaults:
+                    check('defaults/' + feature, error is None and flags.get(feature) is False,
+                          str((error, flags.get(feature))))
             for grant, features in mapped.items():
                 flags, error, tools, _ = launch([grant])
                 enabled = set(features)

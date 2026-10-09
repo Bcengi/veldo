@@ -1,0 +1,22 @@
+{
+ "binary_sha256": "sha256:50ed828f357c655a3c82054d346cab8434f24901f14ec19b8267571bdd008b38",
+ "catalog_sha256": "69af12f94a39dabd1a1ded8f5257b4884d2118902ea2b5b9cffbf4a1925dfa65",
+ "model_catalog_command": "codex debug models under empty profiles and loopback.capture containment",
+ "network": "loopback.capture, empty temporary HOME and CODEX_HOME, Landlock TCP restriction.",
+ "qualified_model_tool_modes": {
+  "codex-auto-review": "code_mode_only",
+  "gpt-5.5": null,
+  "gpt-5.6-luna": "code_mode_only",
+  "gpt-5.6-sol": "code_mode_only",
+  "gpt-5.6-terra": "code_mode_only",
+  "gpt-6-astra": "code_mode_only",
+  "gpt-6-luna": "code_mode_only",
+  "gpt-6-sol": "code_mode_only",
+  "gpt-6.1-sol": "code_mode_only",
+  "gpt-daybreak-blue-latest": "code_mode_only",
+  "gpt-daybreak-red-latest": "code_mode_only"
+ },
+ "reproduction": "loopback.capture(binary, {}, models=True): the bundled catalog's tool_mode per slug",
+ "schema": "veldo.codex-tool-investigation/v1",
+ "scope": "0.162.0's model-mode probe only; 0.154.0's tool probes (proof/VELDO-0127/codex-tool-investigation.json) are not repeated here"
+}

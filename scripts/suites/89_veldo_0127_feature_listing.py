@@ -37,9 +37,9 @@ def _v127_feature_listing():
         base = Path(temp)
         fault = base / 'fault'
         fault.write_text('')
-        fixture = json.loads((TREE / 'proof/VELDO-0127/features-fixture.json').read_text())
+        fixture = json.loads(wire.fixture('features-fixture.json').read_text())
         catalog = base / 'catalog-fixture.json'
-        catalog.write_bytes((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_bytes())
+        catalog.write_bytes(wire.fixture('catalog-fixture.json').read_bytes())
         listing = base / 'features-fixture.json'
         listing.write_text(json.dumps(fixture))
         defaults = {line.split()[0] for line in fixture['stdout'].splitlines() if line.split()[-1] == 'true'}

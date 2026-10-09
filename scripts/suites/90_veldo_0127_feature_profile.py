@@ -49,11 +49,11 @@ def _v127_feature_profile():
         base = Path(temp)
         fault = base / 'fault'
         fault.write_text('')
-        recorded = json.loads((TREE / 'proof/VELDO-0127/features-fixture.json').read_text())
+        recorded = json.loads(wire.fixture('features-fixture.json').read_text())
         check('profile/pinned-tools', 'sha256:' + hashlib.sha256(wire.BINARY.read_bytes()).hexdigest()
               == recorded['executable_digest'], 'binary differs from the retained feature listing')
         catalog = base / 'catalog-fixture.json'
-        catalog.write_bytes((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_bytes())
+        catalog.write_bytes(wire.fixture('catalog-fixture.json').read_bytes())
         listing_path = base / 'features-fixture.json'
         listing_path.write_text(json.dumps(recorded))
         try:

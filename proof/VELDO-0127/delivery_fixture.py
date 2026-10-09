@@ -36,7 +36,11 @@ def run(ROOT, TREE, PRODUCTION, models):
     with tempfile.TemporaryDirectory(prefix='v127-delivery-') as temp:
         base = Path(temp)
         fault = base / 'fault'
-        catalog = TREE / 'proof/VELDO-0127/catalog-fixture.json'
+        catalog = wire.fixture('catalog-fixture.json')
+        entries = {m['slug']: m for m in json.loads(catalog.read_text())['models']}
+        # The models whose bundled entry offers the experimental clock and asynchronous input, per qualified version.
+        experimental = {'0.154.0': {'gpt-6-astra'},
+                        '0.162.0': {'gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-luna'}}[wire.VERSION]
         try:
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
@@ -86,6 +90,12 @@ def run(ROOT, TREE, PRODUCTION, models):
                 baseline = definition(model, [])
                 _, save_error = attempt(lambda: f.save(baseline))
                 observed, error, wanted = launch(baseline) if save_error is None else (None, save_error, {})
+                tier = entries[model].get('default_service_tier')
+                if tier is not None:
+                    # A model whose catalog picks a service tier itself (0.162.0's gpt-6-sol) stops before any run.
+                    check('stop/' + model + '/service-tier', save_error is None and observed is None
+                          and error == 'configuration_stop:codex_service_tier:%s:%s' % (model, tier), str(error))
+                    continue
                 expected = L.HANDOFF.codex_expected_tools(wanted, {}) if wanted else []
                 check('delivery/' + model + '/none', error is None and observed == expected,
                       str((error, observed, expected)))
@@ -95,7 +105,7 @@ def run(ROOT, TREE, PRODUCTION, models):
                     accepted, save_error = attempt(lambda: f.save(d))
                     # Independent pinned-model support expectation, never computed
                     # from the production refusal under test.
-                    unsupported = ((tool in ('clock', 'request_user_input_async') and model != 'gpt-6-astra')
+                    unsupported = ((tool in ('clock', 'request_user_input_async') and model not in experimental)
                                    or tool == 'tool_search')
                     if unsupported:
                         check(row, accepted is None and save_error ==
