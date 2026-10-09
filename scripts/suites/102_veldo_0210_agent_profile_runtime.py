@@ -694,7 +694,8 @@ print(json.dumps(r))
                                              (Path('/dev/null'), (1 << 1) | (1 << 2))]) is None
                and source.index('grants += [(real, READ | WRITE) for real, _ in state]')
                < source.index('problem = launcher_write_problem(grants)')
-               < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)')
+               < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)',
+                              source.index('def run_tree('))
                and source.count('launcher_write_problem(') == 2)
         spec_text = (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text()
         policy_text = (ROOT / 'scripts/veldo-userns.apparmor').read_text()
@@ -1167,7 +1168,20 @@ print(json.dumps(r))
         client_policy = dict(policy, clients=real['clients'])
         client_config = top / 'client-config.json'
         client_config.write_text(json.dumps(client_policy))
-        client_env = dict(os.environ, CLAUDE_CONFIG_DIR=str(account), CODEX_HOME=str(codex_home))
+        # Borrow journals and credential recoveries (VELDO-0211) go to this suite's own directory.
+        state_home = top / 'state-home'
+        client_env = dict(os.environ, CLAUDE_CONFIG_DIR=str(account), CODEX_HOME=str(codex_home),
+                          XDG_STATE_HOME=str(state_home))
+        borrows = state_home / 'veldo' / 'borrowed-logins'
+
+        def take_recovery():
+            """The one recovery the last run kept, private and complete; removed here."""
+            found = sorted(borrows.iterdir()) if borrows.is_dir() else []
+            if len(found) != 1:
+                return False
+            ok = ((found[0] / 'recovery.json').is_file() and found[0].stat().st_mode & 0o777 == 0o700)
+            __import__('shutil').rmtree(found[0])
+            return ok
         act = worktree / 'act.py'
         # The confined CLI's side: what a token refresh (or a hostile rewrite) does to its copies.
         act.write_text(r'''import json, os, sys
@@ -1227,6 +1241,9 @@ print(json.dumps(seen))
                         __import__('shutil').rmtree(child)
                     else:
                         child.unlink()
+            # The lease file a runner (account_lease.sh) leaves in every login it used.
+            (account / '.runner-lease').touch()
+            (codex_home / '.runner-lease').touch()
             (account / '.credentials.json').write_text(old_token)
             (account / '.credentials.json').chmod(0o600)
             (account / 'settings.json').write_text('{"theme": "auto"}')
@@ -1249,7 +1266,7 @@ print(json.dumps(seen))
             expect('VELDO-0210 credentials/write-back-is-atomic-replace',
                    after[1] != before[1] and after[2] == 0o600
                    and sorted(p.name for p in account.iterdir())
-                   == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
+                   == ['.claude.json', '.credentials.json', '.runner-lease', 'projects',
                        'settings.json', 'veldo-agent-state'])
             seen = results(result)
             expect('VELDO-0210 credentials/claude-run-receives-claude-files',
@@ -1258,28 +1275,36 @@ print(json.dumps(seen))
                    seen.get('codex') is False and seen.get('codex-config') is False)
             result = act_run('unchanged')
             expect('VELDO-0210 credentials/unchanged-left-alone',
-                   result.returncode == 0 and account_state()[::2] == after[::2] and 'written back' not in result.stderr)
+                   result.returncode == 0 and account_state() == after and 'written back' not in result.stderr
+                   and take_recovery() is False)
+            # A copy that is no usable login is never written back; the run ends with the recovery
+            # status (VELDO-0211), never a refusal, and keeps what it found privately.
             for mode, reason in (('invalid', 'not written back'), ('array', 'not a JSON object')):
                 reset()
                 before = account_state()
                 result = act_run(mode)
                 expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
-                       result.returncode == 2 and account_state()[::2] == before[::2] and reason in result.stderr)
+                       result.returncode == S.RECOVERY_EXIT and account_state() == before and reason in result.stderr
+                       and 'CREDENTIAL RECOVERY REQUIRED' in result.stderr and 'refused to start' not in result.stderr
+                       and take_recovery())
             reset()
             before = account_state()
             result = act_run('deep')
-            expect('VELDO-0210 credentials/deeply-nested-requires-recovery: %s %s' % (result.returncode,
+            expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
                                                                                   result.stderr[-200:]),
-                   result.returncode == 2 and account_state()[::2] == before[::2]
+                   result.returncode == S.RECOVERY_EXIT and account_state() == before
                    and 'changed but not written back' in result.stderr
-                   and 'credential recovery required' in result.stderr)
+                   and 'the run ended with exit status 7' in result.stderr
+                   and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr
+                   and take_recovery())
             for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
                 reset()
                 before = account_state()
                 result = act_run(mode, extra=str(target))
                 expect('VELDO-0210 credentials/%s-not-followed: %s' % (mode, result.stderr[-200:]),
-                       account_state()[::2] == before[::2] and 'not written back' in result.stderr
-                       and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True})
+                       account_state() == before and 'not written back' in result.stderr
+                       and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True}
+                       and take_recovery())
             # A login (or another run's write-back) that replaced the source during the run wins: the
             # run's own refresh is never written over it.
             reset()
@@ -1308,31 +1333,38 @@ print(json.dumps(seen))
                    and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
         else:
             skip('credentials/* rows of a running tree (refresh, write-back, links, concurrent login)')
-        # Two write-backs of one source never interleave their compare and rename: a second one waits
-        # for the sibling lock, then finds the bytes the first wrote and is superseded.
-        locked = top / 'locked-credential.json'
+        # Two write-backs of one login never interleave their compare and rename: the login's lease
+        # (<login>/.runner-lease, the runners' own) is held from before the copy until after the
+        # write-back, so a second borrower is refused while another run holds it, before anything is
+        # copied, and borrows once it is free. Nothing is left in the login but its own files.
+        leased = top / 'leased-login'
+        leased.mkdir()
+        (leased / '.runner-lease').touch()
+        locked = leased / 'credential.json'
         locked.write_text('{"v": 1}')
-        holder = os.open(top / 'locked-credential.json.veldo-lock', os.O_RDWR | os.O_CREAT, 0o600)
-        fcntl.flock(holder, fcntl.LOCK_EX)
+        holder = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import fcntl, sys\nf = open(sys.argv[1])\n'
+                                   'fcntl.flock(f, fcntl.LOCK_EX)\nprint("held", flush=True)\nsys.stdin.read()',
+                                   str(leased / '.runner-lease')], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        holder.stdout.readline()
         outcome = {}
-
-        def write_locked():
+        lease_root = state_home / 'veldo' / 'lease-row'
+        for name in ('busy', 'free'):
+            if name == 'free':
+                holder.communicate('', timeout=10)
+            scratch_of = top / ('lease-scratch-' + name)
+            scratch_of.mkdir()
             try:
-                S.replace_atomically(locked, b'{"v": 2}', expected=b'{"v": 1}')
-                outcome['result'] = 'replaced'
-            except S.Superseded:
-                outcome['result'] = 'superseded'
-        writer = threading.Thread(target=write_locked)
-        writer.start()
-        writer.join(0.5)
-        waited = writer.is_alive()
-        locked.write_text('{"v": 3}')
-        os.close(holder)
-        writer.join(10)
-        expect('VELDO-0210 credentials/compare-and-rename-under-sibling-lock: %s %s' % (waited, outcome),
-               waited and outcome.get('result') == 'superseded' and locked.read_text() == '{"v": 3}'
-               and sorted(p.name for p in top.iterdir() if p.name.startswith('locked-credential'))
-               == ['locked-credential.json', 'locked-credential.json.veldo-lock'])
+                with S.borrowed_credentials(scratch_of, [(locked, 'credential.json')], top / 'no-store',
+                                            root=lease_root):
+                    (scratch_of / 'credential.json').write_text('{"v": 2}')
+                outcome[name] = 'borrowed'
+            except ValueError as error:
+                outcome[name] = str(error)
+        expect('VELDO-0210 credentials/compare-and-rename-under-the-login-lease: %s' % outcome,
+               'borrowed login is busy' in outcome.get('busy', '') and not (top / 'lease-scratch-busy/credential.json').exists()
+               and outcome.get('free') == 'borrowed' and locked.read_text() == '{"v": 2}'
+               and sorted(p.name for p in leased.iterdir()) == ['.runner-lease', 'credential.json']
+               and sorted(lease_root.iterdir()) == [])
         if live:
             reset()
             result = act_run('settings')
@@ -1599,8 +1631,8 @@ print(json.dumps(seen))
                    results(result).get('transcript-seen') is True
                    and (kept / 'session.jsonl').read_text() == 'allowed')
             expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
-                   sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
-                                                                  'settings.json', 'veldo-agent-state']
+                   sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', '.runner-lease',
+                                                                  'projects', 'settings.json', 'veldo-agent-state']
                    and sorted(p.name for p in (account / 'veldo-agent-state').iterdir()) == ['claims']
                    and sorted(p.name for p in (account / 'veldo-agent-state/claims').iterdir()) == [project]
                    and (account / 'settings.json').read_text() == '{"theme": "auto"}'
@@ -1650,7 +1682,8 @@ print(json.dumps(seen))
                    and (codex_home / 'veldo-agent-state' / (S.claude_project(other_worktree.resolve()) + '-'
                         + __import__('hashlib').sha256(os.fsencode(str(other_worktree.resolve()))).hexdigest()[:16]) / 'history.jsonl').read_text() == '')
             expect('VELDO-0210 state/codex-home-otherwise-untouched',
-                   sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
+                   sorted(p.name for p in codex_home.iterdir()) == ['.runner-lease', 'auth.json', 'config.toml',
+                                                                    'veldo-agent-state']
                    and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
                    and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
                    and (codex_home / 'auth.json').read_text() == codex_token)
@@ -1916,7 +1949,8 @@ time.sleep(120)
             process, held = held_run('plain')
             if held:
                 os.utime(held['home'], (day_old, day_old))
-            result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+            # The second start borrows no login: the first holds that login's lease (VELDO-0211).
+            result = run(client_config, worktree, ['/usr/bin/true'], env=scratch_env)
             expect('VELDO-0210 scratch/live-launcher-scratch-kept: %s' % held,
                    result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
             process.send_signal(signal.SIGTERM)
@@ -1944,6 +1978,11 @@ time.sleep(120)
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
             expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
                    result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+            # The killed run refreshed its copy and never wrote it back: the next start kept it as a
+            # recovery and said so before the sweep removed the scratch (VELDO-0211).
+            expect('VELDO-0210 scratch/killed-run-rotation-kept-and-reported: %s' % result.stderr[-300:],
+                   'CREDENTIAL RECOVERY REQUIRED' in result.stderr and 'restore-login' in result.stderr
+                   and take_recovery())
 
         else:
             skip('scratch/* rows of a running tree (stop signals, live and killed launchers)')

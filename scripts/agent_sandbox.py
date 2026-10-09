@@ -1056,9 +1056,8 @@ def await_start(ready, stop=None):
     """What the tree reported on its ready pipe within NAMESPACE_START_SECONDS: b'1' from the init once
     its namespace is checked, b'0' from a child or init that refused and said why on stderr, b'' when
     the pipe closed with nothing, None when the time ran out or a stop came first. A stop (TERM, INT
-    or HUP) runs the launcher's handler, which forwards it, and ends the wait within a tenth of a
-    second: nothing in the tree has started the command yet, so the caller kills it at once, a hung
-    helper with it."""
+    or HUP) runs the launcher's handler, which records it without forwarding it (Stop), and ends the
+    wait within a tenth of a second; the caller kills the tree at once, a hung helper with it."""
     import select
     deadline = time.monotonic() + NAMESPACE_START_SECONDS
     poller = select.poll()
@@ -1567,22 +1566,20 @@ def current_bytes(path):
         os.close(descriptor)
 
 
-def replace_atomically(target, data, expected=None, locked=False):
+def replace_atomically(target, data, expected=None):
     """Replace `target` with `data`: a temporary file beside it, fsync, rename, fsync the directory.
     A reader sees the old file or the new one, never a partial write. The mode stays the source's
     owner bits (credentials are 0600). With `expected`, the target is read again just before the
     rename and is replaced only if it still holds exactly those bytes; otherwise Superseded is
-    raised and the target is left as it is. The read and the rename run under an exclusive flock on
-    the sibling <name>.veldo-lock, so two launchers writing back one file never interleave them;
-    the CLIs do not take that lock, so a CLI's own write between the two steps is still replaced.
-    `locked` means the borrower already holds this lock for the entire run."""
+    raised and the target is left as it is. The caller holds the login's lease (take_lease) for the
+    whole run, so no other borrower writes the file between the two steps; a CLI used directly on
+    the login, outside every lease, is not stopped by it (VELDO-0211)."""
     try:
         mode = stat.S_IMODE(os.stat(target).st_mode) & 0o700 or 0o600
     except FileNotFoundError:
         mode = 0o600
     descriptor, temporary = tempfile.mkstemp(prefix='.' + target.name + '.', suffix='.veldo-tmp',
                                              dir=target.parent)
-    lock = None
     try:
         try:
             os.fchmod(descriptor, mode)
@@ -1592,11 +1589,6 @@ def replace_atomically(target, data, expected=None, locked=False):
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
-        # Left in place: removing it would race with the next holder.
-        if not locked:
-            lock = os.open(target.with_name(target.name + '.veldo-lock'),
-                           os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
-            fcntl.flock(lock, fcntl.LOCK_EX)
         if expected is not None and current_bytes(target) != expected:
             raise Superseded('the source changed during the run')
         os.replace(temporary, target)
@@ -1606,9 +1598,6 @@ def replace_atomically(target, data, expected=None, locked=False):
         except FileNotFoundError:
             pass
         raise
-    finally:
-        if lock is not None:
-            os.close(lock)
     directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
     try:
         os.fsync(directory)
@@ -1616,14 +1605,28 @@ def replace_atomically(target, data, expected=None, locked=False):
         os.close(directory)
 
 
-def write_back(scratch, credentials, locked=False):
+def replace_problem(target):
+    """Why `target` cannot be replaced the way write-back replaces it, or None: a temporary file is
+    created beside it and removed again. The credential itself is never opened for writing, renamed
+    or rewritten, so a check at the start of a run cannot overwrite a newer login (VELDO-0211)."""
+    try:
+        descriptor, temporary = tempfile.mkstemp(prefix='.' + target.name + '.', suffix='.veldo-tmp',
+                                                 dir=target.parent)
+    except OSError as error:
+        return 'write-back to %s is not possible: %s' % (target, error)
+    os.close(descriptor)
+    os.unlink(temporary)
+    return None
+
+
+def write_back(scratch, credentials):
     """After the run: each credential file the launcher copied in that the CLI changed (a token
     refresh) and that is still one JSON object replaces its source atomically (VELDO-0210).
-    Storage failure or a missing refresh token requires private recovery (VELDO-0211).
-    Nothing else in the scratch is ever written back,
-    and an unchanged copy leaves the source as it is. An unreadable or invalid copy requires
-    recovery rather than silently discarding a possible rotation. A source that no longer holds
-    the bytes copied in (a separate login wrote it meanwhile) wins over the borrowed copy."""
+    Nothing else in the scratch is ever written back, and an unchanged copy leaves the source as it
+    is. A source that no longer holds the bytes copied in (a separate login wrote it meanwhile) wins
+    over the borrowed copy. Returns what must be kept for recovery instead (VELDO-0211): an
+    unreadable or invalid copy, a rotation that drops the refresh token, a failed replacement; each
+    as (source, relative, the copy's bytes or None, why)."""
     failures = []
     for real, relative, original in credentials:
         try:
@@ -1631,39 +1634,33 @@ def write_back(scratch, credentials, locked=False):
         except (OSError, ValueError) as error:
             print('agent sandbox: credential %s not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
-            failures.append(relative)
+            failures.append((real, relative, None, 'the copy is unreadable: %s' % error))
             continue
         if data == original:
             continue
         try:
-            if not isinstance(json.loads(data.decode('utf-8')), dict):
+            if not isinstance(json.loads(data), dict):
                 raise ValueError('not a JSON object')
+            require_refresh_tokens(json.loads(original), json.loads(data))
         except Exception as error:  # ValueError, and RecursionError for a deeply nested document
             print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
-            failures.append(relative)
+            failures.append((real, relative, data, 'the copy is not a usable login: %s' % error))
             continue
         try:
-            require_refresh_tokens(json.loads(original), json.loads(data))
-            replace_atomically(real, data, expected=original, locked=locked)
+            replace_atomically(real, data, expected=original)
         except Superseded as error:
             print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
             continue
-        except (OSError, ValueError) as error:
+        except OSError as error:
             print('agent sandbox: credential %s write-back to %s failed: %s' % (relative, real, error),
                   file=sys.stderr, flush=True)
-            failures.append(relative)
+            failures.append((real, relative, data, 'the write-back failed: %s' % error))
             continue
         print('agent sandbox: credential %s refreshed during the run, written back to %s' % (relative, real),
               file=sys.stderr, flush=True)
-
-    if failures:
-        raise CredentialRecovery('credential recovery required for ' + ', '.join(failures))
-
-
-class CredentialRecovery(RuntimeError):
-    """A rotated login could not be persisted; callers must retain private scratch."""
+    return failures
 
 
 def require_refresh_tokens(original, rotated):
@@ -1678,29 +1675,229 @@ def require_refresh_tokens(original, rotated):
             require_refresh_tokens(value, next_value)
 
 
-@contextmanager
-def borrowed_credentials(scratch, sources, store, protected=None):
-    """Lock, preflight and copy credentials, then persist rotations before releasing any lock.
+RECOVERY_EXIT = 74  # EX_IOERR: distinct from a refusal (2) and reported with the run's own status
+LEASE_NAME = '.runner-lease'
+BORROW_SCHEMA = 'veldo.borrowed-login/v1'
 
-    Sources are (path, scratch-relative name) pairs. Missing optional sandbox sources stay absent.
-    The caller must stop every engine before leaving this context, including on exceptions.
-    Busy logins refuse immediately; direct CLI use must be serialized by the operator.
-    """
-    locks, credentials = [], []
+
+class CredentialRecovery(Exception):
+    """A rotated login could not be persisted to its source. `location` holds what was kept: a
+    private recovery directory, or (`retained`) the run's scratch when even that could not be
+    written. `code` is the run's own exit status. Never a refusal: main reports it with
+    RECOVERY_EXIT and the restore command."""
+
+    def __init__(self, location, names, code=None, retained=False):
+        super().__init__('credential recovery required for ' + ', '.join(names))
+        self.location, self.names, self.code, self.retained = location, names, code, retained
+
+
+def recovery_message(error, launcher=None):
+    launcher = launcher or Path(__file__).resolve()
+    status = 'without an exit status' if error.code is None else 'with exit status %s' % error.code
+    if error.retained:
+        kept = 'the run\'s scratch %s is kept as it is (the recovery store was not writable)' % error.location
+    else:
+        kept = 'kept privately at %s; restore it with: python3 %s restore-login %s' % (
+            error.location, launcher, error.location)
+    return ('agent sandbox: CREDENTIAL RECOVERY REQUIRED: %s was not written back to its login '
+            '(the run ended %s); %s' % (', '.join(error.names), status, kept))
+
+
+def borrow_root():
+    """Where borrow journals and credential recoveries live: persistent, private, outside every
+    login, scratch and tree ($XDG_STATE_HOME/veldo/borrowed-logins, ~/.local/state by default)."""
+    state = os.environ.get('XDG_STATE_HOME', '')
+    if not os.path.isabs(state):
+        state = str(Path.home() / '.local/state')
+    return Path(state) / 'veldo' / 'borrowed-logins'
+
+
+def private_directory(path):
+    """`path` as a directory of this uid with mode 0700, made if missing; a link or anything else
+    there is refused."""
+    path.mkdir(mode=0o700, parents=True, exist_ok=True)
+    info = os.lstat(path)
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid():
+        raise ValueError('not a private directory of this user: %s' % path)
+    os.chmod(path, 0o700)
+    return path
+
+
+def write_private(path, data):
+    """A new 0600 file holding `data`, synced, never following or replacing anything at `path`."""
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
     try:
-        resolved = [(source.resolve(strict=True), relative) for source, relative in sources if source.is_file()]
+        view = memoryview(data)
+        while view:
+            view = view[os.write(descriptor, view):]
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def digest(data):
+    return __import__('hashlib').sha256(data).hexdigest()
+
+
+def same_file(descriptor, info):
+    try:
+        other = os.fstat(descriptor)
+    except OSError:
+        return False
+    return (other.st_dev, other.st_ino) == (info.st_dev, info.st_ino)
+
+
+TAKEN_LEASES = set()  # the lease descriptors take_lease opened in this process, never a runner's
+
+
+def take_lease(login):
+    """Hold <login>/.runner-lease, the one lock every user of a login takes: the runners
+    (account_lease.sh flocks it before their launcher starts and the launcher inherits it), live
+    capture and this launcher (VELDO-0211). A descriptor this process inherited that holds it (the
+    runner's) counts: it is checked, not taken again; one a borrow in this process took does not, so
+    a second borrow of the login here is busy. Otherwise the lease is taken here,
+    never waiting. The file is never created: a login with none has never been leased by a runner,
+    and borrowing it must not leave a file in it. Returns the descriptor to close afterwards, or
+    None for the runner's own."""
+    path = login / LEASE_NAME
+    try:
+        info = os.stat(path, follow_symlinks=False)
+    except FileNotFoundError:
+        raise ValueError('borrowed login %s has no lease file %s: borrow it through a runner '
+                         '(scripts/account_lease.sh), or create the empty file first' % (login, path)) from None
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError('the lease %s is not a regular file' % path)
+    for name in os.listdir('/proc/self/fd'):
+        descriptor = int(name)
+        if descriptor not in TAKEN_LEASES and same_file(descriptor, info):
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                continue  # this process's descriptor, but not the one holding the lease
+            return None
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        if not same_file(descriptor, info):
+            raise ValueError('the lease %s changed while it was opened' % path)
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ValueError('borrowed login is busy: %s is held by another run' % path) from None
+    except BaseException:
+        os.close(descriptor)
+        raise
+    TAKEN_LEASES.add(descriptor)
+    return descriptor
+
+
+def release(descriptors):
+    for descriptor in reversed(descriptors):
+        TAKEN_LEASES.discard(descriptor)
+        os.close(descriptor)
+
+
+class Borrow:
+    """One borrowed-login run: its scratch, the credentials copied in as (source, relative, bytes),
+    the journal that names them outside the scratch, and the descriptors that hold the leases and
+    the scratch. `code` is the run's exit status once it is known."""
+
+    def __init__(self, scratch):
+        self.scratch, self.credentials, self.journal, self.code = scratch, [], None, None
+        self.descriptors = []
+
+
+def borrow_journal(borrow, root=None):
+    """Record the borrow at `root`/<scratch name>/borrow.json before an engine can rotate anything:
+    the sources and digests of what was copied in. A run killed outright leaves it, and the next
+    start turns its rotated copies into a recovery (recover_orphans) instead of losing them."""
+    root = private_directory(root or borrow_root())
+    journal = root / borrow.scratch.name
+    journal.mkdir(mode=0o700)
+    borrow.journal = journal
+    write_private(journal / 'borrow.json', json.dumps({
+        'schema': BORROW_SCHEMA, 'scratch': str(borrow.scratch), 'pid': os.getpid(), 'started': int(time.time()),
+        'credentials': [{'source': str(real), 'relative': relative, 'sha256': digest(data)}
+                        for real, relative, data in borrow.credentials]}, indent=1).encode())
+
+
+def keep_recovery(journal, failures, code=None):
+    """Turn `journal` into a recovery: each failed credential's bytes in a private file beside a
+    recovery.json naming its source and the digest it held when the run started. The manifest is
+    written last, by rename, so a recovery is either complete or still a journal."""
+    entries = []
+    record = json.loads((journal / 'borrow.json').read_text())
+    started = {entry['source']: entry['sha256'] for entry in record['credentials']}
+    for number, (real, relative, data, why) in enumerate(failures):
+        name = None
+        if data is not None:
+            name = 'credential-%d.json' % number
+            write_private(journal / name, data)
+        entries.append({'source': str(real), 'relative': relative, 'file': name,
+                        'original_sha256': started.get(str(real)), 'reason': why})
+    temporary = journal / 'recovery.json.tmp'
+    write_private(temporary, json.dumps({'schema': BORROW_SCHEMA, 'exit': code, 'entries': entries},
+                                        indent=1).encode())
+    os.replace(temporary, journal / 'recovery.json')
+    return journal
+
+
+def discard_journal(journal):
+    if journal is not None:
+        shutil.rmtree(journal, ignore_errors=True)
+
+
+def settle_borrow(borrow):
+    """After every engine of the run has stopped, under the leases, with the stop signals blocked
+    so a handled signal cannot cut it short: write the rotations back, then drop the journal, or
+    keep what could not be written back and raise CredentialRecovery."""
+    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+    try:
+        failures = write_back(borrow.scratch, borrow.credentials)
+        if not failures:
+            discard_journal(borrow.journal)
+            borrow.journal = None
+            return
+        names = [relative for _, relative, _, _ in failures]
+        try:
+            location = keep_recovery(borrow.journal, failures, borrow.code)
+        except (OSError, ValueError, TypeError) as error:
+            print('agent sandbox: the recovery could not be written: %s' % error, file=sys.stderr, flush=True)
+            raise CredentialRecovery(borrow.scratch, names, borrow.code, retained=True) from None
+        borrow.journal = None
+        raise CredentialRecovery(location, names, borrow.code)
+    finally:
+        signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+
+
+@contextmanager
+def borrowed_credentials(scratch, sources, store, protected=None, root=None):
+    """Lease, check and copy credentials, then persist rotations before releasing any lease
+    (VELDO-0211). Sources are (path, scratch-relative name) pairs; a missing one stays absent.
+
+    The lease is the login directory's .runner-lease (take_lease): of the directory the source is
+    named in, canonical, and of the directory its file really lies in. The caller must stop every
+    engine before leaving this context, including on exceptions; it yields a Borrow whose `code`
+    the caller sets to the run's exit status."""
+    borrow = Borrow(scratch)
+    try:
+        named = [(source, relative) for source, relative in sources if source.is_file()]
+        resolved = [(source.resolve(strict=True), relative) for source, relative in named]
         if len({real for real, _ in resolved}) != len(resolved):
             raise ValueError('duplicate borrowed credential source')
-        for real, relative in sorted(resolved):
+        for real, _ in resolved:
             if beneath(real, store) or any(beneath(real, p) for p in (protected or [])):
                 raise ValueError('credential source lies in a protected path: ' + str(real))
-            lock = os.open(real.with_name(real.name + '.veldo-lock'),
-                           os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
-            locks.append(lock)
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                raise ValueError('borrowed login is busy: ' + str(real)) from None
+        if resolved:
+            # Held from here to the end: a sweep sees a live borrow by this lock (recover_orphans).
+            holder = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            borrow.descriptors.append(holder)
+            fcntl.flock(holder, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        logins = {source.parent.resolve(strict=True) for source, _ in named} | {real.parent for real, _ in resolved}
+        for login in sorted(logins):
+            descriptor = take_lease(login)
+            if descriptor is not None:
+                borrow.descriptors.append(descriptor)
+        for real, relative in sorted(resolved):
             original = current_bytes(real)
             try:
                 valid = isinstance(json.loads(original), dict)
@@ -1708,34 +1905,142 @@ def borrowed_credentials(scratch, sources, store, protected=None):
                 valid = False
             if not valid:
                 raise ValueError('borrowed credential is not a JSON object: ' + str(real))
-            # Exercise the actual write-back destination and operation before an engine can rotate.
-            # The bytes are unchanged; inode identity is intentionally not preserved.
-            replace_atomically(real, original, expected=original, locked=True)
+            problem = replace_problem(real)
+            if problem:
+                raise PermissionError(problem)
             copied = seed(scratch, real, relative, store, protected)
             if copied is None:
                 raise ValueError('borrowed credential disappeared: ' + str(real))
-            credentials.append((real, relative, copied[1]))
+            borrow.credentials.append((real, relative, copied[1]))
+        if borrow.credentials:
+            borrow_journal(borrow, root)
         try:
-            yield credentials
+            yield borrow
         finally:
-            # Handled signals must not interrupt the atomic save or release the lock early.
-            mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
-            try:
-                write_back(scratch, credentials, locked=True)
-            finally:
-                signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+            if borrow.credentials:
+                settle_borrow(borrow)
     finally:
-        for lock in reversed(locks):
-            os.close(lock)
+        release(borrow.descriptors)
 
 
-def preserve_login_recovery(scratch):
-    """Move failed scratch out of automatic cleanup and the stale-scratch sweep's namespace."""
-    recovery = scratch.with_name('veldo-login-recovery-' + scratch.name)
-    scratch.rename(recovery)
-    print('credential recovery required; private files retained at ' + str(recovery),
-          file=sys.stderr, flush=True)
-    return recovery
+def recover_orphans(root=None):
+    """Turn the journal of every borrow whose run was killed outright (its scratch held by no
+    process any more) into a recovery when a copy differs from what was copied in, and report it;
+    an unchanged one is dropped. A journal whose scratch is gone is reported and dropped. Never
+    writes a login: restore_login does that, under its lease. Runs at every launcher start."""
+    root = root or borrow_root()
+    try:
+        journals = sorted(p for p in root.iterdir() if (p / 'borrow.json').is_file()
+                          and not (p / 'recovery.json').exists())
+    except OSError:
+        return
+    for journal in journals:
+        try:
+            record = json.loads((journal / 'borrow.json').read_text())
+            scratch = Path(record['scratch'])
+        except FileNotFoundError:
+            continue  # settled meanwhile
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print('agent sandbox: borrow journal %s not read: %s' % (journal, error), file=sys.stderr, flush=True)
+            continue
+        try:
+            descriptor = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        except OSError as error:
+            if (journal / 'borrow.json').is_file() and not (journal / 'recovery.json').exists():
+                # Its run settled the journal before removing the scratch, so the scratch went first:
+                # removed by hand, or a runtime directory gone with a reboot.
+                print('agent sandbox: borrow %s lost its scratch %s (%s); nothing of it can be recovered'
+                      % (journal, scratch, error.strerror), file=sys.stderr, flush=True)
+                discard_journal(journal)
+            continue
+        try:
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                continue  # a live run
+            if not (journal / 'borrow.json').is_file() or (journal / 'recovery.json').exists():
+                continue  # it ended meanwhile
+            failures = []
+            for entry in record['credentials']:
+                try:
+                    data = read_scratch_file(scratch, entry['relative'])
+                except (OSError, ValueError) as error:
+                    failures.append((entry['source'], entry['relative'], None,
+                                     'a killed run left an unreadable copy: %s' % error))
+                    continue
+                if digest(data) != entry['sha256']:
+                    failures.append((entry['source'], entry['relative'], data,
+                                     'a killed run left a rotated copy that was never written back'))
+            if not failures:
+                discard_journal(journal)
+                continue
+            keep_recovery(journal, failures)
+            print(recovery_message(CredentialRecovery(journal, [r for _, r, _, _ in failures])),
+                  file=sys.stderr, flush=True)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print('agent sandbox: borrow %s not recovered: %s' % (journal, error), file=sys.stderr, flush=True)
+        finally:
+            os.close(descriptor)
+
+
+def pending_borrow(name, root=None):
+    """True when a journal of the scratch named `name` has not been settled: the stale-scratch
+    sweep leaves that scratch alone, it may hold the only copy of a rotation."""
+    journal = (root or borrow_root()) / name
+    return (journal / 'borrow.json').is_file() and not (journal / 'recovery.json').exists()
+
+
+def restore_login(recovery=None, force=False):
+    """Restore a recovery (VELDO-0211): under each login's lease, the kept copy replaces its source
+    when the source still holds the bytes it held when the run started (with `force`, whatever it
+    holds), is one JSON object and keeps every refresh token the source has. Once every kept copy is
+    restored, the recovery is removed. Without `recovery`, the recoveries waiting are listed."""
+    root = borrow_root()
+    if recovery is None:
+        found = sorted(p for p in root.iterdir() if (p / 'recovery.json').is_file()) if root.is_dir() else []
+        for path in found:
+            for entry in json.loads((path / 'recovery.json').read_text())['entries']:
+                print('%s\t%s\t%s' % (path, entry['source'], entry['reason']))
+        if not found:
+            print('no credential recovery is waiting in %s' % root)
+        return 0
+    recovery = Path(recovery)
+    info = os.lstat(recovery)
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
+        raise ValueError('not a private recovery directory of this user: %s' % recovery)
+    manifest = json.loads((recovery / 'recovery.json').read_text())
+    if manifest.get('schema') != BORROW_SCHEMA:
+        raise ValueError('not a borrowed-login recovery: %s' % recovery)
+    entries = [entry for entry in manifest['entries'] if entry.get('file')]
+    for entry in manifest['entries']:
+        if not entry.get('file'):
+            print('%s: nothing was kept (%s)' % (entry['source'], entry['reason']))
+    descriptors = []
+    try:
+        sources = [Path(entry['source']) for entry in entries]
+        for login in sorted({source.parent for source in sources}):
+            descriptor = take_lease(login)
+            if descriptor is not None:
+                descriptors.append(descriptor)
+        for entry, source in zip(entries, sources):
+            data = read_scratch_file(recovery, entry['file'])
+            current = current_bytes(source)
+            if current is None:
+                raise ValueError('%s is missing or not a regular file' % source)
+            if digest(current) != entry['original_sha256'] and not force:
+                raise ValueError('%s changed since the run started (a new login?); it is left as it is. '
+                                 'To overwrite it anyway: restore-login --force %s' % (source, recovery))
+            value = json.loads(data)
+            if not isinstance(value, dict):
+                raise ValueError('the kept copy for %s is not a JSON object' % source)
+            require_refresh_tokens(json.loads(current), value)
+            replace_atomically(source, data, expected=current)
+            print('restored %s' % source)
+    finally:
+        release(descriptors)
+    shutil.rmtree(recovery)
+    print('recovery %s removed' % recovery)
+    return 0
 
 
 SCRATCH_PREFIX = 'veldo-agent-'
@@ -1771,13 +2076,18 @@ def remove_stale_scratch(parent):
     directories this uid owns, untouched for more than a day and held by no live launcher or agent
     (each launcher holds a shared lock on its own scratch until it removes it, and its confined
     command holds another on its own descriptor for as long as it runs). A link or any other kind of
-    entry is never followed or removed."""
+    entry is never followed or removed, and neither is a scratch whose borrow journal is not settled
+    (recover_orphans runs first and keeps its rotated credentials; VELDO-0211)."""
     try:
         entries = list(os.scandir(parent))
     except OSError:
         return
     for entry in entries:
         if not entry.name.startswith(SCRATCH_PREFIX):
+            continue
+        if pending_borrow(entry.name):
+            print('agent sandbox: stale scratch %s kept: its borrowed login is not settled' % entry.path,
+                  file=sys.stderr, flush=True)
             continue
         try:
             info = entry.stat(follow_symlinks=False)
@@ -1807,14 +2117,16 @@ class Interrupted(Exception):
 
 class Stop:
     """TERM, INT and HUP while a launch runs. Before the confined child exists, a signal ends the
-    launch (the scratch is still removed). After, it is forwarded to the child's process group, and a
+    launch (the scratch is still removed). While the tree is starting, it is recorded and the launcher
+    kills the tree, never forwarding it: the command, which may already run, never handles a stop
+    meant for the start. Once the tree has started, it is forwarded to the child's process group, and a
     group still alive GRACE_SECONDS later is killed; the launcher then writes back credentials,
     removes its scratch and exits 128 plus the signal number. A signal the launcher inherited as
     ignored stays ignored, for it and for the child."""
 
     def __init__(self):
         self.pid = self.number = None
-        self.reaped = self.closing = False
+        self.reaped = self.closing = self.started = False
         self.previous = {}
 
     def __enter__(self):
@@ -1834,6 +2146,13 @@ class Stop:
 
     def child(self, pid):
         self.pid = pid
+
+    def tree_started(self):
+        """The tree reported its start and passed the checks: a stop recorded meanwhile goes on now."""
+        self.started = True
+        if self.number is not None:
+            self.signal_group(self.number)
+            signal.alarm(GRACE_SECONDS)
 
     def in_child(self):
         """In the forked child, before anything else: the default action for what this caught."""
@@ -1860,8 +2179,8 @@ class Stop:
         self.number = number
         if self.pid is None and not self.closing:
             raise Interrupted(number)
-        if self.pid is None:
-            return
+        if self.pid is None or not self.started:
+            return  # still starting: run_tree kills the tree once it sees the stop
         self.signal_group(number)
         signal.alarm(GRACE_SECONDS)
 
@@ -1874,8 +2193,12 @@ def launch(config_path, worktree, command, profile="agent", client=None):
     """Run `command` confined. The private scratch is created in the temporary directory, held
     with a shared lock and removed when the launcher returns, raises or is stopped by TERM, INT or
     HUP; one a launcher killed outright left behind is removed by the next start once it is a day
-    old and no process holds its lock (VELDO-0210)."""
+    old and no process holds its lock (VELDO-0210). Before that sweep, a killed run's rotated
+    credential is kept as a recovery (recover_orphans). A credential that could not be written back
+    raises CredentialRecovery with the run's own exit status; the scratch is removed unless it holds
+    the only copy (VELDO-0211)."""
     parent = Path(tempfile.gettempdir())
+    recover_orphans()
     remove_stale_scratch(parent)
     scratch = lock = None
     # The handlers stay installed until the scratch is gone, so a signal cannot cut the removal short.
@@ -1887,9 +2210,11 @@ def launch(config_path, worktree, command, profile="agent", client=None):
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
         except Interrupted:
             code = None
-        except CredentialRecovery:
-            preserve_login_recovery(scratch)
-            scratch = None
+        except CredentialRecovery as error:
+            if stop.number:
+                error.code = 128 + stop.number
+            if error.retained:
+                scratch = None  # the only copy of the rotation
             raise
         finally:
             stop.closing = True
@@ -1929,7 +2254,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             raise ValueError('the gate profile takes no agent client')
         config = dict(config, write_roots=['{scratch}'], seed_files={})
     # Credentials are copied in, never read in place: every client's sources are denied for the run.
-    config = dict(config, deny_read=[*config.get('deny_read', []),
+    # So are the borrow journals and recoveries of every login (VELDO-0211).
+    config = dict(config, deny_read=[*config.get('deny_read', []), str(borrow_root()),
                                      *map(str, credential_sources(config, worktree))])
     files = client_files(config, client, worktree) if client is not None else {}
     links = [(source.resolve(strict=True), relative) for source, relative in files.get('read_links', [])
@@ -1952,7 +2278,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         seed(scratch, Path(source).expanduser(), relative, store)
     for source, relative in files.get('seed_files', []):
         seed(scratch, source, relative, store)
-    with borrowed_credentials(scratch, files.get('credentials', []), store, protected):
+    with borrowed_credentials(scratch, files.get('credentials', []), store, protected) as borrow:
         # The client's persistent state for this worktree: read and write where it is, linked where the
         # CLI looks for it, checked by clean_state before the grant and again once the tree is gone.
         state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
@@ -2000,7 +2326,9 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                 clean_state(state)
             except Exception as error:
                 print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
-        return run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots, after=after)
+        borrow.code = run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots,
+                               after=after)
+        return borrow.code
 
 
 def run_tree(worktree, command, env, grants, profile, protected, scratch, stop=None, roots=None,
@@ -2044,6 +2372,8 @@ def run_tree(worktree, command, env, grants, profile, protected, scratch, stop=N
                 except OSError as error:
                     problem = str(error)
                 started = problem is None
+            if started and stop is not None:
+                stop.tree_started()
             if not started:
                 try:
                     os.killpg(pid, signal.SIGKILL)
@@ -2586,6 +2916,16 @@ def main():
         namespace_init(sys.argv[2])
     if sys.argv[1:] == ['namespace-selftest']:
         return namespace_selftest()
+    if sys.argv[1:2] == ['restore-login']:
+        parser = argparse.ArgumentParser(prog='agent_sandbox.py restore-login', description=restore_login.__doc__)
+        parser.add_argument('--force', action='store_true', help='replace a source that changed since the run')
+        parser.add_argument('recovery', nargs='?', help='a recovery directory; none lists them')
+        args = parser.parse_args(sys.argv[2:])
+        try:
+            return restore_login(args.recovery, args.force)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print('restore-login refused: %s' % error, file=sys.stderr)
+            return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profile', choices=('agent', 'gate'), default='agent')
@@ -2599,6 +2939,9 @@ def main():
         if not command:
             raise ValueError('an agent command is required after --')
         return launch(args.config, args.worktree, command, args.profile, args.client)
+    except CredentialRecovery as error:
+        print(recovery_message(error), file=sys.stderr, flush=True)
+        return RECOVERY_EXIT
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as error:
         print('agent sandbox refused to start: ' + str(error), file=sys.stderr)
         return 2

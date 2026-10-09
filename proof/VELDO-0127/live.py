@@ -2,7 +2,9 @@
 """Lead-only subscription capture. This driver is never run by the implementer or suite.
 
 Arguments name logged-in profile directories and pinned binaries. Login files are copied into
-private temporary profiles under source locks and rotated credentials are written back. Workers
+private temporary profiles under each login's runner lease and rotated credentials are written
+back before the lease is released; one that cannot be is kept as a private recovery on persistent
+storage and the run exits with the launcher's recovery status (VELDO-0211). Workers
 run serially in the temporary factory, under its own transient Linux slice. Captures hold
 capability names, credential-source identities and redacted execution-record evidence.
 """
@@ -16,6 +18,7 @@ from pathlib import Path
 import re
 import signal
 import subprocess
+import sys
 import tempfile
 import tomllib
 
@@ -34,9 +37,73 @@ def load(name, path):
 LOGIN = load('live_borrowed_login', ROOT / 'scripts/agent_sandbox.py')
 
 
+class Guard:
+    """A process that holds the borrow's leases and scratch for as long as this one runs. If this
+    one is killed outright, the guard stops the factory slice and only then settles the borrow
+    itself (write-back, or a recovery), so no engine left running in the slice rotates the login
+    after its lease is released and no rotation is left behind in the runtime directory."""
+
+    def __init__(self):
+        self.pid = self.write = None
+
+    def start(self, borrow, command, env):
+        read, write = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            code = 1
+            try:
+                os.setsid()
+                for number in LOGIN.STOP_SIGNALS:
+                    signal.signal(number, signal.SIG_IGN)
+                # Nothing else of this process stays open in the guard: a socket it held would never
+                # reach end of file at the teardown.
+                keep = {0, 1, 2, read, *borrow.descriptors}
+                for name in os.listdir('/proc/self/fd'):
+                    if int(name) not in keep:
+                        try:
+                            os.close(int(name))
+                        except OSError:
+                            pass
+                code = 0
+                if os.read(read, 1) != b'1':
+                    try:
+                        subprocess.run(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL)
+                    except (OSError, subprocess.SubprocessError) as error:
+                        print('live: the slice was not stopped: %s' % error, file=sys.stderr, flush=True)
+                    try:
+                        LOGIN.settle_borrow(borrow)
+                    except LOGIN.CredentialRecovery as error:
+                        print(LOGIN.recovery_message(error), file=sys.stderr, flush=True)
+                        code = LOGIN.RECOVERY_EXIT
+            finally:
+                os._exit(code)
+        os.close(read)
+        self.pid, self.write = pid, write
+
+    def release(self):
+        """After this process settled the borrow itself: the guard ends without doing anything."""
+        if self.pid is not None:
+            os.write(self.write, b'1')
+            os.close(self.write)
+            os.waitpid(self.pid, 0)
+            self.pid = None
+
+
+class Borrowed:
+    def __init__(self, stop, borrow, guard):
+        self.stop, self.borrow, self._guard = stop, borrow, guard
+
+    def guard(self, command, env):
+        """Once the slice exists: `command` stops it should this process be killed outright."""
+        self._guard.start(self.borrow, command, env)
+
+
 @contextmanager
 def borrowed_profiles(base, args, engines):
-    """Keep the source login locked through every capture, control and engine teardown."""
+    """Hold each source login's lease (<login>/.runner-lease, the one the runners and the sandbox
+    launcher take) through every capture, control and engine teardown, and write rotations back
+    before releasing it. A borrow an earlier capture or launcher left unsettled is recovered first."""
     sources = []
     for engine in sorted(engines):
         name = '.credentials.json' if engine == 'claude' else 'auth.json'
@@ -48,16 +115,17 @@ def borrowed_profiles(base, args, engines):
         sources.append((source, engine + '-login/' + name))
     args['claude_code_profile'] = str(base / 'claude-login')
     args['codex_profile'] = str(base / 'codex-login')
+    LOGIN.recover_orphans()
+    guard = Guard()
     with LOGIN.Stop() as stop:
         try:
-            with LOGIN.borrowed_credentials(base, sources, base):
+            with LOGIN.borrowed_credentials(base, sources, base) as borrow:
                 try:
-                    yield stop
+                    yield Borrowed(stop, borrow, guard)
                 finally:
                     stop.closing = True
-        except LOGIN.CredentialRecovery:
-            LOGIN.preserve_login_recovery(base)
-            raise
+        finally:
+            guard.release()
 
 
 SENSITIVE = re.compile(r'token|key|secret|authoriz|credential|bearer|cookie|password|[A-Za-z0-9+/=_-]{40,}', re.I)
@@ -245,8 +313,9 @@ def main():
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
         base = Path(temp)
         selected = (only[0],) if only else engines
-        with borrowed_profiles(base, args, selected) as stop:
+        with borrowed_profiles(base, args, selected) as borrowed:
             f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
+            borrowed.guard(['systemctl', P + 'user', 'stop', f.slice_name], f.inherited)
             try:
                 for engine in engines:
                     if only and only[0] != engine:
@@ -287,7 +356,7 @@ def main():
                     (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
                     print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
             finally:
-                stop.closing = True
+                borrowed.stop.closing = True
                 try:
                     for connection in f.connections:
                         connection.close()
@@ -298,4 +367,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except LOGIN.CredentialRecovery as error:
+        print(LOGIN.recovery_message(error), file=sys.stderr, flush=True)
+        sys.exit(LOGIN.RECOVERY_EXIT)
