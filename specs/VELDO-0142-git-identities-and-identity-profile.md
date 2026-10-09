@@ -16,6 +16,7 @@ protected_paths: []
 footprint:
   - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "scripts/suites/59_veldo_0037_aliases.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
   - "scripts/suites/69_veldo_0068_settlement.py"
   - "scripts/suites/65_veldo_0132_workflow.py"
   - "scripts/suites/92_veldo_0088_pm_cycles.py"
