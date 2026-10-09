@@ -21,7 +21,9 @@ def _v142_suite():
     PRODUCTION = {
         'control_git_identity.py': ROOT / ".veldo" / "control_git_identity.py",
         'control_clone.py': ROOT / ".veldo" / "control_clone.py",
-        'control_launch.py': ROOT / '.veldo' / 'control_launch.py',
+        'control_launch.py': ROOT / ".veldo" / "control_launch.py",
+        'control_store.py': ROOT / ".veldo" / "control_store.py",
+        'control_landing_station.py': ROOT / ".veldo" / "control_landing_station.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'lander.py': ROOT / ".veldo" / "lander.py",
     }
