@@ -216,3 +216,19 @@ and names the store and the copy; VELDO-0183 AC4's switch and the owner's assist
 same check. The title names it. Asked by the owner; back to draft: the owner must re-mark it ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-10-08, implementation preflight on agent/codex/veldo-0182 at 294e1933:
+blocked at AC4 before production changes. The permitted checkout contains no
+source or located interface captures for myday's mem0_memory, knowledge_graph
+and memory_kb or the installed claude-mem search server. Read probes of candidate
+myday source paths and the Claude plugin cache returned EACCES; these paths
+could not be confirmed as the actual installations. The function names in AC4
+do not establish their signatures, initialization, result shapes, enumeration
+and count interfaces, or the plugin search protocol. Inventing those contracts
+and matching fixtures would not prove that the owner's memories survive a
+switch. A readable source location was requested. Resume with version-identified
+source snapshots or authoritative interface captures, without live memory or
+credentials. The access observations, operational criteria and planned
+falsifiers are in proof/VELDO-0182/. No suite, mutation runner or gate was run,
+and no criterion is claimed proven. Acceptance criteria and ready status are
+unchanged.
