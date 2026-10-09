@@ -427,26 +427,37 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
                       facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
             qualified = json.loads((base / 'codex-qualification.json').read_text())
+            # Owner Telegram 29400/29401: readers only with a selected server. Telegram 32962: 0.162.0 alone also
+            # expects them for a Code Mode model with no server, because it offers them with no switch.
+            rule = {'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]}
+            code_mode_readers = SELECTED_WIRE.VERSION == '0.162.0'
+            if code_mode_readers:
+                rule['code_mode_otherwise'] = 'mcp_server'
             check('wire/no-server', 'qualification records the conditional MCP server grant',
                   qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
-                  and qualified.get('mcp_resource_rule') == {
-                      'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]})
+                  and qualified.get('mcp_resource_rule') == rule)
             for model in ('gpt-6-astra', 'gpt-5.5'):
+                allowed = resources if code_mode_readers and model == 'gpt-6-astra' else []
                 definition = f.role('codex', 'no-server-' + model)
                 definition['settings']['model'] = model
                 definition['mcp'] = []
                 f.save(definition)
                 _, rec, own, _ = run('codex', 'no-server-' + model, {'role':definition['role']})
                 revision = rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
-                wanted = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
+                # 0.154.0's capture below keeps the strict rule; the run's own expectation is its bound record's.
+                strict = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
+                wanted = dict(strict, resource_readers=allowed)
                 wire = own.get('wire', {})
                 observed = evidence.wire_observation(wire, wanted, L.HANDOFF)
-                check('wire/no-server', model + ': accepted empty server selection exposes no resource readers',
+                check('wire/no-server', model + ': accepted empty server selection exposes exactly its version\'s readers',
                       f.D.completed(rec) and own.get('configuration', {}).get('mcp_servers', {}) == {}
                       and observed['actual'] == observed['expected'] and observed['stop'] is None
-                      and not set(resources) & set(observed['actual']))
+                      and set(resources) & set(observed['actual']) == set(allowed))
+                bound_expected = L.HANDOFF.codex_expected(qualified, {'revision':revision, 'skills':[]}, {})
+                check('wire/no-server', model + ': the bound qualification yields that expectation',
+                      bound_expected.get('resource_readers') == allowed)
                 captured = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-none.json')).read_text())
-                observations = [evidence.wire_observation(r['body'], wanted, L.HANDOFF)
+                observations = [evidence.wire_observation(r['body'], strict, L.HANDOFF)
                                 for r in captured.get('requests', [])]
                 check('wire/no-server', model + ': real loopback capture confirms absence without a server',
                       captured.get('returncode') == 0 and bool(observations)
@@ -454,10 +465,16 @@ for step in (packet.get('payload') or {}).get('script',[]):
                       and all(o['actual'] == o['expected'] and not set(resources) & set(o['actual'])
                               and o['stop'] is None for o in observations))
                 for resource in resources:
+                    if resource in allowed:
+                        continue
                     extra = copy.deepcopy(wire)
                     extra.setdefault('tools', []).append({'type':'function', 'name':resource})
                     check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
                           compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
+                extra = copy.deepcopy(wire)
+                extra.setdefault('tools', []).append({'type':'function', 'name':'ungranted'})
+                check('wire/no-server', model + ': any other unselected tool fails closed',
+                      compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
             modes = json.loads(SELECTED_WIRE.fixture('codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
             check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
                   bool(modes) and qualified.get('model_tool_modes') == modes)

@@ -41,6 +41,7 @@
   "check_for_update_on_startup=false"
  ],
  "mcp_resource_rule": {
+  "code_mode_otherwise": "mcp_server",
   "mapping": "mcp_server",
   "otherwise": [],
   "when": "nonempty_mcp_servers"

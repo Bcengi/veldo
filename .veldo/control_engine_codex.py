@@ -440,6 +440,14 @@ NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
 # Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
 # This mapping key is conditional on the selected server set, not a native role tool.
 NATIVE_TOOL_MAPPING['mcp_server'] = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+# Each qualified version's rule for those readers. Codex 0.162.0 offers them to every Code Mode model even with
+# no server selected, with no switch to remove them; with none selected they reach no resource, so for that
+# version and Code Mode only they are expected (owner Telegram 32962). Every other case keeps 29400/29401.
+MCP_RESOURCE_RULE = {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []}
+QUALIFIED_MCP_RESOURCE_RULES = {
+    '0.154.0': MCP_RESOURCE_RULE,
+    '0.162.0': dict(MCP_RESOURCE_RULE, code_mode_otherwise='mcp_server'),
+}
 # Each qualified version's debug models under an empty profile; absent tool_mode is JSON null. A record
 # binds only with its own version's table, so the pin decides which models a run may name.
 QUALIFIED_MODEL_TOOL_MODES = {
@@ -570,7 +578,7 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'baseline': BASELINE, 'session_environment': session_environment(executable),
             'native_tool_mapping': NATIVE_TOOL_MAPPING,
             'model_tool_modes': QUALIFIED_MODEL_TOOL_MODES.get(version.split('-', 1)[0]),
-            'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []},
+            'mcp_resource_rule': QUALIFIED_MCP_RESOURCE_RULES.get(version.split('-', 1)[0]),
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
@@ -623,7 +631,7 @@ def bind(adapter, state_root=None):
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
-            'baseline': base, 'model_tool_modes': record['model_tool_modes'],
+            'baseline': base, 'model_tool_modes': record['model_tool_modes'], 'mcp_resource_rule': record['mcp_resource_rule'],
             'feature_listing': record.get('feature_listing', ''),
             'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
 
@@ -748,6 +756,8 @@ def qualified_baseline(bound, record=None):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     if record.get('model_tool_modes') != QUALIFIED_MODEL_TOOL_MODES.get(record.get('version')):
         raise Refused('missing_evidence:codex_model_tool_modes')
+    if record.get('mcp_resource_rule') != QUALIFIED_MCP_RESOURCE_RULES.get(record.get('version')):
+        raise Refused('missing_evidence:codex_mcp_resource_rule')
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
     return BASELINE
@@ -783,7 +793,7 @@ def baseline(bound, run, environment=None, record=None, servers=()):
             listing = helper.inventory(run['capability'], servers)
             files = helper.codex(configuration, run['capability'], listing, Path(run['config']), catalog=catalog,
                                  feature_listing=bound.get('feature_listing', ''))
-            wanted = helper.expected(run['capability'], listing)
+            wanted = helper.codex_expected(bound, run['capability'], listing)
         except helper.Refused as error:
             raise Refused(error.code) from None
     argv = list(base['options'])

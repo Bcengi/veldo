@@ -428,10 +428,32 @@ def codex_tool_names(tools, namespace=''):
     return sorted(names)
 
 
+def codex_resource_readers(bound, wanted):
+    """The MCP resource readers a run expects, by its bound version's qualified rule: a selected server grants
+    all three, none grants none (owner Telegram 29400/29401). A rule naming `code_mode_otherwise` (0.162.0 only,
+    owner Telegram 32962) also expects them for a Code Mode model of that version with no server selected.
+    A rule other than its version's own binds nothing."""
+    rule = bound.get('mcp_resource_rule')
+    if rule is None or rule != X.QUALIFIED_MCP_RESOURCE_RULES.get(bound.get('version')):
+        raise Refused('missing_evidence:codex_mcp_resource_rule')
+    if wanted.get('mcp_servers'):
+        return list(X.NATIVE_TOOL_MAPPING[rule['mapping']])
+    if rule.get('code_mode_otherwise') and (bound.get('model_tool_modes') or {}).get(wanted.get('model')) == 'code_mode_only':
+        return list(X.NATIVE_TOOL_MAPPING[rule['code_mode_otherwise']])
+    return list(rule['otherwise'])
+
+
+def codex_expected(bound, capability, inventory):
+    """`expected`, with the readers the bound qualification's rule gives this run."""
+    wanted = expected(capability, inventory)
+    wanted['resource_readers'] = codex_resource_readers(bound, wanted)
+    return wanted
+
+
 def codex_expected_tools(wanted, body):
     names = [codex_name(n) for name in wanted['tools'] for n in X.NATIVE_TOOL_MAPPING.get(name, [name])]
-    if wanted.get('mcp_servers'):
-        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])
+    # Without a bound rule, only a selected server grants the readers.
+    names.extend(wanted.get('resource_readers', X.NATIVE_TOOL_MAPPING['mcp_server'] if wanted.get('mcp_servers') else []))
     # Runner presence is determined by the accepted model, not by an untrusted tool list.
     if X.MODEL_TOOL_MODES.get(wanted.get('model')) == 'code_mode_only':
         names.extend(['exec', 'wait'])

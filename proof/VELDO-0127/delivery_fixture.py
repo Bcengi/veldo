@@ -99,6 +99,11 @@ def run(ROOT, TREE, PRODUCTION, models):
                 expected = L.HANDOFF.codex_expected_tools(wanted, {}) if wanted else []
                 check('delivery/' + model + '/none', error is None and observed == expected,
                       str((error, observed, expected)))
+                # With no server selected, a tool beyond the expected set still refuses the launch, whatever the
+                # version's reader rule (owner Telegram 32962 allows the three readers only).
+                got, stop, _ = launch(baseline, 'extra') if save_error is None else (None, save_error, {})
+                check('stop/' + model + '/extra-no-server', stop == 'configuration_stop:codex_unexpected_tool'
+                      and got is None, str(stop))
                 for tool in sorted(C.CODEX_CAPABILITIES):
                     row = 'delivery/' + model + '/' + tool
                     d = definition(model, [tool])
@@ -142,6 +147,45 @@ def run(ROOT, TREE, PRODUCTION, models):
                                                                                   'native_tools': []}))
                 check('catalog/service-tier', stop == wanted and (stop is not None or [
                     m['slug'] for m in chosen['models']] == [model]), str((model, stop)))
+            # Whichever binary is selected: each qualified version's own record decides the readers. Independent
+            # oracle: a selected server grants the three (owner Telegram 29400/29401); with none, only a Code Mode
+            # model on 0.162.0 expects them (32962); 0.154.0 and models outside Code Mode expect none.
+            readers = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+            records = {v: json.loads((TREE / ('proof/VELDO-0061/codex-qualification-%s.json' % v)).read_text())
+                       for v in ('0.154.0', '0.162.0')}
+            def bound_for(version, rule=None):
+                record = records[version]
+                return {'version': version, 'model_tool_modes': record['model_tool_modes'],
+                        'mcp_resource_rule': record['mcp_resource_rule'] if rule is None else rule}
+            for version, model, servers, want in [
+                    ('0.154.0', 'gpt-6-astra', [], []), ('0.154.0', 'gpt-5.6-sol', [], []), ('0.154.0', 'gpt-5.5', [], []),
+                    ('0.154.0', 'gpt-6-astra', ['jira'], readers), ('0.154.0', 'gpt-5.5', ['jira'], readers),
+                    ('0.162.0', 'gpt-6.1-sol', [], readers), ('0.162.0', 'gpt-6-astra', [], readers),
+                    ('0.162.0', 'gpt-5.5', [], []), ('0.162.0', 'gpt-6.1-sol', ['jira'], readers),
+                    ('0.162.0', 'gpt-5.5', ['jira'], readers)]:
+                got, stop = attempt(lambda: L.HANDOFF.codex_resource_readers(
+                    bound_for(version), {'mcp_servers': servers, 'model': model}))
+                check('readers/' + version, stop is None and sorted(got or []) == want,
+                      str((model, servers, stop, got)))
+            # A rule that is not its version's own binds nothing, in the record and at the launch.
+            for version, other in (('0.154.0', '0.162.0'), ('0.162.0', '0.154.0')):
+                foreign = records[other]['mcp_resource_rule']
+                _, stop = attempt(lambda: L.HANDOFF.codex_resource_readers(
+                    bound_for(version, foreign), {'mcp_servers': [], 'model': 'gpt-6-astra'}))
+                _, record_stop = attempt(lambda: X.qualified_baseline(None, dict(records[version], mcp_resource_rule=foreign)))
+                check('readers/foreign-rule', stop == record_stop == 'missing_evidence:codex_mcp_resource_rule',
+                      str((version, stop, record_stop)))
+            # 0.162.0, Code Mode, no server: the readers compare equal; any other tool still refuses; a reader
+            # missing is still a missing tool.
+            wanted = {'tools': [], 'mcp_servers': [], 'model': 'gpt-6.1-sol'}
+            wanted['resource_readers'], _ = attempt(lambda: L.HANDOFF.codex_resource_readers(bound_for('0.162.0'), wanted))
+            body = {'tools': [{'type': 'function', 'name': n} for n in ['exec', 'wait'] + readers]}
+            other = {'tools': body['tools'] + [{'type': 'function', 'name': 'view_image'}]}
+            short = {'tools': body['tools'][:-1]}
+            check('readers/other-tool', L.HANDOFF.codex_tool_difference(body, wanted) is None
+                  and L.HANDOFF.codex_tool_difference(other, wanted) == 'configuration_stop:codex_unexpected_tool'
+                  and L.HANDOFF.codex_tool_difference(short, wanted) == 'configuration_stop:codex_missing_tool',
+                  str(wanted))
         except Exception as error:
             check('delivery/completed', False, 'raised ' + type(error).__name__ + ': ' + str(error)[:180])
         finally:

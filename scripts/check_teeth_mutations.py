@@ -9699,11 +9699,21 @@ def cases():
     # VELDO-0127 catalog controls and effective Code Mode definitions.
     catalog_suite = '86_veldo_0127_agent_configuration.py'
     add(127, 'role127-resource-grant-omitted', catalog_suite, 'control_agent_config_handoff.py',
-        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
-        "    if False:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/resources'])
+        "    names.extend(wanted.get('resource_readers', X.NATIVE_TOOL_MAPPING['mcp_server'] if wanted.get('mcp_servers') else []))\n",
+        "    names.extend([])\n", ['wire/resources'])
     add(127, 'role127-resource-grant-without-server', catalog_suite, 'control_agent_config_handoff.py',
-        "    if wanted.get('mcp_servers'):\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n",
-        "    if True:\n        names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/no-server'])
+        "    names.extend(wanted.get('resource_readers', X.NATIVE_TOOL_MAPPING['mcp_server'] if wanted.get('mcp_servers') else []))\n",
+        "    names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])\n", ['wire/no-server'])
+    # Owner Telegram 32962: the no-server readers are 0.162.0's and Code Mode's only, from the bound record.
+    add(127, 'role127-resource-readers-any-version', '87_veldo_0127_codex_delivery.py', 'control_engine_codex.py',
+        "    '0.154.0': MCP_RESOURCE_RULE,", "    '0.154.0': dict(MCP_RESOURCE_RULE, code_mode_otherwise='mcp_server'),",
+        ['readers/0.154.0'])
+    add(127, 'role127-resource-readers-any-model', '87_veldo_0127_codex_delivery.py', 'control_agent_config_handoff.py',
+        "    if rule.get('code_mode_otherwise') and (bound.get('model_tool_modes') or {}).get(wanted.get('model')) == 'code_mode_only':",
+        "    if rule.get('code_mode_otherwise'):", ['readers/0.162.0'])
+    add(127, 'role127-resource-rule-unbound', '87_veldo_0127_codex_delivery.py', 'control_agent_config_handoff.py',
+        "    if rule is None or rule != X.QUALIFIED_MCP_RESOURCE_RULES.get(bound.get('version')):",
+        "    if rule is None:", ['readers/foreign-rule'])
     add(127, 'role127-catalog-subagents-retained', catalog_suite, 'control_agent_config_handoff.py',
         "        selected.pop('multi_agent_version', None)", "        pass", ['catalog/fields'])
     add(127, 'role127-catalog-patch-retained', catalog_suite, 'control_agent_config_handoff.py',
@@ -9734,8 +9744,8 @@ def cases():
     add(127, 'role127-catalog-runner-not-expected', catalog_suite, 'control_agent_config_handoff.py',
         "        names.extend(['exec', 'wait'])", "        pass", ['review/codex-tools'])
     add(127, 'role127-catalog-resource-readers-hidden', catalog_suite, 'control_agent_config_handoff.py',
-        "    return sorted(names)\n\n\ndef codex_expected_tools",
-        "    return sorted(n for n in names if n not in ('list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource'))\n\n\ndef codex_expected_tools",
+        "    return sorted(names)\n\n\ndef codex_resource_readers",
+        "    return sorted(n for n in names if n not in ('list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource'))\n\n\ndef codex_resource_readers",
         ['wire/resources'])
     # VELDO-0127 model-dependent qualification and lead capture, with no invented switch claims.
     add(127, 'role127-model-modes-omitted', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
