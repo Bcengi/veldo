@@ -1,8 +1,8 @@
 {
  "debug_control": {
-  "debug_bytes": 74892,
+  "debug_bytes": 46168,
   "debug_lines": [],
-  "debug_sha256": "33dfd62646380f37604d759287b7683fe37287f65b397ac91c26ebe11f57af8c",
+  "debug_sha256": "f591c3c608c358078fd92d130f094006451628c1d0074f7c5e3f0df46f1a815a",
   "qualification": "context-size-only",
   "ran": true,
   "returncode": 0
@@ -14,7 +14,7 @@
   "control_agent_config_handoff.py": "b73d425b7f6b6422640da4ce56d133cbf96c8f180968d8a61d89daef011c0df8",
   "control_engine_claude.py": "b0b0fa352f6df575c38a529eb447da4c664816ecf338b03884eedce174094c3e",
   "control_engine_codex.py": "3f1e8fed5d574fb52a53cf8d54bae8910d1eb9a9bdb40552bffa974cfd7fc4cc",
-  "control_launch.py": "aaa2c80c655c3d98610689700cbb5c05496ded9fcda3b15f8568d80508d071d3"
+  "control_launch.py": "4879116df90bd21da529d4d5f579763fc67c9462f848080a77a954fc1e3c33b9"
  },
  "runs": [
   {
@@ -36,10 +36,8 @@
     "fast",
     "focus",
     "goal",
-    "heapdump",
     "import",
     "init",
-    "insights",
     "list-agents",
     "mcp",
     "model",
@@ -50,7 +48,6 @@
     "rename",
     "security-review",
     "skill-doctor",
-    "team-onboarding",
     "usage",
     "usage-credits",
     "workflow-launch-exec"
@@ -62,14 +59,14 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 6275,
+        "ephemeral_1h_input_tokens": 6210,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 6275,
+       "cache_creation_input_tokens": 6210,
        "cache_read_input_tokens": 0,
        "inference_geo": "not_available",
        "input_tokens": 10,
-       "output_tokens": 4,
+       "output_tokens": 1,
        "service_tier": "standard"
       }
      },
@@ -79,10 +76,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 30422,
+   "debug_bytes": 31404,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "f1e3d4cab3ac5b2c8156ecc3df9022ec9e4c397fce43fe13d4efcf7ef87eaf2d",
+   "debug_sha256": "949ff88dbcfe14cfbc9a60bfc85ca6496c329ccd8bd473166a0788a0a3824533",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -191,7 +188,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6285,
+   "first_turn_context": 6220,
    "init": {
     "mcp_servers": [
      {
@@ -204,7 +201,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-k2i82pz_/factory/runs/a124222497eb16b4617416075c7ac674/config/role-plugin",
+      "path": "/run/user/1000/veldo0127-live-7ap8vqty/factory/runs/ac2d4232e775861046118b4b37706aeb/config/role-plugin",
       "source": "veldo-role@inline"
      }
     ],
@@ -226,7 +223,6 @@
      "effort",
      "fast",
      "focus",
-     "heapdump",
      "init",
      "mcp",
      "import",
@@ -240,14 +236,12 @@
      "usage-credits",
      "extra-usage",
      "usage",
-     "insights",
      "recap",
      "skill-doctor",
      "goal",
      "design-consent",
      "design-revoke",
-     "list-agents",
-     "team-onboarding"
+     "list-agents"
     ],
     "tools": [
      "PushNotification",
@@ -270,16 +264,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "fe4040a7-b8fd-40cc-b7ee-7f5b3d33323f",
+     "session_id": "2c8c1e39-f43f-465f-b8b8-f9a872467ab2",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 81826,
-    "digest": "sha256:4b8cecd3560c60b3027825cc22a6d87daac0e48175abb469f35cc6b4444326bb",
-    "lines": 304
+    "bytes": 105169,
+    "digest": "sha256:8a61032fbe0c82ad180ff2ec3000ffd13e02099a2984e2f2018e939475f6bed7",
+    "lines": 317
    },
    "revision": {
     "digest": "sha256:a98bd73b1466eba4e84e08dd7bdee0a79aaa97650efdfdfea38f3119ff0a9daf",
@@ -373,14 +367,14 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 1352,
+        "ephemeral_1h_input_tokens": 1350,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 1352,
-       "cache_read_input_tokens": 4932,
+       "cache_creation_input_tokens": 1350,
+       "cache_read_input_tokens": 4939,
        "inference_geo": "not_available",
        "input_tokens": 10,
-       "output_tokens": 4,
+       "output_tokens": 1,
        "service_tier": "standard"
       }
      },
@@ -390,10 +384,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 20179,
+   "debug_bytes": 20111,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "83122aa0663d79da3af2ca93fbbf1cbcca19ac4e9eace3c8218e2ac5166c29af",
+   "debug_sha256": "b977b0e21a05e3456cae4849e7c766af8a7da2c8409ae4799833dc047ab8949d",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -502,7 +496,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6294,
+   "first_turn_context": 6299,
    "init": {
     "mcp_servers": [
      {
@@ -515,7 +509,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-k2i82pz_/factory/runs/5027a34c8e6a845a38edbffc683e1d4f/config/role-plugin",
+      "path": "/run/user/1000/veldo0127-live-7ap8vqty/factory/runs/f15917102bc8cf467a3614c454038ca5/config/role-plugin",
       "source": "veldo-role@inline"
      }
     ],
@@ -581,15 +575,15 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "74aee6f4-4b21-496e-96fd-06d0d470adb6",
+     "session_id": "473cc8fd-d084-4424-9455-dc464d8c9c84",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 62893,
-    "digest": "sha256:9dfb21e2d5492d2a12a98380f19364870f82e5ac6bbff6f154944d9568748179",
+    "bytes": 62866,
+    "digest": "sha256:2d434a9c2208e9da2f9284cb75d5fa6fb6e8dcffa4f7a472778558f1899ebc7c",
     "lines": 213
    },
    "revision": {
@@ -684,14 +678,14 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 2168,
+        "ephemeral_1h_input_tokens": 2167,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 2168,
-       "cache_read_input_tokens": 4222,
+       "cache_creation_input_tokens": 2167,
+       "cache_read_input_tokens": 4229,
        "inference_geo": "not_available",
        "input_tokens": 10,
-       "output_tokens": 6,
+       "output_tokens": 3,
        "service_tier": "standard"
       }
      },
@@ -701,332 +695,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 20394,
+   "debug_bytes": 20443,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "ce7fd7a7485c453665fa53d2179bb61235d26a3e69d00473eb74af6c96cac742",
-   "disallowed": [
-    "Agent",
-    "AppifactRepl",
-    "Artifact",
-    "ArtifactCheck",
-    "ArtifactComments",
-    "ArtifactData",
-    "AskUserQuestion",
-    "Bash",
-    "ClaudeDesign",
-    "CronCreate",
-    "CronDelete",
-    "CronList",
-    "DesignSync",
-    "Edit",
-    "EndConversation",
-    "EnterPlanMode",
-    "EnterWorktree",
-    "ExitPlanMode",
-    "ExitWorktree",
-    "FetchInboxMessage",
-    "Glob",
-    "Grep",
-    "LSP",
-    "ListAgents",
-    "ListConnectors",
-    "ListMcpResourcesTool",
-    "ListPlugins",
-    "ListSkills",
-    "Monitor",
-    "NotebookEdit",
-    "Poll",
-    "PowerShell",
-    "Projects",
-    "ProposeGoal",
-    "ReadMcpResourceDirTool",
-    "ReadMcpResourceTool",
-    "ReadNotifications",
-    "RefreshMcpTools",
-    "RemoteTrigger",
-    "ReportFindings",
-    "ScheduleWakeup",
-    "SearchMcpRegistry",
-    "SearchPlugins",
-    "SearchSkills",
-    "SendFeedback",
-    "SendFile",
-    "SendMessage",
-    "SendUserFile",
-    "SendUserMessage",
-    "ShareOnboardingGuide",
-    "ShowOnboardingRolePicker",
-    "SuggestConnectors",
-    "SuggestPluginInstall",
-    "SuggestSkills",
-    "TaskCreate",
-    "TaskGet",
-    "TaskList",
-    "TaskStop",
-    "TaskUpdate",
-    "TodoWrite",
-    "ToolSearch",
-    "WaitForMcpServers",
-    "WebFetch",
-    "WebSearch",
-    "Workflow",
-    "Write",
-    "enable__mcp__claude-in-chrome",
-    "enable__mcp__remote-devices__Claude_Browser",
-    "enable__mcp__remote-devices__computer",
-    "memory_list",
-    "memory_read",
-    "memory_write",
-    "propose_skills",
-    "request_computer",
-    "self_hosted_runner_get_pool",
-    "self_hosted_runner_list_runners",
-    "self_hosted_runner_list_secrets",
-    "self_hosted_runner_list_sessions",
-    "self_hosted_runner_read_health",
-    "self_hosted_runner_read_metrics",
-    "self_hosted_runner_requeue_session",
-    "self_hosted_runner_spawn_local",
-    "self_hosted_runner_tail_log",
-    "mcp__jira__jira_write"
-   ],
-   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
-   "expected": {
-    "mcp_servers": [
-     "jira"
-    ],
-    "model": "claude-haiku-4-5-20251001",
-    "plugins": [
-     "veldo-role"
-    ],
-    "skills": [
-     "veldo-role:inspect"
-    ],
-    "slash_commands": [
-     "veldo-role:inspect"
-    ],
-    "tools": [
-     "PushNotification",
-     "Read",
-     "Skill",
-     "mcp__jira__jira_search"
-    ]
-   },
-   "first_turn_context": 6400,
-   "init": {
-    "mcp_servers": [
-     {
-      "name": "jira",
-      "source": "dynamic",
-      "status": "connected"
-     }
-    ],
-    "model": "claude-haiku-4-5-20251001",
-    "plugins": [
-     {
-      "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-k2i82pz_/factory/runs/06c936f863215bb8c2939b93b2640fb8/config/role-plugin",
-      "source": "veldo-role@inline"
-     }
-    ],
-    "skills": [
-     "veldo-role:inspect"
-    ],
-    "slash_commands": [
-     "veldo-role:inspect",
-     "advisor",
-     "agents",
-     "auto-mode-setup",
-     "autocompact",
-     "clear",
-     "color",
-     "compact",
-     "config",
-     "output-style",
-     "context",
-     "effort",
-     "fast",
-     "focus",
-     "heapdump",
-     "init",
-     "mcp",
-     "import",
-     "model",
-     "__remote-workflow",
-     "workflow-launch-exec",
-     "reload-plugins",
-     "reload-skills",
-     "rename",
-     "security-review",
-     "usage-credits",
-     "extra-usage",
-     "usage",
-     "insights",
-     "recap",
-     "skill-doctor",
-     "goal",
-     "design-consent",
-     "design-revoke",
-     "list-agents",
-     "team-onboarding"
-    ],
-    "tools": [
-     "PushNotification",
-     "Read",
-     "Skill",
-     "mcp__jira__jira_search"
-    ]
-   },
-   "listing": [],
-   "marker": false,
-   "marker_present": false,
-   "mode": "deferred",
-   "model_catalog": null,
-   "probe": {
-    "assistants_before_prompt": 0,
-    "prompt_written": true,
-    "result": {
-     "errors": [],
-     "is_error": false,
-     "num_turns": 0,
-     "result": "",
-     "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "be5b6554-78a5-4297-ac7d-6f63d74551d5",
-     "stop_reason": null,
-     "subtype": "success",
-     "tokens": 0
-    }
-   },
-   "record_commitment": {
-    "bytes": 63292,
-    "digest": "sha256:6dcb3c1cedcd4cef3da8aa72cd38a454d0e387bb79d26c07c8241e31b13d91f0",
-    "lines": 215
-   },
-   "revision": {
-    "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
-    "engine": "claude_code",
-    "instructions": [
-     {
-      "load": "always",
-      "path": "listed.md",
-      "source": "factory"
-     },
-     {
-      "load": "always",
-      "path": "project.md",
-      "source": "project"
-     },
-     {
-      "load": "when assigned",
-      "path": "unassigned.md",
-      "source": "factory"
-     }
-    ],
-    "mcp": [
-     {
-      "load": "always",
-      "revision": 1,
-      "server": "jira",
-      "tools": [
-       "jira_search"
-      ]
-     },
-     {
-      "load": "when assigned",
-      "revision": 1,
-      "server": "other",
-      "tools": "all"
-     }
-    ],
-    "native_tools": [
-     "Read",
-     "PushNotification",
-     "Skill"
-    ],
-    "previous": null,
-    "revision": 1,
-    "role": "claude-deferred",
-    "settings": {
-     "model": "claude-haiku-4-5-20251001"
-    },
-    "skills": [
-     {
-      "load": "always",
-      "revision": 1,
-      "skill": "inspect"
-     }
-    ]
-   },
-   "wire_capture": null,
-   "wire_tools": []
-  },
-  {
-   "builtin_commands": [
-    "__remote-workflow",
-    "advisor",
-    "agents",
-    "auto-mode-setup",
-    "autocompact",
-    "clear",
-    "color",
-    "compact",
-    "config",
-    "context",
-    "design-consent",
-    "design-revoke",
-    "effort",
-    "extra-usage",
-    "fast",
-    "focus",
-    "goal",
-    "heapdump",
-    "import",
-    "init",
-    "insights",
-    "list-agents",
-    "mcp",
-    "model",
-    "output-style",
-    "recap",
-    "reload-plugins",
-    "reload-skills",
-    "rename",
-    "security-review",
-    "skill-doctor",
-    "team-onboarding",
-    "usage",
-    "usage-credits",
-    "workflow-launch-exec"
-   ],
-   "completed": true,
-   "configuration": {},
-   "context_events": [
-    {
-     "message": {
-      "usage": {
-       "cache_creation": {
-        "ephemeral_1h_input_tokens": 1402,
-        "ephemeral_5m_input_tokens": 0
-       },
-       "cache_creation_input_tokens": 1402,
-       "cache_read_input_tokens": 4994,
-       "inference_geo": "not_available",
-       "input_tokens": 10,
-       "output_tokens": 6,
-       "service_tier": "standard"
-      }
-     },
-     "type": "assistant"
-    }
-   ],
-   "credential_sources": [
-    "jira"
-   ],
-   "debug_bytes": 20049,
-   "debug_lines": [],
-   "debug_marker_present": false,
-   "debug_sha256": "0852dc9319cd06006b5d26bd6406f0c129f8663b700e2b9f133586a137177bfb",
+   "debug_sha256": "3f299ed533211a329f92d1857b465ae8e65968ca044b40a67f0b42a6cb958c7c",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -1148,7 +820,329 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-k2i82pz_/factory/runs/37b59dc3b28443e2295d3a7df90ccd69/config/role-plugin",
+      "path": "/run/user/1000/veldo0127-live-7ap8vqty/factory/runs/8ef6fa36f2f266eefa38475625017c92/config/role-plugin",
+      "source": "veldo-role@inline"
+     }
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect",
+     "advisor",
+     "agents",
+     "auto-mode-setup",
+     "autocompact",
+     "clear",
+     "color",
+     "compact",
+     "config",
+     "output-style",
+     "context",
+     "effort",
+     "fast",
+     "focus",
+     "heapdump",
+     "init",
+     "mcp",
+     "import",
+     "model",
+     "__remote-workflow",
+     "workflow-launch-exec",
+     "reload-plugins",
+     "reload-skills",
+     "rename",
+     "security-review",
+     "usage-credits",
+     "extra-usage",
+     "usage",
+     "insights",
+     "recap",
+     "skill-doctor",
+     "goal",
+     "design-consent",
+     "design-revoke",
+     "list-agents",
+     "team-onboarding"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "listing": [],
+   "marker": false,
+   "marker_present": false,
+   "mode": "deferred",
+   "model_catalog": null,
+   "probe": {
+    "assistants_before_prompt": 0,
+    "prompt_written": true,
+    "result": {
+     "errors": [],
+     "is_error": false,
+     "num_turns": 0,
+     "result": "",
+     "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "session_id": "9162f62e-848c-49ec-ac44-e89f5296771b",
+     "stop_reason": null,
+     "subtype": "success",
+     "tokens": 0
+    }
+   },
+   "record_commitment": {
+    "bytes": 64463,
+    "digest": "sha256:2d043b57ed8a67e08f36f98fed89445ef9966ac4c3f0483f71d49e181bcb4e3a",
+    "lines": 219
+   },
+   "revision": {
+    "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
+    "engine": "claude_code",
+    "instructions": [
+     {
+      "load": "always",
+      "path": "listed.md",
+      "source": "factory"
+     },
+     {
+      "load": "always",
+      "path": "project.md",
+      "source": "project"
+     },
+     {
+      "load": "when assigned",
+      "path": "unassigned.md",
+      "source": "factory"
+     }
+    ],
+    "mcp": [
+     {
+      "load": "always",
+      "revision": 1,
+      "server": "jira",
+      "tools": [
+       "jira_search"
+      ]
+     },
+     {
+      "load": "when assigned",
+      "revision": 1,
+      "server": "other",
+      "tools": "all"
+     }
+    ],
+    "native_tools": [
+     "Read",
+     "PushNotification",
+     "Skill"
+    ],
+    "previous": null,
+    "revision": 1,
+    "role": "claude-deferred",
+    "settings": {
+     "model": "claude-haiku-4-5-20251001"
+    },
+    "skills": [
+     {
+      "load": "always",
+      "revision": 1,
+      "skill": "inspect"
+     }
+    ]
+   },
+   "wire_capture": null,
+   "wire_tools": []
+  },
+  {
+   "builtin_commands": [
+    "__remote-workflow",
+    "advisor",
+    "agents",
+    "auto-mode-setup",
+    "autocompact",
+    "clear",
+    "color",
+    "compact",
+    "config",
+    "context",
+    "design-consent",
+    "design-revoke",
+    "effort",
+    "extra-usage",
+    "fast",
+    "focus",
+    "goal",
+    "heapdump",
+    "import",
+    "init",
+    "insights",
+    "list-agents",
+    "mcp",
+    "model",
+    "output-style",
+    "recap",
+    "reload-plugins",
+    "reload-skills",
+    "rename",
+    "security-review",
+    "skill-doctor",
+    "team-onboarding",
+    "usage",
+    "usage-credits",
+    "workflow-launch-exec"
+   ],
+   "completed": true,
+   "configuration": {},
+   "context_events": [
+    {
+     "message": {
+      "usage": {
+       "cache_creation": {
+        "ephemeral_1h_input_tokens": 1402,
+        "ephemeral_5m_input_tokens": 0
+       },
+       "cache_creation_input_tokens": 1402,
+       "cache_read_input_tokens": 5001,
+       "inference_geo": "not_available",
+       "input_tokens": 10,
+       "output_tokens": 4,
+       "service_tier": "standard"
+      }
+     },
+     "type": "assistant"
+    }
+   ],
+   "credential_sources": [
+    "jira"
+   ],
+   "debug_bytes": 20249,
+   "debug_lines": [],
+   "debug_marker_present": false,
+   "debug_sha256": "486e3451c828b46c38e66977f886d45969bd91dfc036ccb63a7256d3f416a72f",
+   "disallowed": [
+    "Agent",
+    "AppifactRepl",
+    "Artifact",
+    "ArtifactCheck",
+    "ArtifactComments",
+    "ArtifactData",
+    "AskUserQuestion",
+    "Bash",
+    "ClaudeDesign",
+    "CronCreate",
+    "CronDelete",
+    "CronList",
+    "DesignSync",
+    "Edit",
+    "EndConversation",
+    "EnterPlanMode",
+    "EnterWorktree",
+    "ExitPlanMode",
+    "ExitWorktree",
+    "FetchInboxMessage",
+    "Glob",
+    "Grep",
+    "LSP",
+    "ListAgents",
+    "ListConnectors",
+    "ListMcpResourcesTool",
+    "ListPlugins",
+    "ListSkills",
+    "Monitor",
+    "NotebookEdit",
+    "Poll",
+    "PowerShell",
+    "Projects",
+    "ProposeGoal",
+    "ReadMcpResourceDirTool",
+    "ReadMcpResourceTool",
+    "ReadNotifications",
+    "RefreshMcpTools",
+    "RemoteTrigger",
+    "ReportFindings",
+    "ScheduleWakeup",
+    "SearchMcpRegistry",
+    "SearchPlugins",
+    "SearchSkills",
+    "SendFeedback",
+    "SendFile",
+    "SendMessage",
+    "SendUserFile",
+    "SendUserMessage",
+    "ShareOnboardingGuide",
+    "ShowOnboardingRolePicker",
+    "SuggestConnectors",
+    "SuggestPluginInstall",
+    "SuggestSkills",
+    "TaskCreate",
+    "TaskGet",
+    "TaskList",
+    "TaskStop",
+    "TaskUpdate",
+    "TodoWrite",
+    "ToolSearch",
+    "WaitForMcpServers",
+    "WebFetch",
+    "WebSearch",
+    "Workflow",
+    "Write",
+    "enable__mcp__claude-in-chrome",
+    "enable__mcp__remote-devices__Claude_Browser",
+    "enable__mcp__remote-devices__computer",
+    "memory_list",
+    "memory_read",
+    "memory_write",
+    "propose_skills",
+    "request_computer",
+    "self_hosted_runner_get_pool",
+    "self_hosted_runner_list_runners",
+    "self_hosted_runner_list_secrets",
+    "self_hosted_runner_list_sessions",
+    "self_hosted_runner_read_health",
+    "self_hosted_runner_read_metrics",
+    "self_hosted_runner_requeue_session",
+    "self_hosted_runner_spawn_local",
+    "self_hosted_runner_tail_log",
+    "mcp__jira__jira_write"
+   ],
+   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "expected": {
+    "mcp_servers": [
+     "jira"
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     "veldo-role"
+    ],
+    "skills": [
+     "veldo-role:inspect"
+    ],
+    "slash_commands": [
+     "veldo-role:inspect"
+    ],
+    "tools": [
+     "PushNotification",
+     "Read",
+     "Skill",
+     "mcp__jira__jira_search"
+    ]
+   },
+   "first_turn_context": 6413,
+   "init": {
+    "mcp_servers": [
+     {
+      "name": "jira",
+      "source": "dynamic",
+      "status": "connected"
+     }
+    ],
+    "model": "claude-haiku-4-5-20251001",
+    "plugins": [
+     {
+      "name": "veldo-role",
+      "path": "/run/user/1000/veldo0127-live-7ap8vqty/factory/runs/af14879cdb3827f927f3dc7599c4d7a3/config/role-plugin",
       "source": "veldo-role@inline"
      }
     ],
@@ -1214,16 +1208,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "e279636e-ed05-4c70-ab4e-06b0e9699ff8",
+     "session_id": "8edd4cfa-48e4-4626-920a-e9de5e020e98",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 63690,
-    "digest": "sha256:9ff9e346374c202d8c4ef232617f671d6671ce2fd43cdfb829cdb6a598031851",
-    "lines": 215
+    "bytes": 64078,
+    "digest": "sha256:4ae62c27b83f60e981007d6feafe272388713881a67f243e8f6361315c96eea3",
+    "lines": 217
    },
    "revision": {
     "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
