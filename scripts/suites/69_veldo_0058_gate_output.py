@@ -271,13 +271,15 @@ def _v58_suite():
 
         def build(unit, files, verdict=False, repo=caller):
             """A build branch from the trunk: the implementation commit, then the evidence commit whose
-            proof names it (and a committed pass verdict when asked, which reconciliation projects)."""
+            proof names it (and a committed pass verdict when asked, which reconciliation projects).
+            Worker commits are authored as the repository's bound identity (VELDO-0142), which the
+            lander checks for every incoming commit before it merges."""
             git(repo, 'checkout', '-q', '-B', 'build/' + unit, 'origin/main')
             for rel, text in files.items():
                 (repo / rel).parent.mkdir(parents=True, exist_ok=True)
                 (repo / rel).write_text(text)
             git(repo, 'add', '-A')
-            git(repo, 'commit', '-q', '-m', 'Implement ' + unit, who=BUILDER)
+            git(repo, 'commit', '-q', '-m', 'Implement ' + unit, who=LANDER)
             implementation = git(repo, 'rev-parse', 'HEAD')
             source = next(rel for rel in files if rel.startswith('src/'))
             manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': 'builder-a', 'commit': implementation,
@@ -294,7 +296,7 @@ def _v58_suite():
                     'findings': {'blocking': [], 'non_blocking': []}}, indent=1) + '\n')
             (proof / 'manifest.json').write_text(json.dumps(manifest, indent=1, sort_keys=True) + '\n')
             git(repo, 'add', '--', 'proof/' + unit)
-            git(repo, 'commit', '-q', '-m', 'Proof for ' + unit, who=BUILDER)
+            git(repo, 'commit', '-q', '-m', 'Proof for ' + unit, who=LANDER)
             return 'build/' + unit, implementation, git(repo, 'rev-parse', 'HEAD')
 
         def remote_tip():
@@ -311,8 +313,8 @@ def _v58_suite():
             # no observations directory), so a red row is an assertion, never a TypeError.
             accepts = __import__('inspect').signature(LD.GitLandOps.__init__).parameters
             extra = {'observations': observations} if 'observations' in accepts else {}
-            identity_conn = __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, None, 'gate-fixture', 'repository', caller, LANDER)
-            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity=LANDER, identity_conn=identity_conn, domain='gate-fixture', repository='repository', **extra)
+            identity_conn = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, None, 'gate-fixture', 'repository', caller, LANDER)
+            ops = LD.GitLandOps(caller, branch, trunk='main', remote='origin', push=True, identity_conn=identity_conn, domain='gate-fixture', repository='repository', **extra)
             try:
                 out = {'trunk_before': remote_tip()}
                 out['sync'] = ops.sync_main()
@@ -590,7 +592,7 @@ def _v58_suite():
                 'basis': 'The owner rejected this change.', 'recorded_at': '2026-09-24T12:00:00Z',
                 'recorded_by': 'fixture', 'expires_at': '2026-12-31T00:00:00Z'}, indent=1) + '\n')
             git(caller, 'add', '-A')
-            git(caller, 'commit', '-q', '-m', 'Rejected approval for ' + U['stub_policy'], who=BUILDER)
+            git(caller, 'commit', '-q', '-m', 'Rejected approval for ' + U['stub_policy'], who=LANDER)
             stub_ran = subprocess.run([sys.executable, '-B', '.veldo/policy_check.py'], cwd=str(caller),
                                       capture_output=True, text=True, env=clean, timeout=60)
             stubbed_policy = land(b2, U['stub_policy'])
