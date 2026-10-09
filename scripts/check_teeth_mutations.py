@@ -5273,15 +5273,15 @@ def cases():
         "        if isinstance(item, str) and SCAN.scan_text(item):",
         "        if False:  # defect: token-shaped text is served", ['reads/authoritative'])
     api('read-model-kind-dropped', MO130,
-        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
+        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126', ('reference', 'proposal_id')))),\n", "        )),\n",
         ['reads/model-set'])
     # Codex review of 3c85f33b (P2): the project, objective, backlog item and team records their writers keep
     # were registered in no read model, so the endpoints answered them empty and live; each registration dropped
     # again, and the published gaps claiming them not implemented again.
-    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),\n"),
-                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),\n"),
-                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),\n"),
-                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),\n")):
+    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076', ('field', 'name')),\n"),
+                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077', ('field', 'project')),\n"),
+                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078', ('field', 'project')),\n"),
+                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089', ('field', 'project')),\n")):
         api('read-model-%s-unregistered' % kind, MO130, line, '', ['reads/implemented-writers'])
     api('read-model-gaps-claim-projects', MO130,
         "    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name\n",
@@ -5289,9 +5289,9 @@ def cases():
         ['reads/implemented-writers'],
         also=[("GAPS = (\n", "GAPS = (\n    Gap('AC2', 'projects', 'VELDO-0076', 'no project record is written by the engine yet'),  # defect\n")])
     api('event-data-leaked', AU130,
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],",
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'),"
-        " 'data': (changes[eid] or {}).get('data')} for eid in sorted(changes)],  # defect", ['events/live'])
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],",
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind'),"
+        " 'data': (visible[eid] or {}).get('data')} for eid in sorted(visible)],  # defect", ['events/live'])
     api('feed-skips-revocations', AU130,
         "                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:",
         "                if False:  # defect: the feed carries no revocation", ['events/live'])
@@ -10466,6 +10466,33 @@ def cases():
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+
+    # VELDO-0164: every project rule is applied at reads and journal delivery.
+    add(164, 'v164-model-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'answer = MO.read_model(self.S, self.conn, model, scope=scope)',
+        'answer = MO.read_model(self.S, self.conn, model)', ['reads/member-A'])
+    add(164, 'v164-events-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'if scope is not None and not scope.universal:', 'if False:', ['events/member-A'])
+    add(164, 'v164-universal-projectless-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        'if self.universal:', 'if self.universal and self.projects(identity, kind, data):', ['owner/unchanged'])
+    add(164, 'v164-workflow-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):",
+        'if False:', ['reads/workflow'])
+    add(164, 'v164-shared-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "if self.rules.get(kind) == ('shared',):", 'if False:', ['reads/member-A'])
+    add(164, 'v164-published-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "or e.get('receipt') in visible", 'or True', ['events/publication'])
+    add(164, 'v164-own-revocations-hidden', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'reason = None if own else scope.reason(eid, kind, data)',
+        'reason = scope.reason(eid, kind, data)', ['events/own-revocations'])
+    add(164, 'v164-cursor-stalls', '103_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "{'cursor': rows[-1][0] if rows else after}", "{'cursor': after}", ['events/cursor'])
+    add(164, 'v164-team-unfiltered', '103_veldo_0164_scoped_reads.py', 'control_api.py',
+        "row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)",
+        "row = self._inspect([identity]).get(identity)", ['reads/team-route'])
+    add(164, 'v164-unrouted-factory-visible', '103_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')",
+        "return data.get('project')", ['reads/member-A'])
 
     return result
 

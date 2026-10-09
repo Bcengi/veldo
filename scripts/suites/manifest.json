@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "103_veldo_0164_scoped_reads",
+   "file": "103_veldo_0164_scoped_reads.py",
+   "requires": [
+    "103_veldo_0164_scoped_reads"
+   ],
+   "regions": "Project scope on read models, workflow reads and member event pages.",
+   "requires_note": "Only ROOT and expect. Real SQLite and signed journal fixtures; foreground only."
   }
  ],
  "resource_capacities": {

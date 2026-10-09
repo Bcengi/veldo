@@ -1,0 +1,107 @@
+{
+  "schema": "veldo.scoped_read_falsifiers/v1",
+  "finding": 164,
+  "mutations": [
+    {
+      "name": "v164-model-unfiltered",
+      "rows": [
+        "reads/member-A"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-model-unfiltered.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-events-unfiltered",
+      "rows": [
+        "events/member-A"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-events-unfiltered.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-universal-projectless-hidden",
+      "rows": [
+        "owner/unchanged"
+      ],
+      "module": "control_api_models_scope.py",
+      "diff": "v164-universal-projectless-hidden.diff",
+      "source_sha256": "5ee16ab49c465edc6fb174e5c578d966045c420d16998f40ca408a6ab6acd367",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-workflow-unfiltered",
+      "rows": [
+        "reads/workflow"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-workflow-unfiltered.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-shared-hidden",
+      "rows": [
+        "reads/member-A"
+      ],
+      "module": "control_api_models_scope.py",
+      "diff": "v164-shared-hidden.diff",
+      "source_sha256": "5ee16ab49c465edc6fb174e5c578d966045c420d16998f40ca408a6ab6acd367",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-published-unfiltered",
+      "rows": [
+        "events/publication"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-published-unfiltered.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-own-revocations-hidden",
+      "rows": [
+        "events/own-revocations"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-own-revocations-hidden.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-cursor-stalls",
+      "rows": [
+        "events/cursor"
+      ],
+      "module": "control_api_authority.py",
+      "diff": "v164-cursor-stalls.diff",
+      "source_sha256": "77e38de101da2fa02537c7e05adead93b9db8e9ac7430f8bbe919f45dbea5532",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-team-unfiltered",
+      "rows": [
+        "reads/team-route"
+      ],
+      "module": "control_api.py",
+      "diff": "v164-team-unfiltered.diff",
+      "source_sha256": "8b5e8214652e6d7c0068934b66ac3a69544ed18148c69a6dde0c2c3209d23f67",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-unrouted-factory-visible",
+      "rows": [
+        "reads/member-A"
+      ],
+      "module": "control_api_models_scope.py",
+      "diff": "v164-unrouted-factory-visible.diff",
+      "source_sha256": "5ee16ab49c465edc6fb174e5c578d966045c420d16998f40ca408a6ab6acd367",
+      "status": "registered; execution reserved for reviewer"
+    }
+  ],
+  "anchor_errors": []
+}

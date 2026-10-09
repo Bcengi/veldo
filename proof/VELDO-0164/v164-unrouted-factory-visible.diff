@@ -1,0 +1,11 @@
+--- .veldo/control_api_models_scope.py
++++ .veldo/control_api_models_scope.py
+@@ -40,7 +40,7 @@
+             return self.reference(field(data, rule[1]), seen)
+         if method == 'intake':
+             # An inbox proposal may name the factory as its holding area, not a routed project.
+-            return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')
++            return data.get('project')
+         if method == 'repository':
+             repository = field(data, rule[1])
+             projects = [json.loads(row[0]) for row in self.conn.execute(

@@ -1,0 +1,11 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -243,7 +243,7 @@
+             return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
+         def produce():
+             scope = self._read_scope(principal)
+-            answer = MO.read_model(self.S, self.conn, model, scope=scope)
++            answer = MO.read_model(self.S, self.conn, model)
+             self._observe_read(principal, model, scope, answer)
+             return answer
+         return self._answer(principal, produce)

@@ -1,0 +1,11 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -333,7 +333,7 @@
+         out = []
+         for seq, command, digest, changes, committed in rows:
+             visible = changes
+-            if scope is not None and not scope.universal:
++            if False:
+                 visible = {}
+                 reasons = []
+                 for eid, change in changes.items():

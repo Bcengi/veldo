@@ -54,6 +54,12 @@ published watermark is behind the head. The records come from the publication's 
 reader (VELDO-0051's control_event_projection.journal), one query of at most `limit` records. An unreadable
 store is unavailable_service, never an empty answer.
 
+VELDO-0164 scopes model rows, workflow revisions and member events using the rules beside each
+registered kind. Shared configurations and default teams remain visible. Unresolved projects require
+universal scope. A member page carries the last scanned journal sequence as its cursor, including
+when every record was withheld; the head watermark and publication freshness remain unchanged.
+The edge's feed and universal-scope answers retain their existing representation.
+
 ONLY THE AUTHORITY RUNS IT (phase 3). The authority service (control_service_api) constructs this judge
 on its own store connection with `authority_lock`, the descriptor on which it holds the exclusive flock
 of the stable lock file beside the store (VELDO-0047's one instance). Every command and every read first
@@ -323,7 +329,7 @@ class ApiAuthority:
         listed, published = self.publication.published(after, rows[-1][0] if rows else after)
         by_seq = {}
         for event in listed:
-            by_seq.setdefault(event.get('journal_seq'), []).append(event['id'])
+            by_seq.setdefault(event.get('journal_seq'), []).append(event)
         out = []
         for seq, command, digest, changes, committed in rows:
             visible = changes
@@ -352,9 +358,8 @@ class ApiAuthority:
                                                                          'revoked_at': data['revoked_at']}}
             out.append({'seq': seq, 'command_id': command, 'record_digest': digest, 'committed_at': committed,
                         'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],
-                        'revocations': revocations, 'published': [e['id'] for e in listed
-                            if e.get('journal_seq') == seq and (scope is None or scope.universal
-                                                              or e.get('receipt') in visible)]})
+                        'revocations': revocations, 'published': [e['id'] for e in by_seq.get(seq, [])
+                            if scope is None or scope.universal or e.get('receipt') in visible]})
         cursor = {'cursor': rows[-1][0] if rows else after} if scope is not None and not scope.universal else {}
         return dict({'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
                 'watermark': {'seq': head, 'record_digest': top['record_digest']},

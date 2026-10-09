@@ -162,3 +162,10 @@ Still a draft.
 
 2026-10-08: implementation footprint includes control_api.py for the separate team read and
 for live-stream cursor advancement across withheld records. Criteria and status are unchanged.
+
+2026-10-08: builder checks: the 16 scoped-read rows and 16 workflow regression rows pass.
+API and configuration regressions are blocked by unavailable_service:profile:user_manager;
+intake routing reports runtime_unavailable; execution-record fixtures cannot write under
+/run/user/1000. These verification blockers and logs are retained in proof/VELDO-0164.
+Ten falsifiers are registered with exact diffs; their execution and the gate belong to
+the reviewer. No criterion, risk or readiness change, approval, push or merge is claimed.
