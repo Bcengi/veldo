@@ -778,9 +778,6 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     now = clock()
     reader = S.open_store(plan['store'], mode='r')
     try:
-        if git_identities is not None:
-            setup_identities(reader, ids['domain_uuid'], ids['repository_uuid'], workspace,
-                             git_identities, workspace_identity, check_only=True)
         reader.execute('BEGIN')
         state = CM.authority_state(S, reader)
         row = reader.execute('SELECT data FROM entities WHERE id=?', ('channel-enrollment:%s:%s' % (CHANNEL, owner),)).fetchone()
@@ -828,6 +825,17 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             profiles.append(None)
     if not profiles or any(p != json.loads(json.dumps(plan['profile'])) for p in profiles):
         holds('profile')
+    # VELDO-0142: the identity records and the workspace's binding, checked read-only once every argument
+    # equals what was laid down; a rerun writes them only when one is absent, never replacing one.
+    identities_due = False
+    if git_identities is not None:
+        reader = S.open_store(plan['store'], mode='r')
+        try:
+            setup_identities(reader, ids['domain_uuid'], ids['repository_uuid'], workspace,
+                             git_identities, workspace_identity, check_only=True)
+            identities_due = identities_pending(reader, ids['domain_uuid'], ids['repository_uuid'], git_identities)
+        finally:
+            reader.close()
 
     # What VELDO-0139 committed to the store, read, never rewritten.
     telegram = E.edge_record(state, E.edge_key_id(CHANNEL))
@@ -881,6 +889,11 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 raise Refused('invalid_input:state_root:service_running:' + missing[0],
                               'the running service takes no command for this store write')
             raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
+        # The identity records are a direct store write, so they are written only while this run is the
+        # store's one writer: never while the service runs, nor after an upgrade that restarts it.
+        if identities_due and (running or engine['restart_due']):
+            raise Refused('invalid_input:state_root:service_running:git_identities',
+                          'the running service takes no command for this store write')
         # VELDO-0189: an earlier engine is replaced by the current one before any other step writes.
         released = lock is not None and lock != -1 and engine['restart_due']
         if released:
@@ -898,17 +911,6 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         installed = json.loads(Path(api['service_json']).read_text())
         outcomes = [upgraded] + [{'step': step, 'outcome': 'already_done'} for step in BASE_STEPS[:8]]
 
-        if git_identities is not None:
-            writer = S.open_store(plan['store'])
-            try:
-                before_identities = list(writer.iterdump())
-                setup_identities(writer, ids['domain_uuid'], ids['repository_uuid'], workspace,
-                                 git_identities, workspace_identity,
-                                 observe=lambda event: outcomes.append(dict(step='git_identity_configured', **event)))
-                identities_added = before_identities != list(writer.iterdump())
-            finally:
-                writer.close()
-            outcomes.append(dict(step='git_identities', outcome='done' if identities_added else 'already_done'))
 
         def mark(step, wrote, **extra):
             outcomes.append(dict({'step': step, 'outcome': 'done' if wrote else 'already_done'}, **extra))
@@ -924,6 +926,22 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         mark('workspace_enrollment', False)
         files('ingress_configuration', [p for p in base if os.path.basename(p) in ('signer.json', 'ingress.json')])
         mark('service_install', False)
+        # VELDO-0142: reported after the steps VELDO-0139 laid down, which a re-run reports in their order.
+        if identities_due:
+            if lock == -1:
+                lock = take_lock(root)
+                if lock is None:
+                    raise Refused('invalid_input:state_root:service_running:git_identities',
+                                  'the authority service started during this run')
+            writer = S.open_store(plan['store'])
+            try:
+                setup_identities(writer, ids['domain_uuid'], ids['repository_uuid'], workspace,
+                                 git_identities, workspace_identity,
+                                 observe=lambda event: outcomes.append(dict(step='git_identity_configured', **event)))
+            finally:
+                writer.close()
+        if git_identities is not None:
+            mark('git_identities', identities_due)
         outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))
         if edge == 'absent':
             API.generate_keys(api['key'], api['connection_key'])
@@ -1107,6 +1125,20 @@ def identity_options(identities, workspace_identity):
             raise GI.Refused('missing_authority:git_identity')
     except GI.Refused as error:
         raise Refused(error.code, 'Git identity configuration refused') from None
+
+
+def identities_pending(conn, domain, repository, identities):
+    """Whether the setup identity step would write: an identity record or the repository's binding is
+    absent. Read after the check-only preflight, so every record present is the one asked for."""
+    GI = organ('control_git_identity')
+    present = {record['id'] for record in GI.records(conn, domain)}
+    if any(record['id'] not in present for record in identities):
+        return True
+    try:
+        GI.repository_record(conn, domain, repository)
+    except GI.Refused:
+        return True
+    return False
 
 
 def setup_identities(conn, domain, repository, workspace, identities, workspace_identity, *, check_only=False,
