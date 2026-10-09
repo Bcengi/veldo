@@ -236,7 +236,7 @@ def _v156_suite():
             GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', branch], check=True,
                    capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
         GP.run(['git', '-C', str(src), 'checkout', '-q', main_branch], check=True, capture_output=True)
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
 
         # The engine's HOME, a directory of this run's, and another whose .agents holds a skill.
@@ -447,7 +447,7 @@ out.close()
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones, _ = attempt(lambda: CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root),
                                               protected=[str(private)], engines=[str(base / 'packages')]))
         if clones is None:

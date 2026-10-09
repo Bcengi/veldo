@@ -81,7 +81,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                        identity=('Fixture', 'fixture@example.invalid'))
             commit = GP.run(['git', '-C', str(source), 'rev-parse', 'HEAD'], check=True,
                             capture_output=True, text=True).stdout.strip()
-            __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, conn, domain, {repository: str(source)})
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, conn, domain, {repository: str(source)})
             revisions = RS.attach_revisions(S, conn, domain, {repository: str(source)})
             revisions.accept('revision-88', repository, commit, 'pm',
                 documents={'README': PM.SN.digest((source / 'README').read_bytes())}, signer='authority', sign=sign,

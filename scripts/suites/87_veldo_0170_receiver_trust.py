@@ -125,7 +125,7 @@ def _v170_suite():
                        profile=profile, writable=[], runner=manager, origin=url,
                        tailscale=[ts.path], api_port=TS.free_port())
 
-        options.update(__import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['options'](base))
+        options.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['options'](base))
 
         def setup():
             try:

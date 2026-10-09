@@ -734,7 +734,7 @@ def _v68_checks(base):
             destination = base / 'published'
             try:
                 if service is not None:
-                    __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, publication, ids['domain_uuid'], {ids['repository_uuid']: str(published_repo)})
+                    __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, publication, ids['domain_uuid'], {ids['repository_uuid']: str(published_repo)})
                     revisions = RS.attach_revisions(S, publication, ids['domain_uuid'], {ids['repository_uuid']: str(published_repo)})
                     reader = RS.attach(S, publication, published_repo, ids['domain_uuid'], ids['repository_uuid'])
                     service.publish(revisions, reader, 'settlement-revision', commit, documents, 'settlement-snapshot-1',

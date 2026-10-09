@@ -363,7 +363,7 @@ with open(log, 'a') as f:
         verify_packet = EL.HostTrust(HOST_ID, str(signers_file)).verifier('owner', str(caller))
         ids = {'domain_uuid': DOMAIN, 'repository_uuid': REPO, 'store_uuid': STORE}
         setup = S.open_store(str(store_path))
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, setup, DOMAIN, REPO, caller, LANDER_ID)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, setup, DOMAIN, REPO, caller, LANDER_ID)
         connections.append(setup)
         setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                      'writes': ('entities', 'journal', 'commands', 'nonces')}

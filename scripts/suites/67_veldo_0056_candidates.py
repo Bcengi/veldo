@@ -253,7 +253,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         db = base / 'authority' / 'control.sqlite3'
         writer = S.open_store(str(db))
         reader = S.open_store(str(db), mode='r')
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind'](mods, writer, DOMAIN, REPOSITORY, caller, LANDER_ID)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, writer, DOMAIN, REPOSITORY, caller, LANDER_ID)
         connections = [writer, reader]
         serial = [0]
 

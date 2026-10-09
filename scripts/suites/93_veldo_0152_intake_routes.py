@@ -205,7 +205,7 @@ def _v152_suite():
                 GP.run(['git', '-C', str(source), *args], check=True, capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
             commit = GP.run(['git', '-C', str(source), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
             RS = load('v152_snapshots', mods / 'control_readset.py')
-            __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](mods, conn, domain, {repository: str(source)})
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](mods, conn, domain, {repository: str(source)})
             RS.attach_revisions(S, conn, domain, {repository: str(source)}).accept('revision-152', repository, commit, 'pm',
                 documents={'README': PM.SN.digest((source / 'README').read_bytes())}, signer='authority', sign=f['journal_sign'], authority_generation=1)
             SV = load('v152_service', mods / 'control_service.py')

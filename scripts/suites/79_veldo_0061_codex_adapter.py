@@ -217,11 +217,11 @@ def _v61_suite():
         GP.run(['git', '-C', str(src), 'add', 'README'], check=True, capture_output=True, stdin=subprocess.DEVNULL)
         GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
                capture_output=True, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
-        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_all'](Path(CL.__file__).parent, writer)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones = CL.Clones(dispatches, clones=str(state / 'clones'), caches=str(state / 'caches'), protected=[str(private)])
 
         # The fake Codex and its descendants. Each process marks <tag>.<name> with its pid, start time and

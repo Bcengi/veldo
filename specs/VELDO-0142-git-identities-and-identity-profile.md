@@ -71,6 +71,7 @@ footprint:
   - "specs/VELDO-0142-git-identities-and-identity-profile.md"
   - "specs/index.md"
   - "proof/VELDO-0142/*"
+  - "scripts/suites/support/git_identity.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -221,7 +222,7 @@ observed with the repository, identity, candidate and unit. Re-lands use this sa
 
 The footprint adds the existing clone, lander and setup consumer suite files because their
 fixtures must now supply explicit identity records. Their assertions are retained. The
-fixture helper lives in proof/VELDO-0142; it chooses test identities and is never installed.
+one shared fixture helper is scripts/suites/support/git_identity.py; it chooses test identities and is never installed.
 The canonical module and scaffold changes are synchronized with this checkout. No pack
 copy exists in the source tree. Suite 103 and finding 142 register the behavior and its
 falsifiers. The owner reserves the full gate and repository mutation drivers for review. This review

@@ -1,6 +1,18 @@
-"""Explicit identity records for older consumer suites, with no production fallback.
+"""The one fixture helper that configures a repository's Git identity before a suite binds it.
 
-These fixtures choose their authors. Production never reads Git to choose an identity.
+VELDO-0142: a repository record is bound only with its configured, immutable Git identity
+(control_store.bind_repositories refuses missing_authority:repository_identity before writing).
+Every suite, harness and helper that binds a repository, directly or through a service that does
+(control_readset.attach_revisions, control_proof.ProofService, control_architecture's authority,
+control_alias, dispatch's FloorAuthority), configures the identity on the same store first:
+
+    GI = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))
+    GI['bind_paths'](mods, conn, domain, {repository: str(path)})
+
+`mods` is the directory of the installed engine copy the suite runs, so the identity is written
+by that copy's control_git_identity.py (a registered mutation of it reaches the fixture too).
+These fixtures choose their authors explicitly; production never reads Git to choose one. The
+helper lives with the suites and is never installed.
 """
 import importlib.util
 from pathlib import Path
