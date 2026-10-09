@@ -1147,7 +1147,7 @@ def setup_identities(conn, domain, repository, workspace, identities, workspace_
     GI = organ('control_git_identity')
     identity_options(identities, workspace_identity)
     try:
-        return GI.configure(conn, domain, identities,
+        return GI.configure_identities(conn, domain, identities,
                             {repository: dict(path=str(workspace), identity=workspace_identity)},
                             check_only=check_only, observe=observe)
     except GI.Refused as error:

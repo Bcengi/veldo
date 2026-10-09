@@ -211,7 +211,7 @@ and repository bindings, including in an existing VELDO-0139 store, and never ch
 No legacy author is inferred and no migration of a previously bound identity is allowed.
 
 The new control_git_identity module owns transactional local identity metadata beside
-the store's repository path registry. Repository creation/adoption calls configure with
+the store's repository path registry. Repository creation/adoption calls configure_identities with
 an explicit repository id, path and identity; missing, multiple, unknown and changed
 identities refuse. Clone provisioning reads that record and sets local user, author and
 committer names and emails. The receiver strips both Git identity variable prefixes and injected Git configuration,

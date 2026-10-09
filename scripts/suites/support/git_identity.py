@@ -40,7 +40,7 @@ def bind(mods, conn, domain, repository, path, author=AUTHOR):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     conn = conn if conn is not None else sqlite3.connect(':memory:', isolation_level=None)
-    module.configure(conn, domain, options(author)['git_identities'],
+    module.configure_identities(conn, domain, options(author)['git_identities'],
                      {repository: dict(path=str(path), identity='fixture')})
     return conn
 

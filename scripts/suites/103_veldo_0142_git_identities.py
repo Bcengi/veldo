@@ -117,7 +117,7 @@ def _v142_suite():
             git(repo, 'add', '.')
             git(repo, 'commit', '-qm', 'fixture base')
             repos[record['id']] = repo
-        GI.configure(conn, domain, identities, {key: dict(path=str(value), identity=key) for key, value in repos.items()})
+        GI.configure_identities(conn, domain, identities, {key: dict(path=str(value), identity=key) for key, value in repos.items()})
         S.bind_repositories(conn, domain, {key: str(value) for key, value in repos.items()})
 
         with row('setup/full-command-and-rerun'):
@@ -241,7 +241,7 @@ def _v142_suite():
                 ('immutable', 'personal', 'binding_mismatch:repository_identity_change')):
             with row('binding/' + label):
                 before = list(conn.iterdump())
-                code = refusal(lambda: GI.configure(conn, domain, identities,
+                code = refusal(lambda: GI.configure_identities(conn, domain, identities,
                                {'bcengi': dict(path=str(repos['bcengi']), identity=choice)}))
                 check('binding/' + label, code == expected and list(conn.iterdump()) == before)
 

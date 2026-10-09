@@ -3,7 +3,7 @@
 Setup owns these local metadata tables, like control_store's repository path registry.
 All checks precede writes in one transaction. Credentials are keychain references only;
 this module neither reads nor copies their values. Repository creation/adoption calls
-configure with the identity chosen by the owner, never one inferred from Git.
+configure_identities with the identity chosen by the owner, never one inferred from Git.
 """
 import json
 import os
@@ -97,7 +97,7 @@ def resolve(conn, domain, repository, path=None):
     raise Refused('missing_authority:git_identity')
 
 
-def configure(conn, domain, identities, repositories, *, check_only=False, observe=None):
+def configure_identities(conn, domain, identities, repositories, *, check_only=False, observe=None):
     """Atomically add identities and {repository: {path, identity}} records, or replay.
 
     An existing identity definition or repository binding can never be replaced.
