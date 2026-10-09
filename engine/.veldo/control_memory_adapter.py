@@ -12,6 +12,10 @@ import sys
 import time
 
 
+class Unavailable(ValueError):
+    """A named reason the check cannot run, carried to the refusal. Never memory content."""
+
+
 def item(identity, text, collection=None):
     if not isinstance(text, str) or not text:
         raise ValueError('memory has no searchable text')
@@ -188,6 +192,8 @@ class Plugin:
                 self.port = probe.getsockname()[1]
             if self.port not in owner_ports:
                 break
+        # The port is free when chosen, not reserved: ready() talks to it only once the process listening on
+        # it is proven to be this worker (it carries this private HOME), never another that took it meanwhile.
         self.env = dict(PATH=str(bins) + os.pathsep + os.environ.get('PATH', os.defpath), HOME=str(self.home),
                         LANG=os.environ.get('LANG', 'C.UTF-8'), TMPDIR=str(self.home),
                         CLAUDE_MEM_DATA_DIR=str(self.data), CLAUDE_MEM_WORKER_HOST='127.0.0.1',
@@ -197,13 +203,19 @@ class Plugin:
                         CLAUDE_MEM_GEMINI_API_KEY='', CLAUDE_MEM_OPENROUTER_API_KEY='',
                         # claude-mem's own bound on a search server request; a cold Chroma exceeds its 3 s.
                         CLAUDE_MEM_HEALTH_TIMEOUT_MS='300000')
-        # chroma-mcp runs under uvx: it resolves with the owner's uv cache, interpreters and settings, as
-        # the owner's own worker would, and the caller's UV_ settings pass through.
-        for name, path in (('UV_CACHE_DIR', real / '.cache/uv'), ('UV_PYTHON_INSTALL_DIR', real / '.local/share/uv/python'),
+        # chroma-mcp runs under uvx with the owner's interpreters and settings, the caller's UV_ settings, and a
+        # resolution of its own: pinned to the chroma-mcp and chromadb the owner's chroma-mcp runs and to a
+        # pydantic chromadb imports with, in a uv cache inside this private home, never the owner's.
+        for name, path in (('UV_PYTHON_INSTALL_DIR', real / '.local/share/uv/python'),
                            ('UV_CONFIG_FILE', Path(os.environ.get('XDG_CONFIG_HOME') or real / '.config') / 'uv/uv.toml')):
             if path.exists():
                 self.env[name] = str(path)
         self.env.update({name: value for name, value in os.environ.items() if name.startswith('UV_')})
+        pins = owner_chroma(owner_cache())
+        constraint = self.home / 'uv-constraints.txt'
+        constraint.write_text('chroma-mcp==%s\nchromadb==%s\npydantic<2.14\n' % (pins['chroma_mcp'], pins['chromadb']))
+        self.env.update(UV_CACHE_DIR=str(self.home / '.cache/uv'), UV_CONSTRAINT=str(constraint))
+        self.resolve()
         quiet = dict(stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.processes.append(subprocess.Popen([bun, str(code / 'scripts/worker-service.cjs'), '--daemon'], cwd=code,
                                                env=self.env, start_new_session=True, **quiet))
@@ -224,7 +236,30 @@ class Plugin:
                     raise
                 time.sleep(2)
 
+    def resolve(self):
+        """Resolve and import chroma-mcp as the worker will start it (claude-mem 10.6.2 runs it under uvx on
+        Python 3.13), so a resolution that cannot start is refused by its cause, not as a worker timeout."""
+        import shutil
+        import subprocess
+        uvx = shutil.which('uvx', path=self.env['PATH'])
+        if uvx is None:
+            raise Unavailable('chroma-mcp cannot start: uvx unavailable')
+        try:
+            done = subprocess.run([uvx, '--python', '3.13', 'chroma-mcp', '--help'], env=self.env, cwd=self.home,
+                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                  timeout=900, start_new_session=True)
+        except subprocess.TimeoutExpired:
+            raise Unavailable('chroma-mcp cannot start: resolution exceeded 900 s') from None
+        if done.returncode:
+            lines = [line.strip() for line in done.stderr.decode(errors='replace').splitlines() if line.strip()]
+            raise Unavailable('chroma-mcp cannot start: ' + (lines[-1][:300] if lines else 'exit %d' % done.returncode))
+
     def ready(self):
+        held = listening(self.port)
+        if not held:
+            return False
+        if not held <= sockets(carrying(self.home)):
+            raise Unavailable('claude-mem worker port %d is held by another process' % self.port)
         try:
             return self.http('/api/readiness') is not None
         except (OSError, ValueError):
@@ -280,28 +315,99 @@ class Plugin:
                 self.backfilled()
         return False
 
-    def backfilled(self, timeout=900):
-        # A memory written just before the copy may not be in Chroma yet; the worker adds it at start.
-        deadline = time.monotonic() + timeout
+    BACKFILL = 120
+
+    def backfilled(self):
+        """A memory written just before the copy may not be in Chroma yet; the worker adds it at start and logs
+        the end, complete or failed (claude-mem 10.6.2 has no other signal). Bounded, and refused by name."""
+        deadline = time.monotonic() + self.BACKFILL
         while time.monotonic() < deadline:
+            logs = b''
             for log in (self.data / 'logs').glob('*.log'):
                 with contextlib.suppress(OSError):
-                    if b'Backfill check complete' in log.read_bytes():
-                        return
+                    logs += log.read_bytes()
+            if b'Backfill failed' in logs:
+                raise Unavailable('claude-mem backfill failed')
+            if b'Backfill check complete' in logs:
+                return
+            if self.processes[0].poll() is not None:
+                raise Unavailable('claude-mem worker stopped before its backfill ended')
             time.sleep(1)
+        raise Unavailable('claude-mem backfill did not end within %d s' % self.BACKFILL)
+
+
+def owner_cache():
+    """Where the owner's uvx keeps its cache, as uv itself finds it."""
+    if os.environ.get('UV_CACHE_DIR'):
+        return Path(os.environ['UV_CACHE_DIR'])
+    return Path(os.environ.get('XDG_CACHE_HOME') or Path.home() / '.cache') / 'uv'
+
+
+def owner_chroma(cache):
+    """The chroma-mcp and chromadb versions of the owner's chroma-mcp, read from its uv cache without writing:
+    the environment of a chroma-mcp running from that cache, else the newest one the cache holds."""
+    archive = Path(cache).resolve() / 'archive-v0'
+    environments = []
+    for proc in Path('/proc').iterdir():
+        with contextlib.suppress(OSError, IndexError):
+            if proc.name.isdigit():
+                script = Path(os.fsdecode((proc / 'cmdline').read_bytes().split(b'\0')[1]))
+                if script.name == 'chroma-mcp' and script.parent.parent.parent == archive:
+                    environments.append(script.parent.parent)
+    if not environments:
+        found = [p.parents[3] for p in archive.glob('*/lib/python*/site-packages/chroma_mcp-*.dist-info')]
+        environments = sorted(found, key=lambda p: p.stat().st_mtime, reverse=True)
+    for environment in environments:
+        versions = {}
+        for name in ('chroma_mcp', 'chromadb'):
+            info = list(environment.glob('lib/python*/site-packages/%s-*.dist-info' % name))
+            if len(info) == 1:
+                versions[name] = info[0].name[len(name) + 1:-len('.dist-info')]
+        if len(versions) == 2:
+            return versions
+    raise Unavailable('chroma-mcp cannot start: no chroma-mcp environment in the uv cache %s' % archive)
+
+
+def carrying(home):
+    """The processes carrying this private HOME."""
+    marker = ('HOME=%s' % home).encode()
+    found = []
+    for proc in Path('/proc').iterdir():
+        with contextlib.suppress(OSError):
+            if proc.name.isdigit() and marker in (proc / 'environ').read_bytes().split(b'\0'):
+                found.append(int(proc.name))
+    return found
+
+
+def listening(port):
+    """The sockets listening on a TCP port, by inode."""
+    held = set()
+    for table in ('tcp', 'tcp6'):
+        with contextlib.suppress(OSError):
+            for line in (Path('/proc/net') / table).read_text().splitlines()[1:]:
+                fields = line.split()
+                if fields[3] == '0A' and int(fields[1].rsplit(':', 1)[1], 16) == port:
+                    held.add('socket:[%s]' % fields[9])
+    return held
+
+
+def sockets(pids):
+    """The sockets these processes hold open, by inode."""
+    held = set()
+    for pid in pids:
+        with contextlib.suppress(OSError):
+            for fd in Path('/proc/%d/fd' % pid).iterdir():
+                with contextlib.suppress(OSError):
+                    held.add(os.readlink(fd))
+    return held
 
 
 def stop(home):
     """Stop every process carrying this private HOME: whatever the worker started on its own (chroma-mcp
     under uvx) as well as the worker and search server, should the check itself have been cut short."""
     import signal
-    marker = ('HOME=%s' % home).encode()
     for _ in range(50):
-        left = []
-        for proc in Path('/proc').iterdir():
-            with contextlib.suppress(OSError):
-                if proc.name.isdigit() and marker in (proc / 'environ').read_bytes().split(b'\0'):
-                    left.append(int(proc.name))
+        left = carrying(home)
         for pid in left:
             with contextlib.suppress(OSError):
                 os.kill(pid, signal.SIGKILL)
@@ -385,4 +491,6 @@ if __name__ == '__main__':
             result = inspect(request)
     except Exception as error:
         result = dict(error=type(error).__name__)
+        if isinstance(error, Unavailable):
+            result['cause'] = str(error)
     print(json.dumps(result))

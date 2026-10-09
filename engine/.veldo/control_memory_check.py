@@ -92,22 +92,39 @@ def copy_data(source, target, part='copy'):
 
 
 def segment_stamps(source):
-    """Chroma's index segment files: everything beside its SQLite database except SQLite's own."""
+    """Chroma's index segment files: everything beside its SQLite database except SQLite's own. A link is
+    stamped as the link, never followed."""
     stamps = {}
-    for path in Path(source).rglob('*'):
-        if path.is_file() and path.name != CHROMA and not path.name.endswith(SIDECARS):
-            info = path.lstat()
-            stamps[str(path.relative_to(source))] = (info.st_ino, info.st_size, info.st_mtime_ns)
+    for child in M.listed(str(source), 'copy'):
+        if child.name != CHROMA and not child.name.endswith(SIDECARS) and (
+                child.is_symlink() or child.is_file(follow_symlinks=False)):
+            info = child.stat(follow_symlinks=False)
+            stamps[os.path.relpath(child.path, source)] = (info.st_ino, info.st_size, info.st_mtime_ns, child.is_symlink())
     return stamps
+
+
+def copy_link(source, name, target, part):
+    """A link inside a Chroma directory is kept as a link into the copy, to the same place; one leading out
+    of the store is never followed and refused."""
+    resolved = os.path.realpath(source / name)
+    if not M.within(resolved, source):
+        raise M.Refused('invalid_input:memory:%s:link_outside' % part, str(source / name))
+    destination = target / name
+    os.symlink(os.path.relpath(target / os.path.relpath(resolved, os.path.realpath(source)), destination.parent), destination)
 
 
 def copy_chroma(source, target, part, attempts=None, sleep=time.sleep):
     """A consistent copy of a Chroma directory that another Chroma may hold open.
 
     Chroma rewrites its index segment files only when it persists them and replays newer writes from its
-    SQLite log. So the segment files are copied first, then the SQLite database through the online backup,
-    and the copy is kept only when no segment file changed from before the first byte to after the backup
-    and none changed within QUIET seconds before it; otherwise it is retried."""
+    SQLite log. chromadb 1.x persists through its Rust local HNSW writer (rust/segment/src/local_hnsw.rs,
+    apply_log_chunk): it writes the index files in place with write(2), so their mtime changes, then
+    index_metadata.pickle, and only then records the persisted sequence in SQLite's max_seq_id table; the log
+    is purged after that, never past the lowest persisted sequence, and replayed above it on open. So the
+    segment files are copied first, then the SQLite database through the online backup, and the copy is kept
+    only when no segment file changed from before the first byte to after the backup and none changed within
+    QUIET seconds before it; otherwise it is retried. A SQLite copy then never claims a sequence its index
+    files lack. Links are copied as links that stay inside the copy, never followed."""
     for attempt in range(attempts or ATTEMPTS):
         before = segment_stamps(source)
         newest = max((stamp[2] for stamp in before.values()), default=0)
@@ -115,11 +132,14 @@ def copy_chroma(source, target, part, attempts=None, sleep=time.sleep):
             if target.exists():
                 shutil.rmtree(target)
             target.mkdir(mode=0o700)
-            for name in before:
+            for name, stamp in before.items():
                 destination = target / name
                 for parent in reversed(destination.relative_to(target).parents[:-1]):
                     (target / parent).mkdir(mode=0o700, exist_ok=True)
-                shutil.copyfile(source / name, destination)
+                if stamp[3]:
+                    copy_link(source, name, target, part)
+                    continue
+                shutil.copyfile(source / name, destination, follow_symlinks=False)
                 destination.chmod(0o600)
             backup(source / CHROMA, target / CHROMA, part)
             if segment_stamps(source) == before:
@@ -130,13 +150,19 @@ def copy_chroma(source, target, part, attempts=None, sleep=time.sleep):
     raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, str(source))
 
 
+def cause(error):
+    """The adapter's named reason a check could not run, if it gave one."""
+    named = error.args[1] if isinstance(error, ValueError) and len(error.args) > 1 else None
+    return 'cause=%s' % named if named else ''
+
+
 def preflight(definition):
     """Exercise readers and search dependencies before setup writes host state."""
     for part, entry in definition['parts'].items():
         try:
             result = probe(part, entry, 'preflight')
-        except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError):
-            raise M.Refused('unavailable_service:memory:%s:adapter' % part) from None
+        except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError) as error:
+            raise M.Refused('unavailable_service:memory:%s:adapter' % part, cause(error)) from None
         if not result['found']:
             raise M.Refused('missing_evidence:memory:%s:lost' % part)
 
@@ -174,7 +200,7 @@ def probe(part, entry, operation, sample=None, scratch=None):
         raise ValueError('adapter failed')
     answer = json.loads(result.stdout)
     if 'error' in answer:
-        raise ValueError('adapter unavailable')
+        raise ValueError('adapter unavailable', answer.get('cause'))
     return answer
 
 
@@ -217,7 +243,7 @@ def check(root, definition, part, phase):
             sample_size = len(saved['sample'])
         return dict(part=part, phase=phase, outcome='passed', path=entry['data'], copy=str(target),
                     count=result['count'], sample_size=sample_size, metrics=dict(memory_checks_passed=1))
-    except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError):
-        raise M.Refused('unavailable_service:memory:%s:adapter' % part, detail) from None
+    except (OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError) as error:
+        raise M.Refused('unavailable_service:memory:%s:adapter' % part, ' '.join(filter(None, (detail, cause(error))))) from None
     finally:
         os.close(fd)

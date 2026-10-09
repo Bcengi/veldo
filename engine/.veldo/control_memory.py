@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import socket
 import stat
 import time
 
@@ -73,6 +74,38 @@ def within(child, parent):
     return os.path.commonpath((os.path.realpath(child), os.path.realpath(parent))) == os.path.realpath(parent)
 
 
+def listed(directory, part):
+    """Every entry under a directory, links listed as links and never followed."""
+    pending = [directory]
+    while pending:
+        try:
+            with os.scandir(pending.pop()) as listing:
+                children = list(listing)
+        except OSError as error:
+            raise Refused('invalid_input:memory:%s:unreadable' % part, str(error.filename)) from None
+        for child in children:
+            yield child
+            if not child.is_symlink() and child.is_dir(follow_symlinks=False):
+                pending.append(child.path)
+
+
+def links_inside(part, data):
+    """A link inside a store is the store's own only while its target, resolved, stays in the same store: one
+    reaching a login, live data or anywhere else is refused. Only the store's data is listed, links are never
+    followed, and only their targets are compared; code trees are never listed."""
+    if os.path.isdir(data):
+        for child in listed(data, part):
+            if child.is_symlink() and not within(child.path, data):
+                raise Refused('invalid_input:memory:%s:link_outside' % part, child.path)
+
+
+def on_host(definition, host=None):
+    """The manifest names the host it was written for; setup, revise and handoff refuse it anywhere else."""
+    host = host or socket.gethostname()
+    if definition['host'] != host:
+        raise Refused('invalid_input:memory:host:differs', host)
+
+
 def locations(definition):
     for part, entry in definition['parts'].items():
         # The code directory is handed too, so it cannot contain a login either.
@@ -99,6 +132,7 @@ def normalize(manifest):
             entry['interpreter'] = checked(e['interpreter'], part, 'interpreter')
             entry['data'] = os.path.join(entry['code'], FIXED[part])
         entry['data'] = checked(entry['data'], part, 'file' if part == 'knowledge_graph' else 'directory')
+        links_inside(part, entry['data'])
         if part == 'file_memory':
             checked(os.path.join(entry['data'], 'MEMORY.md'), part, 'file')
         if part == 'ava_memory':
@@ -148,12 +182,13 @@ def account_outside(conn, profiles):
 
 def handoff(conn, host=None):
     """The record's current revision, its locations checked again as setup, revise and the signed transition
-    check them (normalize: present, the owner's own, not a link), and on the host the manifest names."""
+    check them (normalize: present, the owner's own, not a link, no link inside leading out of its store),
+    and on the host the manifest names."""
     record = read(conn)
     if record is None:
         return None
-    if host is not None and record['definition']['host'] != host:
-        raise Refused('invalid_input:memory:host:differs', host)
+    if host is not None:
+        on_host(record['definition'], host)
     definition = normalize(manifest_of(record['definition']))
     profiles_outside(conn, definition)
     return dict(revision=record['revision'], definition=definition)

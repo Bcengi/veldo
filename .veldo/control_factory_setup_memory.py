@@ -16,13 +16,15 @@ def organ(name):
 M, CHECK = organ('control_memory'), organ('control_memory_check')
 
 
-def prepare(manifest, conn=None, revise=False):
+def prepare(manifest, conn=None, revise=False, host=None):
     if manifest is None:
         return None
     try:
         definition = M.normalize(json.loads(Path(manifest).read_text()) if isinstance(manifest, (str, Path)) else manifest)
     except (OSError, ValueError, TypeError):
         raise M.Refused('invalid_input:memory:manifest') from None
+    # The host running setup or revise, refused as handoff refuses it.
+    M.on_host(definition, host)
     previous = M.read(conn) if conn is not None else None
     if conn is not None:
         M.profiles_outside(conn, definition)

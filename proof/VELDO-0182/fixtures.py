@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import sqlite3
 import sys
 
@@ -101,15 +102,42 @@ def vector(path, collections):
             c.execute('INSERT INTO embedding_metadata(id,key,string_value) VALUES (?,?,?)',(i+1,'chroma:document','Synthetic durable fact '+str(i)))
 
 
+UVX = """import json, os, sys
+from pathlib import Path
+constraint = Path(os.environ.get('UV_CONSTRAINT') or '/nonexistent')
+pins = constraint.read_text().split() if constraint.is_file() else []
+with open(Path(sys.argv[0]).with_name('uvx.jsonl'), 'a') as out:
+    out.write(json.dumps(dict(args=sys.argv[1:], cache=os.environ.get('UV_CACHE_DIR'), home=os.environ.get('HOME'), pins=pins)) + '\\n')
+if 'pydantic<2.14' not in pins:
+    sys.stderr.write("ImportError: cannot import name 'fixture' from 'pydantic' (chromadb imports no pydantic 2.14)\\n")
+    sys.exit(1)
+"""
+
+
 def bun(directory):
-    """A `bun` that runs the stand-in beside the worker-service.cjs it is given, for any fixture plugin."""
+    """A `bun` that runs the stand-in beside the worker-service.cjs it is given, for any fixture plugin, and a
+    `uvx` standing in for chroma-mcp's resolution: it records what it was given and, as chromadb does under
+    pydantic 2.14, fails to start unless pydantic is pinned below it."""
     directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
-    (directory/'bun').write_text('#!/bin/sh\nexec %s -B "$(dirname "$1")/../fixture_worker.py" "$@"\n'%Path(sys.executable).resolve())
-    (directory/'bun').chmod(0o700)
+    python=Path(sys.executable).resolve()
+    (directory/'bun').write_text('#!/bin/sh\nexec %s -B "$(dirname "$1")/../fixture_worker.py" "$@"\n'%python)
+    (directory/'uvx.py').write_text(UVX)
+    (directory/'uvx').write_text('#!/bin/sh\nexec %s -B "$(dirname "$0")/uvx.py" "$@"\n'%python)
+    for name in ('bun','uvx'):(directory/name).chmod(0o700)
     return directory
 
 
-def build(root, host='fixture-host', count=3):
+def uv_cache(directory, chroma_mcp='0.2.6', chromadb='1.5.9'):
+    """An owner uv cache holding one chroma-mcp environment, as uvx leaves it."""
+    packages=Path(directory)/'archive-v0/fixture-env/lib/python3.13/site-packages'
+    for name,version in (('chroma_mcp',chroma_mcp),('chromadb',chromadb),('pydantic','2.13.5')):
+        (packages/('%s-%s.dist-info'%(name,version))).mkdir(parents=True)
+    (Path(directory)/'archive-v0/fixture-env/bin').mkdir()
+    return Path(directory)
+
+
+def build(root, host=None, count=3):
+    host=host or socket.gethostname()
     root=Path(root);root.mkdir(parents=True, exist_ok=True)
     interpreter=root/'python';shutil.copyfile(Path(sys.executable).resolve(),interpreter);interpreter.chmod(0o700)
     file=root/'files';file.mkdir();(file/'MEMORY.md').write_text('Synthetic index\n')

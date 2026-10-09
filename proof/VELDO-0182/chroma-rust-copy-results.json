@@ -1,0 +1,155 @@
+{
+  "chromadb": "1.5.9",
+  "configuration": {
+    "hnsw": {
+      "batch_size": 10,
+      "sync_threshold": 20
+    }
+  },
+  "copies": [
+    {
+      "attempts": 3,
+      "found_through_index": 33,
+      "ids": 33
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 52,
+      "ids": 52
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 52,
+      "ids": 52
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 68,
+      "ids": 68
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 79,
+      "ids": 79
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 88,
+      "ids": 88
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 88,
+      "ids": 88
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 107,
+      "ids": 107
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 133,
+      "ids": 133
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 147,
+      "ids": 147
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 169,
+      "ids": 169
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 187,
+      "ids": 187
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 193,
+      "ids": 193
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 193,
+      "ids": 193
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 193,
+      "ids": 193
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 213,
+      "ids": 213
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 219,
+      "ids": 219
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 231,
+      "ids": 231
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 254,
+      "ids": 254
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 264,
+      "ids": 264
+    },
+    {
+      "attempts": 2,
+      "found_through_index": 284,
+      "ids": 284
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 293,
+      "ids": 293
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 297,
+      "ids": 297
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 317,
+      "ids": 317
+    },
+    {
+      "attempts": 1,
+      "found_through_index": 322,
+      "ids": 322
+    }
+  ],
+  "copies_busy": 0,
+  "copies_hold": true,
+  "falsifier": [
+    {
+      "found_through_index": 339,
+      "ids": 359
+    },
+    {
+      "found_through_index": 345,
+      "ids": 365
+    },
+    {
+      "found_through_index": 368,
+      "ids": 388
+    }
+  ],
+  "falsifier_loses": true,
+  "persisted_seq": 388,
+  "written": 388
+}

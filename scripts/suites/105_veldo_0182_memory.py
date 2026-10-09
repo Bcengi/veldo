@@ -36,6 +36,11 @@ def _v182_suite():
     FIX.bun(bun_dir)
     saved_path = os.environ['PATH']
     os.environ['PATH'] = str(bun_dir) + os.pathsep + saved_path
+    # As from a plain shell or a service: no UV_ setting from the caller, and the owner's uv cache a fixture.
+    saved_uv = {name: os.environ.pop(name) for name in list(os.environ) if name.startswith('UV_')}
+    owner_uv = FIX.uv_cache(bun_dir / 'owner-uv')
+    owner_listing = sorted(str(p) for p in owner_uv.rglob('*'))
+    os.environ['UV_CACHE_DIR'] = str(owner_uv)
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -45,6 +50,13 @@ def _v182_suite():
             fn()
         except Exception as e:
             return getattr(e, 'code', type(e).__name__)
+        return None
+
+    def raised(fn):
+        try:
+            fn()
+        except Exception as e:
+            return '%s: %s' % (type(e).__name__, e)
         return None
 
     def entry_path_in_error(store,copy,detail):
@@ -155,7 +167,20 @@ def _v182_suite():
             journal_head = head(conn)
             unchanged = F.apply(plan, F.prepare(manifest,conn), authority.ids, S, conn, ('authority', authority.journal_sign), sign)
             check('setup/idempotent', unchanged['outcome']=='already_done' and head(conn)==journal_head and M.read(conn)['revision']==1)
-            different = dict(manifest, host='different-host')
+            other = base / 'files-other'; shutil.copytree(manifest['parts']['file_memory']['data'], other)
+            different = json.loads(json.dumps(manifest)); different['parts']['file_memory']['data'] = str(other)
+            # Setup and revise run on the manifest's host only, refused as handoff refuses another.
+            foreign = dict(manifest, host='another-host')
+            foreign_codes = {refusal(lambda: F.prepare(foreign)), refusal(lambda: F.prepare(foreign, conn)),
+                             refusal(lambda: F.prepare(foreign, conn, revise=True)), refusal(lambda: M.handoff(conn, 'another-host'))}
+            check('host/setup-revise-differs', foreign_codes == {'invalid_input:memory:host:differs'} and head(conn) == journal_head
+                  and refusal(lambda: F.prepare(manifest, conn, host='another-host')) == 'invalid_input:memory:host:differs')
+            on_host = F.M.on_host; F.M.on_host = lambda *args, **kwargs: None
+            try:
+                unchecked = refusal(lambda: F.prepare(foreign, conn, revise=True))
+            finally:
+                F.M.on_host = on_host
+            check('falsifier/host-unchecked', unchecked is None)
             check('setup/differs', refusal(lambda: F.prepare(different,conn))=='invalid_input:state_root:differs:memory' and head(conn)==journal_head)
             stale=F.prepare(different,conn,revise=True);stale['previous']=dict(stale['previous'],revision=0)
             stale_report=report_of(lambda: F.apply(plan,stale,authority.ids,S,conn,('authority',authority.journal_sign),sign))
@@ -181,16 +206,34 @@ def _v182_suite():
             check('profile/setup-refused', refusal(lambda: F.prepare(wide,conn,revise=True))=='invalid_input:memory:contains_account_profile:file_memory' and head(conn)==at)
             alias=base/'alias';alias.symlink_to(inner,target_is_directory=True)
             check('profile/real-paths', refusal(lambda: accounts.register('alias','alias','codex','alias',{'fixture-host':str(alias)},now=time.time()))=='invalid_input:account_profile:inside_memory:knowledge_graph')
-            # The link rule is the spec's: a location is not a link, checked by normalize in setup, revise,
-            # the signed transition and handoff alike; a link inside a location is the store's own.
+            # The link rule is the spec's: a location is not a link, and a link inside a store is the store's own
+            # only while its target stays inside that store; checked by normalize in setup, revise, the signed
+            # transition and handoff alike.
             files=Path(definition['parts']['file_memory']['data'])
             nested=files/'login-alias';nested.symlink_to(profile,target_is_directory=True)
-            current=M.read(conn)
+            current=M.read(conn);at=head(conn)
             signed=packet(definition,base=current['revision'])
             transition=lambda value: writer.transition(conn,dict(signed_command=value['command'],signature=value['signature']),None)
-            check('link/nested-same-everywhere',refusal(lambda: F.prepare(manifest,conn)) is None and refusal(lambda: F.prepare(manifest,conn,revise=True)) is None
-                  and refusal(lambda: transition(signed)) is None and refusal(lambda: M.handoff(conn)) is None and M.handoff(conn)['definition']==definition)
+            def everywhere():
+                return [refusal(lambda: F.prepare(manifest,conn)),refusal(lambda: F.prepare(manifest,conn,revise=True)),
+                        refusal(lambda: transition(signed)),refusal(lambda: M.handoff(conn))]
+            outside=everywhere()
+            check('link/nested-same-everywhere',outside==['invalid_input:memory:file_memory:link_outside']*4 and M.read(conn)==current and head(conn)==at)
+            links_inside=M.links_inside;M.links_inside=F.M.links_inside=lambda *args: None
+            try:
+                followed=everywhere()
+            finally:
+                M.links_inside=F.M.links_inside=links_inside
+            check('falsifier/link-outside-accepted',followed==[None]*4)
             nested.unlink()
+            deep=files/'deep';deep.mkdir();(deep/'inner-link').symlink_to('../fact-0.md');(files/'deep-link').symlink_to(deep,target_is_directory=True)
+            inside=everywhere()
+            check('link/inside-accepted',inside==[None]*4 and M.handoff(conn)['definition']==definition)
+            safety=base/'safety-copy-links';C.copy_data(files,safety,'file_memory')
+            check('link/safety-copy-keeps-links',(safety/'deep-link').is_symlink() and os.readlink(safety/'deep-link')==str(deep)
+                  and (safety/'deep/inner-link').is_symlink() and os.readlink(safety/'deep/inner-link')=='../fact-0.md')
+            shutil.rmtree(deep);(files/'deep-link').unlink();shutil.rmtree(safety)
+            current=M.read(conn)
             linked=base/'files-link';linked.symlink_to(files,target_is_directory=True)
             relinked=json.loads(json.dumps(manifest));relinked['parts']['file_memory']['data']=str(linked)
             bent=json.loads(json.dumps(definition));bent['parts']['file_memory']['data']=str(linked)
@@ -201,7 +244,7 @@ def _v182_suite():
             finally:
                 files.unlink();moved.rename(files)
             check('link/location-same-everywhere',link_codes=={'invalid_input:memory:file_memory:link'} and M.read(conn)==current)
-            # Containment compares real paths and never walks a location's tree.
+            # Containment compares real paths and never walks a location's tree; only data is listed, for links.
             with unittest.mock.patch.object(os,'walk',side_effect=AssertionError('walked')), \
                     unittest.mock.patch.object(Path,'rglob',side_effect=AssertionError('walked')):
                 walked=[refusal(lambda: M.handoff(conn)),refusal(lambda: F.prepare(manifest,conn))]
@@ -271,6 +314,79 @@ def _v182_suite():
             started=json.loads(observed.read_text().splitlines()[0]) if observed.exists() else {}
             check('worker/cut-short-stopped',cut=='TimeoutExpired' and started and not running(started['home'])
                   and not Path('/proc/%d'%started['child']).exists() and not Path(started['home']).exists())
+            # chroma-mcp resolves on its own pins, in a uv cache inside the check's private home, with no UV_
+            # setting from the caller; the owner's uv cache is only read.
+            calls=[json.loads(line) for line in (bun_dir/'uvx.jsonl').read_text().splitlines()] if (bun_dir/'uvx.jsonl').exists() else []
+            check('worker/own-resolution',bool(calls) and 'UV_CONSTRAINT' not in os.environ and all(
+                c['args']==['--python','3.13','chroma-mcp','--help'] and c['pins']==['chroma-mcp==0.2.6','chromadb==1.5.9','pydantic<2.14']
+                and c['cache']==str(Path(c['home'])/'.cache/uv') and not Path(c['home']).exists() and not c['cache'].startswith(str(owner_uv))
+                for c in calls) and sorted(str(p) for p in owner_uv.rglob('*'))==owner_listing)
+            mutant_dir=Path(tempfile.mkdtemp(prefix='v182-pins-',dir=fast_temp()))
+            for module in (ROOT/'.veldo').glob('*.py'):shutil.copyfile(module,mutant_dir/module.name)
+            own_pins="        self.env.update(UV_CACHE_DIR=str(self.home / '.cache/uv'), UV_CONSTRAINT=str(constraint))\n"
+            adapter_text=(mutant_dir/'control_memory_adapter.py').read_text();assert adapter_text.count(own_pins)==1
+            (mutant_dir/'control_memory_adapter.py').write_text(adapter_text.replace(own_pins,''))
+            try:
+                unpinned=raised(lambda: load('v182_check_unpinned',mutant_dir/'control_memory_check.py').probe('claude_mem',entry,'preflight'))
+            finally:shutil.rmtree(mutant_dir)
+            check('falsifier/caller-pins-only',unpinned is not None and 'pydantic' in unpinned)
+            failing=Path(tempfile.mkdtemp(prefix='v182-uvx-',dir=fast_temp()))
+            (failing/'uvx').write_text('#!/bin/sh\necho "error: Failed to fetch: fixture network unreachable" >&2\nexit 2\n');(failing/'uvx').chmod(0o700)
+            path_before=os.environ['PATH'];os.environ['PATH']=str(failing)+os.pathsep+path_before
+            try:
+                named=raised(lambda: C.check(str(base/'cause-state'),definition,'claude_mem','before'))
+            finally:
+                os.environ['PATH']=path_before;shutil.rmtree(failing)
+            os.environ['UV_CACHE_DIR']=str(base/'empty-uv')
+            try:
+                unknown=raised(lambda: C.preflight(definition))
+            finally:os.environ['UV_CACHE_DIR']=str(owner_uv)
+            check('worker/chroma-mcp-cause-named',named is not None and 'unavailable_service:memory:claude_mem:adapter' in named
+                  and 'cause=chroma-mcp cannot start: error: Failed to fetch: fixture network unreachable' in named
+                  and unknown is not None and 'cause=chroma-mcp cannot start: no chroma-mcp environment in the uv cache' in unknown)
+            # The worker's port is used only once the process listening on it carries the check's private HOME.
+            A=load('v182_adapter',ROOT/'.veldo/control_memory_adapter.py')
+            import http.server
+            class Ready(http.server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    body=b'{"status":"ready"}';self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+                def log_message(self,*args):pass
+            foreign=http.server.ThreadingHTTPServer(('127.0.0.1',0),Ready);threading.Thread(target=foreign.serve_forever,daemon=True).start()
+            plugin=A.Plugin.__new__(A.Plugin);plugin.home=Path(tempfile.mkdtemp(prefix='v182-home-',dir=fast_temp()));plugin.port=foreign.server_port
+            try:
+                taken=raised(plugin.ready)
+                def unguarded(self):
+                    try:
+                        return self.http('/api/readiness') is not None
+                    except (OSError,ValueError):
+                        return False
+                check('falsifier/port-unverified',unguarded(plugin) is True)
+            finally:foreign.shutdown();foreign.server_close()
+            serve=("import http.server,sys\nclass R(http.server.BaseHTTPRequestHandler):\n def do_GET(self):\n  self.send_response(200);self.send_header('Content-Length','2');self.end_headers();self.wfile.write(b'{}')\n"
+                   " def log_message(self,*a):pass\ns=http.server.HTTPServer(('127.0.0.1',0),R);print(s.server_port,flush=True);s.serve_forever()\n")
+            own=subprocess.Popen([sys.executable,'-c',serve],env=dict(os.environ,HOME=str(plugin.home)),stdout=subprocess.PIPE,text=True)
+            try:
+                plugin.port=int(own.stdout.readline());ours=raised(plugin.ready) is None and plugin.ready()
+            finally:own.kill();own.wait();own.stdout.close()
+            check('worker/port-listener-verified',taken is not None and taken.startswith('Unavailable: claude-mem worker port') and ours is True)
+            # The backfill wait is bounded and refused by name, never a silent pass into a loss verdict.
+            class Alive:
+                def poll(self):return None
+            plugin.data=plugin.home/'.claude-mem';(plugin.data/'logs').mkdir(parents=True);plugin.processes=[Alive()];plugin.BACKFILL=1
+            started=time.monotonic();silent=raised(plugin.backfilled);waited=time.monotonic()-started
+            (plugin.data/'logs/worker.log').write_text('Backfill failed (non-blocking)\n');failed=raised(plugin.backfilled)
+            (plugin.data/'logs/worker.log').write_text('Backfill check complete for all projects\n');ended=raised(plugin.backfilled)
+            check('worker/backfill-bounded',silent=='Unavailable: claude-mem backfill did not end within 1 s' and waited<5
+                  and failed=='Unavailable: claude-mem backfill failed' and ended is None)
+            (plugin.data/'logs/worker.log').unlink()
+            def unbounded(self,timeout=1):
+                deadline=time.monotonic()+timeout
+                while time.monotonic()<deadline:
+                    for log in (self.data/'logs').glob('*.log'):
+                        if b'Backfill check complete' in log.read_bytes():return
+                    time.sleep(0.2)
+            check('falsifier/backfill-silent',raised(lambda: unbounded(plugin)) is None)
+            shutil.rmtree(plugin.home)
             db=Path(manifest['parts']['knowledge_graph']['code'])/'knowledge_graph.db';db.rename(db.with_suffix('.saved'))
             check('setup/missing-database', refusal(lambda: F.prepare(manifest,conn))=='invalid_input:memory:knowledge_graph:missing')
             check('launch/missing-refused', refusal(lambda: M.handoff(conn))=='invalid_input:memory:knowledge_graph:missing')
@@ -393,6 +509,22 @@ def _v182_suite():
                     opened=C.copy_chroma(chroma,base/'chroma-copy-open','memory_kb')
                 check('copy/chroma-open-writer',opened==1 and (base/'chroma-copy-open/segment/data_level0.bin').read_bytes()==b'persisted index 1'
                       and facts_queue(base/'chroma-copy-open/chroma.sqlite3')==1)
+                # A link inside a Chroma directory: one leading out of the store is refused, never followed; one
+                # inside stays a link inside the copy.
+                outside=base/'outside-index';outside.write_bytes(b'outside bytes')
+                (segment/'link_lists.bin').symlink_to(outside)
+                out_code=refusal(lambda: C.copy_chroma(chroma,base/'chroma-copy-out','memory_kb'))
+                copy_link=C.copy_link;C.copy_link=lambda source,name,target,part: shutil.copyfile(source/name,target/name)
+                try:
+                    C.copy_chroma(chroma,base/'chroma-copy-followed','memory_kb')
+                finally:C.copy_link=copy_link
+                check('copy/chroma-link-outside-refused',out_code=='invalid_input:memory:memory_kb:link_outside')
+                check('falsifier/chroma-link-followed',(base/'chroma-copy-followed/segment/link_lists.bin').read_bytes()==b'outside bytes')
+                (segment/'link_lists.bin').unlink();(segment/'link_lists.bin').symlink_to('data_level0.bin')
+                C.copy_chroma(chroma,base/'chroma-copy-inside','memory_kb')
+                kept=base/'chroma-copy-inside/segment/link_lists.bin'
+                check('copy/chroma-link-inside-kept',kept.is_symlink() and kept.resolve()==(base/'chroma-copy-inside/segment/data_level0.bin').resolve())
+                (segment/'link_lists.bin').unlink();os.utime(index,(time.time()-10,)*2)
                 original_backup=C.backup;persisted=[]
                 def persist_during(source,target,*rest):
                     original_backup(source,target,*rest)
@@ -590,6 +722,19 @@ def _v182_suite():
         at_files=ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent)
         code,report=setup('different',root,clone,trust,**{'--memory':str(path)})
         check('integration/differs-no-writes',code==1 and report.get('reason')=='invalid_input:state_root:differs:memory' and at_files==ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent))
+        # A manifest written for another host is refused by setup and revise as handoff refuses it, before any write.
+        foreign=json.loads(json.dumps(revised));foreign['host']='another-host'
+        foreign_path=base/'foreign.json';foreign_path.write_text(json.dumps(foreign))
+        with sqlite3.connect(db) as conn:
+            at=head(conn)
+        code,report=setup('foreign',root,clone,trust,**{'--memory':str(foreign_path)})
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            result=cli.main(['revise',str(foreign_path),'--state-root',str(root),'--owner-key',str(ctx['owner_key'])])
+        answer=json.loads(out.getvalue())
+        with sqlite3.connect(db) as conn:
+            unchanged=head(conn)==at and M.read(conn)['definition']==M.normalize(revised)
+        check('integration/host-differs-no-writes',code==1 and report.get('reason')=='invalid_input:memory:host:differs' and result==1
+              and answer['reason']=='invalid_input:memory:host:differs' and unchanged and at_files==ctx['snapshot'](root,Path(initial['home']),base/'units',trust.parent))
 
 
 
@@ -696,6 +841,8 @@ def _v182_suite():
             traceback.print_exc(limit=18)
             check('integration/'+name+'-completed',False)
     os.environ['PATH'] = saved_path
+    os.environ.pop('UV_CACHE_DIR', None)
+    os.environ.update(saved_uv)
     shutil.rmtree(bun_dir)
     if os.environ.get('VELDO_0182_REPORT'):
         Path(os.environ['VELDO_0182_REPORT']).write_text(json.dumps({name:dict(assertions=len(checks),passed=bool(checks) and all(checks)) for name,checks in rows.items()},indent=2)+'\n')
