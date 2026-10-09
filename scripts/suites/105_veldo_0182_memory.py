@@ -75,6 +75,61 @@ def _v182_suite():
             prepared = F.prepare(manifest, conn)
             report = F.apply(plan, prepared, authority.ids, S, conn, ('authority', authority.journal_sign), sign)
             check('setup/five-parts', report['outcome']=='done' and len(report['checks'])==10 and M.read(conn)['definition']==definition)
+            # Each attempt checks the candidate while the old signed record is served.
+            def switch_case(mutated=False):
+                state = base / ('switch-mutant' if mutated else 'switch')
+                auth = H.build(state, ROOT / '.veldo', 183 if mutated else 184,
+                               'http://127.0.0.1:1', 'synthetic', scope='activation-repository')
+                args = (dict(root=str(state),owner='owner'), auth.ids, auth.S, auth.conn,
+                        ('authority',auth.journal_sign), lambda data: auth.sign_as('owner',data))
+                M.Memory(auth.S,auth.conn,auth.ids,'authority',auth.journal_sign)
+                def apply(prepared):
+                    return F.apply(args[0],prepared,*args[1:])
+                try:
+                    apply(F.prepare(manifest,auth.conn))
+                    old_record=M.read(auth.conn);old_head=head(auth.conn);old_handoff=M.handoff(auth.conn)
+                    lossy=json.loads(json.dumps(manifest))
+                    empty=state/'empty';empty.mkdir();(empty/'MEMORY.md').write_text('empty')
+                    lossy['parts']['file_memory']['data']=str(empty)
+                    original=F._apply
+                    if mutated:
+                        import inspect,textwrap
+                        code=textwrap.dedent(inspect.getsource(original))
+                        block="    for part in M.PARTS:\n        checks.append(CHECK.check(plan['root'], definition, part, 'after'))\n"
+                        assert code.count(block)==1
+                        code=code.replace(block,'').replace('    return dict(report, revision=',block+'    return dict(report, revision=')
+                        ns={};exec(compile(code,F.__file__,'exec'),F.__dict__,ns);F._apply=ns['_apply']
+                    attempts=[];original_check=F.CHECK.check
+                    def observe(*args):
+                        attempts.append((args[2],args[3]))
+                        return original_check(*args)
+                    F.CHECK.check=observe
+                    try:
+                        first=refusal(lambda: apply(F.prepare(lossy,auth.conn,revise=True)))
+                        unchanged=M.read(auth.conn)==old_record and head(auth.conn)==old_head and M.handoff(auth.conn)==old_handoff
+                        attempts.clear()
+                        retry=refusal(lambda: apply(F.prepare(lossy,auth.conn,revise=True)))
+                        accepted=refusal(lambda: F.prepare(manifest,auth.conn)) is None
+                        if mutated:
+                            check('falsifier/commit-before-check',first=='missing_evidence:memory:file_memory:lost' and not unchanged and retry is None and not attempts and not accepted)
+                        else:
+                            check('switch/refused-unchanged',first=='missing_evidence:memory:file_memory:lost' and unchanged)
+                            check('switch/retry-rechecks',retry==first and ('file_memory','after') in attempts)
+                            check('switch/original-setup',accepted and apply(F.prepare(manifest,auth.conn))['outcome']=='already_done')
+                    finally:
+                        F.CHECK.check=original_check;F._apply=original
+                finally:auth.conn.close()
+            switch_case()
+            switch_case(mutated=True)
+            interpreter=base/'venv/bin/python';interpreter.parent.mkdir(parents=True)
+            interpreter.symlink_to(manifest['parts']['ava_memory']['interpreter'])
+            check('setup/venv-interpreter',M.checked(str(interpreter),'ava_memory','interpreter')==str(interpreter))
+            # In a user namespace the system owner may be unmapped. Verify the
+            # trusted root rule without treating uid 65534 as trusted.
+            import unittest.mock
+            info=Path('/usr/bin/python3').stat()
+            with unittest.mock.patch.object(M.Path,'stat',return_value=os.stat_result((info.st_mode,info.st_ino,info.st_dev,info.st_nlink,0,0,info.st_size,info.st_atime,info.st_mtime,info.st_ctime))):
+                check('setup/system-interpreter',M.checked('/usr/bin/python3','ava_memory','interpreter')=='/usr/bin/python3')
             journal_head = head(conn)
             unchanged = F.apply(plan, F.prepare(manifest,conn), authority.ids, S, conn, ('authority', authority.journal_sign), sign)
             check('setup/idempotent', unchanged['outcome']=='already_done' and head(conn)==journal_head and M.read(conn)['revision']==1)
@@ -101,6 +156,33 @@ def _v182_suite():
             check('profile/setup-refused', refusal(lambda: F.prepare(wide,conn,revise=True))=='invalid_input:memory:contains_account_profile:file_memory' and head(conn)==at)
             alias=base/'alias';alias.symlink_to(inner,target_is_directory=True)
             check('profile/real-paths', refusal(lambda: accounts.register('alias','alias','codex','alias',{'fixture-host':str(alias)},now=time.time()))=='invalid_input:account_profile:inside_memory:knowledge_graph')
+            nested=Path(definition['parts']['file_memory']['data'])/'login-alias'
+            nested.symlink_to(profile,target_is_directory=True)
+            check('profile/handoff-nested-link',refusal(lambda: M.handoff(conn))=='invalid_input:memory:file_memory:link')
+            nested.unlink()
+            code_alias=Path(definition['parts']['knowledge_graph']['code'])/'login-alias'
+            code_alias.symlink_to(profile,target_is_directory=True)
+            check('profile/handoff-code-link',refusal(lambda: M.handoff(conn))=='invalid_input:memory:knowledge_graph:link')
+            code_alias.unlink()
+            A=load('v182_adapter',ROOT/'.veldo/control_memory_adapter.py')
+            plugin=A.Plugin(definition['parts']['claude_mem'])
+            try:
+                row=plugin.all()[0]
+                check('check/search-required-claude_mem',plugin.get(row) and plugin.search(row) and not plugin.search(dict(row,text='absent synthetic text')))
+            finally:plugin.close()
+            W=load('v182_worker',ROOT/'proof/VELDO-0182/worker_fixture.py')
+            other=FIX.build(base/'other-worker',count=1)['parts']['claude_mem']
+            entry=definition['parts']['claude_mem']
+            with W.worker(other['data'],chroma=False) as settings:
+                (Path(entry['data'])/'settings.json').write_text(json.dumps(settings))
+                client=W.MCPClient(entry)
+                try:
+                    remote=client.all()
+                    check('worker/real-routing',len(remote)==3 and not client.search(remote[0]))
+                    direct=C.probe('claude_mem',entry,'before')
+                    check('worker/named-store-chroma-off',direct['count']==9 and C.probe('claude_mem',entry,'after',direct['sample'])['found'])
+                finally:client.close()
+            check('worker/missing-not-lost',C.probe('claude_mem',entry,'after',direct['sample'])['found'])
             db=Path(manifest['parts']['knowledge_graph']['code'])/'knowledge_graph.db';db.rename(db.with_suffix('.saved'))
             check('setup/missing-database', refusal(lambda: F.prepare(manifest,conn))=='invalid_input:memory:knowledge_graph:missing')
             check('launch/missing-refused', refusal(lambda: M.handoff(conn))=='invalid_input:memory:knowledge_graph:missing')
@@ -116,7 +198,7 @@ def _v182_suite():
                 C.check(plan['root'],definition,part,'before')
                 evidence=json.loads((copy.parent/(part+'.json')).read_text())
                 check('check/sample-'+part, len(evidence['sample'])==min(20,evidence['count']) and evidence['count']>0)
-                if part!='file_memory':
+                if part not in ('file_memory','claude_mem'):
                     code=Path(definition['parts'][part]['code'])
                     if part=='ava_memory':
                         source=code/'memory_store.py';needle="    def search(self, query, limit=10, category=None):\n";extra='        return []\n'
@@ -163,6 +245,23 @@ def _v182_suite():
             with sqlite3.connect(base/'wal-copy.db') as copied:
                 check('copy/sqlite-online',copied.execute('SELECT COUNT(*) FROM facts').fetchone()[0]==1)
             live.close()
+            busy=base/'busy';busy.mkdir();(busy/'MEMORY.md').write_text('Index')
+            (busy/'segment.bin').write_bytes(b'synthetic HNSW bytes')
+            busydef=json.loads(json.dumps(definition));busydef['parts']['file_memory']['data']=str(busy)
+            busyroot=base/'busy-state';busyroot.mkdir(mode=0o700)
+            original_copy=C.copy_data
+            def moving_copy(source,target):
+                original_copy(source,target)
+                if Path(source)==busy:(busy/'segment.bin').write_bytes(b'writer changed index')
+            C.copy_data=moving_copy
+            try:
+                check('copy/moving-index-refused',refusal(lambda: C.check(busyroot,busydef,'file_memory','before'))=='unavailable_service:memory:file_memory:copy_busy' and not (busyroot/'memory/copies/file_memory').exists())
+            finally:C.copy_data=original_copy
+            source=Path(definition['parts']['ava_memory']['code'])/'memory_store.py'
+            saved_source=source.read_text();source.write_text("raise ImportError('fixture')\n")
+            try:
+                check('check/unavailable-not-lost',refusal(lambda: C.check(plan['root'],definition,'ava_memory','after'))=='unavailable_service:memory:ava_memory:adapter')
+            finally:source.write_text(saved_source)
             # An always-write rerun creates a revision, violating the identical-head predicate.
             # A changed label first, then the same record written again.
             changed=M.normalize(dict(manifest,host='rerun-falsifier'))
@@ -283,6 +382,15 @@ def _v182_suite():
         graph.with_suffix('.saved').rename(graph)
         fresh=base/'fresh';fresh.mkdir(mode=0o700)
         workspace2=ctx['clone']('fresh-clone');trust2=base/'fresh-xdg/veldo/host_trust.json'
+        # Missing imports fail before directories, keys, authority or owner bootstrap.
+        reader=Path(manifest['parts']['ava_memory']['code'])/'memory_store.py'
+        original_reader=reader.read_text();reader.write_text("raise ImportError('fixture missing dependency')\n")
+        snapshot=ctx['snapshot'](fresh,base/'fresh-xdg',base/'units')
+        try:
+            code,report=setup('unavailable-memory',fresh,workspace2,trust2,**{'--memory':str(path)})
+            check('integration/adapter-preflight-no-writes',code==1 and report.get('reason')=='unavailable_service:memory:ava_memory:adapter' and snapshot==ctx['snapshot'](fresh,base/'fresh-xdg',base/'units'))
+            check('integration/refused-outcome',report.get('memory',{}).get('outcome')=='refused' and report['memory']['metrics']['memory_steps_refused']==1)
+        finally:reader.write_text(original_reader)
         # Same manifest on a fresh root proves initial setup names and copies all parts.
         code,report=setup('fresh',fresh,workspace2,trust2,**{'--memory':str(path)})
         check('integration/fresh-setup',code==0 and report.get('memory',{}).get('outcome')=='done')
@@ -322,6 +430,46 @@ def _v182_suite():
         M.Memory(S,conn,ids,'runner',ctx['sign']).admit(dict(command=command,signature=signature))
         for account,provider in [('acct-c2','claude_code'),('acct-x2','codex')]:
             check('launch/register',ctx['register'](account,provider) is None)
+        config=ctx['config'];configured=json.loads(config.read_text())
+        module=ctx['mods']/'control_launch.py';source=module.read_text()
+        guard="        if reserved:\n            return 'invalid_input:adapter_environment:' + reserved[0]\n"
+        assert source.count(guard)==1
+        legacy=source.replace(guard,'')
+        old_exec="    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))\n"
+        start=legacy.index("    handed = environment.pop('VELDO_MEMORY', None)")
+        end=legacy.index("    environment['XDG_RUNTIME_DIR'] = runtime",start)
+        wrong_exec=legacy[:start]+old_exec+legacy[end:]
+        try:
+            for engine,account in [('claude','acct-c1'),('codex','acct-x1')]:
+                for name in ('VELDO_MEMORY','VELDO_FUTURE_INTERNAL'):
+                    configured['adapters'][engine]['environment'][name]=json.dumps(dict(revision=99,definition={}))
+                    config.write_text(json.dumps(configured))
+                    launch,error=ctx['submit']('reserved-'+engine+name,engine,ctx['STREAMS'][engine](),via=account)
+                    result=ctx['finish'](launch,via=account)
+                    check('launch/reserved-config-'+engine,result.get('state')=='refused' and not ctx['markers_of'](launch.dispatch_id))
+                    del configured['adapters'][engine]['environment'][name]
+                configured['adapters'][engine]['environment']['VELDO_MEMORY']=json.dumps(dict(revision=99,definition={}))
+                config.write_text(json.dumps(configured))
+                for label,code in [('legacy',legacy),('mutant',wrong_exec)]:
+                    module.write_text(code)
+                    launch,error=ctx['submit'](label+'-memory-'+engine,engine,ctx['STREAMS'][engine](),via=account)
+                    result=ctx['finish'](launch,via=account)
+                    markers=ctx['markers_of'](launch.dispatch_id) if launch else []
+                    value=json.loads(markers[0]['env']['VELDO_MEMORY']) if markers else None
+                    observed=next((e for e in launch.messages if e.get('event')=='memory'),{}) if launch else {}
+                    if label=='legacy':
+                        check('launch/config-precedence-'+engine,error is None and result.get('state')=='exited' and value==dict(revision=1,definition=definition) and observed.get('revision')==1)
+                    else:
+                        check('falsifier/config-precedence-'+engine,value is not None and value['revision']==99 and observed.get('revision')==1)
+                module.write_text(source)
+                del configured['adapters'][engine]['environment']['VELDO_MEMORY']
+                config.write_text(json.dumps(configured))
+        finally:
+            module.write_text(source)
+            for adapter in configured['adapters'].values():
+                adapter.get('environment',{}).pop('VELDO_MEMORY',None)
+                adapter.get('environment',{}).pop('VELDO_FUTURE_INTERNAL',None)
+            config.write_text(json.dumps(configured))
         handed=[]
         for engine,account in [('claude','acct-c1'),('claude','acct-c2'),('codex','acct-x1'),('codex','acct-x2')]:
             launch,error=ctx['submit']('memory-'+account,engine,ctx['STREAMS'][engine](),via=account)

@@ -349,7 +349,12 @@ def engine_environment(environment):
     for name in list(environment):
         if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
             environment.pop(name, None)
-    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
+    handed = environment.pop('VELDO_MEMORY', None)
+    environment.update({name: value for name, value in
+                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()
+                        if not name.startswith('VELDO_')})
+    if handed is not None:
+        environment['VELDO_MEMORY'] = handed
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -1269,6 +1274,9 @@ class Receiver:
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
         account the accepted contract records. None when it may run; else the named refusal."""
         self.login = None
+        reserved = sorted(n for n in (adapter.get('environment') or {}) if n.startswith('VELDO_'))
+        if reserved:
+            return 'invalid_input:adapter_environment:' + reserved[0]
         engine = adapter.get('engine')
         if engine is None:
             return None

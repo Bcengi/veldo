@@ -31,10 +31,16 @@ captured stats function's 10000-item ceiling. The knowledge graph samples entiti
 as the specified get_entity/search_entities pair requires, while backing up all
 tables. The KB enumerates full documents across all seven collections, decrypts
 through the captured store helper, and refuses unavailable plaintext. The plugin
-checks all three searchable memory types and explicitly disables its default
-90-day search cutoff. Version 10.6.2 has no summary/prompt get tool; its filter-only
-search supplies full records for lookup by typed id. Observations use the dedicated
-get_observations tool. A failed or unavailable search is a refusal, never success.
+reader opens the named claude-mem.db read only, in one SQLite read transaction.
+The captured 10.6.2 worker schema supplies observations (narrative, text, title),
+session_summaries (request, learned, completed), and user_prompts (prompt_text).
+Lookup uses each table's id; literal own-text search uses SQLite instr on those
+text columns. This deliberately replaces semantic MCP search for the loss check:
+the captured MCP server routes to a worker chosen by settings.json, whose open
+database can differ from the record, and Chroma-off search returns no matches.
+Neither a running worker nor Chroma is required for this durable content check.
+The captured MCP test and portable worker fixture both reproduce the mismatch,
+Chroma-off search and continued direct checks after the worker stops.
 
 ## Operational interface
 
@@ -58,8 +64,10 @@ Add the memory option to factory setup, naming a JSON manifest with these fields
 }
 ```
 
-Use absolute, existing, owned paths without symlinks, including the executable
-paths. The host field is descriptive; it cannot bypass profile exclusion. Profile
+Use absolute, existing, owned code and data paths without symlinks. Interpreter
+paths may use venv or system symlinks; their resolved executable must belong to
+the owner or root and must not be group or world writable. The invocation path
+is preserved so Python still discovers its venv. The host field is descriptive; it cannot bypass profile exclusion. Profile
 comparisons inspect every registered profile path against both the handed code
 and data directories using real paths. Memory inside a profile is permitted.
 The first three server data paths are derived from their code locations, so the
@@ -67,8 +75,9 @@ manifest cannot redirect them. Setup names existing bytes and never migrates the
 
 The memory command has check and revise subcommands. Check takes the part name
 above and before or after, plus the state-root option. Revise takes a new manifest,
-state-root and owner-key options. Initial setup and revision surround the record
-switch with checks. A differing setup manifest refuses and writes nothing.
+state-root and owner-key options. Initial setup and revision check the old and candidate locations before the signed
+record switch. A failed switch leaves the old record and launch handoff intact;
+a retry checks again. Fresh setup probes every adapter before host writes. A differing setup manifest refuses and writes nothing.
 The revise command uses the original owner's signature and an expected revision.
 A live authority receives the signed command through setup's existing transport;
 an offline writer must hold authority.lock. An identical setup does not declare
@@ -76,7 +85,8 @@ ownership again, refresh a sample, copy data or advance the journal.
 
 Each engine receives VELDO_MEMORY containing the revision and normalized locations.
 The receiver emits the same metadata and saves a private per-dispatch receipt under
-memory/launches. It ignores any inherited VELDO_MEMORY. This implements location
+memory/launches. It ignores any inherited VELDO_MEMORY, refuses configured VELDO_ names before
+adapter acceptance and applies handed memory last in the exec wrapper. This implements location
 handoff; configuring the memory servers and the engines' native file-memory behavior
 belongs to VELDO-0183 and VELDO-0184, respectively.
 
@@ -85,8 +95,18 @@ backup, including committed WAL rows. Subsequent before checks refresh the priva
 count/sample file without replacing that copy. After reads the current store,
 requires at least the saved count and every sampled id and own-text search, and
 names the part, live location and safety copy on refusal. A copy is never handed
-to a launch. A failed after stops the switch operation; it does not automatically
-roll back the owner's record or memory.
+to a launch. A failed after stops before the record changes. Adapter/import failures report
+unavailable_service, distinct from missing_evidence for measured loss. Memory
+steps report done, already_done or refused with outcome counters. Data and code
+links into profiles are checked again at handoff. KB checks select only existing
+collections and replace the captured create-on-read helper in their subprocess.
+
+A safety copy checks source inode, size, mtime and ctime across the whole copy and
+refuses copy_busy if an index or SQLite sidecar changes. Staging is discarded and
+a retry can take the first copy. This detects concurrent file changes, but is not
+a cross-file filesystem snapshot: delayed mmap writeback in an external Chroma
+writer remains a limitation. For a guaranteed recoverable HNSW index, quiesce its
+writer while taking the first copy; SQLite itself always uses online backup.
 
 ## Acceptance criteria and counterexamples
 
@@ -112,3 +132,25 @@ remains the reviewer's gate coverage. Launch rows use the real Runner, receiver,
 account registry and wrapper, with qualified fake engine binaries and no real login.
 
 No full selftest, gate, mutation runner, push, merge or live memory switch was run.
+
+## Review repair rows
+
+Configuration precedence: launch/reserved-config for both engines refuses memory
+and future reserved names. launch/config-precedence starts both engines with a
+legacy configuration bypass and compares actual environment with the signed
+record. falsifier/config-precedence removes the exec protection too and observes
+revision 99 while the receipt event still names revision 1.
+
+Switch atomicity: switch/refused-unchanged compares the record, journal and
+handoff; switch/retry-rechecks observes the repeated checks; switch/original-setup
+accepts the original manifest. falsifier/commit-before-check moves the signed
+write ahead of the check and reproduces all three failures.
+
+Other review rows: worker/real-routing, worker/named-store-chroma-off,
+worker/missing-not-lost, profile/handoff-nested-link, profile/handoff-code-link,
+integration/adapter-preflight-no-writes, integration/refused-outcome,
+setup/venv-interpreter, setup/system-interpreter, check/unavailable-not-lost,
+and copy/moving-index-refused. The KB fixture raises if a check creates a
+collection. System interpreter ownership is represented as root in its focused
+row because this sandbox maps the system filesystem owner to uid 65534; that uid
+is never accepted by production validation.

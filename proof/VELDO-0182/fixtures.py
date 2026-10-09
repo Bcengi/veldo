@@ -56,33 +56,36 @@ class Collection:
         found=[r for r in rows(DB_PATH) if r['collection']==self.name and (ids is None or r['id'] in ids)]
         found=found[offset:offset+limit if limit else None]
         return dict(ids=[r['id'] for r in found], documents=[r['text'] for r in found],metadatas=[dict(classification='BP') for r in found])
-def _get_collection(name):return Collection(name)
+def _get_collection(name):raise AssertionError('check created a collection')
+class Client:
+    def list_collections(self):return sorted({r['collection'] for r in rows(DB_PATH)})
+    def get_collection(self,name,embedding_function=None):return Collection(name)
+def _get_client():return Client()
 def _decrypt_results(results):return results
 def search(collection,query,n_results=5,classifications=None):
     return [dict(r,distance=0) for r in rows(DB_PATH) if r['collection']==collection and query in r['text']][:n_results]
 '''
-PLUGIN = '''import json,os,sqlite3,sys
+PLUGIN = '''import json,os,sys,urllib.request
 from pathlib import Path
-c=sqlite3.connect(str(Path(os.environ['CLAUDE_MEM_DATA_DIR'])/'claude-mem.db'));c.row_factory=sqlite3.Row
-kinds={'observations':('observations','narrative'),'sessions':('session_summaries','request'),'prompts':('user_prompts','prompt_text')}
-def answer(r,result):print(json.dumps(dict(jsonrpc='2.0',id=r['id'],result=result)),flush=True)
+settings=json.loads((Path(os.environ['CLAUDE_MEM_DATA_DIR'])/'settings.json').read_text())
+base='http://'+settings.get('CLAUDE_MEM_WORKER_HOST','127.0.0.1')+':'+str(settings.get('CLAUDE_MEM_WORKER_PORT',37777))
 for line in sys.stdin:
     r=json.loads(line)
-    if r['method']=='initialize':answer(r,dict(protocolVersion='2024-11-05',capabilities=dict(tools={}),serverInfo=dict(name='claude-mem',version='10.6.2')))
-    elif r['method']=='tools/call':
-        p=r['params'];a=p['arguments']
-        if p['name']=='get_observations':
-            found=[dict(x) for x in c.execute('SELECT * FROM observations') if x['id'] in a['ids']]
-            answer(r,dict(content=[dict(type='text',text=json.dumps(found))]))
-        elif p['name']=='search':
-            assert a['format']=='json' and a['dateStart']=='1970-01-01'
-            table,field=kinds[a['type']]
-            found=[dict(x) for x in c.execute('SELECT * FROM '+table+' ORDER BY created_at_epoch ASC') if not a.get('query') or a['query'] in x[field]]
-            offset=a.get('offset',0);found=found[offset:offset+a.get('limit',20)]
-            result=dict(observations=[],sessions=[],prompts=[],totalResults=len(found),query=a.get('query',''))
-            result[a['type']]=found;answer(r,result)
-        else:raise AssertionError('unexpected tool')
+    if 'id' not in r:continue
+    if r['method']=='initialize':result=dict(protocolVersion='2024-11-05',capabilities=dict(tools={}),serverInfo=dict(name='fixture',version='10.6.2'))
+    else:
+        from urllib.parse import urlencode
+        a=r['params']['arguments'];name=r['params']['name']
+        try:
+            if name=='search':
+                with urllib.request.urlopen(base+'/api/search?'+urlencode(a),timeout=2) as response:result=json.load(response)
+            else:
+                req=urllib.request.Request(base+'/api/observations/batch',data=json.dumps(a).encode(),headers={'Content-Type':'application/json'})
+                with urllib.request.urlopen(req,timeout=2) as response:result=dict(content=[dict(type='text',text=response.read().decode())])
+        except Exception:result=dict(isError=True)
+    print(json.dumps(dict(jsonrpc='2.0',id=r['id'],result=result)),flush=True)
 '''
+
 
 
 def vector(path, collections):
@@ -116,6 +119,7 @@ def build(root, host='fixture-host', count=3):
     vector(kb/'data/chromadb',[collections[i%len(collections)] for i in range(max(count,7))])
     (kb/'kb/config.py').write_text("from pathlib import Path\nDB_PATH=str(Path(__file__).resolve().parents[1]/'data/chromadb')\nCOLLECTIONS="+repr(collections))
     (kb/'kb/store.py').write_text(KB)
+    (kb/'kb/embeddings.py').write_text('def get_embedding_function():return None\n')
     (kb/'kb/search.py').write_text('from kb.store import search as store_search\ndef search(query,collections=None,n_results=5,classifications=None):\n    return [r for c in collections for r in store_search(c,query,n_results,classifications)]\n')
     plugin=root/'claude-mem';plugin.mkdir();(plugin/'package.json').write_text(json.dumps(dict(name='claude-mem-plugin',version='10.6.2')))
     (plugin/'search.py').write_text(PLUGIN)

@@ -228,3 +228,14 @@ live memory or credential was copied into the repository. Capture versions,
 operational commands, criterion rows, falsifiers and validation limits are in
 proof/VELDO-0182/. The canonical gate, independent review and approval remain the
 reviewer's and owner's work. Acceptance criteria and ready status are unchanged.
+
+2026-10-08, owner-requested review repairs: adapter configuration cannot name
+VELDO_ variables and the exec wrapper preserves the handed memory. Candidate
+checks now precede the signed revision. The owner authorized reading claude-mem
+SQLite directly instead of relying on its worker-routed MCP server. Interpreter
+validation permits venv links and root-owned system executables while retaining
+strict code/data validation. Fresh setup preflights adapter dependencies, and
+checks distinguish unavailable adapters from measured loss. Review rows and
+executed falsifiers are recorded in proof/VELDO-0182. The ready status and
+acceptance-criterion text are unchanged; this History records the owner's
+explicit operational clarifications.

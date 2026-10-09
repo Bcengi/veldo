@@ -33,16 +33,30 @@ def prepare(manifest, conn=None, revise=False):
 
 
 def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
+    try:
+        return _apply(plan, memory, ids, S, conn, journal, owner_sign, send)
+    except Exception as error:
+        if hasattr(error, 'code'):
+            error.report = dict(step='memory', outcome='refused', reason=error.code,
+                                metrics=dict(memory_steps_refused=1, memory_checks_refused=1))
+        raise
+
+
+def _apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
     if memory is None:
         return None
     definition, previous = memory['definition'], memory['previous']
     report = dict(step='memory', outcome=memory['outcome'], parts={
-        part: dict(entry, digest=M.digest(entry)) for part, entry in definition['parts'].items()})
+        part: dict(entry, digest=M.digest(entry)) for part, entry in definition['parts'].items()},
+        metrics={'memory_steps_' + memory['outcome']: 1})
     if memory['outcome'] == 'already_done':
         return report
     checks = []
     for part in M.PARTS:
         checks.append(CHECK.check(plan['root'], previous['definition'] if previous else definition, part, 'before'))
+    # The candidate must preserve memory before any run can read its revision.
+    for part in M.PARTS:
+        checks.append(CHECK.check(plan['root'], definition, part, 'after'))
     base = previous['revision'] if previous else 0
     command = dict(ids, command_id='memory-' + uuid.uuid4().hex, operation=M.SAVE, principal=plan['owner'],
                    parameters=dict(definition=definition, base=base))
@@ -63,10 +77,8 @@ def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
             if hasattr(error, 'code'):
                 raise M.Refused(error.code, getattr(error, 'detail', '')) from None
             raise
-    for part in M.PARTS:
-        checks.append(CHECK.check(plan['root'], definition, part, 'after'))
     return dict(report, revision=base + 1, command_id=command['command_id'], checks=checks,
-                metrics=dict(memory_revisions=1, memory_checks_passed=len(checks)))
+                metrics=dict(memory_steps_done=1, memory_revisions=1, memory_checks_passed=len(checks)))
 
 
 def main(argv=None):
@@ -115,7 +127,9 @@ def main(argv=None):
         return 0
     except (M.Refused, CHECK.M.Refused, OSError, ValueError) as error:
         print(json.dumps(dict(outcome='refused', reason=getattr(error, 'code', 'invalid_input:memory'),
-                              detail=getattr(error, 'detail', ''))))
+                              detail=getattr(error, 'detail', ''),
+                              memory=getattr(error, 'report', dict(step='memory', outcome='refused',
+                                  metrics=dict(memory_steps_refused=1))))))
         return 1
     finally:
         if conn is not None:

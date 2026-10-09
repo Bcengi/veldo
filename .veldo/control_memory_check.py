@@ -44,6 +44,26 @@ def copy_data(source, target):
         target.chmod(0o600)
 
 
+def copy_version(source):
+    source = Path(source)
+    paths = [source] + (list(source.rglob('*')) if source.is_dir() else [])
+    return {str(p): (p.lstat().st_ino, p.lstat().st_size, p.lstat().st_mtime_ns,
+                     p.lstat().st_ctime_ns) for p in paths}
+
+
+def preflight(definition):
+    """Exercise readers and search dependencies before setup writes host state."""
+    M.no_nested_links(definition)
+    for part, entry in definition['parts'].items():
+        try:
+            before = probe(part, entry, 'before')
+            after = probe(part, entry, 'after', before['sample'])
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+            raise M.Refused('unavailable_service:memory:%s:adapter' % part) from None
+        if after['count'] < before['count'] or not after['found']:
+            raise M.Refused('missing_evidence:memory:%s:lost' % part)
+
+
 def probe(part, entry, operation, sample=None):
     interpreter = entry.get('interpreter', sys.executable)
     request = dict(part=part, entry=entry, operation=operation, sample=sample or [])
@@ -74,7 +94,10 @@ def check(root, definition, part, phase):
             if not target.exists():
                 staging = Path(tempfile.mkdtemp(prefix='copy-', dir=copies))
                 try:
+                    initial = copy_version(entry['data'])
                     copy_data(entry['data'], staging / part)
+                    if copy_version(entry['data']) != initial:
+                        raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail)
                     (staging / part).rename(target)
                 finally:
                     shutil.rmtree(staging)
@@ -89,11 +112,11 @@ def check(root, definition, part, phase):
             saved = json.loads(evidence.read_text())
             result = probe(part, entry, 'after', saved['sample'])
             if result['count'] < saved['count'] or not result['found']:
-                raise ValueError('lost')
+                raise M.Refused('missing_evidence:memory:%s:lost' % part, detail)
             sample_size = len(saved['sample'])
         return dict(part=part, phase=phase, outcome='passed', path=entry['data'], copy=str(target),
                     count=result['count'], sample_size=sample_size)
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
-        raise M.Refused('missing_evidence:memory:%s:lost' % part, detail) from None
+        raise M.Refused('unavailable_service:memory:%s:adapter' % part, detail) from None
     finally:
         os.close(fd)

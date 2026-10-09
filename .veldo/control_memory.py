@@ -38,6 +38,19 @@ def checked(path, part, kind='directory', owner=True):
         reason = 'absolute_path_required'
     else:
         p = Path(path)
+        # Runtime interpreters commonly use venv or system symlinks. Keep the
+        # invocation path (venv discovery needs it), but validate the executable.
+        if kind == 'interpreter':
+            try:
+                target = p.resolve(strict=True)
+                info = target.stat()
+                if info.st_uid not in (0, os.geteuid()) or info.st_mode & 0o022:
+                    raise Refused('invalid_input:memory:%s:unsafe_interpreter' % part, path)
+                if not target.is_file() or not os.access(target, os.X_OK):
+                    raise Refused('invalid_input:memory:%s:not_executable' % part, path)
+                return os.path.abspath(path)
+            except OSError:
+                raise Refused('invalid_input:memory:%s:missing' % part, path) from None
         if any(v.is_symlink() for v in (p, *p.parents)):
             reason = 'link'
         else:
@@ -113,12 +126,29 @@ def read(conn):
     return json.loads(row[0]) if row else None
 
 
+def no_nested_links(definition):
+    # Do not traverse links: even a nested alias can expose a profile at handoff.
+    for part, entry in definition['parts'].items():
+        path = entry['data']
+        if Path(path).is_dir():
+            for parent, dirs, files in os.walk(path, followlinks=False):
+                for name in dirs + files:
+                    if (Path(parent) / name).is_symlink():
+                        raise Refused('invalid_input:memory:%s:link' % part)
+
+
 def profiles_outside(conn, definition):
     for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='account'"):
         for directory in json.loads(raw).get('profiles', {}).values():
             for part, path in locations(definition):
                 if within(directory, path):
                     raise Refused('invalid_input:memory:contains_account_profile:' + part)
+                if Path(path).is_dir():
+                    for parent, dirs, files in os.walk(path, followlinks=False):
+                        for name in dirs + files:
+                            alias = Path(parent) / name
+                            if alias.is_symlink() and (within(directory, alias) or within(alias, directory)):
+                                raise Refused('invalid_input:memory:%s:link' % part)
 
 
 def account_outside(conn, profiles):
@@ -137,6 +167,7 @@ def handoff(conn):
         return None
     definition = normalize(manifest_of(record['definition']))
     profiles_outside(conn, definition)
+    no_nested_links(definition)
     return dict(revision=record['revision'], definition=definition)
 
 

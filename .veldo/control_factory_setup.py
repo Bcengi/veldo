@@ -400,6 +400,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                      tailscale=tailscale, port=port, memory=memory, **options)
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
     memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory))
+    if memory_plan is not None:
+        _memory(lambda: organ('control_memory_check').preflight(memory_plan['definition']))
     # Tailscale is read, with read-only commands, after every other check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
     transport = _api(lambda: API.transport(cli, port))
@@ -615,7 +617,10 @@ def _memory(call):
         return call()
     except Exception as error:
         if hasattr(error, 'code'):
-            raise Refused(error.code, getattr(error, 'detail', '')) from None
+            refused = Refused(error.code, getattr(error, 'detail', ''))
+            refused.memory = getattr(error, 'report', dict(step='memory', outcome='refused', reason=error.code,
+                                  metrics=dict(memory_steps_refused=1)))
+            raise refused from None
         raise
 
 
@@ -1138,7 +1143,7 @@ def main(argv=None, **overrides):
                        memory=args.memory, **overrides)
     except Refused as exc:
         return answer({'action': 'setup', 'outcome': 'refused', 'reason': exc.code, 'problems': exc.problems,
-                       'detail': exc.detail}, EXIT_REFUSED)
+                       'detail': exc.detail, **({'memory': exc.memory} if hasattr(exc, 'memory') else {})}, EXIT_REFUSED)
     return answer(dict(report, action='setup'), 0)
 
 

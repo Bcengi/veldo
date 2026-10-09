@@ -57,7 +57,9 @@ def run(part, capture, entry, adapter):
                 rows=self.get();indices=[i for i,t in enumerate(rows['documents']) if query_texts[0] in t][:n_results]
                 return dict(ids=[[rows['ids'][i] for i in indices]],documents=[[rows['documents'][i] for i in indices]],metadatas=[[rows['metadatas'][i] for i in indices]],distances=[[0 for i in indices]])
         class Client:
-            def get_or_create_collection(self,name,embedding_function):return Collection(name)
+            def get_or_create_collection(self,name,embedding_function):raise AssertionError('collection created')
+            def list_collections(self):return ['conversations','confluence','jira','emails','files','research','recipes']
+            def get_collection(self,name,embedding_function):return Collection(name)
         sys.modules['chromadb']=types.SimpleNamespace(ClientAPI=Client,PersistentClient=lambda path:Client())
         sys.path.insert(0,str(capture))
         config=load('kb.config',capture/'kb/config.py');config.DB_PATH=entry['data']
@@ -65,46 +67,29 @@ def run(part, capture, entry, adapter):
         # Public synthetic documents need no encryption dependency.
         sys.modules['kb.crypto']=types.SimpleNamespace(decrypt=lambda text:text)
     elif part=='claude_mem':
-        import http.server
-        import threading
-        import sqlite3
-        from urllib.parse import urlparse,parse_qs
-        class Handler(http.server.BaseHTTPRequestHandler):
-            def log_message(self,*args):pass
-            def send(self,value):
-                body=json.dumps(value).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
-            def do_GET(self):
-                path=urlparse(self.path)
-                if path.path=='/api/health':return self.send(dict(status='ok'))
-                assert path.path=='/api/search'
-                args={k:v[0] for k,v in parse_qs(path.query).items()}
-                table,field={'observations':('observations','narrative'),'sessions':('session_summaries','request'),'prompts':('user_prompts','prompt_text')}[args['type']]
-                with sqlite3.connect(Path(entry['data'])/'claude-mem.db') as conn:
-                    conn.row_factory=sqlite3.Row
-                    rows=[dict(r) for r in conn.execute('SELECT * FROM '+table+' ORDER BY created_at_epoch') if not args.get('query') or args['query'] in r[field]]
-                offset=int(args.get('offset',0));rows=rows[offset:offset+int(args['limit'])]
-                result=dict(observations=[],sessions=[],prompts=[],totalResults=len(rows),query=args.get('query',''));result[args['type']]=rows;self.send(result)
-            def do_POST(self):
-                assert self.path=='/api/observations/batch'
-                args=json.loads(self.rfile.read(int(self.headers['Content-Length'])))
-                with sqlite3.connect(Path(entry['data'])/'claude-mem.db') as conn:
-                    conn.row_factory=sqlite3.Row
-                    rows=[dict(r) for r in conn.execute('SELECT * FROM observations') if r['id'] in args['ids']]
-                self.send(rows)
-        server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler)
-        thread=threading.Thread(target=server.serve_forever);thread.start()
+        W=load('worker_fixture',Path(__file__).with_name('worker_fixture.py'))
         import shutil
+        import tempfile
+        F=load('fixtures',Path(__file__).with_name('fixtures.py'))
         node=shutil.which('node')
-        if not node:raise RuntimeError('node unavailable for captured MCP protocol')
-        os.environ.update(HOME=str(Path(entry['data']).parent),CLAUDE_MEM_WORKER_HOST='127.0.0.1',CLAUDE_MEM_WORKER_PORT=str(server.server_port))
-        entry=dict(entry,code=str(capture),command=[node,str(capture/'scripts/mcp-server.cjs')])
-        try:
-            before=A.inspect(dict(part=part,entry=entry,operation='before'))
-            after=A.inspect(dict(part=part,entry=entry,operation='after',sample=before['sample']))
-            assert before['count'] and after['count']==before['count'] and after['found']
-            return
-        finally:
-            server.shutdown();thread.join();server.server_close()
+        assert node
+        with tempfile.TemporaryDirectory() as tmp:
+            other=F.build(Path(tmp)/'other',count=1)['parts']['claude_mem']
+            with W.worker(other['data'],chroma=False) as settings:
+                (Path(entry['data'])/'settings.json').write_text(json.dumps(settings))
+                os.environ.update(settings,HOME=str(Path(entry['data']).parent))
+                routed=dict(entry,code=str(capture),command=[node,str(capture/'scripts/mcp-server.cjs')])
+                client=W.MCPClient(routed)
+                try:
+                    rows=client.all()
+                    assert len(rows)==3 and not client.search(rows[0])
+                    before=A.inspect(dict(part=part,entry=routed,operation='before'))
+                    after=A.inspect(dict(part=part,entry=routed,operation='after',sample=before['sample']))
+                    assert before['count']==9 and after['found']
+                finally:client.close()
+            # No worker is running now. The same recorded store remains readable.
+            assert A.inspect(dict(part=part,entry=routed,operation='after',sample=before['sample']))['found']
+        return
     before=A.inspect(dict(part=part,entry=entry,operation='before'))
     after=A.inspect(dict(part=part,entry=entry,operation='after',sample=before['sample']))
     assert before['count'] and after['count']==before['count'] and after['found']

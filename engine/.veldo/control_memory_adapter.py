@@ -7,10 +7,7 @@ import contextlib
 import json
 import os
 from pathlib import Path
-import selectors
-import subprocess
 import sys
-import time
 
 
 def item(identity, text, collection=None):
@@ -78,7 +75,13 @@ class KB:
     def __init__(self, entry):
         from kb import store, search
         from kb.config import COLLECTIONS
-        self.store, self.query, self.collections = store, search.search, COLLECTIONS
+        from kb.embeddings import get_embedding_function
+        client = store._get_client()
+        existing = {getattr(c, 'name', c) for c in client.list_collections()}
+        self.collections = [name for name in COLLECTIONS if name in existing]
+        self.collection = lambda name: client.get_collection(name=name, embedding_function=get_embedding_function())
+        store._get_collection = self.collection
+        self.store, self.query = store, search.search
 
     def decode(self, collection, result):
         rows = [dict(id=i, text=result['documents'][at], metadata=(result['metadatas'] or [{}] * len(result['ids']))[at])
@@ -108,99 +111,39 @@ class KB:
 
 
 class Plugin:
-    TYPES = {'observations': ('narrative', 'text', 'title'), 'sessions': ('request', 'learned', 'completed'),
-             'prompts': ('prompt_text',)}
+    # The captured 10.6.2 MCP server reads an HTTP worker, not this directory.
+    # Use its durable SQLite schema in a read transaction, independent of worker
+    # routing, Chroma availability, embedding models and the 90 day search cutoff.
+    TYPES = {'observations': ('observations', ('narrative', 'text', 'title')),
+             'sessions': ('session_summaries', ('request', 'learned', 'completed')),
+             'prompts': ('user_prompts', ('prompt_text',))}
 
     def __init__(self, entry):
-        env = dict(os.environ, CLAUDE_MEM_DATA_DIR=entry['data'])
-        self.proc = subprocess.Popen(entry['command'], cwd=entry['code'], env=env, stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        self.selector = selectors.DefaultSelector()
-        self.selector.register(self.proc.stdout, selectors.EVENT_READ)
-        self.buffer, self.serial = b'', 0
-        try:
-            self.rpc('initialize', dict(protocolVersion='2024-11-05', capabilities={},
-                                       clientInfo=dict(name='veldo-memory-check', version='1')))
-        except Exception:
-            self.close()
-            raise
-        self.proc.stdin.write(b'{"jsonrpc":"2.0","method":"notifications/initialized"}\n')
-        self.proc.stdin.flush()
+        import sqlite3
+        self.conn = sqlite3.connect((Path(entry['data']) / 'claude-mem.db').as_uri() + '?mode=ro', uri=True)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute('BEGIN')
 
     def close(self):
-        self.proc.terminate()
-        try:
-            self.proc.wait(timeout=3)
-        except subprocess.TimeoutExpired:
-            self.proc.kill()
-            self.proc.wait()
-        self.selector.close()
-        self.proc.stdin.close()
-        self.proc.stdout.close()
-
-    def rpc(self, method, params):
-        self.serial += 1
-        self.proc.stdin.write((json.dumps(dict(jsonrpc='2.0', id=self.serial, method=method, params=params)) + '\n').encode())
-        self.proc.stdin.flush()
-        deadline = time.monotonic() + 30
-        while time.monotonic() < deadline:
-            if b'\n' not in self.buffer:
-                if not self.selector.select(max(0, deadline - time.monotonic())):
-                    break
-                chunk = os.read(self.proc.stdout.fileno(), 65536)
-                if not chunk:
-                    break
-                self.buffer += chunk
-                continue
-            line, self.buffer = self.buffer.split(b'\n', 1)
-            answer = json.loads(line)
-            if answer.get('id') != self.serial:
-                continue
-            if 'error' in answer or answer.get('result', {}).get('isError'):
-                raise ValueError('search server refused')
-            return answer['result']
-        raise ValueError('search server unavailable')
-
-    def call(self, name, arguments):
-        return self.rpc('tools/call', dict(name=name, arguments=arguments))
-
-    def query(self, kind, **params):
-        # 10.6.2 search returns these structured fields directly for format=json.
-        # dateStart also disables its implicit 90-day cutoff for semantic queries.
-        result = self.call('search', dict(type=kind, format='json', dateStart='1970-01-01',
-                                          orderBy='date_asc', limit=500, **params))
-        return result[kind]
+        self.conn.close()
 
     def convert(self, kind, row):
-        return item(row['id'], next((row[k] for k in self.TYPES[kind] if row.get(k)), None), kind)
+        return item(row['id'], next((row[k] for k in self.TYPES[kind][1] if row[k]), None), kind)
 
     def all(self):
-        self.index = {}
-        for kind in self.TYPES:
-            offset = 0
-            while True:
-                rows = self.query(kind, offset=offset)
-                for row in rows:
-                    key = (kind, row['id'])
-                    if key in self.index:
-                        raise ValueError('search server pagination repeated an id')
-                    self.index[key] = self.convert(kind, row)
-                if len(rows) < 500:
-                    break
-                offset += len(rows)
-        return list(self.index.values())
+        return [self.convert(kind, row) for kind, (table, _) in self.TYPES.items()
+                for row in self.conn.execute('SELECT * FROM ' + table)]
 
     def get(self, row):
-        if row['collection'] == 'observations':
-            answer = self.call('get_observations', dict(ids=[row['id']]))
-            rows = json.loads(answer['content'][0]['text'])
-            return any(self.convert('observations', r) == row for r in rows)
-        # There is no summary/prompt get tool in 10.6.2. Their full records are
-        # fetched by the filter-only search above and looked up by typed id.
-        return self.index.get((row['collection'], row['id'])) == row
+        table = self.TYPES[row['collection']][0]
+        found = self.conn.execute('SELECT * FROM ' + table + ' WHERE id=?', (row['id'],)).fetchone()
+        return found is not None and self.convert(row['collection'], found) == row
 
     def search(self, row):
-        return any(r['id'] == row['id'] for r in self.query(row['collection'], query=row['text']))
+        table, fields = self.TYPES[row['collection']]
+        predicate = ' OR '.join('instr(COALESCE(' + field + ", ''), ?) > 0" for field in fields)
+        return any(found[0] == row['id'] for found in self.conn.execute(
+            'SELECT id FROM ' + table + ' WHERE ' + predicate, [row['text']] * len(fields)))
 
 
 def inspect(request):
