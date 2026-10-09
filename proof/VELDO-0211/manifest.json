@@ -1,0 +1,52 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0211",
+  "commit": "778069c49449217b5cfa15c894004c3268a2a003",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-09T11:10:12.245962+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
+          "detail": "Full-run locking, both integrations, rotation and teardown. Executable coverage reference only; canonical unit evidence pending."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
+          "detail": "Preflight refusal, contention and canonical source aliases. Executable coverage reference only; canonical unit evidence pending."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
+          "detail": "Private atomic saves and explicit retained recovery. Executable coverage reference only; canonical unit evidence pending."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "command": "bash scripts/verify.sh",
+      "detail": "The owner reserves the complete canonical gate for the reviewer. No passed unit claim is made."
+    }
+  ],
+  "rollback": "Revert the implementation and stop borrowed-login runs until corrected.",
+  "review": "Pending independent reviewer and owner approval; no self-approval."
+}

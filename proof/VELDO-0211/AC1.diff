@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1721,7 +1721,7 @@
+             # Handled signals must not interrupt the atomic save or release the lock early.
+             mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+             try:
+-                write_back(scratch, credentials, locked=True)
++                pass  # falsifier: omit credential persistence
+             finally:
+                 signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+     finally:
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1721,7 +1721,7 @@
+             # Handled signals must not interrupt the atomic save or release the lock early.
+             mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+             try:
+-                write_back(scratch, credentials, locked=True)
++                pass  # falsifier: omit credential persistence
+             finally:
+                 signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+     finally:

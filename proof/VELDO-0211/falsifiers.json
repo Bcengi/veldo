@@ -1,0 +1,34 @@
+{
+  "scope": "diagnostic suite selections only; no gate or passed unit evidence",
+  "sources": {
+    "engine/scripts/agent_sandbox.py": "182b2148c2f6310b66a66c27cdfa649b772f93e5811227401273534955d83ed7",
+    "scripts/agent_sandbox.py": "182b2148c2f6310b66a66c27cdfa649b772f93e5811227401273534955d83ed7"
+  },
+  "mutations": [
+    {
+      "criterion": "AC1",
+      "target": "rotation/live/claude/success",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC1.diff",
+      "log": "AC1.log"
+    },
+    {
+      "criterion": "AC2",
+      "target": "refused-before-launch/live/claude/preflight",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC2.diff",
+      "log": "AC2.log"
+    },
+    {
+      "criterion": "AC3",
+      "target": "recovery/live-retains-private-rotated-token",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC3.diff",
+      "log": "AC3.log"
+    }
+  ],
+  "restored": true
+}

@@ -1,0 +1,52 @@
+Borrowed login credential persistence
+
+Root cause
+The suspected mechanism is confirmed by an offline reproduction, not by replaying the owner's
+production login. live.py previously symlinked the credential file into a temporary profile.
+The fake engine saves a rotated refresh token with os.replace. This replaces the symlink, leaving
+the original login with its old refresh token. No production credential was read or used.
+
+Audit
+Searches across proof, scripts, engine, bin and .veldo for credential filenames, profile environment
+variables, copying and linking found two production borrowing paths: proof/VELDO-0127/live.py and
+scripts/agent_sandbox.py (canon: engine/scripts/agent_sandbox.py). Format probes create synthetic
+credentials. The ordinary control engine adapters use the account profile directly.
+
+agent_sandbox.py does not have the exact symlink replacement defect: it copies credentials and
+already attempted atomic write-back. It did have the related refresh hazard: it locked only the
+final compare and rename, allowing two borrowers to start with the same token, and it did not
+check write-back permissions before starting. It also logged write-back errors and deleted the
+scratch anyway. These failure modes are corrected by the shared borrowed_credentials context.
+
+Implementation
+Both callers resolve the credential source, acquire its existing sibling flock before copying,
+exercise an atomic replacement of identical source bytes, and retain the lock through engine
+termination and atomic write-back. Busy sources refuse immediately. Preflight intentionally can
+change the inode while preserving credential bytes and private owner permissions. No-op engine
+runs perform no additional final save. A separate direct login that changes the original wins.
+The live capture borrows only the selected engines and includes its discovery control in the
+locked lifetime. Its independent discovery process group is reaped before saving credentials.
+Both callers save rotations on exceptions and handled stops. A corrupt or unreadable credential,
+a dropped refresh token or a late write-back failure produces a recovery error, retaining private
+scratch under a recovery name rather than deleting it. Error messages contain paths and reasons,
+not credential values.
+
+Limits
+Direct engine invocations do not honor Veldo's advisory lock; the operator must serialize them
+with borrowed runs. No wrapper can promise a successful save after storage disappears or after
+uncatchable termination. The preflight refuses known unwritable destinations; unexpected late
+storage failures are explicit failures with retained recovery data, not successful runs.
+
+Verification handoff
+Suite 103 runs foreground fake engines through both integrations, including the live command,
+and covers atomic rotations, nonzero exits, exceptions, handled signals, busy locks, canonical
+aliases, real permission denial, recovery and the original symlink failure. Three temporary source
+mutations falsify the named rotation, preflight and recovery assertions, with source diffs and
+hashes recorded. The driver restores both canonical and installed copies in finally blocks.
+Suite 102 is the existing launcher/runtime suite. Its unchanged mutation-worker portion moved
+byte-for-byte to registered suite 104 so the runtime suite can run without a prohibited mutation
+coordinator. Suite 104 and the full gate are reserved for the reviewer, per the owner's constraint.
+Runtime suite execution in this host encounters namespace-marker and AF_UNIX restrictions.
+Diagnostic results are in diagnostics.json. These selected runs are not passed unit evidence.
+The manifest deliberately leaves every criterion and the canonical unit check pending.
+No independent review, approval, merge, push or full gate has been performed.

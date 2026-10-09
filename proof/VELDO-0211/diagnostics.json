@@ -1,0 +1,69 @@
+{
+  "schema": "veldo.borrowed-login-diagnostics/v1",
+  "implementation_commit": "778069c49449217b5cfa15c894004c3268a2a003",
+  "recorded_at": "2026-10-09T11:11:34.972290+00:00",
+  "scope": "Selected suites only. Diagnostic observations, not canonical unit evidence or a landing claim.",
+  "suite103": {
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "103_veldo_0211_borrowed_login"
+    ],
+    "exit_code": 2,
+    "own_assertions": 45,
+    "failed": 0,
+    "summary": "selftest (PARTIAL, 1 of 158 suites): 71 passed, 0 failed in 1.20s",
+    "log": "suite103.log"
+  },
+  "suite102": {
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "102_veldo_0210_agent_profile_runtime"
+    ],
+    "exit_code": 1,
+    "failed_assertions": 17,
+    "skips": 8,
+    "failure_lines": [
+      "SELFTEST FAIL: VELDO-0210 namespace/unconfigured-host-refuses-every-start: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/launcher-inside-a-writable-grant-refused",
+      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-long-descriptor: veldo-userns: /tmp is owned by another account",
+      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-empty-descriptor: veldo-userns: /tmp is owned by another account",
+      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-other-argument: veldo-userns: /tmp is owned by another account",
+      "SELFTEST FAIL: VELDO-0210 namespace/init-sets-no-new-privs-first-and-holds-nothing: [None, 1, None, \"the AppArmor label is 'veldo-userns//&veldo-userns-child (enforce)', not 'veldo-userns-child (enforce)'\", \"the AppArmor label is 'veldo-userns-child (complain)', not 'veldo-userns-child (enforce)'\", None]",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGTERM: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGINT: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGHUP: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGTERM: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGINT: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGHUP: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/missing-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/user-writable-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/user-owned-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/linked-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
+      "SELFTEST FAIL: VELDO-0210 namespace/not-the-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()"
+    ],
+    "terminal_error": "PermissionError: [Errno 1] Operation not permitted creating AF_UNIX socket",
+    "limitation": "This confined runner cannot supply the namespace marker or AF_UNIX capability these existing host-runtime checks require. No claim that suite 102 passed.",
+    "log": "suite102.log"
+  },
+  "falsifiers": "falsifiers.json",
+  "not_run": [
+    "complete selftest",
+    "scripts/verify.sh",
+    "scripts/check_teeth_mutations.py",
+    "scripts/check_gate_mutations.py",
+    "104_veldo_0210_mutation_workers"
+  ],
+  "static_checks": {
+    "canonical_sandbox_matches_installed": true,
+    "moved_worker_checks_byte_identical_to_baseline": true,
+    "python_sources_parse": true,
+    "git_diff_check_clean": true
+  },
+  "production_credentials_used": false,
+  "independent_review": "pending",
+  "approval": "pending"
+}

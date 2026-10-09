@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1710,7 +1710,7 @@
+                 raise ValueError('borrowed credential is not a JSON object: ' + str(real))
+             # Exercise the actual write-back destination and operation before an engine can rotate.
+             # The bytes are unchanged; inode identity is intentionally not preserved.
+-            replace_atomically(real, original, expected=original, locked=True)
++            pass  # falsifier: admit without write-back preflight
+             copied = seed(scratch, real, relative, store, protected)
+             if copied is None:
+                 raise ValueError('borrowed credential disappeared: ' + str(real))
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1710,7 +1710,7 @@
+                 raise ValueError('borrowed credential is not a JSON object: ' + str(real))
+             # Exercise the actual write-back destination and operation before an engine can rotate.
+             # The bytes are unchanged; inode identity is intentionally not preserved.
+-            replace_atomically(real, original, expected=original, locked=True)
++            pass  # falsifier: admit without write-back preflight
+             copied = seed(scratch, real, relative, store, protected)
+             if copied is None:
+                 raise ValueError('borrowed credential disappeared: ' + str(real))
