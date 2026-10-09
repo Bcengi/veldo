@@ -769,10 +769,12 @@ class Clones(EP.EnvProvisioner):
 
     def _event(self, operation, subject, outcome, refusal=None, **extra):
         subject = subject or {}
+        # The accepted source carries the identity record; a clone's manifest keeps only its id.
+        identity = subject.get('identity')
         event = {'schema': SCHEMA, 'operation': operation, 'domain': self.domain,
                  'repository': subject.get('repository'), 'unit': subject.get('unit'),
                  'dispatch_id': subject.get('dispatch_id'), 'outcome': outcome,
-                 'identity': (subject.get('identity') or {}).get('id'),
+                 'identity': identity.get('id') if isinstance(identity, dict) else identity,
                  'accepted': {'commit': subject.get('commit'), 'tree': subject.get('tree'),
                               'attachments': [{f: a.get(f) for f in ('name', 'repository', 'commit')}
                                               for a in subject.get('attachments') or []]}}
