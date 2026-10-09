@@ -298,6 +298,7 @@ _FILES = [
     ".veldo/control_factory_setup_upgrade.py",
     ".veldo/control_factory_setup_engines.py",
     ".veldo/control_factory_setup_trust.py",
+    ".veldo/control_factory_setup_dispatch.py",
     ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.

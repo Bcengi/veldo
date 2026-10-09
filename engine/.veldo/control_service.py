@@ -1926,7 +1926,10 @@ class Line:
     def limited(self, record, report):
         """VELDO-0154 AC3: a run that ended `account_limit` (its invocation's outcome, VELDO-0160 AC2) is decided
         over its execution record (VELDO-0141) by VELDO-0160's decision, and the decision is carried out: re-run,
-        or ask the owner. Any other end leaves the unit stopped."""
+        or ask the owner. A dispatch its receiver refused because its account is not logged in (VELDO-0185 AC4)
+        is offered on another account. Any other end leaves the unit stopped."""
+        if record.get('state') == 'refused' and str(record.get('refusal') or '').startswith(L.ACCOUNT_LOGIN):
+            return self.another_account(record, report)
         if record.get('state') != 'exited':
             return None
         invocation = self.invocation(record['dispatch_id']) or {}
@@ -1946,6 +1949,27 @@ class Line:
         if decision['decision'] == LIM.RERUN:
             return self.rerun(record, report)
         return self.ask(record, decision, invocation, report)
+
+    def another_account(self, record, report):
+        """VELDO-0185 AC4: the unit's station again (a re-run) after its receiver refused the dispatch before spawn
+        because its account is not logged in, while an active account of the engine has not refused this station
+        of this unit for its login; the pool takes another account, the refused one being its most recently used.
+        With none left the unit waits, named in the pass (missing_authority:account_login:none_left)."""
+        contract = record['contract']
+        engine = self.engines.get(contract['capability']['adapter'])
+        refused = {(r.get('contract') or {}).get('reservation', {}).get('account')
+                   for r in self._rows(L.D.RECORD_KIND)
+                   if (r.get('contract') or {}).get('repository') == self.repository
+                   and r['contract'].get('unit') == contract['unit'] and r['contract'].get('station') == contract['station']
+                   and r.get('state') == 'refused' and str(r.get('refusal') or '').startswith(L.ACCOUNT_LOGIN)}
+        left = [a for a in L.D.RES.POOL.accounts(self.service.conn)
+                if a.get('provider') == engine and a.get('status') == 'active' and a.get('id') not in refused]
+        if not left:
+            report['refused'].append({'repository': self.repository, 'unit': contract['unit'],
+                                      'station': contract['station'], 'dispatch_id': record['dispatch_id'],
+                                      'refusals': [L.ACCOUNT_LOGIN + 'none_left']})
+            return None
+        return self.rerun(record, report)
 
     def decide(self, record):
         """VELDO-0160's decision over the run's committed execution record, in the form its Notes give."""

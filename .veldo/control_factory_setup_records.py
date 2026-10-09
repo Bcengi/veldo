@@ -83,6 +83,9 @@ def prepare(root, installed, receivers, api, service_text, differs, engine_write
         for key in ('runs', 'adapters'):
             if key in held:
                 expected[key] = held[key]
+        # VELDO-0185 AC3: a state root the receiver holds as null is the dispatch step's to add.
+        if 'state_root' in held and held['state_root'] is None:
+            expected['state_root'] = None
         # The trust preflight and repair own this key, including a missing or null value.
         expected.pop('host_trust', None)
         if 'host_trust' in held:
