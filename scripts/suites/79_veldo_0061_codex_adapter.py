@@ -14,7 +14,7 @@ dispatch entered through its Landlock entrance, the VELDO-0039 Runner and receiv
 VELDO-0040 containment scopes under the owner's systemd user manager (transient scopes in a slice of
 this run's own, stopped at its end; no unit is installed) and the kernel's cgroup, pidfd and /proc files.
 
-The engine is the installed Codex 0.154.0 vendor binary where no model runs (its qualified flags and
+The engine is the selected, reviewed Codex vendor binary where no model runs (its qualified flags and
 `--help`, with a fixture CODEX_HOME), and otherwise a fake Codex laid out as a vendor package,
 qualified by the production writer, that prints the stream its packet scripts. Every line a fake prints is built from the
 binary's own tables (VELDO-0062's cli-formats.json for the events, VELDO-0061's codex-exec.json for the
@@ -23,6 +23,37 @@ exists and ~/.codex is never read. The profile's systemd-run is a shim that reco
 dispatch before it becomes the real systemd-run, so a spawn for a refused invocation is seen. Each row
 is reported once: the cases of a row are parts of it.
 """
+
+
+def _v61_selection():
+    """Evidence selection refuses unknown packages and altered executables."""
+    import importlib.util
+    import json
+    from pathlib import Path
+    import tempfile
+
+    HERE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
+    evidence_spec = importlib.util.spec_from_file_location('v61_qualification', HERE / 'proof/VELDO-0061/qualification.py')
+    evidence = importlib.util.module_from_spec(evidence_spec)
+    evidence_spec.loader.exec_module(evidence)
+    selected = evidence.select()
+    expect('VELDO-0061 pin/selected-evidence', selected['record']['sha256'] == selected['items']['sha256'])
+    with tempfile.TemporaryDirectory(prefix='v61-selection-') as temp:
+        package = Path(temp)
+        record = selected['record']
+        binary = package / record['executable']
+        binary.parent.mkdir(parents=True)
+        binary.write_bytes(b'changed executable')
+        for version, reason in ((record['package_version'], 'stale_subject:engine_digest'),
+                                ('999.0.0-linux-x64', 'missing_evidence:engine_qualification:999.0.0')):
+            (package / 'package.json').write_text(json.dumps({'name': record['package'], 'version': version}))
+            try:
+                evidence.select(binary)
+                refused = False
+            except ValueError as error:
+                refused = str(error) == reason
+            expect('VELDO-0061 pin/selector-' + ('digest' if version == record['package_version'] else 'unknown'), refused)
+    return selected
 
 
 def _v61_suite():
@@ -40,9 +71,8 @@ def _v61_suite():
     import time
 
     HERE = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2]
-    FORMATS = json.loads((HERE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())['codex']
-    EXEC = json.loads((HERE / 'proof' / 'VELDO-0061' / 'codex-exec.json').read_text())
-    REAL = FORMATS['binary']
+    selected = _v61_selection()
+    FORMATS, EXEC, REAL = selected['events'], selected['items'], selected['binary']
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
@@ -112,7 +142,7 @@ def _v61_suite():
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
-        INSTALLED_QUALIFICATION = ROOT / '.veldo' / 'runtime' / 'codex-qualification.json'
+        INSTALLED_QUALIFICATION = selected['record_path']
         if INSTALLED_QUALIFICATION.is_file():
             shutil.copyfile(INSTALLED_QUALIFICATION, mods / 'runtime' / 'codex-qualification.json')
         S = load('v61_store', mods / 'control_store.py')
@@ -327,8 +357,11 @@ sys.exit(payload.get('code', 0))
         # ~/.nvm/.../bin/codex, the shim the package manager links: found beside the node the package is under.
         NPM_LINK = None
         for parent in Path(REAL).parents:
-            if (parent / 'bin' / 'codex').is_symlink():
-                NPM_LINK = str(parent / 'bin' / 'codex')
+            for candidate in (parent / 'bin/codex', parent / '.bin/codex'):
+                if candidate.is_symlink():
+                    NPM_LINK = str(candidate)
+                    break
+            if NPM_LINK:
                 break
 
         # Every contained spawn: the profile's systemd-run records its dispatch, then becomes the real one.
@@ -734,7 +767,7 @@ sys.exit(payload.get('code', 0))
                                     stdin=subprocess.DEVNULL,
                                     env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'LANG': 'C.UTF-8', 'COLUMNS': '100',
                                          'CODEX_HOME': str(base / 'direct-codex-home')})
-            check('lifecycle/actual-binary', 'the installed Codex 0.154.0 vendor binary, pinned by the installed '
+            check('lifecycle/actual-binary', 'the selected Codex vendor binary, pinned by its reviewed '
                   'qualification, was launched through the trusted runner in its clone and exited 0 [%s %s %s]'
                   % (history(launch), termination, record.get('refusal')),
                   history(launch) == ['prepared', 'accepted', 'running', 'exited'] and termination.get('returncode') == 0
@@ -786,9 +819,9 @@ sys.exit(payload.get('code', 0))
             fresh, error = attempt(lambda: X.qualification(REAL, catalog=True))
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
                   'the installed vendor binary now [%s]' % error, installed and fresh == installed)
-            check('pin/qualified-record', 'it names Codex 0.154.0, the vendor path inside @openai/codex, the digest both '
+            check('pin/qualified-record', 'it names the selected version, the vendor path inside @openai/codex, the digest both '
                   'extracted tables read from the binary, and the qualified flags',
-                  installed.get('version') == FORMATS['version'] == EXEC['version'] == '0.154.0'
+                  installed.get('version') == FORMATS['version'] == EXEC['version']
                   and installed.get('sha256') == FORMATS['sha256'] == EXEC['sha256']
                   and installed.get('executable') == 'vendor/x86_64-unknown-linux-musl/bin/codex'
                   and installed.get('package') == '@openai/codex' and installed.get('flags') == ['exec', '--json', '-c', 'check_for_update_on_startup=false']
@@ -796,10 +829,14 @@ sys.exit(payload.get('code', 0))
                   and installed.get('terminal_protocol', {}).get('item_kinds') == EXEC['item']['kinds'])
             scaffold = load('v61_scaffold', mods / 'init_scaffold.py')
             engine_copy = ROOT / 'engine' / 'runtime' / 'codex-qualification.json'
+            active_path = ROOT / '.veldo/runtime/codex-qualification.json'
+            active = json.loads(active_path.read_text())
+            active_history = HERE / 'proof/VELDO-0061' / ('codex-qualification-' + active['version'] + '.json')
             check('pin/qualified-record', 'init lays it down beside the module that reads it, from a canonical engine copy '
                   'identical to it', ('runtime/codex-qualification.json', '.veldo/runtime/codex-qualification.json')
                   in list(scaffold._RUNTIME_ASSETS) and engine_copy.is_file()
-                  and engine_copy.read_bytes() == INSTALLED_QUALIFICATION.read_bytes()
+                  and engine_copy.read_bytes() == active_path.read_bytes()
+                  and active_history.read_bytes() == active_path.read_bytes()
                   and Path(getattr(X, 'QUALIFICATION', '/nonexistent')) == mods / 'runtime' / 'codex-qualification.json')
 
         # AC2: terminal output as artifacts
@@ -1103,7 +1140,8 @@ sys.exit(payload.get('code', 0))
                   'forms with its no-reset phrase', any(form.replace('{}', phrase) == LIMIT for form in templates
                                                         for phrase in FORMATS['usage_limit']['retry_later']))
             check('format/codex-fake-lines', 'the extracted item table matches the installed binary now',
-                  subprocess.run([sys.executable, '-B', str(HERE / 'proof' / 'VELDO-0061' / 'extract_items.py'), '--check'],
+                  subprocess.run([sys.executable, '-B', str(HERE / 'proof' / 'VELDO-0061' / 'extract_items.py'),
+                                  '--check', '--codex', REAL, '--output', str(selected['items_path'])],
                                  capture_output=True, timeout=120, stdin=subprocess.DEVNULL).returncode == 0)
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:

@@ -125,14 +125,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--codex', default=str(FORMATS.DEFAULT_CODEX))
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--output', type=Path, default=OUT)
     args = parser.parse_args()
     text = json.dumps(extract(args.codex), indent=1, sort_keys=True) + '\n'
     if args.check:
-        same = OUT.is_file() and OUT.read_text() == text
+        same = args.output.is_file() and args.output.read_text() == text
         print('codex-exec.json %s the installed binary' % ('matches' if same else 'DIFFERS FROM'))
         return 0 if same else 1
-    OUT.write_text(text)
-    print('wrote %s (%d bytes)' % (OUT.relative_to(HERE.parents[1]), len(text)))
+    args.output.write_text(text)
+    print('wrote %s (%d bytes)' % (args.output, len(text)))
     return 0
 
 
