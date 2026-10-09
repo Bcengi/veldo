@@ -132,6 +132,16 @@ def run(ROOT, TREE, PRODUCTION, models):
                 _, stop = attempt(lambda: f.save(d))
                 check('save/' + model + '/search-mcp', stop ==
                       'unsupported_configuration:codex_tool:' + model + ':tool_search', str(stop))
+            # Whichever binary is selected: 0.162.0's retained catalog stops gpt-6-sol on the tier it picks itself
+            # and takes gpt-6.1-sol, whose entry picks none.
+            catalog_0162 = json.loads((TREE / 'proof/VELDO-0127/codex-0.162.0/catalog-fixture.json').read_text())
+            bound_0162 = {'model_catalog': catalog_0162, 'model_catalog_digest': X.catalog_digest(catalog_0162)}
+            for model, wanted in (('gpt-6-sol', 'configuration_stop:codex_service_tier:gpt-6-sol:priority'),
+                                  ('gpt-6.1-sol', None)):
+                chosen, stop = attempt(lambda: L.HANDOFF.codex_model(bound_0162, {'settings': {'model': model},
+                                                                                  'native_tools': []}))
+                check('catalog/service-tier', stop == wanted and (stop is not None or [
+                    m['slug'] for m in chosen['models']] == [model]), str((model, stop)))
         except Exception as error:
             check('delivery/completed', False, 'raised ' + type(error).__name__ + ': ' + str(error)[:180])
         finally:

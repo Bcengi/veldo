@@ -874,7 +874,10 @@ sys.exit(payload.get('code', 0))
                       and not invocation(launch.dispatch_id))
             # The production refusal over every listed name: each login is refused, nothing else is.
             credentials = getattr(L, 'CREDENTIALS', None)
-            logins = sorted(set(LOGINS) | set(REDIRECTS) | set(NINE))
+            # With Codex 0.162.0's login lists, qualified beside the pin (one table more).
+            tables_0162 = json.loads((FORMATS_PATH.parents[1] / 'VELDO-0061/codex-formats-0.162.0.json').read_text())
+            logins_0162 = {n for t in tables_0162['credential_tables'] if t['decision'] == 'strip' for n in t['names']}
+            logins = sorted(set(LOGINS) | set(REDIRECTS) | set(NINE) | logins_0162)
             passed = [n for n in logins if not attempt(lambda: ACC.refused({n: 'x'}, credentials))[0]]
             others = sorted(set(MODEL_LISTED) | set(SETTINGS_LISTED) | set(KEPT) | {'CODEX_CA_CERTIFICATE'})
             blocked = [n for n in others if attempt(lambda: ACC.refused({n: 'x'}, credentials))[0]]
@@ -1133,6 +1136,8 @@ sys.exit(payload.get('code', 0))
             # the usage-limit forms with the reset their retry phrase states or none, the rest with none; nothing
             # else in the table records a window.
             ERRORS = FORMATS['codex']['errors']
+            # Codex 0.162.0's error table, qualified beside the pin (its apostrophes are U+2019): read the same way.
+            ERRORS_0162 = json.loads((FORMATS_PATH.parents[1] / 'VELDO-0061/codex-formats-0.162.0.json').read_text())['errors']
 
             def filled(entry, retry):
                 text = entry['message']
@@ -1143,7 +1148,7 @@ sys.exit(payload.get('code', 0))
                                         else '') for i, p in enumerate(pieces))
                 return text.replace('{}', 'x')
             misread = []
-            for entry in ERRORS:
+            for entry in ERRORS + ERRORS_0162:
                 retries = ((LIMIT['retry_at'][1] + x_clock(fixed // 60 * 60 + 600, 'UTC', fixed) + '.',
                             fixed // 60 * 60 + 660), (LIMIT['retry_later'][1], None)) \
                     if entry['window'] == 'usage_limit' else (('', None),)
@@ -1160,10 +1165,10 @@ sys.exit(payload.get('code', 0))
                     if got != wanted or failure:
                         misread.append((message[:60], got, wanted, failure))
             exhaustions = [e for e in ERRORS if e['window']]
-            check('usage/rate-limit-reset', 'codex: every one of the %d messages of the binary\'s error table is read as '
-                  'its window or as none, the %d exhaustions each once, with the reset stated or none [%s]'
-                  % (len(ERRORS), len(exhaustions), misread[:3]),
-                  len(ERRORS) >= 40 and {'usage_limit', 'workspace_credits', 'workspace_spend_cap', 'quota', 'plan'}
+            check('usage/rate-limit-reset', 'codex: every one of the %d messages of the binary\'s error table (and the %d '
+                  'of 0.162.0\'s) is read as its window or as none, the %d exhaustions each once, with the reset stated or '
+                  'none [%s]' % (len(ERRORS), len(ERRORS_0162), len(exhaustions), misread[:3]),
+                  len(ERRORS) >= 40 and len(ERRORS_0162) >= 40 and {'usage_limit', 'workspace_credits', 'workspace_spend_cap', 'quota', 'plan'}
                   == {e['window'] for e in exhaustions} and not misread)
             # End to end, no wait: a stated minute two hours away refuses its account; none stated keeps its account
             # refused however long; a stated minute that already ended lets its account take work; a workspace out

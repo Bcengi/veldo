@@ -6846,6 +6846,16 @@ def cases():
             "        if LIMIT_MESSAGE in message:\n            window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)\n",
             "        if False:  # defect: the usage-limit message is not observed\n            pass\n",
             'usage/rate-limit-reset')
+    # Codex 0.162.0 prints the usage-limit apostrophe as U+2019 (its error table, read by the same row).
+    account('account-codex-limit-apostrophe-ignored', 'control_engine_codex.py',
+            "        message = message.translate(APOSTROPHES)\n",
+            "        pass  # defect: 0.162.0's typographic apostrophe is not read\n",
+            'usage/rate-limit-reset')
+    # The credential names of 0.162.0's new table are refused when an adapter configures them.
+    account('account-codex-0162-credentials-dropped', 'control_engine_codex.py',
+            "    'CODEX_GUARDIAN_DECISIONS_API_KEY', 'OPENAI_WORKLOAD_IDENTITY_CONTEXT'))",
+            "    ))  # defect: 0.162.0's new table is not refused",
+            'login/configured-environment')
     account('account-codex-workspace-unobserved', 'control_engine_codex.py',
             "            window = next((window for text, window in EXHAUSTED if text in message), None)\n",
             "            window = None  # defect: only the usage-limit family of the error table is read\n",
@@ -9972,6 +9982,15 @@ def cases():
             "            if feature != " + repr(feature) + ":\n"
             "                configuration[key] = False",
             ['defaults/' + feature] + mapped127, [])
+    # Codex 0.162.0's newly enabled defaults stay off (a shared background server, worktrees beside the clone).
+    for feature in ('daemon_auto_start', 'worktrees'):
+        add(127, 'role127-default-0162-omitted-' + feature, defaults127, 'control_agent_config_handoff.py',
+            "            configuration[key] = False",
+            "            if feature != " + repr(feature) + ":\n"
+            "                configuration[key] = False",
+            ['defaults/' + feature], [])
+    add(127, 'role127-service-tier-unchecked', '87_veldo_0127_codex_delivery.py', 'control_agent_config_handoff.py',
+        "    if entry and entry.get('default_service_tier') is not None:", "    if False:", ['catalog/service-tier'])
     add(127, 'role127-default-clock-grant-lost', defaults127, 'control_agent_config_handoff.py',
         "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['mapped/clock'], [])
     add(127, 'role127-default-unknown-accepted', defaults127, 'control_agent_config_handoff.py',
