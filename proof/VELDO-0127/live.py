@@ -34,7 +34,17 @@ def load(name, path):
     return module
 
 
-LOGIN = load('live_borrowed_login', ROOT / 'scripts/agent_sandbox.py')
+LOGIN = None
+
+
+def login():
+    """The sandbox launcher's borrowed-login half, loaded on first use from this driver's own
+    repository. Never at import: a relocated copy (suite 86 runs capture() from one under the
+    runtime directory) does not borrow a login and has no repository above it."""
+    global LOGIN
+    if LOGIN is None:
+        LOGIN = load('live_borrowed_login', ROOT / 'scripts/agent_sandbox.py')
+    return LOGIN
 
 
 class Guard:
@@ -53,7 +63,7 @@ class Guard:
             code = 1
             try:
                 os.setsid()
-                for number in LOGIN.STOP_SIGNALS:
+                for number in login().STOP_SIGNALS:
                     signal.signal(number, signal.SIG_IGN)
                 # Nothing else of this process stays open in the guard: a socket it held would never
                 # reach end of file at the teardown.
@@ -72,10 +82,10 @@ class Guard:
                     except (OSError, subprocess.SubprocessError) as error:
                         print('live: the slice was not stopped: %s' % error, file=sys.stderr, flush=True)
                     try:
-                        LOGIN.settle_borrow(borrow)
-                    except LOGIN.CredentialRecovery as error:
-                        print(LOGIN.recovery_message(error), file=sys.stderr, flush=True)
-                        code = LOGIN.RECOVERY_EXIT
+                        login().settle_borrow(borrow)
+                    except login().CredentialRecovery as error:
+                        print(login().recovery_message(error), file=sys.stderr, flush=True)
+                        code = login().RECOVERY_EXIT
             finally:
                 os._exit(code)
         os.close(read)
@@ -115,11 +125,11 @@ def borrowed_profiles(base, args, engines):
         sources.append((source, engine + '-login/' + name))
     args['claude_code_profile'] = str(base / 'claude-login')
     args['codex_profile'] = str(base / 'codex-login')
-    LOGIN.recover_orphans()
+    login().recover_orphans()
     guard = Guard()
-    with LOGIN.Stop() as stop:
+    with login().Stop() as stop:
         try:
-            with LOGIN.borrowed_credentials(base, sources, base) as borrow:
+            with login().borrowed_credentials(base, sources, base) as borrow:
                 try:
                     yield Borrowed(stop, borrow, guard)
                 finally:
@@ -369,6 +379,6 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except LOGIN.CredentialRecovery as error:
-        print(LOGIN.recovery_message(error), file=sys.stderr, flush=True)
-        sys.exit(LOGIN.RECOVERY_EXIT)
+    except login().CredentialRecovery as error:
+        print(login().recovery_message(error), file=sys.stderr, flush=True)
+        sys.exit(login().RECOVERY_EXIT)

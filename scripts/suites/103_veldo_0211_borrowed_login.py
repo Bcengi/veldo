@@ -20,7 +20,7 @@ def _v211_borrowed_login():
     spec = importlib.util.spec_from_file_location('v211_live', ROOT / 'proof/VELDO-0127/live.py')
     L = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(L)
-    S = L.LOGIN
+    S = L.login()
     expect('VELDO-0211 canonical/sandbox-copies-match',
            (ROOT / 'engine/scripts/agent_sandbox.py').read_bytes() == (ROOT / 'scripts/agent_sandbox.py').read_bytes())
     # Every journal and recovery this suite makes lies under its own temporary directory.
