@@ -258,3 +258,13 @@ replaceable policy (now the station's store reader, explicitly). The identity wr
 configure_identities so the VELDO-0204 census of Reservations.configure stays exact. Fixtures that read
 a set-up factory's repository use the workspace setup bound it to. The VELDO-0127 live captures pin
 control_launch.py, which this specification changes; their refresh is the owner's.
+
+2026-10-09 gate followup (gate-v0142c at b3108355 RED): suite 103 made its tree under the checkout's
+.veldo/tmp, which the confined gate domain and a mutation worker's read-only checkout cannot write
+and which first use's copy puts beneath /tmp, where the VELDO-0042 clone layout refuses every
+protected target. The tree now lives in the process temporary directory with its own temporary
+directories standing for the system's while the provisioner runs; row clone/layout-refused proves
+the rule still refuses beneath both. A setup block that ends early emits its later rows as failed,
+so the falsifier identity142-setup-binding-omitted is a detection rather than missing_target. The
+suite 93, 95 and 96 cleanup errors in that run were workers the stage killed when it stopped on
+suite 103; each finding's cases pass in the mutation stage.

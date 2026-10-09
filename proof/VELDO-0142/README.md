@@ -16,6 +16,7 @@ reserved for the reviewer and owner.
 | Land station uses only its repository record | lander/station-record-authority | identity142-station-caller-config |
 | Caller supplied lander identity refuses | lander/caller-identity-refused | identity142-caller-identity-ignored |
 | Independent clone refusal fixture and direct author comparison | clone/unbound-refused; clone/identity-authors | identity142-clone-global-author |
+| Clone layout rule under the fixture's temporary directories | clone/layout-refused | none registered (a no-op layout check fails the row; the rule is VELDO-0042's) |
 
 Rerun identity additions now succeed and report the git_identities step as done; changes to an
 existing identity retain binding_mismatch:git_identity_change. Existing repository bindings
@@ -44,6 +45,15 @@ local and reported launch paths. Credential resolution, execution recording, bas
 and containment are controlled seams; actual processes and commits are real. The environment
 assertions enumerate forbidden names independently of the implementation scrubber.
 
+The fixture tree lives in the process temporary directory, the one place the confined gate domain,
+a mutation worker and first use's copy under /tmp all let the suite write. The VELDO-0042 layout
+rule refuses a protected target beneath a temporary directory, so while the provisioner runs the
+tree's own tmp, var-tmp and shm stand for the system's temporary directories, as suite 66 lays out
+production's. Row clone/layout-refused proves the rule still refuses a clone root, cache root or
+store beneath the real system's temporary directory and beneath each of the tree's, making nothing.
+A setup block that ends early emits each of its later rows as failed, so no falsifier removes a
+baseline row.
+
 The lander inspects every commit reachable from evidence but absent from the trunk watermark,
 including earlier worker ancestors. Negative controls separately alter author and committer for
 implementation and evidence, plus an earlier ancestor. Refusal precedes all merge commits.
@@ -64,8 +74,10 @@ checkpoint. One premature identity suite attempt was stopped after it overlapped
 retry. It supplies no result; the final identity checks were rerun after the consumer process
 finished. Consumer results retain the initial startup failures and owned-runtime retries.
 
-The final suite has 22 identity rows plus 26 shared checks: 48 passed, zero failed. All
-fifteen registered negative controls failed their named rows at their recorded checkpoints.
+The final suite has 23 identity rows plus 26 shared checks: 49 passed, zero failed, unconfined,
+in the confined gate domain and from a copy under /tmp. All fifteen registered negative controls
+failed their named rows at b4540fbc (drive.py) and in the gate's mutation stage, confined
+(the stage for finding 142: 15 registered, 15 rejected).
 Of 24 consumer suites, six passed and eighteen failed. They include containment, permission,
 runtime and gate-observation failures; none is certified as a non-regression without reviewer
 execution. No full gate or independent approval is claimed.

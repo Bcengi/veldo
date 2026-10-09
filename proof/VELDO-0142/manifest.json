@@ -31,7 +31,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0142/observations.json",
-          "detail": "Scoped assertions: launch/no-author-overrides, launch/no-config-overrides, clone/identity-authors, launch/spawn-config-commit-authors, clone/unbound-refused"
+          "detail": "Scoped assertions: launch/no-author-overrides, launch/no-config-overrides, clone/identity-authors, launch/spawn-config-commit-authors, clone/unbound-refused, clone/layout-refused"
         },
         {
           "type": "integration",
@@ -61,7 +61,7 @@
     {
       "name": "unit",
       "status": "passed",
-      "detail": "Own suite: 48 passed, zero failed, partial exit 2. Not a gate verdict."
+      "detail": "Own suite: 49 passed, zero failed, partial exit 2, unconfined and in the confined gate domain. Not a gate verdict."
     },
     {
       "name": "integration",
