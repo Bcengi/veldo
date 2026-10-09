@@ -33,12 +33,20 @@ def run(name, observations):
                 log_sha256=digest(log.read_bytes()))
 
 
-def main():
+def main(selected=None):
     LOGS.mkdir(parents=True, exist_ok=True)
     baseline = run('honest', PROOF / 'observations.json')
     assert baseline['exit'] == 2 and not baseline['failing_rows'], baseline
-    records = []
-    for case in json.loads((PROOF / 'falsifiers.json').read_text()):
+    suite_digest = digest((ROOT / 'scripts/suites' / (SUITE + '.py')).read_bytes())
+    prior = json.loads((PROOF / 'verification.json').read_text()) if selected else {}
+    records = prior.get('mutations', [])
+    for record in records:
+        record.setdefault('suite_sha256', prior['suite_sha256'])
+    cases = json.loads((PROOF / 'falsifiers.json').read_text())
+    if selected:
+        cases = [case for case in cases if case['name'] == selected]
+        assert len(cases) == 1, selected
+    for case in cases:
         target = ROOT / '.veldo' / case['module']
         source = target.read_bytes()
         original = source.decode()
@@ -53,9 +61,10 @@ def main():
         finally:
             target.write_bytes(source)
         expected = ['SELFTEST FAIL: VELDO-0142 ' + row for row in case['rows']]
-        record = dict(name=case['name'], module=case['module'], source_sha256=digest(source),
+        record = dict(name=case['name'], module=case['module'], suite_sha256=suite_digest, source_sha256=digest(source),
                       mutant_sha256=digest(mutated.encode()), diff=case['name'] + '.diff', expected_rows=expected,
                       rejected=result['exit'] == 1 and all(row in result['failing_rows'] for row in expected), **result)
+        records = [prior_record for prior_record in records if prior_record['name'] != case['name']]
         records.append(record)
         print(case['name'], 'rejected' if record['rejected'] else 'NOT REJECTED', flush=True)
         assert record['rejected'], record
@@ -64,8 +73,11 @@ def main():
                   suite=SUITE, suite_sha256=digest((ROOT / 'scripts/suites' / (SUITE + '.py')).read_bytes()),
                   baseline=baseline, mutations=records, full_gate_run=False, other_suites_run=False)
     (PROOF / 'verification.json').write_text(json.dumps(packet, indent=2) + '\n')
-    print('Honest suite passes; all registered falsifiers fail their required assertion rows.', flush=True)
+    print('Honest suite passes; selected falsifiers fail their required assertion rows.', flush=True)
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description='Serial scoped identity checks; no repository gate or mutation driver.')
+    parser.add_argument('--case', help='Replay one named falsifier and retain prior records with their suite digests')
+    main(parser.parse_args().case)

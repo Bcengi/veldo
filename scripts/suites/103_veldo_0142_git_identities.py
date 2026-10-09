@@ -482,6 +482,18 @@ def _v142_suite():
                 ops.discard()
             check('lander/worker-commit-mismatch', results == [True] * 5)
 
+        with row('lander/station-record-authority'):
+            LS = load('identity142_station', mods / 'control_landing_station.py')
+            land = {key: str(base / key) for key in LS.REQUIRED}
+            land.update(repository=str(repos['bcengi']), trunk='main', remote='origin')
+            station = LS.LandStation(S, conn, domain=domain, repository='bcengi', land=land,
+                                    principal='fixture', signer='fixture', sign=lambda body: 'fixture')
+            with patch.object(LS.LG, 'Landing', return_value=object()):
+                ops = station._ops('HEAD')
+            check('lander/station-record-authority', LS.config_problem(land) is None
+                  and LS.config_problem(dict(land, identity=list(outsider))) == 'identity'
+                  and ops._identity() == GI.author(identities[0]))
+
         with row('lander/caller-identity-refused'):
             ops = LD.GitLandOps(repos['bcengi'], 'HEAD', push=False, identity=outsider,
                                 identity_conn=conn, domain=domain, repository='bcengi')

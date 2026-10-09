@@ -155,5 +155,16 @@
       "launch/no-config-overrides",
       "launch/spawn-config-commit-authors"
     ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-station-caller-config",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_landing_station.py",
+    "old": "policy=policy, workspace_root=land.get",
+    "new": "policy=policy, identity=tuple(land['identity']), workspace_root=land.get",
+    "rows": [
+      "lander/station-record-authority"
+    ]
   }
 ]
