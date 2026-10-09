@@ -14,6 +14,7 @@ depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0139, VELDO-0
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
   - "scripts/suites/59_veldo_0037_aliases.py"
   - "scripts/suites/69_veldo_0068_settlement.py"
   - "scripts/suites/65_veldo_0132_workflow.py"
@@ -223,6 +224,12 @@ fixtures must now supply explicit identity records. Their assertions are retaine
 fixture helper lives in proof/VELDO-0142; it chooses test identities and is never installed.
 The canonical module and scaffold changes are synchronized with this checkout. No pack
 copy exists in the source tree. Suite 103 and finding 142 register the behavior and its
-falsifiers. The owner reserves the full gate, mutation drivers and other specifications'
-suites for review; only this specification's named suite is run here. Criteria, readiness,
+falsifiers. The owner reserves the full gate and repository mutation drivers for review. This review
+followup runs suite 103 and touched consumer suites individually, serially and in the foreground. Criteria, readiness,
 risk and approval requirements are unchanged.
+
+2026-10-08 review followup: strip environment-injected Git configuration on every launch path
+and after engine overrides. Check every incoming worker commit before merging. Setup reruns
+add missing bindings and identities without replacement. Store path registration refuses
+unbound records before writing, including both service registration callers. Scoped suite rows
+and registered falsifiers cover the review findings; the full gate remains reviewer-owned.
