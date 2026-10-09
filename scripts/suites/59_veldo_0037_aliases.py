@@ -1264,6 +1264,7 @@ def _s37_run():
         altered_conn = st.open_store(env.base / 'altered.sqlite3')
         handles.append(altered_conn)
         mapping = {'repository': str(env.origins['repository'])}
+        __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0142/fixtures.py'))['bind_paths'](modules, altered_conn, 'domain', mapping)
         accepting_altered, _ = attempt(lambda: rs_altered.attach_revisions(st, altered_conn, 'domain', mapping))
         if accepting_altered is not None:
             attempt(lambda: accepting_altered.accept('revision/repository', 'repository',
