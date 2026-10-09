@@ -296,7 +296,9 @@ class LandStation:
 
     def _ops(self, evidence):
         """The factory land's GitLandOps over this repository's configuration, with the authority's
-        CandidatePolicy and the exact-tip Landing wired, exactly as every factory land runs."""
+        CandidatePolicy and the exact-tip Landing wired, exactly as every factory land runs. Its author is
+        read from the authority store's repository identity record (VELDO-0142), named here explicitly so
+        authorship never depends on the policy callable the land is given."""
         land = self.land_config
         policy = LD.CandidatePolicy(self.store, self.conn, domain=self.domain, repository=self.repository,
                                     floor=self.floor, settlement_trust=self.settlement_trust)
@@ -309,7 +311,7 @@ class LandStation:
                              policy=policy, workspace_root=land.get('workspace_root'),
                              observe=self.observe, domain=self.domain, repository=self.repository,
                              installation=land.get('installation'), observations=land.get('observations'),
-                             landing=landing)
+                             landing=landing, identity_conn=self.conn)
 
     def land(self, unit, *, evidence, holder=None, generation=None, follows=None):
         """Run one land dispatch of `unit`, landing the build whose evidence commit is `evidence`; `follows`
