@@ -1,11 +1,11 @@
---- .veldo/control_factory_setup.py
-+++ .veldo/control_factory_setup.py
-@@ -631,7 +631,7 @@
-     D, ACT = organ('control_factory_setup_dispatch'), organ('control_channel_activation')
-     key = os.path.join(plan['keys'], JOURNAL_KEY)
-     for principal in D.RESERVATION_PRINCIPALS:
--        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': [D.RESERVATION_ROLE],
-+        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': [],
-                                    'public_key': public_key(key), 'independence_group': principal, 'scope': '*'},
-               enrollee=ACT.ssh_signer(key))
-     K.publish(S, conn, projection)
+--- .veldo/control_factory_setup_dispatch.py
++++ .veldo/control_factory_setup_dispatch.py
+@@ -229,7 +229,7 @@
+         found = conn.execute('SELECT kind, data FROM entities WHERE id=?', (principal,)).fetchone()
+         data = json.loads(found[1]) if found and found[0] == 'membership' else None
+         return data if data is not None and data.get('revoked_at') is None else None
+-    due = [(p, [RESERVATION_ROLE]) for p in RESERVATION_PRINCIPALS
++    due = [(p, []) for p in RESERVATION_PRINCIPALS
+            if RESERVATION_ROLE not in ((member(p) or {}).get('roles') or [])]
+     return due + [(worker, []) for worker in TEAM_WORKERS if member(worker) is None]
+ 

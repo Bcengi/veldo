@@ -1,0 +1,11 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1973,7 +1973,7 @@
+                    and r.get('state') == 'refused' and str(r.get('refusal') or '').startswith(L.ACCOUNT_LOGIN)}
+         logins = {account: self.login_now(account, contract['capability']['adapter'])
+                   for account in sorted(a for a in refused if isinstance(a, str))}
+-        excluded = sorted(a for a, kind in logins.items() if kind is not None and not kind.startswith(UNCHECKED))
++        excluded = sorted(logins)
+         left = [a for a in L.D.RES.POOL.accounts(self.service.conn)
+                 if a.get('provider') == engine and a.get('status') == 'active' and a.get('id') not in excluded]
+         if not left:

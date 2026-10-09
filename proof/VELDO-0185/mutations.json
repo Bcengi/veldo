@@ -2,8 +2,8 @@
  "all_detected": true,
  "baseline": {
   "all_passed": true,
-  "rows": 14,
-  "seconds": 11.027
+  "rows": 19,
+  "seconds": 11.431
  },
  "mutations": [
   {
@@ -20,7 +20,7 @@
     "reservation/principals"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "2856e6ae4ee3e8e04836dcffa9fb04cbfd7f1c020291fc67347fde51bc141dc3",
+   "mutant_sha256": "c2fbaa1ade3e799f964586be6a2417f24add77b0c94d2b95b68657282c3afe4c",
    "name": "v185-work-not-installed",
    "named_row_details": {
     "loop/configured": "the running service's loop is available and configured, with no refusal [{'available': False, 'configured': False, 'refusal': None}]"
@@ -28,8 +28,8 @@
    "named_rows": [
     "loop/configured"
    ],
-   "seconds": 6.942,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 7.438,
+   "source_sha256": "e5b9313edf328b4bed2e473a4462cf1e66059c6a924a8494a7c0fe8305d38b8d"
   },
   {
    "detected": true,
@@ -39,12 +39,14 @@
     "every-account",
     "fresh/registered",
     "login/receiver-refuses",
+    "login/retry-excludes",
     "rerun/changes-nothing",
+    "rerun/missing-state-root",
     "rerun/over-earlier-host",
     "reservation/principals"
    ],
-   "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "1e949243c292831db45b5a223811553b164f08027a592180763af691099859ea",
+   "module": ".veldo/control_factory_setup_dispatch.py",
+   "mutant_sha256": "9665238fa3bbc06d39974f087be6abecf70c25f3c9f40af44fc02aa63110ff44",
    "name": "v185-principals-without-role",
    "named_row_details": {
     "reservation/principals": "authority holds reservation_service, enrolled by the owner's signed command [[]]"
@@ -52,8 +54,8 @@
    "named_rows": [
     "reservation/principals"
    ],
-   "seconds": 36.994,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 37.493,
+   "source_sha256": "21583b8001b3908bbf17a28a166100245301dab4c3b66f1a8108a651dbfb444c"
   },
   {
    "detected": true,
@@ -64,16 +66,16 @@
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "2151c172982829a030272b55f0c87eae68fe61ad4b16b8fe4d67aaf5935059dc",
+   "mutant_sha256": "2ae98d43174f150feaadf7b1219f4e44e8e5e78bec0e6a7028ead35df4118efc",
    "name": "v185-enrollments-every-run",
    "named_row_details": {
-    "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:reservation_principals:store_refused []]"
+    "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [set_up None [('account_login', 'refused'), ('account_registration', 'already_done'), ('api_edge_enrollment', 'already_done'), ('api_edge_key', 'already_done'), ('api_process_configuration', 'already_done'), ('api_se"
    },
    "named_rows": [
     "rerun/changes-nothing"
    ],
-   "seconds": 10.941,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 11.459,
+   "source_sha256": "e5b9313edf328b4bed2e473a4462cf1e66059c6a924a8494a7c0fe8305d38b8d"
   },
   {
    "detected": true,
@@ -87,14 +89,19 @@
     "fresh/team",
     "login/named",
     "login/receiver-refuses",
+    "login/recheck",
+    "login/retry-excludes",
     "loop/configured",
     "rerun/changes-nothing",
+    "rerun/missing-state-root",
     "rerun/over-earlier-host",
     "reservation/principals",
-    "reservation/state-root"
+    "reservation/state-root",
+    "team/newest-model",
+    "team/workers"
    ],
    "module": ".veldo/control_factory_setup_dispatch.py",
-   "mutant_sha256": "74bba31060341654eaadaef2310d01e3cdbca03f18384bffac2c31cea86dc828",
+   "mutant_sha256": "2dbd72641224b08988413f693e00ddcd07a9350cf6ca42e0e16a0f49e70c820d",
    "name": "v185-adapters-without-codex",
    "named_row_details": {
     "every-account": "setup laid the owner's host down [refused setup_incomplete:work_configuration:invalid_input:work:role:adapter]"
@@ -102,8 +109,8 @@
    "named_rows": [
     "every-account"
    ],
-   "seconds": 1.885,
-   "source_sha256": "d3189288888874628c433de96d3ebfdfbac58843cb2529ba08b8abc809a93238"
+   "seconds": 1.899,
+   "source_sha256": "21583b8001b3908bbf17a28a166100245301dab4c3b66f1a8108a651dbfb444c"
   },
   {
    "detected": true,
@@ -116,11 +123,12 @@
     "fresh/team",
     "login/named",
     "login/receiver-refuses",
+    "login/retry-excludes",
     "rerun/over-earlier-host",
     "reservation/principals"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "65f6695b8b33c04a2d950f59c4f69d12c11a7ab35cb6a8b9d1e8a43bf4ce0bb0",
+   "mutant_sha256": "5c5d9f6dc6f8236c61a0271528a707c9a44be31cd453becdb1844ce03c583a76",
    "name": "v185-registration-left-out",
    "named_row_details": {
     "fresh/registered": "claude-a: one store record with the fields registration prints [{'provider': None, 'label': None, 'concurrency': None}]"
@@ -128,18 +136,19 @@
    "named_rows": [
     "fresh/registered"
    ],
-   "seconds": 36.467,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 36.995,
+   "source_sha256": "e5b9313edf328b4bed2e473a4462cf1e66059c6a924a8494a7c0fe8305d38b8d"
   },
   {
    "detected": true,
    "diff": "proof/VELDO-0185/v185-receiver-login-unchecked.diff",
    "executed": true,
    "false_rows": [
-    "login/receiver-refuses"
+    "login/receiver-refuses",
+    "login/retry-excludes"
    ],
    "module": ".veldo/control_launch.py",
-   "mutant_sha256": "0f5e8750280e95468aa71b5fb85c75a917c42752617616a34850e5844204465e",
+   "mutant_sha256": "39c46695dba23438234f38d75a6810396e0df01e23230d98cac38a8e50b51b6c",
    "name": "v185-receiver-login-unchecked",
    "named_row_details": {
     "login/receiver-refuses": "every dispatch on the logged-out account was refused by name before spawn [[('v185-u2', 'build', 'exited', True, None)]]"
@@ -147,8 +156,8 @@
    "named_rows": [
     "login/receiver-refuses"
    ],
-   "seconds": 10.957,
-   "source_sha256": "dd47167f7f0cf1583ffeb41ca89d08225271fb8141da831bb2eb1abc44f87a1d"
+   "seconds": 11.483,
+   "source_sha256": "4a1ef041cd092f3dda964f18be012eb4c636981cea90e2c91c34e09b4ff2ddd8"
   },
   {
    "detected": true,
@@ -156,10 +165,12 @@
    "executed": true,
    "false_rows": [
     "every-account",
-    "login/receiver-refuses"
+    "login/receiver-refuses",
+    "login/recheck",
+    "login/retry-excludes"
    ],
    "module": ".veldo/control_service.py",
-   "mutant_sha256": "88035f21faf42fd43dbccb0dd0900072f3462b2825b9d106ed09b512b2a5f173",
+   "mutant_sha256": "79fdadc6b2e6d0c37103e000ad1f1b798083726a74fc12313956cfa030dc8a21",
    "name": "v185-refused-unit-stranded",
    "named_row_details": {
     "every-account": "every unit was built and reviewed, each to a completion [{'claude-a': [('v185-u1', 'build', 'exited', True, None)], 'claude-b': [('v185-u2', 'build', 'refused', False, 'missing_authority:account_login:claude-b')], 'claude-c': [('v185-u3', 'build', 'exited', True, None)], 'codex-a': [('v185-u1', 'rev",
@@ -169,8 +180,8 @@
     "login/receiver-refuses",
     "every-account"
    ],
-   "seconds": 39.968,
-   "source_sha256": "44a568f2c51aff737e3f0145b100c91c3bf50eb2c7ff93892c461e1c84dd68df"
+   "seconds": 40.515,
+   "source_sha256": "e3a07033d86fa29c42643ddce4b43a2b7697b37b5283419313c4623cbf27f5b1"
   },
   {
    "detected": true,
@@ -181,7 +192,7 @@
     "rerun/changes-nothing"
    ],
    "module": ".veldo/control_factory_setup_dispatch.py",
-   "mutant_sha256": "ed5dd88d1f158d610ff40af6e38f288caf35d53966a9d6e3209451bd4f1cbbaa",
+   "mutant_sha256": "578b6723495dba0fa00ca33500b2bf65df5acd0387e370305c1ac801aa56ce5d",
    "name": "v185-setup-login-unchecked",
    "named_row_details": {
     "login/named": "setup checked every account's own login [{'claude-a': ('logged_in', None), 'claude-b': ('logged_in', None), 'claude-c': ('logged_in', None), 'codex-a': ('logged_in', None)}]"
@@ -189,8 +200,8 @@
    "named_rows": [
     "login/named"
    ],
-   "seconds": 10.934,
-   "source_sha256": "d3189288888874628c433de96d3ebfdfbac58843cb2529ba08b8abc809a93238"
+   "seconds": 11.461,
+   "source_sha256": "21583b8001b3908bbf17a28a166100245301dab4c3b66f1a8108a651dbfb444c"
   },
   {
    "detected": true,
@@ -200,16 +211,16 @@
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "78371fac9d6bc75dfd4d259df26d57176947e732f2e7caf8d92bb5388edf0964",
+   "mutant_sha256": "808dede40019941e18ad7d0a651c0c00526157897781348eebf346f52e988cff",
    "name": "v185-rerun-work-not-recorded",
    "named_row_details": {
-    "rerun/over-earlier-host": "the installation gained its work configuration, the receiver its adapters and the state root it held as null [[{'keys': ['adapters', 'state_root'], 'path': '/dev/shm/b171-3r9es9v1/install-earlier/63ff31f64e89f570/config/receiver-71f73a391027ff07.json'}]]"
+    "rerun/over-earlier-host": "the installation gained its work configuration, the receiver its adapters and the state root it held as null [[{'keys': ['adapters', 'state_root'], 'path': '/dev/shm/b171-kakp68uk/install-earlier/4dee77a7e426332a/config/receiver-55e1901ca911f1de.json'}]]"
    },
    "named_rows": [
     "rerun/over-earlier-host"
    ],
-   "seconds": 10.942,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 11.448,
+   "source_sha256": "e5b9313edf328b4bed2e473a4462cf1e66059c6a924a8494a7c0fe8305d38b8d"
   },
   {
    "detected": true,
@@ -217,10 +228,11 @@
    "executed": true,
    "false_rows": [
     "rerun/changes-nothing",
+    "rerun/missing-state-root",
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup.py",
-   "mutant_sha256": "d976a7a51b4edc4e79a7fdf052d336a15565735689fe7b62aa9f66398e45fba4",
+   "mutant_sha256": "9301f879f0567cd933a6f98be020c74499d9b819e9ca7a5258e78b46553100d7",
    "name": "v185-team-saved-again",
    "named_row_details": {
     "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:default_team:stale_version:default_team []]"
@@ -228,8 +240,8 @@
    "named_rows": [
     "rerun/changes-nothing"
    ],
-   "seconds": 10.954,
-   "source_sha256": "d3d13456d0c2caaa8bfdab97e5a8f76abf482994fbfb85046a066d5bd76ee8cd"
+   "seconds": 11.459,
+   "source_sha256": "e5b9313edf328b4bed2e473a4462cf1e66059c6a924a8494a7c0fe8305d38b8d"
   },
   {
    "detected": true,
@@ -242,12 +254,12 @@
    "mutant_sha256": "39c0058e969ef8e42089c6fd2b3bb7b61a85c6f0ebb9c3150776d274997ef245",
    "name": "v185-null-state-root-refused",
    "named_row_details": {
-    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-puxj86mr/install-earlier/f6c9524ef5dfa47e/config/receiver-cb24637ecf8621ed.json []]"
+    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-vuuicxhe/install-earlier/9e77139e7f392915/config/receiver-5ef38f1a7b234f93.json []]"
    },
    "named_rows": [
     "rerun/over-earlier-host"
    ],
-   "seconds": 10.423,
+   "seconds": 10.982,
    "source_sha256": "7b6935d58eb17b5a1c7bd1b91c5a4d0563517fc3cb2c45429ff1808e48cc38bf"
   },
   {
@@ -255,19 +267,20 @@
    "diff": "proof/VELDO-0185/v185-records-null-refused.diff",
    "executed": true,
    "false_rows": [
+    "rerun/missing-state-root",
     "rerun/over-earlier-host"
    ],
    "module": ".veldo/control_factory_setup_records.py",
-   "mutant_sha256": "eb35f2eb5dbf21e0feb4d197030336464c4708315fa3d671895228ac0c5070b4",
+   "mutant_sha256": "f57584ce7139605a85b3d4630205a848db776998419179247b607c2559e4baca",
    "name": "v185-records-null-refused",
    "named_row_details": {
-    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-n5pi7sj0/install-earlier/73bb26eff4eb2461/config/receiver-1372301c0933c42c.json []]"
+    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-ylsy_9bi/install-earlier/d03c44841930ce9d/config/receiver-102ac6d53f183ed6.json []]"
    },
    "named_rows": [
     "rerun/over-earlier-host"
    ],
-   "seconds": 10.44,
-   "source_sha256": "08fadd0c15facb049a6522bf90641d587193d05dd77e1473b905e13797f64478"
+   "seconds": 10.963,
+   "source_sha256": "046f47e20dc74745f8a02d7339b3df7aaa19c9aa02926169e90ab67209c00b27"
   },
   {
    "detected": true,
@@ -285,8 +298,141 @@
    "named_rows": [
     "install/asset"
    ],
-   "seconds": 10.965,
+   "seconds": 11.48,
    "source_sha256": "27b5bc0811f9655da2a5635c01175e1f5ad25bc09bc22c17abdf7ef037eedfdd"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-retry-excludes-nothing.diff",
+   "executed": true,
+   "false_rows": [
+    "login/retry-excludes"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "87bcdd86d9e84c58d9c699ff1995bf14f3a78cd63cb5f3f27f24f12245b75cb6",
+   "name": "v185-retry-excludes-nothing",
+   "named_row_details": {
+    "login/retry-excludes": "each retry of a dispatch refused for its login chose another account, the refused one passed over as excluded [[('claude-a', None)]]"
+   },
+   "named_rows": [
+    "login/retry-excludes"
+   ],
+   "seconds": 11.489,
+   "source_sha256": "e3a07033d86fa29c42643ddce4b43a2b7697b37b5283419313c4623cbf27f5b1"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-pool-ignores-exclude.diff",
+   "executed": true,
+   "false_rows": [
+    "login/retry-excludes"
+   ],
+   "module": ".veldo/control_account_pool.py",
+   "mutant_sha256": "9b455134dc7b930d327a401dc2ca892bceb15001aafff1e71923eb50ec498c2f",
+   "name": "v185-pool-ignores-exclude",
+   "named_row_details": {
+    "login/retry-excludes": "each retry of a dispatch refused for its login chose another account, the refused one passed over as excluded [[('claude-a', None)]]"
+   },
+   "named_rows": [
+    "login/retry-excludes"
+   ],
+   "seconds": 11.43,
+   "source_sha256": "0b34da0544dcff40650ceffe2bc43f6d02024ea3b682b65eca86e91530d14784"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-pool-ranks-by-utilization-first.diff",
+   "executed": true,
+   "false_rows": [
+    "login/retry-excludes"
+   ],
+   "module": ".veldo/control_account_pool.py",
+   "mutant_sha256": "6e52d59aaae0b2b28f8219ba163c1c098b734b6ab0cd6de507c57975ec152212",
+   "name": "v185-pool-ranks-by-utilization-first",
+   "named_row_details": {
+    "login/retry-excludes": "the pool never chooses the login-refused account while the healthy one can take the work, though its utilization is lower, excluded or not [['v185-out', 'v185-out', 'v185-out', 'v185-healthy', 'v185-healthy', 'v185-healthy']; passed {'v185-out': 'account_login:excluded'}]"
+   },
+   "named_rows": [
+    "login/retry-excludes"
+   ],
+   "seconds": 11.457,
+   "source_sha256": "0b34da0544dcff40650ceffe2bc43f6d02024ea3b682b65eca86e91530d14784"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-login-refusal-forever.diff",
+   "executed": true,
+   "false_rows": [
+    "login/recheck"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "5459a5fc89dbd1f40350923132a60d60bcfd184991c0d72711e7c1f69f59c133",
+   "name": "v185-login-refusal-forever",
+   "named_row_details": {
+    "login/recheck": "logged in again, the same account is offered the unit again with nothing excluded [[]; {'refused': [{'repository': '544b697f-62c2-40b3-ac5a-c1a4b8ba38a5', 'unit': 'v185-r', 'station': 'build', 'dispatch_id': 'v185-refused', 'refusals': ['missing_authority:account_login:none_left'], 'logins': {'v185-"
+   },
+   "named_rows": [
+    "login/recheck"
+   ],
+   "seconds": 11.48,
+   "source_sha256": "e3a07033d86fa29c42643ddce4b43a2b7697b37b5283419313c4623cbf27f5b1"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-records-missing-refused.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/missing-state-root"
+   ],
+   "module": ".veldo/control_factory_setup_records.py",
+   "mutant_sha256": "1c16a5aa24fda8cc366363b5528dc9cffb76637fca4dfd9f969adaffb831a24c",
+   "name": "v185-records-missing-refused",
+   "named_row_details": {
+    "rerun/missing-state-root": "setup run again over a receiver lacking its state_root key succeeds and adds it [1 invalid_input:state_root:differs:/dev/shm/b171-w2hlnp65/install-main/31d240332478907c/config/receiver-3a8e0ef0e9bc3bad.json []]"
+   },
+   "named_rows": [
+    "rerun/missing-state-root"
+   ],
+   "seconds": 11.462,
+   "source_sha256": "046f47e20dc74745f8a02d7339b3df7aaa19c9aa02926169e90ab67209c00b27"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-workers-not-enrolled.diff",
+   "executed": true,
+   "false_rows": [
+    "team/workers"
+   ],
+   "module": ".veldo/control_factory_setup_dispatch.py",
+   "mutant_sha256": "aad798dae55931f06e46503e97054f5995b8e39af4b063e60569ec31ef3f92e7",
+   "name": "v185-workers-not-enrolled",
+   "named_row_details": {
+    "team/workers": "elaborator is enrolled, a service principal of its own independence group, by the owner's signed command [{'principal_type': None, 'independence_group': None, 'scope': None, 'revoked_at': None}]"
+   },
+   "named_rows": [
+    "team/workers"
+   ],
+   "seconds": 11.532,
+   "source_sha256": "21583b8001b3908bbf17a28a166100245301dab4c3b66f1a8108a651dbfb444c"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-codex-model-oldest.diff",
+   "executed": true,
+   "false_rows": [
+    "team/newest-model"
+   ],
+   "module": ".veldo/control_factory_setup_dispatch.py",
+   "mutant_sha256": "816f261af17be325b1c4db6cde8d125325c2e861d85d29dd8bdbc534f1a85b70",
+   "name": "v185-codex-model-oldest",
+   "named_row_details": {
+    "team/newest-model": "the Codex reviewer's saved configuration names the newest model of the qualified catalog, no listed model newer [gpt-5.2; newest gpt-6-astra; listed [(1, 'gpt-6-astra'), (6, 'gpt-5.6-sol'), (7, 'gpt-5.6-terra'), (8, 'gpt-5.6-luna'), (12, 'gpt-5.5'), (29, 'gpt-5.2')]]"
+   },
+   "named_rows": [
+    "team/newest-model"
+   ],
+   "seconds": 11.424,
+   "source_sha256": "21583b8001b3908bbf17a28a166100245301dab4c3b66f1a8108a651dbfb444c"
   }
  ],
  "schema": "veldo.mutation-registration/v1",

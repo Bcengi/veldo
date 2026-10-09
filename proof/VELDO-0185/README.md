@@ -83,7 +83,8 @@ owner session's.
 Suite `106_veldo_0185_dispatch_setup` (registered in manifest.json with the
 `systemd_user_manager` resource, requires.json regenerated). Every falsifier
 is a registered case in `scripts/check_teeth_mutations.py` (finding 185);
-`drive.py` (its mutations mode) executed all 13 with the driver's own worker, the
+`drive.py` (its mutations mode) executed all of them (13 for the build, 20 since the
+Codex review below) with the driver's own worker, the
 baseline passing every row first (`mutations.json`, one diff per case).
 
 | Criterion | Proving rows | Declared falsifier (case) | Observed |
@@ -128,8 +129,11 @@ pre-change tree; every behavior row is false by assertion.
   configured subscription token logs in with it and is not checked this way.
 * The starting grants: Claude Code roles get Read, Glob, Grep and Bash (plus
   Edit and Write except the reviewer); Codex roles get shell and update_plan
-  (plus apply_patch except the reviewer) and the lowest-priority listed,
-  non-code-mode model of the qualified catalog (gpt-5.5 in the shipped record);
+  (plus apply_patch except the reviewer) and the newest model of the qualified
+  catalog: of its listed models not retired in favour of another, the one of
+  the lowest priority, whatever its tool mode (gpt-6-astra in the shipped
+  record; until the Codex review below it was the lowest-priority non-code-mode
+  model, gpt-5.5);
   each role's budget is capacity 1, 20 invocations, 3600 seconds; the factory
   project's is capacity 4, 400 invocations, 7 days. The owner changes them in
   the role form.
@@ -141,7 +145,7 @@ pre-change tree; every behavior row is false by assertion.
 ## What ran
 
 `scripts/selftest.py`, one suite selected each time, on the host, each foreground, green on the final
-tree: 106_veldo_0185_dispatch_setup (14 rows), 73_veldo_0139_factory_setup,
+tree: 106_veldo_0185_dispatch_setup (14 rows; 19 since the Codex review below), 73_veldo_0139_factory_setup,
 85_veldo_0171_setup_api, 86_veldo_0186_setup_assets, 86_veldo_0189_engine_upgrade,
 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records,
 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies; earlier in the
@@ -171,3 +175,50 @@ baseline also fails there, its setup rows false). `drive.py` runs the same worke
 
 Not run: the full selftest, `scripts/verify.sh`, the canonical gate. No gate
 stamp, review or landing is claimed. The specification stays `ready`.
+
+## The Codex review of e016df9b (review-20261009-023457)
+
+Four defects, each with a reproduction capsule, fixed in 5952516c. Each fix has a
+suite 106 row that is false at e016df9b by assertion (`red-at-e016df9b.json`,
+`drive.py --red e016df9b` with the five rows named) and a registered falsifier
+case that makes it false again (`mutations.json`, 20 cases, all detected, the
+baseline passing all 19 rows). The capsules were run with `.veldo/capsule.py run`
+against e016df9b and 5952516c (`codex-review-capsules.json`): each reproduces at
+e016df9b and none reproduces at 5952516c, where each script's own assertion
+passes. The harvested manifests carried no `veldo.capsule/v1` schema or digests;
+each was sealed with `capsule.write_manifest` from its own fields (same files,
+command and expected observation), recorded there.
+
+| Finding | Fix | Row | Falsifier cases | Capsule at e016df9b / 5952516c |
+| --- | --- | --- | --- | --- |
+| R4, default workers never enrolled | the principals step also enrolls `elaborator`, `builder`, `reviewer` (service principals, each its own independence group, the journal key), only those the store lacks; held and the re-run use the same list (`enrollments_due`); the owner may not take their names | team/workers | v185-workers-not-enrolled | reproduced / not: the owner-signed proposal of the saved team is accepted, no problem |
+| R1, the retry picks the refused account again | `another_account` passes the accounts still not logged in to `offer` as `exclude`, through `Runner.prepare`, `Pool.reserve` and `reserve_pooled` (its request check takes `exclude`) to `choose`, which passes them over (`account_login:excluded`); `choose` also ranks an account whose latest receiver login check refused it after every other candidate, before utilization | login/retry-excludes | v185-retry-excludes-nothing, v185-pool-ignores-exclude, v185-pool-ranks-by-utilization-first | reproduced / not: `healthy` three times |
+| R2, a login refusal excludes forever | `Line.login_now` reads each refused account's login again with the receiver's adapter, state root and the account's profile, the engine's own login status as the receiver runs it; only one still not logged in is excluded; one logged in again is a candidate; one whose login cannot be read here is left to the pool's ranking and its receiver's check; `none_left` names each login read | login/recheck | v185-login-refusal-forever | reproduced / not: one retry offer |
+| R3, a missing state_root refused before repair | the records preflight treats an absent `state_root` as a null one | rerun/missing-state-root | v185-records-missing-refused | reproduced / not: the rerun exits 0 and the key is added |
+| Codex roles' model | `codex_model` takes the newest model of the qualified catalog (`catalog_models`); the suite's fake Codex binary sends a code-mode model's runner tools (`exec`, `wait`) as the qualified binary does, so the journey's reviews run on it | team/newest-model (the saved reviewer configuration names the catalog's newest, computed by the suite from the shipped record, and no listed model is newer) | v185-codex-model-oldest | no capsule |
+
+Also: the journey's row login/retry-excludes reads the installed service's own
+retries: each retry of a dispatch refused for its login chose another account
+with the refused one passed over as excluded (its login read again by the
+service). Two existing cases follow their moved anchors
+(v185-principals-without-role now in `control_factory_setup_dispatch.py`,
+v185-records-null-refused over the new preflight block). The red replay's
+rerun/over-earlier-host is false in an archived tree for its own reason (the
+archive holds no Git history to take the earlier engine from), as in
+`red-at-244784bc.json`.
+
+The footprint now declares `control_reservations.py` (both copies): its request
+check is where the exclusion enters selection. Criteria and ready status are
+unchanged.
+
+Run on 5952516c, each foreground and green: 106_veldo_0185_dispatch_setup (19
+rows), 78_veldo_0160_account_pool, 58_veldo_0036_reservations,
+83_veldo_0154_factory_loop, 62_veldo_0039_dispatch, 83_veldo_0166_usage_windows,
+82_veldo_0129_worker_wiring, 73_veldo_0139_factory_setup, 85_veldo_0171_setup_api,
+86_veldo_0186_setup_assets, 86_veldo_0189_engine_upgrade,
+87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records,
+95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies,
+75_veldo_0062_accounts, 85_veldo_0158_credential_delivery,
+81_veldo_0156_codex_baseline, 80_veldo_0155_claude_baseline,
+82_veldo_0141_execution_record; template sync passes. Not run: the full
+selftest, `scripts/verify.sh`, the canonical gate.

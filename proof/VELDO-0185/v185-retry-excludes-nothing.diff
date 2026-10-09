@@ -1,0 +1,11 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1981,7 +1981,7 @@
+                                       'station': contract['station'], 'dispatch_id': record['dispatch_id'],
+                                       'refusals': [L.ACCOUNT_LOGIN + 'none_left'], 'logins': logins})
+             return None
+-        return self.rerun(record, report, exclude=excluded)
++        return self.rerun(record, report)
+ 
+     def login_now(self, account, adapter):
+         """The account's login read now, as its receiver reads it before acceptance (control_launch

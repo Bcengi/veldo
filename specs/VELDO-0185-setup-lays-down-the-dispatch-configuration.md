@@ -217,6 +217,13 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
 
+2026-10-09, the Codex review of e016df9b found four defects, each with a capsule: setup enrolled only the PM
+of the default team's workers (R4), a login retry did not pass the refused accounts to selection (R1), a login
+refusal excluded an account forever (R2), and a missing state_root key was refused before its repair (R3).
+Fixed in 5952516c, each with a suite 106 row false at e016df9b and a falsifier case; the Codex roles also start
+on the newest qualified model. The footprint adds control_reservations.py, whose request check the exclusion
+passes. Criteria and ready status are unchanged; proof/VELDO-0185/README.md records the rows, cases and capsule runs.
+
 2026-10-09, build on veldo-0185 from 244784bc, on the host: the user manager answers there, so the
 installed-host fixture qualifies the worker profile and the 2026-10-08 blocker no longer holds; its record
 and preflight file are replaced by the proof in proof/VELDO-0185/README.md. Setup lays the dispatch

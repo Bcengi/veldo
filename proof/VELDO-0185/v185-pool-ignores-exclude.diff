@@ -1,0 +1,12 @@
+--- .veldo/control_account_pool.py
++++ .veldo/control_account_pool.py
+@@ -150,9 +150,6 @@
+             continue
+         if not (record.get('profiles') or {}).get(host):
+             passed[name] = 'account_profile:%s' % host
+-            continue
+-        if name in excluded:
+-            passed[name] = 'account_login:excluded'
+             continue
+         limited = ACC.blocking(record, now)
+         if limited:
