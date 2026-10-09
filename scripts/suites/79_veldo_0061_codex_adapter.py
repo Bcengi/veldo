@@ -30,6 +30,8 @@ def _v61_selection():
     import importlib.util
     import json
     from pathlib import Path
+    import subprocess
+    import sys
     import tempfile
 
     HERE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
@@ -38,6 +40,10 @@ def _v61_selection():
     evidence_spec.loader.exec_module(evidence)
     selected = evidence.select()
     expect('VELDO-0061 pin/selected-evidence', selected['record']['sha256'] == selected['items']['sha256'])
+    extracted = subprocess.run([sys.executable, '-B', str(HERE / 'proof/VELDO-0061/extract_items.py'),
+                                '--check', '--codex', selected['binary'], '--output', str(selected['items_path'])],
+                               capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
+    expect('VELDO-0061 pin/selected-extraction', extracted.returncode == 0)
     with tempfile.TemporaryDirectory(prefix='v61-selection-') as temp:
         package = Path(temp)
         record = selected['record']

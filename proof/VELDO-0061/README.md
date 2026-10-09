@@ -1,5 +1,99 @@
 # VELDO-0061 proof: the Codex adapter qualified on Linux
 
+## 0.162.0 qualification in progress (2026-10-09)
+
+The production pin and global install remain 0.154.0. This work does **not**
+qualify 0.162.0 or authorize upgrading the global install. The runner cannot
+read the supplied private package at
+`/home/dmitry/.local/share/veldo-engines/codex-0.162.0`: both directory access
+and reading `node_modules/@openai/codex/package.json` return PermissionError.
+It also cannot create the runtime directories under `/run/user/1000` required
+by suites 79 and 86. These are execution-environment blockers, not passing
+qualification evidence.
+
+The exact 0.154.0 runtime record is preserved in
+`codex-qualification-0.154.0.json`; the original `codex-exec.json` and the
+0062 format table remain unchanged. `qualification.py` selects a retained
+record using the vendor package manifest, checks package-relative path and
+SHA-256, and refuses an unknown version or inconsistent evidence. Suite 79
+uses that record for its actual-binary launch and its table checks. It also
+checks that the active production record equals its canonical engine copy
+and its retained history. Production binding still uses its configured pin;
+the test selector does not auto-qualify or switch production engines.
+
+For a private binary, set `VELDO_CODEX_BINARY` to the **vendor executable**,
+not `node_modules/.bin/codex`, before running a scoped suite. Suite 79 now
+supports this selection; the 0127 wire fixtures still need the same change.
+`extract_items.py --output PATH` permits a second version's extracted item
+record without overwriting the historical one. No 0.162.0 record has been
+invented from the old table.
+
+`qualification-progress.json` records the scoped results: 87-90 passed their
+176/25/11/2 rows on 0.154.0; 79 and 86 could not create their runtime directories.
+The selector, extraction and two negative checks in 79 ran before that failure.
+The item comparison permits relocation from a private install to a global install
+while retaining exact version, digest and extracted-table equality.
+
+Remaining work requires readable/executable access to the supplied package:
+
+- Identify the vendor path and digest; retain offline help, bundled model
+  catalog and feature listing; extract and compare event/item, credential and
+  configuration tables. Update extraction anchors from the actual bytes.
+- Audit each vendor changelog from 0.155 through 0.162, including event output,
+  sandbox options, credential/keyring guidance and file layout, update behavior,
+  and `--cyber-access-program`. No version-specific compatibility claim has yet
+  been established for these changes.
+- Replace the fixed 0.154 model-mode assumption with validated per-pin catalog
+  data, qualify `gpt-6.1-sol`, and make 0127 fixtures select the same reviewed
+  binary, catalog and feature defaults. Fix all observed behavior differences.
+- Commit the 0.162 record and synchronized production pin in one reviewed change,
+  preserving 0.154 history. Run suites 79 and 86-90 serially on both versions.
+- Have the owner's assistant perform subscription captures on the host. Do not
+  treat offline help or loopback results as a substitute for these captures.
+
+### Host live-capture handoff (after qualification is completed)
+
+The following resolver deliberately fails until the new reviewed record exists.
+It resolves the private vendor executable from the recorded relative path and
+verifies its digest; it does not run the package-manager shim or install anything.
+Run it from this checkout on the host:
+
+```bash
+codex_vendor=$(python3 - <<'PYCODEX'
+import hashlib, json
+from pathlib import Path
+record = json.loads(Path('proof/VELDO-0061/codex-qualification-0.162.0.json').read_text())
+package = Path('/home/dmitry/.local/share/veldo-engines/codex-0.162.0/node_modules')
+matches = [p for p in package.rglob('codex')
+           if p.is_file() and not p.is_symlink()
+           and p.as_posix().endswith('/' + record['executable'])]
+assert len(matches) == 1, matches
+binary = matches[0]
+assert 'sha256:' + hashlib.sha256(binary.read_bytes()).hexdigest() == record['sha256']
+print(binary)
+PYCODEX
+)
+test -n "$codex_vendor" || exit 1
+python3 proof/VELDO-0127/live.py \
+  --claude /home/dmitry/.local/share/claude/versions/2.1.281 \
+  --codex "$codex_vendor" \
+  --claude-profile /home/dmitry/.claude \
+  --codex-profile /home/dmitry/.codex \
+  --claude-model claude-opus-4-6 \
+  --codex-model gpt-6.1-sol --only codex \
+  > /run/user/1000/veldo-0127-codex-0.162.0-live.log 2>&1
+```
+
+The supplied profiles must contain the owner's existing file-backed subscription
+logins (`.credentials.json` and `auth.json`). The driver requires both profiles
+even with `--only codex`; it links login files into temporary profiles. The
+command above has **not** been executed or qualified for 0.162.0. The current
+model table will refuse the new model until the remaining implementation lands.
+The 0061 bundle has no subscription-capture driver today; a vetted command for
+normal/nonzero/signal terminal evidence and byte perturbations remains part of
+the blocked qualification work. Historical help-only evidence below must not be
+relabeled as new live evidence.
+
 Built on branch build-veldo-0061, then integrated with VELDO-0060 on build-veldo-0060-0061, where both
 engine modules were put on one engine protocol and both reviews' filed items were done. This README
 describes the integrated tree.

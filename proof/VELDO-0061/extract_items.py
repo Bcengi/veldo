@@ -127,9 +127,14 @@ def main():
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--output', type=Path, default=OUT)
     args = parser.parse_args()
-    text = json.dumps(extract(args.codex), indent=1, sort_keys=True) + '\n'
+    extracted = extract(args.codex)
+    text = json.dumps(extracted, indent=1, sort_keys=True) + '\n'
     if args.check:
-        same = args.output.is_file() and args.output.read_text() == text
+        recorded = json.loads(args.output.read_text()) if args.output.is_file() else {}
+        # The private qualification install and the later global install may
+        # have different absolute paths. Digest, version and every table field
+        # must still agree; the suite separately binds the package-relative path.
+        same = bool(recorded) and dict(recorded, binary=extracted['binary']) == extracted
         print('codex-exec.json %s the installed binary' % ('matches' if same else 'DIFFERS FROM'))
         return 0 if same else 1
     args.output.write_text(text)

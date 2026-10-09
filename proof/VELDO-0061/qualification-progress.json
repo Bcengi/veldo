@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-09",
+  "status": "blocked; 0.162.0 is not qualified",
+  "production_pin": "0.154.0",
+  "scope": "Informational scoped runs only; not gate evidence or a landing decision.",
+  "private_package": "/home/dmitry/.local/share/veldo-engines/codex-0.162.0",
+  "private_package_status": "PermissionError reading directory and package.json; no private-binary suite or live capture run.",
+  "runs": [
+    {
+      "command": "python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter",
+      "version": "0.154.0",
+      "status": "blocked before lifecycle setup",
+      "suite_rows_passed": null,
+      "exit_code": 1,
+      "note": "PermissionError creating suite temporary directory under /run/user/1000."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration",
+      "version": "0.154.0",
+      "status": "blocked before lifecycle setup",
+      "suite_rows_passed": null,
+      "exit_code": 1,
+      "note": "PermissionError creating suite temporary directory under /run/user/1000."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 87_veldo_0127_codex_delivery",
+      "version": "0.154.0",
+      "status": "passed (partial run)",
+      "suite_rows_passed": 176,
+      "exit_code": 2,
+      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 88_veldo_0127_feature_defaults",
+      "version": "0.154.0",
+      "status": "passed (partial run)",
+      "suite_rows_passed": 25,
+      "exit_code": 2,
+      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 89_veldo_0127_feature_listing",
+      "version": "0.154.0",
+      "status": "passed (partial run)",
+      "suite_rows_passed": 11,
+      "exit_code": 2,
+      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 90_veldo_0127_feature_profile",
+      "version": "0.154.0",
+      "status": "passed (partial run)",
+      "suite_rows_passed": 2,
+      "exit_code": 2,
+      "note": "26 shared preamble checks are additional; exit 2 is the selftest partial-run convention."
+    }
+  ],
+  "suite_79_selection": "The selected-record, binary-table extraction, changed-digest and unknown-version checks ran before runtime directory creation; no SELFTEST FAIL was printed.",
+  "live_captures": "Not run, as instructed. VELDO-0127 command and remaining VELDO-0061 capture work are in README.md.",
+  "remaining": [
+    "Read private vendor package, help/features/catalog and 0.155-0.162 vendor changelogs.",
+    "Extract 0.162.0 event/item/credential/configuration tables and fix changed assumptions.",
+    "Make model-mode binding and 0127 wire fixtures version-aware; qualify gpt-6.1-sol.",
+    "Switch synchronized production pin to the reviewed 0.162.0 record and verify both versions.",
+    "Run host subscription captures and reviewer-owned full gate."
+  ]
+}
