@@ -101,7 +101,8 @@ def plan(workspace, engines, enrollment, Refused, root=None):
         return None
     present = sorted({a['provider'] for a in accounts})
     roles = dict(WALKTHROUGH) if set(WALKTHROUGH.values()) <= set(present) else {r: present[0] for r in WALKTHROUGH}
-    return {'registry': root, 'accounts': accounts, 'engines': present, 'roles': roles,
+    models = {'codex': codex_model(Refused)} if 'codex' in roles.values() else {}
+    return {'registry': root, 'accounts': accounts, 'engines': present, 'roles': roles, 'models': models,
             'adapters': adapters(engines, present)}
 
 
@@ -118,8 +119,34 @@ def adapters(engines, present):
     return found
 
 
-def definition(role, engine):
-    return dict(role=role, engine=engine, native_tools=[], mcp=[], skills=[], instructions=[], settings={})
+# Each role's native tools on each engine, the owner's starting grant (VELDO-0163's role form changes it):
+# Claude Code's from its in-run registry tools (VELDO-0173), Codex's from its capabilities (VELDO-0127); the
+# independent reviewer reads and runs checks, and edits nothing.
+NATIVE_TOOLS = {'claude_code': {'independent_review': ('Bash', 'Glob', 'Grep', 'Read'),
+                                None: ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')},
+                'codex': {'independent_review': ('shell', 'update_plan'), None: ('apply_patch', 'shell', 'update_plan')}}
+
+
+def definition(role, engine, models):
+    """The capability configuration setup saves for `role` on `engine` (control_agent_config FIELDS); a Codex role
+    names the model its run binds (VELDO-0127: only a model of the qualified bundled catalog)."""
+    tools = NATIVE_TOOLS[engine].get(role, NATIVE_TOOLS[engine][None])
+    settings = {'model': models[engine]} if models.get(engine) else {}
+    return dict(role=role, engine=engine, native_tools=[{'name': name, 'load': 'always'} for name in tools], mcp=[],
+                skills=[], instructions=[], settings=settings)
+
+
+def codex_model(Refused):
+    """The model a Codex role starts on: of the installed qualification's bundled catalog, the listed model of
+    the lowest priority that is not code-mode only and carries the fields a role-bound run selects from."""
+    record = organ('control_engine_codex').load_qualification(Path(__file__).parent / 'runtime' / 'codex-qualification.json')
+    modes = record.get('model_tool_modes') or {}
+    models = [m for m in ((record.get('model_catalog') or {}).get('models') or [])
+              if isinstance(m, dict) and m.get('visibility') == 'list' and modes.get(m.get('slug')) != 'code_mode_only'
+              and all(k in m for k in ('experimental_supported_tools', 'apply_patch_tool_type', 'supports_search_tool'))]
+    if not models:
+        raise Refused('missing_evidence:codex_model_catalog', 'the Codex qualification names no model a role can bind')
+    return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']
 
 
 def team(CT, roles, revisions):
@@ -248,9 +275,9 @@ class Store:
         return CG, OR.OwnerRevisions(self.S, self.CM, self.conn, ids=self.ids, authority_lock=self.lock,
                                      configurations=configurations, team_routes=routes)
 
-    def default_team(self, roles, prefix):
+    def default_team(self, dispatch, prefix):
         CG, writer = self.revisions()
-        return save_team(self.conn, CG, self.CT, self.ids, roles, prefix, writer.apply, self.packet)
+        return save_team(self.conn, CG, self.CT, self.ids, dispatch, prefix, writer.apply, self.packet)
 
     def register(self, accounts):
         """Each registry account the store holds no record of, by control_accounts Accounts.register."""
@@ -289,7 +316,7 @@ def owner_packet(S, CM, conn, ids, owner, owner_sign, clock, operation, paramete
     return dict(command=command, envelope=envelope, signature=owner_sign(CM.AC.canonical_envelope_bytes(envelope)))
 
 
-def save_team(conn, CG, CT, ids, roles, prefix, apply, packet):
+def save_team(conn, CG, CT, ids, dispatch, prefix, apply, packet):
     """AC1: one capability configuration revision per role the store has none of, then the default team naming
     each role's head revision, each the owner's packet answered by `apply` (the writer under this run's lock, or
     the running service). Returns (team, what was saved)."""
@@ -300,13 +327,14 @@ def save_team(conn, CG, CT, ids, roles, prefix, apply, packet):
             continue
         except CG.Refused:
             pass
-        answer = apply(packet('save_capability_configuration', dict(definition=definition(role, roles[role]), base=0),
+        definition_ = definition(role, dispatch['roles'][role], dispatch['models'])
+        answer = apply(packet('save_capability_configuration', dict(definition=definition_, base=0),
                               '%s-configuration-%s' % (prefix, role)))
         if not answer.get('ok'):
             raise StepRefused(answer.get('reason') or 'unknown_outcome:default_team')
         revisions[role] = answer['result']['revision']
         saved.append('configuration:%s:%d' % (role, revisions[role]))
-    chosen = team(CT, roles, revisions)
+    chosen = team(CT, dispatch['roles'], revisions)
     answer = apply(packet('save_default_team', dict(team=chosen, base=0), prefix + '-default-team'))
     if not answer.get('ok'):
         raise StepRefused(answer.get('reason') or 'unknown_outcome:default_team')

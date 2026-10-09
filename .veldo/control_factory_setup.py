@@ -655,7 +655,7 @@ def store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sig
         if 'default_team' in wanted:
             with step('default_team'):
                 try:
-                    _team, saved = store.default_team(dispatch['roles'], prefix)
+                    _team, saved = store.default_team(dispatch, prefix)
                 except D.StepRefused as error:
                     raise Refused(error.code) from None
                 details['default_team'] = {'saved': saved}
@@ -835,8 +835,8 @@ def service_team(plan, dispatch, prefix, owner_sign, clock):
         def packet(operation, parameters, command_id):
             return D.owner_packet(S, CM, reader, ids, plan['owner'], owner_sign, clock, operation, parameters, command_id)
         try:
-            return D.save_team(reader, organ('control_agent_config'), organ('control_team'), ids, dispatch['roles'],
-                               prefix, send, packet)
+            return D.save_team(reader, organ('control_agent_config'), organ('control_team'), ids, dispatch, prefix,
+                               send, packet)
         except D.StepRefused as error:
             raise Refused(error.code) from None
     finally:

@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "106_veldo_0185_dispatch_setup",
+   "file": "106_veldo_0185_dispatch_setup.py",
+   "requires": [
+    "106_veldo_0185_dispatch_setup"
+   ],
+   "regions": "Factory setup lays down the dispatch configuration; installed dispatch on every account; re-run changes nothing.",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture with real setup, generated SSH keys, accounts.py registries and generated 0172 fake engines run contained under the host's user manager; the installed service and receiver dispatch the units."
   }
  ],
  "resource_capacities": {
