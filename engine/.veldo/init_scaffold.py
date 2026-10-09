@@ -289,6 +289,10 @@ _FILES = [
     # and checks the pieces above. An owner command, not loaded by the service or any validator, so not
     # REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup.py",
+    ".veldo/control_memory.py",
+    ".veldo/control_memory_adapter.py",
+    ".veldo/control_memory_check.py",
+    ".veldo/control_factory_setup_memory.py",
     # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
     # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_api.py",

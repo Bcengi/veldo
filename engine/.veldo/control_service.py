@@ -1244,6 +1244,13 @@ class Service:
                 result = self.commit_ownership()
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
+            elif command.get('operation') == 'save_memory_store':
+                memory = _organ('control_memory')
+                ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
+                try:
+                    result = memory.Memory(S, self.conn, ids, self.principal, self.sign, self.generation).admit(packet)
+                except memory.Refused as error:
+                    result = dict(ok=False, reason=error.code)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
             elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:

@@ -1102,6 +1102,17 @@ class Receiver:
             refusal = self._login(contract, adapter)
         if not refusal:
             refusal = self._bind(adapter, dispatch_id)
+        self.memory = None
+        if not refusal:
+            memory = _organ('control_memory')
+            reader = S.open_store(self.config['store'], mode='r')
+            try:
+                self.memory = memory.handoff(reader)
+            except memory.Refused as error:
+                refusal = error.code
+            finally:
+                reader.close()
+
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -1585,6 +1596,10 @@ class Receiver:
             environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
             argv, environment = self._baseline(dispatch_id, argv, environment,
                                                adapter.get('identity', 'local') == 'reported')
+        environment.pop('VELDO_MEMORY', None)
+        if self.memory is not None:
+            environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
+            self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error

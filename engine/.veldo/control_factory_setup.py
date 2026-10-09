@@ -386,7 +386,7 @@ class _Step:
 @_one_setup
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
-          tailscale=None, api_port=None):
+          tailscale=None, api_port=None, memory=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
@@ -397,8 +397,9 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     runner = runner or organ('control_service').Systemctl()
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
         return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
-                     tailscale=tailscale, port=port, **options)
+                     tailscale=tailscale, port=port, memory=memory, **options)
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
+    memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory))
     # Tailscale is read, with read-only commands, after every other check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
     transport = _api(lambda: API.transport(cli, port))
@@ -467,6 +468,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                                      'public_key': owner_public, 'independence_group': owner, 'scope': '*'})
             K.publish(S, conn, projection)
             os.chmod(projection, 0o600)
+        memory_report = _memory(lambda: organ('control_factory_setup_memory').apply(
+            plan, memory_plan, ids, S, conn, (journal_principal, journal_sign), owner_sign))
         with step('chat_enrollment'):
             eid = 'channel-enrollment:%s:%s' % (CHANNEL, owner)
             S.execute(conn, dict(command_id=next_id('chat'), principal=journal_principal, operation='upsert_entity',
@@ -579,7 +582,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'binding_digest': binding.get('binding_digest'), 'chat_enrolled': True,
             'edge_key': os.path.join(keys, E.edge_key_id(CHANNEL)), 'ingress': ingress,
             'token_file': plan['token_file'], 'unit': installed['unit'], 'unit_path': installed['unit_path'],
-            'records': record_steps, 'engines': engines, 'runtime_assets': installed['runtime_assets'],
+            'memory': memory_report, 'records': record_steps, 'engines': engines, 'runtime_assets': installed['runtime_assets'],
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
@@ -604,6 +607,15 @@ def _api(call):
     except Exception as exc:
         if type(exc).__name__ == 'Refused' and isinstance(getattr(exc, 'code', None), str):
             raise Refused(exc.code, getattr(exc, 'detail', '')) from None
+        raise
+
+
+def _memory(call):
+    try:
+        return call()
+    except Exception as error:
+        if hasattr(error, 'code'):
+            raise Refused(error.code, getattr(error, 'detail', '')) from None
         raise
 
 
@@ -744,7 +756,7 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
 
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
-          writable, origin, runner, clock, tailscale, port):
+          writable, origin, runner, clock, tailscale, port, memory=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -772,6 +784,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     reader = S.open_store(plan['store'], mode='r')
     try:
         reader.execute('BEGIN')
+        memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory, reader))
         state = CM.authority_state(S, reader)
         row = reader.execute('SELECT data FROM entities WHERE id=?', ('channel-enrollment:%s:%s' % (CHANNEL, owner),)).fetchone()
         reader.execute('ROLLBACK')
@@ -996,6 +1009,22 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, name, port))
         mark('tailscale_serve', transport['serve'] == 'free')
+        if memory_plan is not None:
+            memory_conn = None
+            try:
+                if not running:
+                    if lock == -1:
+                        lock = take_lock(root)
+                        if lock is None:
+                            raise Refused('invalid_input:state_root:service_running:memory', 'lock changed')
+                    memory_conn = S.open_store(plan['store'])
+                memory_report = _memory(lambda: organ('control_factory_setup_memory').apply(
+                    plan, memory_plan, ids, S, memory_conn, organ('control_channel_ingress').journal_signer(laid['journal']), owner_sign,
+                    send=(lambda packet: service_request(plan, packet)()) if running else None))
+                outcomes.append(memory_report)
+            finally:
+                if memory_conn is not None:
+                    memory_conn.close()
     finally:
         if lock is not None and lock != -1:
             os.close(lock)
@@ -1092,6 +1121,7 @@ def main(argv=None, **overrides):
     parser.add_argument('--owner', required=True, help='the owner\'s principal name')
     parser.add_argument('--owner-key', required=True, help='his OpenSSH private key file; it signs, it is never read here')
     parser.add_argument('--workspace', required=True, help='the Git clone the factory serves')
+    parser.add_argument('--memory', help='five-part memory manifest')
     parser.add_argument('--chat', required=True, type=int, help='his numeric Telegram user id')
     parser.add_argument('--token-file', required=True, help='this account\'s own 0600 bot token file; named, never copied')
     try:
@@ -1104,7 +1134,7 @@ def main(argv=None, **overrides):
         return code
     try:
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
-                       **overrides)
+                       memory=args.memory, **overrides)
     except Refused as exc:
         return answer({'action': 'setup', 'outcome': 'refused', 'reason': exc.code, 'problems': exc.problems,
                        'detail': exc.detail}, EXIT_REFUSED)

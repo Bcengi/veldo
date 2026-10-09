@@ -295,6 +295,13 @@ class Accounts:
         current = copy.deepcopy((before.get(target) or {}).get('data'))
         action = params['action']
         if action == 'register':
+            spec = importlib.util.spec_from_file_location('account_memory', Path(__file__).with_name('control_memory.py'))
+            memory = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(memory)
+            try:
+                memory.account_outside(conn, params['profiles'])
+            except memory.Refused as error:
+                raise Refused(error.code) from None
             if current is not None:
                 raise Refused('duplicate_account:' + params['account'], params['account'])
             for (data,) in conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,)):
