@@ -45,7 +45,7 @@ acceptance_criteria:
   - id: AC3
     text: >
       Write-back retains private permissions, rejects a rotated JSON object that drops an existing
-      refresh token, and never silently discards valid rotated credentials on an unexpected late
+      refresh token, treats invalid or unreadable copies as recovery errors, and never silently discards valid rotated credentials on an unexpected late
       storage failure. Recovery data remains private and the caller reports failure. Suite 103
       exercises late replacement failure and missing refresh tokens, while suite 102 retains
       coverage of unsafe scratch links and a separate login superseding the borrowed source.

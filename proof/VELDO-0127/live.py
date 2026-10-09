@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import subprocess
 import tempfile
 import tomllib
@@ -51,7 +52,7 @@ def borrowed_profiles(base, args, engines):
         try:
             with LOGIN.borrowed_credentials(base, sources, base):
                 try:
-                    yield
+                    yield stop
                 finally:
                     stop.closing = True
         except LOGIN.CredentialRecovery:
@@ -188,12 +189,24 @@ def discovery_control(binary, profile, evidence):
         debug = root / 'debug.log'
         env = {'PATH':'/usr/bin:/bin', 'HOME':temp, 'CLAUDE_CONFIG_DIR':str(profile),
                'DISABLE_AUTOUPDATER':'1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY':'1'}
-        done = subprocess.run([str(binary), '-p', 'Reply ready without tools.', P + 'verbose',
+        # This control runs outside the factory slice. Reap its entire process group on failure
+        # or a handled stop before the borrowed profile can be written back.
+        with subprocess.Popen([str(binary), '-p', 'Reply ready without tools.', P + 'verbose',
                                P + 'output-format', 'stream-json', P + 'debug-file', str(debug)],
-                              cwd=root, env=env, capture_output=True, text=True, timeout=90)
+                              cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              text=True, start_new_session=True) as child:
+            try:
+                child.communicate(timeout=90)
+            finally:
+                try:
+                    os.killpg(child.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                child.wait()
+            returncode = child.returncode
         text = debug.read_text() if debug.is_file() else ''
         lines = [line for line in text.splitlines() if 'CLAUDE.md' in line]
-        return {'ran':True, 'returncode':done.returncode, 'debug_bytes':len(text.encode()),
+        return {'ran':True, 'returncode':returncode, 'debug_bytes':len(text.encode()),
                 'debug_lines':lines, 'debug_sha256':hashlib.sha256(text.encode()).hexdigest(),
                 'qualification':'debug-and-context' if lines else 'context-size-only'}
 
@@ -232,7 +245,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
         base = Path(temp)
         selected = (only[0],) if only else engines
-        with borrowed_profiles(base, args, selected):
+        with borrowed_profiles(base, args, selected) as stop:
             f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
             try:
                 for engine in engines:
@@ -274,8 +287,14 @@ def main():
                     (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
                     print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
             finally:
-                for connection in f.connections: connection.close()
-                subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name], env=f.inherited, capture_output=True, timeout=20)
+                stop.closing = True
+                try:
+                    for connection in f.connections:
+                        connection.close()
+                finally:
+                    # Wait for systemd's stop job, including its own kill timeout, before saving.
+                    subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name],
+                                   env=f.inherited, capture_output=True, check=True)
 
 
 if __name__ == '__main__':

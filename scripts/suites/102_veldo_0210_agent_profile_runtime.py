@@ -1264,15 +1264,15 @@ print(json.dumps(seen))
                 before = account_state()
                 result = act_run(mode)
                 expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
-                       result.returncode == 0 and account_state()[::2] == before[::2] and reason in result.stderr)
+                       result.returncode == 2 and account_state()[::2] == before[::2] and reason in result.stderr)
             reset()
             before = account_state()
             result = act_run('deep')
-            expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
+            expect('VELDO-0210 credentials/deeply-nested-requires-recovery: %s %s' % (result.returncode,
                                                                                   result.stderr[-200:]),
-                   result.returncode == 7 and account_state()[::2] == before[::2]
+                   result.returncode == 2 and account_state()[::2] == before[::2]
                    and 'changed but not written back' in result.stderr
-                   and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr)
+                   and 'credential recovery required' in result.stderr)
             for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
                 reset()
                 before = account_state()

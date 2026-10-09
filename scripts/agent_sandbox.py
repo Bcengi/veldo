@@ -1618,10 +1618,12 @@ def replace_atomically(target, data, expected=None, locked=False):
 
 def write_back(scratch, credentials, locked=False):
     """After the run: each credential file the launcher copied in that the CLI changed (a token
-    refresh) and that is still one JSON object replaces its source atomically, so a refresh during
-    a run never logs the account out (VELDO-0210). Nothing else in the scratch is ever written back,
-    and an unchanged, unreadable or invalid copy leaves the source as it is. So does a source that no
-    longer holds the bytes copied in (a login or another run wrote it meanwhile): the newer file wins."""
+    refresh) and that is still one JSON object replaces its source atomically (VELDO-0210).
+    Storage failure or a missing refresh token requires private recovery (VELDO-0211).
+    Nothing else in the scratch is ever written back,
+    and an unchanged copy leaves the source as it is. An unreadable or invalid copy requires
+    recovery rather than silently discarding a possible rotation. A source that no longer holds
+    the bytes copied in (a separate login wrote it meanwhile) wins over the borrowed copy."""
     failures = []
     for real, relative, original in credentials:
         try:
@@ -1629,6 +1631,7 @@ def write_back(scratch, credentials, locked=False):
         except (OSError, ValueError) as error:
             print('agent sandbox: credential %s not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
+            failures.append(relative)
             continue
         if data == original:
             continue
@@ -1638,6 +1641,7 @@ def write_back(scratch, credentials, locked=False):
         except Exception as error:  # ValueError, and RecursionError for a deeply nested document
             print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
+            failures.append(relative)
             continue
         try:
             require_refresh_tokens(json.loads(original), json.loads(data))

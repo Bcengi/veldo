@@ -109,6 +109,17 @@ sys.exit(int(sys.argv[4]))
             with L.borrowed_profiles(base, args, [engine]):
                 return engine_run(engine, base / (engine + '-login') / source_for(engine).name, mode)
 
+        # Reproduce the original symlink failure with the same engine's atomic save.
+        source = reset('claude')
+        with tempfile.TemporaryDirectory(dir=top) as tmp:
+            copied = Path(tmp) / source.name
+            copied.symlink_to(source)
+            Path(str(source) + '.veldo-lock').touch(mode=0o600)
+            engine_run('claude', copied, 'success')
+            expect('VELDO-0211 root-cause/symlink-replacement-strands-original',
+                   token(source, 'claude') == 'fixture-old'
+                   and token(copied, 'claude') == 'fixture-old-rotated' and not copied.is_symlink())
+
         for caller, invoke in [('live', live), ('sandbox', sandbox)]:
             for engine in ('claude', 'codex'):
                 for mode in ('success', 'nonzero', 'exception', 'signal'):
@@ -146,7 +157,7 @@ sys.exit(int(sys.argv[4]))
                         rejected = False
                         try:
                             invoke(engine, 'success', Path(tmp))
-                        except (OSError, ValueError):
+                        except (OSError, ValueError, S.CredentialRecovery):
                             rejected = True
                         expect('VELDO-0211 refused-before-launch/%s/%s/%s' % (caller, engine, refusal),
                                rejected and not marker.exists() and token(source, engine) == 'fixture-old')
@@ -181,7 +192,7 @@ sys.exit(int(sys.argv[4]))
 
                 def load(name, path):
                     if name == 'role_live_evidence':
-                        return SimpleNamespace(MODULES=[], production=lambda root: {}, problems=lambda *a: [])
+                        return SimpleNamespace(MODULES=[], MARKER_REPETITIONS=1, production=lambda root: {}, problems=lambda *a: [])
                     if name == 'role_live_factory':
                         return SimpleNamespace(factory=make_factory)
                     return real_load(name, path)
@@ -251,7 +262,7 @@ sys.exit(int(sys.argv[4]))
                     rejected = False
                     try:
                         invoke('claude', 'success', Path(tmp))
-                    except PermissionError:
+                    except (PermissionError, S.CredentialRecovery):
                         rejected = True
                     expect('VELDO-0211 refused-before-launch/%s/read-only-source-directory' % caller,
                            rejected and not marker.exists())
@@ -323,6 +334,27 @@ sys.exit(int(sys.argv[4]))
                     rejected = True
                 expect('VELDO-0211 recovery/%s/missing-refresh-token' % engine,
                        rejected and token(source, engine) == 'fixture-old')
+
+        for corruption in ('invalid-json', 'array', 'missing-file', 'scratch-link'):
+            source = reset('claude')
+            with tempfile.TemporaryDirectory(dir=top) as tmp:
+                scratch = Path(tmp)
+                rejected = False
+                try:
+                    with S.borrowed_credentials(scratch, [(source, source.name)], top / 'store'):
+                        target = scratch / source.name
+                        if corruption == 'invalid-json':
+                            target.write_text('{')
+                        elif corruption == 'array':
+                            target.write_text('[]')
+                        else:
+                            target.unlink()
+                            if corruption == 'scratch-link':
+                                target.symlink_to(source)
+                except S.CredentialRecovery:
+                    rejected = True
+                expect('VELDO-0211 recovery/%s' % corruption,
+                       rejected and token(source, 'claude') == 'fixture-old')
 
         # Executed falsifier: remove the production write-back call and require the same rotation
         # observation to detect the stale original. This is deliberately an in-process mutation,
