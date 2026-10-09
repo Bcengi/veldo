@@ -758,6 +758,12 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 ops_one = one.get('ops')
                 status_after = outcome_of(lambda: ops_one.status())
                 built = [e for e in events if e.get('operation') == 'reconcile' and e.get('outcome') == 'accepted']
+                # VELDO-0142: besides its four stages, the land observes every incoming worker commit it
+                # checked against the repository's identity and every commit it made as that identity.
+                one_id = (one.get('candidate') or {}).get('id')
+                bound = [e for e in events if e.get('request') == one_id and e.get('outcome') == 'accepted'
+                         and e.get('operation') in ('worker_commit_identity', 'lander_merge', 'projection_commit')]
+                made = [e for e in bound if e['operation'] != 'worker_commit_identity']
                 observed['observations'] = {'events': len(events), 'refused': sorted({e.get('refusal') for e in refused}),
                                             'status_at_gate': one.get('status'), 'status_after': status_after,
                                             'sample': refused[:2]}
@@ -775,7 +781,9 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                               for e in events)
                       and (one.get('status') or {}).get('pending') == [(one.get('candidate') or {}).get('id')]
                       and status_after[0] == 'ok' and status_after[1].get('pending') == []
-                      and status_after[1].get('accepted') == 4 and status_after[1].get('refused') == 0
+                      and status_after[1].get('accepted') == 4 + len(bound) and status_after[1].get('refused') == 0
+                      and len(bound) - len(made) >= 2 and made
+                      and sum(c['commits'] for c in status_after[1].get('identities', {}).values()) == len(made)
                       and taxonomy('conflict:README.md') == 'stale_subject'
                       and taxonomy('unavailable_service:git/fetch') == 'unavailable_service'
                       and taxonomy('missing_evidence:proof/VELDO-9569') == 'missing_evidence'
