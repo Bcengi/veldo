@@ -1,0 +1,65 @@
+{
+  "schema": "veldo.setup_preflight/v1",
+  "spec_id": "VELDO-0185",
+  "base_commit": "294e19332c34e6d19b95534fb7a4b75d9952590d",
+  "branch": "agent/codex/veldo-0185",
+  "outcome": "blocked",
+  "blocker": "unavailable_service:profile:user_manager",
+  "implementation_retained": false,
+  "suite_retained": false,
+  "acceptance_proven": [],
+  "observations": [
+    {
+      "command": [
+        "systemctl",
+        "--user",
+        "show-environment"
+      ],
+      "result": "refused",
+      "output": "Failed to connect to bus: Operation not permitted"
+    },
+    {
+      "command": [
+        "systemctl",
+        "--user",
+        "show",
+        "--property=Version",
+        "--property=ControlGroup"
+      ],
+      "environment": {
+        "XDG_RUNTIME_DIR": "/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"
+      },
+      "result": "refused",
+      "output": "Failed to connect to bus: Operation not permitted"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "106_veldo_0185_dispatch_setup"
+      ],
+      "result": "fail",
+      "draft_only": true,
+      "passed": 26,
+      "failed": 5,
+      "selected_output": [
+        "  SELFTEST FAIL: VELDO-0185 fresh/team: setup succeeded: {'action': 'setup', 'detail': 'the worker profile is not qualified on this host', 'outcome': 'refused', 'problems': ['unavailable_service:profile:user_manager'], 'reason': 'unavailable_service:profile:user_manager'}",
+        "  SELFTEST FAIL: VELDO-0185 fresh/registered: setup succeeded: {'action': 'setup', 'detail': 'the worker profile is not qualified on this host', 'outcome': 'refused', 'problems': ['unavailable_service:profile:user_manager'], 'reason': 'unavailable_service:profile:user_manager'}",
+        "  SELFTEST FAIL: VELDO-0185 loop/configured: setup succeeded: {'action': 'setup', 'detail': 'the worker profile is not qualified on this host', 'outcome': 'refused', 'problems': ['unavailable_service:profile:user_manager'], 'reason': 'unavailable_service:profile:user_manager'}",
+        "  SELFTEST FAIL: VELDO-0185 reservation/principals: setup succeeded: {'action': 'setup', 'detail': 'the worker profile is not qualified on this host', 'outcome': 'refused', 'problems': ['unavailable_service:profile:user_manager'], 'reason': 'unavailable_service:profile:user_manager'}",
+        "  SELFTEST FAIL: VELDO-0172 fake/capture:0185_dispatch_setup ['observer:did-not-complete:LookupError:suite /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0185 names 0 suite files']",
+        "selftest (PARTIAL, 1 of 157 suites): 26 passed, 5 failed in 0.78s",
+        "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+      ],
+      "interpretation": "Four draft journey rows stopped at unchanged production containment qualification. The fifth failure was an incorrect draft conform_fake call, independent of host access. The incomplete draft and registrations were removed; this is no acceptance proof."
+    }
+  ],
+  "not_run": [
+    "full selftest",
+    "mutation drivers",
+    "canonical gate"
+  ],
+  "required_resume": "Run the existing installed-host fixture in an authorized execution environment able to query the systemd user manager. Recreate suite 106 and complete all acceptance and falsifier checks without bypassing containment qualification."
+}

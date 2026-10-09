@@ -215,6 +215,18 @@ so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
 
+2026-10-08, preflight on agent/codex/veldo-0185 at 294e1933: the owner revision
+and reservation policy prerequisites are present. The installed-host fixture
+cannot pass the existing containment qualification in this execution environment:
+setup refuses unavailable_service:profile:user_manager, and direct read-only
+systemctl queries return Operation not permitted, including with the explicit
+user bus address. The incomplete implementation and suite draft were removed
+without bypassing qualification. Resume needs authorized user-manager access
+for the fixture, then implementation and suite 106 with all acceptance proofs.
+The exact observations and remaining proof matrix are in proof/VELDO-0185/README.md
+and host-preflight-2026-10-08.json beside it. Criteria and ready status are unchanged;
+no implementation, passing acceptance check or gate stamp is claimed.
+
 2026-10-04: depends on VELDO-0203, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
 2026-10-04: depends on VELDO-0204, the provisioning of every account, project and engineering unit reservation policy, which AC4's dispatch consumes; setup calls it after AC2's reservation_service enrollment of `authority`, whose absence the reservation writer refuses as missing_authority.
 2026-10-04, VELDO-0204 review: no production code writes the store's account records, so AC4's setup now registers each account of the host's account registry through control_accounts Accounts.register with the fields accounts.py registration prints, before VELDO-0204's provisioning runs; the fresh/registered row and its falsifier are added.
