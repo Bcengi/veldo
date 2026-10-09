@@ -308,6 +308,10 @@ def _v128_checks(base):
                                            execution_repository=repo, authority_policy={'grooming': ['project_owner']},
                                            coordination_budget=dict(capacity=4, invocations=40, wall_seconds=3600,
                                                                     owner_minutes=120))))
+        # VELDO-0142: the repository is bound only with its configured Git identity; the fixture
+        # configures it on the authority's store before the proof service binds it.
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
+            organs, A.conn, domain, {repo: str(work)})
         proofs = CP.ProofService(A.S, A.conn, domain=domain, repository=repo, repo=str(work), principal='proof-service',
                                  signer='authority', sign=A.journal_sign)
         A.fixture(DSP.review_policy_id(repo), 'review_policy', {

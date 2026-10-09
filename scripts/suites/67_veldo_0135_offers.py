@@ -341,6 +341,10 @@ sys.stdout.flush()
         guards = {a: RT.InvocationGuard(reservations, a, lambda invocation, configuration: None, lambda *_: None)
                   for a in RT.ADAPTERS}
         calls = EL.StationCalls(gate, guards, account=ACCOUNT)
+        # VELDO-0142: the repository is bound only with its configured Git identity; the fixture
+        # configures it on the authority's store before the floor binds it.
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
+            mods, writer, DOMAIN, {REPOSITORY: str(work)})
         floor = DSP.FloorAuthority(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=str(work),
                                    projections=str(base / 'projections'), principal='floor-service',
                                    signer='floor-service', sign=sign)
