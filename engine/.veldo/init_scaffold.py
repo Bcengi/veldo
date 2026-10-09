@@ -277,6 +277,7 @@ _FILES = [
     ".veldo/control_authority_lock.py",
     ".veldo/control_api_credentials.py",
     ".veldo/control_api_models.py",
+    ".veldo/control_api_models_scope.py",
     ".veldo/control_api_signer.py",
     ".veldo/control_api_webauthn.py",
     # VELDO-0130 phase 3: the API process's client of the authority service socket and its hint socket.

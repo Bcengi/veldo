@@ -194,8 +194,12 @@ class ApiAuthority:
         return None
 
     def _answer(self, principal, produce):
+        opened = False
         try:
             self._authority()
+            opened = not self.conn.in_transaction
+            if opened:
+                self.conn.execute('BEGIN')
             problem = self._reader_problem(principal)
             if problem:
                 return {'ok': False, 'reason': problem, 'taxonomy': taxonomy(problem)}
@@ -206,26 +210,63 @@ class ApiAuthority:
             if not isinstance(getattr(error, 'code', None), str):
                 raise
             return {'ok': False, 'reason': error.code, 'taxonomy': _class_of(error.code)}
+        finally:
+            if opened:
+                self.conn.execute('ROLLBACK')
+
+    def _read_scope(self, principal):
+        member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
+        return MO.reader_scope(self.conn, self.CM, member.get('scope'))
+
+    def _observe_read(self, principal, model, scope, answer, **extra):
+        event = dict(schema=SCHEMA, operation='read', principal=principal, model=model,
+                     scope=scope.scope, watermark=answer['watermark'], withheld=dict(scope.withheld),
+                     withheld_records=dict(scope.records), **extra)
+        self.observations.append(event)
+        self.observe(event)
+        key = 'feed_pages' if model == 'events' else 'reads'
+        self.counts[key] = self.counts.get(key, 0) + 1
+        for category, counts in (('entities', scope.withheld), ('records', scope.records)):
+            for reason, count in counts.items():
+                key = 'withheld_' + category + ':' + reason
+                self.counts[key] = self.counts.get(key, 0) + count
 
     def read(self, model, principal):
         """One published read model for `principal`, read on this connection now."""
         if model not in MO.MODELS:
             return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
-        return self._answer(principal, lambda: MO.read_model(self.S, self.conn, model))
+        def produce():
+            scope = self._read_scope(principal)
+            answer = MO.read_model(self.S, self.conn, model, scope=scope)
+            self._observe_read(principal, model, scope, answer)
+            return answer
+        return self._answer(principal, produce)
 
     def workflow(self, principal, workflow, version=None):
         """VELDO-0132's stored canvas document of one revision (the head when `version` is None)."""
         def produce():
             if self.workflows is None:
                 raise WF.Refused('unavailable_service:workflows', 'no workflow service on this authority')
+            scope = self._read_scope(principal)
+            if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):
+                answer = dict(workflow=None, redacted=[], watermark=MO.watermark(self.conn), freshness='live')
+                self._observe_read(principal, 'workflow', scope, answer)
+                return answer
             document = self.workflows.load(workflow, version)
             served, paths = MO.redact(document)
-            return dict(served, redacted=paths, watermark=MO.watermark(self.conn), freshness='live')
+            answer = dict(served, redacted=paths, watermark=MO.watermark(self.conn), freshness='live')
+            self._observe_read(principal, 'workflow', scope, answer)
+            return answer
         return self._answer(principal, produce)
 
     def events(self, principal, after, limit=256):
         """The committed journal records after `after`, oldest first, at most `limit`, for `principal`."""
-        return self._answer(principal, lambda: self._feed(after, limit))
+        def produce():
+            scope = self._read_scope(principal)
+            answer = self._feed(after, limit, scope=scope, principal=principal)
+            self._observe_read(principal, 'events', scope, answer, after=after)
+            return answer
+        return self._answer(principal, produce)
 
     def record(self, principal, dispatch_id, after, limit=RECORD_LIMIT):
         """One run's execution record after `after`, at most `limit` lines, for `principal` (VELDO-0141)."""
@@ -271,7 +312,7 @@ class ApiAuthority:
                 raise
             return {'ok': False, 'reason': error.code, 'taxonomy': _class_of(error.code)}
 
-    def _feed(self, after, limit):
+    def _feed(self, after, limit, scope=None, principal=None):
         self._authority()
         if self.publication is None:
             raise WF.Refused('unavailable_service:publication', 'no VELDO-0051 publication on this authority')
@@ -285,19 +326,40 @@ class ApiAuthority:
             by_seq.setdefault(event.get('journal_seq'), []).append(event['id'])
         out = []
         for seq, command, digest, changes, committed in rows:
+            visible = changes
+            if scope is not None and not scope.universal:
+                visible = {}
+                reasons = []
+                for eid, change in changes.items():
+                    data, kind = (change or {}).get('data') or {}, (change or {}).get('kind')
+                    own = data.get('revoked_at') is not None and (
+                        (kind == 'membership' and eid == principal)
+                        or (kind == CR.KIND and data.get('principal') == principal))
+                    reason = None if own else scope.reason(eid, kind, data)
+                    if reason is None:
+                        visible[eid] = change
+                    else:
+                        scope.withheld[reason] += 1
+                        reasons.append(reason)
+                if not visible:
+                    scope.records['out_of_scope' if 'out_of_scope' in reasons else 'no_project'] += 1
+                    continue
             revocations = {}
-            for eid, change in changes.items():
+            for eid, change in visible.items():
                 data = (change or {}).get('data') or {}
                 if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:
                     revocations[eid] = {'kind': change['kind'], 'data': {'credential_id': data.get('credential_id'),
                                                                          'revoked_at': data['revoked_at']}}
             out.append({'seq': seq, 'command_id': command, 'record_digest': digest, 'committed_at': committed,
-                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],
-                        'revocations': revocations, 'published': by_seq.get(seq, [])})
-        return {'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
+                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],
+                        'revocations': revocations, 'published': [e['id'] for e in listed
+                            if e.get('journal_seq') == seq and (scope is None or scope.universal
+                                                              or e.get('receipt') in visible)]})
+        cursor = {'cursor': rows[-1][0] if rows else after} if scope is not None and not scope.universal else {}
+        return dict({'schema': 'veldo.api_events/v1', 'after': after, 'events': out,
                 'watermark': {'seq': head, 'record_digest': top['record_digest']},
                 'publication': {'watermark': published, 'head': head, 'pending_records': max(0, head - published),
-                                'freshness': 'live' if published == head else 'stale'}}
+                                'freshness': 'live' if published == head else 'stale'}}, **cursor)
 
     # the judgment
 

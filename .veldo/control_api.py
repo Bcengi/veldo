@@ -838,7 +838,8 @@ class ControlApi:
             identity = teams.default_id(revision)
         else:
             identity = 'team:' + project
-        row = self._inspect([identity]).get(identity)
+        answer = self._ask(self.authority.read, 'configuration', session['principal'])
+        row = next((item for items in answer['items'].values() for item in items if item['id'] == identity), None)
         served, redacted = MO.redact(dict(row['data'], version=row['version']) if row else None)
         return 200, {'team': served, 'redacted': redacted}
 
@@ -1006,7 +1007,9 @@ class ControlApi:
         events = [e for e in answer['events'] if e['seq'] > stream.cursor]
         if events:
             stream.cursor = events[-1]['seq']
-        if events or always:
+        advanced = answer.get('cursor', stream.cursor) > stream.cursor
+        stream.cursor = max(stream.cursor, answer.get('cursor', stream.cursor))
+        if events or always or advanced:
             stream.put(dict(answer, events=events, cursor=stream.cursor))
 
     def streams(self):

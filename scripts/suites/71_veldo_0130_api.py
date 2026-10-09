@@ -80,7 +80,7 @@ _V130_EXPECTED_KINDS = {
     'decisions': ['assignment', 'settlement_terms', 'request_settlement', 'decision_settlement', 'decision',
                   'channel_presentation'],
     'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation'],
-    'configuration': ['workflow_head', 'workflow_revision', 'team', 'role_configuration', 'tool_configuration']}
+    'configuration': ['workflow_head', 'workflow_revision', 'default_team_revision', 'team', 'role_configuration', 'tool_configuration']}
 # The criteria's own phrases (parsed from the specification) and the published action or read model each is.
 _V130_AC4_ACTIONS = {'owner admission': 'owner_admission', 'owner priority': 'owner_priority',
                      'project pause': 'project_pause', 'project cancel': 'project_cancel', 'worker stop': 'worker_stop',
@@ -500,7 +500,7 @@ def _v130_checks(base):
                                           'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                           'independence_group': 'steward', 'scope': '*'})
     enroll_member('owner', 'person', ['project_owner', 'admission_authority', 'priority_authority', 'technical_authority'],
-                  ['project-a', 'project-b', 'factory'])
+                  '*')
     enroll_member('owner2', 'person', ['project_owner'], ['project-a'])
     enroll_member('member', 'person', [], ['project-z'])
     enroll_member('steward2', 'person', ['membership_steward'], ['project-b'])
@@ -1649,6 +1649,8 @@ def _v130_checks(base):
                     if k.module not in owners:
                         # The owning modules are read in place: they are not under test here.
                         owners[k.module] = _v130_load('v130_owner_' + k.module, ROOT / '.veldo' / (k.module + '.py'))
+                    check(RM, '%s has an explicit project rule' % k.kind,
+                          bool(getattr(k, 'project_rule', None)))
                     owner = owners[k.module]
                     named = getattr(owner, k.constant, None) if k.constant else None
                     held = (named == k.kind if isinstance(named, str) else

@@ -60,7 +60,7 @@ CREDENTIAL_SUFFIXES = ('_signature', '_token', '_secret', '_password', '_private
 # environment, a request's headers): served by name only.
 OPAQUE_MAPPINGS = frozenset({'env', 'environment', 'headers'})
 
-Kind = collections.namedtuple('Kind', 'kind module constant spec')
+Kind = collections.namedtuple('Kind', 'kind module constant spec project_rule')
 ReadModel = collections.namedtuple('ReadModel', 'name route criterion_subject kinds')
 Action = collections.namedtuple('Action', 'name route operation module command spec')
 Gap = collections.namedtuple('Gap', 'criterion subject spec what')
@@ -68,46 +68,51 @@ Gap = collections.namedtuple('Gap', 'criterion subject spec what')
 # THE READ MODELS. Each kind names the module and constant that own it, so the suite can compare the
 # registration with the owning module's own name for it. Projects (VELDO-0076), objectives (VELDO-0077),
 # backlog items with their nesting (objective_uuid, and the feature an item was taken from; VELDO-0078) and
-# teams (VELDO-0089) are served from their writers' own records. Like every model here, each serves the whole
-# store to the authenticated owner session; no model is filtered to a member's projects yet.
+# teams (VELDO-0089) are served from their writers' own records. Each registration declares how
+# its project is resolved. Only explicit shared kinds are available to every current member.
 READ_MODELS = (
     ReadModel('objectives', 'reads.objectives', 'projects/objectives', (
-        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),
-        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),
-        Kind('intake_proposal', 'control_intake', 'PROPOSAL_KIND', 'VELDO-0126'),
-        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),
+        Kind('project', 'control_project', 'KIND', 'VELDO-0076', ('field', 'name')),
+        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077', ('field', 'project')),
+        Kind('intake_proposal', 'control_intake', 'PROPOSAL_KIND', 'VELDO-0126', ('intake',)),
+        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126', ('reference', 'proposal_id')))),
     ReadModel('work', 'reads.work', 'backlog/specs/units', (
-        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),
-        Kind('accepted_document', 'control_alias', 'OWNED_KINDS', 'VELDO-0037'),
-        Kind('document_version', 'control_alias', 'OWNED_KINDS', 'VELDO-0037'),
-        Kind('accepted_revision', 'control_readset', 'REVISION_KINDS', 'VELDO-0035'),
-        Kind('execution_unit', 'entity_contract', 'ENTITY_TYPES', 'VELDO-0031'))),
+        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078', ('field', 'project')),
+        Kind('accepted_document', 'control_alias', 'OWNED_KINDS', 'VELDO-0037', ('repository', 'repository_uuid')),
+        Kind('document_version', 'control_alias', 'OWNED_KINDS', 'VELDO-0037', ('repository', 'repository_uuid')),
+        Kind('accepted_revision', 'control_readset', 'REVISION_KINDS', 'VELDO-0035', ('repository', 'repository_uuid')),
+        Kind('execution_unit', 'entity_contract', 'ENTITY_TYPES', 'VELDO-0031', ('field', 'project')))),
     ReadModel('workers', 'reads.workers', 'machines/workers', (
-        Kind('dispatch', 'control_dispatch', 'RECORD_KIND', 'VELDO-0039'),
-        Kind('dispatch_active', 'control_dispatch', 'INDEX_KIND', 'VELDO-0039'))),
+        Kind('dispatch', 'control_dispatch', 'RECORD_KIND', 'VELDO-0039', ('field', 'contract.reservation.project')),
+        Kind('dispatch_active', 'control_dispatch', 'INDEX_KIND', 'VELDO-0039', ('reference', 'unit')))),
     ReadModel('runs', 'reads.runs', 'run steps/tool calls', (
-        Kind('workflow_cycle', 'control_workflow_cycle', 'CYCLE_KIND', 'VELDO-0132'),)),
+        Kind('workflow_cycle', 'control_workflow_cycle', 'CYCLE_KIND', 'VELDO-0132', ('reference', 'subject')),)),
     ReadModel('decisions', 'reads.decisions', 'decisions', (
-        Kind('assignment', 'control_assignment', 'ENTITY_KIND', 'VELDO-0064'),
-        Kind('settlement_terms', 'control_request_settlement', 'TERMS_KIND', 'VELDO-0068'),
-        Kind('request_settlement', 'control_request_settlement', 'SETTLEMENT_KIND', 'VELDO-0068'),
-        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069'),
-        Kind('decision', 'control_request_settlement', 'GOVERNING_RECORD_KIND', 'VELDO-0069'),
-        Kind('channel_presentation', 'control_channel_presentation', 'RECEIPT_KIND', 'VELDO-0065'))),
+        Kind('assignment', 'control_assignment', 'ENTITY_KIND', 'VELDO-0064', ('field', 'scope')),
+        Kind('settlement_terms', 'control_request_settlement', 'TERMS_KIND', 'VELDO-0068', ('request',)),
+        Kind('request_settlement', 'control_request_settlement', 'SETTLEMENT_KIND', 'VELDO-0068', ('reference', 'request_id')),
+        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')),
+        Kind('decision', 'control_request_settlement', 'GOVERNING_RECORD_KIND', 'VELDO-0069', ('reference', 'subject.id')),
+        Kind('channel_presentation', 'control_channel_presentation', 'RECEIPT_KIND', 'VELDO-0065', ('reference', 'request_id')))),
     ReadModel('proof', 'reads.proof', 'gate/review/proof', (
-        Kind('proof_bundle', 'control_proof', 'BUNDLE_KIND', 'VELDO-0050'),
-        Kind('gate_observation', 'control_proof', 'OBSERVATION_KIND', 'VELDO-0058'),
-        Kind('completion_receipt', 'control_event_projection', 'RECEIPT_KIND', 'VELDO-0021'))),
+        Kind('proof_bundle', 'control_proof', 'BUNDLE_KIND', 'VELDO-0050', ('reference', 'unit')),
+        Kind('gate_observation', 'control_proof', 'OBSERVATION_KIND', 'VELDO-0058', ('repository', 'repository')),
+        Kind('completion_receipt', 'control_event_projection', 'RECEIPT_KIND', 'VELDO-0021', ('reference', 'subject.id')))),
     ReadModel('spend', 'reads.spend', 'spend', (
-        Kind('subscription_reservation', 'control_reservations', None, 'VELDO-0036'),)),
+        Kind('subscription_reservation', 'control_reservations', None, 'VELDO-0036', ('reservation',)),)),
     ReadModel('configuration', 'reads.configuration', 'configuration/workflows', (
-        Kind('workflow_head', 'control_workflow', 'HEAD_KIND', 'VELDO-0132'),
-        Kind('workflow_revision', 'control_workflow', 'REVISION_KIND', 'VELDO-0132'),
-        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),
-        Kind('role_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127'),
-        Kind('tool_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127'))),
+        Kind('workflow_head', 'control_workflow', 'HEAD_KIND', 'VELDO-0132', ('field', 'repository')),
+        Kind('workflow_revision', 'control_workflow', 'REVISION_KIND', 'VELDO-0132', ('field', 'repository')),
+        Kind('default_team_revision', 'control_team_routes', 'KIND', 'VELDO-0162', ('shared',)),
+        Kind('team', 'control_team', 'KIND', 'VELDO-0089', ('field', 'project')),
+        Kind('role_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127', ('shared',)),
+        Kind('tool_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127', ('shared',)))),
 )
 MODELS = {m.name: m for m in READ_MODELS}
+SCOPE = _organ('control_api_models_scope')
+
+def reader_scope(conn, membership, scope):
+    return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS for k in m.kinds})
 
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
 # one is a gap owned by the named specification.
@@ -197,7 +202,7 @@ def _item(store, conn, row):
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 
-def read_model(store, conn, name):
+def read_model(store, conn, name, scope=None):
     """One read model from the authority's connection, in one read transaction at one watermark."""
     model = MODELS[name]
     kinds = [k.kind for k in model.kinds]
@@ -209,6 +214,8 @@ def read_model(store, conn, name):
         mark = watermark(conn)
         for row in conn.execute('SELECT id, kind, version, digest, data FROM entities WHERE kind IN (%s) '
                                 'ORDER BY kind, id' % ','.join('?' * len(kinds)), kinds).fetchall():
+            if scope is not None and not scope.visible(row[0], row[1], json.loads(row[4])):
+                continue
             item, extra = _item(store, conn, row)
             if item is None:
                 problems.append(extra)

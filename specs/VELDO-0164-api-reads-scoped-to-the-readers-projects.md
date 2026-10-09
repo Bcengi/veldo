@@ -14,6 +14,8 @@ depends_on: [VELDO-0076, VELDO-0130, VELDO-0162]
 placement: [contracts, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_api.py"
+  - ".veldo/control_api.py"
   - "engine/.veldo/control_api_authority*.py"
   - ".veldo/control_api_authority*.py"
   - "engine/.veldo/control_api_models*.py"
@@ -157,3 +159,6 @@ entities are decided per entity, with intake_proposal and subscription_reservati
 Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-10-08: implementation footprint includes control_api.py for the separate team read and
+for live-stream cursor advancement across withheld records. Criteria and status are unchanged.
