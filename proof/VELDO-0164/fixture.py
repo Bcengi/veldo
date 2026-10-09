@@ -67,7 +67,7 @@ def fixture(root, production):
                 artifact_digests=[], nonce='seed-' + str(counter)), 'fixture', sign, 1)
         def put(identity, kind, **data):
             return commit({identity:dict(kind=kind, data=data)})
-        for principal, scope in (('owner','*'), ('reader',['A']), ('outside',['C']), ('other',['B']), ('factory-reader',['factory'])):
+        for principal, scope in (('owner','*'), ('reader',['A']), ('outside',['C']), ('other',['B']), ('factory-reader',['factory']), ('both-reader',['A','B'])):
             put(principal, 'membership', principal_type='person', roles=['project_owner'], scope=scope,
                 revoked_at=None, expires_at=None)
         for kind in ('role_configuration', 'tool_configuration'):
@@ -90,10 +90,10 @@ def fixture(root, production):
             row('project', dict(name=project, execution_repository=project), 'project:' + project)
             row('objective', dict(project=project))
             context = dict(candidates=['A','B'], projects=[
-                dict(id=p, name=p, ticket_key_prefixes=['AAA' if p=='A' else 'BBB']) for p in ('A','B')],
+                dict(id=p, name=p, ticket_key_prefixes=['AAA' if p=='A' else 'BBB', 'CROSS']) for p in ('A','B')],
                 project_versions={'project:A':1, 'project:B':1, 'project:factory':1})
             row('intake_proposal', dict(project=project, proposal='objective', state='PROPOSED',
-                context=context, decision=dict(context, hints=['A','B'], shared_ticket_keys=['A','B']),
+                context=context, decision=dict(context, hints=['A','B'], shared_ticket_keys=['cross']),
                 hints=['A','B']), proposal)
             row('intake_question', dict(proposal_id=proposal))
             row('backlog_item', dict(project=project))

@@ -3070,7 +3070,8 @@ def _v130_service_checks(base):
             cookie2, token2 = sign_in(desktop)
             check(SP, 'both passkeys sign in, the credentials read through the service', bool(cookie) and bool(cookie2))
             mark, seen = head(), len(observations())
-            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'Plan the socket phase.', 'project': 'project-a'}, cookie, token)
+            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN,
+                        {'text': 'Plan the socket phase.', 'project': 'project-a'}, cookie, token)
             made = sent[2].get('proposal_id') or sent[2].get('question_id') if isinstance(sent[2], dict) else None
             check(SP, 'a message through the socket is accepted and committed by the service into the intake [%s %s]'
                   % (sent[0], refusal(sent)), sent[0] == 200 and bool(made) and head() > mark

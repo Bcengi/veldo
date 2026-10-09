@@ -18,7 +18,7 @@ cases = namespace['cases']()
 touched = {'control_api_models.py','control_api_models_scope.py','control_api_authority.py','control_api.py','init_scaffold.py'}
 errors, records = [], []
 for case in cases:
-    if case.get('module') not in touched or case.get('fixture'):
+    if (case['finding'] != 164 and case.get('module') not in touched) or case.get('fixture'):
         continue
     source = ROOT / case.get('dir','.veldo') / case['module']
     before = source.read_text()
@@ -31,7 +31,7 @@ for case in cases:
     if case['finding'] == 164:
         diff = case['name'] + '.diff'
         (Path(__file__).parent / diff).write_text(''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),
-            fromfile='.veldo/'+case['module'],tofile='.veldo/'+case['module'],n=0)))
+            fromfile=case.get('dir','.veldo')+'/'+case['module'],tofile=case.get('dir','.veldo')+'/'+case['module'],n=0)))
         records.append(dict(name=case['name'],rows=case['rows'],module=case['module'],diff=diff,
             source_sha256=hashlib.sha256(before.encode()).hexdigest(),status='registered; execution reserved for reviewer'))
 result = dict(schema='veldo.scoped_read_falsifiers/v1',finding=164,mutations=records,anchor_errors=errors)

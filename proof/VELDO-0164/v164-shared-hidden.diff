@@ -1,5 +1,5 @@
 --- .veldo/control_api_models_scope.py
 +++ .veldo/control_api_models_scope.py
-@@ -101 +101 @@
+@@ -110 +110 @@
 -        if self.rules.get(kind) == ('shared',):
 +        if False:

@@ -70,7 +70,12 @@ def _v164_suite():
                   and 'project:B' not in json.dumps(proposal) and 'project:factory' not in json.dumps(proposal))
             check('reads/proposal-context','allowed project names and prefixes remain',
                   proposal['context']['candidates']==['A']
-                  and proposal['context']['projects']==[dict(id='A',name='A',ticket_key_prefixes=['AAA'])])
+                  and proposal['context']['projects']==[dict(id='A',name='A',ticket_key_prefixes=['AAA','CROSS'])])
+            both = next(i['data'] for i in authority.read('objectives','both-reader')['items']['intake_proposal']
+                        if i['id']==f.expected['A']['intake_proposal'])
+            check('reads/proposal-context','named scope covering both projects retains both and their shared prefix',
+                  both['context']['candidates']==['A','B'] and 'BBB' in json.dumps(both['context']['projects'])
+                  and both['decision']['shared_ticket_keys']==['cross'])
             check('owner/unchanged','unrouted intake and account policy are retained',
                   'unrouted' in json.dumps(authority.read('objectives','owner'))
                   and 'account-policy' in json.dumps(authority.read('spend','owner')))

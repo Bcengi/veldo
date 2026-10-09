@@ -77,13 +77,22 @@ class ReaderScope:
         served = copy.deepcopy(data)
         def covered(project):
             return isinstance(project, str) and self.membership.scope_covers(self.scope, project)
+        # Shared ticket keys are prefixes, not project names. Keep a shared prefix only
+        # when at least two visible projects share it, so it cannot disclose a hidden peer.
+        prefixes = {}
+        for project in field(data, 'context.projects') or []:
+            if isinstance(project, dict) and covered(project.get('id')):
+                for prefix in set(p.casefold() for p in project.get('ticket_key_prefixes', []) if isinstance(p, str)):
+                    prefixes[prefix] = prefixes.get(prefix, 0) + 1
         def walk(value):
             if isinstance(value, dict):
                 for key, item in list(value.items()):
                     if key == 'projects' and isinstance(item, list):
                         value[key] = [p for p in item if isinstance(p, dict) and covered(p.get('id'))]
-                    elif key in ('candidates', 'hints', 'shared_ticket_keys') and isinstance(item, list):
+                    elif key in ('candidates', 'hints') and isinstance(item, list):
                         value[key] = [p for p in item if covered(p)]
+                    elif key == 'shared_ticket_keys' and isinstance(item, list):
+                        value[key] = [p for p in item if isinstance(p, str) and prefixes.get(p.casefold(), 0) > 1]
                     elif key == 'project_versions' and isinstance(item, dict):
                         value[key] = {p:v for p,v in item.items() if p.startswith('project:')
                                       and covered(p[len('project:'):])}

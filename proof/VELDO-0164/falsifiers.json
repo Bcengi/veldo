@@ -29,7 +29,7 @@
       ],
       "module": "control_api_models_scope.py",
       "diff": "v164-universal-projectless-hidden.diff",
-      "source_sha256": "ff1e618b00407dc5a3218f9694856fa2f40dcee672665e4dc3d21024c3aef932",
+      "source_sha256": "88560a05c91a73d93aaae4fc82708ee91d92aa55b52ec57c9baf4966494abc8b",
       "status": "registered; execution reserved for reviewer"
     },
     {
@@ -49,7 +49,7 @@
       ],
       "module": "control_api_models_scope.py",
       "diff": "v164-shared-hidden.diff",
-      "source_sha256": "ff1e618b00407dc5a3218f9694856fa2f40dcee672665e4dc3d21024c3aef932",
+      "source_sha256": "88560a05c91a73d93aaae4fc82708ee91d92aa55b52ec57c9baf4966494abc8b",
       "status": "registered; execution reserved for reviewer"
     },
     {
@@ -99,7 +99,7 @@
       ],
       "module": "control_api_models_scope.py",
       "diff": "v164-unrouted-factory-visible.diff",
-      "source_sha256": "ff1e618b00407dc5a3218f9694856fa2f40dcee672665e4dc3d21024c3aef932",
+      "source_sha256": "88560a05c91a73d93aaae4fc82708ee91d92aa55b52ec57c9baf4966494abc8b",
       "status": "registered; execution reserved for reviewer"
     },
     {
@@ -130,6 +130,26 @@
       "module": "control_api.py",
       "diff": "v164-team-requires-model-read.diff",
       "source_sha256": "f9dd0e65338ac3d44312c21b8c5849e2d7b223f42b0ade9ac0a3b5082c3ccb8f",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-api-default-team-unseeded",
+      "rows": [
+        "reads/authoritative"
+      ],
+      "module": "71_veldo_0130_api.py",
+      "diff": "v164-api-default-team-unseeded.diff",
+      "source_sha256": "69825ede4f1a8f864ded3a9b1a81ab26da6e7579e96ab2e6b2a5cb14c6a91b4f",
+      "status": "registered; execution reserved for reviewer"
+    },
+    {
+      "name": "v164-socket-message-unrouted",
+      "rows": [
+        "service/socket-path"
+      ],
+      "module": "71_veldo_0130_api.py",
+      "diff": "v164-socket-message-unrouted.diff",
+      "source_sha256": "69825ede4f1a8f864ded3a9b1a81ab26da6e7579e96ab2e6b2a5cb14c6a91b4f",
       "status": "registered; execution reserved for reviewer"
     }
   ],

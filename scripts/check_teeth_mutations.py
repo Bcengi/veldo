@@ -10506,6 +10506,16 @@ def cases():
         "self._ask(self.authority.read, 'configuration', principal)\n        entities = self._inspect([identity, principal])",
         ['reads/team-route'])
 
+
+    add(164, 'v164-api-default-team-unseeded', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),\n                                              S.digest_of(default_team))\n",
+        '', ['reads/authoritative'])
+    result[-1]['dir'] = 'scripts/suites'
+    add(164, 'v164-socket-message-unrouted', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "{'text': 'Plan the socket phase.', 'project': 'project-a'}",
+        "{'text': 'Plan the socket phase.'}", ['service/socket-path'])
+    result[-1]['dir'] = 'scripts/suites'
+
     return result
 
 
