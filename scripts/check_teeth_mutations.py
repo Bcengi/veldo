@@ -5249,8 +5249,8 @@ def cases():
         "        if a['operation'] == 'save_workflow':\n"
         "            return self._save_workflow(a)  # defect: a workflow save skips the authority's checks\n",
         ['actions/unauthorized-write'])
-    api('publication-lag-labeled-live', AU130, "                                'freshness': 'live' if published == head else 'stale'}}",
-        "                                'freshness': 'live'}}  # defect: a lagging publication is labeled current",
+    api('publication-lag-labeled-live', AU130, "'freshness': 'live' if published == head else 'stale'",
+        "# defect: a lagging publication is labeled current\n                                'freshness': 'live'",
         ['reads/freshness'])
     api('read-unscoped', AU130,
         "        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):\n"
