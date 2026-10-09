@@ -1,5 +1,7 @@
 """One private safety copy and a fresh light check around every memory switch."""
 import fcntl
+from contextlib import contextmanager
+import signal
 import json
 import os
 from pathlib import Path
@@ -42,6 +44,42 @@ def copy_data(source, target):
         else:
             shutil.copyfile(source, target)
         target.chmod(0o600)
+
+
+@contextmanager
+def index_guard(source, part, detail):
+    """Read leases keep Chroma segment files immutable across the SQLite backup.
+
+    SQLite supports online backup; HNSW does not. An open writer or writable mmap
+    refuses a lease. A new writer requests a lease break, which aborts this copy.
+    Unsupported hosts fail closed only when raw index files actually exist.
+    """
+    files = []
+    for database in Path(source).rglob('chroma.sqlite3'):
+        for path in database.parent.rglob('*'):
+            if path.is_file() and path != database and not path.name.endswith(('-wal', '-shm', '-journal')):
+                files.append(path)
+    held, previous = [], None
+    try:
+        if files:
+            if not hasattr(fcntl, 'F_SETLEASE'):
+                raise OSError('index lease unavailable')
+            def interrupted(signum, frame):
+                raise OSError('index writer requested lease break')
+            previous = signal.signal(signal.SIGIO, interrupted)
+            for path in files:
+                fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+                held.append(fd)
+                fcntl.fcntl(fd, fcntl.F_SETOWN, os.getpid())
+                fcntl.fcntl(fd, fcntl.F_SETLEASE, fcntl.F_RDLCK)
+        yield
+    except (OSError, ValueError):
+        raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail) from None
+    finally:
+        for fd in held:
+            os.close(fd)
+        if previous is not None:
+            signal.signal(signal.SIGIO, previous)
 
 
 def copy_version(source):
@@ -95,10 +133,11 @@ def check(root, definition, part, phase):
                 staging = Path(tempfile.mkdtemp(prefix='copy-', dir=copies))
                 try:
                     initial = copy_version(entry['data'])
-                    copy_data(entry['data'], staging / part)
-                    if copy_version(entry['data']) != initial:
-                        raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail)
-                    (staging / part).rename(target)
+                    with index_guard(entry['data'], part, detail):
+                        copy_data(entry['data'], staging / part)
+                        if copy_version(entry['data']) != initial:
+                            raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, detail)
+                        (staging / part).rename(target)
                 finally:
                     shutil.rmtree(staging)
             result = probe(part, entry, 'before')
@@ -115,7 +154,7 @@ def check(root, definition, part, phase):
                 raise M.Refused('missing_evidence:memory:%s:lost' % part, detail)
             sample_size = len(saved['sample'])
         return dict(part=part, phase=phase, outcome='passed', path=entry['data'], copy=str(target),
-                    count=result['count'], sample_size=sample_size)
+                    count=result['count'], sample_size=sample_size, metrics=dict(memory_checks_passed=1))
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         raise M.Refused('unavailable_service:memory:%s:adapter' % part, detail) from None
     finally:

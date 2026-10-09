@@ -102,11 +102,13 @@ links into profiles are checked again at handoff. KB checks select only existing
 collections and replace the captured create-on-read helper in their subprocess.
 
 A safety copy checks source inode, size, mtime and ctime across the whole copy and
-refuses copy_busy if an index or SQLite sidecar changes. Staging is discarded and
-a retry can take the first copy. This detects concurrent file changes, but is not
-a cross-file filesystem snapshot: delayed mmap writeback in an external Chroma
-writer remains a limitation. For a guaranteed recoverable HNSW index, quiesce its
-writer while taking the first copy; SQLite itself always uses online backup.
+refuses copy_busy if an index or SQLite sidecar changes. Chroma segment files also
+require kernel read leases held across the entire copy: existing writers and
+writable mmap mappings refuse the lease, and a new writer's lease-break signal
+aborts staging. Pause Chroma's writer for its first safety copy. Hosts without
+read leases refuse copies containing raw Chroma index files; SQLite-only stores
+still use online backup. Staging is discarded on refusal, so retry can take the
+first copy. This avoids claiming raw live HNSW files are a coherent backup.
 
 ## Acceptance criteria and counterexamples
 
@@ -150,7 +152,8 @@ Other review rows: worker/real-routing, worker/named-store-chroma-off,
 worker/missing-not-lost, profile/handoff-nested-link, profile/handoff-code-link,
 integration/adapter-preflight-no-writes, integration/refused-outcome,
 setup/venv-interpreter, setup/system-interpreter, check/unavailable-not-lost,
-and copy/moving-index-refused. The KB fixture raises if a check creates a
+copy/moving-index-refused, copy/open-index-writer-refused, and
+copy/quiescent-index. The KB fixture raises if a check creates a
 collection. System interpreter ownership is represented as root in its focused
 row because this sandbox maps the system filesystem owner to uid 65534; that uid
 is never accepted by production validation.

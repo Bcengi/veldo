@@ -257,6 +257,15 @@ def _v182_suite():
             try:
                 check('copy/moving-index-refused',refusal(lambda: C.check(busyroot,busydef,'file_memory','before'))=='unavailable_service:memory:file_memory:copy_busy' and not (busyroot/'memory/copies/file_memory').exists())
             finally:C.copy_data=original_copy
+            indexroot=base/'index-state';indexroot.mkdir(mode=0o700)
+            segments=Path(definition['parts']['memory_kb']['data'])/'segment';segments.mkdir()
+            hnsw=segments/'data_level0.bin';hnsw.write_bytes(b'synthetic HNSW')
+            with hnsw.open('r+b') as writer:
+                check('copy/open-index-writer-refused',refusal(lambda: C.check(indexroot,definition,'memory_kb','before'))=='unavailable_service:memory:memory_kb:copy_busy' and not (indexroot/'memory/copies/memory_kb').exists())
+            if sys.platform=='linux':
+                result=C.check(indexroot,definition,'memory_kb','before')
+                check('copy/quiescent-index',result['outcome']=='passed' and (indexroot/'memory/copies/memory_kb/segment/data_level0.bin').read_bytes()==b'synthetic HNSW')
+            hnsw.unlink();segments.rmdir()
             source=Path(definition['parts']['ava_memory']['code'])/'memory_store.py'
             saved_source=source.read_text();source.write_text("raise ImportError('fixture')\n")
             try:
@@ -446,7 +455,7 @@ def _v182_suite():
                     config.write_text(json.dumps(configured))
                     launch,error=ctx['submit']('reserved-'+engine+name,engine,ctx['STREAMS'][engine](),via=account)
                     result=ctx['finish'](launch,via=account)
-                    check('launch/reserved-config-'+engine,result.get('state')=='refused' and not ctx['markers_of'](launch.dispatch_id))
+                    check('launch/reserved-config-'+engine,error is None and result.get('state')=='refused' and result.get('refusal')=='invalid_input:adapter_environment:'+name and not ctx['markers_of'](launch.dispatch_id))
                     del configured['adapters'][engine]['environment'][name]
                 configured['adapters'][engine]['environment']['VELDO_MEMORY']=json.dumps(dict(revision=99,definition={}))
                 config.write_text(json.dumps(configured))
@@ -457,10 +466,13 @@ def _v182_suite():
                     markers=ctx['markers_of'](launch.dispatch_id) if launch else []
                     value=json.loads(markers[0]['env']['VELDO_MEMORY']) if markers else None
                     observed=next((e for e in launch.messages if e.get('event')=='memory'),{}) if launch else {}
+                    import hashlib
+                    receipt_path=ctx['factory']/'memory/launches'/(hashlib.sha256(launch.dispatch_id.encode()).hexdigest()+'.json')
+                    receipt=json.loads(receipt_path.read_text())
                     if label=='legacy':
-                        check('launch/config-precedence-'+engine,error is None and result.get('state')=='exited' and value==dict(revision=1,definition=definition) and observed.get('revision')==1)
+                        check('launch/config-precedence-'+engine,error is None and result.get('state')=='exited' and value==dict(revision=1,definition=definition) and observed.get('revision')==1 and receipt==dict(dispatch_id=launch.dispatch_id,revision=1,definition=definition))
                     else:
-                        check('falsifier/config-precedence-'+engine,value is not None and value['revision']==99 and observed.get('revision')==1)
+                        check('falsifier/config-precedence-'+engine,value is not None and value['revision']==99 and observed.get('revision')==1 and receipt['revision']==1)
                 module.write_text(source)
                 del configured['adapters'][engine]['environment']['VELDO_MEMORY']
                 config.write_text(json.dumps(configured))
