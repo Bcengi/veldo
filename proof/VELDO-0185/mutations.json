@@ -1,0 +1,277 @@
+{
+ "all_detected": true,
+ "baseline": {
+  "all_passed": true,
+  "rows": 14,
+  "seconds": 10.924
+ },
+ "mutations": [
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-work-not-installed.diff",
+   "executed": true,
+   "false_rows": [
+    "every-account",
+    "fresh/adapters",
+    "fresh/one-engine",
+    "login/receiver-refuses",
+    "loop/configured",
+    "rerun/changes-nothing",
+    "reservation/principals"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "eb82690ac5cda98616b82a85813bb4a84e98be7233e2340b7d0b7337d542484f",
+   "name": "v185-work-not-installed",
+   "named_row_details": {
+    "loop/configured": "the running service's loop is available and configured, with no refusal [{'available': False, 'configured': False, 'refusal': None}]"
+   },
+   "named_rows": [
+    "loop/configured"
+   ],
+   "seconds": 36.959,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-principals-without-role.diff",
+   "executed": true,
+   "false_rows": [
+    "every-account",
+    "fresh/registered",
+    "login/receiver-refuses",
+    "rerun/changes-nothing",
+    "rerun/over-earlier-host",
+    "reservation/principals"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "0553ebca3b477c546c631398fb4f6787d2ef0ee6c37284eb05c4fb5a307d677e",
+   "name": "v185-principals-without-role",
+   "named_row_details": {
+    "reservation/principals": "authority holds reservation_service, enrolled by the owner's signed command [[]]"
+   },
+   "named_rows": [
+    "reservation/principals"
+   ],
+   "seconds": 37.012,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-enrollments-every-run.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/changes-nothing",
+    "rerun/over-earlier-host"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "b22b0548a380fc06bb114948fa2652357a41ca4876cdb8218f98759bd3811934",
+   "name": "v185-enrollments-every-run",
+   "named_row_details": {
+    "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:reservation_principals:store_refused []]"
+   },
+   "named_rows": [
+    "rerun/changes-nothing"
+   ],
+   "seconds": 10.952,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-adapters-without-codex.diff",
+   "executed": true,
+   "false_rows": [
+    "every-account",
+    "fresh/adapters",
+    "fresh/one-engine",
+    "fresh/registered",
+    "fresh/team",
+    "login/named",
+    "login/receiver-refuses",
+    "loop/configured",
+    "rerun/changes-nothing",
+    "rerun/over-earlier-host",
+    "reservation/principals",
+    "reservation/state-root"
+   ],
+   "module": ".veldo/control_factory_setup_dispatch.py",
+   "mutant_sha256": "23f3e2552315285c11d06e42efe1c803825d61de8b7ca47ea370204286615142",
+   "name": "v185-adapters-without-codex",
+   "named_row_details": {
+    "every-account": "setup laid the owner's host down [refused setup_incomplete:work_configuration:invalid_input:work:role:adapter]"
+   },
+   "named_rows": [
+    "every-account"
+   ],
+   "seconds": 1.882,
+   "source_sha256": "c94f1f4b34621fc9cece0e331696bab1f2de98ecec7823413b54c10f40ce253f"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-registration-left-out.diff",
+   "executed": true,
+   "false_rows": [
+    "every-account",
+    "fresh/one-engine",
+    "fresh/registered",
+    "fresh/team",
+    "login/named",
+    "login/receiver-refuses",
+    "rerun/over-earlier-host",
+    "reservation/principals"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "dc8f312f45bc0b058eab9db2ff30558f9fb5f4ef6c999a3773a05a86366cf97e",
+   "name": "v185-registration-left-out",
+   "named_row_details": {
+    "fresh/registered": "claude-a: one store record with the fields registration prints [{'provider': None, 'label': None, 'concurrency': None}]"
+   },
+   "named_rows": [
+    "fresh/registered"
+   ],
+   "seconds": 36.549,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-receiver-login-unchecked.diff",
+   "executed": true,
+   "false_rows": [
+    "login/receiver-refuses"
+   ],
+   "module": ".veldo/control_launch.py",
+   "mutant_sha256": "0f5e8750280e95468aa71b5fb85c75a917c42752617616a34850e5844204465e",
+   "name": "v185-receiver-login-unchecked",
+   "named_row_details": {
+    "login/receiver-refuses": "every dispatch on the logged-out account was refused by name before spawn [[('v185-u2', 'build', 'exited', True, None)]]"
+   },
+   "named_rows": [
+    "login/receiver-refuses"
+   ],
+   "seconds": 10.951,
+   "source_sha256": "dd47167f7f0cf1583ffeb41ca89d08225271fb8141da831bb2eb1abc44f87a1d"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-refused-unit-stranded.diff",
+   "executed": true,
+   "false_rows": [
+    "every-account",
+    "login/receiver-refuses"
+   ],
+   "module": ".veldo/control_service.py",
+   "mutant_sha256": "88035f21faf42fd43dbccb0dd0900072f3462b2825b9d106ed09b512b2a5f173",
+   "name": "v185-refused-unit-stranded",
+   "named_row_details": {
+    "every-account": "every unit was built and reviewed, each to a completion [{'claude-a': [('v185-u1', 'build', 'exited', True, None)], 'claude-b': [('v185-u2', 'build', 'refused', False, 'missing_authority:account_login:claude-b')], 'claude-c': [('v185-u3', 'build', 'exited', True, None)], 'codex-a': [('v185-u1', 'rev",
+    "login/receiver-refuses": "the Line offered each refused unit's station again on another account at its next pass [[]]"
+   },
+   "named_rows": [
+    "login/receiver-refuses",
+    "every-account"
+   ],
+   "seconds": 39.969,
+   "source_sha256": "44a568f2c51aff737e3f0145b100c91c3bf50eb2c7ff93892c461e1c84dd68df"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-setup-login-unchecked.diff",
+   "executed": true,
+   "false_rows": [
+    "login/named",
+    "rerun/changes-nothing"
+   ],
+   "module": ".veldo/control_factory_setup_dispatch.py",
+   "mutant_sha256": "9446654e7194f4aac038357baf2623717b7bb7e4fc2dc390906d753d040cdec2",
+   "name": "v185-setup-login-unchecked",
+   "named_row_details": {
+    "login/named": "setup checked every account's own login [{'claude-a': ('logged_in', None), 'claude-b': ('logged_in', None), 'claude-c': ('logged_in', None), 'codex-a': ('logged_in', None)}]"
+   },
+   "named_rows": [
+    "login/named"
+   ],
+   "seconds": 11.011,
+   "source_sha256": "c94f1f4b34621fc9cece0e331696bab1f2de98ecec7823413b54c10f40ce253f"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-rerun-work-not-recorded.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "c2d5b3e72d2b3387d5f8ff504a8fbffd1dfbb35398432784be3ee4ac70360465",
+   "name": "v185-rerun-work-not-recorded",
+   "named_row_details": {
+    "rerun/over-earlier-host": "the installation gained its work configuration, the receiver its adapters and the state root it held as null [[{'keys': ['adapters', 'state_root'], 'path': '/dev/shm/b171-7gt3dcmh/install-earlier/36e207404c556a67/config/receiver-c70ce4d353d095dd.json'}]]"
+   },
+   "named_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "seconds": 10.925,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-team-saved-again.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/changes-nothing",
+    "rerun/over-earlier-host"
+   ],
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_sha256": "2061cab54365c8a1468298d78ecb1bc9ee970e1c05d2e255e7570e8366006253",
+   "name": "v185-team-saved-again",
+   "named_row_details": {
+    "rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [refused setup_incomplete:default_team:stale_version:default_team []]"
+   },
+   "named_rows": [
+    "rerun/changes-nothing"
+   ],
+   "seconds": 10.973,
+   "source_sha256": "21a9b5fe9565baef49c59701e539a5d88f21c9797120926619b92e3a7317faed"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-null-state-root-refused.diff",
+   "executed": true,
+   "false_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "module": ".veldo/control_factory_setup_trust.py",
+   "mutant_sha256": "39c0058e969ef8e42089c6fd2b3bb7b61a85c6f0ebb9c3150776d274997ef245",
+   "name": "v185-null-state-root-refused",
+   "named_row_details": {
+    "rerun/over-earlier-host": "the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:differs:/dev/shm/b171-d27an66f/install-earlier/c7d87fcd8571867d/config/receiver-cd8694d3942c809f.json []]"
+   },
+   "named_rows": [
+    "rerun/over-earlier-host"
+   ],
+   "seconds": 10.437,
+   "source_sha256": "7b6935d58eb17b5a1c7bd1b91c5a4d0563517fc3cb2c45429ff1808e48cc38bf"
+  },
+  {
+   "detected": true,
+   "diff": "proof/VELDO-0185/v185-scaffold-absent.diff",
+   "executed": true,
+   "false_rows": [
+    "install/asset"
+   ],
+   "module": ".veldo/init_scaffold.py",
+   "mutant_sha256": "877a72e7ff94361784880c6910490a0e2136d43c4191c2cfdce50098e3a1b61e",
+   "name": "v185-scaffold-absent",
+   "named_row_details": {
+    "install/asset": "the dispatch module is in the scaffold inventory, with every setup module"
+   },
+   "named_rows": [
+    "install/asset"
+   ],
+   "seconds": 10.972,
+   "source_sha256": "27b5bc0811f9655da2a5635c01175e1f5ad25bc09bc22c17abdf7ef037eedfdd"
+  }
+ ],
+ "schema": "veldo.mutation-registration/v1",
+ "spec_id": "VELDO-0185",
+ "status": "registered; executed by proof/VELDO-0185/drive.py outside the confined stage",
+ "suite": "scripts/suites/106_veldo_0185_dispatch_setup.py"
+}

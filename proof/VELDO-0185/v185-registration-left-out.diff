@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -659,7 +659,7 @@
+                 except D.StepRefused as error:
+                     raise Refused(error.code) from None
+                 details['default_team'] = {'saved': saved}
+-        if 'account_registration' in wanted:
++        if False:
+             with step('account_registration'):
+                 details['account_registration'] = {'registered': store.register(dispatch['accounts'])}
+         before = store.head()

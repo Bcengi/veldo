@@ -1119,6 +1119,10 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # VELDO-0185: the dispatch configuration this run would add, every check before the first write.
     pending = (dispatch_preflight(plan, ids, installed, home, unit_dir, _differs) if plan['dispatch'] is not None
                else None)
+    # AC2 and AC3: a receiver lacking its state root, or holding it as null, gains it whatever the registry holds.
+    bare = (organ('control_factory_setup_dispatch').receiver_states(
+        sorted(((installed.get('receiver') or {}).get('configs') or {}).values()), None, root, _differs)
+            if pending is None else None)
     lock = take_lock(root, create=False)
     running = lock is None
     try:
@@ -1231,6 +1235,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
         configured = False
         if pending is None:
+            outcomes.append(organ('control_factory_setup_dispatch').apply_receivers(
+                bare, None, root, organ('control_factory_setup_api')))
             outcomes.append(DEFERRED)
         else:
             lock, configured = dispatch_rerun(plan, pending, ids, home, api, lock, running, outcomes, mark, clock)

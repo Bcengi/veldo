@@ -1,0 +1,115 @@
+{
+ "all_behavior_rows_red": true,
+ "behavior_rows": [
+  "fresh/team",
+  "fresh/adapters",
+  "fresh/one-engine",
+  "loop/configured",
+  "reservation/principals",
+  "reservation/state-root",
+  "fresh/registered",
+  "login/named",
+  "login/receiver-refuses",
+  "every-account",
+  "rerun/changes-nothing",
+  "rerun/over-earlier-host",
+  "install/asset"
+ ],
+ "by_assertion": true,
+ "commit": "244784bc8a0e6ec03c39f866865b5cca1eaf4fc4",
+ "details": {
+  "VELDO-0185 every-account": "the installed service has a configured loop to dispatch through",
+  "VELDO-0185 format/fake-lines": "generated CLI lines conform to the capture",
+  "VELDO-0185 fresh/adapters": "the receiver names both adapters: Claude Code its pinned version, Codex its vendor binary, each checking the account login [{}]",
+  "VELDO-0185 fresh/one-engine": "the installation names a work configuration [None]",
+  "VELDO-0185 fresh/registered": "claude-a: one store record with the fields registration prints [{'provider': None, 'label': None, 'concurrency': None}]",
+  "VELDO-0185 fresh/team": "the default team is at revision 1, saved by the owner, with the four required roles on the walkthrough's engines [{}]",
+  "VELDO-0185 install/asset": "the dispatch module is in the scaffold inventory, with every setup module",
+  "VELDO-0185 login/named": "setup checked every account's own login [{}]",
+  "VELDO-0185 login/receiver-refuses": "the installed service has a configured loop to dispatch through",
+  "VELDO-0185 loop/configured": "the running service's loop is available and configured, with no refusal [{'available': False, 'configured': False, 'refusal': None}]",
+  "VELDO-0185 rerun/changes-nothing": "the second run answers already_set_up, every step already done, deferred or checked [already_set_up None [('api_edge_enrollment', 'already_done'), ('api_edge_key', 'already_done'), ('api_process_configuration', 'already_done'), ('api_service_configuration', 'already_done'), ('api_service_install', '",
+  "VELDO-0185 rerun/over-earlier-host": "the engine of 294e1933 is in history",
+  "VELDO-0185 reservation/principals": "authority holds reservation_service, enrolled by the owner's signed command [None]",
+  "VELDO-0185 reservation/state-root": "the receiver carries the state root, and its records, runs and pinned engine resolve under it [/dev/shm/b171-hzdlhc_h/state-main]"
+ },
+ "failed_rows": [
+  "VELDO-0185 fresh/team",
+  "VELDO-0185 fresh/adapters",
+  "VELDO-0185 fresh/one-engine",
+  "VELDO-0185 loop/configured",
+  "VELDO-0185 reservation/principals",
+  "VELDO-0185 reservation/state-root",
+  "VELDO-0185 fresh/registered",
+  "VELDO-0185 login/named",
+  "VELDO-0185 login/receiver-refuses",
+  "VELDO-0185 every-account",
+  "VELDO-0185 rerun/changes-nothing",
+  "VELDO-0185 rerun/over-earlier-host",
+  "VELDO-0185 install/asset",
+  "VELDO-0185 format/fake-lines"
+ ],
+ "rows": [
+  [
+   "VELDO-0185 fresh/team",
+   false
+  ],
+  [
+   "VELDO-0185 fresh/adapters",
+   false
+  ],
+  [
+   "VELDO-0185 fresh/one-engine",
+   false
+  ],
+  [
+   "VELDO-0185 loop/configured",
+   false
+  ],
+  [
+   "VELDO-0185 reservation/principals",
+   false
+  ],
+  [
+   "VELDO-0185 reservation/state-root",
+   false
+  ],
+  [
+   "VELDO-0185 fresh/registered",
+   false
+  ],
+  [
+   "VELDO-0185 login/named",
+   false
+  ],
+  [
+   "VELDO-0185 login/receiver-refuses",
+   false
+  ],
+  [
+   "VELDO-0185 every-account",
+   false
+  ],
+  [
+   "VELDO-0185 rerun/changes-nothing",
+   false
+  ],
+  [
+   "VELDO-0185 rerun/over-earlier-host",
+   false
+  ],
+  [
+   "VELDO-0185 install/asset",
+   false
+  ],
+  [
+   "VELDO-0185 format/fake-lines",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 3.8,
+ "spec_id": "VELDO-0185",
+ "suite": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+ "tree": "unchanged git archive of the pre-change commit"
+}

@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -713,7 +713,7 @@
+     installed_work = installed.get('work') or os.path.join(home, 'config', CS.WORK)
+     configs = sorted(((installed.get('receiver') or {}).get('configs') or {}).values())
+     missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}
+-    if not held['default_team']:
++    if True:
+         missing.add('default_team')
+     if any(a['account'] not in held['accounts'] for a in dispatch['accounts']):
+         missing.add('account_registration')

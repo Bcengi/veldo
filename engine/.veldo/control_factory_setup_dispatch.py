@@ -413,8 +413,9 @@ def login_step(found):
 # ---------------------------------------------------------------------------------------------
 
 def receiver_states(paths, found_adapters, root, differs):
-    """Read only: {path: 'equal' | 'upgrade'}. A receiver configuration gains its adapters only where it names
-    none, and its state root only where it lacks it or holds it as null; any other difference is refused."""
+    """Read only: {path: 'equal' | 'upgrade'}. A receiver configuration gains its state root only where it lacks
+    it or holds it as null, and its adapters (when this run lays them down, `found_adapters` not None) only where
+    it names none; any other difference is refused by name."""
     states = {}
     for path in sorted(paths):
         try:
@@ -423,22 +424,24 @@ def receiver_states(paths, found_adapters, root, differs):
             raise differs(path) from None
         if not isinstance(held_config, dict):
             raise differs(path)
-        if held_config.get('adapters') and held_config['adapters'] != found_adapters:
+        if found_adapters is not None and held_config.get('adapters') and held_config['adapters'] != found_adapters:
             raise differs(path)
         if held_config.get('state_root') is not None and held_config['state_root'] != root:
             raise differs(path)
-        states[path] = 'equal' if held_config.get('adapters') and held_config.get('state_root') else 'upgrade'
+        lacking = held_config.get('state_root') is None or (found_adapters is not None and not held_config.get('adapters'))
+        states[path] = 'upgrade' if lacking else 'equal'
     return states
 
 
 def apply_receivers(states, found_adapters, root, API):
+    """Write only the keys a receiver lacks (receiver_states), each file replaced whole at 0600."""
     added = []
     for path, state in sorted(states.items()):
         if state != 'upgrade':
             continue
         config = json.loads(Path(path).read_text())
         keys = []
-        if not config.get('adapters'):
+        if found_adapters is not None and not config.get('adapters'):
             config['adapters'] = found_adapters
             keys.append('adapters')
         if config.get('state_root') is None:
@@ -447,4 +450,4 @@ def apply_receivers(states, found_adapters, root, API):
         if keys:
             API.replace_file(path, API.text(config), 0o600)
             added.append({'path': path, 'keys': keys})
-    return {'step': 'receiver_adapters', 'outcome': 'done' if added else 'already_done', 'added': added}
+    return {'step': 'receiver_configuration', 'outcome': 'done' if added else 'already_done', 'added': added}

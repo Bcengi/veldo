@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -631,7 +631,7 @@
+     D, ACT = organ('control_factory_setup_dispatch'), organ('control_channel_activation')
+     key = os.path.join(plan['keys'], JOURNAL_KEY)
+     for principal in D.RESERVATION_PRINCIPALS:
+-        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': [D.RESERVATION_ROLE],
++        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': [],
+                                    'public_key': public_key(key), 'independence_group': principal, 'scope': '*'},
+               enrollee=ACT.ssh_signer(key))
+     K.publish(S, conn, projection)

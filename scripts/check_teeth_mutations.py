@@ -10466,6 +10466,42 @@ def cases():
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+    # VELDO-0185: each acceptance criterion's declared falsifier, then the guards its rows also hold.
+    S185 = '106_veldo_0185_dispatch_setup.py'
+    add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',
+        '                                   work=work)\n', '                                   work=None)\n',
+        ['loop/configured'], ())
+    add(185, 'v185-principals-without-role', S185, 'control_factory_setup.py',
+        "'roles': [D.RESERVATION_ROLE],", "'roles': [],", ['reservation/principals'], ())
+    add(185, 'v185-enrollments-every-run', S185, 'control_factory_setup.py',
+        "    missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}\n",
+        "    missing = {'reservation_principals'} | {name for name in ('factory_project',) if not held[name]}\n",
+        ['rerun/changes-nothing'], ())
+    add(185, 'v185-adapters-without-codex', S185, 'control_factory_setup_dispatch.py',
+        "    if 'codex' in present:\n        vendor", "    if False:\n        vendor", ['every-account'], ())
+    add(185, 'v185-registration-left-out', S185, 'control_factory_setup.py',
+        "        if 'account_registration' in wanted:\n", '        if False:\n', ['fresh/registered'], ())
+    add(185, 'v185-receiver-login-unchecked', S185, 'control_launch.py',
+        "        if adapter.get('account_login') is not True or self.token is not None:\n",
+        '        if True:\n', ['login/receiver-refuses'], ())
+    add(185, 'v185-refused-unit-stranded', S185, 'control_service.py',
+        '            return self.another_account(record, report)\n', '            return None\n',
+        ['login/receiver-refuses', 'every-account'], ())
+    add(185, 'v185-setup-login-unchecked', S185, 'control_factory_setup_dispatch.py',
+        "        if kind is None:\n            entry.update(outcome='logged_in')",
+        "        if True:\n            entry.update(outcome='logged_in')", ['login/named'], ())
+    add(185, 'v185-rerun-work-not-recorded', S185, 'control_factory_setup.py',
+        "    if states['service_work'] == 'add':\n", '    if False:\n', ['rerun/over-earlier-host'], ())
+    add(185, 'v185-team-saved-again', S185, 'control_factory_setup.py',
+        "    if not held['default_team']:\n", '    if True:\n', ['rerun/changes-nothing'], ())
+    add(185, 'v185-null-state-root-refused', S185, 'control_factory_setup_trust.py',
+        "        if actual.get('state_root') is None:\n", "        if 'state_root' not in actual:\n",
+        ['rerun/over-earlier-host'], ())
+    add(185, 'v185-records-null-refused', S185, 'control_factory_setup_records.py',
+        "        if 'state_root' in held and held['state_root'] is None:\n            expected['state_root'] = None\n", '',
+        ['rerun/over-earlier-host'], ())
+    add(185, 'v185-scaffold-absent', S185, 'init_scaffold.py',
+        '    ".veldo/control_factory_setup_dispatch.py",\n', '', ['install/asset'], ())
 
     return result
 

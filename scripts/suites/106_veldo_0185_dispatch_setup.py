@@ -45,13 +45,29 @@ def _v185_suite():
     }
     ROWS = ('fresh/team', 'fresh/adapters', 'fresh/one-engine', 'loop/configured', 'reservation/principals',
             'reservation/state-root', 'fresh/registered', 'login/named', 'login/receiver-refuses', 'every-account',
-            'rerun/changes-nothing', 'rerun/over-earlier-host', 'format/fake-lines')
+            'rerun/changes-nothing', 'rerun/over-earlier-host', 'install/asset', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
     # The engine before this change: the whole .veldo of main at 294e1933 (VELDO-0139, 0171, 0186, 0189, 0203, 0204).
     BEFORE = '294e1933'
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
+
+    class section:
+        """An exception is recorded as a failure of each named row, and the run goes on (as suite 85 does)."""
+
+        def __init__(self, *names):
+            self.names = names
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, kind, value, trace):
+            if kind is not None and issubclass(kind, Exception):
+                for name in self.names:
+                    check(name, 'the section ran to its end (raised %s: %s)' % (kind.__name__, str(value)[:200]), False)
+                return True
+            return False
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -181,6 +197,10 @@ else:
     def exercise(h):
         F, S, CEN, base = h['F'], h['S'], h['CEN'], h['base']
         AR = load('v185_accounts', h['mods'] / 'accounts.py')
+        scaffold = load('v185_scaffold', h['mods'] / 'init_scaffold.py')
+        check('install/asset', 'the dispatch module is in the scaffold inventory, with every setup module',
+              '.veldo/control_factory_setup_dispatch.py' in scaffold._FILES
+              and '.veldo/control_factory_setup.py' in scaffold._FILES)
         # The installed Codex record of the generated binary carries the shipped record's bundled model catalog and
         # feature listing, as `qualification(catalog=True)` records them from the real binary (VELDO-0127).
         record_path = h['mods'] / 'runtime' / 'codex-qualification.json'
@@ -245,9 +265,6 @@ else:
             found = rows_of(store, 'SELECT kind, data FROM entities WHERE id=?', identity)
             return (found[0][0], json.loads(found[0][1])) if found else (None, None)
 
-        def kind_rows(store, kind):
-            return [json.loads(d) for (d,) in rows_of(store, 'SELECT data FROM entities WHERE kind=? ORDER BY id', kind)]
-
         def journal(store):
             return h['journal'](store)
 
@@ -259,7 +276,7 @@ else:
         report, store, root = main['report'], main['store'], main['root']
         ok = main['code'] == 0 and report.get('outcome') == 'set_up'
         for row in ROWS:
-            if row != 'format/fake-lines' and (ok or row not in ('fresh/one-engine', 'rerun/over-earlier-host')):
+            if row not in ('format/fake-lines', 'install/asset') and (ok or row not in ('fresh/one-engine', 'rerun/over-earlier-host')):
                 check(row, 'setup laid the owner\'s host down [%s %s]' % (report.get('outcome'), report.get('reason')), ok)
         if not ok:
             return
@@ -269,218 +286,242 @@ else:
         ids = report['authority_ids']
         repository = ids['repository_uuid']
         steps = steps_of(report)
-
-        # AC1: the default team, saved by the owner's signed commands through VELDO-0203, read back.
         TR = load('v185_routes', h['mods'] / 'control_team_routes.py')
         CG = load('v185_config', h['mods'] / 'control_agent_config.py')
         CT = TR.CT
-        _kind, head = entity(store, TR.HEAD)
-        _kind, saved = entity(store, TR.default_id(1))
-        team = (saved or {}).get('team') or {}
-        engines = {role: spec.get('engines') for role, spec in (team.get('roles') or {}).items()}
-        check('fresh/team', 'the default team is at revision 1, saved by the owner, with the four required roles on '
-              'the walkthrough\'s engines [%s]' % engines,
-              (head or {}).get('revision') == 1 and (saved or {}).get('saved_by') == owner
-              and engines == {'project_manager': ['claude_code'], 'elaboration': ['claude_code'],
-                              'implementation': ['claude_code'], 'independent_review': ['codex']})
-        conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
-        try:
-            configurations = {role: CG.read(conn, ids['domain_uuid'], repository, role, 1) for role in CT.REQUIRED_ROLES}
-        except CG.Refused as error:
-            configurations = {'refused': error.code}
-        finally:
-            conn.close()
-        check('fresh/team', 'one capability configuration revision per role, its engine the team\'s, each referenced by '
-              'the team [%s]' % {r: (c.get('engine'), c.get('revision')) for r, c in configurations.items()
-                                 if isinstance(c, dict)},
-              set(configurations) == set(CT.REQUIRED_ROLES)
-              and all(c.get('engine') == engines[r][0] and c.get('revision') == 1 for r, c in configurations.items())
-              and all(team['roles'][r]['capability_configuration'] == {'role': r, 'revision': 1} for r in CT.REQUIRED_ROLES))
-        records = journal(store)
-        owner_saves = [r for r in records if r['command_id'].endswith(('-default-team',)) or '-configuration-' in r['command_id']]
-        check('fresh/team', 'five owner revisions in the journal, each signed by the owner\'s command, its nonce its '
-              'command id [%s]' % [(r['command_id'], r['principal']) for r in owner_saves],
-              len(owner_saves) == 5 and all(r['principal'] == owner and r['nonce'] == r['command_id'] for r in owner_saves))
-        _kind, project = entity(store, 'project:factory')
-        check('fresh/team', 'the factory project is active and owned by the owner [%s]'
-              % {k: (project or {}).get(k) for k in ('owner', 'state', 'execution_repository')},
-              (project or {}).get('owner') == owner and (project or {}).get('state') == 'ACTIVE'
-              and (project or {}).get('execution_repository') == repository)
-        check('fresh/team', 'setup reports each dispatch step done [%s]' % sorted(
-              (n, steps.get(n, {}).get('outcome')) for n in ('work_configuration', 'reservation_principals',
-                                                             'factory_project', 'default_team', 'account_registration',
-                                                             'reservation_policies')),
-              all(steps.get(n, {}).get('outcome') == 'done' for n in (
-                  'work_configuration', 'reservation_principals', 'factory_project', 'default_team',
-                  'account_registration', 'reservation_policies')))
+        team = (entity(store, TR.default_id(1))[1] or {}).get('team') or {}
 
-        # AC1: the adapters and the work configuration, through the installer's options.
-        engines186 = h['engines186']
-        vendor = str(Path(engines186['vendor']).resolve())
-        for path, receiver in sorted(receivers.items()):
-            adapters = receiver.get('adapters') or {}
-            check('fresh/adapters', 'the receiver names both adapters: Claude Code its pinned version, Codex its vendor '
-                  'binary, each checking the account login [%s]' % {k: v.get('executable') for k, v in adapters.items()},
-                  set(adapters) == {'claude_code', 'codex'}
-                  and adapters['claude_code'].get('executable') == {'version': engines186['version']}
-                  and adapters['claude_code'].get('engine') == 'claude_code'
-                  and adapters['codex'].get('executable') == vendor and adapters['codex'].get('argv', [None])[0] == vendor
-                  and all(a.get('account_login') is True for a in adapters.values()))
-        work_path = config.get('work')
-        work = json.loads(Path(work_path).read_text()) if work_path and Path(work_path).is_file() else {}
-        line = (work.get('repositories') or {}).get(repository) or {}
-        builder, reviewers = line.get('builder') or {}, line.get('reviewers') or []
-        check('fresh/adapters', 'the installed work configuration is 0600 and names the enrolled repository [%s]'
-              % work_path, work_path == str(Path(report['home']) / 'config' / 'work.json')
-              and oct(stat.S_IMODE(os.stat(work_path).st_mode)) == '0o600'
-              and work.get('schema') == 'veldo.factory_work/v1' and list(work.get('repositories') or {}) == [repository])
-        check('fresh/adapters', 'its builder comes from the implementation role and its reviewer from independent_review, '
-              'each with control_service ROLE_FIELDS [%s, %s]' % (builder, reviewers),
-              set(builder) == set(h['CS'].ROLE_FIELDS) and builder.get('identity') == team['roles']['implementation']['workers'][0]
-              and builder.get('adapter') == 'claude_code'
-              and builder.get('configuration') == {'role': 'implementation', 'revision': 1}
-              and builder.get('seconds') == team['roles']['implementation']['budget']['wall_seconds']
-              and len(reviewers) == 1 and set(reviewers[0]) == set(h['CS'].ROLE_FIELDS)
-              and reviewers[0].get('identity') == team['roles']['independent_review']['workers'][0]
-              and reviewers[0].get('adapter') == 'codex'
-              and reviewers[0].get('configuration') == {'role': 'independent_review', 'revision': 1})
-        check('fresh/adapters', 'the work configuration setup wrote is the one installed',
-              (root / 'host' / 'work.json').read_text() == Path(work_path).read_text())
+        with section('fresh/team'):
+            # AC1: the default team, saved by the owner's signed commands through VELDO-0203, read back.
+            _kind, head = entity(store, TR.HEAD)
+            _kind, saved = entity(store, TR.default_id(1))
+            team = (saved or {}).get('team') or {}
+            engines = {role: spec.get('engines') for role, spec in (team.get('roles') or {}).items()}
+            check('fresh/team', 'the default team is at revision 1, saved by the owner, with the four required roles on '
+                  'the walkthrough\'s engines [%s]' % engines,
+                  (head or {}).get('revision') == 1 and (saved or {}).get('saved_by') == owner
+                  and engines == {'project_manager': ['claude_code'], 'elaboration': ['claude_code'],
+                                  'implementation': ['claude_code'], 'independent_review': ['codex']})
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
+            try:
+                configurations = {role: CG.read(conn, ids['domain_uuid'], repository, role, 1) for role in CT.REQUIRED_ROLES}
+            except CG.Refused as error:
+                configurations = {'refused': error.code}
+            finally:
+                conn.close()
+            check('fresh/team', 'one capability configuration revision per role, its engine the team\'s, each referenced by '
+                  'the team [%s]' % {r: (c.get('engine'), c.get('revision')) for r, c in configurations.items()
+                                     if isinstance(c, dict)},
+                  set(configurations) == set(CT.REQUIRED_ROLES)
+                  and all(c.get('engine') == engines[r][0] and c.get('revision') == 1 for r, c in configurations.items())
+                  and all(team['roles'][r]['capability_configuration'] == {'role': r, 'revision': 1} for r in CT.REQUIRED_ROLES))
+            records = journal(store)
+            owner_saves = [r for r in records if r['command_id'].endswith(('-default-team',)) or '-configuration-' in r['command_id']]
+            check('fresh/team', 'five owner revisions in the journal, each signed by the owner\'s command, its nonce its '
+                  'command id [%s]' % [(r['command_id'], r['principal']) for r in owner_saves],
+                  len(owner_saves) == 5 and all(r['principal'] == owner and r['nonce'] == r['command_id'] for r in owner_saves))
+            _kind, project = entity(store, 'project:factory')
+            check('fresh/team', 'the factory project is active and owned by the owner [%s]'
+                  % {k: (project or {}).get(k) for k in ('owner', 'state', 'execution_repository')},
+                  (project or {}).get('owner') == owner and (project or {}).get('state') == 'ACTIVE'
+                  and (project or {}).get('execution_repository') == repository)
+            check('fresh/team', 'setup reports each dispatch step done [%s]' % sorted(
+                  (n, steps.get(n, {}).get('outcome')) for n in ('work_configuration', 'reservation_principals',
+                                                                 'factory_project', 'default_team', 'account_registration',
+                                                                 'reservation_policies')),
+                  all(steps.get(n, {}).get('outcome') == 'done' for n in (
+                      'work_configuration', 'reservation_principals', 'factory_project', 'default_team',
+                      'account_registration', 'reservation_policies')))
 
-        # AC4: every account the registry lists has its store record with the fields registration prints.
-        for name, provider, _logged in ACCOUNTS:
-            _kind, record = entity(store, 'account:' + name)
-            fields = AR.registration(name, root=os.path.join(CEN.git_common_dir(str(main['workspace'])), 'veldo'))
-            check('fresh/registered', '%s: one store record with the fields registration prints [%s]'
-                  % (name, {k: (record or {}).get(k) for k in ('provider', 'label', 'concurrency')}),
-                  record is not None and record.get('provider') == fields['provider'] == provider
-                  and record.get('label') == fields['label'] and record.get('profiles') == fields['profiles']
-                  and record.get('concurrency') == 1 and record.get('status') == 'active')
-            journaled = [r for r in records if r['command_id'] == 'register/' + name]
-            check('fresh/registered', '%s: registered by command register/%s as the owner' % (name, name),
-                  len(journaled) == 1 and journaled[0]['principal'] == owner)
-            _kind, policy = entity(store, RES.entity('policy', [ids['domain_uuid'], 'account', name]))
-            check('fresh/registered', '%s: its VELDO-0204 reservation policy exists before the service starts [%s]'
-                  % (name, (policy or {}).get('caps')), bool((policy or {}).get('caps')))
-        enrolled = next((i for i, r in enumerate(records) if 'reservation_service' in json.dumps(r['transition'])
-                         and r['principal'] == owner), None)
-        provisioned = next((i for i, r in enumerate(records) if r['command_id'].startswith('reservation-policy/')), None)
-        registered_at = [i for i, r in enumerate(records) if r['command_id'].startswith('register/')]
-        check('fresh/registered', 'the accounts were registered after the reservation enrollment and before the '
-              'policies [%s, %s, %s]' % (enrolled, registered_at, provisioned),
-              enrolled is not None and provisioned is not None and registered_at
-              and enrolled < min(registered_at) and max(registered_at) < provisioned)
+        with section('fresh/adapters'):
+            # AC1: the adapters and the work configuration, through the installer's options.
+            engines186 = h['engines186']
+            vendor = str(Path(engines186['vendor']).resolve())
+            for path, receiver in sorted(receivers.items()):
+                adapters = receiver.get('adapters') or {}
+                check('fresh/adapters', 'the receiver names both adapters: Claude Code its pinned version, Codex its vendor '
+                      'binary, each checking the account login [%s]' % {k: v.get('executable') for k, v in adapters.items()},
+                      set(adapters) == {'claude_code', 'codex'}
+                      and adapters['claude_code'].get('executable') == {'version': engines186['version']}
+                      and adapters['claude_code'].get('engine') == 'claude_code'
+                      and adapters['codex'].get('executable') == vendor and adapters['codex'].get('argv', [None])[0] == vendor
+                      and all(a.get('account_login') is True for a in adapters.values()))
+            work_path = config.get('work')
+            work = json.loads(Path(work_path).read_text()) if work_path and Path(work_path).is_file() else {}
+            line = (work.get('repositories') or {}).get(repository) or {}
+            builder, reviewers = line.get('builder') or {}, line.get('reviewers') or []
+            check('fresh/adapters', 'the installed work configuration is 0600 and names the enrolled repository [%s]'
+                  % work_path, work_path == str(Path(report['home']) / 'config' / 'work.json')
+                  and oct(stat.S_IMODE(os.stat(work_path).st_mode)) == '0o600'
+                  and work.get('schema') == 'veldo.factory_work/v1' and list(work.get('repositories') or {}) == [repository])
+            check('fresh/adapters', 'its builder comes from the implementation role and its reviewer from independent_review, '
+                  'each with control_service ROLE_FIELDS [%s, %s]' % (builder, reviewers),
+                  set(builder) == set(h['CS'].ROLE_FIELDS) and builder.get('identity') == team['roles']['implementation']['workers'][0]
+                  and builder.get('adapter') == 'claude_code'
+                  and builder.get('configuration') == {'role': 'implementation', 'revision': 1}
+                  and builder.get('seconds') == team['roles']['implementation']['budget']['wall_seconds']
+                  and len(reviewers) == 1 and set(reviewers[0]) == set(h['CS'].ROLE_FIELDS)
+                  and reviewers[0].get('identity') == team['roles']['independent_review']['workers'][0]
+                  and reviewers[0].get('adapter') == 'codex'
+                  and reviewers[0].get('configuration') == {'role': 'independent_review', 'revision': 1})
+            check('fresh/adapters', 'the work configuration setup wrote is the one installed',
+                  bool(work) and (root / 'host' / 'work.json').is_file()
+                  and (root / 'host' / 'work.json').read_text() == Path(work_path).read_text())
 
-        # AC4: setup names the account not logged in, with its login step, and the others carry on.
-        logins = {e['account']: e for e in (steps.get('account_login') or {}).get('accounts') or []}
-        check('login/named', 'setup checked every account\'s own login [%s]'
-              % {k: (v.get('outcome'), v.get('login')) for k, v in logins.items()},
-              set(logins) == {a[0] for a in ACCOUNTS}
-              and all(logins[n]['outcome'] == ('logged_in' if logged else 'refused') for n, _p, logged in ACCOUNTS))
-        out = logins.get(LOGGED_OUT) or {}
-        record = AR.get(LOGGED_OUT, os.path.join(CEN.git_common_dir(str(main['workspace'])), 'veldo'))
-        check('login/named', 'the logged-out account is refused by name with its login step [%s]'
-              % {k: out.get(k) for k in ('refusal', 'login', 'login_step')},
-              out.get('refusal') == 'missing_authority:account_login:' + LOGGED_OUT and out.get('login') == 'not_logged_in'
-              and out.get('login_step') == AR.login_step(record)
-              and (steps.get('account_login') or {}).get('refusals') == ['missing_authority:account_login:' + LOGGED_OUT])
-        check('login/named', 'setup still laid the factory down and reports one account not logged in',
-              report.get('outcome') == 'set_up' and (report.get('dispatch') or {}).get('metrics', {}).get('not_logged_in') == 1)
+        with section('fresh/registered'):
+            # AC4: every account the registry lists has its store record with the fields registration prints.
+            for name, provider, _logged in ACCOUNTS:
+                _kind, record = entity(store, 'account:' + name)
+                fields = AR.registration(name, root=os.path.join(CEN.git_common_dir(str(main['workspace'])), 'veldo'))
+                check('fresh/registered', '%s: one store record with the fields registration prints [%s]'
+                      % (name, {k: (record or {}).get(k) for k in ('provider', 'label', 'concurrency')}),
+                      record is not None and record.get('provider') == fields['provider'] == provider
+                      and record.get('label') == fields['label'] and record.get('profiles') == fields['profiles']
+                      and record.get('concurrency') == 1 and record.get('status') == 'active')
+                journaled = [r for r in records if r['command_id'] == 'register/' + name]
+                check('fresh/registered', '%s: registered by command register/%s as the owner' % (name, name),
+                      len(journaled) == 1 and journaled[0]['principal'] == owner)
+                _kind, policy = entity(store, RES.entity('policy', [ids['domain_uuid'], 'account', name]))
+                check('fresh/registered', '%s: its VELDO-0204 reservation policy exists before the service starts [%s]'
+                      % (name, (policy or {}).get('caps')), bool((policy or {}).get('caps')))
+            enrolled = next((i for i, r in enumerate(records) if 'reservation_service' in json.dumps(r['transition'])
+                             and r['principal'] == owner), None)
+            provisioned = next((i for i, r in enumerate(records) if r['command_id'].startswith('reservation-policy/')), None)
+            registered_at = [i for i, r in enumerate(records) if r['command_id'].startswith('register/')]
+            check('fresh/registered', 'the accounts were registered after the reservation enrollment and before the '
+                  'policies [%s, %s, %s]' % (enrolled, registered_at, provisioned),
+                  enrolled is not None and provisioned is not None and registered_at
+                  and enrolled < min(registered_at) and max(registered_at) < provisioned)
 
-        # AC2: the two principals hold the reservation_service role by the owner's signed enrollment.
-        for principal in ('authority', 'launch-receiver'):
-            _kind, member = entity(store, principal)
-            journaled = [r for r in records if r['principal'] == owner and principal in r['transition']
-                         and 'enroll_principal' in r['command_id']]
-            check('reservation/principals', '%s holds reservation_service, enrolled by the owner\'s signed command [%s]'
-                  % (principal, (member or {}).get('roles')),
-                  'reservation_service' in ((member or {}).get('roles') or []) and len(journaled) == 1)
+        with section('login/named'):
+            # AC4: setup names the account not logged in, with its login step, and the others carry on.
+            logins = {e['account']: e for e in (steps.get('account_login') or {}).get('accounts') or []}
+            check('login/named', 'setup checked every account\'s own login [%s]'
+                  % {k: (v.get('outcome'), v.get('login')) for k, v in logins.items()},
+                  set(logins) == {a[0] for a in ACCOUNTS}
+                  and all(logins[n]['outcome'] == ('logged_in' if logged else 'refused') for n, _p, logged in ACCOUNTS))
+            out = logins.get(LOGGED_OUT) or {}
+            record = AR.get(LOGGED_OUT, os.path.join(CEN.git_common_dir(str(main['workspace'])), 'veldo'))
+            check('login/named', 'the logged-out account is refused by name with its login step [%s]'
+                  % {k: out.get(k) for k in ('refusal', 'login', 'login_step')},
+                  out.get('refusal') == 'missing_authority:account_login:' + LOGGED_OUT and out.get('login') == 'not_logged_in'
+                  and out.get('login_step') == AR.login_step(record)
+                  and (steps.get('account_login') or {}).get('refusals') == ['missing_authority:account_login:' + LOGGED_OUT])
+            check('login/named', 'setup still laid the factory down and reports one account not logged in',
+                  report.get('outcome') == 'set_up' and (report.get('dispatch') or {}).get('metrics', {}).get('not_logged_in') == 1)
 
-        # AC2: the state root in every receiver, and what resolves under it.
-        for path, receiver in sorted(receivers.items()):
-            check('reservation/state-root', 'the receiver carries the state root, and its records, runs and pinned engine '
-                  'resolve under it [%s]' % receiver.get('state_root'),
-                  receiver.get('state_root') == str(root)
-                  and str(L.ER.directory(receiver)).startswith(str(root) + '/')
-                  and str(L.runs_root(receiver)).startswith(str(root) + '/')
-                  and L.ENGINES['claude_code'].bind(receiver['adapters']['claude_code'], receiver['state_root'])['path']
-                  .startswith(str(root) + '/'))
+        with section('reservation/principals'):
+            # AC2: the two principals hold the reservation_service role by the owner's signed enrollment.
+            for principal in ('authority', 'launch-receiver'):
+                _kind, member = entity(store, principal)
+                journaled = [r for r in records if r['principal'] == owner and principal in r['transition']
+                             and 'enroll_principal' in r['command_id']]
+                check('reservation/principals', '%s holds reservation_service, enrolled by the owner\'s signed command [%s]'
+                      % (principal, (member or {}).get('roles')),
+                      'reservation_service' in ((member or {}).get('roles') or []) and len(journaled) == 1)
 
-        # ---- the installed factory runs: loop configured, units built and reviewed on every account ------------
-        unit = report['unit']
-        started = main['manager'].start(unit)
-        check('loop/configured', 'the installed authority started [%s]' % (started,), started[0] == 0)
-        if started[0]:
-            return
-        try:
-            status = h['service_send'](root, {'operation': 'inspect', 'entity_ids': []})
-            loop = ((status or {}).get('result') or {}).get('loop') or {}
-            check('loop/configured', 'the running service\'s loop is available and configured, with no refusal [%s]'
-                  % {k: loop.get(k) for k in ('available', 'configured', 'refusal')},
-                  loop.get('available') is True and loop.get('configured') is True and not loop.get('refusal'))
-            journey(h, main, ids, L, RES)
-        finally:
-            main['manager'].stop(unit)
+        with section('reservation/state-root'):
+            # AC2: the state root in every receiver, and what resolves under it.
+            for path, receiver in sorted(receivers.items()):
+                check('reservation/state-root', 'the receiver carries the state root, and its records, runs and pinned engine '
+                      'resolve under it [%s]' % receiver.get('state_root'),
+                      receiver.get('state_root') == str(root)
+                      and str(L.ER.directory(receiver)).startswith(str(root) + '/')
+                      and str(L.runs_root(receiver)).startswith(str(root) + '/')
+                      and 'claude_code' in (receiver.get('adapters') or {})
+                      and L.ENGINES['claude_code'].bind(receiver['adapters']['claude_code'], receiver['state_root'])['path']
+                      .startswith(str(root) + '/'))
 
-        # AC2: a slot reserved as each principal, through the production authorization.
-        writer = S.open_store(str(store))
-        try:
-            IN = load('v185_ingress', h['mods'] / 'control_channel_ingress.py')
-            _principal, sign = IN.journal_signer({'principal': 'authority', 'key': str(root / 'keys' / 'journal')})
-            for principal, engine in (('authority', 'codex'), ('launch-receiver', 'claude_code')):
-                reservations = RES.Reservations(S, writer, domain=ids['domain_uuid'], repository=repository,
-                                                principal=principal, authorize=RES.service_authority, signer=principal,
-                                                sign=sign)
-                try:
-                    reservations.reserve_pooled('v185-probe-' + principal, 'v185-probe-' + principal,
-                                                {'engine': engine, 'host': hostname}, 'factory', 'v185-u1', now=time.time())
-                    refusal = None
-                except Exception as error:  # noqa: BLE001 - the reservation service's refusal is the row's data
-                    refusal = getattr(error, 'code', type(error).__name__)
-                check('reservation/principals', '%s reserves an account slot through the reservation service [%s]'
-                      % (principal, refusal), refusal is None)
-        finally:
-            writer.close()
+        with section('loop/configured', 'every-account', 'login/receiver-refuses', 'reservation/principals'):
+            # ---- the installed factory runs: loop configured, units built and reviewed on every account ------------
+            unit = report['unit']
+            started = main['manager'].start(unit)
+            check('loop/configured', 'the installed authority started [%s]' % (started,), started[0] == 0)
+            if started[0]:
+                raise RuntimeError('the installed authority did not start')
+            try:
+                status = h['service_send'](root, {'operation': 'inspect', 'entity_ids': []})
+                loop = ((status or {}).get('result') or {}).get('loop') or {}
+                check('loop/configured', 'the running service\'s loop is available and configured, with no refusal [%s]'
+                      % {k: loop.get(k) for k in ('available', 'configured', 'refusal')},
+                      loop.get('available') is True and loop.get('configured') is True and not loop.get('refusal'))
+                if loop.get('configured') is True:
+                    journey(h, main, ids, L, RES)
+                else:
+                    for row in ('every-account', 'login/receiver-refuses'):
+                        check(row, 'the installed service has a configured loop to dispatch through', False)
+            finally:
+                main['manager'].stop(unit)
 
-        # ---- AC3: a second run over the complete host changes nothing ---------------------------------------
-        trees = (root, main['install'], main['units'])
-        # The store is read first: a reader's shared-memory index exists before both snapshots.
-        head = journal(store)
-        before = h['snapshot'](*trees)
-        code, again = h['setup'](*main['args'])
-        after = h['snapshot'](*trees)
-        changed = h['changes'](before, after)
-        outcomes = steps_of(again)
-        check('rerun/changes-nothing', 'the second run answers already_set_up, every step already done, deferred or '
-              'checked [%s]' % sorted((n, s.get('outcome')) for n, s in outcomes.items()),
-              code == 0 and again.get('outcome') == 'already_set_up'
-              and all(s.get('outcome') in ('already_done', 'deferred', 'checked', 'refused') for s in outcomes.values())
-              and (outcomes.get('account_login') or {}).get('outcome') == 'refused')
-        check('rerun/changes-nothing', 'every file under the state root, install root and unit directory is byte for '
-              'byte the same [%s]' % (changed,), changed == ([], [], []))
-        check('rerun/changes-nothing', 'nothing pinned or installed again, and the journal head is unchanged',
-              again.get('pins_made') == 0 and journal(store) == head)
+        with section('reservation/principals'):
+            # AC2: a slot reserved as each principal, through the production authorization.
+            writer = S.open_store(str(store))
+            try:
+                IN = load('v185_ingress', h['mods'] / 'control_channel_ingress.py')
+                _principal, sign = IN.journal_signer({'principal': 'authority', 'key': str(root / 'keys' / 'journal')})
+                for principal, engine in (('authority', 'codex'), ('launch-receiver', 'claude_code')):
+                    reservations = RES.Reservations(S, writer, domain=ids['domain_uuid'], repository=repository,
+                                                    principal=principal, authorize=RES.service_authority, signer=principal,
+                                                    sign=sign)
+                    try:
+                        reservations.reserve_pooled('v185-probe-' + principal, 'v185-probe-' + principal,
+                                                    {'engine': engine, 'host': hostname}, 'factory', 'v185-u1', now=time.time())
+                        refusal = None
+                    except Exception as error:  # noqa: BLE001 - the reservation service's refusal is the row's data
+                        refusal = getattr(error, 'code', type(error).__name__)
+                    check('reservation/principals', '%s reserves an account slot through the reservation service [%s]'
+                          % (principal, refusal), refusal is None)
+            finally:
+                writer.close()
 
-        # ---- AC1, one engine: a registry naming only Claude Code puts all four roles on it -------------------
-        one = host('one', (('solo-a', 'claude_code', True),))
-        one_steps = steps_of(one['report'])
-        check('fresh/one-engine', 'setup laid the host down [%s]' % one['report'].get('reason'),
-              one['code'] == 0 and one['report'].get('outcome') == 'set_up')
-        if one['code'] == 0:
-            _kind, solo = entity(one['store'], TR.default_id(1))
-            one_config = json.loads((Path(one['report']['home']) / 'config' / 'service.json').read_text())
-            one_receiver = json.loads(Path(next(iter(one_config['receiver']['configs'].values()))).read_text())
-            one_work = json.loads(Path(one_config['work']).read_text())
-            line = one_work['repositories'][one['report']['authority_ids']['repository_uuid']]
-            check('fresh/one-engine', 'all four roles on Claude Code, one adapter, both work roles on it [%s]'
-                  % {r: s.get('engines') for r, s in ((solo or {}).get('team') or {}).get('roles', {}).items()},
-                  all(s.get('engines') == ['claude_code'] for s in ((solo or {}).get('team') or {}).get('roles', {}).values())
-                  and set(one_receiver.get('adapters') or {}) == {'claude_code'}
-                  and line['builder']['adapter'] == line['reviewers'][0]['adapter'] == 'claude_code'
-                  and (one_steps.get('account_login') or {}).get('outcome') == 'checked')
+        with section('rerun/changes-nothing'):
+            # ---- AC3: a second run over the complete host changes nothing ---------------------------------------
+            trees = (root, main['install'], main['units'])
+            # The store is read first: a reader's shared-memory index exists before both snapshots.
+            head = journal(store)
+            before = h['snapshot'](*trees)
+            code, again = h['setup'](*main['args'])
+            after = h['snapshot'](*trees)
+            changed = h['changes'](before, after)
+            outcomes = steps_of(again)
+            check('rerun/changes-nothing', 'the second run answers already_set_up, every step already done, deferred or '
+                  'checked [%s %s %s]' % (again.get('outcome'), again.get('reason'),
+                                          sorted((n, s.get('outcome')) for n, s in outcomes.items())),
+                  code == 0 and again.get('outcome') == 'already_set_up'
+                  and all(s.get('outcome') in ('already_done', 'deferred', 'checked', 'refused') for s in outcomes.values())
+                  and (outcomes.get('account_login') or {}).get('outcome') == 'refused')
+            check('rerun/changes-nothing', 'every file under the state root, install root and unit directory is byte for '
+                  'byte the same [%s]' % (changed,), changed == ([], [], []))
+            check('rerun/changes-nothing', 'nothing pinned or installed again [%s]' % again.get('pins_made'),
+                  again.get('pins_made') == 0)
+            check('rerun/changes-nothing', 'the journal head is unchanged [%s]'
+                  % [r['command_id'] for r in journal(store)[len(head):]], journal(store) == head)
+
+        with section('fresh/one-engine'):
+            # ---- AC1, one engine: a registry naming only Claude Code puts all four roles on it -------------------
+            one = host('one', (('solo-a', 'claude_code', True),))
+            one_steps = steps_of(one['report'])
+            check('fresh/one-engine', 'setup laid the host down [%s]' % one['report'].get('reason'),
+                  one['code'] == 0 and one['report'].get('outcome') == 'set_up')
+            if one['code'] == 0:
+                _kind, solo = entity(one['store'], TR.default_id(1))
+                one_config = json.loads((Path(one['report']['home']) / 'config' / 'service.json').read_text())
+                one_receiver = json.loads(Path(next(iter(one_config['receiver']['configs'].values()))).read_text())
+                one_work = json.loads(Path(one_config['work']).read_text()) if one_config.get('work') else {}
+                line = (one_work.get('repositories') or {}).get(one['report']['authority_ids']['repository_uuid']) or {}
+                check('fresh/one-engine', 'the installation names a work configuration [%s]' % one_config.get('work'),
+                      bool(line))
+                check('fresh/one-engine', 'all four roles on Claude Code, one adapter, both work roles on it [%s]'
+                      % {r: s.get('engines') for r, s in ((solo or {}).get('team') or {}).get('roles', {}).items()},
+                      all(s.get('engines') == ['claude_code'] for s in ((solo or {}).get('team') or {}).get('roles', {}).values())
+                      and set(one_receiver.get('adapters') or {}) == {'claude_code'}
+                      and line.get('builder', {}).get('adapter') == (line.get('reviewers') or [{}])[0].get('adapter')
+                      == 'claude_code'
+                      and (one_steps.get('account_login') or {}).get('outcome') == 'checked')
 
         # ---- AC3: over a host laid down before this change, only these steps write ---------------------------
-        earlier(h, host, journal, steps_of, entity)
+        with section('rerun/over-earlier-host'):
+            earlier(h, host, journal, steps_of, entity)
 
     def journey(h, main, ids, L, RES):
         """Units submitted after setup are built and reviewed through the installed service and receiver alone."""
@@ -634,14 +675,23 @@ else:
         check(row, 'that host has no default team, no reservation principal and no account record',
               entity(store, TR.HEAD)[0] is None and entity(store, 'authority')[0] is None
               and entity(store, 'account:claude-a')[0] is None)
+        # One receiver holds its state root as null, as an installation not made by setup leaves it.
+        laid_config = json.loads((Path(laid['report']['home']) / 'config' / 'service.json').read_text())
+        nulled = sorted(laid_config['receiver']['configs'].values())[0]
+        held = json.loads(Path(nulled).read_text())
+        held['state_root'] = None
+        Path(nulled).write_text(json.dumps(held, indent=1, sort_keys=True) + '\n')
         head = journal(store)
         code, report = h['setup'](*laid['args'])
         steps = steps_of(report)
-        mine = {'work_configuration', 'receiver_adapters', 'reservation_principals', 'factory_project', 'default_team',
+        mine = {'work_configuration', 'receiver_configuration', 'reservation_principals', 'factory_project', 'default_team',
                 'account_registration', 'reservation_policies'}
         wrote = {name for name, s in steps.items() if s.get('outcome') == 'done'}
-        check(row, 'the run adds exactly these steps, after the engine upgrade the changed engine needs [%s]'
-              % sorted(wrote), code == 0 and report.get('outcome') == 'set_up' and wrote == mine | {'engine_upgrade'})
+        check(row, 'the run adds exactly these steps, after the engine upgrade the changed engine needs [%s %s %s]'
+              % (report.get('outcome'), report.get('reason'), sorted(wrote)),
+              code == 0 and report.get('outcome') == 'set_up' and wrote == mine | {'engine_upgrade'})
+        if code != 0:
+            return
         added = journal(store)[len(head):]
         ours = re.compile(r'setup-enroll_principal-[0-9a-f]{8}-[0-9a-f]{12}|setup-[0-9a-f]{8}-[0-9a-f]{8}-'
                           r'(factory-project|default-team|configuration-[a-z_]+)|register/[a-z0-9.-]+|reservation-policy/.+')
@@ -653,9 +703,13 @@ else:
               and all(entity(store, 'account:' + a[0])[0] == 'account' for a in ACCOUNTS))
         config = json.loads((Path(report['home']) / 'config' / 'service.json').read_text())
         receiver = json.loads(Path(next(iter(config['receiver']['configs'].values()))).read_text())
-        check(row, 'the installation gained its work configuration and the receiver its adapters',
+        added = (steps.get('receiver_configuration') or {}).get('added') or []
+        check(row, 'the installation gained its work configuration, the receiver its adapters and the state root it '
+              'held as null [%s]' % added,
               config.get('work') and Path(config['work']).is_file()
-              and set(receiver.get('adapters') or {}) == {'claude_code', 'codex'})
+              and set(receiver.get('adapters') or {}) == {'claude_code', 'codex'}
+              and json.loads(Path(nulled).read_text()).get('state_root') == str(laid['root'])
+              and {'path': nulled, 'keys': ['adapters', 'state_root']} in added)
         trees = (laid['root'], laid['install'], laid['units'])
         head = journal(store)
         before = h['snapshot'](*trees)
@@ -686,7 +740,9 @@ else:
         for label, passed in observations:
             if not passed or os.environ.get('VELDO_0185_DETAILS'):
                 print('VELDO-0185 ' + row + (' detail: ' if not passed else ' observed: ') + label)
-        expect('VELDO-0185 ' + row, len(observations) >= 1 and all(passed for _, passed in observations))
+        failed = [label for label, passed in observations if not passed]
+        # A false row carries its first failed observation after its colon, which mutation workers keep.
+        expect('VELDO-0185 ' + row + (': ' + failed[0][:300] if failed else ''), len(observations) >= 1 and not failed)
 
 
 _v185_suite()

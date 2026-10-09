@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -738,7 +738,7 @@
+         if states[name] == 'absent':
+             API.write_new(pending[name], pending['text'], 0o600)
+             wrote = True
+-    if states['service_work'] == 'add':
++    if False:
+         # The one change to the installation's record: it gains the work key it holds as null.
+         current = json.loads(Path(api['service_json']).read_text())
+         API.replace_file(api['service_json'], CS._json(dict(current, work=pending['installed_work'])), 0o600)
