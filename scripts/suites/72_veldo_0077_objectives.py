@@ -303,6 +303,10 @@ def _v77_suite():
                     'required_evidence: [unit]', 'rollback: git revert', '---', '', '## Intent', '', 'Fixture.', '']))
             for sid in ('VELDO-9771', 'VELDO-9772', 'VELDO-9773'):
                 spec_file(sid, 'shipped')
+            # VELDO-0142: the repository is bound only with its configured Git identity; the fixture
+            # configures it on this store before the proof service binds it.
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
+                mods, conn, DOMAIN, {REPO: str(work)})
             proofs = CP.ProofService(S, conn, domain=DOMAIN, repository=REPO, repo=str(work), principal='proof-service',
                                      signer='authority', sign=journal_sign)
             checker = base / 'outcome_check.py'
