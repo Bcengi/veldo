@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0211",
-  "commit": "778069c49449217b5cfa15c894004c3268a2a003",
-  "producer": "Codex implementation agent",
-  "produced_at": "2026-10-09T11:10:12.245962+00:00",
+  "commit": "b0e85cfd07bda51faaf0ea48c69e10918fcca512",
+  "producer": "Claude host implementation, fixing the host review of the Codex implementation",
+  "produced_at": "2026-10-09T12:39:58.357658+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -12,7 +12,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
-          "detail": "Full-run locking, both integrations, rotation and teardown. Executable coverage reference only; canonical unit evidence pending."
+          "detail": "Suite 103 rotation/*, live-main/*, locking/*/runner-lease-*, live-guard/*; suite 102 credentials/* and scratch/* teardown rows. Falsifiers AC1 and live-guard detected. Selected suite runs only; canonical unit evidence pending."
         }
       ]
     },
@@ -23,7 +23,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
-          "detail": "Preflight refusal, contention and canonical source aliases. Executable coverage reference only; canonical unit evidence pending."
+          "detail": "Suite 103 refused-before-launch/*, locking/*/login-without-lease-refused, locking/canonical-alias-refused, preflight/credential-never-rewritten; suite 102 credentials/compare-and-rename-under-the-login-lease and the restored inode assertions. Falsifiers AC2 and lease-busy detected. Selected suite runs only; canonical unit evidence pending."
         }
       ]
     },
@@ -34,7 +34,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/103_veldo_0211_borrowed_login.py",
-          "detail": "Private atomic saves and explicit retained recovery. Executable coverage reference only; canonical unit evidence pending."
+          "detail": "Suite 103 recovery/*, restore/*, sweep/*, exit/recovery-distinct-from-refusal, write-back/stop-signals-blocked; suite 102 credentials/*-not-written-back, deeply-nested-keeps-exit-code, *-not-followed and scratch/killed-run-rotation-kept-and-reported. Falsifiers AC3, sweep and signal-mask detected. Selected suite runs only; canonical unit evidence pending."
         }
       ]
     }
@@ -44,7 +44,7 @@
       "name": "unit",
       "status": "not_run",
       "command": "bash scripts/verify.sh",
-      "detail": "The owner reserves the complete canonical gate for the reviewer. No passed unit claim is made."
+      "detail": "The complete canonical gate was not run; suites 102, 103 and 104 and the falsifiers were (diagnostics.json). No passed unit claim is made."
     }
   ],
   "rollback": "Revert the implementation and stop borrowed-login runs until corrected.",

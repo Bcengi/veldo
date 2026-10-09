@@ -1,8 +1,9 @@
 {
   "scope": "diagnostic suite selections only; no gate or passed unit evidence",
   "sources": {
-    "engine/scripts/agent_sandbox.py": "182b2148c2f6310b66a66c27cdfa649b772f93e5811227401273534955d83ed7",
-    "scripts/agent_sandbox.py": "182b2148c2f6310b66a66c27cdfa649b772f93e5811227401273534955d83ed7"
+    "engine/scripts/agent_sandbox.py": "183929c32d43d5ca26f234a1f1f345de8ca7c1a90bf6115979a6ab53b47cd14b",
+    "scripts/agent_sandbox.py": "183929c32d43d5ca26f234a1f1f345de8ca7c1a90bf6115979a6ab53b47cd14b",
+    "proof/VELDO-0127/live.py": "ce07efc107a8f6acddb2afbce794f4403f5c692bd05ada510499ff8777e73661"
   },
   "mutations": [
     {
@@ -28,6 +29,38 @@
       "exit_code": 1,
       "diff": "AC3.diff",
       "log": "AC3.log"
+    },
+    {
+      "criterion": "lease-busy",
+      "target": "refused-before-launch/live/claude/busy",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "lease-busy.diff",
+      "log": "lease-busy.log"
+    },
+    {
+      "criterion": "sweep",
+      "target": "sweep/killed-run-rotation-kept-and-reported",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "sweep.diff",
+      "log": "sweep.log"
+    },
+    {
+      "criterion": "signal-mask",
+      "target": "write-back/stop-signals-blocked",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "signal-mask.diff",
+      "log": "signal-mask.log"
+    },
+    {
+      "criterion": "live-guard",
+      "target": "live-guard/killed-capture-slice-stopped-under-lease-then-written-back",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "live-guard.diff",
+      "log": "live-guard.log"
     }
   ],
   "restored": true

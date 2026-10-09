@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1850,7 +1850,7 @@
+     """After every engine of the run has stopped, under the leases, with the stop signals blocked
+     so a handled signal cannot cut it short: write the rotations back, then drop the journal, or
+     keep what could not be written back and raise CredentialRecovery."""
+-    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
++    mask = signal.pthread_sigmask(signal.SIG_BLOCK, [])
+     try:
+         failures = write_back(borrow.scratch, borrow.credentials)
+         if not failures:
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1850,7 +1850,7 @@
+     """After every engine of the run has stopped, under the leases, with the stop signals blocked
+     so a handled signal cannot cut it short: write the rotations back, then drop the journal, or
+     keep what could not be written back and raise CredentialRecovery."""
+-    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
++    mask = signal.pthread_sigmask(signal.SIG_BLOCK, [])
+     try:
+         failures = write_back(borrow.scratch, borrow.credentials)
+         if not failures:

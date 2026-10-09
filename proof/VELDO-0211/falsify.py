@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run only suite 103 against three temporary source mutations, serially, restoring every byte."""
+"""Run only suite 103 against temporary source mutations, serially, restoring every byte."""
 import difflib
 import hashlib
 import json
@@ -10,24 +10,42 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 SUITE = '103_veldo_0211_borrowed_login'
-SOURCES = [ROOT / path for path in ('engine/scripts/agent_sandbox.py', 'scripts/agent_sandbox.py')]
+LAUNCHER = ('engine/scripts/agent_sandbox.py', 'scripts/agent_sandbox.py')
+LIVE = ('proof/VELDO-0127/live.py',)
+SOURCES = [ROOT / path for path in LAUNCHER + LIVE]
+# (name, files, anchor, mutant, the suite 103 row that must fail). The first three are the spec's
+# declared falsifiers (AC1 to AC3); the rest cover the lease, the sweep, the signal mask and the guard.
 MUTATIONS = [
-    ('AC1', '                write_back(scratch, credentials, locked=True)',
-     '                pass  # falsifier: omit credential persistence', 'rotation/live/claude/success'),
-    ('AC2', '            replace_atomically(real, original, expected=original, locked=True)',
-     '            pass  # falsifier: admit without write-back preflight', 'refused-before-launch/live/claude/preflight'),
-    ('AC3', '    if failures:\n', '    if False and failures:\n', 'recovery/live-retains-private-rotated-token'),
+    ('AC1', LAUNCHER, '                settle_borrow(borrow)\n',
+     '                pass  # falsifier: omit credential persistence\n', 'rotation/live/claude/success'),
+    ('AC2', LAUNCHER, '            problem = replace_problem(real)\n',
+     '            problem = None  # falsifier: admit without the write-back probe\n',
+     'refused-before-launch/live/claude/preflight'),
+    ('AC3', LAUNCHER, '        if not failures:\n            discard_journal(borrow.journal)\n',
+     '        if True:  # falsifier: drop failed rotations\n            discard_journal(borrow.journal)\n',
+     'recovery/live-retains-private-rotated-token'),
+    ('lease-busy', LAUNCHER, "            raise ValueError('borrowed login is busy: %s is held by another run' % path) from None\n",
+     '            pass  # falsifier: ignore another run\'s lease\n', 'refused-before-launch/live/claude/busy'),
+    ('sweep', LAUNCHER, "                if digest(data) != entry['sha256']:\n",
+     '                if False:  # falsifier: the sweep drops a killed run\'s rotation\n',
+     'sweep/killed-run-rotation-kept-and-reported'),
+    ('signal-mask', LAUNCHER, '    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)\n    try:\n        failures = write_back(',
+     '    mask = signal.pthread_sigmask(signal.SIG_BLOCK, [])\n    try:\n        failures = write_back(',
+     'write-back/stop-signals-blocked'),
+    ('live-guard', LIVE, '                        subprocess.run(command, env=env,',
+     '                        0 and subprocess.run(command, env=env,',
+     'live-guard/killed-capture-slice-stopped-under-lease-then-written-back'),
 ]
 
 
 def main():
     original = {path: path.read_bytes() for path in SOURCES}
     rows = []
-    for criterion, old, new, target in MUTATIONS:
+    for criterion, files, old, new, target in MUTATIONS:
         changes = []
         try:
-            for path, data in original.items():
-                text = data.decode()
+            for path in [ROOT / name for name in files]:
+                text = original[path].decode()
                 if text.count(old) != 1:
                     raise RuntimeError('falsifier anchor moved: ' + criterion)
                 mutant = text.replace(old, new)

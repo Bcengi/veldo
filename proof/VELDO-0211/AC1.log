@@ -12,28 +12,64 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/nocrit.md: no acceptance criteria
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/status.md: bad status: donezo
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/proof2.json: spec criterion AC1 missing from proof
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/proof4.json: criterion AC1 passed without evidence
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/veldo-agent-wes6wnfx/tmp/tmpeeknfbxy/verdict.json: bad verdict: looks_fine
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/cycle.md: dependency cycle through WARP-9101
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/oref.md: feature F1: unknown outcome ref O7
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/fref.md: work W1: unknown feature ref F9
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/dupspec.md: duplicate spec ids across work items
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/veldo-agent-wes6wnfx/tmp/tmp671cmwst/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpy0knjpd4 lost its scratch /tmp/v211-4k0_oe35/tmpy0knjpd4 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpo4m_n3j9 lost its scratch /tmp/v211-4k0_oe35/tmpo4m_n3j9 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmplruy6c9r lost its scratch /tmp/v211-4k0_oe35/tmplruy6c9r (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpp4q8et7i lost its scratch /tmp/v211-4k0_oe35/tmpp4q8et7i (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpfb9usq0o lost its scratch /tmp/v211-4k0_oe35/tmpfb9usq0o (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpx7042xgr lost its scratch /tmp/v211-4k0_oe35/tmpx7042xgr (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpyxxmdly9 lost its scratch /tmp/v211-4k0_oe35/tmpyxxmdly9 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpncg5hp_6 lost its scratch /tmp/v211-4k0_oe35/tmpncg5hp_6 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmp02f5aax7 lost its scratch /tmp/v211-4k0_oe35/tmp02f5aax7 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmp5lu3m_ys lost its scratch /tmp/v211-4k0_oe35/tmp5lu3m_ys (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpcxcypvv5 lost its scratch /tmp/v211-4k0_oe35/tmpcxcypvv5 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpjbw46kna lost its scratch /tmp/v211-4k0_oe35/tmpjbw46kna (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpjryoda3c lost its scratch /tmp/v211-4k0_oe35/tmpjryoda3c (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmppuqq9zht lost its scratch /tmp/v211-4k0_oe35/tmppuqq9zht (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmprk2ursx3 lost its scratch /tmp/v211-4k0_oe35/tmprk2ursx3 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmptbnc8b5m lost its scratch /tmp/v211-4k0_oe35/tmptbnc8b5m (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-iu12znbr lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-iu12znbr (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-rqv9fcng lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-rqv9fcng (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-yk8i2cnp lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-yk8i2cnp (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-bw6yld4x lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-bw6yld4x (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-rfrz9e7f lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-rfrz9e7f (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpmqybgqwa lost its scratch /tmp/v211-4k0_oe35/tmpmqybgqwa (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo0127-live-0md0grar lost its scratch /tmp/v211-4k0_oe35/veldo0127-live-0md0grar (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmp61m1882k lost its scratch /tmp/v211-4k0_oe35/tmp61m1882k (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpw51cjy5b lost its scratch /tmp/v211-4k0_oe35/tmpw51cjy5b (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpw7b27om4 lost its scratch /tmp/v211-4k0_oe35/tmpw7b27om4 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpwjy3ev9f lost its scratch /tmp/v211-4k0_oe35/tmpwjy3ev9f (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpc6615uq8 lost its scratch /tmp/v211-4k0_oe35/tmpc6615uq8 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo-agent-2r92i2_a lost its scratch /tmp/v211-4k0_oe35/tmp-parent/veldo-agent-2r92i2_a (No such file or directory); nothing of it can be recovered
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-4k0_oe35/account/.credentials.json
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmp4wk94e3n lost its scratch /tmp/v211-4k0_oe35/tmp4wk94e3n (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpckfuxlk0 lost its scratch /tmp/v211-4k0_oe35/tmpckfuxlk0 (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpj7sbgvkz lost its scratch /tmp/v211-4k0_oe35/tmpj7sbgvkz (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpkxu0gdqf lost its scratch /tmp/v211-4k0_oe35/tmpkxu0gdqf (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpkzgomjf_ lost its scratch /tmp/v211-4k0_oe35/tmpkzgomjf_ (No such file or directory); nothing of it can be recovered
+agent sandbox: borrow /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/tmpwzms00yo lost its scratch /tmp/v211-4k0_oe35/tmpwzms00yo (No such file or directory); nothing of it can be recovered
+  /tmp/tmp0kqc1ai3: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp0kqc1ai3/nocrit.md: no acceptance criteria
+  /tmp/tmp0kqc1ai3/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp0kqc1ai3/status.md: bad status: donezo
+  /tmp/tmp0kqc1ai3/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp0kqc1ai3/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp0kqc1ai3/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp0kqc1ai3/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp0kqc1ai3/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp0kqc1ai3/verdict.json: bad verdict: looks_fine
+  /tmp/tmpkl4wyhmi/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpkl4wyhmi/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpkl4wyhmi/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpkl4wyhmi/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpkl4wyhmi/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpkl4wyhmi/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpkl4wyhmi/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpkl4wyhmi/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpkl4wyhmi/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpkl4wyhmi/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpkl4wyhmi/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpkl4wyhmi/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
@@ -49,10 +85,14 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/claude/nonzero
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/claude/exception
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/claude/signal
+  SELFTEST FAIL: VELDO-0211 refused-before-launch/sandbox/claude/busy
+  SELFTEST FAIL: VELDO-0211 refused-before-launch/sandbox/claude/preflight
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/codex/success
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/codex/nonzero
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/codex/exception
   SELFTEST FAIL: VELDO-0211 rotation/sandbox/codex/signal
+  SELFTEST FAIL: VELDO-0211 refused-before-launch/sandbox/codex/busy
+  SELFTEST FAIL: VELDO-0211 refused-before-launch/sandbox/codex/preflight
 claude: captured
   SELFTEST FAIL: VELDO-0211 live-main/claude/success
   SELFTEST FAIL: VELDO-0211 live-main/claude/exception
@@ -61,14 +101,22 @@ codex: captured
   SELFTEST FAIL: VELDO-0211 live-main/codex/success
   SELFTEST FAIL: VELDO-0211 live-main/codex/exception
   SELFTEST FAIL: VELDO-0211 live-main/codex/signal
+  SELFTEST FAIL: VELDO-0211 locking/live/runner-lease-inherited-counts-as-held
+  SELFTEST FAIL: VELDO-0211 locking/sandbox/runner-lease-inherited-counts-as-held
+  SELFTEST FAIL: VELDO-0211 write-back/stop-signals-blocked: []
   SELFTEST FAIL: VELDO-0211 recovery/live-retains-private-rotated-token
+  SELFTEST FAIL: VELDO-0211 restore/refused-while-busy-or-changed
+  SELFTEST FAIL: VELDO-0211 restore/kept-rotation-restored
   SELFTEST FAIL: VELDO-0211 recovery/sandbox-retains-private-rotated-token
+  SELFTEST FAIL: VELDO-0211 recovery/sandbox-keeps-run-exit-status
+  SELFTEST FAIL: VELDO-0211 recovery/scratch-kept-when-store-fails: row /tmp/v211-4k0_oe35/state/veldo/borrowed-logins/veldo-agent-pndqbytw lost its scratch /tmp/v211-4k0_oe35/tmp-parent/veldo-agent-pndqbytw (No such file or directory); nothing of it can be recovered
+
   SELFTEST FAIL: VELDO-0211 recovery/claude/missing-refresh-token
   SELFTEST FAIL: VELDO-0211 recovery/codex/missing-refresh-token
   SELFTEST FAIL: VELDO-0211 recovery/invalid-json
   SELFTEST FAIL: VELDO-0211 recovery/array
   SELFTEST FAIL: VELDO-0211 recovery/missing-file
   SELFTEST FAIL: VELDO-0211 recovery/scratch-link
-  103_veldo_0211_borrowed_login                   15 passed    0.96s
-selftest (PARTIAL, 1 of 158 suites): 41 passed, 30 failed in 0.96s
+  103_veldo_0211_borrowed_login                   21 passed    1.07s
+selftest (PARTIAL, 1 of 158 suites): 47 passed, 41 failed in 1.07s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

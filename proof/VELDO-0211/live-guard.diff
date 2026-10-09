@@ -1,0 +1,11 @@
+--- proof/VELDO-0127/live.py
++++ proof/VELDO-0127/live.py
+@@ -67,7 +67,7 @@
+                 code = 0
+                 if os.read(read, 1) != b'1':
+                     try:
+-                        subprocess.run(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
++                        0 and subprocess.run(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.DEVNULL)
+                     except (OSError, subprocess.SubprocessError) as error:
+                         print('live: the slice was not stopped: %s' % error, file=sys.stderr, flush=True)

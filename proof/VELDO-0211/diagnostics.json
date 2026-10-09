@@ -1,69 +1,76 @@
 {
   "schema": "veldo.borrowed-login-diagnostics/v1",
-  "implementation_commit": "778069c49449217b5cfa15c894004c3268a2a003",
-  "recorded_at": "2026-10-09T11:11:34.972290+00:00",
+  "implementation_commit": "b0e85cfd07bda51faaf0ea48c69e10918fcca512",
+  "recorded_at": "2026-10-09T12:39:58.357658+00:00",
+  "host": "the owner's workstation, foreground, unconfined (suite 102 runs fully there)",
   "scope": "Selected suites only. Diagnostic observations, not canonical unit evidence or a landing claim.",
-  "suite103": {
-    "argv": [
-      "python3",
-      "scripts/selftest.py",
-      "--suite",
-      "103_veldo_0211_borrowed_login"
-    ],
-    "exit_code": 2,
-    "own_assertions": 45,
-    "failed": 0,
-    "summary": "selftest (PARTIAL, 1 of 158 suites): 71 passed, 0 failed in 1.20s",
-    "log": "suite103.log"
+  "runs": {
+    "suite102-run1": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.47s",
+      "log": "suite102-run1.log"
+    },
+    "suite102-run2": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.86s",
+      "log": "suite102-run2.log"
+    },
+    "suite102-run3": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.39s",
+      "log": "suite102-run3.log"
+    },
+    "suite103": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "103_veldo_0211_borrowed_login"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 88 passed, 0 failed in 1.58s",
+      "log": "suite103.log"
+    },
+    "suite104": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "104_veldo_0210_mutation_workers"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 33 passed, 0 failed in 83.29s",
+      "log": "suite104.log"
+    }
   },
-  "suite102": {
-    "argv": [
-      "python3",
-      "scripts/selftest.py",
-      "--suite",
-      "102_veldo_0210_agent_profile_runtime"
-    ],
-    "exit_code": 1,
-    "failed_assertions": 17,
-    "skips": 8,
-    "failure_lines": [
-      "SELFTEST FAIL: VELDO-0210 namespace/unconfigured-host-refuses-every-start: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/launcher-inside-a-writable-grant-refused",
-      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-long-descriptor: veldo-userns: /tmp is owned by another account",
-      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-empty-descriptor: veldo-userns: /tmp is owned by another account",
-      "SELFTEST FAIL: VELDO-0210 namespace/helper-refuses-other-argument: veldo-userns: /tmp is owned by another account",
-      "SELFTEST FAIL: VELDO-0210 namespace/init-sets-no-new-privs-first-and-holds-nothing: [None, 1, None, \"the AppArmor label is 'veldo-userns//&veldo-userns-child (enforce)', not 'veldo-userns-child (enforce)'\", \"the AppArmor label is 'veldo-userns-child (complain)', not 'veldo-userns-child (enforce)'\", None]",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGTERM: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGINT: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-agent-SIGHUP: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGTERM: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGINT: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/stop-ends-a-hung-helper-gate-SIGHUP: 2 0.0 [] erns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/missing-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/user-writable-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/user-owned-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/linked-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()",
-      "SELFTEST FAIL: VELDO-0210 namespace/not-the-helper-refused: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()"
-    ],
-    "terminal_error": "PermissionError: [Errno 1] Operation not permitted creating AF_UNIX socket",
-    "limitation": "This confined runner cannot supply the namespace marker or AF_UNIX capability these existing host-runtime checks require. No claim that suite 102 passed.",
-    "log": "suite102.log"
+  "falsifiers": {
+    "detected": 7,
+    "total": 7,
+    "restored": true,
+    "report": "falsifiers.json"
   },
-  "falsifiers": "falsifiers.json",
-  "not_run": [
-    "complete selftest",
-    "scripts/verify.sh",
-    "scripts/check_teeth_mutations.py",
-    "scripts/check_gate_mutations.py",
-    "104_veldo_0210_mutation_workers"
-  ],
-  "static_checks": {
-    "canonical_sandbox_matches_installed": true,
-    "moved_worker_checks_byte_identical_to_baseline": true,
-    "python_sources_parse": true,
-    "git_diff_check_clean": true
+  "comparison": {
+    "main 294e1933, suite 102": "243 passed in each of 4 runs (includes the 7 mutation worker rows now in suite 104); stop-during-fork-forwarded-to-child failed 1 of 2 further runs with a timing probe added",
+    "branch 9cc5bbf5, suite 102": "5 or 6 failed in each of 5 runs: the five rows of the host review in every run, and stop-during-fork-forwarded-to-child in 2 of 5",
+    "this commit, suite 102": "237 passed, 0 failed in 3 of 3 here, and in 10 of 10 more after the start fix while developing (the 7 mutation worker rows run in suite 104)"
   },
-  "production_credentials_used": false,
-  "independent_review": "pending",
-  "approval": "pending"
+  "other_repository": "myday scripts/test_runner_sandbox_dry.sh against this checkout, acct2, XDG_STATE_HOME in scratch: 79 passed, 1 failed (test root refused inside an agent tree, failing the same way with myday HEAD scripts)"
 }
