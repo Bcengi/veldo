@@ -1019,7 +1019,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                             raise Refused('invalid_input:state_root:service_running:memory', 'lock changed')
                     memory_conn = S.open_store(plan['store'])
                 memory_report = _memory(lambda: organ('control_factory_setup_memory').apply(
-                    plan, memory_plan, ids, S, memory_conn, organ('control_channel_ingress').journal_signer(laid['journal']), owner_sign,
+                    plan, memory_plan, ids, S, memory_conn, organ('control_channel_ingress').journal_signer(laid['journal']),
+                    organ('control_channel_activation').ssh_signer(plan['owner_key']),
                     send=(lambda packet: service_request(plan, packet)()) if running else None))
                 outcomes.append(memory_report)
             finally:

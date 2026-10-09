@@ -51,10 +51,17 @@ def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
         if not send(packet):
             raise M.Refused('invalid_input:state_root:service_running:memory')
     else:
-        M.Memory(S, conn, ids, *journal).admit(packet)
+        writer_module = M
+        binding = S.owning_modules(S.entity_owners(conn)).get(M.SAVE)
+        if binding and os.path.realpath(binding[0]) != os.path.realpath(M.__file__):
+            spec = importlib.util.spec_from_file_location('installed_memory_writer', binding[0])
+            writer_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(writer_module)
+        writer_module.Memory(S, conn, ids, *journal).admit(packet)
     for part in M.PARTS:
         checks.append(CHECK.check(plan['root'], definition, part, 'after'))
-    return dict(report, revision=base + 1, command_id=command['command_id'], checks=checks)
+    return dict(report, revision=base + 1, command_id=command['command_id'], checks=checks,
+                metrics=dict(memory_revisions=1, memory_checks_passed=len(checks)))
 
 
 def main(argv=None):

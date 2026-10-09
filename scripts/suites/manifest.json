@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "105_veldo_0182_memory",
+   "file": "105_veldo_0182_memory.py",
+   "requires": [
+    "105_veldo_0182_memory"
+   ],
+   "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
+   "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
   }
  ],
  "resource_capacities": {

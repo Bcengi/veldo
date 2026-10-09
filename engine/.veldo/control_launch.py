@@ -1599,6 +1599,8 @@ class Receiver:
         environment.pop('VELDO_MEMORY', None)
         if self.memory is not None:
             environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
+            _organ('control_memory').record_launch(
+                self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, self.memory)
             self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''

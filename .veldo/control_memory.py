@@ -83,8 +83,7 @@ def normalize(manifest):
         if part != 'file_memory':
             entry['code'] = checked(e['code'], part)
         if part in FIXED:
-            # System Python need not belong to the owner, but must be a real executable, not a link.
-            entry['interpreter'] = checked(e['interpreter'], part, 'interpreter', owner=False)
+            entry['interpreter'] = checked(e['interpreter'], part, 'interpreter')
             entry['data'] = os.path.join(entry['code'], FIXED[part])
         entry['data'] = checked(entry['data'], part, 'file' if part == 'knowledge_graph' else 'directory')
         if part == 'file_memory':
@@ -97,7 +96,7 @@ def normalize(manifest):
             checked(os.path.join(entry['data'], 'claude-mem.db'), part, 'file')
             if not isinstance(e['command'], list) or not e['command'] or not all(isinstance(s, str) and s for s in e['command']):
                 raise Refused('invalid_input:memory:claude_mem:command')
-            checked(e['command'][0], part, 'interpreter', owner=False)
+            checked(e['command'][0], part, 'interpreter')
         result['parts'][part] = entry
     return result
 
@@ -116,8 +115,7 @@ def read(conn):
 
 def profiles_outside(conn, definition):
     for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='account'"):
-        directory = json.loads(raw).get('profiles', {}).get(definition['host'])
-        if directory:
+        for directory in json.loads(raw).get('profiles', {}).values():
             for part, path in locations(definition):
                 if within(directory, path):
                     raise Refused('invalid_input:memory:contains_account_profile:' + part)
@@ -127,8 +125,7 @@ def account_outside(conn, profiles):
     record = read(conn)
     if record:
         definition = record['definition']
-        directory = profiles.get(definition['host'])
-        if directory:
+        for directory in profiles.values():
             for part, path in locations(definition):
                 if within(directory, path):
                     raise Refused('invalid_input:account_profile:inside_memory:' + part)
@@ -191,3 +188,16 @@ class Memory:
                         artifact_digests=[], expected_versions={HEAD: base, 'memory:revision:%d' % (base + 1): 0})
         result = self.S.execute(self.conn, internal, self.signer, self.sign, self.generation)
         return dict(ok=True, revision=base + 1, seq=result['seq'])
+
+
+def record_launch(root, dispatch_id, handed):
+    """Durable metadata receipt; no sample or memory content, and no account login."""
+    directory = Path(root) / 'memory' / 'launches'
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    checked(str(directory), 'launches')
+    path = directory / (hashlib.sha256(dispatch_id.encode()).hexdigest() + '.json')
+    receipt = dict(dispatch_id=dispatch_id, **handed)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'w') as out:
+        json.dump(receipt, out, sort_keys=True)
+    return str(path)

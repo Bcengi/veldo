@@ -118,8 +118,12 @@ class Plugin:
         self.selector = selectors.DefaultSelector()
         self.selector.register(self.proc.stdout, selectors.EVENT_READ)
         self.buffer, self.serial = b'', 0
-        self.rpc('initialize', dict(protocolVersion='2024-11-05', capabilities={},
-                                    clientInfo=dict(name='veldo-memory-check', version='1')))
+        try:
+            self.rpc('initialize', dict(protocolVersion='2024-11-05', capabilities={},
+                                       clientInfo=dict(name='veldo-memory-check', version='1')))
+        except Exception:
+            self.close()
+            raise
         self.proc.stdin.write(b'{"jsonrpc":"2.0","method":"notifications/initialized"}\n')
         self.proc.stdin.flush()
 
