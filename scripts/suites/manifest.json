@@ -1412,6 +1412,24 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "104_veldo_0210_mutation_workers",
+   "file": "104_veldo_0210_mutation_workers.py",
+   "requires": [
+    "104_veldo_0210_mutation_workers"
+   ],
+   "regions": "Existing mutation worker integration, split from suite 102.",
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+  },
+  {
+   "name": "103_veldo_0211_borrowed_login",
+   "file": "103_veldo_0211_borrowed_login.py",
+   "requires": [
+    "103_veldo_0211_borrowed_login"
+   ],
+   "regions": "Borrowed login locks, atomic rotation and fail-closed admission.",
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
   }
  ],
  "resource_capacities": {

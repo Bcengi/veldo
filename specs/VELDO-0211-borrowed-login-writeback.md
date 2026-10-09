@@ -15,6 +15,7 @@ footprint:
   - proof/VELDO-0127/live.py
   - scripts/suites/103_veldo_0211_borrowed_login.py
   - scripts/suites/102_veldo_0210_agent_profile_runtime.py
+  - scripts/suites/104_veldo_0210_mutation_workers.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0211-borrowed-login-writeback.md
@@ -77,3 +78,7 @@ unwritable source: they must fail loudly and retain private recovery data instea
 Only suites 103 and 102 are run, sequentially through the selftest suite selector. No whole gate,
 mutation runner, production engine, production login, push, merge or independent approval is
 performed by this implementation run. The reviewer owns the complete gate and landing approval.
+
+Suite 102 previously invoked the mutation coordinator. Its unchanged mutation worker checks
+move to suite 104, still registered in the full gate, so the permitted runtime suite can run
+without invoking any prohibited mutation runner. Suite 104 is reserved for the reviewer.

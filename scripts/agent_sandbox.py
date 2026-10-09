@@ -13,6 +13,7 @@ repository with transfer.fsckObjects, re-hashing every object.
 """
 import argparse
 import ctypes
+from contextlib import contextmanager
 import errno
 import fcntl
 import importlib.util
@@ -1566,14 +1567,15 @@ def current_bytes(path):
         os.close(descriptor)
 
 
-def replace_atomically(target, data, expected=None):
+def replace_atomically(target, data, expected=None, locked=False):
     """Replace `target` with `data`: a temporary file beside it, fsync, rename, fsync the directory.
     A reader sees the old file or the new one, never a partial write. The mode stays the source's
     owner bits (credentials are 0600). With `expected`, the target is read again just before the
     rename and is replaced only if it still holds exactly those bytes; otherwise Superseded is
     raised and the target is left as it is. The read and the rename run under an exclusive flock on
     the sibling <name>.veldo-lock, so two launchers writing back one file never interleave them;
-    the CLIs do not take that lock, so a CLI's own write between the two steps is still replaced."""
+    the CLIs do not take that lock, so a CLI's own write between the two steps is still replaced.
+    `locked` means the borrower already holds this lock for the entire run."""
     try:
         mode = stat.S_IMODE(os.stat(target).st_mode) & 0o700 or 0o600
     except FileNotFoundError:
@@ -1591,9 +1593,10 @@ def replace_atomically(target, data, expected=None):
         finally:
             os.close(descriptor)
         # Left in place: removing it would race with the next holder.
-        lock = os.open(target.with_name(target.name + '.veldo-lock'),
-                       os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        if not locked:
+            lock = os.open(target.with_name(target.name + '.veldo-lock'),
+                           os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+            fcntl.flock(lock, fcntl.LOCK_EX)
         if expected is not None and current_bytes(target) != expected:
             raise Superseded('the source changed during the run')
         os.replace(temporary, target)
@@ -1613,12 +1616,13 @@ def replace_atomically(target, data, expected=None):
         os.close(directory)
 
 
-def write_back(scratch, credentials):
+def write_back(scratch, credentials, locked=False):
     """After the run: each credential file the launcher copied in that the CLI changed (a token
     refresh) and that is still one JSON object replaces its source atomically, so a refresh during
     a run never logs the account out (VELDO-0210). Nothing else in the scratch is ever written back,
     and an unchanged, unreadable or invalid copy leaves the source as it is. So does a source that no
     longer holds the bytes copied in (a login or another run wrote it meanwhile): the newer file wins."""
+    failures = []
     for real, relative, original in credentials:
         try:
             data = read_scratch_file(scratch, relative)
@@ -1636,17 +1640,98 @@ def write_back(scratch, credentials):
                   file=sys.stderr, flush=True)
             continue
         try:
-            replace_atomically(real, data, expected=original)
+            require_refresh_tokens(json.loads(original), json.loads(data))
+            replace_atomically(real, data, expected=original, locked=locked)
         except Superseded as error:
             print('agent sandbox: credential %s changed but not written back: %s' % (relative, error),
                   file=sys.stderr, flush=True)
             continue
-        except OSError as error:
+        except (OSError, ValueError) as error:
             print('agent sandbox: credential %s write-back to %s failed: %s' % (relative, real, error),
                   file=sys.stderr, flush=True)
+            failures.append(relative)
             continue
         print('agent sandbox: credential %s refreshed during the run, written back to %s' % (relative, real),
               file=sys.stderr, flush=True)
+
+    if failures:
+        raise CredentialRecovery('credential recovery required for ' + ', '.join(failures))
+
+
+class CredentialRecovery(RuntimeError):
+    """A rotated login could not be persisted; callers must retain private scratch."""
+
+
+def require_refresh_tokens(original, rotated):
+    """Never replace a refreshable login with a JSON object that silently loses its refresh token."""
+    if not isinstance(original, dict):
+        return
+    for key, value in original.items():
+        next_value = rotated.get(key) if isinstance(rotated, dict) else None
+        if key in ('refreshToken', 'refresh_token') and value and not next_value:
+            raise ValueError('rotated credential is missing a refresh token')
+        if isinstance(value, dict):
+            require_refresh_tokens(value, next_value)
+
+
+@contextmanager
+def borrowed_credentials(scratch, sources, store, protected=None):
+    """Lock, preflight and copy credentials, then persist rotations before releasing any lock.
+
+    Sources are (path, scratch-relative name) pairs. Missing optional sandbox sources stay absent.
+    The caller must stop every engine before leaving this context, including on exceptions.
+    Busy logins refuse immediately; direct CLI use must be serialized by the operator.
+    """
+    locks, credentials = [], []
+    try:
+        resolved = [(source.resolve(strict=True), relative) for source, relative in sources if source.is_file()]
+        if len({real for real, _ in resolved}) != len(resolved):
+            raise ValueError('duplicate borrowed credential source')
+        for real, relative in sorted(resolved):
+            if beneath(real, store) or any(beneath(real, p) for p in (protected or [])):
+                raise ValueError('credential source lies in a protected path: ' + str(real))
+            lock = os.open(real.with_name(real.name + '.veldo-lock'),
+                           os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+            locks.append(lock)
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                raise ValueError('borrowed login is busy: ' + str(real)) from None
+            original = current_bytes(real)
+            try:
+                valid = isinstance(json.loads(original), dict)
+            except (TypeError, ValueError, RecursionError):
+                valid = False
+            if not valid:
+                raise ValueError('borrowed credential is not a JSON object: ' + str(real))
+            # Exercise the actual write-back destination and operation before an engine can rotate.
+            # The bytes are unchanged; inode identity is intentionally not preserved.
+            replace_atomically(real, original, expected=original, locked=True)
+            copied = seed(scratch, real, relative, store, protected)
+            if copied is None:
+                raise ValueError('borrowed credential disappeared: ' + str(real))
+            credentials.append((real, relative, copied[1]))
+        try:
+            yield credentials
+        finally:
+            # Handled signals must not interrupt the atomic save or release the lock early.
+            mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+            try:
+                write_back(scratch, credentials, locked=True)
+            finally:
+                signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+    finally:
+        for lock in reversed(locks):
+            os.close(lock)
+
+
+def preserve_login_recovery(scratch):
+    """Move failed scratch out of automatic cleanup and the stale-scratch sweep's namespace."""
+    recovery = scratch.with_name('veldo-login-recovery-' + scratch.name)
+    scratch.rename(recovery)
+    print('credential recovery required; private files retained at ' + str(recovery),
+          file=sys.stderr, flush=True)
+    return recovery
 
 
 SCRATCH_PREFIX = 'veldo-agent-'
@@ -1798,6 +1883,10 @@ def launch(config_path, worktree, command, profile="agent", client=None):
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
         except Interrupted:
             code = None
+        except CredentialRecovery:
+            preserve_login_recovery(scratch)
+            scratch = None
+            raise
         finally:
             stop.closing = True
             if scratch is not None:
@@ -1859,66 +1948,55 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         seed(scratch, Path(source).expanduser(), relative, store)
     for source, relative in files.get('seed_files', []):
         seed(scratch, source, relative, store)
-    credentials = []
-    for source, relative in files.get('credentials', []):
-        copied = seed(scratch, source, relative, store, protected)
-        if copied is not None:
-            real, data = copied
-            credentials.append((real, relative, data))
-    # The client's persistent state for this worktree: read and write where it is, linked where the
-    # CLI looks for it, checked by clean_state before the grant and again once the tree is gone.
-    state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
-                                 *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
-    grants += [(real, READ | WRITE) for real, _ in state]
-    problem = launcher_write_problem(grants)
-    if problem:
-        raise ValueError(problem)
-    for name in ('.codex', '.claude', 'tmp'):
-        os.close(scratch_directory(scratch, [name]))
-    # The client's installed plugins, marketplaces and skills (read only) and its persistent state
-    # (read and write), where they are, linked where the CLI looks for them under its private state
-    # directory.
-    for target, relative in [*links, *state]:
-        parts = Path(relative).parts
-        directory = scratch_directory(scratch, parts[:-1])
-        try:
-            os.symlink(target, parts[-1], dir_fd=directory)
-        finally:
-            os.close(directory)
-    env = dict(os.environ, HOME=str(scratch), CODEX_HOME=str(scratch / '.codex'),
-               CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'),
-               VELDO_AGENT_CONFIG=str(config_path),
-               XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
-               XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'),
-               PWD=str(worktree))
-    # VELDO_EXPECTED_GIT_COMMON names the trusted repository to this launcher only. Handed on, it
-    # would make a gate the confined command runs for another repository (a freshly scaffolded
-    # one, a fixture) check that repository against this one's common directory.
-    for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
-                 'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
-                 'VELDO_EXPECTED_GIT_COMMON', 'CLAUDE_CODE_PROJECT_DIR_NAME'):
-        # CLAUDE_CODE_PROJECT_DIR_NAME would name another projects/ folder than the one granted.
-        env.pop(name, None)
-    toolchain_environment(config, scratch, grants, env)
-    roots = None
-    if profile == 'gate':
-        # Gate commands run this repository's own suites, which serve and dial Unix sockets and
-        # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
-        roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
+    with borrowed_credentials(scratch, files.get('credentials', []), store, protected):
+        # The client's persistent state for this worktree: read and write where it is, linked where the
+        # CLI looks for it, checked by clean_state before the grant and again once the tree is gone.
+        state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
+                                     *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
+        grants += [(real, READ | WRITE) for real, _ in state]
+        problem = launcher_write_problem(grants)
+        if problem:
+            raise ValueError(problem)
+        for name in ('.codex', '.claude', 'tmp'):
+            os.close(scratch_directory(scratch, [name]))
+        # The client's installed plugins, marketplaces and skills (read only) and its persistent state
+        # (read and write), where they are, linked where the CLI looks for them under its private state
+        # directory.
+        for target, relative in [*links, *state]:
+            parts = Path(relative).parts
+            directory = scratch_directory(scratch, parts[:-1])
+            try:
+                os.symlink(target, parts[-1], dir_fd=directory)
+            finally:
+                os.close(directory)
+        env = dict(os.environ, HOME=str(scratch), CODEX_HOME=str(scratch / '.codex'),
+                   CLAUDE_CONFIG_DIR=str(scratch / '.claude'), TMPDIR=str(scratch / 'tmp'),
+                   VELDO_AGENT_CONFIG=str(config_path),
+                   XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
+                   XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'),
+                   PWD=str(worktree))
+        # VELDO_EXPECTED_GIT_COMMON names the trusted repository to this launcher only. Handed on, it
+        # would make a gate the confined command runs for another repository (a freshly scaffolded
+        # one, a fixture) check that repository against this one's common directory.
+        for name in ('PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD', 'LD_LIBRARY_PATH',
+                     'BASH_ENV', 'ENV', 'DBUS_SESSION_BUS_ADDRESS', 'SSH_AUTH_SOCK',
+                     'VELDO_EXPECTED_GIT_COMMON', 'CLAUDE_CODE_PROJECT_DIR_NAME'):
+            # CLAUDE_CODE_PROJECT_DIR_NAME would name another projects/ folder than the one granted.
+            env.pop(name, None)
+        toolchain_environment(config, scratch, grants, env)
+        roots = None
+        if profile == 'gate':
+            # Gate commands run this repository's own suites, which serve and dial Unix sockets and
+            # drive terminals. The parent brokers those inside the domain's writable roots (scratch).
+            roots = [p for p, access in grants if access & WRITE == WRITE and p.is_dir()]
 
-    def after():
-        # The confined group is gone: a refreshed credential goes back to its account. Nothing
-        # the write-back meets replaces the run's own exit status.
-        try:
-            write_back(scratch, credentials)
-        except Exception as error:
-            print('agent sandbox: credential write-back stopped: %r' % error, file=sys.stderr, flush=True)
-        # Before any unconfined CLI reads what the run left in its state.
-        try:
-            clean_state(state)
-        except Exception as error:
-            print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
-    return run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots, after=after)
+        def after():
+            # Before any unconfined CLI reads what the run left in its state.
+            try:
+                clean_state(state)
+            except Exception as error:
+                print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
+        return run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots, after=after)
 
 
 def run_tree(worktree, command, env, grants, profile, protected, scratch, stop=None, roots=None,

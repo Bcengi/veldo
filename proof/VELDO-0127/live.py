@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Lead-only subscription capture. This driver is never run by the implementer or suite.
 
-Arguments name logged-in profile directories and pinned binaries. Only login files are
-linked into temporary profiles; original profiles are neither edited nor copied. Workers
+Arguments name logged-in profile directories and pinned binaries. Login files are copied into
+private temporary profiles under source locks and rotated credentials are written back. Workers
 run serially in the temporary factory, under its own transient Linux slice. Captures hold
 capability names, credential-source identities and redacted execution-record evidence.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import importlib.util
 import json
@@ -27,6 +28,35 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+LOGIN = load('live_borrowed_login', ROOT / 'scripts/agent_sandbox.py')
+
+
+@contextmanager
+def borrowed_profiles(base, args, engines):
+    """Keep the source login locked through every capture, control and engine teardown."""
+    sources = []
+    for engine in sorted(engines):
+        name = '.credentials.json' if engine == 'claude' else 'auth.json'
+        profile = base / (engine + '-login')
+        profile.mkdir(mode=0o700)
+        source = Path(args[engine + '_profile']).expanduser().resolve() / name
+        if not source.is_file():
+            raise ValueError('No file-backed subscription login in the supplied ' + engine + ' profile')
+        sources.append((source, engine + '-login/' + name))
+    args['claude_code_profile'] = str(base / 'claude-login')
+    args['codex_profile'] = str(base / 'codex-login')
+    with LOGIN.Stop() as stop:
+        try:
+            with LOGIN.borrowed_credentials(base, sources, base):
+                try:
+                    yield
+                finally:
+                    stop.closing = True
+        except LOGIN.CredentialRecovery:
+            LOGIN.preserve_login_recovery(base)
+            raise
 
 
 SENSITIVE = re.compile(r'token|key|secret|authoriz|credential|bearer|cookie|password|[A-Za-z0-9+/=_-]{40,}', re.I)
@@ -201,62 +231,51 @@ def main():
     fixture = load('role_live_factory', HERE / 'factory.py')
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
         base = Path(temp)
-        args['claude_code_profile'] = str(base / 'claude-login')
-        args['codex_profile_source'] = args['codex_profile']
-        for engine, argument, names in [('claude', 'claude_profile', ['.credentials.json']),
-                                        ('codex', 'codex_profile_source', ['auth.json'])]:
-            profile = base / (engine + '-login')
-            profile.mkdir(mode=0o700)
-            source = Path(args[argument]).resolve()
-            for name in names:
-                if (source / name).is_file():
-                    (profile / name).symlink_to(source / name)
-            if not any(profile.iterdir()):
-                raise SystemExit('No file-backed subscription login in the supplied ' + engine + ' profile')
-        args['codex_profile'] = str(base / 'codex-login')
-        f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
-        try:
-            for engine in engines:
-                if only and only[0] != engine:
-                    continue
-                for mode in ('always', 'deferred'):
-                    definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
-                    if mode == 'deferred':
-                        definition['instructions'].append({'source':'factory','path':'unassigned.md','load':'when assigned'})
-                    f.save(definition)
-                result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
-                for mode in ('always', 'deferred'):
-                    if only and only[1] != mode:
+        selected = (only[0],) if only else engines
+        with borrowed_profiles(base, args, selected):
+            f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
+            try:
+                for engine in engines:
+                    if only and only[0] != engine:
                         continue
-                    if not only or only[2] == 'control':
-                        result['runs'].append(capture(f, engine, mode, False, evidence, diagnostics))
-                    if only and only[2] != 'planted':
+                    for mode in ('always', 'deferred'):
+                        definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
+                        if mode == 'deferred':
+                            definition['instructions'].append({'source':'factory','path':'unassigned.md','load':'when assigned'})
+                        f.save(definition)
+                    result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
+                    for mode in ('always', 'deferred'):
+                        if only and only[1] != mode:
+                            continue
+                        if not only or only[2] == 'control':
+                            result['runs'].append(capture(f, engine, mode, False, evidence, diagnostics))
+                        if only and only[2] != 'planted':
+                            continue
+                        profile = base / (engine + '-login')
+                        marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
+                        if engine == 'codex':
+                            marker_paths = [f.src / 'AGENTS.md']
+                        for path in marker_paths:
+                            path.write_text(('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS) + '\n')
+                        try:
+                            result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
+                        finally:
+                            for path in marker_paths: path.unlink()
+                    if engine == 'claude' and not only:
+                        result['debug_control'] = discovery_control(args['claude'], base / 'claude-login', evidence)
+                    result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
+                    if only:
+                        for run in result['runs']:
+                            print(json.dumps({k: run[k] for k in ('mode', 'marker', 'completed', 'init', 'expected',
+                                                                  'first_turn_context', 'listing', 'marker_present',
+                                                                  'debug_marker_present', 'credential_sources')}))
+                        print(engine + ' (diagnosis only, not written): ' + '; '.join(result['problems']))
                         continue
-                    profile = base / (engine + '-login')
-                    marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
-                    if engine == 'codex':
-                        marker_paths = [f.src / 'AGENTS.md']
-                    for path in marker_paths:
-                        path.write_text(('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS) + '\n')
-                    try:
-                        result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
-                    finally:
-                        for path in marker_paths: path.unlink()
-                if engine == 'claude' and not only:
-                    result['debug_control'] = discovery_control(args['claude'], base / 'claude-login', evidence)
-                result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
-                if only:
-                    for run in result['runs']:
-                        print(json.dumps({k: run[k] for k in ('mode', 'marker', 'completed', 'init', 'expected',
-                                                              'first_turn_context', 'listing', 'marker_present',
-                                                              'debug_marker_present', 'credential_sources')}))
-                    print(engine + ' (diagnosis only, not written): ' + '; '.join(result['problems']))
-                    continue
-                (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
-                print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
-        finally:
-            for connection in f.connections: connection.close()
-            subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name], env=f.inherited, capture_output=True, timeout=20)
+                    (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+                    print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
+            finally:
+                for connection in f.connections: connection.close()
+                subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name], env=f.inherited, capture_output=True, timeout=20)
 
 
 if __name__ == '__main__':

@@ -535,6 +535,12 @@
   ],
   "102_veldo_0210_agent_profile_runtime": [
    "102_veldo_0210_agent_profile_runtime"
+  ],
+  "103_veldo_0211_borrowed_login": [
+   "103_veldo_0211_borrowed_login"
+  ],
+  "104_veldo_0210_mutation_workers": [
+   "104_veldo_0210_mutation_workers"
   ]
  }
 }
