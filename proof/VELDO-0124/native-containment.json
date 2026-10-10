@@ -5,61 +5,200 @@
     "platform": "darwin",
     "host": "dmitrys-mini.lan",
     "os_version": "26.5.1",
-    "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+    "boot_id": "{ sec = 1785738141, usec = 178912 } Mon Aug  3 06:22:21 2026",
     "tools": true
   },
+  "modules": "/Users/dmitry/veldo-0124-check/.veldo",
   "rows": [
     {
-      "row": "native/claude_code/containment",
+      "row": "native/claude_code/write",
       "status": "passed",
-      "elapsed": 0.5974129159003496,
-      "process": {
-        "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
-        "host": "dmitrys-mini.lan",
-        "pid": 24851,
-        "platform": "darwin",
-        "start": "Sat Oct 10 01:24:14 2026"
-      },
-      "worker": {
-        "pgid": 24851,
-        "process": {
-          "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
-          "host": "dmitrys-mini.lan",
-          "pid": 24865,
-          "platform": "darwin",
-          "start": "Sat Oct 10 01:24:14 2026"
-        }
-      },
-      "pgid": 24851,
-      "steps": [],
-      "outcome": "exited",
-      "group_empty": true
+      "observed": {
+        "owner": "denied",
+        "authority": "denied",
+        "code": "denied",
+        "slot": "denied",
+        "result": "denied",
+        "scratch": "allowed",
+        "clone": "allowed",
+        "login": "allowed",
+        "null": "allowed",
+        "tty": "error:6",
+        "home": "allowed",
+        "temp": "allowed",
+        "derived": "allowed",
+        "simulator": "allowed",
+        "alias_child": "denied"
+      }
     },
     {
-      "row": "native/codex/containment",
+      "row": "native/claude_code/read",
       "status": "passed",
-      "elapsed": 0.23667516745626926,
-      "process": {
-        "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
-        "host": "dmitrys-mini.lan",
-        "pid": 24894,
-        "platform": "darwin",
-        "start": "Sat Oct 10 01:24:14 2026"
-      },
-      "worker": {
-        "pgid": 24894,
-        "process": {
-          "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
-          "host": "dmitrys-mini.lan",
-          "pid": 24904,
-          "platform": "darwin",
-          "start": "Sat Oct 10 01:24:15 2026"
+      "observed": {
+        "ssh": "denied",
+        "claude": "denied",
+        "claude_json": "denied",
+        "claude_accounts": "denied",
+        "codex": "denied",
+        "accounts": "denied",
+        "projects": "denied",
+        "dispatches": "denied",
+        "claude_case": "denied",
+        "allowed_own_login": "allowed",
+        "allowed_clone": "allowed",
+        "allowed_owner_other": "allowed"
+      }
+    },
+    {
+      "row": "native/claude_code/launchd",
+      "status": "passed",
+      "observed": {
+        "copy": "allowed",
+        "submit": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "bootstrap": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "copy_submit": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "copy_bootstrap": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "jobs_created": {
+          "submit": false,
+          "bootstrap": false,
+          "copy_submit": false,
+          "copy_bootstrap": false
         }
-      },
-      "pgid": 24894,
-      "steps": [],
-      "outcome": "exited",
-      "group_empty": true
+      }
+    },
+    {
+      "row": "native/claude_code/keychain",
+      "status": "passed",
+      "observed": {
+        "sandboxed": {
+          "com.apple.SecurityServer": 1100,
+          "com.apple.securityd": 1100,
+          "com.apple.securityd.xpc": 1100
+        },
+        "unsandboxed": {
+          "com.apple.SecurityServer": 0,
+          "com.apple.securityd": 1102,
+          "com.apple.securityd.xpc": 0
+        }
+      }
+    },
+    {
+      "row": "native/claude_code/signal",
+      "status": "passed",
+      "observed": {
+        "supervisor": "denied",
+        "wrapper": "denied",
+        "own_child": "allowed"
+      }
+    },
+    {
+      "row": "native/codex/write",
+      "status": "passed",
+      "observed": {
+        "owner": "denied",
+        "authority": "denied",
+        "code": "denied",
+        "slot": "denied",
+        "result": "denied",
+        "scratch": "allowed",
+        "clone": "allowed",
+        "login": "allowed",
+        "null": "allowed",
+        "tty": "error:6",
+        "home": "allowed",
+        "temp": "allowed",
+        "derived": "allowed",
+        "simulator": "allowed",
+        "alias_child": "denied"
+      }
+    },
+    {
+      "row": "native/codex/read",
+      "status": "passed",
+      "observed": {
+        "ssh": "denied",
+        "claude": "denied",
+        "claude_json": "denied",
+        "claude_accounts": "denied",
+        "codex": "denied",
+        "accounts": "denied",
+        "projects": "denied",
+        "dispatches": "denied",
+        "claude_case": "denied",
+        "allowed_own_login": "allowed",
+        "allowed_clone": "allowed",
+        "allowed_owner_other": "allowed"
+      }
+    },
+    {
+      "row": "native/codex/launchd",
+      "status": "passed",
+      "observed": {
+        "copy": "allowed",
+        "submit": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "bootstrap": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "copy_submit": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "copy_bootstrap": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "jobs_created": {
+          "submit": false,
+          "bootstrap": false,
+          "copy_submit": false,
+          "copy_bootstrap": false
+        }
+      }
+    },
+    {
+      "row": "native/codex/keychain",
+      "status": "passed",
+      "observed": {
+        "sandboxed": {
+          "com.apple.SecurityServer": 1100,
+          "com.apple.securityd": 1100,
+          "com.apple.securityd.xpc": 1100
+        },
+        "unsandboxed": {
+          "com.apple.SecurityServer": 0,
+          "com.apple.securityd": 1102,
+          "com.apple.securityd.xpc": 0
+        }
+      }
+    },
+    {
+      "row": "native/codex/signal",
+      "status": "passed",
+      "observed": {
+        "supervisor": "denied",
+        "wrapper": "denied",
+        "own_child": "allowed"
+      }
     }
   ],
   "status": "passed",

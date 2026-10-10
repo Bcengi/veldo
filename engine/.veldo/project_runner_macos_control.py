@@ -27,6 +27,18 @@ CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES))
 STRIPPED = CREDENTIALS.union(*(e.SETTINGS for e in ENGINES))
 
 
+def engine_environment(host, account, dispatch, scratch, configured):
+    """(login profile, environment) for one dispatch on this Mac host: only the account's
+    own login variable, and a run scoped HOME and TMPDIR so no engine falls back to the
+    owner's home via getpwuid."""
+    name = host.os.facts()['host']
+    login = ACC.profile(account, name)[1]
+    environment = ACC.login_environment({'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}, account, name,
+                                        STRIPPED, configured, CREDENTIALS)
+    environment.update(host.run_environment(dispatch, scratch), VELDO_DISPATCH_ID=dispatch)
+    return login, environment
+
+
 class Receiver:
     """Invoked after the ordinary Runner prepares a complete admitted contract.
 
@@ -55,13 +67,8 @@ empty, returning True only once clone files/pins are gone. Neither is worker cod
             account = self.accounts.get(contract['reservation']['account'])
             if not account or account['provider'] != engine:
                 raise P.Refused('binding_mismatch:account_provider')
-            host = self.host.os.facts()['host']
-            variable, login = ACC.profile(account, host)
-            configured = contract['capability']['configuration'].get('environment', {})
-            environment = ACC.login_environment({'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}, account, host,
-                                                 STRIPPED, configured, CREDENTIALS)
-            # Run scoped HOME and TMPDIR: no engine falls back to the owner's home via getpwuid.
-            environment.update(self.host.run_environment(dispatch, scratch), VELDO_DISPATCH_ID=dispatch)
+            login, environment = engine_environment(self.host, account, dispatch, scratch,
+                                                    contract['capability']['configuration'].get('environment', {}))
             request = dict(contract=contract, contract_digest=digest, acceptance='preflight', engine=engine,
                            clone=clone, scratch=scratch, login_profile=login, environment=environment)
             self.host.preflight(request)

@@ -110,7 +110,8 @@ class Native:
         command(['/bin/launchctl', 'bootout', 'user/%d/%s' % (os.getuid(), label)])
 
     def user_temp(self):
-        return os.confstr('CS_DARWIN_USER_TEMP_DIR')
+        # _CS_DARWIN_USER_TEMP_DIR from <unistd.h>; Python has no name for it.
+        return os.confstr(65537)
 
     def interpreter(self, path):
         """(major, minor) of the pinned interpreter, or None if it cannot run."""

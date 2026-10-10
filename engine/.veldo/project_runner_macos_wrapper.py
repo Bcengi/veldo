@@ -80,7 +80,7 @@ def main(path):
                                  stdout=out, stderr=err, close_fds=True, process_group=0)
         # Keep this unsandboxed wrapper alive until waitpid observes engine exit and
         # the coalition holds no other process, or the backstop has spent its bounds.
-        write(directory / 'worker.json', dict(process=identity(child.pid), pgid=child.pid))
+        write(directory / 'worker.json', dict(process=identity(child.pid), pgid=os.getpgid(child.pid)))
         returncode, stage, due = None, None, float('inf')
         while True:
             write(directory / 'heartbeat.json', dict(monotonic=time.monotonic(), dispatch_id=request['dispatch_id']))

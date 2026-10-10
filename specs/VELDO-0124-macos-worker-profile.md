@@ -137,3 +137,26 @@ containment rows passed after one fix: launchd jobs in `user/<uid>` must declare
 the Background session type. Real Claude Code and Codex rows remain not run and
 need owner supplied configurations; `proof/VELDO-0124/README.md` lists them.
 Criteria, risk, approval requirements and status are unchanged.
+
+2026-10-10: fixed the independent review's nine findings. The Seatbelt profile now
+denies writes outside the run's clone, scratch, run home, run temp and its own login
+profile (protected paths never overlap a grant); reads of the account's `.ssh`,
+`.claude*`, `.codex*`, other account profiles, other projects and the slot root;
+`/bin/launchctl` exec and Seatbelt `job-creation`; mach lookups of
+`com.apple.SecurityServer`, `com.apple.securityd` and `com.apple.securityd.xpc`;
+and signals outside the sandbox instance. Observed on macOS 26.5.1: launchd itself
+also refuses job creation from sandboxed callers. The run's own login directory
+(`CLAUDE_CONFIG_DIR` or `CODEX_HOME`) stays writable because the engine keeps its
+session there; every other account directory is denied for read and write, so one
+run cannot use or spoil another account. Keychain access is denied until VELDO-0147
+decides what a run's own engine account needs. Engines run with their own sandboxes
+off inside this profile (Codex in its no sandbox mode, Claude Code without its bash
+sandbox) because a nested Seatbelt fails with `sandbox_apply: Operation not
+permitted`. Network restriction is a Release 2 open item. HOME and TMPDIR are run
+scoped in production, the engine has its own process group under the wrapper, the
+wrapper enforces the elapsed deadline itself, descendants are tracked by the launchd
+job's resource coalition (setsid and reparented children stay in it), a restarted
+supervisor rebuilds a Run from `slot.json`, and the interpreter is pinned in profile
+data. 22 synthetic native rows and 14 native single rule falsifiers ran on the Mac;
+real Claude Code and Codex rows still need the owner. Criteria, risk, approval
+requirements and status are unchanged.

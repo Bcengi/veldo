@@ -1,6 +1,6 @@
 --- a/project_runner_macos.py
 +++ b/project_runner_macos.py
-@@ -263,7 +263,7 @@
+@@ -269,7 +269,7 @@
              observed = heartbeat['monotonic']
              if self.last_heartbeat <= observed <= now:
                  self.last_heartbeat = observed

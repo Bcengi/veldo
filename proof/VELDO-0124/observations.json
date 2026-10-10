@@ -8,30 +8,30 @@
   "assets": [
     {
       "path": "engine/.veldo/project_runner_macos.py",
-      "sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715"
+      "sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71"
     },
     {
       "path": "engine/.veldo/project_runner_macos_control.py",
-      "sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121"
+      "sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78"
     },
     {
       "path": "engine/.veldo/project_runner_macos_os.py",
-      "sha256": "f71804a389a404ccdbec13765279163deecf8311dc3cd715a3aa7c329af7351d"
+      "sha256": "79f8405adf03185efe5a4cd42da6aef964fd669cecf0cb3e8b296c1dfe5f62e3"
     },
     {
       "path": "engine/.veldo/project_runner_macos_profile.py",
-      "sha256": "1c00a7de1f6388906505a34cc87caae41ef898e96f04bca9a2829e3d1f8a7eae"
+      "sha256": "00b4a3f121fada4b8c278094e61533a3fdceff16ef36f24f9506825c276cb898"
     },
     {
       "path": "engine/.veldo/project_runner_macos_wrapper.py",
-      "sha256": "d4ca2253d25ddd53c393f10df06f705cea726c2ae0374b71b5dad7849a682aea"
+      "sha256": "b9ce30408eb3f468960350922c55918147f5490b3fbef392498875055120de83"
     }
   ],
   "suites": [
     {
       "suite": "103_veldo_0124_macos",
       "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
-      "own_rows": 17,
+      "own_rows": 22,
       "failed": 0,
       "scope": "partial_development_only",
       "exit_code": 2,
@@ -54,6 +54,9 @@
       "AC1/bindings",
       "AC1/apfs-policy",
       "AC1/apple-interfaces",
+      "AC1/run-environment",
+      "AC1/interpreter",
+      "AC1/nested-sandbox",
       "AC1/template-sync",
       "AC1/native-declared",
       "AC1/accepted-store",
@@ -73,6 +76,8 @@
       "AC3/cooperative",
       "AC3/unknown",
       "AC3/ignoring",
+      "AC3/hard-kill-unknown",
+      "AC3/recover",
       "AC3/heartbeat",
       "AC3/retirement-obligations",
       "AC3/unknown-charge"

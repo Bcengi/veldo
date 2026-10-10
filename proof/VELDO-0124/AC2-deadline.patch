@@ -1,6 +1,6 @@
 --- a/project_runner_macos.py
 +++ b/project_runner_macos.py
-@@ -268,7 +268,7 @@
+@@ -274,7 +274,7 @@
                  self.cause = 'runtime_cap'
              return True
          # Deadline wins even when the model blocks or a stop is already cooperative.

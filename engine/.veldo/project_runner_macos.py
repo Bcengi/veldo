@@ -79,6 +79,12 @@ class Supervisor:
         contract = request['contract']
         binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
                             contract['capability']['configuration_digest'])
+        return binding, self.admit(request)
+
+    def admit(self, request):
+        """Everything but qualification: the native candidate probes measure that."""
+        contract = request['contract']
+        P.validate(self.profile)
         version = self.os.interpreter(self.profile['interpreter'])
         if not version or version < P.MINIMUM_PYTHON:
             raise P.Refused('unsupported_configuration:interpreter')
@@ -97,7 +103,7 @@ class Supervisor:
         environment = request.get('environment') or {}
         if any(environment.get(k) != v for k, v in self.run_environment(contract['dispatch_id'], scratch).items()):
             raise P.Refused('binding_mismatch:run_environment')
-        return binding, self.policy(request)
+        return self.policy(request)
 
     def policy(self, request):
         paths = self.run_paths(request['contract']['dispatch_id'], request['scratch'])

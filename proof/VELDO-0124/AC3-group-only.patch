@@ -1,6 +1,6 @@
 --- a/project_runner_macos.py
 +++ b/project_runner_macos.py
-@@ -232,7 +232,7 @@
+@@ -238,7 +238,7 @@
          if worker and worker.get('pgid'):
              self.os.send(worker['pgid'], number, group=True)
          for pid in self.os.members(self.coalition):

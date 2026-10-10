@@ -14,7 +14,8 @@ import unicodedata
 SCHEMA = 'veldo.macos_worker_profile/v1'
 QUALIFICATION = 'veldo.macos_worker_qualification/v1'
 ENGINES = ('claude_code', 'codex')
-NATIVE_ROWS = ('launch', 'containment', 'capacity', 'deadline', 'natural', 'cooperative', 'descendant')
+NATIVE_ROWS = ('launch', 'write', 'read', 'launchd', 'keychain', 'signal', 'capacity', 'deadline', 'natural',
+               'cooperative', 'descendant', 'hard-kill', 'supervisor-loss')
 # A nested Seatbelt fails with sandbox_apply: Operation not permitted, so each engine
 # runs with its own sandbox off inside this profile. Codex must say so in its argv;
 # Claude Code's bash sandbox is off unless the accepted configuration enables it.

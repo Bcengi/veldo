@@ -5,7 +5,7 @@
     "row": "AC1/qualification",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "8bf7ddf7128be0ad0df5e7f9920c42dc38d7e5ff832c45c6b72f7e97941af5b7",
+    "source_sha256": "00b4a3f121fada4b8c278094e61533a3fdceff16ef36f24f9506825c276cb898",
     "patch": "AC1-qualification.patch",
     "log": "AC1-qualification.log"
   },
@@ -15,7 +15,7 @@
     "row": "AC1/apple-interfaces",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "7ec300fd1cf36cfdc4f475367e88d11ebfdea4bd202cd29314717cdc59c1776f",
+    "source_sha256": "79f8405adf03185efe5a4cd42da6aef964fd669cecf0cb3e8b296c1dfe5f62e3",
     "patch": "AC1-session-type.patch",
     "log": "AC1-session-type.log"
   },
@@ -25,7 +25,7 @@
     "row": "AC2/deadline",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
+    "source_sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71",
     "patch": "AC2-deadline.patch",
     "log": "AC2-deadline.log"
   },
@@ -35,7 +35,7 @@
     "row": "AC2/capacity",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
+    "source_sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71",
     "patch": "AC2-capacity.patch",
     "log": "AC2-capacity.log"
   },
@@ -45,7 +45,7 @@
     "row": "AC3/descendant",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
+    "source_sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71",
     "patch": "AC3-parent-only.patch",
     "log": "AC3-parent-only.log"
   },
@@ -55,7 +55,7 @@
     "row": "AC3/descendant",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
+    "source_sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71",
     "patch": "AC3-group-only.patch",
     "log": "AC3-group-only.log"
   },
@@ -65,7 +65,7 @@
     "row": "AC2/precall-caps",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "a90cc9f5261fe74020267036c8d13466fbe780f9fc8fe862c821346c946e795c",
+    "source_sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78",
     "patch": "AC2-postcall.patch",
     "log": "AC2-postcall.log"
   },
@@ -75,7 +75,7 @@
     "row": "AC3/unknown-charge",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "a90cc9f5261fe74020267036c8d13466fbe780f9fc8fe862c821346c946e795c",
+    "source_sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78",
     "patch": "AC3-unknown-retire.patch",
     "log": "AC3-unknown-retire.log"
   }

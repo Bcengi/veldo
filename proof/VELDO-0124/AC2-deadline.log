@@ -12,28 +12,28 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpp4xyte33: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpp4xyte33/nocrit.md: no acceptance criteria
-  /tmp/tmpp4xyte33/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpp4xyte33/status.md: bad status: donezo
-  /tmp/tmpp4xyte33/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpp4xyte33/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpp4xyte33/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpp4xyte33/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpp4xyte33/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpp4xyte33/verdict.json: bad verdict: looks_fine
-  /tmp/tmppb2f603s/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmppb2f603s/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmppb2f603s/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmppb2f603s/fref.md: work W1: unknown feature ref F9
-  /tmp/tmppb2f603s/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmppb2f603s/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmppb2f603s/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmppb2f603s/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmppb2f603s/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmppb2f603s/dupspec.md: duplicate spec ids across work items
-  /tmp/tmppb2f603s/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmppb2f603s/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmp9sbqgxmk: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp9sbqgxmk/nocrit.md: no acceptance criteria
+  /tmp/tmp9sbqgxmk/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp9sbqgxmk/status.md: bad status: donezo
+  /tmp/tmp9sbqgxmk/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp9sbqgxmk/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp9sbqgxmk/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp9sbqgxmk/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp9sbqgxmk/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp9sbqgxmk/verdict.json: bad verdict: looks_fine
+  /tmp/tmpacddi00o/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpacddi00o/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpacddi00o/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpacddi00o/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpacddi00o/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpacddi00o/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpacddi00o/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpacddi00o/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpacddi00o/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpacddi00o/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpacddi00o/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpacddi00o/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
@@ -47,6 +47,6 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   SELFTEST FAIL: VELDO-0124 AC2/contract-deadline
   AC3/unknown: AssertionError: stale_version:deadline_passed
   SELFTEST FAIL: VELDO-0124 AC3/unknown
-  103_veldo_0124_macos                            17 passed    1.32s
-selftest (PARTIAL, 1 of 158 suites): 43 passed, 5 failed in 1.32s
+  103_veldo_0124_macos                            17 passed    0.75s
+selftest (PARTIAL, 1 of 158 suites): 43 passed, 5 failed in 0.75s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
