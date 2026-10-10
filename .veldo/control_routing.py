@@ -32,6 +32,7 @@ def qualified(profile):
             and all(isinstance(profile.get(k), str) and profile[k] for k in ('host', 'principal'))
             and isinstance(profile.get('capabilities'), list)
             and all(isinstance(v, str) and v for v in profile['capabilities'])
+            and (profile['platform'] == 'darwin' or not {'macos', 'ios-build'}.intersection(profile['capabilities']))
             and evidence.get('kind') == 'native' and bool(evidence.get('reference'))
             and evidence.get('profile_digest') == D.digest(definition(profile)))
 
@@ -57,7 +58,7 @@ def select(profiles, contract):
     for profile in profiles:
         if eligible(profile, contract):
             return dict(host=profile['host'], principal=profile['principal'], platform=profile['platform'],
-                        profile_digest=D.digest(definition(profile)), required=requirements(contract))
+                        profile_digest=D.digest(definition(profile)), runtime_profile=profile.get('runtime_profile'), required=requirements(contract))
     raise Refused('blocked:no_qualified_host')
 
 
@@ -69,9 +70,32 @@ def check(profiles, contract):
     if (len(matches) != 1 or not eligible(matches[0], contract)
             or route != dict(host=matches[0]['host'], principal=matches[0]['principal'],
                              platform=matches[0]['platform'], profile_digest=D.digest(definition(matches[0])),
+                             runtime_profile=matches[0].get('runtime_profile'),
                              required=requirements(contract))):
         raise Refused('blocked:host_unavailable_or_changed')
     return route
+
+
+def decision_transition(params, before):
+    return {params['id']: dict(kind='host_routing', data=params['decision'])}
+
+
+def record_decision(dispatches, result):
+    """Owner-visible routing state survives a blocked queue pass."""
+    store, conn = dispatches.store, dispatches.conn
+    operation = 'host_routing_decision'
+    conn.command_registry[operation] = dict(transition=decision_transition,
+                                            writes=('entities', 'journal', 'commands', 'nonces'))
+    store.declare_owners(conn, 'VELDO-0125-routing', kinds={'host_routing': (operation,)},
+                         prefixes={'routing:': (operation,)}, module=__file__)
+    identity = 'routing:' + result['dispatch_id']
+    row = conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+    version = row[0] if row else 0
+    command_id = 'routing/' + result['dispatch_id'] + '/' + str(version + 1)
+    store.execute(conn, dict(command_id=command_id, principal=dispatches.principal, operation=operation,
+        nonce=command_id, artifact_digests=[], expected_versions={identity: version},
+        parameters=dict(id=identity, decision=dict(result, domain=dispatches.domain, repository=dispatches.repository))),
+        dispatches.signer, dispatches.sign, dispatches.generation)
 
 
 def prepare(dispatches, contract, profiles, *, now):
@@ -80,13 +104,20 @@ def prepare(dispatches, contract, profiles, *, now):
     The caller retains blocked work in its queue and surfaces the returned reason.
     """
     contract = copy.deepcopy(contract)
+    if dispatches.record(contract['dispatch_id']) is not None:
+        raise Refused('duplicate_dispatch')
     try:
         route = select(profiles, contract)
     except Refused as error:
         if error.code != 'blocked:no_qualified_host':
             raise
-        return dict(state='blocked', reason=error.code, unit=contract['unit'],
-                    dispatch_id=contract['dispatch_id'], required=requirements(contract))
+        result = dict(state='blocked', reason=error.code, unit=contract['unit'],
+                      dispatch_id=contract['dispatch_id'], required=requirements(contract))
+        record_decision(dispatches, result)
+        return result
     contract['input']['context']['host_route'] = route
     dispatches.prepare(contract, now=now)
-    return dict(state='prepared', contract=contract, host=route['host'])
+    result = dict(state='prepared', unit=contract['unit'], dispatch_id=contract['dispatch_id'],
+                  required=requirements(contract), host=route['host'], contract_digest=D.digest(contract))
+    record_decision(dispatches, result)
+    return dict(result, contract=contract)

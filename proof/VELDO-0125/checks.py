@@ -90,7 +90,7 @@ class Fixture:
         self.ds, self.res = self.service.records('repo')
         for scope, subject in (('account', 'account'), ('project', 'project'), ('unit', 'unit')):
             self.res.configure('policy/' + scope, scope, subject,
-                                dict(capacity=20, invocations=20, wall_seconds=200), now=time.time())
+                                dict(capacity=20, invocations=20, wall_seconds=1800 if remote else 200), now=time.time())
         self.child = None
 
     def sign(self, name, data, namespace='veldo-command'):
@@ -104,22 +104,28 @@ class Fixture:
             expected_versions={identity: row[0] if row else 0}, parameters=dict(entity_id=identity, kind=kind, data=data)),
             'authority', lambda b: self.sign('authority', b, 'veldo-journal'), 1)
 
-    def prepare(self, dispatch='dispatch/test', required=None, source=None, engine='codex'):
-        self.res.reserve_worker('slot/' + dispatch, dispatch, 'account', 'project', 'unit', now=time.time())
+    def prepare(self, dispatch='dispatch/test', required=None, source=None, engine='codex', deadline_seconds=90, unit='unit'):
+        self.res.reserve_worker('slot/' + dispatch, dispatch, 'account', 'project', unit, now=time.time())
         entity = RES.entity('worker', ['domain', dispatch])
         version, digest = self.conn.execute('SELECT version, digest FROM entities WHERE id=?', (entity,)).fetchone()
         source = source or {k: git(self.repo, 'rev-parse', 'HEAD^{%s}' % k) for k in ('commit', 'tree')}
         inputs = dict(source=source, required_host_capabilities=required or [])
         contract = dict(schema=D.SCHEMA, dispatch_id=dispatch, domain='domain', repository='repo',
-            unit='unit', station='review', attempt=self.ds.attempts('unit', 'review') + 1, source=source,
-            input=dict(decision=dict(decision_id='accepted-review', station='review', unit='unit', inputs=inputs),
+            unit=unit, station='review', attempt=self.ds.attempts(unit, 'review') + 1, source=source,
+            input=dict(decision=dict(decision_id='accepted-review', station='review', unit=unit, inputs=inputs),
                        context={}, payload={}, payload_digest=D.digest({})),
             capability=dict(adapter=engine, configuration=self.configuration, configuration_digest=D.digest(self.configuration)),
             reservation=dict(entity=entity, version=version, digest=digest, account='account', project='project'),
-            claim=None, deadline=time.time() + 90, authority_generation=1)
+            claim=None, deadline=time.time() + deadline_seconds, authority_generation=1)
         return R.prepare(self.ds, contract, self.profiles, now=time.time())
 
-    def start(self):
+    def start(self, ipc=False):
+        self.ipc = ipc
+        if not ipc:
+            self.authority = W.SV.CC.Authority(
+                "store", "domain", str(self.store), W.SV.E, self.service.verify, "linux-authority",
+                self.service.apply, watermark=self.service.watermark, context=True)
+            return
         path = self.base / 'config.json'
         path.write_text(json.dumps(self.config))
         path.chmod(0o600)
@@ -134,7 +140,17 @@ class Fixture:
         assert Path(self.config['socket']).exists(), 'service never bound'
 
     def client(self, who='mac', argv=None):
-        return CL.Client(str(self.repo), self.binding, who, lambda b: self.sign(who, b), argv or
+        client_module = load('control_worker_client')
+        if not getattr(self, 'ipc', True) and argv is None:
+            # A named in-process transport fixture. The production judge still
+            # verifies both signatures and enrollment, then commits the real store.
+            import types
+            def exchange(args, *, input, **kwargs):
+                request = json.loads(input)
+                answer = self.authority.judge(request, os.getuid())
+                return subprocess.CompletedProcess(args, 0, json.dumps(answer).encode(), b'')
+            client_module.subprocess = types.SimpleNamespace(run=exchange, TimeoutExpired=subprocess.TimeoutExpired)
+        return client_module.Client(str(self.repo), self.binding, who, lambda b: self.sign(who, b), argv or
                          [sys.executable, str(MODULES / 'control_relay.py'), self.config['socket']])
 
     def close(self):

@@ -29,7 +29,10 @@ RECORD = 'worker_observation'
 
 
 def transition(params, before):
-    return {params['id']: dict(kind=RECORD, data=params['data'])}
+    changes = {params['id']: dict(kind=RECORD, data=params['data'])}
+    if params.get('spend') is not None:
+        changes['worker-spend:' + params['data']['dispatch_id']] = dict(kind='worker_spend', data=params['spend'])
+    return changes
 
 
 class Service(SV.Service):
@@ -38,14 +41,14 @@ class Service(SV.Service):
         self.profiles = config.get('worker_profiles', [])
         conn.command_registry[RECORD] = dict(transition=transition,
                                              writes=('entities', 'journal', 'commands', 'nonces'))
-        SV.S.declare_owners(conn, 'VELDO-0125', kinds={RECORD: (RECORD,)},
-                            prefixes={'worker:': (RECORD,)}, module=__file__)
+        SV.S.declare_owners(conn, 'VELDO-0125', kinds={RECORD: (RECORD,), 'worker_spend': (RECORD,)},
+                            prefixes={'worker:': (RECORD,), 'worker-spend:': (RECORD,)}, module=__file__)
 
     def records(self, repository):
         common = dict(domain=self.domain, repository=repository, principal=self.principal,
                       signer=self.principal, sign=self.sign, generation=self.generation)
         return (D.Dispatches(SV.S, self.conn, **common),
-                RES.Reservations(SV.S, self.conn, authorize=RES.service_authority, **common))
+                RES.Reservations(organ('control_store'), self.conn, authorize=RES.service_authority, **common))
 
     def get(self, dispatch):
         row = self.conn.execute('SELECT data FROM entities WHERE id=?', ('worker:' + dispatch,)).fetchone()
@@ -54,9 +57,18 @@ class Service(SV.Service):
     def save(self, command, data):
         identity = 'worker:' + data['dispatch_id']
         row = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+        expected = {identity: row[0] if row else 0}
+        spend = None
+        if data['state'] in ('exited', 'unknown'):
+            spend = {k: data[k] for k in ('domain_uuid', 'repository_uuid', 'store_uuid', 'workspace',
+                'dispatch_id', 'unit', 'host', 'contract_digest', 'invocation', 'usage', 'charge', 'references')}
+            spend['receipt'] = data.get('spend_receipt')
+            sid = 'worker-spend:' + data['dispatch_id']
+            row = self.conn.execute('SELECT version FROM entities WHERE id=?', (sid,)).fetchone()
+            expected[sid] = row[0] if row else 0
         return SV.S.execute(self.conn, dict(command_id=command['command_id'], principal=command['principal'],
-            operation=RECORD, nonce=command['command_id'], expected_versions={identity: row[0] if row else 0},
-            artifact_digests=[], parameters=dict(id=identity, data=data)), self.principal, self.sign, self.generation)
+            operation=RECORD, nonce=command['command_id'], expected_versions=expected,
+            artifact_digests=[], parameters=dict(id=identity, data=data, spend=spend)), self.principal, self.sign, self.generation)
 
     def authenticate(self, packet, command, repository):
         ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
@@ -85,7 +97,10 @@ class Service(SV.Service):
 
     def worker(self, packet, command, repository):
         self.authenticate(packet, command, repository)
-        params = command.get('parameters') or {}
+        params = command.get('parameters')
+        if (not D._text(command.get('command_id')) or not isinstance(params, dict)
+                or not D._text(params.get('dispatch_id'))):
+            raise SV.Refused('invalid_input:worker_command')
         ds, reservations = self.records(repository)
         dispatch = params.get('dispatch_id')
         record = ds.record(dispatch)
@@ -118,10 +133,15 @@ class Service(SV.Service):
                     if (D._identity_problems(receiver) or receiver['host'] != route['host']
                             or receiver['platform'] != route['platform']):
                         raise SV.Refused('binding_mismatch:receiver')
+                    runtime = params.get('runtime_seconds')
+                    if not RES.number(runtime) or runtime <= 0:
+                        raise SV.Refused('invalid_input:runtime_seconds')
                     # Authorization, complete contract and reservation precede any OS launch.
                     ds.accept(dispatch, record['contract_digest'], dict(receiver, principal=self.principal), now=now)
+                    # Cover transport and startup too: the Mac's immutable accepted
+                    # deadline is the latest possible end, even if the ack is delayed.
                     receipt = reservations.reserve_call('remote-call/' + dispatch, dispatch, data['invocation'],
-                        RR.boundary(contract), min(params.get('runtime_seconds', 0), contract['deadline'] - now), now=now)
+                        RR.boundary(contract), contract['deadline'] - now, now=now)
                     if receipt['replayed']:
                         raise SV.Refused('unknown_outcome:invocation_replayed')
                     data.update(state='accepted', acceptance=ds.receipt(dispatch, 'accept'), reservation=receipt)
@@ -148,12 +168,14 @@ class Service(SV.Service):
                                            or any(not RES.number(v) for v in usage.values())):
                     raise SV.Refused('invalid_input:usage')
                 if observation.get('state') == 'exited':
-                    if D._termination_problems(observation.get('termination')):
+                    termination = observation.get('termination')
+                    if (D._termination_problems(termination) or len(termination['output_digest']) != 71
+                            or any(c not in '0123456789abcdef' for c in termination['output_digest'][7:])):
                         raise SV.Refused('invalid_input:termination')
                     ds.exit(dispatch, record['contract_digest'], record['process'], observation['termination'], now=now,
                             artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)))
                     if usage is not None:
-                        reservations.report('remote-spend/' + dispatch, data['invocation'], 1, usage,
+                        data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'], 1, usage,
                             final=True, outcome='completed' if observation['termination']['returncode'] == 0 else 'cancelled',
                             receipts=[observation['termination']['output_digest']], now=now)
                 elif observation.get('state') == 'unknown':
@@ -164,6 +186,9 @@ class Service(SV.Service):
                 data.update(state=observation['state'], observation=observation, references=references,
                             usage=usage if observation['state'] == 'exited' else None,
                             charge='reported' if usage is not None and observation['state'] == 'exited' else 'unknown')
+        data.setdefault('commands', []).append(dict(command_id=command['command_id'], operation=op,
+                                                    digest=SV.S.digest_of(command)))
+        data['workspace'] = self.repositories[repository]
         receipt = self.save(command, data)
         return dict(ok=True, reason=op, receipt=receipt, binding=binding, record=data, contract=contract)
 

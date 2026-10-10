@@ -5,6 +5,7 @@ and retains the claim binding. Usage is supplied by the configured trusted outpu
 reader, never guessed from a successful exit. Absent usage keeps charge unknown.
 """
 import importlib.util
+import os
 from pathlib import Path
 
 
@@ -22,7 +23,8 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
     claim = client.claim(dispatch)
     contract, binding = claim['contract'], claim['binding']
     route = contract['input']['context']['host_route']
-    if (binding['host'] != host.os.facts()['host'] or route['platform'] != host.os.facts()['platform']
+    if (route.get('runtime_profile') != C.P.digest(host.profile)
+            or binding['host'] != host.os.facts()['host'] or route['platform'] != host.os.facts()['platform']
             or account['id'] != contract['reservation']['account']
             or account['provider'] != contract['capability']['adapter']):
         raise C.P.Refused('binding_mismatch:host_account')
@@ -32,7 +34,7 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
                    engine=contract['capability']['adapter'], clone=clone, scratch=scratch,
                    login_profile=login, environment=environment)
     host.preflight(request)
-    receiver = C.organ('project_runner_macos_os').identity(__import__('os').getpid())
+    receiver = C.organ('project_runner_macos_os').identity(os.getpid())
     accepted = client.launch(binding, 'accept', receiver=receiver, runtime_seconds=host.profile['runtime_seconds'])
     request['acceptance'] = accepted['record']['acceptance']
     request['environment']['VELDO_DISPATCH_ACCEPTANCE'] = request['acceptance']

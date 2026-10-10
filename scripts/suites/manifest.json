@@ -1439,6 +1439,15 @@
    ],
    "regions": "Mac remote command families and dispatch bindings.",
    "requires_note": "Only ROOT and expect."
+  },
+  {
+   "name": "106_veldo_0125_routing",
+   "file": "106_veldo_0125_routing.py",
+   "requires": [
+    "106_veldo_0125_routing"
+   ],
+   "regions": "Host capability routing and Mac worker integration.",
+   "requires_note": "Only ROOT and expect."
   }
  ],
  "resource_capacities": {

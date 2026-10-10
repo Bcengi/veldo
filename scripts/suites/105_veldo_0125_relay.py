@@ -27,13 +27,24 @@ def _v125_suite():
             data = json.loads(independent.execute('SELECT data FROM entities WHERE id=?',
                                                   ('worker:dispatch/test',)).fetchone()[0])
             assert data == result['record'] and data['state'] == 'exited'
+            spend = json.loads(independent.execute('SELECT data FROM entities WHERE id=?',
+                ('worker-spend:dispatch/test',)).fetchone()[0])
+            assert all(spend[k] == data[k] for k in ('unit', 'host', 'dispatch_id', 'invocation', 'usage'))
+            assert spend['receipt']['seq'] > 0
             assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == client.watermark
         assert data['host'] == 'mac' and data['unit'] == 'unit' and data['dispatch_id'] == 'dispatch/test'
+        assert all(next(c for c in data['commands'] if c['command_id'] == r['command']['command']['command_id'])['digest']
+                   == T.S.digest_of(r['command']['command']) for r in client.sent)
         assert data['references']['proof'] == 'proof/synthetic' and data['usage']['tokens'] == 7
         invocation = f.res._records()[T.RES.entity('invocation', ['domain', data['invocation']])]
         assert invocation['dispatch'] == data['dispatch_id'] and invocation['context']['unit'] == data['unit']
         assert invocation['observed']['tokens'] == 7
         assert not T.D.completed(f.ds.record(data['dispatch_id']))
+        request = T.W.SV.CC.build_request(str(f.repo), f.binding, dict(operation='inspect',
+            entity_ids=['worker:dispatch/test', 'worker-spend:dispatch/test']), lambda b: f.sign('mac', b))
+        visible = f.authority.judge(request, __import__('os').getuid())['result']
+        assert visible['ok'] and visible['entities']['worker:dispatch/test']['data'] == data
+        assert visible['entities']['worker-spend:dispatch/test']['data'] == spend
 
     def unavailable(f):
         local = f.base / 'mac-local'
@@ -47,6 +58,8 @@ def _v125_suite():
 
     def binding(f):
         f.prepare(required=['ios-build'])
+        f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=20), now=__import__('time').time())
+        f.prepare('dispatch/other', ['ios-build'], unit='other')
         f.start()
         client = f.client()
         bound = T.launch(client)
@@ -71,10 +84,17 @@ def _v125_suite():
             client.binding = dict(client.binding, **{field: 'wrong'})
             try:
                 client.claim('dispatch/test')
-            except T.CL.Refused:
+            except Exception:
                 pass
             else:
                 raise AssertionError('wrong coordinate accepted: ' + field)
+        client = f.client()
+        original, calls = client.sign, []
+        def inner_unsigned(data):
+            calls.append(data)
+            return 'unsigned' if len(calls) == 1 else original(data)
+        client.sign = inner_unsigned
+        T.refused(lambda: client.claim('dispatch/test'), 'unauthorized:worker_signature')
         client = f.client()
         client.sign = lambda b: 'unsigned'
         T.refused(lambda: client.claim('dispatch/test'), 'command_signature_invalid')
@@ -91,8 +111,21 @@ def _v125_suite():
         assert not f.res.worker(bound['dispatch_id'])['retired']
         T.refused(lambda: client.claim(bound['dispatch_id']), 'stale_version:already_claimed')
 
+    def precall(f):
+        f.prepare(required=['macos'])
+        f.start()
+        client = f.client()
+        bound = client.claim('dispatch/test')['binding']
+        before = f.service.watermark()
+        T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=-1), 'invalid_input:runtime_seconds')
+        assert f.service.watermark() == before and f.ds.record('dispatch/test')['state'] == 'prepared'
+        f.res.configure('exhausted', 'account', 'account', dict(capacity=20, invocations=0, wall_seconds=200), now=__import__('time').time())
+        T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5), 'usage_cap:')
+        assert f.service.get('dispatch/test')['state'] == 'claimed'
+        assert f.ds.record('dispatch/test')['state'] != 'running'
+
     for row, test in {'AC1/command-families': families, 'AC1/one-authority': unavailable,
-                      'AC1/authentication': auth, 'AC3/remote-result-binding': binding,
+                      'AC1/authentication': auth, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/unknown-charge': unknown}.items():
         with tempfile.TemporaryDirectory(prefix='v125-') as directory:
             fixture = None
