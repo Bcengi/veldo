@@ -1,0 +1,17 @@
+PASS VELDO-0125 AC1/command-families
+PASS VELDO-0125 AC1/one-authority
+PASS VELDO-0125 AC1/authentication
+PASS VELDO-0125 AC1/worker-mutate-only
+PASS VELDO-0125 AC1/worker-claim-only
+PASS VELDO-0125 AC1/worker-inbox-only
+PASS VELDO-0125 AC1/worker-request-only
+PASS VELDO-0125 AC1/entity-owners
+AC1/owner-copies: AssertionError: accepted instead of foreign_transition
+FAIL VELDO-0125 AC1/owner-copies
+PASS VELDO-0125 AC1/signature-namespaces
+PASS VELDO-0125 AC3/refused-report-atomic
+PASS VELDO-0125 AC2/precall-caps
+PASS VELDO-0125 AC3/remote-result-binding
+PASS VELDO-0125 AC3/dispatch-other
+PASS VELDO-0125 AC3/unknown-charge
+passed 14 failed 1

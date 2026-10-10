@@ -1,0 +1,17 @@
+PASS VELDO-0125 AC1/command-families
+PASS VELDO-0125 AC1/one-authority
+PASS VELDO-0125 AC1/authentication
+PASS VELDO-0125 AC1/worker-mutate-only
+PASS VELDO-0125 AC1/worker-claim-only
+PASS VELDO-0125 AC1/worker-inbox-only
+PASS VELDO-0125 AC1/worker-request-only
+PASS VELDO-0125 AC1/entity-owners
+AC1/owner-copies: StoreRefused: ownership_conflict: change_roles is bound to the code in /tmp/v125-falsify-path-identity/.veldo/control_membership.py (sha256:6761c74684b9bd35b7b48e1156efd928d039d8a9dbed1f4a883eb3e66a613c5b); membership declares /tmp/v125-falsify-path-identity/engine/.veldo/control_membership.py (sha256:6761c74684b9bd35b7b48e1156efd928d039d8a9dbed1f4a883eb3e66a613c5b)
+FAIL VELDO-0125 AC1/owner-copies
+PASS VELDO-0125 AC1/signature-namespaces
+PASS VELDO-0125 AC3/refused-report-atomic
+PASS VELDO-0125 AC2/precall-caps
+PASS VELDO-0125 AC3/remote-result-binding
+PASS VELDO-0125 AC3/dispatch-other
+PASS VELDO-0125 AC3/unknown-charge
+passed 14 failed 1

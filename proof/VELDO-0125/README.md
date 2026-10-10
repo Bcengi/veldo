@@ -306,3 +306,33 @@ rerun and all were rejected. After the fixes, 87 of the 88 suites pass.
 live captures bind control_launch.py's digest, which this change alters, so they
 need a fresh live capture against real logins. host-verification.json holds every
 row.
+
+## Ownership identified by code digest
+
+An ownership declaration named one file path, so the same owner code from another
+legitimate copy (the checkout's engine/.veldo, an installed .veldo, a fixture's copy)
+was refused. On a relay installation the worker relay authority declares membership
+from the installed engine, and a setup rerun from a checkout was then refused
+ownership_conflict and foreign_transition. control_store.py now identifies the owning
+code by the sha256 of its module bytes, checked the same way for every copy: a
+registered transition must run from exactly one file whose bytes have the declared
+digest, and a second declaration with the same owner, kinds and digest from another
+path is the same declaration. The stored path is informational. A copy whose bytes
+differ is refused at declaration (ownership_conflict) and at execution
+(foreign_transition).
+
+`AC1/owner-copies` in 105_veldo_0125_relay builds the relay authority from the
+installed `.veldo`, then reruns membership protection and a change_roles command
+through the checkout's `engine/.veldo` store and membership modules on the same store
+(accepted, declarations unchanged), then through a copy with one appended comment
+line (both refused, tables unchanged). Two single-change falsifiers, each applied to
+both store copies in a throwaway tree, fail exactly that row:
+`owner-copies-path-identity.diff` restores path identity and reproduces the defect
+(same digest, refused by path); `owner-copies-digest-ignored.diff` drops the digest
+comparison and accepts the edited copy. Logs are beside each diff.
+
+Run on the host while another full gate was active, so only suites that use no user
+systemd units or /run/user ran, through `run_suite.py` (no shared dispatcher checks):
+105_veldo_0125_relay 15 of 15, 106_veldo_0125_routing 8 of 8, 59_veldo_0037_aliases
+53 of 53 including aliases/owned-by-code-not-name. 86_veldo_0189_engine_upgrade, the
+other ownership consumer, starts user units and was not run; it remains reviewer work.

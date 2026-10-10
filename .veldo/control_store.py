@@ -787,13 +787,22 @@ def transition_files(transition):
 
 
 def transition_origin_problem(transition, module, digest):
-    """Why a registered transition is not the declared module's code, or None when it is."""
+    """Why a registered transition is not the declared code, or None when it is. The code is its
+    bytes: every legitimate copy of the owning module (the canonical engine, an installed engine, a
+    fixture's copy) has the declared digest and is accepted alike, wherever it lives; `module`, the
+    path the declaration was first made from, is informational. A copy whose bytes differ is refused."""
     files = transition_files(transition)
-    if files != {module}:
-        return "the registered transition runs code from %s" % ", ".join(sorted(str(f) for f in files - {module}) or ["nowhere"])
+    if len(files) != 1 or None in files:
+        return "the registered transition runs code from %s" % ", ".join(sorted(str(f) for f in files) or ["nowhere"])
+    module = next(iter(files))
     if module_digest(module) != digest:
-        return "%s no longer has the declared bytes %s" % (module, digest)
+        return "%s does not have the declared bytes %s" % (module, digest)
     return None
+
+
+def _declared(row):
+    """A declaration's identity: everything but the informational module path."""
+    return row[:4] + row[5:]
 
 
 def _ownership_rows(owner, kinds, prefixes, module):
@@ -834,14 +843,16 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None, adopt_ex
     """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
     prefix in `prefixes`, are written only by the commands mapped to it, and that those commands are
     the code in the file `module` (the caller's own __file__), whose bytes the store digests now.
-    Idempotent for the same declaration; the same owner, module and digest may add commands.
+    The digest identifies the code; the path is recorded for the reader only, so the same declaration
+    from another copy with the same bytes is the same declaration, and a copy with other bytes is not.
+    Idempotent for the same declaration; the same owner and digest may add commands.
     ownership_conflict for every other difference, for a command
     another declaration binds to other code, or for a first declaration of a kind or prefix that
     entities already occupy. Trusted attachment may adopt existing records to protect
     a store initialized by an earlier version; this never rewrites those records.
     Its own transaction, like the publication cursor's writes."""
     rows = _ownership_rows(owner, kinds, prefixes, module)
-    if set(rows) <= set(entity_owners(conn)):
+    if {_declared(r) for r in rows} <= {_declared(r) for r in entity_owners(conn)}:
         return rows
     try:
         conn.execute("BEGIN IMMEDIATE")
@@ -853,17 +864,17 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None, adopt_ex
         bound = owning_modules(declared.values())
         for row in rows:
             for command in row[3]:
-                if bound.get(command, row[4:]) != row[4:]:
+                if bound.get(command, row[4:])[1] != row[5]:
                     raise StoreRefused("ownership_conflict", "%s is bound to the code in %s (%s); %s declares %s (%s)"
                                        % (command, bound[command][0], bound[command][1], owner, row[4], row[5]))
             prior = declared.get(row[:2])
             if prior is not None:
-                if (prior[2] == row[2] and prior[4:] == row[4:]
+                if (prior[2] == row[2] and prior[5] == row[5]
                         and set(prior[3]) < set(row[3])):
                     conn.execute("UPDATE entity_owners SET commands=? WHERE selector=? AND value=?",
                                  (json.dumps(list(row[3])), row[0], row[1]))
                     continue
-                if prior != row:
+                if _declared(prior) != _declared(row):
                     raise StoreRefused("ownership_conflict", "%s %r is owned by %s (written only by %s); %s declares %s"
                                        % (row[0], row[1], prior[2], ", ".join(prior[3]), owner, ", ".join(row[3])))
                 continue

@@ -169,6 +169,53 @@ def _v125_suite():
                                ('key:injected', 'verification_key'), ('injected', 'subscription_reservation')]:
             T.refused(lambda: f.put(identity, kind, {}), 'entity_owned')
 
+    def owner_copies(f):
+        # A relay installation declares ownership from its installed engine (T.MODULES); a setup
+        # rerun from a checkout writes the same kinds through the checkout's own engine/.veldo copy.
+        # Same bytes are the same owner wherever they live; one edited byte is not.
+        import shutil
+
+        def engine(directory, label):
+            loaded = {}
+            for name in ('control_store', 'control_membership'):
+                spec = importlib.util.spec_from_file_location('v125_%s_%s' % (label, name), directory / (name + '.py'))
+                loaded[name] = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(loaded[name])
+            return loaded['control_store'], loaded['control_membership']
+
+        def change_roles(store, membership, conn, label):
+            membership.attach(store)
+            touched = ['outsider', membership.VERSIONS_ENTITY]
+            versions = {i: (conn.execute('SELECT version FROM entities WHERE id=?', (i,)).fetchone() or (0,))[0]
+                        for i in touched}
+            return store.execute(conn, dict(command_id='rerun/' + label, principal='authority', operation='change_roles',
+                nonce='rerun/' + label, artifact_digests=[], expected_versions=versions,
+                parameters=dict(principal='outsider', roles=['worker_receiver'], scope=['repo'])),
+                'authority', lambda b: f.sign('authority', b, 'veldo-journal'), 1)
+
+        checkout = ROOT / 'engine/.veldo'
+        installed = T.MODULES.resolve() / 'control_membership.py'
+        assert checkout.resolve() != T.MODULES.resolve()
+        declared = {r[1]: r for r in T.S.entity_owners(f.conn) if r[2] == 'membership'}
+        assert declared['membership'][4] == str(installed), declared
+        S2, CM2 = engine(checkout, 'checkout')
+        rerun = S2.open_store(str(f.store))
+        CM2.protect(S2, rerun)
+        assert change_roles(S2, CM2, rerun, 'checkout')['replayed'] is False
+        assert {r[1]: r for r in S2.entity_owners(rerun) if r[2] == 'membership'} == declared
+        rerun.close()
+        edited = f.base / 'edited-engine'
+        shutil.copytree(checkout, edited, ignore=shutil.ignore_patterns('__pycache__'))
+        source = edited / 'control_membership.py'
+        source.write_bytes(source.read_bytes() + b'\n# edited copy\n')
+        S3, CM3 = engine(edited, 'edited')
+        foreign = S3.open_store(str(f.store))
+        before = T.S.table_snapshot(f.conn)
+        T.refused(lambda: CM3.protect(S3, foreign), 'ownership_conflict')
+        T.refused(lambda: change_roles(S3, CM3, foreign, 'edited'), 'foreign_transition')
+        assert T.S.table_snapshot(f.conn) == before
+        foreign.close()
+
     def refused_report(f):
         f.prepare(required=['macos'])
         f.start()
@@ -199,7 +246,8 @@ def _v125_suite():
                       'AC1/authentication': auth, 'AC1/worker-mutate-only': lambda f: confinement(f, 'mutate'),
                       'AC1/worker-claim-only': lambda f: confinement(f, 'claim'),
                       'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
-                      'AC1/worker-request-only': request_only, 'AC1/entity-owners': owners, 'AC1/signature-namespaces': namespaces,
+                      'AC1/worker-request-only': request_only, 'AC1/entity-owners': owners,
+                      'AC1/owner-copies': owner_copies, 'AC1/signature-namespaces': namespaces,
                       'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/dispatch-other': lambda f: binding(f, [('dispatch_id', 'dispatch/other')]),
                       'AC3/unknown-charge': unknown}.items():
