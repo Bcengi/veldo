@@ -38,7 +38,8 @@ def qualified(profile):
 
 
 def requirements(contract):
-    required = contract['input']['decision']['inputs'].get('required_host_capabilities', [])
+    required = contract['input']['context'].get('required_host_capabilities',
+        contract['input']['decision']['inputs'].get('required_host_capabilities', []))
     if not isinstance(required, list) or not all(isinstance(c, str) and c for c in required):
         raise Refused('invalid_input:host_capabilities')
     return sorted(set(required))

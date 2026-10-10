@@ -64,12 +64,7 @@ def _v124_suite():
         for granted in (dirs['clone'], dirs['scratch'], dirs['login'], environment['HOME'], environment['TMPDIR']):
             assert '(subpath "%s")' % granted in lines[2], granted
         assert str(dirs['authority']) not in policy and str(host.root) not in lines[2]
-        signing_key = dirs['authority'] / 'worker-signing'
-        signing_key.write_text('synthetic private key')
-        host.profile['signing_keys'] = [str(signing_key)]
-        key_policy = host.policy(request)
-        assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in key_policy
-        host.profile.pop('signing_keys')
+
         owner = str(dirs['owner'].resolve())
         reads = [line for line in lines if line.startswith('(deny file-read-data')]
         assert [r.split(' (require-not')[0] for r in reads] == [
@@ -96,6 +91,15 @@ def _v124_suite():
         assert P.overlaps('/Users/caf\u00e9', '/Users/cafe\u0301/child')
         assert not P.overlaps('/private/var/key', '/private/var/keys')
         T.refused(lambda: P.sandbox([str(base)], [str(dirs['authority'])], str(base)), 'invalid_input:protected_overlap')
+
+    def signing_key_read(base):
+        host, osx, request, dirs = T.start(base)
+        signing_key = dirs['authority'] / 'worker-signing'
+        signing_key.write_text('synthetic private key')
+        host.profile['signing_keys'] = [str(signing_key)]
+        key_policy = host.policy(request)
+        assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in key_policy
+
 
     def run_environment(base):
         host, osx, request, dirs = T.start(base)
@@ -327,7 +331,7 @@ def _v124_suite():
         assert M.OS.live_members([(12, 7, 2), (13, 7, M.OS.SZOMB), (14, 9, 2), (15, 7, 3)], 7) == [12, 15]
 
     tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
-             'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
+             'AC1/apfs-policy': paths, 'AC1/worker-signing-key-read': signing_key_read, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
              'AC1/interpreter': interpreter, 'AC1/nested-sandbox': nested, 'AC3/hard-kill-unknown': killed,
              'AC3/recover': recover, 'AC2/capacity': capacity,
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,

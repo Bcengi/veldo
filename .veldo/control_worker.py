@@ -20,6 +20,9 @@ C = organ('project_runner_macos_control')
 
 
 def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, result: (None, {})):
+    keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
+    if not client.signing_key or client.signing_key not in keys:
+        raise C.P.Refused('missing_evidence:worker_signing_key_custody')
     claim = client.claim(dispatch)
     contract, binding = claim['contract'], claim['binding']
     route = contract['input']['context']['host_route']

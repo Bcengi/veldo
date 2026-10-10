@@ -1627,7 +1627,7 @@ class Line:
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
                                runs=L.runs_root(receiver), profile=receiver.get('profile'),
-                               worker_profiles=service.config.get('worker_profiles'), local_host=host)
+                               worker_profiles=getattr(service, 'profiles', service.config.get('worker_profiles')), local_host=host)
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(

@@ -152,7 +152,7 @@ class Fixture:
                 return subprocess.CompletedProcess(args, 0, json.dumps(answer).encode(), b'')
             client_module.subprocess = types.SimpleNamespace(run=exchange, TimeoutExpired=subprocess.TimeoutExpired)
         return client_module.Client(str(self.repo), self.binding, who, lambda b, namespace='veldo-command': self.sign(who, b, namespace), argv or
-                         [sys.executable, str(MODULES / 'control_relay.py'), self.config['socket']])
+                         [sys.executable, str(MODULES / 'control_relay.py'), self.config['socket']], signing_key=self.keys / who)
 
     def close(self):
         if self.child:

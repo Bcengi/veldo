@@ -66,7 +66,9 @@ individually; the canonical gate and native observations remain reviewer work.
 The trusted authority's admitted-unit path calls
 `control_routing.prepare(dispatches, contract, profiles, now=...)` before handing
 a dispatch to a host. Requirements are the accepted decision's
-`input.decision.inputs.required_host_capabilities`, never fields on a worker claim.
+`input.context.required_host_capabilities`, copied by the Runner from the accepted
+execution unit, never fields on a worker claim. The gate decision remains intact
+so its ordinary stale-input check can revalidate it at receiver acceptance.
 The result is either a persisted blocked decision or a prepared contract.
 The production Runner calls this path whenever worker profiles or accepted unit
 requirements exist. Requirements are copied from the accepted execution unit.

@@ -837,7 +837,9 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None, adopt_ex
     Idempotent for the same declaration; the same owner, module and digest may add commands.
     ownership_conflict for every other difference, for a command
     another declaration binds to other code, or for a first declaration of a kind or prefix that
-    entities already occupy. Its own transaction, like the publication cursor's writes."""
+    entities already occupy. Trusted attachment may adopt existing records to protect
+    a store initialized by an earlier version; this never rewrites those records.
+    Its own transaction, like the publication cursor's writes."""
     rows = _ownership_rows(owner, kinds, prefixes, module)
     if set(rows) <= set(entity_owners(conn)):
         return rows

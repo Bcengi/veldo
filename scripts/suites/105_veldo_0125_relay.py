@@ -56,7 +56,7 @@ def _v125_suite():
         assert set(local.rglob('*')) == before, 'Mac-local fallback wrote authority state'
         assert not list(local.rglob('*.sqlite3'))
 
-    def binding(f):
+    def binding(f, fields=None):
         f.prepare(required=['ios-build'])
         f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=200), now=__import__('time').time())
         f.prepare('dispatch/other', ['ios-build'], unit='other')
@@ -65,8 +65,8 @@ def _v125_suite():
         bound = T.launch(client)
         T.launch(client, 'dispatch/other')
         before = f.service.watermark()
-        for key, value in (('dispatch_id', 'dispatch/other'), ('unit', 'other'), ('host', 'linux'),
-                           ('contract_digest', T.D.digest('other'))):
+        for key, value in fields or [('dispatch_id', 'dispatch/other'), ('unit', 'other'), ('host', 'linux'),
+                           ('contract_digest', T.D.digest('other'))]:
             wrong = dict(bound, **{key: value})
             T.refused(lambda: client.result(wrong, T.observation(), usage={'tokens': 999}), 'binding_mismatch:')
         wrong = T.observation()
@@ -191,6 +191,7 @@ def _v125_suite():
                       'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
                       'AC1/entity-owners': owners, 'AC1/signature-namespaces': namespaces,
                       'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
+                      'AC3/dispatch-other': lambda f: binding(f, [('dispatch_id', 'dispatch/other')]),
                       'AC3/unknown-charge': unknown}.items():
         with tempfile.TemporaryDirectory(prefix='v125-') as directory:
             fixture = None

@@ -66,7 +66,7 @@ def run(engine, client_path):
     def sign(data, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
                               input=data, check=True, capture_output=True, timeout=10).stdout.decode()
-    client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'])
+    client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'], signing_key=local['key'])
     account = dict(id='account', provider=engine, status='active', profiles={host.os.facts()['host']:
                    local['request']['login_profile']})
     dispatch = config['dispatch_id']
@@ -114,7 +114,7 @@ def unavailable(engine, client_path):
     def sign(data, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
             input=data, check=True, capture_output=True, timeout=10).stdout.decode()
-    client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'])
+    client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'], signing_key=local['key'])
     for operation in CL.OPERATIONS:
         try:
             client.send(operation, {'dispatch_id': config['dispatch_id']})

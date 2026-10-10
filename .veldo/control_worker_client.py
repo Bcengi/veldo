@@ -30,9 +30,10 @@ class Refused(Exception):
 
 
 class Client:
-    def __init__(self, workspace, binding, principal, sign, ssh_argv, *, timeout=30):
+    def __init__(self, workspace, binding, principal, sign, ssh_argv, *, timeout=30, signing_key=None):
         self.workspace, self.binding, self.principal = workspace, binding, principal
         self.sign, self.argv, self.timeout = sign, list(ssh_argv), timeout
+        self.signing_key = str(Path(signing_key).resolve()) if signing_key else None
         self.watermark = None
         self.sent = []
 

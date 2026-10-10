@@ -74,6 +74,8 @@ def _v125_routing_suite():
         host, backend, request, paths = P.start(base / 'mac')
         f = T.Fixture(base / 'linux')
         worker = T.load('control_worker')
+        host.profile['signing_keys'] = [str(f.keys / 'mac')]
+        host.qualification['profile_digest'] = P.P.digest(host.profile)
         try:
             f.profiles[1] = T.profile(backend.facts()['host'], 'darwin', ['macos', 'ios-build'],
                                        f.configuration, principal='mac')
@@ -133,6 +135,29 @@ def _v125_routing_suite():
         finally:
             f.close()
 
+    def production_pool(base):
+        f = T.Fixture(base)
+        L = T.load('control_launch')
+        L.CFG.bind = lambda conn, domain, repository, configuration: configuration
+        gate = types.SimpleNamespace(
+            require=lambda station, unit, context: dict(decision_id='accepted', station=station, unit=unit,
+                domain_uuid='domain', watermark=0, inputs={'source': 'accepted'}),
+            unit_record=lambda unit: dict(project='project', required_host_capabilities=['ios-build']))
+        f.put('account:account', 'account', dict(id='account', provider='codex', status='active',
+            profiles={'mac': '/synthetic/mac/login'}, concurrency=1, windows={}))
+        pool = L.D.RES.POOL.Pool({'codex': dict(engine='codex', host='linux')})
+        runner = L.Runner(gate, f.res, f.ds, lambda contract: (_ for _ in ()).throw(
+            AssertionError('Mac work reached Linux')), account=pool, worker_profiles=f.profiles, local_host='linux')
+        try:
+            launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
+                revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
+                configuration=f.configuration, deadline=__import__('time').time() + 60)
+            assert launch.contract['input']['context']['host_route']['host'] == 'mac'
+            assert launch.contract['reservation']['account'] == 'account'
+            assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
+        finally:
+            f.close()
+
     def sync(base):
         pack = T.load('pack')
         names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py']
@@ -164,7 +189,7 @@ def _v125_routing_suite():
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
     for row, test in {'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
-                      'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/actual-worker-launch': actual_launch,
+                      'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
             try:

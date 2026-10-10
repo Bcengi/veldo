@@ -569,7 +569,8 @@ class Runner:
             code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
             raise D.Refused(code + held['dispatch_id'], 'one active dispatch per unit and station')
         record = self.gate.unit_record(unit) or {}
-        decision['inputs']['required_host_capabilities'] = record.get('required_host_capabilities', [])
+        if self.worker_profiles is not None or 'required_host_capabilities' in record:
+            decided['required_host_capabilities'] = record.get('required_host_capabilities', [])
         project = record.get('project')
         if not D._text(project):
             raise D.Refused('missing_authority:project', 'the unit has no accepted project')
@@ -581,6 +582,22 @@ class Runner:
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
         account = self.account
+        routing = _organ('control_routing')
+        route_input = dict(dispatch_id=dispatch_id, unit=unit,
+            input=dict(decision=decision, context=decided),
+            capability=dict(adapter=adapter, configuration_digest=D.digest(configuration)))
+        if self.worker_profiles is not None or routing.requirements(route_input):
+            try:
+                route = routing.select(self.worker_profiles or [], route_input)
+            except routing.Refused as error:
+                if error.code == 'blocked:no_qualified_host':
+                    routing.record_decision(self.dispatches, dict(state='blocked', reason=error.code,
+                        unit=unit, dispatch_id=dispatch_id, required=routing.requirements(route_input)))
+                raise D.Refused(error.code) from error
+            if hasattr(account, 'adapters'):
+                target = account.adapters.get(adapter)
+                if target:
+                    account = D.RES.POOL.Pool({adapter: dict(target, host=route['host'])})
         if hasattr(account, 'reserve'):
             # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
             # reservation, reading the pool now: an account registered while work runs takes this dispatch.
@@ -604,7 +621,6 @@ class Runner:
                                 'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
             }
-            routing = _organ('control_routing')
             if self.worker_profiles is not None or routing.requirements(contract):
                 selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)
                 if selected['state'] == 'blocked':
