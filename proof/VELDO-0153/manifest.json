@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0153",
-  "commit": "42f20d6d6b01e4d2c8de0357c2cbfa8f1f8f9125",
+  "commit": "1679d3d32aa1dc1ca1ef1f0d4eed69ab82d5e419",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-10T12:23:46.728846+00:00",
+  "produced_at": "2026-10-10T12:49:04.795194+00:00",
   "plan": "PLAN-0019",
   "work": "W113",
   "plan_revision": 4,
@@ -15,12 +15,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0153/observations.json",
-          "detail": "Scoped observations only: profile/planted-helper, profile/direct-push/alpha, lander/alpha/alpha and executor/own; real host qualification pending."
+          "detail": "Scoped observations of netrc, included/worktree config, URL sections, hooks, literal destinations, identity reads, signed observations and durable counts. Host qualification pending."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0153/falsifiers.json",
-          "detail": "identity153-global-helper is red at its target assertion after setup and green after restoration; live credential integration not run."
+          "detail": "Fourteen targeted falsifiers rejected at their named rows, including natural global-config exposure. Restored scoped suite passes. No mutation driver or aggregate gate ran."
         }
       ]
     },
@@ -45,7 +45,7 @@
     {
       "name": "unit",
       "status": "not_run",
-      "detail": "Only the permitted scoped suite ran: 58 named and 26 shared assertions, zero failures, partial exit 2. No aggregate unit pass is claimed."
+      "detail": "Scoped suite: 91 named and 26 shared assertions, zero failures, partial exit 2. No aggregate unit pass is claimed."
     },
     {
       "name": "integration",
@@ -54,8 +54,8 @@
     },
     {
       "name": "consumer_suites",
-      "status": "not_run",
-      "detail": "Strict own-suite token restriction retained pending clarification; exact consumer commands in consumer-suites.json."
+      "status": "failed",
+      "detail": "Individually selected consumers: {'passed_scoped': 30, 'failed': 26, 'incomplete': 12}. Four driver-invoking consumers deferred because mutation drivers are prohibited. See consumer-suites.json and baseline-comparison.json."
     },
     {
       "name": "gate",
@@ -65,9 +65,9 @@
   ],
   "assumptions": [
     "Host rows, independent critical-risk review and human approval remain outstanding.",
-    "Existing consumers using file remotes or ambient credentials need identity-aware fixtures; compatibility is not certified.",
+    "Consumer verification is not green. Selected starting-commit failures are compared in baseline-comparison.json; other failures and environment limitations remain visible in consumer-suites.json.",
     "VELDO-0143 must call the shared owner check on creation/adoption and the identity profile on initial pushes."
   ],
   "rollback": "Stop identity pushes that cannot satisfy the profile. Keep recorded bindings; no ambient fallback or automatic rollback.",
-  "proof_digest": "sha256:7fed99b519a5091b"
+  "proof_digest": "sha256:ffbe0268221d6448"
 }
