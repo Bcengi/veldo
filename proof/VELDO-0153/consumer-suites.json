@@ -1,0 +1,880 @@
+{
+  "method": "Conservative textual direct-reference inventory; transitive consumers require reviewer gate.",
+  "suites": [
+    {
+      "suite": "01_warp_0101_reviewer_notes",
+      "modules": [
+        "lander",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 01_warp_0101_reviewer_notes",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "03_plugin_extension_loading_runner",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 03_plugin_extension_loading_runner",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "04_run_status_reader_veldo",
+      "modules": [
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 04_run_status_reader_veldo",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "06_capabilities_manifest_honesty_veldo",
+      "modules": [
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 06_capabilities_manifest_honesty_veldo",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "101_veldo_0208_landing_reuse",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "103_veldo_0142_git_identities",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0142_git_identities",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "104_veldo_0164_scoped_reads",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0164_scoped_reads",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "106_veldo_0185_dispatch_setup",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0185_dispatch_setup",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "16_warp_1403_sizing_pass",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "19_veldo_0002_work_state",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 19_veldo_0002_work_state",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "26_veldo_0009_install_stamp",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 26_veldo_0009_install_stamp",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "29_veldo_0016_policy_boundaries",
+      "modules": [
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 29_veldo_0016_policy_boundaries",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "31_veldo_0018_release_floor",
+      "modules": [
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 31_veldo_0018_release_floor",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "50_git_environment",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 50_git_environment",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "51_parser_boundary",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 51_parser_boundary",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "52_writer_boundary",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 52_writer_boundary",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "56_veldo_0027_signing",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 56_veldo_0027_signing",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "58_veldo_0028_effects",
+      "modules": [
+        "git_process",
+        "lander",
+        "control_effect_executor"
+      ],
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0028_effects",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "58_veldo_0031_claims",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0031_claims",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "58_veldo_0035_snapshots",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0035_snapshots",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "58_veldo_0046_notifications",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0046_notifications",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "59_veldo_0031_review",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0031_review",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "59_veldo_0037_aliases",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0037_aliases",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "59_veldo_0043_graph",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0043_graph",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "60_veldo_0052_eligibility",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 60_veldo_0052_eligibility",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "60_veldo_0053_architecture",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 60_veldo_0053_architecture",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "60_veldo_0064_inbox",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 60_veldo_0064_inbox",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "62_veldo_0039_dispatch",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0039_dispatch",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "62_veldo_0045_runtime",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0045_runtime",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "62_veldo_0054_decisions",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0054_decisions",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "62_veldo_0065_presentations",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0065_presentations",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "63_veldo_0040_containment",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 63_veldo_0040_containment",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "63_veldo_0049_floor",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 63_veldo_0049_floor",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "63_veldo_0066_attribution",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 63_veldo_0066_attribution",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "64_veldo_0050_proof",
+      "modules": [
+        "git_process",
+        "lander",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 64_veldo_0050_proof",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "65_veldo_0067_edges",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 65_veldo_0067_edges",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "65_veldo_0132_workflow",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 65_veldo_0132_workflow",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "66_veldo_0042_clones",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0042_clones",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "66_veldo_0047_authority",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0047_authority",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "66_veldo_0051_events",
+      "modules": [
+        "git_process",
+        "control_effect_executor",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0051_events",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "67_veldo_0041_heartbeat",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0041_heartbeat",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "modules": [
+        "git_process",
+        "lander",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0056_candidates",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "67_veldo_0135_offers",
+      "modules": [
+        "git_process",
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0135_offers",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "68_veldo_0126_intake",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0126_intake",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "68_veldo_0134_acceptance",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0134_acceptance",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "68_veldo_0137_policy_revision",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0137_policy_revision",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "69_veldo_0058_gate_output",
+      "modules": [
+        "git_process",
+        "lander",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 69_veldo_0058_gate_output",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "69_veldo_0068_settlement",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 69_veldo_0068_settlement",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "69_veldo_0133_dispositions",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 69_veldo_0133_dispositions",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "70_veldo_0057_landing",
+      "modules": [
+        "git_process",
+        "lander",
+        "control_effect_executor",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 70_veldo_0057_landing",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "70_veldo_0069_bindings",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 70_veldo_0069_bindings",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "70_veldo_0073_activation",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 70_veldo_0073_activation",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "71_veldo_0076_projects",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0076_projects",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "71_veldo_0130_api",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0130_api",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "71_veldo_0138_channel_service",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0138_channel_service",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "72_veldo_0075_andon",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 72_veldo_0075_andon",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "72_veldo_0077_objectives",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 72_veldo_0077_objectives",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "72_veldo_0128_reports",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 72_veldo_0128_reports",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "73_veldo_0078_backlog",
+      "modules": [
+        "lander",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 73_veldo_0078_backlog",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "73_veldo_0089_team",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 73_veldo_0089_team",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 73_veldo_0139_factory_setup",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "74_veldo_0140_standing_delegation",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 74_veldo_0140_standing_delegation",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "75_veldo_0062_accounts",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 75_veldo_0062_accounts",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "76_veldo_0079_grooming",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 76_veldo_0079_grooming",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "77_veldo_0149_adopted_activation",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 77_veldo_0149_adopted_activation",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "78_veldo_0060_claude_adapter",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 78_veldo_0060_claude_adapter",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "78_veldo_0160_account_pool",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 78_veldo_0160_account_pool",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "79_veldo_0061_codex_adapter",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "80_veldo_0155_claude_baseline",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 80_veldo_0155_claude_baseline",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "81_veldo_0156_codex_baseline",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 81_veldo_0156_codex_baseline",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0085_decomposition",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0085_decomposition",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0129_worker_wiring",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0141_execution_record",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0141_execution_record",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0144_mcp_catalog",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0144_mcp_catalog",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0165_launch_hygiene",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "82_veldo_0173_tool_registry",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0173_tool_registry",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "83_veldo_0154_factory_loop",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "85_veldo_0158_credential_delivery",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0158_credential_delivery",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "85_veldo_0171_setup_api",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0171_setup_api",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "86_veldo_0148_re_land",
+      "modules": [
+        "git_process",
+        "lander",
+        "control_effect_executor",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0148_re_land",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "86_veldo_0168_text",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "86_veldo_0186_setup_assets",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0186_setup_assets",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "86_veldo_0189_engine_upgrade",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "87_veldo_0170_receiver_trust",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 87_veldo_0170_receiver_trust",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "91_veldo_0151_specialists",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 91_veldo_0151_specialists",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "91_veldo_0167_setup_records",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 91_veldo_0167_setup_records",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "92_veldo_0088_pm_cycles",
+      "modules": [
+        "git_process",
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "93_veldo_0152_intake_routes",
+      "modules": [
+        "git_process"
+      ],
+      "command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "94_veldo_0162_configuration_routes",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 94_veldo_0162_configuration_routes",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "95_veldo_0203_owner_revisions",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 95_veldo_0203_owner_revisions",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "96_veldo_0204_reservation_policies",
+      "modules": [
+        "init_scaffold"
+      ],
+      "command": "python3 scripts/selftest.py --suite 96_veldo_0204_reservation_policies",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    },
+    {
+      "suite": "97_veldo_0204_gate_resources",
+      "modules": [
+        "lander"
+      ],
+      "command": "python3 scripts/selftest.py --suite 97_veldo_0204_gate_resources",
+      "status": "not_run",
+      "reason": "Owner token rule limits execution to VELDO-0153 suites; consumer scope clarification unanswered."
+    }
+  ]
+}

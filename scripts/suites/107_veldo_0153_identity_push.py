@@ -59,14 +59,17 @@ def _v153_suite():
         git('push', '-q', str(bare), 'HEAD:refs/heads/main')
         git('commit', '--allow-empty', '-qm', 'candidate')
         tip, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
-        key = base / 'identity-key'; key.write_text('fixture identity key')
-        token = 'fixture-value-' + os.urandom(16).hex()
+        keys = {owner: base / (owner + '-key') for owner in ('alpha', 'beta')}
+        for owner, path in keys.items():
+            path.write_text('fixture key for ' + owner)
+        tokens = {owner: 'fixture-value-' + os.urandom(16).hex() for owner in keys}
+        token = tokens['alpha']
         marker = base / 'planted-helper-ran'
         (home / '.gitconfig').write_text('[credential]\n\thelper = !touch ' + str(marker) + '\n')
         system = base / 'system.gitconfig'
         system.write_text('[url "https://github.com/intruder/"]\n\tinsteadOf = https://github.com/alpha/\n')
         secret = tools / 'secret-tool'
-        secret.write_text('#!/usr/bin/env python3\nimport sys\nvalues=' + repr({'fixture/token': token, 'fixture/ssh': str(key)})
+        secret.write_text('#!/usr/bin/env python3\nimport sys\nvalues=' + repr({**{'fixture/' + owner + '/token': value for owner, value in tokens.items()}, **{'fixture/' + owner + '/ssh': str(value) for owner, value in keys.items()}})
                           + '\nvalue=values.get(sys.argv[-1])\nif value is None: sys.exit(1)\nsys.stdout.write(value)\n')
         secret.chmod(0o700)
         clean = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
@@ -76,8 +79,8 @@ def _v153_suite():
                        GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='credential.helper', GIT_CONFIG_VALUE_0='!false',
                        GIT_TRACE='1', GIT_DIR='/nonexistent/planted')
         records = [dict(id=owner, label=owner, author_name='Fixture', author_email='fixture@example.invalid',
-                        remote_host='github.com', remote_owner=owner, api_token='keychain:fixture/token',
-                        push_credential={'kind': 'token', 'reference': 'keychain:fixture/token'},
+                        remote_host='github.com', remote_owner=owner, api_token='keychain:fixture/' + owner + '/token',
+                        push_credential={'kind': 'token', 'reference': 'keychain:fixture/' + owner + '/token'},
                         projects_root=str(base), default_visibility='private') for owner in ('alpha', 'beta')]
         events = []
         for record in records:
@@ -110,12 +113,19 @@ def _v153_suite():
                            profile='identity', push_identity=record, remote_url=url, capture_output=True, text=True)
             row('profile/planted-helper', helpers.returncode == 0 and str(marker) not in helpers.stdout
                 and filled.returncode == 0 and 'password=' + token in filled.stdout and not marker.exists())
+            beta_filled = G.run(['git', '-C', str(repo), 'credential', 'fill'], input='protocol=https\nhost=github.com\npath=beta/repo.git\n\n',
+                profile='identity', push_identity=records[1], remote_url='https://github.com/beta/repo.git', capture_output=True, text=True)
+            row('profile/distinct-tokens', beta_filled.returncode == 0 and 'password=' + tokens['beta'] in beta_filled.stdout
+                and token not in beta_filled.stdout and tokens['beta'] not in filled.stdout)
             routed = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='identity',
                            push_identity=record, remote_url=url, capture_output=True, text=True)
             row('profile/system-rewrite', routed.stdout.strip() == url)
             operator = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='network', capture_output=True, text=True)
             row('profile/network-preserved', operator.stdout.strip() == 'https://github.com/intruder/repo.git'
                 and G.clean_env(profile='network')['SSH_AUTH_SOCK'] == planted['SSH_AUTH_SOCK'])
+            operator_push = G.run(['git', '-C', str(repo), 'push', str(bare), 'HEAD:refs/heads/operator'],
+                                  profile='network', capture_output=True, text=True)
+            row('profile/network-push', operator_push.returncode == 0 and git('rev-parse', 'refs/heads/operator', cwd=bare) == tip)
             missing = dict(record, push_credential={'kind': 'token', 'reference': 'keychain:missing'})
             row('profile/credential-unavailable', refusal(lambda: G.run(['git', '-C', str(repo), 'status'], profile='identity',
                 push_identity=missing, remote_url=url)) == 'unavailable_service:push_credential')
@@ -130,10 +140,10 @@ def _v153_suite():
             wirelog = base / 'wire.jsonl'
             adapter.write_text('#!/usr/bin/env python3\nimport os,sys,json,shlex\n'
                 + 'a=sys.argv[1:]\n'
-                + 'assert a[a.index("-i")+1] == ' + repr(str(key)) + '\n'
+                + 'keys=' + repr({owner: str(value) for owner, value in keys.items()}) + '\n'
                 + 'assert "IdentitiesOnly=yes" in a and "IdentityAgent=none" in a and "BatchMode=yes" in a\n'
                 + 'assert "SSH_AUTH_SOCK" not in os.environ and "GIT_SSH_COMMAND" not in os.environ\n'
-                + 'command=shlex.split(a[-1])\nassert command[0] in ("git-receive-pack","git-upload-pack")\n'
+                + 'command=shlex.split(a[-1])\nassert a[a.index("-i")+1] == keys[command[1].split("/")[0]]\nassert command[0] in ("git-receive-pack","git-upload-pack")\n'
                 + 'with open(' + repr(str(wirelog)) + ',"a") as f: f.write(json.dumps(a)+"\\n")\n'
                 + 'os.execv("/usr/bin/"+command[0],[command[0],' + repr(str(bare)) + '])\n')
             adapter.chmod(0o700)
@@ -148,7 +158,7 @@ def _v153_suite():
                             args[index] = arg.replace('/usr/bin/ssh', shlex.quote(str(adapter)), 1)
                 return original_run(args, **kwargs)
 
-            ssh_records = [dict(r, push_credential={'kind': 'ssh', 'reference': 'keychain:fixture/ssh'}) for r in records]
+            ssh_records = [dict(r, push_credential={'kind': 'ssh', 'reference': 'keychain:fixture/' + r['id'] + '/ssh'}) for r in records]
             conn = sqlite3.connect(base / 'identities.db', isolation_level=None)
             for r in ssh_records:
                 I.configure_identities(conn, 'domain', [r], {r['id']: {'path': str(repo) if r['id'] == 'alpha' else str(base / 'beta'), 'identity': r['id']}})
@@ -189,7 +199,7 @@ def _v153_suite():
                     reset()
                     contract = dict(kind='publication', target='git', domain_uuid='domain', repository_uuid='alpha',
                                     payload={'commit': tip, 'tree': tree, 'old_tip': old})
-                    config = {'store': str(base / 'identities.db'), 'receivers': {'git': dict(kind='publication', repository=str(repo),
+                    config = {'store': str(base / 'identities.db'), '_identity_events': [], 'receivers': {'git': dict(kind='publication', repository=str(repo),
                               remote='git@github.com:' + destination + '/repo.git', ref='refs/heads/main')}}
                     accepted = {'dispatch_id': 'dispatch', 'target': 'git', 'request_digest': 'digest'}
                     count = len(invocations)
@@ -197,9 +207,39 @@ def _v153_suite():
                         answer = X.receive(config, contract, accepted)
                         row('executor/own', answer['status'] == 'completed' and before() == tip
                             and answer['evidence']['identity'] == 'alpha')
+                        T.record_operations(conn, config['_identity_events'])
+                        row('executor/observability', T.metrics(conn)['alpha']['pushes'] == 1
+                            and all(e['repository'] == 'alpha' and e['request'] == 'dispatch'
+                                    and e['remote_owner'] == 'alpha' for e in config['_identity_events']))
                     else:
                         row('executor/' + destination, refusal(lambda: X.receive(config, contract, accepted)) == 'binding_mismatch:remote_owner'
                             and before() == old and len(invocations) == count)
+                reset()
+                config['receivers']['git']['remote'] = 'git@github.com:alpha/repo.git'
+                missing_contract = dict(contract, repository_uuid='unbound')
+                count = len(invocations)
+                row('executor/unbound', refusal(lambda: X.receive(config, missing_contract, accepted)) == 'missing_authority:repository_identity'
+                    and before() == old and len(invocations) == count)
+                git('config', 'remote.origin.url', 'git@github.com:alpha/repo.git')
+                def alpha_lander(reader):
+                    instance = L.GitLandOps(repo, 'HEAD', domain='domain', repository='alpha', identity_conn=reader,
+                                           policy=lambda *a: {'ok': True})
+                    instance.candidate = dict(id='candidate', state='verified', workspace=str(repo), commit=tip, tree=tree, watermark=old, gate={})
+                    return instance
+                row('lander/unbound', alpha_lander(None).finalize({'id': 'unit'}).get('refusal') == 'missing_authority:repository_identity')
+                key_bytes = keys['alpha'].read_bytes()
+                keys['alpha'].unlink()
+                try:
+                    answer = alpha_lander(conn).finalize({'id': 'unit'})
+                    row('lander/credential-unavailable', answer.get('refusal') == 'unavailable_service:push_credential'
+                        and before() == old and len(invocations) == count)
+                finally:
+                    keys['alpha'].write_bytes(key_bytes)
+                hook = bare / 'hooks/pre-receive'
+                hook.write_text('#!/bin/sh\nexit 1\n'); hook.chmod(0o700)
+                row('executor/remote-refused', refusal(lambda: X.receive(config, contract, accepted)) == 'push_refused:remote' and before() == old)
+                hook.unlink()
+                row('profile/no-token-on-command-line', all(token not in str(args) and token not in str(env) for args, env in invocations))
                 row('profile/ssh-only', bool(invocations) and all('SSH_AUTH_SOCK' not in env and 'GIT_SSH_COMMAND' not in env
                     and env.get('GIT_CONFIG_GLOBAL') == os.devnull for args, env in invocations))
             conn.close()

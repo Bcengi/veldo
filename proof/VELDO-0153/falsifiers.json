@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "name": "identity153-global-helper",
+      "module": "control_git_identity_transport.py",
+      "old": "config = ['credential.helper=',",
+      "new": "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
+      "target": "profile/planted-helper",
+      "exit": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0153 profile/planted-helper"
+      ],
+      "setup_succeeded": true,
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 83 passed, 1 failed in 1.24s"
+      ]
+    },
+    {
+      "name": "identity153-host-only",
+      "module": "control_git_identity_transport.py",
+      "old": "if owner.casefold() != record['remote_owner'].casefold():",
+      "new": "if False:",
+      "target": "owner/alpha/push/beta",
+      "exit": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/push/beta",
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/push/third",
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/beta",
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/third",
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/beta",
+        "  SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/third",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/push/alpha",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/push/third",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/alpha",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/third",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/adoption/alpha",
+        "  SELFTEST FAIL: VELDO-0153 owner/beta/adoption/third",
+        "  SELFTEST FAIL: VELDO-0153 lander/alpha/beta",
+        "  SELFTEST FAIL: VELDO-0153 lander/alpha/third",
+        "  SELFTEST FAIL: VELDO-0153 lander/beta/alpha",
+        "  SELFTEST FAIL: VELDO-0153 lander/beta/third",
+        "  SELFTEST FAIL: VELDO-0153 executor/beta",
+        "  SELFTEST FAIL: VELDO-0153 executor/third"
+      ],
+      "setup_succeeded": true,
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 66 passed, 18 failed in 2.04s"
+      ]
+    }
+  ],
+  "restored": [
+    "selftest (PARTIAL, 1 of 163 suites): 84 passed, 0 failed in 1.31s"
+  ]
+}

@@ -1,6 +1,7 @@
 """One subprocess boundary for Git. Caller environment cannot select a repository.
 
-Repository-local configuration remains authoritative. In the default profile, system/global config
+Repository-local configuration remains authoritative for isolated and network operations.
+Identity transport refuses local routing and authentication overrides. In the default profile, system/global config
 (including HOME and XDG_CONFIG_HOME discovery), replacement objects, and all inherited GIT_* knobs
 are disabled. Writers needing a synthetic identity pass it explicitly; ambient identity is never
 trusted.
@@ -42,7 +43,7 @@ def identity_transport():
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.
-# Variables outside GIT_* (SSH_AUTH_SOCK, SSH_ASKPASS, proxy variables) pass in every profile.
+# Non-Git variables pass through, except identity also removes SSH agent and askpass variables.
 TRANSPORT_VARIABLES = frozenset((
     "GIT_SSH_COMMAND", "GIT_SSH", "GIT_SSH_VARIANT", "GIT_ASKPASS", "GIT_TERMINAL_PROMPT",
     "GIT_PROXY_COMMAND", "GIT_HTTP_PROXY_AUTHMETHOD", "GIT_PROXY_SSL_CERT", "GIT_PROXY_SSL_KEY",

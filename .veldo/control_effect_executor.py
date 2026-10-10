@@ -190,7 +190,7 @@ def receive(config, contract, accepted):
                 raise E.Refused('invalid_input:push_destinations')
             remote = targets[0]
         try:
-            target = transport_module.check_remote(push_identity, remote,
+            target = transport_module.check_remote(push_identity, remote, operation='remote_check',
                 repository=contract['repository_uuid'], request=binding['dispatch_id'],
                 observe=config.get('_identity_events', []).append)
         except transport_module.Refused as error:
@@ -234,9 +234,11 @@ def receive(config, contract, accepted):
                        'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
                                         for url, outcome in zip(pushed, outcomes)]}
         complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)
+        rejected = bool(push.returncode) and all(after == prior for after, prior in zip(afters, before))
         config.get('_identity_events', []).append(dict(operation='push', repository=contract['repository_uuid'],
             request=binding['dispatch_id'], identity=push_identity['id'], remote_owner=target['owner'],
-            outcome='accepted' if complete else 'refused', refusal=None if complete else 'push_refused:remote'))
+            outcome='accepted' if complete else ('refused' if rejected else 'unknown'),
+            refusal=None if complete else ('push_refused:remote' if rejected else 'unknown_outcome:push')))
         # VELDO-0148: a lease lost to another push between the listing and the push. The push failed,
         # and when EVERY destination's trunk now holds a commit that is neither the old tip nor the
         # candidate and does not contain the candidate, nothing of this publication is on any trunk:
@@ -246,6 +248,8 @@ def receive(config, contract, accepted):
         if not complete and push.returncode and pushed and all(
                 trunk_moved(url, after) for url, after in zip(pushed, afters)):
             raise E.Refused(TRUNK_MOVED)
+        if rejected:
+            raise E.Refused('push_refused:remote')
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree'],
                               'identity': push_identity['id'], 'remote_owner': target['owner']} if complete else None)
@@ -306,7 +310,8 @@ def execute(config, request, principal, challenge, signature):
         except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             observation = dict(accepted, status='unknown', evidence=None)
         if contract['kind'] == 'publication':
-            if observation.get('status') == 'refused':
+            if observation.get('status') == 'refused' and not any(
+                    e['operation'] == 'push' for e in config['_identity_events']):
                 try:
                     record = E.organ('control_git_identity').resolve(conn, contract['domain_uuid'], contract['repository_uuid'])
                 except Exception:

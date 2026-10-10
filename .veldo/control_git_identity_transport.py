@@ -123,7 +123,7 @@ def metrics(conn):
         row = counts.setdefault(event.get('identity'), {'pushes': 0, 'refusals': {}})
         if event['operation'] == 'push' and event['outcome'] == 'accepted':
             row['pushes'] += 1
-        if event.get('refusal'):
+        if event['operation'] == 'push' and event.get('refusal'):
             reason = event['refusal']
             row['refusals'][reason] = row['refusals'].get(reason, 0) + 1
     return counts

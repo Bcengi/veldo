@@ -127,3 +127,17 @@ running tools under separate OS users is Release 2 hardening.
 2026-09-25: split from VELDO-0142 (its former AC3 and AC4, criterion text unchanged) on the review of
 PLAN-0019 revision 4, so each specification keeps one concern of about three criteria. Draft, as
 VELDO-0142 was; the owner decides readiness.
+
+
+2026-10-10 implementation on agent/codex/veldo-0153: added the identity Git profile,
+Secret Service credential helper and one shared GitHub owner check. Direct lander and
+protected executor pushes resolve the repository identity and refuse missing credentials,
+wrong owners and local transport overrides. The network profile remains for operator use.
+The scaffold includes control_git_identity_transport; installed copies match the engine.
+Suite 107 supplies named rows and finding 153 supplies the two single-change falsifiers.
+Proof records scoped observations only; real GitHub, Secret Service and SSH qualification
+is declared in proof/VELDO-0153/host_check.py and was not run. The VELDO-0143 provisioner
+is not present and must drive its creation/adoption integrations with the shared check.
+The owner's own-suite token restriction was retained pending clarification of the later
+consumer-suite instruction. Consumer runs, the gate, independent review and approval
+remain outstanding. Acceptance criteria, risk, readiness and approval requirements are unchanged.
