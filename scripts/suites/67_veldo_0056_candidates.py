@@ -241,7 +241,7 @@ sys.stdout.write(json.dumps({'commit': git('rev-parse', 'HEAD'), 'implementation
 ''')
         # The reviewer engine: a real process that signs its receipt for exactly its assignment.
         reviewer_engine = base / 'reviewer_engine.py'
-        reviewer_engine.write_text('''import json, subprocess, sys
+        reviewer_engine.write_text('''import json, os, subprocess, sys
 signing, principal, verdict = sys.argv[1], sys.argv[2], sys.argv[3]
 assignment = json.loads(sys.stdin.read() or '{}')
 body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment.get('assignment'), 'unit': assignment.get('unit'),
@@ -249,8 +249,10 @@ body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment.get('assig
         'proof': (assignment.get('proof') or {}).get('digest'), 'verdict': verdict,
         'findings': [] if verdict == 'pass' else [{'severity': 'blocking', 'text': 'the fixture review objects'}]}
 message = json.dumps(body, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
+# Signed with the key file alone, as control_signer signs: no SSH agent (the host's keyring) is asked.
 signature = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', signing, '-n', 'veldo-review'], input=message,
-                           capture_output=True, check=True, timeout=20).stdout.decode()
+                           capture_output=True, check=True, timeout=20,
+                           env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}).stdout.decode()
 sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=True, separators=(',', ':')))
 ''')
 

@@ -475,7 +475,7 @@ git('commit', '-q', '-m', 'Proof for ' + unit)
 sys.stdout.write(json.dumps({'commit': git('rev-parse', 'HEAD'), 'implementation': implementation, 'spec': spec_path}))
 ''')
         reviewer_engine = base / 'reviewer_engine.py'
-        reviewer_engine.write_text('''import json, subprocess, sys
+        reviewer_engine.write_text('''import json, os, subprocess, sys
 CHILD_WAIT = 600
 signing, principal = sys.argv[1], sys.argv[2]
 assignment = json.loads(sys.stdin.read() or '{}')
@@ -483,8 +483,10 @@ body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment.get('assig
         'reviewer': principal, 'source': (assignment.get('source') or {}).get('commit'),
         'proof': (assignment.get('proof') or {}).get('digest'), 'verdict': 'pass', 'findings': []}
 message = json.dumps(body, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
+# Signed with the key file alone, as control_signer signs: no SSH agent (the host's keyring) is asked.
 signature = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', signing, '-n', 'veldo-review'], input=message,
-                           capture_output=True, check=True, timeout=CHILD_WAIT).stdout.decode()
+                           capture_output=True, check=True, timeout=CHILD_WAIT,
+                           env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}).stdout.decode()
 sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=True, separators=(',', ':')))
 ''')
         station_gate = EL.Gate(S, setup, domain_uuid=DOMAIN, repository_uuid=REPO, workspace=str(caller))
@@ -1483,7 +1485,13 @@ print(json.dumps(result))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        wired.close()
+        # The hermetic fence closes with the wire; a violation it raises is this suite's failing row
+        # below, after the teardown has run, never a teardown skipped.
+        hermetic = None
+        try:
+            wired.close()
+        except AssertionError as error:
+            hermetic = str(error)
         if loop is not None:
             for line in loop.lines.values():
                 for launch in list(line.runner.launches.values()):
@@ -1517,6 +1525,9 @@ print(json.dumps(result))
     for line in conform_formats.describe('0148_re_land', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0148_re_land', bool(fake_capture[1]) and not fake_capture[0])
+    if hermetic:
+        print('  VELDO-0148 hermetic detail: ' + hermetic[:1500])
+    expect('VELDO-0153 hermetic fence: 0148 re-land reached no network, keyring or credential store', hermetic is None)
     print('VELDO-0148 suite seconds: %.3f' % (time.monotonic() - started))
 
 

@@ -5,7 +5,80 @@ Real GitHub, SSH agent and Secret Service qualification is proof/VELDO-0153/host
 """
 
 
-def _v153_suite():
+def _v153_fence_rows(W, base):
+    """The hermetic fence (support/identity_wire.py) every 0153 and consumer identity fixture runs in:
+    each way out is refused, recorded and raised when the fence closes; local work passes."""
+    import http.server
+    import json
+    import os
+    import socket
+    import subprocess
+    import threading
+
+    def denied(call):
+        try:
+            call()
+        except W['HermeticViolation']:
+            return True
+        return False
+
+    base.mkdir(parents=True)
+    bare = base / 'local.git'
+    subprocess.run(['/usr/bin/git', 'init', '-q', '--bare', str(bare)], check=True, capture_output=True)
+    control = W['Fence'](base / 'control')
+    with control.active():
+        local = subprocess.run(['git', 'ls-remote', str(bare)], capture_output=True, text=True)
+    expect('VELDO-0153 fence/local-passes', local.returncode == 0 and control.violations() == [])
+    # A planted "real" global configuration whose credential helper stands for the host's real store.
+    home = base / 'real-home'
+    home.mkdir()
+    marker = base / 'real-store-asked'
+    (home / '.gitconfig').write_text('[credential]\n\thelper = !touch %s\n' % marker)
+
+    class Challenge(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(401)
+            self.send_header('WWW-Authenticate', 'Basic realm="fixture"')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+
+        def log_message(self, *args):
+            pass
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Challenge)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    fence = W['Fence'](base / 'fence', configs=[str(home / '.gitconfig')])
+    outcome = {}
+    try:
+        with fence.active():
+            off_host = subprocess.run(['git', 'ls-remote', 'https://github.com/fixture/unregistered.git'],
+                                      capture_output=True, text=True, timeout=30)
+            outcome['git'] = off_host.returncode == 97 and 'VELDO HERMETIC FENCE' in off_host.stderr
+            outcome['socket'] = denied(lambda: socket.create_connection(('192.0.2.1', 9), timeout=1))
+            outcome['lookup'] = denied(lambda: socket.getaddrinfo('github.com', 443))
+            keyring = os.path.join(os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid(), 'keyring', 'control')
+            outcome['keyring'] = denied(lambda: socket.socket(socket.AF_UNIX).connect(keyring))
+            with socket.socket(socket.AF_UNIX) as agent:
+                agent.connect(os.environ['SSH_AUTH_SOCK'])
+            asked = subprocess.run(['git', 'ls-remote', 'http://127.0.0.1:%d/fixture.git' % server.server_port],
+                                   capture_output=True, text=True, timeout=30,
+                                   env=dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home)))
+            outcome['credential'] = asked.returncode != 0 and not marker.exists()
+        outcome['raised'] = False
+    except W['HermeticViolation'] as error:
+        outcome['raised'] = 'violation(s)' in str(error)
+    finally:
+        server.shutdown()
+        server.server_close()
+    kinds = [v['kind'] for v in fence.violations()]
+    expect('VELDO-0153 fence/network-git-refused', outcome.get('git') and 'network' in kinds)
+    expect('VELDO-0153 fence/network-socket-refused', outcome.get('socket') and outcome.get('lookup'))
+    expect('VELDO-0153 fence/keyring-socket-refused', outcome.get('keyring') and kinds.count('keyring') >= 2)
+    expect('VELDO-0153 fence/real-credential-store-refused', outcome.get('credential') and 'credential-store' in kinds)
+    expect('VELDO-0153 fence/fails-loudly', outcome.get('raised') is True)
+    print('VELDO-0153 fence observations: ' + json.dumps({'outcome': outcome, 'kinds': kinds}, sort_keys=True))
+
+
+def _v153_suite(fence_dir):
     import importlib.util
     import json
     import os
@@ -81,7 +154,8 @@ def _v153_suite():
                           + '\nvalue=values.get(sys.argv[-1])\nif value is None: sys.exit(1)\nsys.stdout.write(value)\n')
         secret.chmod(0o700)
         clean = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-        planted = dict(clean, HOME=str(home), XDG_CONFIG_HOME=str(home), PATH=str(tools) + ':' + os.defpath,
+        # The fence's Git stand-in stays on PATH behind the suite's own tools.
+        planted = dict(clean, HOME=str(home), XDG_CONFIG_HOME=str(home), PATH=str(tools) + ':' + str(fence_dir) + ':' + os.defpath,
                        GIT_CONFIG_GLOBAL=str(home / '.gitconfig'), GIT_CONFIG_SYSTEM=str(system),
                        GIT_SSH_COMMAND='/bin/false planted', SSH_AUTH_SOCK=str(base / 'other-agent'),
                        GIT_CONFIG_COUNT='1', GIT_CONFIG_KEY_0='credential.helper', GIT_CONFIG_VALUE_0='!false',
@@ -420,6 +494,13 @@ def _v153_suite():
                 row('executor/remote-refused', rejected['status'] == 'unknown' and rejected['evidence'] is None
                     and before() == old and [(e['operation'], e['outcome'], e.get('refusal')) for e in config['_identity_events']
                                              if e['operation'] == 'push'] == [('push', 'refused', 'push_refused:remote')])
+                # A push the remote refused, through the lander: named push_refused:remote, and its
+                # error class is an unknown outcome, never a settled class or a landed push.
+                refused_land = alpha_lander(conn).finalize({'id': 'unit'})
+                row('lander/push-refused-unknown', refused_land.get('ok') is False
+                    and refused_land.get('refusal') == 'push_refused:remote'
+                    and L.taxonomy(refused_land.get('refusal')) == 'unknown_outcome'
+                    and L.taxonomy('push_refused') == 'unknown_outcome' and before() == old)
                 hook.unlink()
                 row('profile/no-token-on-command-line', all(token not in str(args) and token not in str(env) for args, env in invocations))
                 row('profile/ssh-only', bool(invocations) and all('SSH_AUTH_SOCK' not in env and 'GIT_SSH_COMMAND' not in env
@@ -434,4 +515,18 @@ def _v153_suite():
             Path(os.environ['VELDO_0153_OBSERVATIONS']).write_text(json.dumps(results, indent=2) + '\n')
 
 
-_v153_suite()
+def _v153_hermetic():
+    """The suite runs inside the hermetic fence: nothing it starts reaches the network or a real
+    keyring or credential store, and a fixture that would is a loud failure when the fence closes."""
+    import runpy
+    import tempfile
+    from pathlib import Path
+    W = runpy.run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))
+    with tempfile.TemporaryDirectory(prefix='fence153-') as tmp:
+        _v153_fence_rows(W, Path(tmp) / 'proof')
+        fence = W['Fence'](Path(tmp) / 'fence')
+        with fence.active():
+            _v153_suite(fence.directory)
+
+
+_v153_hermetic()
