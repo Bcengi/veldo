@@ -16,12 +16,12 @@ process boundary and nothing else:
 A stand-in `git` on PATH replaces a registered URL by its bare path ONLY in an invocation that
 carries the identity transport's options (`credential.interactive=false`, which the identity profile
 alone passes, for a token and an ssh credential alike), after git_process has run every check on the
-literal URL (owner, local overrides, argv binding). Any other invocation of a registered URL is
-passed to Git unchanged, so an ambient-profile push to one fails rather than reaching the bare
-remote. A stand-in `secret-tool` answers the fixture identity's references (support/git_identity.py)
-and those a suite passes as `secrets` (an ssh credential names a key file that exists), and refuses
-every other lookup, so no suite reads or writes the real keyring. Each identity
-invocation is appended to `wire.log` for rows that assert the identity profile was used.
+literal URL (owner, local overrides, argv binding); it runs a suite's `before_push` program ahead of
+an identity push. Any other invocation is passed to Git unchanged, so nothing but the identity
+profile reaches a bare remote by its URL. A stand-in `secret-tool` answers the fixture identity's
+references (support/git_identity.py) and those a suite passes as `secrets` (an ssh credential names
+a key file that exists), and refuses every other lookup, so no suite reads or writes the real
+keyring. Each identity invocation is appended to `wire.log` for rows that assert the profile ran.
 
 The PATH entry is inherited by processes a suite starts inside `active()`. The helper lives with
 the suites and is never installed.
@@ -53,14 +53,20 @@ class Wire:
         values.update(secrets or {})
         # Every Git call of the suite meets the stand-in, so the pass-through is a shell exec; only an
         # identity invocation pays for the interpreter that rewrites its registered URLs.
+        self.hook = self.directory / 'before-push.json'
         rewrite = self.directory / 'identity-git.py'
-        rewrite.write_text('import json, os, sys\n'
+        rewrite.write_text('import json, os, subprocess, sys\n'
                            'args = sys.argv[1:]\n'
                            'remotes = json.load(open(%r))\n'
                            'with open(%r, "a") as log:\n'
                            '    log.write(json.dumps(args) + "\\n")\n'
+                           'if "push" in args and os.path.exists(%r):\n'
+                           '    tail = [a for a in args[args.index("push") + 1:] if not a.startswith("-")]\n'
+                           '    lines = "".join("%%s %%s %%s %%s\\n" %% (src, src, dst, "0" * 40)\n'
+                           '                    for src, _, dst in (spec.partition(":") for spec in tail[1:]))\n'
+                           '    subprocess.run(json.load(open(%r)), input=lines, text=True, check=True)\n'
                            'os.execv("/usr/bin/git", ["git", *[remotes.get(a, a) for a in args]])\n'
-                           % (str(self.map), str(self.log)))
+                           % (str(self.map), str(self.log), str(self.hook), str(self.hook)))
         git = self.directory / 'git'
         git.write_text('#!/bin/sh\nfor a in "$@"; do\n'
                        '  case "$a" in credential.interactive=false)\n'
@@ -81,6 +87,14 @@ class Wire:
         remotes[url(name, owner, scheme)] = str(path)
         self.map.write_text(json.dumps(remotes))
         return url(name, owner, scheme)
+
+    def before_push(self, argv):
+        """Run `argv` before each identity push, its standard input the lines a pre-push hook reads.
+
+        The identity profile disables the clone's hooks (VELDO-0153), so a suite that injects work
+        between the listing and the push (another pusher moving the trunk, VELDO-0148) does it here,
+        at the process boundary, rather than through a hook the factory no longer runs."""
+        self.hook.write_text(json.dumps([str(a) for a in argv]))
 
     def invocations(self):
         if not self.log.exists():

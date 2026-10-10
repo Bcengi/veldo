@@ -109,6 +109,7 @@ def _v148_suite():
     connections, service = [], None
     loop = None
     fake_capture = (['the suite did not reach its teardown'], [])
+    wired = contextlib.ExitStack()
     try:
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
@@ -293,6 +294,15 @@ Group.members = _v148_sample_members
             GP.run(['git', 'clone', '-q', str(remote), str(clones[name])], check=True, capture_output=True)
             git(clones[name], 'config', 'gc.auto', '0')
         caller, builder_repo, publisher, mover = (clones[n] for n in ('caller', 'builder', 'publisher', 'mover'))
+        # VELDO-0153: the lander's watermark fetch, the landing's remote listing and the executor's
+        # publication go through the identity transport, which reaches only a remote under the
+        # identity's owner. The test wire maps that URL to the bare remote; the colleague's clone
+        # keeps the plain path, as another person's factory would its own remote.
+        wire = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))['Wire'](base / 'wire')
+        remote_url = wire.remote('remote', remote)
+        for clone in (caller, publisher):
+            git(clone, 'remote', 'set-url', 'origin', remote_url)
+        wired.enter_context(wire.active())
         git(caller, 'checkout', '-q', '--detach')
 
         def tip():
@@ -344,10 +354,9 @@ with open(log, 'a') as f:
     f.write(json.dumps({'mode': order['mode'], 'label': order['label'], 'pushed': git('rev-parse', 'HEAD'),
                         'candidate': lines[1] if len(lines) > 1 else None}) + chr(10))
 ''')
-        hook = publisher / '.git' / 'hooks' / 'pre-push'
-        hook.write_text('#!/bin/sh\nexec "%s" -B "%s" "%s" "%s" "%s" "%s"\n'
-                        % (sys.executable, hook_script, arm, hook_log, mover, publisher))
-        hook.chmod(0o755)
+        # The identity profile runs no hook of the publisher's clone (VELDO-0153), so the colleague's push
+        # runs at the process boundary just before the publication's push, with a pre-push hook's input.
+        wire.before_push([sys.executable, '-B', hook_script, arm, hook_log, mover, publisher])
 
         def armed(mode, label, path):
             arm.write_text(json.dumps({'mode': mode, 'label': label, 'file': path}))
@@ -546,7 +555,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         effects_path = private / 'effects.json'
         effects_path.write_text(json.dumps({
             'store': str(store_path), 'journal_key': str(keys / 'journal'), 'domain_uuid': DOMAIN, 'repository_uuid': REPO,
-            'receivers': {'git-origin': {'kind': 'publication', 'repository': str(publisher), 'remote': str(remote),
+            'receivers': {'git-origin': {'kind': 'publication', 'repository': str(publisher), 'remote': remote_url,
                                          'ref': 'refs/heads/main'}}}))
         events_root = base / 'events'
         (events_root / '.veldo').mkdir(parents=True)
@@ -611,7 +620,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         first[C] = first_land(C)
         # G's first candidate tree, derived the way its land derives it (the same watermark and merges), and the
         # owner's grant bound to exactly that subject.
-        git(caller, 'fetch', '-q', 'origin', '+refs/heads/main:refs/heads/main')
+        git(caller, 'fetch', '-q', str(remote), '+refs/heads/main:refs/heads/main')
         dry = LD.GitLandOps(str(caller), builds[G]['evidence'], trunk='main', remote='origin', push=False,
                             workspace_root=str(base / 'candidates'), domain=DOMAIN,
                             repository=REPO, identity_conn=setup)
@@ -1474,6 +1483,7 @@ print(json.dumps(result))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        wired.close()
         if loop is not None:
             for line in loop.lines.values():
                 for launch in list(line.runner.launches.values()):
