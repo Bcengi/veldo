@@ -1,0 +1,128 @@
+{
+ "capsules": {
+  "R1": {
+   "expected": {
+    "kind": "stdout_contains",
+    "value": "retry selections: ['logged-out', 'logged-out', 'logged-out']"
+   },
+   "files": {
+    "repro.py": "8fd6ecf27d69c6e5facc2402dce7d24dab16e25940667499acd4089d8f5b1e48"
+   }
+  },
+  "R2": {
+   "expected": {
+    "kind": "stdout_contains",
+    "value": "current login: chatgpt; retry offers: 0"
+   },
+   "files": {
+    "fake_cli.py": "427d46c13e7aee541b39e8a4ad2d49955887301fbb20789ed55502620b04e473",
+    "repro.py": "9f4c4c44f375472240260b0d38e7c9fe3d662c789df170bbff6d071f45d2c137"
+   }
+  },
+  "R3": {
+   "expected": {
+    "kind": "stdout_contains",
+    "value": "\"repaired\": false"
+   },
+   "files": {
+    "repro.py": "df8cbf042367d3d8923f0ae50bc46387a521319a453094e6042afb7b9d886ab4"
+   }
+  },
+  "R4": {
+   "expected": {
+    "kind": "stdout_contains",
+    "value": "incomplete_roster:unknown_worker:elaboration/elaborator"
+   },
+   "files": {
+    "repro.py": "6f5bf02fb6c4b72298fa0f579147f9faa8906978447de1935d90c6306f142ea8"
+   }
+  }
+ },
+ "command": "python3 .veldo/capsule.py run <capsule-dir> /home/dmitry/projects/veldo <commit>",
+ "review": "Codex review of veldo-0185 at e016df9b (review-20261009-023457)",
+ "runs": [
+  {
+   "capsule_digest": "a3224c2e87b27b5d8b135ff1fead10ac66398b98d3e19df503f3a239b022f865",
+   "commit": "e016df9b",
+   "duration_seconds": 0.403,
+   "exit_code": 1,
+   "finding_id": "R1",
+   "reproduced": true,
+   "stdout": "retry selections: ['logged-out', 'logged-out', 'logged-out']\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "a3224c2e87b27b5d8b135ff1fead10ac66398b98d3e19df503f3a239b022f865",
+   "commit": "5952516c",
+   "duration_seconds": 0.375,
+   "exit_code": 0,
+   "finding_id": "R1",
+   "reproduced": false,
+   "stdout": "retry selections: ['healthy', 'healthy', 'healthy']\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "0b6a8109ff4d6de63f2fcdad8e3af4c6a172536df50dfd05e073d29b9bbe5097",
+   "commit": "e016df9b",
+   "duration_seconds": 0.424,
+   "exit_code": 1,
+   "finding_id": "R2",
+   "reproduced": true,
+   "stdout": "current login: chatgpt; retry offers: 0 ; report: {\"refused\": [{\"dispatch_id\": \"first\", \"refusals\": [\"missing_authority:account_login:none_left\"], \"repository\": \"repo\", \"station\": \"build\", \"unit\": \"unit\"}]}\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "0b6a8109ff4d6de63f2fcdad8e3af4c6a172536df50dfd05e073d29b9bbe5097",
+   "commit": "5952516c",
+   "duration_seconds": 0.407,
+   "exit_code": 0,
+   "finding_id": "R2",
+   "reproduced": false,
+   "stdout": "current login: chatgpt; retry offers: 1 ; report: {\"refused\": []}\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "42d2e0dc8568e40619b28d88bfc7333fac461a80a7db88f593e349c23f4bcc71",
+   "commit": "e016df9b",
+   "duration_seconds": 2.314,
+   "exit_code": 1,
+   "finding_id": "R3",
+   "reproduced": true,
+   "stdout": "rerun with missing state_root: {\"code\": 1, \"reason\": \"invalid_input:state_root:differs:/dev/shm/b171-nytw7g8x/install/d58668319d7ea2dc/config/receiver-f3f19f076e39587c.json\", \"repaired\": false}\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "42d2e0dc8568e40619b28d88bfc7333fac461a80a7db88f593e349c23f4bcc71",
+   "commit": "5952516c",
+   "duration_seconds": 2.315,
+   "exit_code": 0,
+   "finding_id": "R3",
+   "reproduced": false,
+   "stdout": "rerun with missing state_root: {\"code\": 0, \"reason\": null, \"repaired\": true}\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "04eda9399d69b900ba3ce66cea03a82cd490b968adbc31c084ed5313cde15fe2",
+   "commit": "e016df9b",
+   "duration_seconds": 2.332,
+   "exit_code": 1,
+   "finding_id": "R4",
+   "reproduced": true,
+   "stdout": "fresh default team application: {\"problems\": [\"unknown_worker:elaboration/elaborator\", \"unknown_worker:implementation/builder\", \"unknown_worker:independent_review/reviewer\"], \"reason\": \"incomplete_roster:unknown_worker:elaboration/elaborator\", \"setup_login\": \"logged_in\", \"team_accepted\": false}\n",
+   "timed_out": false
+  },
+  {
+   "capsule_digest": "04eda9399d69b900ba3ce66cea03a82cd490b968adbc31c084ed5313cde15fe2",
+   "commit": "5952516c",
+   "duration_seconds": 2.826,
+   "exit_code": 0,
+   "finding_id": "R4",
+   "reproduced": false,
+   "stdout": "fresh default team application: {\"problems\": [], \"reason\": \"propose\", \"setup_login\": \"logged_in\", \"team_accepted\": true}\n",
+   "timed_out": false
+  }
+ ],
+ "schema": "veldo.capsule-runs/v1",
+ "source": "the four capsules as harvested; each sealed by capsule.write_manifest (veldo.capsule/v1) from its harvested manifest: the same files, command and expected observation, recast as {kind, value}",
+ "spec_id": "VELDO-0185"
+}

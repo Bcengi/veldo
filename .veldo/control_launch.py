@@ -133,7 +133,10 @@ refused by name before acceptance. `profile_problem(binding, environment, cwd)` 
 environment and working directory (`cwd`: the clone's work tree the clone entrance changes into, this
 receiver's own for an engine it execs directly, None for another host's): an account profile holding an
 item no switch of the baseline keeps out (Codex's own AGENTS.md) is refused by name, and so is a login
-that is not a subscription (`paid_api:...`), nothing accepted, reserved or spawned. The protocol's `Guard`
+that is not a subscription (`paid_api:...`), nothing accepted, reserved or spawned. For an adapter factory setup
+wrote (`account_login` true, VELDO-0185), the account's own login as its engine reports it (`account_login`:
+Claude Code's `auth status`, Codex's `login status`) is checked first, and an account not logged in to its
+subscription is refused by name (`missing_authority:account_login:<account>`). The protocol's `Guard`
 holds the prompt: the receiver writes the engine's input from `Guard.opening(packet)` ((bytes, close):
 Claude Code's initialize control request with its input left open, Codex's packet whole and closed),
 reads the stream through `Guard.feed`, where a login the engine reports that is not a subscription stops
@@ -234,6 +237,8 @@ DL = _organ('control_credential_delivery')
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
 ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+# VELDO-0185 AC4: the refusal of a dispatch on an account its engine reports not logged in to its subscription.
+ACCOUNT_LOGIN = D.RES.POOL.ACCOUNT_LOGIN
 # Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
 # adapter configuring one is refused. STRIPPED adds each binary's settings of the owner's shell, which
 # the inherited environment loses and an adapter may configure.
@@ -552,8 +557,9 @@ class Runner:
         return self.clear_runs()
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
-                deadline, context=None):
-        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract."""
+                deadline, context=None, exclude=()):
+        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract. `exclude`
+        names the accounts a login retry's pool passes over (VELDO-0185 AC4)."""
         # Pending retirements first: a slot whose obligations have since completed is released before
         # this preparation reserves another.
         self.sweep()
@@ -585,7 +591,7 @@ class Runner:
             # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
             # reservation, reading the pool now: an account registered while work runs takes this dispatch.
             account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
-                                      adapter=adapter, now=now)
+                                      adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
         else:
             self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:
@@ -1344,12 +1350,30 @@ class Receiver:
         login_environment = self._login_environment(adapter)
         cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
         self.token, problem = self._token()
-        problem = (problem or module.profile_problem(self.binding, login_environment, cwd)
+        problem = (problem or self._account_login(module, bound, adapter, login_environment, cwd)
+                   or module.profile_problem(self.binding, login_environment, cwd)
                    or module.login_problem(bound, login_environment, cwd))
         if problem:
             self.binding, self.token = None, None
             return problem
         return None
+
+    def _account_login(self, module, bound, adapter, environment, cwd):
+        """VELDO-0185 AC4: for an adapter factory setup wrote (`account_login` true), the account's own login
+        as its engine reports it (the engine module's `account_login`, the check setup runs), before acceptance:
+        an account not logged in to its subscription is refused by name (missing_authority:account_login:<account>),
+        nothing accepted, reserved or spawned, so the Line offers the unit on another account. An account whose
+        subscription token the configuration names (VELDO-0155 AC2) logs in with that token instead."""
+        if adapter.get('account_login') is not True or self.token is not None:
+            return None
+        check = getattr(module, 'account_login', None)
+        kind = check(bound, environment, cwd) if callable(check) else 'unqualified'
+        if kind is None:
+            return None
+        account = self.login['account']
+        self.emit({'event': 'account_login_refused', 'engine': module.PROVIDER, 'account': account, 'login': kind,
+                   'metrics': {'account_login_refused': 1}})
+        return ACCOUNT_LOGIN + account
 
     @staticmethod
     def _engine_cwd(argv, dispatch_id, reported):

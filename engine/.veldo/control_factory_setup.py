@@ -105,7 +105,9 @@ SETTLEMENT_PRINCIPAL = 'settlement'
 _CHANNEL = organ('control_service_channel')
 REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUESTER_KEY, _CHANNEL.REQUESTER_SCOPE
 PROJECT_MANAGER = 'pm'
-RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER)
+# The owner's name is none of them, nor a default team worker setup enrolls (VELDO-0185).
+RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER,
+            *organ('control_factory_setup_dispatch').TEAM_WORKERS)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -232,7 +234,7 @@ def host_trust_directory_problem(directory):
 
 
 def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir,
-          profile, writable, origin, rerun=False):
+          profile, writable, origin, rerun=False, accounts_root=None):
     """Every precondition, as a plan the setup then carries out, or Refused naming the first problem. With
     `rerun` the state root holds a store laid down before, and the host trust file and the workspace binding
     it wrote are expected (rerun() then compares them with this run's arguments)."""
@@ -308,11 +310,13 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         engines = organ('control_factory_setup_engines').check(Refused)
     except CS.Refused as error:
         raise Refused(error.code, str(error)) from None
+    # VELDO-0185: the engines the host's account registry names, read before the first write.
+    dispatch = organ('control_factory_setup_dispatch').plan(workspace, engines, E, Refused, accounts_root)
     host_identity = re.sub(r'[^A-Za-z0-9._-]', '-', platform.node() or '') or 'veldo-host'
     return dict(root=root, owner=owner, owner_key=key, owner_public=owner_public, workspace=workspace, chat=chat,
                 token_file=token_file, host_trust=str(host_trust), install_root=install_root,
                 unit_dir=unit_dir, profile=profile, writable=writable, origin=origin, host_identity=host_identity,
-                keys=keys, store=store, engines=engines)
+                keys=keys, store=store, engines=engines, dispatch=dispatch)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -386,13 +390,13 @@ class _Step:
 @_one_setup
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
-          tailscale=None, api_port=None, git_identities=None, workspace_identity=None):
+          tailscale=None, api_port=None, git_identities=None, workspace_identity=None, accounts_root=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
     options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
-                   profile=profile, writable=writable, origin=origin)
+                   profile=profile, writable=writable, origin=origin, accounts_root=accounts_root)
     port = API.PORT if api_port is None else api_port
     runner = runner or organ('control_service').Systemctl()
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
@@ -410,6 +414,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     root, keys, owner, workspace = plan['root'], plan['keys'], plan['owner'], plan['workspace']
     owner_sign = ACT.ssh_signer(plan['owner_key'])
     owner_public = plan['owner_public']
+    D = organ('control_factory_setup_dispatch')
     done = []
     step = _Step(done)
     ids = {'domain_uuid': str(uuid.uuid4()), 'repository_uuid': str(uuid.uuid4()), 'store_uuid': str(uuid.uuid4())}
@@ -552,17 +557,37 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             organ('control_factory_setup_records').directory(root, _differs, write=True)
         with step('api_service_configuration'):
             api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
+        dispatch, details = plan['dispatch'], {}
+        work = None
+        if dispatch is None:
+            details['dispatch'] = DEFERRED
+        else:
+            with step('work_configuration'):
+                # VELDO-0185 AC1: the work configuration from the team setup saves below, checked as the
+                # installer checks it, written 0600 and passed through the installer's `work`.
+                text = D.text(D.setup_work(organ('control_team'), ids['repository_uuid'], dispatch))
+                D.checked_work(CS, text, {ids['repository_uuid']: [workspace]}, dispatch['adapters'], Refused)
+                work = _private(os.path.join(host, D.WORK_FILE), text)
+                details['work_configuration'] = {'path': work, 'adapters': sorted(dispatch['adapters'])}
         with step('service_install'):
             installed = CS.install([workspace], state_root=root, host_trust=plan['host_trust'], key_directory=keys,
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
-                                   api_service=api_service)
+                                   api_service=api_service, adapters=dispatch['adapters'] if dispatch else None,
+                                   work=work)
         with step('record_configuration'):
             record_steps = organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
         with step('engine_pins'):
             engines = organ('control_factory_setup_engines').install(
                 root, Path(installed['home']) / 'bin', plan['engines'], Refused)
             _private(os.path.join(host, 'engines.json'), json.dumps(engines, sort_keys=True) + '\n')
+        if dispatch is not None:
+            with step('reservation_principals'):
+                details['reservation_principals'] = enroll_reservation(plan, admin, S, K, conn, projection)
+            store_steps(plan, dispatch, details, step, lock, Path(installed['home']) / 'bin', ingress, owner_sign,
+                        clock, 'setup-%s' % ids['store_uuid'][:8])
+            details['account_login'] = D.login_step(D.logins(Path(installed['home']) / 'bin', conn, dispatch['accounts'],
+                                                             dispatch['adapters'], root))
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
@@ -590,11 +615,246 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
-            'steps': [name if isinstance(name, dict) else {'step': name, 'outcome': 'done'} for name in done]
+            'steps': [name if isinstance(name, dict) else dict({'step': name, 'outcome': 'done'}, **details.get(name, {}))
+                      for name in done]
+            + [details[name] for name in ('account_login', 'dispatch') if name in details]
             + [{'step': 'api_start', 'outcome': 'deferred'}],
+            'dispatch': dispatch_report(dispatch, details),
             'api': api_report(transport['name'], port, api_files, through_service=False),
             'next': 'start it explicitly: systemctl --user start %s (the API unit %s starts with it), then veldo channel '
                     'qualify' % (installed['unit'], api_files['unit'])}
+
+
+# ---------------------------------------------------------------------------------------------
+# The dispatch steps (VELDO-0185), shared by the first run and every re-run
+# ---------------------------------------------------------------------------------------------
+
+# A host whose account registry names no account has nothing to dispatch to: nothing of it is laid down.
+DEFERRED = {'step': 'dispatch', 'outcome': 'deferred',
+            'next': 'register the accounts (veldo account add NAME --provider claude_code or codex), log in to each '
+                    'once, then run setup again'}
+
+
+def enroll_reservation(plan, admin, S, K, conn, projection):
+    """AC2: the owner's signed enroll_principal of `authority` and `launch-receiver` with the reservation_service
+    role, and of each default team worker besides the PM (control_factory_setup_dispatch TEAM_WORKERS), each
+    co-signed by the journal key they sign with, on this run's own connection under its lock: only those the
+    store does not hold yet (enrollments_due)."""
+    D, ACT = organ('control_factory_setup_dispatch'), organ('control_channel_activation')
+    key = os.path.join(plan['keys'], JOURNAL_KEY)
+    due = D.enrollments_due(conn)
+    for principal, roles in due:
+        admin('enroll_principal', {'principal': principal, 'principal_type': 'service', 'roles': roles,
+                                   'public_key': public_key(key), 'independence_group': principal, 'scope': '*'},
+              enrollee=ACT.ssh_signer(key))
+    K.publish(S, conn, projection)
+    os.chmod(projection, 0o600)
+    return {'principals': [p for p, _roles in due if p in D.RESERVATION_PRINCIPALS], 'role': D.RESERVATION_ROLE,
+            'workers': [p for p, _roles in due if p in D.TEAM_WORKERS]}
+
+
+def store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sign, clock, prefix, missing=None):
+    """AC1 and AC4 on the store, after `authority` holds its role: the factory project, the default team, the
+    accounts and the reservation policies, through the installed engine's writers under this run's lock. With
+    `missing` (a re-run) only the steps it names write; the policies are reconciled on every run."""
+    D = organ('control_factory_setup_dispatch')
+    store = D.Store(bin_dir, ingress, plan['owner'], owner_sign, lock, clock)
+    wanted = missing if missing is not None else {'factory_project', 'default_team', 'account_registration'}
+    try:
+        if 'factory_project' in wanted:
+            with step('factory_project'):
+                answer = store.activate(prefix + '-factory-project')
+                if not answer.get('ok'):
+                    raise Refused('factory_project_refused:%s' % answer.get('reason'))
+        if 'default_team' in wanted:
+            with step('default_team'):
+                try:
+                    _team, saved = store.default_team(dispatch, prefix)
+                except D.StepRefused as error:
+                    raise Refused(error.code) from None
+                details['default_team'] = {'saved': saved}
+        if 'account_registration' in wanted:
+            with step('account_registration'):
+                details['account_registration'] = {'registered': store.register(dispatch['accounts'])}
+        before = store.head()
+        with step('reservation_policies'):
+            try:
+                answer = store.provision()
+            except D.StepRefused as error:
+                raise Refused(error.code) from None
+            details['reservation_policies'] = {
+                'configured': sorted('%s:%s' % (e['scope'], e['subject']) for e in answer['subjects']
+                                     if e['outcome'] == 'configured'),
+                'refused': sorted('%s:%s:%s' % (e['scope'], e['subject'], e['refusal']) for e in answer['subjects']
+                                  if e['outcome'] == 'refused')}
+            details['reservation_policies']['wrote'] = store.head() != before
+    finally:
+        store.close()
+
+
+def dispatch_report(dispatch, details):
+    """What setup's answer says of the dispatch configuration: never a key or a credential."""
+    if dispatch is None:
+        return {'outcome': 'deferred', 'accounts': [], 'engines': []}
+    return {'outcome': 'laid_down', 'engines': dispatch['engines'], 'roles': dispatch['roles'],
+            'adapters': sorted(dispatch['adapters']), 'accounts': [a['account'] for a in dispatch['accounts']],
+            'logins': (details.get('account_login') or {}).get('accounts', []),
+            'metrics': {'accounts': len(dispatch['accounts']),
+                        'not_logged_in': ((details.get('account_login') or {}).get('metrics') or {}).get('not_logged_in', 0)}}
+
+
+def dispatch_preflight(plan, ids, installed, home, unit_dir, differs):
+    """Read only, before a re-run's first write (VELDO-0185 AC3): the work configuration, from the store's default
+    team when it holds one, else from the team this run saves; each file's state (absent or equal, any other
+    difference refused by name); the receivers' adapters and state root; the store steps still missing."""
+    D, API, CS = organ('control_factory_setup_dispatch'), organ('control_factory_setup_api'), organ('control_service')
+    claims = organ('control_claim')
+    dispatch, root = plan['dispatch'], plan['root']
+    reader = claims.S.open_store(plan['store'], mode='r')
+    try:
+        reader.execute('BEGIN')
+        held = D.held(reader)
+        saved, engines = D.saved_team(reader, ids)
+        due = D.policies_due(reader, ids['domain_uuid'])
+        reader.execute('ROLLBACK')
+    finally:
+        reader.close()
+    found = (D.work(ids['repository_uuid'], saved['roles'], engines) if saved is not None
+             else D.setup_work(organ('control_team'), ids['repository_uuid'], dispatch))
+    text = D.text(found)
+    D.checked_work(CS, text, installed.get('repositories') or {}, dispatch['adapters'], Refused)
+    host_work = os.path.join(root, HOST_DIR, D.WORK_FILE)
+    installed_work = installed.get('work') or os.path.join(home, 'config', CS.WORK)
+    configs = sorted(((installed.get('receiver') or {}).get('configs') or {}).values())
+    missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}
+    if not held['default_team']:
+        missing.add('default_team')
+    if any(a['account'] not in held['accounts'] for a in dispatch['accounts']):
+        missing.add('account_registration')
+    return {'text': text, 'host_work': host_work, 'installed_work': installed_work,
+            'states': {'host_work': API.file_state(host_work, text, 0o600, differs),
+                       'installed_work': API.file_state(installed_work, text, 0o600, differs),
+                       'service_work': 'equal' if installed.get('work') else 'add'},
+            'receivers': D.receiver_states(configs, dispatch['adapters'], root, differs), 'missing': missing,
+            'policies_due': due,
+            'prefix': 'setup-%s-%s' % (ids['store_uuid'][:8], uuid.uuid4().hex[:8])}
+
+
+def dispatch_rerun(plan, pending, ids, home, api, lock, running, outcomes, mark, clock):
+    """A re-run's dispatch steps (VELDO-0185 AC3), after the API steps: only what the preflight found missing is
+    written. Store writes only while this run holds the store's lock (VELDO-0171 AC1); with the service running,
+    the default team goes to it, the policies are left to its next pass, and nothing else is sent. Returns
+    (lock, whether the installation's configuration changed)."""
+    D, API, CS = organ('control_factory_setup_dispatch'), organ('control_factory_setup_api'), organ('control_service')
+    dispatch, root, states = plan['dispatch'], plan['root'], pending['states']
+    wrote = False
+    for name in ('host_work', 'installed_work'):
+        if states[name] == 'absent':
+            API.write_new(pending[name], pending['text'], 0o600)
+            wrote = True
+    if states['service_work'] == 'add':
+        # The one change to the installation's record: it gains the work key it holds as null.
+        current = json.loads(Path(api['service_json']).read_text())
+        API.replace_file(api['service_json'], CS._json(dict(current, work=pending['installed_work'])), 0o600)
+        wrote = True
+    mark('work_configuration', wrote, path=pending['installed_work'])
+    receivers = D.apply_receivers(pending['receivers'], dispatch['adapters'], root, API)
+    outcomes.append(receivers)
+    configured = wrote or receivers['outcome'] == 'done'
+    bin_dir, ingress = Path(home) / 'bin', os.path.join(root, HOST_DIR, 'ingress.json')
+    owner_sign = organ('control_channel_activation').ssh_signer(plan['owner_key'])
+    details, done = {}, []
+    step = _Step(done)
+    if running:
+        if 'default_team' in pending['missing']:
+            with step('default_team'):
+                _team, saved = service_team(plan, dispatch, pending['prefix'], owner_sign, clock)
+                details['default_team'] = {'saved': saved, 'through_service': True}
+        outcomes.append({'step': 'reservation_policies', 'outcome': 'deferred',
+                         'detail': 'the running service provisions every policy at its next pass'})
+    elif pending['missing'] or pending['policies_due']:
+        # A complete host's store is not opened for writing: nothing of it is missing or out of date.
+        if lock == -1:
+            lock = take_lock(root)
+            if lock is None:
+                raise Refused('invalid_input:state_root:service_running:reservation_principals',
+                              'the authority service started during this run')
+        if 'reservation_principals' in pending['missing']:
+            with step('reservation_principals'):
+                details['reservation_principals'] = enroll_offline(plan, ids, clock)
+        store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sign, clock, pending['prefix'],
+                    missing=pending['missing'])
+    for name in ('reservation_principals', 'factory_project', 'default_team', 'account_registration'):
+        mark(name, name in done, **details.get(name, {}))
+    if not running:
+        policies = details.get('reservation_policies') or {}
+        mark('reservation_policies', policies.get('wrote', False),
+             **{k: v for k, v in policies.items() if k != 'wrote'})
+    claims = organ('control_claim')
+    reader = claims.S.open_store(plan['store'], mode='r')
+    try:
+        outcomes.append(D.login_step(D.logins(bin_dir, reader, dispatch['accounts'], dispatch['adapters'], root)))
+    finally:
+        reader.close()
+    return lock, configured
+
+
+def enroll_offline(plan, ids, clock):
+    """AC2 on a re-run: the two reservation enrollments on a writing connection of this run's own, under its lock."""
+    claims, K, IN = organ('control_claim'), organ('control_keys'), organ('control_channel_ingress')
+    S, CM, AC, ACT = claims.S, claims.CM, claims.AC, organ('control_channel_activation')
+    owner_sign = ACT.ssh_signer(plan['owner_key'])
+    journal = IN.journal_signer({'principal': JOURNAL_PRINCIPAL, 'key': os.path.join(plan['keys'], JOURNAL_KEY)})
+    writer = S.open_store(plan['store'])
+    try:
+        CM.attach(S)
+        K.attach(S)
+
+        def admin(operation, params, enrollee=None):
+            command = {'command_id': 'setup-%s-%s-%s' % (operation, ids['store_uuid'][:8], uuid.uuid4().hex[:12]),
+                       'operation': operation, 'target': 'authority', 'parameters': params, 'artifact_digests': [],
+                       'expected_versions': {}}
+            now = CM.authority_state(S, writer)
+            env = dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=plan['owner'],
+                       request_revision=1, nonce='nonce-' + command['command_id'], expires_at=clock() + 600,
+                       membership_version=now['membership_version'], delegation_version=now['delegation_version'],
+                       command_digest=AC.canonical_command_digest(command))
+            cosigned = enrollee(AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
+            return CM.admit(S, writer, env, command, owner_sign(AC.canonical_envelope_bytes(env)), ids, clock(),
+                            enrollee_signature=cosigned, journal_signer=journal)
+        return enroll_reservation(plan, admin, S, K, writer, os.path.join(plan['root'], HOST_DIR, 'allowed_signers'))
+    finally:
+        writer.close()
+
+
+def service_team(plan, dispatch, prefix, owner_sign, clock):
+    """AC1 with the service running: the default team's owner revisions sent to it over its socket (VELDO-0203's
+    route), each packet built on a read-only connection; the service holds the lock and writes them."""
+    D, claims = organ('control_factory_setup_dispatch'), organ('control_claim')
+    CC, CE, EL = organ('control_client'), organ('control_enrollment'), organ('control_eligibility')
+    S, CM = claims.S, claims.CM
+    workspace = plan['workspace']
+    trust, binding = EL.load_host_trust(plan['host_trust']), CE.read_binding(workspace)
+    verify = trust.verifier(binding.get('enrolled_by'), workspace)
+    ids = {k: binding[k] for k in ('domain_uuid', 'repository_uuid', 'store_uuid')}
+
+    def send(packet):
+        try:
+            answer = CC.send(workspace, packet, CE, verify, owner_sign, trust.host_identity, timeout=60)
+        except CC.RoutingRefused as exc:
+            raise Refused('unavailable_service:authority:' + exc.reason, 'the running service did not answer') from None
+        return (answer.get('result') or {}) if answer.get('accepted') else {'ok': False, 'reason': answer.get('reason')}
+    reader = S.open_store(plan['store'], mode='r')
+    try:
+        def packet(operation, parameters, command_id):
+            return D.owner_packet(S, CM, reader, ids, plan['owner'], owner_sign, clock, operation, parameters, command_id)
+        try:
+            return D.save_team(reader, organ('control_agent_config'), organ('control_team'), ids, dispatch, prefix,
+                               send, packet)
+        except D.StepRefused as error:
+            raise Refused(error.code) from None
+    finally:
+        reader.close()
 
 
 # ---------------------------------------------------------------------------------------------
@@ -751,7 +1011,8 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
 
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
-          writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None):
+          writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
+          accounts_root=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -764,7 +1025,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     S, CM, AC = claims.S, claims.CM, claims.AC
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, host_trust=host_trust,
                  install_root=install_root, unit_dir=unit_dir, profile=profile, writable=writable, origin=origin,
-                 rerun=True)
+                 rerun=True, accounts_root=accounts_root)
     root, keys, workspace = plan['root'], plan['keys'], plan['workspace']
     host = os.path.join(root, HOST_DIR)
     try:
@@ -881,6 +1142,13 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     if not os.path.isfile(api['executable']) and API.API_EXECUTABLE not in engine['current']:
         raise Refused('unavailable_service:api:not_installed', 'the installed engine has no API process (%s)'
                       % api['executable'])
+    # VELDO-0185: the dispatch configuration this run would add, every check before the first write.
+    pending = (dispatch_preflight(plan, ids, installed, home, unit_dir, _differs) if plan['dispatch'] is not None
+               else None)
+    # AC2 and AC3: a receiver lacking its state root, or holding it as null, gains it whatever the registry holds.
+    bare = (organ('control_factory_setup_dispatch').receiver_states(
+        sorted(((installed.get('receiver') or {}).get('configs') or {}).values()), None, root, _differs)
+            if pending is None else None)
     lock = take_lock(root, create=False)
     running = lock is None
     try:
@@ -889,6 +1157,11 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 raise Refused('invalid_input:state_root:service_running:' + missing[0],
                               'the running service takes no command for this store write')
             raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
+        blocked = [name for name in ('reservation_principals', 'factory_project', 'account_registration')
+                   if running and pending is not None and name in pending['missing']]
+        if blocked:
+            raise Refused('invalid_input:state_root:service_running:' + blocked[0],
+                          'the running service takes no command for this store write')
         # The identity records are a direct store write, so they are written only while this run is the
         # store's one writer: never while the service runs, nor after an upgrade that restarts it.
         if identities_due and (running or engine['restart_due']):
@@ -1008,6 +1281,13 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             API.write_new(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
         mark('api_process_configuration', states['process_config'] == 'absent')
         mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
+        configured = False
+        if pending is None:
+            outcomes.append(organ('control_factory_setup_dispatch').apply_receivers(
+                bare, None, root, organ('control_factory_setup_api')))
+            outcomes.append(DEFERRED)
+        else:
+            lock, configured = dispatch_rerun(plan, pending, ids, home, api, lock, running, outcomes, mark, clock)
         started, next_step = False, None
         if running and not added:
             # VELDO-0189: a service the upgrade could not restart (it runs outside its unit) still runs the
@@ -1033,6 +1313,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 authority_unit, api['unit'])
         if running and states['installed_service_config'] == 'upgrade' and upgraded.get('restart') != 'restarted':
             next_step = 'the service reads its new record configuration on restart: systemctl --user restart %s' % authority_unit
+        if running and configured:
+            next_step = ('the service reads its work configuration and engine adapters on restart: systemctl --user '
+                         'restart %s' % authority_unit)
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, name, port))
         mark('tailscale_serve', transport['serve'] == 'free')
@@ -1047,7 +1330,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'started': started, 'service_running': running, 'steps': outcomes,
             'pins_made': upgraded.get('pins_made', 0), 'engines': upgraded.get('engines', {}),
             'engines_record': upgraded.get('engines_record'),
-            'api': api_report(name, port, api, through), 'next': next_step or upgraded.get('next')}
+            'api': api_report(name, port, api, through), 'next': next_step or upgraded.get('next'),
+            'dispatch': dispatch_report(plan['dispatch'], {o['step']: o for o in outcomes})}
 
 
 # ---------------------------------------------------------------------------------------------

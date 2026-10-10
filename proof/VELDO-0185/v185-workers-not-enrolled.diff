@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup_dispatch.py
++++ .veldo/control_factory_setup_dispatch.py
+@@ -231,7 +231,7 @@
+         return data if data is not None and data.get('revoked_at') is None else None
+     due = [(p, [RESERVATION_ROLE]) for p in RESERVATION_PRINCIPALS
+            if RESERVATION_ROLE not in ((member(p) or {}).get('roles') or [])]
+-    return due + [(worker, []) for worker in TEAM_WORKERS if member(worker) is None]
++    return due
+ 
+ 
+ def policies_due(conn, domain):

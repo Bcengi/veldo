@@ -41,8 +41,10 @@ def validate(step, installed, receivers, differs):
         expected.pop('host_trust', None)
         actual = dict(held)
         actual.pop('host_trust', None)
-        if 'state_root' not in actual:
+        if actual.get('state_root') is None:
+            # VELDO-0185 AC3: a receiver lacking its state root, or holding it as null, gains it by name.
             expected.pop('state_root', None)
+            actual.pop('state_root', None)
         if 'runs' in actual:
             expected['runs'] = actual['runs']
         # The records preflight checks these values and plans their additive repair.

@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup.py
++++ .veldo/control_factory_setup.py
+@@ -567,7 +567,7 @@
+                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
+                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
+                                    api_service=api_service, adapters=dispatch['adapters'] if dispatch else None,
+-                                   work=work)
++                                   work=None)
+         with step('record_configuration'):
+             record_steps = organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
+         with step('engine_pins'):

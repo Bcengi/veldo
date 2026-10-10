@@ -1448,6 +1448,18 @@
    ],
    "regions": "Project scope on read models, workflow reads and member event pages.",
    "requires_note": "Only ROOT and expect. Real SQLite and signed journal fixtures; foreground only."
+  },
+  {
+   "name": "106_veldo_0185_dispatch_setup",
+   "file": "106_veldo_0185_dispatch_setup.py",
+   "requires": [
+    "106_veldo_0185_dispatch_setup"
+   ],
+   "regions": "Factory setup lays down the dispatch configuration; installed dispatch on every account; re-run changes nothing.",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture with real setup, generated SSH keys, accounts.py registries and generated 0172 fake engines run contained under the host's user manager; the installed service and receiver dispatch the units.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {
