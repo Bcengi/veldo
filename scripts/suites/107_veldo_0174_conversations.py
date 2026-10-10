@@ -393,6 +393,8 @@ def _v174_suite():
                 cv.open(identity,owner='owner',role=role,intake_digest='sha256:'+identity)
                 cv.message(identity,identity+'-1','sha256:'+identity+'-1',owner='owner')
             report = J.pass_(factory)
+            if any(e['result']!='accepted' for e in report['conversation_offered']):
+                print('  VELDO-0174 launch refusals:',[(i,t['outcome']) for i in ('claude-live','codex-live') for t in cv.turns(i)])
             check('AC4/no-work-line','no work configuration still launches both engine turns',
                   len(report['conversation_offered']) == 2 and
                   all(e['result']=='accepted' for e in report['conversation_offered']))

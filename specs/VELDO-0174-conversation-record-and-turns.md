@@ -22,6 +22,15 @@ footprint:
   - ".veldo/control_service*.py"
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
+  - "engine/.veldo/control_agent_config_handoff.py"
+  - ".veldo/control_agent_config_handoff.py"
+  - "engine/.veldo/control_project.py"
+  - ".veldo/control_project.py"
+  - "engine/.veldo/control_reservation_policies.py"
+  - ".veldo/control_reservation_policies.py"
+  - "engine/.veldo/control_reservations.py"
+  - ".veldo/control_reservations.py"
+  - "scripts/suites/support/v174_journey.py"
   - "engine/.veldo/control_account_pool*.py"
   - ".veldo/control_account_pool*.py"
   - "engine/.veldo/init_scaffold.py"
@@ -201,3 +210,10 @@ version, which the API's commands name; depends_on adds VELDO-0172 (the fake eng
 VELDO-0185 (the receiver configuration's state root). Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+## Implementation follow-up boundaries
+
+Role-change and project-attach commands and their version checks remain open with the conversation
+intake and history work in VELDO-0175 and VELDO-0176. Message text delivery and session continuity are
+also open there. VELDO-0174 currently hands the receiver the durable intake command reference and turn
+identity. These open items are not claimed as passing evidence for AC1 or AC2.

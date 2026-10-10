@@ -1505,7 +1505,7 @@ class Receiver:
         work tree of the dispatch's clone when the clone entrance execs it (it changes into it), this
         receiver's own when this receiver's wrapper execs it directly; None for another host's engine, or a
         clone that names no single work tree."""
-        if self.contract and self.contract.get('subject_kind') == 'conversation':
+        if (getattr(self, 'contract', None) or {}).get('subject_kind') == 'conversation':
             return self.conversation_directory
         if reported:
             return None
@@ -1747,14 +1747,17 @@ class Receiver:
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
-        cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
+        cwd = (self.conversation_directory
+               if (getattr(self, 'contract', None) or {}).get('subject_kind') == 'conversation' else None)
         if cwd is not None:
             os.makedirs(cwd, mode=0o700, exist_ok=True)
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.
         self._record(adapter, environment)
         if adapter.get('identity', 'local') != 'reported':
-            return self._contained(dispatch_id, argv, environment, cwd=cwd)
+            if cwd is not None:
+                return self._contained(dispatch_id, argv, environment, cwd=cwd)
+            return self._contained(dispatch_id, argv, environment)
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, env=environment, cwd=cwd,
                                 start_new_session=True, close_fds=True)
