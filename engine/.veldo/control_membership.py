@@ -470,7 +470,6 @@ def admit(store, conn, envelope, command, signature, authority_ids, now, verifie
         if problems:
             code = problems[0].split(":", 1)[0]
             raise MembershipRefused(code if code in REFUSALS else "policy_refused", "; ".join(x.split(": ", 1)[1] if x.split(":", 1)[0] in REFUSALS else x for x in problems))
-    protect(store, conn)
     stored = dict(command, nonce=envelope["nonce"], principal=envelope["principal"])
     stored["parameters"] = _stored_parameters(command, envelope, now)
     # Expected versions from the snapshot the checks ran against: a revocation, role change or
