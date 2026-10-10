@@ -1,0 +1,19 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+    "tools": true
+  },
+  "rows": [
+    {
+      "row": "native/claude_code/containment",
+      "status": "failed"
+    }
+  ],
+  "status": "failed",
+  "error": "AssertionError: {'state': 'exited', 'process': {'boot_id': '{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026', 'host': 'dmitrys-mini.lan', 'pid': 24977, 'platform': 'darwin', 'start': 'Sat Oct 10 01:24:29 2026'}, 'termination': {'returncode': 91, 'signal': None, 'output_digest': 'sha256:e3b0c44298fc1c149"
+}

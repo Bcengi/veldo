@@ -3,7 +3,7 @@
   "implementation_commit": "869d76ffc79d28809e3ffeb3e5c6f56ec529657e",
   "scope": "development_only",
   "selected_host": "dmitrys-mac-mini",
-  "macos_version": null,
+  "macos_version": "26.5.1 (25F80), arm64, hostname dmitrys-mini.lan",
   "real_engine_versions": null,
   "assets": [
     {
@@ -16,7 +16,7 @@
     },
     {
       "path": "engine/.veldo/project_runner_macos_os.py",
-      "sha256": "25f64d83cbd3749a7434b51148166bff508e9be9228e5ecdb047c67a830be1aa"
+      "sha256": "f71804a389a404ccdbec13765279163deecf8311dc3cd715a3aa7c329af7351d"
     },
     {
       "path": "engine/.veldo/project_runner_macos_profile.py",
@@ -82,86 +82,119 @@
   "native": [
     {
       "row": "native/claude_code/natural",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/claude_code/cooperative",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/claude_code/deadline",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/claude_code/descendant",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/claude_code/containment",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
     },
     {
       "row": "native/qualified-claude_code/natural",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     },
     {
       "row": "native/qualified-claude_code/cooperative",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     },
     {
       "row": "native/qualified-claude_code/deadline",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     },
     {
       "row": "native/codex/natural",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/codex/cooperative",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/codex/deadline",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/codex/descendant",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/codex/containment",
-      "status": "not_run",
-      "kind": "real_macos_synthetic_engine"
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
     },
     {
       "row": "native/qualified-codex/natural",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     },
     {
       "row": "native/qualified-codex/cooperative",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     },
     {
       "row": "native/qualified-codex/deadline",
       "status": "not_run",
-      "kind": "real_macos_real_cli"
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration"
     }
   ],
   "gate": "not_run",
   "activation": "disabled_until_native_qualification",
-  "review": "not_performed"
+  "review": "not_performed",
+  "native_falsifiers": [
+    {
+      "change": "drop LimitLoadToSessionType",
+      "row": "native/claude_code/natural",
+      "rejected": true,
+      "error": "Refused: unknown_outcome:launch",
+      "log": "native-falsifier-session-type.json"
+    },
+    {
+      "change": "remove the Seatbelt file-write deny",
+      "row": "native/claude_code/containment",
+      "rejected": true,
+      "error": "protected write succeeded (exit 91)",
+      "log": "native-falsifier-sandbox.json"
+    }
+  ],
+  "native_interpreter": "/opt/homebrew/bin/python3.12 (3.12.13); /usr/bin/python3 is 3.9.6 and unsupported"
 }

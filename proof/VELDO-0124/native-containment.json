@@ -1,0 +1,67 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+    "tools": true
+  },
+  "rows": [
+    {
+      "row": "native/claude_code/containment",
+      "status": "passed",
+      "elapsed": 0.5974129159003496,
+      "process": {
+        "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 24851,
+        "platform": "darwin",
+        "start": "Sat Oct 10 01:24:14 2026"
+      },
+      "worker": {
+        "pgid": 24851,
+        "process": {
+          "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 24865,
+          "platform": "darwin",
+          "start": "Sat Oct 10 01:24:14 2026"
+        }
+      },
+      "pgid": 24851,
+      "steps": [],
+      "outcome": "exited",
+      "group_empty": true
+    },
+    {
+      "row": "native/codex/containment",
+      "status": "passed",
+      "elapsed": 0.23667516745626926,
+      "process": {
+        "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 24894,
+        "platform": "darwin",
+        "start": "Sat Oct 10 01:24:14 2026"
+      },
+      "worker": {
+        "pgid": 24894,
+        "process": {
+          "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 24904,
+          "platform": "darwin",
+          "start": "Sat Oct 10 01:24:15 2026"
+        }
+      },
+      "pgid": 24894,
+      "steps": [],
+      "outcome": "exited",
+      "group_empty": true
+    }
+  ],
+  "status": "passed",
+  "qualification_created": false
+}

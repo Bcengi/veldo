@@ -1,12 +1,12 @@
 # VELDO-0124 build and pending qualification
 
-This is a Linux build observation, not a shipped specification, gate stamp,
+This is a build observation, not a shipped specification, gate stamp,
 native qualification, activation approval or independent review. The selected
-machine is the SSH tailnet alias `dmitrys-mac-mini`. Its actual hostname, macOS
-version, Python installation and Claude Code/Codex versions remain unobserved.
-Access is expected on 2026-10-10. No SSH connection, live capture, login or provider
-invocation was attempted during this build. All three ACs remain pending native
-evidence. The specification's status and criteria are unchanged.
+machine is the SSH tailnet alias `dmitrys-mac-mini`: hostname `dmitrys-mini.lan`,
+macOS 26.5.1 (25F80), arm64, uid 501. The ten synthetic engine native rows ran
+there on 2026-10-10 (see "Native results" below). The real CLI rows did not run:
+no login, live capture or provider invocation was attempted. All three ACs remain
+pending real CLI evidence and the canonical gate. Status and criteria are unchanged.
 
 ## Implementation and installation
 
@@ -65,9 +65,10 @@ made. Python 3.11 or newer is required by these assets.
 | AC2 | `AC2/deadline` | Ignore the elapsed deadline | `capacity`, `contract-deadline`, `precall-caps`, `invocation-boundaries` |
 | AC3 | `AC3/descendant` | Declare the group ended after only parent exit | `natural`, `cooperative`, `ignoring`, `notification-lost`, `heartbeat`, `unknown`, `retirement-obligations`, `unknown-charge` |
 
-The extra falsifiers disable capacity, launch before the pre-call check, and bypass
-the unknown-outcome retirement refusal. `negative-controls.json` names each source
-hash, single-change patch, log and failed row. All six were rejected. The scripts
+The extra falsifiers disable capacity, launch before the pre-call check, bypass
+the unknown-outcome retirement refusal and drop the launchd Background session type
+(`AC1-session-type`, failing `AC1/apple-interfaces`). `negative-controls.json` names
+each source hash, single-change patch, log and failed row. All seven were rejected. The scripts
 use only these suites, sequentially:
 
 ```
@@ -96,9 +97,12 @@ Do not copy authority keys, the authority database or real login files into it.
 
 ```
 git archive HEAD .veldo proof/VELDO-0124 | ssh dmitrys-mac-mini 'mkdir -p ~/veldo-0124-check && tar -x -C ~/veldo-0124-check'
-ssh dmitrys-mac-mini 'cd ~/veldo-0124-check && python3 proof/VELDO-0124/native_checks.py lifecycle > proof/VELDO-0124/native-lifecycle.json 2>&1'
-ssh dmitrys-mac-mini 'cd ~/veldo-0124-check && python3 proof/VELDO-0124/native_checks.py containment > proof/VELDO-0124/native-containment.json 2>&1'
+ssh dmitrys-mac-mini 'cd ~/veldo-0124-check && /opt/homebrew/bin/python3.12 proof/VELDO-0124/native_checks.py lifecycle > proof/VELDO-0124/native-lifecycle.json 2>&1'
+ssh dmitrys-mac-mini 'cd ~/veldo-0124-check && /opt/homebrew/bin/python3.12 proof/VELDO-0124/native_checks.py containment > proof/VELDO-0124/native-containment.json 2>&1'
 ```
+
+`/usr/bin/python3` on this Mac is 3.9.6, below the required 3.11, and lacks
+`hashlib.file_digest`; use the owner's existing Homebrew 3.12. Nothing is installed.
 
 These drive real launchd, kqueue, ps, sandbox-exec, Git and processes on the Mac.
 For each of `claude_code` and `codex` fixture configurations, lifecycle declares
@@ -109,6 +113,57 @@ protected directory, including through a symlink, while their scratch write must
 succeed. These ten rows require the real Mac and use synthetic engines, openly.
 They establish native primitives, not real CLI qualification. On Linux the driver
 returns 2 and `not_run`, not a skip counted as a native pass.
+
+## Native results, 2026-10-10
+
+Synthetic engines on real launchd, kqueue, ps, sandbox-exec and Git, Python 3.12.13:
+
+| Row | claude_code | codex |
+| --- | --- | --- |
+| `natural` | passed, exited 0, no stop steps | passed |
+| `cooperative` | passed, exited after wrapper TERM | passed |
+| `deadline` | passed, runtime_cap, group TERM at 1.16 s, excess launch refused | passed |
+| `descendant` | passed, cooperative, terminate, kill; group empty; outcome unknown, slot retained, release refused | passed |
+| `containment` | passed, scratch write allowed, direct and symlinked protected writes denied to worker and child | passed |
+
+Results: `native-lifecycle.json`, `native-containment.json`. The descendant row
+ends `unknown` by design: KILL leaves no wrapper receipt, so the slot stays held.
+
+The first native run failed `native/claude_code/natural` with
+`unknown_outcome:launch`. On macOS 26, `launchctl bootstrap user/501` refuses a
+plist without `LimitLoadToSessionType=Background` with EIO 5. `gui/501` accepts
+only Aqua jobs and exists only with a console login, so it is wrong for a headless
+worker. The job now declares the Background session type in `user/<uid>`. The
+launchd job ran as pgid leader with ppid 1, so `AbandonProcessGroup=False`
+and `killpg` cover ordinary descendants. Native falsifiers, each a single change
+in a scratch copy on the Mac: dropping the session key fails `natural` with
+`unknown_outcome:launch` (`native-falsifier-session-type.json`); removing the
+Seatbelt deny fails `containment` with the protected write succeeding, exit 91
+(`native-falsifier-sandbox.json`). The Linux falsifier is `AC1-session-type`.
+
+## What the engines check needs from the owner
+
+Not run. It launches the real CLIs with a real prompt, so every probe is a real
+subscription model call (six calls: natural, cooperative, deadline per engine).
+Observed without executing anything: Claude Code 2.1.285 at
+`~/.local/share/claude/versions/2.1.285`, reached through the symlink
+`~/.local/bin/claude`. No Codex CLI was found in `/opt/homebrew`, `/usr/local`,
+`~/.local/bin`, npm, bun, volta or `/Applications`; its install path and version
+are unknown. The owner must provide:
+
+1. Codex: whether it is installed, its absolute binary path and version, or
+   permission to install it under the user account only.
+2. For each engine, the absolute versioned binary for `argv[0]` (not the
+   auto-updating symlink, which would turn an update into `stale_version:engine_binary`),
+   the supported noninteractive argv, and the configuration digest from the
+   authority's accepted adapter configuration.
+3. A fresh, dedicated subscription profile directory per engine, separate from
+   `~/.claude` and `~/.codex`, passed as `CLAUDE_CONFIG_DIR` or `CODEX_HOME`,
+   and which already qualified account each one is. Logging it in is the owner's
+   act; this harness never logs in or reads existing logins.
+4. Explicit consent for six model calls, and the authority's accepted contracts
+   and pre-call reservation receipts for them (six slots in a qualification pool).
+5. A Python 3.11+ path for the run (`/opt/homebrew/bin/python3.12` worked).
 
 Real CLI rows are `native/qualified-<engine>/natural`, `cooperative`, `deadline`
 for both installed engines. Before running them, the owner's assistant must record

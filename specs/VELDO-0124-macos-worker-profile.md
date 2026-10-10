@@ -130,3 +130,10 @@ CLI configurations remain pending; fixtures confer no qualification or activatio
 All new runtime assets map to the existing project_runner area. Packs compose
 them from the engine canon. Criteria, risk, approval requirements and status are
 unchanged. The canonical gate and independent review remain the reviewer's work.
+
+2026-10-10: first native run on the selected Mac, hostname `dmitrys-mini.lan`,
+macOS 26.5.1 (25F80) arm64, Python 3.12.13. The ten synthetic engine lifecycle and
+containment rows passed after one fix: launchd jobs in `user/<uid>` must declare
+the Background session type. Real Claude Code and Codex rows remain not run and
+need owner supplied configurations; `proof/VELDO-0124/README.md` lists them.
+Criteria, risk, approval requirements and status are unchanged.
