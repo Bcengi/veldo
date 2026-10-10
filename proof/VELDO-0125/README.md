@@ -336,3 +336,43 @@ systemd units or /run/user ran, through `run_suite.py` (no shared dispatcher che
 105_veldo_0125_relay 15 of 15, 106_veldo_0125_routing 8 of 8, 59_veldo_0037_aliases
 53 of 53 including aliases/owned-by-code-not-name. 86_veldo_0189_engine_upgrade, the
 other ownership consumer, starts user units and was not run; it remains reviewer work.
+
+## Native observations on the real Mac (2026-10-10)
+
+Run from this host worktree against `dmitrys-mac-mini` (dmitrys-mini.lan, macOS 26.5.1,
+pinned /opt/homebrew/bin/python3.12), synthetic engines only, no login or provider call.
+Transport: a dedicated Mac key `~/.ssh/veldo_transport_ed25519` (comment
+veldo-mac-transport, separate from the worker signing key, which the driver creates per run),
+a Mac Host alias `veldo-linux-relay` (HostName 100.127.52.61, IdentitiesOnly, BatchMode,
+StrictHostKeyChecking against `~/.ssh/veldo_transport_known_hosts`, which holds this host's
+ED25519 key, fingerprint SHA256:xboQImbyCTRV7Nc8tpP77QzTRZeM1dTMjpeUILpYGwc, compared with
+`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` before recording), and this single
+authorized_keys line on the Linux account:
+
+```
+restrict,from="100.88.156.52",command="/usr/bin/python3 /home/dmitry/projects/veldo-worktrees/veldo-0125-host/.veldo/control_relay.py /home/dmitry/.veldo-0125-relay/authority.sock" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHpskPE2uQeQ2qzvh2V1/NvmHMVj5MMFxS+FIx5PUfS veldo-mac-transport
+```
+
+`native/forced-command.txt`: from the Mac, `ssh veldo-linux-relay id`, a shell command
+line, `/bin/sh -c id` and no command each reached only the relay (its own "not answering"
+message, exit 3, no command output); a PTY request and a remote forward were refused.
+
+The first driver run reached the authority over that relay and was refused
+unenrolled_workspace: `control_client.build_request` resolved the Linux workspace against
+the Mac's filesystem (/tmp is /private/tmp there). 8fd5bbf3 sends the enrolled path
+verbatim; `AC1/remote-workspace` and `remote-workspace.diff` cover it. The rerun, with the
+exact README commands (`ipc_checks.py`, then `native_roundtrip.py veldo-linux-relay
+/home/dmitry/.veldo-0125-relay/authority.sock /Users/dmitry/.ssh/veldo_transport_ed25519`),
+exited 0 and observed, for each of claude_code and codex:
+native/AC1/signed-families, native/AC3/real-work, native/AC3/dispatch-other (one
+Mac-signed result naming the other running dispatch refused binding_mismatch, absent from
+the journal) and native/AC1/authority-stopped (every family AUTHORITY_UNAVAILABLE, no
+Mac-local store). native/AC1/linux-ipc was observed over a real socket. `native/` holds the
+summary, candidates, results with the signed requests, Mac logs and authority observations;
+private fixture keys were not retained.
+
+The driver's Mac export now lands in `~/veldo-0125-check/run-<unique>`. Afterwards the
+whole `~/veldo-0125-check` was removed; `native/mac-cleanup.txt` shows no org.veldo
+launchd job, run temp or probe process left. Only the transport key pair, its known_hosts
+file and `~/.ssh/config` remain on the Mac. This is observation, not qualification,
+activation or a gate stamp.

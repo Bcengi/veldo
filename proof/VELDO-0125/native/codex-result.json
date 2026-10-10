@@ -1,0 +1,451 @@
+{
+  "ok": true,
+  "reason": "worker_result",
+  "receipt": {
+    "committed": true,
+    "command_id": "4f239bf1-86ff-4b18-aab7-770382225464",
+    "seq": 33,
+    "record_digest": "sha256:66dbf1656e3363acdaf560b77c1263eeac3089d5046fbf76a6ef79ee62151ad2",
+    "after_versions": {
+      "worker-spend:dispatch/native/codex": 1,
+      "worker:dispatch/native/codex": 4
+    },
+    "effects": [],
+    "reservations": [],
+    "result_digest": "sha256:34686d727d8b6604e4a5a9423d2302766c73f4057ce07cad654ccbbdc105c7f5",
+    "replayed": false
+  },
+  "binding": {
+    "dispatch_id": "dispatch/native/codex",
+    "unit": "unit",
+    "host": "dmitrys-mini.lan",
+    "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7"
+  },
+  "record": {
+    "acceptance": "sha256:efc836c9e9b204b1c486953d84ebabcbe1d0f83b3fa5d7795a6edc3457a0c011",
+    "commands": [
+      {
+        "command_id": "854f9304-5396-4551-880d-cc7bca50ba03",
+        "digest": "sha256:97929e7332761dced0a149b455d255b07f3c70b568c9362edc87889eadc81a4f",
+        "operation": "worker_claim"
+      },
+      {
+        "command_id": "b42b1985-a060-4dcd-8dd7-aec3cb15bb93",
+        "digest": "sha256:39a027075a7dd1752acfac16847245e58aff9869034d9fee49b8291f5b7d2f59",
+        "operation": "worker_launch"
+      },
+      {
+        "command_id": "0cd974a4-cd7e-41be-b5be-02f65225507b",
+        "digest": "sha256:d5ad6c9ee7d008264de5816b9b3c44a409919865aaa6a9e883b19c8dbd368be9",
+        "operation": "worker_launch"
+      },
+      {
+        "command_id": "4f239bf1-86ff-4b18-aab7-770382225464",
+        "operation": "worker_result",
+        "digest": "sha256:884f0a8ad9635a443473ca53fd3c50b494ff47b9a17621c0cbb163130971c061"
+      }
+    ],
+    "configuration_digest": "sha256:21606a6e53f2f001d6df23390b5b94246e9d77426019f7839c6231513059742e",
+    "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7",
+    "dispatch_id": "dispatch/native/codex",
+    "domain_uuid": "domain",
+    "host": "dmitrys-mini.lan",
+    "invocation": "remote/dispatch/native/codex",
+    "principal": "mac",
+    "process": {
+      "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+      "host": "dmitrys-mini.lan",
+      "pid": 60819,
+      "platform": "darwin",
+      "start": "Sat Oct 10 13:50:15 2026"
+    },
+    "repository_uuid": "repo",
+    "reservation": {
+      "after_versions": {
+        "reservation:invocation:[\"domain\",\"remote/dispatch/native/codex\"]": 1
+      },
+      "command_id": "remote-call/dispatch/native/codex",
+      "committed": true,
+      "effects": [],
+      "record_digest": "sha256:72ad1b1151c294fc53df25ab97138f28d229a199bf1b813bf4638caea3fc0c4b",
+      "replayed": false,
+      "reservations": [],
+      "result_digest": "sha256:74512870f444dea9dba5690fabd2f45b46e43aa66643b5662b1adb339430be58",
+      "seq": 21
+    },
+    "state": "exited",
+    "store_uuid": "store",
+    "unit": "unit",
+    "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+    "spend_receipt": {
+      "committed": true,
+      "command_id": "remote-spend/dispatch/native/codex",
+      "seq": 32,
+      "record_digest": "sha256:2875aa47908dd9313a44cc00036ee9867678c883a932690a15e017061987adfc",
+      "after_versions": {
+        "reservation:invocation:[\"domain\",\"remote/dispatch/native/codex\"]": 2
+      },
+      "effects": [],
+      "reservations": [],
+      "result_digest": "sha256:f26319b6ae70e719676b9b86d3eab51202b6262e15b9f8989c15b7f70845ae1c",
+      "replayed": false
+    },
+    "observation": {
+      "state": "exited",
+      "process": {
+        "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 60819,
+        "platform": "darwin",
+        "start": "Sat Oct 10 13:50:15 2026"
+      },
+      "termination": {
+        "returncode": 0,
+        "signal": null,
+        "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output_bytes": 0,
+        "deadline_stop": false
+      },
+      "worker": {
+        "pgid": 60826,
+        "process": {
+          "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 60826,
+          "platform": "darwin",
+          "start": "Sat Oct 10 13:50:16 2026"
+        }
+      },
+      "steps": []
+    },
+    "references": {
+      "output": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "proof": "synthetic-natural/codex"
+    },
+    "usage": {
+      "tokens": 0,
+      "messages": 0
+    },
+    "charge": "reported"
+  },
+  "contract": {
+    "attempt": 1,
+    "authority_generation": 1,
+    "capability": {
+      "adapter": "codex",
+      "configuration": {
+        "environment": {},
+        "identity": "fixture only"
+      },
+      "configuration_digest": "sha256:21606a6e53f2f001d6df23390b5b94246e9d77426019f7839c6231513059742e"
+    },
+    "claim": null,
+    "deadline": 1791640814.6383822,
+    "dispatch_id": "dispatch/native/codex",
+    "domain": "domain",
+    "input": {
+      "context": {
+        "host_route": {
+          "host": "dmitrys-mini.lan",
+          "platform": "darwin",
+          "principal": "mac",
+          "profile_digest": "sha256:c4bec8371218df98282e6b58a91f200f5226b8a1afa39653be0ca720e753a960",
+          "required": [
+            "ios-build",
+            "macos"
+          ],
+          "runtime_profile": "sha256:9f662fc15a8cf3c97bf926251f1b30e702a218bf6e8be027e0e2c4d346d4828d"
+        }
+      },
+      "decision": {
+        "decision_id": "accepted-review",
+        "inputs": {
+          "required_host_capabilities": [
+            "macos",
+            "ios-build"
+          ],
+          "source": {
+            "commit": "b4c3a879389aada97747c33f7d21e467c753e5f4",
+            "tree": "82e0f26b4af13a514bf7d4d35d42ed89244fad56"
+          }
+        },
+        "station": "review",
+        "unit": "unit"
+      },
+      "payload": {},
+      "payload_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    "repository": "repo",
+    "reservation": {
+      "account": "account",
+      "digest": "sha256:bf796f3f7b938b023d9491a060104956a5058cf2297606d766a3dc3937ea6049",
+      "entity": "reservation:worker:[\"domain\",\"dispatch/native/codex\"]",
+      "project": "project",
+      "version": 1
+    },
+    "schema": "veldo.dispatch/v1",
+    "source": {
+      "commit": "b4c3a879389aada97747c33f7d21e467c753e5f4",
+      "tree": "82e0f26b4af13a514bf7d4d35d42ed89244fad56"
+    },
+    "station": "review",
+    "unit": "unit"
+  },
+  "rows": [
+    "native/AC1/signed-families/codex",
+    "native/AC3/real-work/codex",
+    "native/AC3/dispatch-other/codex"
+  ],
+  "signed_requests": [
+    {
+      "schema": "veldo.control_request/v1",
+      "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+      "domain_uuid": "domain",
+      "store_uuid": "store",
+      "command": {
+        "command": {
+          "command_id": "854f9304-5396-4551-880d-cc7bca50ba03",
+          "principal": "mac",
+          "operation": "worker_claim",
+          "parameters": {
+            "dispatch_id": "dispatch/native/codex"
+          },
+          "domain_uuid": "domain",
+          "store_uuid": "store",
+          "repository_uuid": "repo"
+        },
+        "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAAUdmVsZG8td29ya2VyLWNvbW1hbmQAAAAAAAAABnNoYTUxMgAA\nAFMAAAALc3NoLWVkMjU1MTkAAABA0DYeQnXEKvKioYvRzhmsw678AB7o2llKy0n2rIj9D1\nHW2t4zAP+0QDZq/OLDn07dR4PwSQMJQyp/zmZozOB/Ag==\n-----END SSH SIGNATURE-----\n"
+      },
+      "repository_uuid": "repo",
+      "repository_root_commit": [
+        "37bbd8ec7fead2426b0f66917a4140d032138962"
+      ],
+      "clone_uuid": "24387def-6473-4402-aeb8-587d9ccfa934",
+      "binding_digest": "sha256:a6e176683c2a470875d01e373cad10270953d95d819dbe9d9bf5e04cbe8d42ef",
+      "authority_generation": 1,
+      "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\nc2gtZWQyNTUxOQAAAEA1w4iDRKTHDTUNSlK12dF4Upgy8jLAf4FNj1b7ptkdjdOiC6iqB2\nIGDIuPJVyHAF5J5iWj3nRc3NvVhGBCrKcN\n-----END SSH SIGNATURE-----\n"
+    },
+    {
+      "schema": "veldo.control_request/v1",
+      "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+      "domain_uuid": "domain",
+      "store_uuid": "store",
+      "command": {
+        "command": {
+          "command_id": "b42b1985-a060-4dcd-8dd7-aec3cb15bb93",
+          "principal": "mac",
+          "operation": "worker_launch",
+          "parameters": {
+            "dispatch_id": "dispatch/native/codex",
+            "unit": "unit",
+            "host": "dmitrys-mini.lan",
+            "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7",
+            "phase": "accept",
+            "receiver": {
+              "platform": "darwin",
+              "host": "dmitrys-mini.lan",
+              "pid": 60793,
+              "start": "Sat Oct 10 13:50:15 2026",
+              "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026"
+            },
+            "runtime_seconds": 5
+          },
+          "domain_uuid": "domain",
+          "store_uuid": "store",
+          "repository_uuid": "repo"
+        },
+        "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAAUdmVsZG8td29ya2VyLWNvbW1hbmQAAAAAAAAABnNoYTUxMgAA\nAFMAAAALc3NoLWVkMjU1MTkAAABAmk8ZLntaU0R2XNAMYc0k8IM9TBFJ09Yiub71gbvRZl\nx1Rgfjc0RWi32I4slINh+5c0OhRvjSnQKnsYhBpHZyDQ==\n-----END SSH SIGNATURE-----\n"
+      },
+      "repository_uuid": "repo",
+      "repository_root_commit": [
+        "37bbd8ec7fead2426b0f66917a4140d032138962"
+      ],
+      "clone_uuid": "24387def-6473-4402-aeb8-587d9ccfa934",
+      "binding_digest": "sha256:a6e176683c2a470875d01e373cad10270953d95d819dbe9d9bf5e04cbe8d42ef",
+      "authority_generation": 1,
+      "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\nc2gtZWQyNTUxOQAAAED1icWhY5LRT/+yUESoOoDyn4izuF+KtLBmI9I7EZY7ltroWAY5FH\n0ABhxcaBHgUKA25kqGJgIUGxady5PY71AF\n-----END SSH SIGNATURE-----\n"
+    },
+    {
+      "schema": "veldo.control_request/v1",
+      "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+      "domain_uuid": "domain",
+      "store_uuid": "store",
+      "command": {
+        "command": {
+          "command_id": "0cd974a4-cd7e-41be-b5be-02f65225507b",
+          "principal": "mac",
+          "operation": "worker_launch",
+          "parameters": {
+            "dispatch_id": "dispatch/native/codex",
+            "unit": "unit",
+            "host": "dmitrys-mini.lan",
+            "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7",
+            "phase": "running",
+            "process": {
+              "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+              "host": "dmitrys-mini.lan",
+              "pid": 60819,
+              "platform": "darwin",
+              "start": "Sat Oct 10 13:50:15 2026"
+            }
+          },
+          "domain_uuid": "domain",
+          "store_uuid": "store",
+          "repository_uuid": "repo"
+        },
+        "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAAUdmVsZG8td29ya2VyLWNvbW1hbmQAAAAAAAAABnNoYTUxMgAA\nAFMAAAALc3NoLWVkMjU1MTkAAABAZqBXuLoR1b071O4bvgcYjpwG4+QpHFdr6iBogkwyd6\nE5VqavL+O/UMcPToSbN+oIE0dbo8NhGcBkQeTAKbPjAA==\n-----END SSH SIGNATURE-----\n"
+      },
+      "repository_uuid": "repo",
+      "repository_root_commit": [
+        "37bbd8ec7fead2426b0f66917a4140d032138962"
+      ],
+      "clone_uuid": "24387def-6473-4402-aeb8-587d9ccfa934",
+      "binding_digest": "sha256:a6e176683c2a470875d01e373cad10270953d95d819dbe9d9bf5e04cbe8d42ef",
+      "authority_generation": 1,
+      "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\nc2gtZWQyNTUxOQAAAEDQ+Zj5dOgxo2wUNGX3JKgoTGO2ez/d7mU7chS+zW+6peA/2qHc9K\nZRc7jSjgfWF/OO4KPV74YSjoL42tMPDpwO\n-----END SSH SIGNATURE-----\n"
+    },
+    {
+      "schema": "veldo.control_request/v1",
+      "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+      "domain_uuid": "domain",
+      "store_uuid": "store",
+      "command": {
+        "command": {
+          "command_id": "4f239bf1-86ff-4b18-aab7-770382225464",
+          "principal": "mac",
+          "operation": "worker_result",
+          "parameters": {
+            "dispatch_id": "dispatch/native/codex",
+            "unit": "unit",
+            "host": "dmitrys-mini.lan",
+            "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7",
+            "observation": {
+              "state": "exited",
+              "process": {
+                "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+                "host": "dmitrys-mini.lan",
+                "pid": 60819,
+                "platform": "darwin",
+                "start": "Sat Oct 10 13:50:15 2026"
+              },
+              "termination": {
+                "returncode": 0,
+                "signal": null,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "output_bytes": 0,
+                "deadline_stop": false
+              },
+              "worker": {
+                "pgid": 60826,
+                "process": {
+                  "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+                  "host": "dmitrys-mini.lan",
+                  "pid": 60826,
+                  "platform": "darwin",
+                  "start": "Sat Oct 10 13:50:16 2026"
+                }
+              },
+              "steps": []
+            },
+            "usage": {
+              "tokens": 0,
+              "messages": 0
+            },
+            "references": {
+              "output": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "proof": "synthetic-natural/codex"
+            }
+          },
+          "domain_uuid": "domain",
+          "store_uuid": "store",
+          "repository_uuid": "repo"
+        },
+        "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAAUdmVsZG8td29ya2VyLWNvbW1hbmQAAAAAAAAABnNoYTUxMgAA\nAFMAAAALc3NoLWVkMjU1MTkAAABAL5RpMLaByYgoOIZdoVc+8jl5i1whSvNATeFmCyP6ao\neeLDGiIMcWy7xjIak5ZWiTf0PUF+9WqwlIC2zhHqaSAw==\n-----END SSH SIGNATURE-----\n"
+      },
+      "repository_uuid": "repo",
+      "repository_root_commit": [
+        "37bbd8ec7fead2426b0f66917a4140d032138962"
+      ],
+      "clone_uuid": "24387def-6473-4402-aeb8-587d9ccfa934",
+      "binding_digest": "sha256:a6e176683c2a470875d01e373cad10270953d95d819dbe9d9bf5e04cbe8d42ef",
+      "authority_generation": 1,
+      "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\nc2gtZWQyNTUxOQAAAEA1R/YgsBW84whP+e0VtZNaUWDUZBIblu7JiVZcoVZoIvbBgBrF1R\n/Ggp5herGXN1cf421TncdyWkf6e0/WcqsL\n-----END SSH SIGNATURE-----\n"
+    }
+  ],
+  "rejected_requests": [
+    {
+      "schema": "veldo.control_request/v1",
+      "workspace": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4/codex/repo",
+      "domain_uuid": "domain",
+      "store_uuid": "store",
+      "command": {
+        "command": {
+          "command_id": "ac626d00-a62e-4728-90ee-551972e5e031",
+          "principal": "mac",
+          "operation": "worker_result",
+          "parameters": {
+            "dispatch_id": "dispatch/native/codex/other",
+            "unit": "unit",
+            "host": "dmitrys-mini.lan",
+            "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7",
+            "observation": {
+              "state": "exited",
+              "process": {
+                "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+                "host": "dmitrys-mini.lan",
+                "pid": 60819,
+                "platform": "darwin",
+                "start": "Sat Oct 10 13:50:15 2026"
+              },
+              "termination": {
+                "returncode": 0,
+                "signal": null,
+                "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "output_bytes": 0,
+                "deadline_stop": false
+              },
+              "worker": {
+                "pgid": 60826,
+                "process": {
+                  "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+                  "host": "dmitrys-mini.lan",
+                  "pid": 60826,
+                  "platform": "darwin",
+                  "start": "Sat Oct 10 13:50:16 2026"
+                }
+              },
+              "steps": []
+            },
+            "usage": {
+              "tokens": 0,
+              "messages": 0
+            },
+            "references": {}
+          },
+          "domain_uuid": "domain",
+          "store_uuid": "store",
+          "repository_uuid": "repo"
+        },
+        "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAAUdmVsZG8td29ya2VyLWNvbW1hbmQAAAAAAAAABnNoYTUxMgAA\nAFMAAAALc3NoLWVkMjU1MTkAAABACtrl0d35+F0nEaQhZr1gMox+0kSkBc7CMYiBkA76Sw\nktODREn1eUJddGxnhoEafii28OubnsBlN+k8pLVoGbDQ==\n-----END SSH SIGNATURE-----\n"
+      },
+      "repository_uuid": "repo",
+      "repository_root_commit": [
+        "37bbd8ec7fead2426b0f66917a4140d032138962"
+      ],
+      "clone_uuid": "24387def-6473-4402-aeb8-587d9ccfa934",
+      "binding_digest": "sha256:a6e176683c2a470875d01e373cad10270953d95d819dbe9d9bf5e04cbe8d42ef",
+      "authority_generation": 1,
+      "signature": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgT3D66MNPVgLP0m4pwBhlirJpRH\nSZjKDAKRaO/hzuaVgAAAANdmVsZG8tY29tbWFuZAAAAAAAAAAGc2hhNTEyAAAAUwAAAAtz\nc2gtZWQyNTUxOQAAAEDDyHpauEI02+VuRns2Prn0flLCW3OAvzXL2T+PoxHIjEvn13Ipt1\nTgjWoS6ifDJWJT9pWVQii9gJ7zjY/hKRkH\n-----END SSH SIGNATURE-----\n"
+    }
+  ],
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+    "tools": true
+  },
+  "no_local_store": true,
+  "watermark": 33,
+  "status": "observed"
+}

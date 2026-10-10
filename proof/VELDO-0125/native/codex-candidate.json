@@ -1,0 +1,37 @@
+{
+  "engine": "codex",
+  "profile": {
+    "host": "dmitrys-mini.lan",
+    "principal": "mac",
+    "platform": "darwin",
+    "revision": 1,
+    "capabilities": [
+      "shell",
+      "macos",
+      "ios-build"
+    ],
+    "available": true,
+    "engines": {
+      "claude_code": "sha256:21606a6e53f2f001d6df23390b5b94246e9d77426019f7839c6231513059742e",
+      "codex": "sha256:21606a6e53f2f001d6df23390b5b94246e9d77426019f7839c6231513059742e"
+    },
+    "runtime_profile": "sha256:9f662fc15a8cf3c97bf926251f1b30e702a218bf6e8be027e0e2c4d346d4828d",
+    "qualification": {
+      "kind": "native",
+      "profile_digest": "sha256:c4bec8371218df98282e6b58a91f200f5226b8a1afa39653be0ca720e753a960",
+      "reference": "SYNTHETIC CANDIDATE PROBE ONLY"
+    }
+  },
+  "source": {
+    "commit": "b4c3a879389aada97747c33f7d21e467c753e5f4",
+    "tree": "82e0f26b4af13a514bf7d4d35d42ed89244fad56"
+  },
+  "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE9w+ujDT1YCz9JuKcAYZYqyaUR0mYygwCkWjv4c7mlY dmitry@dmitrys-mini.lan",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+    "tools": true
+  }
+}

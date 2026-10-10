@@ -1,0 +1,18 @@
+== from Mac: ssh veldo-linux-relay id
+relay: the authority at /home/dmitry/.veldo-0125-relay/authority.sock is not answering: [Errno 2] No such file or directory
+exit=3
+== from Mac: ssh veldo-linux-relay echo SHELL-REACHED; uname -a; cat /etc/hostname
+relay: the authority at /home/dmitry/.veldo-0125-relay/authority.sock is not answering: [Errno 2] No such file or directory
+exit=3
+== from Mac: ssh veldo-linux-relay /bin/sh -c id
+relay: the authority at /home/dmitry/.veldo-0125-relay/authority.sock is not answering: [Errno 2] No such file or directory
+exit=3
+== from Mac: ssh veldo-linux-relay <no remote command>
+relay: the authority at /home/dmitry/.veldo-0125-relay/authority.sock is not answering: [Errno 2] No such file or directory
+exit=3
+== from Mac: ssh -tt veldo-linux-relay id (pty requested)
+PTY allocation request failed on channel 0
+exit=255
+== from Mac: ssh -R forwarding request
+Error: remote port forwarding failed for listen port 18999
+exit=255

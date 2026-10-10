@@ -1,0 +1,120 @@
+{
+  "status": "observed",
+  "rows": [
+    {
+      "rows": [
+        "native/AC1/signed-families/claude_code",
+        "native/AC3/real-work/claude_code",
+        "native/AC3/dispatch-other/claude_code"
+      ],
+      "status": "observed",
+      "binding": {
+        "dispatch_id": "dispatch/native/claude_code",
+        "unit": "unit",
+        "host": "dmitrys-mini.lan",
+        "contract_digest": "sha256:4e9cc7c3858fb3f4385a8a2f546661733ae0751d5015b92cee03c9b548f4a5b5"
+      },
+      "machine": "dmitrys-mini.lan",
+      "usage": {
+        "messages": 0,
+        "tokens": 0
+      },
+      "terminal": {
+        "process": {
+          "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 60709,
+          "platform": "darwin",
+          "start": "Sat Oct 10 13:50:10 2026"
+        },
+        "state": "exited",
+        "steps": [],
+        "termination": {
+          "deadline_stop": false,
+          "output_bytes": 0,
+          "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "returncode": 0,
+          "signal": null
+        },
+        "worker": {
+          "pgid": 60717,
+          "process": {
+            "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+            "host": "dmitrys-mini.lan",
+            "pid": 60717,
+            "platform": "darwin",
+            "start": "Sat Oct 10 13:50:11 2026"
+          }
+        }
+      },
+      "references": {
+        "output": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "proof": "synthetic-natural/claude_code"
+      }
+    },
+    {
+      "row": "native/AC1/authority-stopped/claude_code",
+      "status": "observed",
+      "no_local_store": true
+    },
+    {
+      "rows": [
+        "native/AC1/signed-families/codex",
+        "native/AC3/real-work/codex",
+        "native/AC3/dispatch-other/codex"
+      ],
+      "status": "observed",
+      "binding": {
+        "dispatch_id": "dispatch/native/codex",
+        "unit": "unit",
+        "host": "dmitrys-mini.lan",
+        "contract_digest": "sha256:3f966ca68cf7f28e12c71126723addfe79e18ff8d23ac89ccff943072349b6c7"
+      },
+      "machine": "dmitrys-mini.lan",
+      "usage": {
+        "messages": 0,
+        "tokens": 0
+      },
+      "terminal": {
+        "process": {
+          "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 60819,
+          "platform": "darwin",
+          "start": "Sat Oct 10 13:50:15 2026"
+        },
+        "state": "exited",
+        "steps": [],
+        "termination": {
+          "deadline_stop": false,
+          "output_bytes": 0,
+          "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "returncode": 0,
+          "signal": null
+        },
+        "worker": {
+          "pgid": 60826,
+          "process": {
+            "boot_id": "{ sec = 1785738141, usec = 232856 } Mon Aug  3 06:22:21 2026",
+            "host": "dmitrys-mini.lan",
+            "pid": 60826,
+            "platform": "darwin",
+            "start": "Sat Oct 10 13:50:16 2026"
+          }
+        }
+      },
+      "references": {
+        "output": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "proof": "synthetic-natural/codex"
+      }
+    },
+    {
+      "row": "native/AC1/authority-stopped/codex",
+      "status": "observed",
+      "no_local_store": true
+    }
+  ],
+  "evidence": "/tmp/v125-run-0JD7U1/v125-native-gp126ta4",
+  "mac_export": "veldo-0125-check/run-79a1b3c79ae5",
+  "scope": "synthetic engines only; no qualification or activation"
+}
