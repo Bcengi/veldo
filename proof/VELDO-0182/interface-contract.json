@@ -1,0 +1,70 @@
+{
+  "schema": "veldo.memory-interface-captures/v1",
+  "source_policy": "Read in place. No captured files or data copied into the repository.",
+  "adapters": {
+    "ava_memory": {
+      "capture": "myday/mem0_memory",
+      "version": "b641e2ad6c01deb54888ffc7be27b72f029941f7",
+      "files": {
+        "cli.py": "f33cca26a22e94752f42e15c72782e98242a17384ec9267001da522939f00910",
+        "config.py": "3b16c752e08171db92c04ba9354502f4eab07b2f0c095081cea267bb1c474a0b",
+        "mcp_server.py": "8d012b70068091b7097bcff5e344720dc11925d0a526955bab67c456c9987663",
+        "memory_store.py": "aa3b67b2864deffbe7bc22aa2ca3a171ae1f262967039ac5e706ed1538b2b57d"
+      }
+    },
+    "knowledge_graph": {
+      "capture": "myday/knowledge_graph",
+      "version": "81541d04ea30c30808145f7498516033ee6cd14a",
+      "files": {
+        "cli.py": "d329a825badc8a530453f0fc948a61a35b191f161c3d0400c5f0972a7ef12463",
+        "db.py": "f74cd05250a2b603d841032accf0d5b799aa560ffda128cbfcbe8758d97a4921",
+        "embeddings.py": "fd1ad1f1a1c83b8283f20af7a0f2e93223f2d53dd56a2c29229832a13c0a823c",
+        "mcp_server.py": "eef1342973a0d251f9e467a7d5e025919e773a968f0c071565b9d00633927a2b",
+        "schema.py": "47ff237fc1fd199b0a5ec5f0134cf802918f5d77aba2d1decbddca1b1c87fc36",
+        "seed.py": "d7ed8e594f695d9ef49a41275330cf26d266dc5ffcb7fa80bb9a6187be6d9fac"
+      }
+    },
+    "memory_kb": {
+      "capture": "myday/memory_kb",
+      "version": "879a46b2b8eb127f525cffd22c9e508b36db5546",
+      "files": {
+        ".sync_cache/index_all.py": "c55aaced2a884ff6d7027949d0420f97b7b6b8bc1c8963a04475d5ff91f0d48e",
+        "_confluence_sync_helper.py": "00e3f31b5e4590c7a7c4df3c6c7c16ee7c501f3e5de2c97adf6d6062a353daf4",
+        "cli.py": "ea71ff99b5eae5aab6a6fab605f75dbf9bc29766ae03ed37a33a06d813da36b8",
+        "confluence_sync.py": "02613133de6d580a21e18260df5789f821ec17a1826da99348ba2a269471059d",
+        "kb/__init__.py": "2da45724c0fba152261d240bd6f7d4ba58929529f66e8213ee6288638067680e",
+        "kb/config.py": "0e0f95e4831ec29e9e8db69431e4f1f30c3c453eb1694ab1cd1a117aa98cf2fe",
+        "kb/crypto.py": "7fa8a203bd849dde5b8405f7b35c2ca424b25e02a4a20227e2ed019bdf8cb6c9",
+        "kb/embeddings.py": "3d17875dad1e6f40feca267f9936d08a77739d0e9d883af3e5bb6f8f17aaa596",
+        "kb/search.py": "16d38da5267cf163b4ff16329f5db375ade42c218e9e53913e5c493b95787a5a",
+        "kb/store.py": "ac395ab1f7bc022077a994c936036797850f25e9b6221ed6ec7b021ac4fc0686",
+        "sync_confluence.py": "af27eb8763e6b2bd3179b3f7ae329b2e629ede5c785fd51c8f91897244f6d57d"
+      }
+    },
+    "claude_mem": {
+      "capture": "claude-mem-10.6.2",
+      "version": "10.6.2",
+      "files": {
+        "hooks/hooks.json": "52e82abecb9affc43d8b2d1fcbbc189662fd64ed942295836ed620585201d69c",
+        "package.json": "12691968992ce90b742c033cbd2c12d15d306a94c02c3a826ee01b46deac323c",
+        "scripts/context-generator.cjs": "bd06fbc09322c2c802f77599f048b7a662ab9621005a354f8b133ee1b9e2eb9e",
+        "scripts/mcp-server.cjs": "fced42882d8d6b8959c94a5a1d2151f961aad1f05be4f78c71e2bf4f1c3000be",
+        "scripts/worker-service.cjs": "e4413cb98c6af03dda4cccd90aaacb4408f663ff39e89056011f517638d711a1",
+        "scripts/worker-wrapper.cjs": "2a76cd6f23994dfe0cbb436ff34886290b0d48f11dde6af9ba45f03667bed357"
+      }
+    }
+  },
+  "interfaces": {
+    "file_memory": "One fact per file; MEMORY.md is the index and excluded from the count. Look up relative filename and search full file text.",
+    "ava_memory": "memory_store.get_store(); get_all(limit) with growing limit until exhausted; get(memory_id) returns memory; search(query, limit) returns id and memory. DATA_DIR beside config.py contains chromadb and history.db. USER_ID ava.",
+    "knowledge_graph": "db.list_entities() enumerates; get_entity(entity_id=...) retrieves; search_entities(query) searches name or description. Entities are the sampled memory unit specified by AC4. knowledge_graph.db beside db.py includes entities, relationships, facts and embeddings; the entire database is backed up.",
+    "memory_kb": "kb.config.COLLECTIONS has seven named collections. kb.store._get_collection(name).count() and get(limit, offset, include) enumerate untruncated documents; get(ids=[document id]) looks up. kb.store._decrypt_results supplies readable restricted text or the adapter refuses. kb.search.search(query, collections=[name], n_results) searches. Fixed data/chromadb. Enumerate _get_client().list_collections(), bind _get_collection to get_collection with the captured embedding function in this subprocess, and never create an absent collection.",
+    "claude_mem": "Installed plugin 10.6.2 (package.json version; other versions are refused until audited). Counts and the random sample come from a consistent private copy of the named claude-mem.db (observations, session_summaries, user_prompts). Each sampled memory is fetched by id through claude-mem's own routes (search server get_observations; worker /api/session/:id and /api/prompt/:id) and searched for through the search server's search tool (type, project, format json, dateStart 1970-01-01, the first 2000 characters of the longest text claude-mem indexes: observation narrative, text and each fact; summary request, investigated, learned, completed, next_steps and notes; prompt_text). Memories for which claude-mem indexes no text are fetched by id only. The search server runs from the manifest's command against a dedicated worker (bun scripts/worker-service.cjs --daemon) whose HOME, CLAUDE_MEM_DATA_DIR and Chroma are a private copy, on its own port, with ps listing nothing, no pending work and no Claude executable; every process carrying that HOME is stopped afterwards."
+  },
+  "limits": [
+    "Synthetic Chroma backend represents the document/metadata subset; no embedding model download or live semantic quality claim.",
+    "Direct captured Python wrappers run over injected synthetic backend APIs. The captured MCP script runs against a loopback worker API stand-in.",
+    "The graph sample unit is entity, as named by the specification, not each relationship or fact. All SQLite tables are copied.",
+    "The claude-mem check depends on claude-mem's semantic search over its Chroma copy: a memory missing from Chroma is searched again after the dedicated worker's own backfill. chroma-mcp resolves through uvx with the owner's uv cache and settings; UV_ variables pass through."
+  ]
+}

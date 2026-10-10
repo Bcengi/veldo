@@ -355,7 +355,12 @@ def engine_environment(environment):
     for name in list(environment):
         if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
             environment.pop(name, None)
-    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
+    handed = environment.pop('VELDO_MEMORY', None)
+    environment.update({name: value for name, value in
+                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()
+                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})
+    if handed is not None:
+        environment['VELDO_MEMORY'] = handed
     environment = _organ('control_git_identity').environment(environment)
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
@@ -970,6 +975,7 @@ class Receiver:
         self.sign = lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE)
         self.host = config.get('host') or socket.gethostname()
         self.login = None
+        self.memory = None
         self.metering = None
         self.binding = None
         self.token = None
@@ -1110,6 +1116,17 @@ class Receiver:
             refusal = self._login(contract, adapter)
         if not refusal:
             refusal = self._bind(adapter, dispatch_id)
+        self.memory = None
+        if not refusal:
+            memory = _organ('control_memory')
+            reader = S.open_store(self.config['store'], mode='r')
+            try:
+                self.memory = memory.handoff(reader, self.host)
+            except memory.Refused as error:
+                refusal = error.code
+            finally:
+                reader.close()
+
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -1266,6 +1283,9 @@ class Receiver:
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
         account the accepted contract records. None when it may run; else the named refusal."""
         self.login = None
+        reserved = sorted(n for n in (adapter.get('environment') or {}) if n.startswith('VELDO_'))
+        if reserved:
+            return 'invalid_input:adapter_environment:' + reserved[0]
         engine = adapter.get('engine')
         if engine is None:
             return None
@@ -1611,6 +1631,12 @@ class Receiver:
             environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
             argv, environment = self._baseline(dispatch_id, argv, environment,
                                                adapter.get('identity', 'local') == 'reported')
+        environment.pop('VELDO_MEMORY', None)
+        if self.memory is not None:
+            environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
+            _organ('control_memory').record_launch(
+                self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, self.memory)
+            self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''

@@ -1,0 +1,96 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0182",
+  "commit": "7b577314a40d8148676a0bf08c634ff0264580b3",
+  "producer": "Claude implementation agent (second review repairs; earlier rounds by the Codex implementation agent)",
+  "produced_at": "2026-10-09T13:54:48+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Owner signature, immutable revisions, fixed paths, missing graph database, two accounts per engine, identical locations and current revision, durable launch receipts. Counterexample: falsifier/account-derived. No aggregate unit-evidence pass is claimed. Review repair rows: launch/reserved-config, launch/config-precedence, and falsifier/config-precedence for both engines include actual launches and durable receipts. Second review: launch/engine-overrides keeps VELDO_MCP_ header credentials and the handed VELDO_MEMORY in the engine environment, and launch/host-differs refuses a record made for another host."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Setup containment refusal, registration containment refusal, real-path aliases, and memory inside a profile accepted. Counterexample: falsifier/setup-only. No aggregate unit-evidence pass is claimed. Second review: profile/no-walk compares profiles by real path without walking a location; link/location-same-everywhere applies the specification's \"not a link\" alike in setup, revise, the signed transition and handoff. Third review: link/nested-same-everywhere refuses a link inside a store whose target leads out of it, in all four alike, and link/inside-accepted keeps one that stays inside."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Older-host addition, service-held authority lock, no setup writable handle, identical journal and files on rerun, differing manifest writes nothing. Counterexample: falsifier/rewrite-rerun. No aggregate unit-evidence pass is claimed. Review repair row: switch/original-setup accepts the original manifest after refusal. Second review: integration/rerun-preflight refuses an unavailable adapter on a re-run before any write."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/105_veldo_0182_memory.py",
+          "detail": "Executable proving rows prepared for canonical verification: Every native-layout copy, SQLite WAL backup, sample size, fresh before count, unchanged-count loss for five stores, independent search failure and count loss, CLI check and revise. Counterexample: falsifier/copy for each part. No aggregate unit-evidence pass is claimed. Review repair rows: switch/refused-unchanged, switch/retry-rechecks, falsifier/commit-before-check, integration/adapter-preflight-no-writes, and check/unavailable-not-lost. Second review: worker/dedicated, worker/owner-worker-untouched, worker/kills-nothing, worker/stopped, worker/cut-short-stopped, worker/read-only, worker/facts-and-untexted, worker/search-is-claude-mems and worker/unaudited-version-refused for claude-mem's own search; copy/sqlite-writer-50ms, copy/check-while-assistant-writes, copy/idle-wal-no-sidecars, copy/chroma-open-writer, copy/chroma-persist-retried and copy/chroma-busy-refused for safety copies while the assistant runs; metrics/check-refusal and metrics/step-refusal-only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0182/integration_fixtures.py",
+          "detail": "Real setup, signing, store, Runner and receiver with synthetic external services. Independent full-gate execution remains pending."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "pending",
+      "detail": "The owner reserves aggregate verification. No partial-run log or diagnostic result is used as passing proof evidence."
+    },
+    {
+      "name": "integration",
+      "status": "pending",
+      "detail": "Canonical gate remains reserved to the reviewer. Scoped affected-suite diagnostics are separate and do not constitute passing proof. Read-only runs against the owner's real stores are recorded in proof/VELDO-0182/real-store-results.json as diagnostics; no live memory was copied into the repository."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0182/interface-contract.json",
+    "proof/VELDO-0182/fixtures.py",
+    "proof/VELDO-0182/capture_conformance.py",
+    "proof/VELDO-0182/integration_fixtures.py",
+    "proof/VELDO-0182/worker_fixture.py",
+    "proof/VELDO-0182/real-store-results.json"
+  ],
+  "rollback": "Stop handing memory to runs while retaining its record and all original bytes. No automatic memory rollback is authorized.",
+  "review": "Pending independent review and owner approval. This manifest records the executable proof contract and capture provenance; it is not a gate stamp or landing approval."
+}
