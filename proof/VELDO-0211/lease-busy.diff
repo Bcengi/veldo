@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1782,7 +1782,7 @@
+         try:
+             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+         except BlockingIOError:
+-            raise ValueError('borrowed login is busy: %s is held by another run' % path) from None
++            pass  # falsifier: ignore another run's lease
+     except BaseException:
+         os.close(descriptor)
+         raise
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1782,7 +1782,7 @@
+         try:
+             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+         except BlockingIOError:
+-            raise ValueError('borrowed login is busy: %s is held by another run' % path) from None
++            pass  # falsifier: ignore another run's lease
+     except BaseException:
+         os.close(descriptor)
+         raise

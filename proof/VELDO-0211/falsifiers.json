@@ -1,0 +1,67 @@
+{
+  "scope": "diagnostic suite selections only; no gate or passed unit evidence",
+  "sources": {
+    "engine/scripts/agent_sandbox.py": "183929c32d43d5ca26f234a1f1f345de8ca7c1a90bf6115979a6ab53b47cd14b",
+    "scripts/agent_sandbox.py": "183929c32d43d5ca26f234a1f1f345de8ca7c1a90bf6115979a6ab53b47cd14b",
+    "proof/VELDO-0127/live.py": "86a45d76475c80d7f10654ec6f3035f7bfbec44db782327661a14e4c44b42522"
+  },
+  "mutations": [
+    {
+      "criterion": "AC1",
+      "target": "rotation/live/claude/success",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC1.diff",
+      "log": "AC1.log"
+    },
+    {
+      "criterion": "AC2",
+      "target": "refused-before-launch/live/claude/preflight",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC2.diff",
+      "log": "AC2.log"
+    },
+    {
+      "criterion": "AC3",
+      "target": "recovery/live-retains-private-rotated-token",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "AC3.diff",
+      "log": "AC3.log"
+    },
+    {
+      "criterion": "lease-busy",
+      "target": "refused-before-launch/live/claude/busy",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "lease-busy.diff",
+      "log": "lease-busy.log"
+    },
+    {
+      "criterion": "sweep",
+      "target": "sweep/killed-run-rotation-kept-and-reported",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "sweep.diff",
+      "log": "sweep.log"
+    },
+    {
+      "criterion": "signal-mask",
+      "target": "write-back/stop-signals-blocked",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "signal-mask.diff",
+      "log": "signal-mask.log"
+    },
+    {
+      "criterion": "live-guard",
+      "target": "live-guard/killed-capture-slice-stopped-under-lease-then-written-back",
+      "detected": true,
+      "exit_code": 1,
+      "diff": "live-guard.diff",
+      "log": "live-guard.log"
+    }
+  ],
+  "restored": true
+}

@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1853,7 +1853,7 @@
+     mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+     try:
+         failures = write_back(borrow.scratch, borrow.credentials)
+-        if not failures:
++        if True:  # falsifier: drop failed rotations
+             discard_journal(borrow.journal)
+             borrow.journal = None
+             return
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1853,7 +1853,7 @@
+     mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)
+     try:
+         failures = write_back(borrow.scratch, borrow.credentials)
+-        if not failures:
++        if True:  # falsifier: drop failed rotations
+             discard_journal(borrow.journal)
+             borrow.journal = None
+             return

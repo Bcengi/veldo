@@ -694,7 +694,8 @@ print(json.dumps(r))
                                              (Path('/dev/null'), (1 << 1) | (1 << 2))]) is None
                and source.index('grants += [(real, READ | WRITE) for real, _ in state]')
                < source.index('problem = launcher_write_problem(grants)')
-               < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)')
+               < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)',
+                              source.index('def run_tree('))
                and source.count('launcher_write_problem(') == 2)
         spec_text = (ROOT / 'specs/VELDO-0210-agent-profile-runtime.md').read_text()
         policy_text = (ROOT / 'scripts/veldo-userns.apparmor').read_text()
@@ -1167,7 +1168,20 @@ print(json.dumps(r))
         client_policy = dict(policy, clients=real['clients'])
         client_config = top / 'client-config.json'
         client_config.write_text(json.dumps(client_policy))
-        client_env = dict(os.environ, CLAUDE_CONFIG_DIR=str(account), CODEX_HOME=str(codex_home))
+        # Borrow journals and credential recoveries (VELDO-0211) go to this suite's own directory.
+        state_home = top / 'state-home'
+        client_env = dict(os.environ, CLAUDE_CONFIG_DIR=str(account), CODEX_HOME=str(codex_home),
+                          XDG_STATE_HOME=str(state_home))
+        borrows = state_home / 'veldo' / 'borrowed-logins'
+
+        def take_recovery():
+            """The one recovery the last run kept, private and complete; removed here."""
+            found = sorted(borrows.iterdir()) if borrows.is_dir() else []
+            if len(found) != 1:
+                return False
+            ok = ((found[0] / 'recovery.json').is_file() and found[0].stat().st_mode & 0o777 == 0o700)
+            __import__('shutil').rmtree(found[0])
+            return ok
         act = worktree / 'act.py'
         # The confined CLI's side: what a token refresh (or a hostile rewrite) does to its copies.
         act.write_text(r'''import json, os, sys
@@ -1227,6 +1241,9 @@ print(json.dumps(seen))
                         __import__('shutil').rmtree(child)
                     else:
                         child.unlink()
+            # The lease file a runner (account_lease.sh) leaves in every login it used.
+            (account / '.runner-lease').touch()
+            (codex_home / '.runner-lease').touch()
             (account / '.credentials.json').write_text(old_token)
             (account / '.credentials.json').chmod(0o600)
             (account / 'settings.json').write_text('{"theme": "auto"}')
@@ -1249,7 +1266,7 @@ print(json.dumps(seen))
             expect('VELDO-0210 credentials/write-back-is-atomic-replace',
                    after[1] != before[1] and after[2] == 0o600
                    and sorted(p.name for p in account.iterdir())
-                   == ['.claude.json', '.credentials.json', '.credentials.json.veldo-lock', 'projects',
+                   == ['.claude.json', '.credentials.json', '.runner-lease', 'projects',
                        'settings.json', 'veldo-agent-state'])
             seen = results(result)
             expect('VELDO-0210 credentials/claude-run-receives-claude-files',
@@ -1258,28 +1275,36 @@ print(json.dumps(seen))
                    seen.get('codex') is False and seen.get('codex-config') is False)
             result = act_run('unchanged')
             expect('VELDO-0210 credentials/unchanged-left-alone',
-                   result.returncode == 0 and account_state() == after and 'written back' not in result.stderr)
+                   result.returncode == 0 and account_state() == after and 'written back' not in result.stderr
+                   and take_recovery() is False)
+            # A copy that is no usable login is never written back; the run ends with the recovery
+            # status (VELDO-0211), never a refusal, and keeps what it found privately.
             for mode, reason in (('invalid', 'not written back'), ('array', 'not a JSON object')):
                 reset()
                 before = account_state()
                 result = act_run(mode)
                 expect('VELDO-0210 credentials/%s-not-written-back: %s' % (mode, result.stderr[-200:]),
-                       result.returncode == 0 and account_state() == before and reason in result.stderr)
+                       result.returncode == S.RECOVERY_EXIT and account_state() == before and reason in result.stderr
+                       and 'CREDENTIAL RECOVERY REQUIRED' in result.stderr and 'refused to start' not in result.stderr
+                       and take_recovery())
             reset()
             before = account_state()
             result = act_run('deep')
             expect('VELDO-0210 credentials/deeply-nested-keeps-exit-code: %s %s' % (result.returncode,
                                                                                   result.stderr[-200:]),
-                   result.returncode == 7 and account_state() == before
+                   result.returncode == S.RECOVERY_EXIT and account_state() == before
                    and 'changed but not written back' in result.stderr
-                   and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr)
+                   and 'the run ended with exit status 7' in result.stderr
+                   and 'write-back stopped' not in result.stderr and 'refused to start' not in result.stderr
+                   and take_recovery())
             for mode, target in (('file-link', decoy / '.credentials.json'), ('directory-link', decoy)):
                 reset()
                 before = account_state()
                 result = act_run(mode, extra=str(target))
                 expect('VELDO-0210 credentials/%s-not-followed: %s' % (mode, result.stderr[-200:]),
                        account_state() == before and 'not written back' in result.stderr
-                       and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True})
+                       and json.loads((decoy / '.credentials.json').read_text()) == {'forged': True}
+                       and take_recovery())
             # A login (or another run's write-back) that replaced the source during the run wins: the
             # run's own refresh is never written over it.
             reset()
@@ -1308,31 +1333,38 @@ print(json.dumps(seen))
                    and not [p.name for p in account.iterdir() if p.name.endswith('.veldo-tmp')])
         else:
             skip('credentials/* rows of a running tree (refresh, write-back, links, concurrent login)')
-        # Two write-backs of one source never interleave their compare and rename: a second one waits
-        # for the sibling lock, then finds the bytes the first wrote and is superseded.
-        locked = top / 'locked-credential.json'
+        # Two write-backs of one login never interleave their compare and rename: the login's lease
+        # (<login>/.runner-lease, the runners' own) is held from before the copy until after the
+        # write-back, so a second borrower is refused while another run holds it, before anything is
+        # copied, and borrows once it is free. Nothing is left in the login but its own files.
+        leased = top / 'leased-login'
+        leased.mkdir()
+        (leased / '.runner-lease').touch()
+        locked = leased / 'credential.json'
         locked.write_text('{"v": 1}')
-        holder = os.open(top / 'locked-credential.json.veldo-lock', os.O_RDWR | os.O_CREAT, 0o600)
-        fcntl.flock(holder, fcntl.LOCK_EX)
+        holder = subprocess.Popen([sys.executable, '-I', '-S', '-c', 'import fcntl, sys\nf = open(sys.argv[1])\n'
+                                   'fcntl.flock(f, fcntl.LOCK_EX)\nprint("held", flush=True)\nsys.stdin.read()',
+                                   str(leased / '.runner-lease')], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        holder.stdout.readline()
         outcome = {}
-
-        def write_locked():
+        lease_root = state_home / 'veldo' / 'lease-row'
+        for name in ('busy', 'free'):
+            if name == 'free':
+                holder.communicate('', timeout=10)
+            scratch_of = top / ('lease-scratch-' + name)
+            scratch_of.mkdir()
             try:
-                S.replace_atomically(locked, b'{"v": 2}', expected=b'{"v": 1}')
-                outcome['result'] = 'replaced'
-            except S.Superseded:
-                outcome['result'] = 'superseded'
-        writer = threading.Thread(target=write_locked)
-        writer.start()
-        writer.join(0.5)
-        waited = writer.is_alive()
-        locked.write_text('{"v": 3}')
-        os.close(holder)
-        writer.join(10)
-        expect('VELDO-0210 credentials/compare-and-rename-under-sibling-lock: %s %s' % (waited, outcome),
-               waited and outcome.get('result') == 'superseded' and locked.read_text() == '{"v": 3}'
-               and sorted(p.name for p in top.iterdir() if p.name.startswith('locked-credential'))
-               == ['locked-credential.json', 'locked-credential.json.veldo-lock'])
+                with S.borrowed_credentials(scratch_of, [(locked, 'credential.json')], top / 'no-store',
+                                            root=lease_root):
+                    (scratch_of / 'credential.json').write_text('{"v": 2}')
+                outcome[name] = 'borrowed'
+            except ValueError as error:
+                outcome[name] = str(error)
+        expect('VELDO-0210 credentials/compare-and-rename-under-the-login-lease: %s' % outcome,
+               'borrowed login is busy' in outcome.get('busy', '') and not (top / 'lease-scratch-busy/credential.json').exists()
+               and outcome.get('free') == 'borrowed' and locked.read_text() == '{"v": 2}'
+               and sorted(p.name for p in leased.iterdir()) == ['.runner-lease', 'credential.json']
+               and sorted(lease_root.iterdir()) == [])
         if live:
             reset()
             result = act_run('settings')
@@ -1599,8 +1631,8 @@ print(json.dumps(seen))
                    results(result).get('transcript-seen') is True
                    and (kept / 'session.jsonl').read_text() == 'allowed')
             expect('VELDO-0210 state/claude-config-dir-otherwise-untouched',
-                   sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', 'projects',
-                                                                  'settings.json', 'veldo-agent-state']
+                   sorted(p.name for p in account.iterdir()) == ['.claude.json', '.credentials.json', '.runner-lease',
+                                                                  'projects', 'settings.json', 'veldo-agent-state']
                    and sorted(p.name for p in (account / 'veldo-agent-state').iterdir()) == ['claims']
                    and sorted(p.name for p in (account / 'veldo-agent-state/claims').iterdir()) == [project]
                    and (account / 'settings.json').read_text() == '{"theme": "auto"}'
@@ -1650,7 +1682,8 @@ print(json.dumps(seen))
                    and (codex_home / 'veldo-agent-state' / (S.claude_project(other_worktree.resolve()) + '-'
                         + __import__('hashlib').sha256(os.fsencode(str(other_worktree.resolve()))).hexdigest()[:16]) / 'history.jsonl').read_text() == '')
             expect('VELDO-0210 state/codex-home-otherwise-untouched',
-                   sorted(p.name for p in codex_home.iterdir()) == ['auth.json', 'config.toml', 'veldo-agent-state']
+                   sorted(p.name for p in codex_home.iterdir()) == ['.runner-lease', 'auth.json', 'config.toml',
+                                                                    'veldo-agent-state']
                    and sorted(p.name for p in codex_state.iterdir()) == ['history.jsonl', 'memories', 'sessions']
                    and (codex_home / 'config.toml').read_text() == 'model = "fixture"\n'
                    and (codex_home / 'auth.json').read_text() == codex_token)
@@ -1916,7 +1949,8 @@ time.sleep(120)
             process, held = held_run('plain')
             if held:
                 os.utime(held['home'], (day_old, day_old))
-            result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
+            # The second start borrows no login: the first holds that login's lease (VELDO-0211).
+            result = run(client_config, worktree, ['/usr/bin/true'], env=scratch_env)
             expect('VELDO-0210 scratch/live-launcher-scratch-kept: %s' % held,
                    result.returncode == 0 and bool(held) and Path(held['home']).is_dir() and alive(held['pid']))
             process.send_signal(signal.SIGTERM)
@@ -1944,6 +1978,11 @@ time.sleep(120)
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
             expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
                    result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+            # The killed run refreshed its copy and never wrote it back: the next start kept it as a
+            # recovery and said so before the sweep removed the scratch (VELDO-0211).
+            expect('VELDO-0210 scratch/killed-run-rotation-kept-and-reported: %s' % result.stderr[-300:],
+                   'CREDENTIAL RECOVERY REQUIRED' in result.stderr and 'restore-login' in result.stderr
+                   and take_recovery())
 
         else:
             skip('scratch/* rows of a running tree (stop signals, live and killed launchers)')
@@ -1984,204 +2023,3 @@ time.sleep(120)
 
 if leg_runs():
     _v210_agent_profile()
-
-
-def _v210_mutation_workers():
-    """AC7: a fresh confined mutation worker starts inside a tree the agent launcher makes and confines
-    itself there, so a gate one of its cases starts nests like any other nested launch; a declared case
-    stays outside every tree, and a suite that starts a gate is never declared."""
-    import fcntl
-    import importlib.util
-    import json
-    import os
-    from pathlib import Path
-    import shutil
-    import subprocess
-    import sys
-    import tempfile
-    import time
-    from unittest.mock import patch
-
-    def load(relative):
-        spec = importlib.util.spec_from_file_location('v210_' + Path(relative).stem, ROOT / relative)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-
-    S, gate, C = load('scripts/agent_sandbox.py'), load('scripts/check_gate_mutations.py'), load('scripts/case_reuse.py')
-    I, R = C.I, C.R
-    nested = S.nested_namespace() is not None
-    unavailable = None if nested else S.helper_problem(S.NAMESPACE_HELPER)
-    live = nested or unavailable is None
-
-    def skip(what):
-        print('  SELFTEST SKIP: VELDO-0210 %s: the installed namespace helper cannot make the tree\'s '
-              'namespace on this host (%s)' % (what, (unavailable or '')[:400]))
-
-    # A traced process starts no worker tree; only a declared case runs traced.
-    expect('VELDO-0210 workers/traced-process-starts-no-tree',
-           S.tracer_problem('Name:\tpython3\nTracerPid:\t4242\n') is not None
-           and S.tracer_problem('Name:\tpython3\nTracerPid:\t0\n') is None)
-
-    with tempfile.TemporaryDirectory(prefix='v210-workers-') as temporary:
-        top = Path(temporary)
-        # A suite that starts a gate is refused declaration, with the reason in the receipt.
-        root = top / 'repository'; root.mkdir()
-        starts = {'name': 'starts', 'identity': gate.DRIVERS[0] + ':starts', 'driver': gate.DRIVERS[0],
-                  'module': 'subject.py', 'suite': 'gate_test.py', 'old': 'value = 1', 'new': 'value = 0',
-                  'rows': ['target']}
-        plain = dict(starts, name='plain', identity=gate.DRIVERS[0] + ':plain', suite='plain_test.py')
-        files = {p: ((ROOT / p).stat().st_mode & 0o777, (ROOT / p).read_bytes()) for p in (*I.MANDATORY, *I.DRIVERS)}
-        files['.veldo/subject.py'] = (0o644, b'value = 1\n')
-        files['scripts/suites/plain_test.py'] = (0o644, b'expect("fixture target", True)\n')
-        files['scripts/suites/gate_test.py'] = (0o644, b'expect("fixture target", True)\n')
-        files['scripts/verify.sh'] = (0o755, b'#!/usr/bin/env bash\n')
-        files['engine/scripts/gate_candidate.py'] = (0o644, b'')
-        declared = {'reviewed': True, 'non_file_inputs': 'none', 'rationale': 'Controlled file-only fixture.'}
-        document = {'schema': 'veldo.case-inputs/v1',
-                    'toolchains': {gate.DRIVERS[0]: {'paths': ['/usr', '/lib', '/lib64', '/etc'], 'reviewed': True}},
-                    'cases': {starts['identity']: dict(declared, files=['scripts/verify.sh']),
-                              plain['identity']: dict(declared, files=[])}}
-        reasons = {}
-        for name, entry in (('verify', 'scripts/verify.sh'), ('engine-copy', 'engine/scripts/gate_candidate.py')):
-            document['cases'][starts['identity']]['files'] = [entry]
-            files[I.DECLARATIONS] = (0o644, R.canonical(document))
-            with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: {'paths': paths}):
-                session = C.Session(root, files, [starts, plain], 'head',
-                                    {'worker_environment': gate.fixed_env('<private-worker-home>')},
-                                    cache_directory=top / 'cache')
-            reasons[name] = (session.reasons[starts['identity']], session.keys[starts['identity']],
-                             starts['identity'] in session.snapshots, session.reasons[plain['identity']],
-                             plain['identity'] in session.snapshots)
-        expect('VELDO-0210 workers/gate-starting-suite-refused-declaration: %r' % reasons,
-               all(value == ('starts_a_gate', None, False, 'miss', True) for value in reasons.values())
-               and I.gate_entries(['a/verify.sh', 'scripts/agent_sandbox.py', 'scripts/gate_legs.py',
-                                   'scripts/agent_sandbox.json', 'x.py'])
-                   == ['a/verify.sh', 'scripts/agent_sandbox.py', 'scripts/gate_legs.py']
-               and "'reason': reuse.reasons[identity]" in (ROOT / 'scripts/check_gate_mutations.py').read_text())
-
-        if not live:
-            skip('workers/* rows of a running worker tree')
-            return
-        # A fresh worker, started as the coordinator starts it, runs in a tree that carries the marker.
-        worker_root = top / 'worker-input'
-        (worker_root / 'scripts/suites').mkdir(parents=True)
-        (worker_root / '.veldo').mkdir()
-        shutil.copyfile(ROOT / 'scripts/agent_sandbox.py', worker_root / 'scripts/agent_sandbox.py')
-        (worker_root / '.veldo/subject.py').write_text('good')
-        (worker_root / 'scripts/suites/shared.py').write_text(
-            'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'
-            'def expect(name, condition): pass\n')
-        (worker_root / 'scripts/suites/fixture.py').write_text(
-            'import importlib.util, json, os, subprocess, sys\n'
-            'spec = importlib.util.spec_from_file_location("sandbox", ROOT / "scripts" / "agent_sandbox.py")\n'
-            'S = importlib.util.module_from_spec(spec); spec.loader.exec_module(S)\n'
-            'child = subprocess.run([sys.executable, "-I", "-S", "-c", "import importlib.util, sys; '
-            'spec = importlib.util.spec_from_file_location(\'s\', sys.argv[1]); '
-            'S = importlib.util.module_from_spec(spec); spec.loader.exec_module(S); '
-            'print(S.nested_namespace() is not None)", str(ROOT / "scripts" / "agent_sandbox.py")], '
-            'pass_fds=S.launcher_fds(), capture_output=True, text=True, timeout=30)\n'
-            'try:\n    open(' + repr(str(ROOT / 'VELDO.md')) + ').read(); outside = "readable"\n'
-            'except OSError as error:\n    outside = type(error).__name__\n'
-            'facts = {"label": S.apparmor_label(), "marker": S.nested_namespace() is not None,\n'
-            '         "host_namespace": os.readlink("/proc/self/ns/pid") == S.INITIAL_PID_NAMESPACE,\n'
-            '         "init": b"\\0namespace-init\\0" in open("/proc/1/cmdline", "rb").read(),\n'
-            '         "status": S.capability_problem(open("/proc/self/status").read()),\n'
-            '         "handed": child.stdout.strip(), "outside": outside}\n'
-            'open(os.path.join(os.environ["TMPDIR"], "tree.json"), "w").write(json.dumps(facts))\n'
-            'value = (ROOT / ".veldo" / "subject.py").read_text()\n'
-            'expect("fixture target", value == "good")\n')
-        case = dict(identity='check_teeth_mutations.py:tree-worker', name='tree-worker',
-                    driver='check_teeth_mutations.py', suite='fixture.py', rows=['target'],
-                    module='subject.py', old='good', new='bad')
-        observed = {}
-        for mode in ('baseline', 'mutant'):
-            scratch = top / ('worker-home-' + mode); scratch.mkdir()
-            job = top / (mode + '-job.json')
-            job.write_text(json.dumps(dict(case=case, mode=mode)))
-            channel = os.open(top / (mode + '.ownership'), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
-            try:
-                run = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'scripts/reuse_worker.py'), 'worker',
-                                      str(worker_root), str(channel), str(job)], cwd=worker_root,
-                                     pass_fds=(channel, *launcher_fds()), env=gate.fixed_env(scratch),
-                                     capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
-            finally:
-                os.close(channel)
-            try:
-                observed[mode] = (json.loads(run.stdout)['observation']['failed_rows'],
-                                  json.loads((scratch / 'tree.json').read_text()))
-            except (OSError, ValueError, KeyError):
-                observed[mode] = (None, run.stderr[-400:])
-        facts = observed['baseline'][1]
-        # PID 1 is the tree's init (nested, the outer tree's), the label the child profile's, every
-        # capability set empty and no_new_privs set.
-        expect('VELDO-0210 workers/fresh-worker-runs-in-a-tree: %r' % (observed,),
-               observed['baseline'][0] == [] and observed['mutant'][0] == ['fixture target']
-               and isinstance(facts, dict) and facts['label'] == S.NAMESPACE_LABEL
-               and facts['host_namespace'] is False and facts['status'] is None and facts['init'] is True)
-        expect('VELDO-0210 workers/worker-tree-carries-the-marker: %r' % (facts,),
-               isinstance(facts, dict) and facts['marker'] is True and facts['handed'] == 'True')
-        expect('VELDO-0210 workers/worker-confined-in-its-tree: %r' % (facts,),
-               isinstance(facts, dict) and facts['outside'] == 'PermissionError')
-
-        # A launcher killed outright leaves no descendant of its agent: in a namespace of its own the
-        # kernel ends them with the init; nested, the init is ORPHANED and ends them itself.
-        worktree = top / 'teardown-worktree'; worktree.mkdir()
-        lock = worktree / 'held.lock'; lock.write_text('')
-        config = top / 'teardown-config.json'
-        config.write_text(json.dumps({
-            'schema': 'veldo.agent-sandbox/v1', 'store': str(top / 'teardown-store'),
-            'read_roots': json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())['read_roots'],
-            'write_roots': ['{worktree}', '{scratch}'], 'deny_write': [], 'seed_files': {}}))
-        grandchild = ('import fcntl, subprocess, sys, time\n'
-                      'subprocess.Popen([sys.executable, "-I", "-S", "-c", "import fcntl, sys, time; '
-                      'f = open(sys.argv[1]); fcntl.flock(f, fcntl.LOCK_EX); print(\'held\', flush=True); '
-                      'time.sleep(60)", sys.argv[1]], start_new_session=True)\n'
-                      'time.sleep(60)\n')
-        started = subprocess.Popen([sys.executable, '-I', '-S', str(ROOT / 'scripts/agent_sandbox.py'),
-                                    '--profile', 'gate', '--config', str(config), '--worktree', str(worktree),
-                                    '--', sys.executable, '-I', '-S', '-c', grandchild, str(lock)],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
-                                   text=True, pass_fds=launcher_fds())
-        held = started.stdout.readline().strip() == 'held'
-        started.kill()
-        started.wait(timeout=30)
-        freed = False
-        with open(lock) as probe:
-            for _ in range(500):
-                try:
-                    fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                    freed = True
-                    break
-                except BlockingIOError:
-                    time.sleep(0.01)
-        expect('VELDO-0210 workers/killed-launcher-leaves-no-descendant: held=%r freed=%r nested=%r %s'
-               % (held, freed, nested, started.stderr.read()[-300:]), held and freed)
-
-        # A confined fresh case of each suite whose cases start a gate, through the real coordinator.
-        chosen = {}
-        for entry in gate.inventory_local(ROOT):
-            for prefix in ('66_veldo_0051', '67_veldo_0056', '69_veldo_0058', '70_veldo_0057'):
-                if entry['suite'].startswith(prefix):
-                    chosen.setdefault(prefix, entry['name'])
-        receipt = top / 'receipt.json'
-        stage = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/check_gate_mutations.py'),
-                                '--root', str(ROOT), '--receipt', str(receipt),
-                                *(part for name in chosen.values() for part in ('--case', name))],
-                               capture_output=True, text=True, timeout=590, stdin=subprocess.DEVNULL,
-                               pass_fds=launcher_fds())
-        try:
-            result = json.loads(receipt.read_text())
-        except (OSError, ValueError):
-            result = {}
-        expect('VELDO-0210 workers/gate-starting-suites-pass-confined-fresh: %r %r' % (
-                   {k: result.get(k) for k in ('status', 'error', 'detail', 'executed', 'rejected')},
-                   stage.stdout[-200:] + stage.stderr[-300:]),
-               len(chosen) == 4 and result.get('status') == 'passed' and result.get('executed') == 4
-               and result.get('rejected') == 4 and not result.get('invalid_results')
-               and {o['leg'] for o in result.get('worker_outcomes', [])} == {'confined'}
-               and all(r['source'] == 'fresh' for r in result.get('case_receipts', [])))
-
-
-if leg_runs():
-    _v210_mutation_workers()

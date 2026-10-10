@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1918,7 +1918,7 @@
+             yield borrow
+         finally:
+             if borrow.credentials:
+-                settle_borrow(borrow)
++                pass  # falsifier: omit credential persistence
+     finally:
+         release(borrow.descriptors)
+ 
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1918,7 +1918,7 @@
+             yield borrow
+         finally:
+             if borrow.credentials:
+-                settle_borrow(borrow)
++                pass  # falsifier: omit credential persistence
+     finally:
+         release(borrow.descriptors)
+ 

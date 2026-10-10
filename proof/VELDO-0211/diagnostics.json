@@ -1,0 +1,76 @@
+{
+  "schema": "veldo.borrowed-login-diagnostics/v1",
+  "implementation_commit": "b0e85cfd07bda51faaf0ea48c69e10918fcca512",
+  "recorded_at": "2026-10-09T12:39:58.357658+00:00",
+  "host": "the owner's workstation, foreground, unconfined (suite 102 runs fully there)",
+  "scope": "Selected suites only. Diagnostic observations, not canonical unit evidence or a landing claim.",
+  "runs": {
+    "suite102-run1": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.47s",
+      "log": "suite102-run1.log"
+    },
+    "suite102-run2": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.86s",
+      "log": "suite102-run2.log"
+    },
+    "suite102-run3": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "102_veldo_0210_agent_profile_runtime"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 263 passed, 0 failed in 21.39s",
+      "log": "suite102-run3.log"
+    },
+    "suite103": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "103_veldo_0211_borrowed_login"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 88 passed, 0 failed in 1.58s",
+      "log": "suite103.log"
+    },
+    "suite104": {
+      "argv": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "104_veldo_0210_mutation_workers"
+      ],
+      "failed": 0,
+      "summary": "selftest (PARTIAL, 1 of 158 suites): 33 passed, 0 failed in 83.29s",
+      "log": "suite104.log"
+    }
+  },
+  "falsifiers": {
+    "detected": 7,
+    "total": 7,
+    "restored": true,
+    "report": "falsifiers.json"
+  },
+  "comparison": {
+    "main 294e1933, suite 102": "243 passed in each of 4 runs (includes the 7 mutation worker rows now in suite 104); stop-during-fork-forwarded-to-child failed 1 of 2 further runs with a timing probe added",
+    "branch 9cc5bbf5, suite 102": "5 or 6 failed in each of 5 runs: the five rows of the host review in every run, and stop-during-fork-forwarded-to-child in 2 of 5",
+    "this commit, suite 102": "237 passed, 0 failed in 3 of 3 here, and in 10 of 10 more after the start fix while developing (the 7 mutation worker rows run in suite 104)"
+  },
+  "other_repository": "myday scripts/test_runner_sandbox_dry.sh against this checkout, acct2, XDG_STATE_HOME in scratch: 79 passed, 1 failed (test root refused inside an agent tree, failing the same way with myday HEAD scripts)"
+}

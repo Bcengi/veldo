@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1905,7 +1905,7 @@
+                 valid = False
+             if not valid:
+                 raise ValueError('borrowed credential is not a JSON object: ' + str(real))
+-            problem = replace_problem(real)
++            problem = None  # falsifier: admit without the write-back probe
+             if problem:
+                 raise PermissionError(problem)
+             copied = seed(scratch, real, relative, store, protected)
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1905,7 +1905,7 @@
+                 valid = False
+             if not valid:
+                 raise ValueError('borrowed credential is not a JSON object: ' + str(real))
+-            problem = replace_problem(real)
++            problem = None  # falsifier: admit without the write-back probe
+             if problem:
+                 raise PermissionError(problem)
+             copied = seed(scratch, real, relative, store, protected)

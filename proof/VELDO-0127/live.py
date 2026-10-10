@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """Lead-only subscription capture. This driver is never run by the implementer or suite.
 
-Arguments name logged-in profile directories and pinned binaries. Only login files are
-linked into temporary profiles; original profiles are neither edited nor copied. Workers
+Arguments name logged-in profile directories and pinned binaries. Login files are copied into
+private temporary profiles under each login's runner lease and rotated credentials are written
+back before the lease is released; one that cannot be is kept as a private recovery on persistent
+storage and the run exits with the launcher's recovery status (VELDO-0211). Workers
 run serially in the temporary factory, under its own transient Linux slice. Captures hold
 capability names, credential-source identities and redacted execution-record evidence.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
 import re
+import signal
 import subprocess
+import sys
 import tempfile
 import tomllib
 
@@ -27,6 +32,110 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+LOGIN = None
+
+
+def login():
+    """The sandbox launcher's borrowed-login half, loaded on first use from this driver's own
+    repository. Never at import: a relocated copy (suite 86 runs capture() from one under the
+    runtime directory) does not borrow a login and has no repository above it."""
+    global LOGIN
+    if LOGIN is None:
+        LOGIN = load('live_borrowed_login', ROOT / 'scripts/agent_sandbox.py')
+    return LOGIN
+
+
+class Guard:
+    """A process that holds the borrow's leases and scratch for as long as this one runs. If this
+    one is killed outright, the guard stops the factory slice and only then settles the borrow
+    itself (write-back, or a recovery), so no engine left running in the slice rotates the login
+    after its lease is released and no rotation is left behind in the runtime directory."""
+
+    def __init__(self):
+        self.pid = self.write = None
+
+    def start(self, borrow, command, env):
+        read, write = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            code = 1
+            try:
+                os.setsid()
+                for number in login().STOP_SIGNALS:
+                    signal.signal(number, signal.SIG_IGN)
+                # Nothing else of this process stays open in the guard: a socket it held would never
+                # reach end of file at the teardown.
+                keep = {0, 1, 2, read, *borrow.descriptors}
+                for name in os.listdir('/proc/self/fd'):
+                    if int(name) not in keep:
+                        try:
+                            os.close(int(name))
+                        except OSError:
+                            pass
+                code = 0
+                if os.read(read, 1) != b'1':
+                    try:
+                        subprocess.run(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL)
+                    except (OSError, subprocess.SubprocessError) as error:
+                        print('live: the slice was not stopped: %s' % error, file=sys.stderr, flush=True)
+                    try:
+                        login().settle_borrow(borrow)
+                    except login().CredentialRecovery as error:
+                        print(login().recovery_message(error), file=sys.stderr, flush=True)
+                        code = login().RECOVERY_EXIT
+            finally:
+                os._exit(code)
+        os.close(read)
+        self.pid, self.write = pid, write
+
+    def release(self):
+        """After this process settled the borrow itself: the guard ends without doing anything."""
+        if self.pid is not None:
+            os.write(self.write, b'1')
+            os.close(self.write)
+            os.waitpid(self.pid, 0)
+            self.pid = None
+
+
+class Borrowed:
+    def __init__(self, stop, borrow, guard):
+        self.stop, self.borrow, self._guard = stop, borrow, guard
+
+    def guard(self, command, env):
+        """Once the slice exists: `command` stops it should this process be killed outright."""
+        self._guard.start(self.borrow, command, env)
+
+
+@contextmanager
+def borrowed_profiles(base, args, engines):
+    """Hold each source login's lease (<login>/.runner-lease, the one the runners and the sandbox
+    launcher take) through every capture, control and engine teardown, and write rotations back
+    before releasing it. A borrow an earlier capture or launcher left unsettled is recovered first."""
+    sources = []
+    for engine in sorted(engines):
+        name = '.credentials.json' if engine == 'claude' else 'auth.json'
+        profile = base / (engine + '-login')
+        profile.mkdir(mode=0o700)
+        source = Path(args[engine + '_profile']).expanduser().resolve() / name
+        if not source.is_file():
+            raise ValueError('No file-backed subscription login in the supplied ' + engine + ' profile')
+        sources.append((source, engine + '-login/' + name))
+    args['claude_code_profile'] = str(base / 'claude-login')
+    args['codex_profile'] = str(base / 'codex-login')
+    login().recover_orphans()
+    guard = Guard()
+    with login().Stop() as stop:
+        try:
+            with login().borrowed_credentials(base, sources, base) as borrow:
+                try:
+                    yield Borrowed(stop, borrow, guard)
+                finally:
+                    stop.closing = True
+        finally:
+            guard.release()
 
 
 SENSITIVE = re.compile(r'token|key|secret|authoriz|credential|bearer|cookie|password|[A-Za-z0-9+/=_-]{40,}', re.I)
@@ -158,12 +267,24 @@ def discovery_control(binary, profile, evidence):
         debug = root / 'debug.log'
         env = {'PATH':'/usr/bin:/bin', 'HOME':temp, 'CLAUDE_CONFIG_DIR':str(profile),
                'DISABLE_AUTOUPDATER':'1', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY':'1'}
-        done = subprocess.run([str(binary), '-p', 'Reply ready without tools.', P + 'verbose',
+        # This control runs outside the factory slice. Reap its entire process group on failure
+        # or a handled stop before the borrowed profile can be written back.
+        with subprocess.Popen([str(binary), '-p', 'Reply ready without tools.', P + 'verbose',
                                P + 'output-format', 'stream-json', P + 'debug-file', str(debug)],
-                              cwd=root, env=env, capture_output=True, text=True, timeout=90)
+                              cwd=root, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              text=True, start_new_session=True) as child:
+            try:
+                child.communicate(timeout=90)
+            finally:
+                try:
+                    os.killpg(child.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                child.wait()
+            returncode = child.returncode
         text = debug.read_text() if debug.is_file() else ''
         lines = [line for line in text.splitlines() if 'CLAUDE.md' in line]
-        return {'ran':True, 'returncode':done.returncode, 'debug_bytes':len(text.encode()),
+        return {'ran':True, 'returncode':returncode, 'debug_bytes':len(text.encode()),
                 'debug_lines':lines, 'debug_sha256':hashlib.sha256(text.encode()).hexdigest(),
                 'qualification':'debug-and-context' if lines else 'context-size-only'}
 
@@ -201,63 +322,63 @@ def main():
     fixture = load('role_live_factory', HERE / 'factory.py')
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
         base = Path(temp)
-        args['claude_code_profile'] = str(base / 'claude-login')
-        args['codex_profile_source'] = args['codex_profile']
-        for engine, argument, names in [('claude', 'claude_profile', ['.credentials.json']),
-                                        ('codex', 'codex_profile_source', ['auth.json'])]:
-            profile = base / (engine + '-login')
-            profile.mkdir(mode=0o700)
-            source = Path(args[argument]).resolve()
-            for name in names:
-                if (source / name).is_file():
-                    (profile / name).symlink_to(source / name)
-            if not any(profile.iterdir()):
-                raise SystemExit('No file-backed subscription login in the supplied ' + engine + ' profile')
-        args['codex_profile'] = str(base / 'codex-login')
-        f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
-        try:
-            for engine in engines:
-                if only and only[0] != engine:
-                    continue
-                for mode in ('always', 'deferred'):
-                    definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
-                    if mode == 'deferred':
-                        definition['instructions'].append({'source':'factory','path':'unassigned.md','load':'when assigned'})
-                    f.save(definition)
-                result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
-                for mode in ('always', 'deferred'):
-                    if only and only[1] != mode:
+        selected = (only[0],) if only else engines
+        with borrowed_profiles(base, args, selected) as borrowed:
+            f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
+            borrowed.guard(['systemctl', P + 'user', 'stop', f.slice_name], f.inherited)
+            try:
+                for engine in engines:
+                    if only and only[0] != engine:
                         continue
-                    if not only or only[2] == 'control':
-                        result['runs'].append(capture(f, engine, mode, False, evidence, diagnostics))
-                    if only and only[2] != 'planted':
+                    for mode in ('always', 'deferred'):
+                        definition = f.role(engine, engine + '-' + mode, mode == 'deferred')
+                        if mode == 'deferred':
+                            definition['instructions'].append({'source':'factory','path':'unassigned.md','load':'when assigned'})
+                        f.save(definition)
+                    result = {'schema':'veldo.role-live/v1', 'engine':engine, 'production':evidence.production(ROOT), 'runs':[]}
+                    for mode in ('always', 'deferred'):
+                        if only and only[1] != mode:
+                            continue
+                        if not only or only[2] == 'control':
+                            result['runs'].append(capture(f, engine, mode, False, evidence, diagnostics))
+                        if only and only[2] != 'planted':
+                            continue
+                        profile = base / (engine + '-login')
+                        marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
+                        if engine == 'codex':
+                            marker_paths = [f.src / 'AGENTS.md']
+                        for path in marker_paths:
+                            path.write_text(('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS) + '\n')
+                        try:
+                            result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
+                        finally:
+                            for path in marker_paths: path.unlink()
+                    if engine == 'claude' and not only:
+                        result['debug_control'] = discovery_control(args['claude'], base / 'claude-login', evidence)
+                    result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
+                    if only:
+                        for run in result['runs']:
+                            print(json.dumps({k: run[k] for k in ('mode', 'marker', 'completed', 'init', 'expected',
+                                                                  'first_turn_context', 'listing', 'marker_present',
+                                                                  'debug_marker_present', 'credential_sources')}))
+                        print(engine + ' (diagnosis only, not written): ' + '; '.join(result['problems']))
                         continue
-                    profile = base / (engine + '-login')
-                    marker_paths = [f.src / 'CLAUDE.md', profile / 'CLAUDE.md']
-                    if engine == 'codex':
-                        marker_paths = [f.src / 'AGENTS.md']
-                    for path in marker_paths:
-                        path.write_text(('VELDO0127_UNLISTED_MARKER ' * evidence.MARKER_REPETITIONS) + '\n')
-                    try:
-                        result['runs'].append(capture(f, engine, mode, True, evidence, diagnostics))
-                    finally:
-                        for path in marker_paths: path.unlink()
-                if engine == 'claude' and not only:
-                    result['debug_control'] = discovery_control(args['claude'], base / 'claude-login', evidence)
-                result['problems'] = evidence.problems(ROOT, engine, result, f.L.HANDOFF)
-                if only:
-                    for run in result['runs']:
-                        print(json.dumps({k: run[k] for k in ('mode', 'marker', 'completed', 'init', 'expected',
-                                                              'first_turn_context', 'listing', 'marker_present',
-                                                              'debug_marker_present', 'credential_sources')}))
-                    print(engine + ' (diagnosis only, not written): ' + '; '.join(result['problems']))
-                    continue
-                (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
-                print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
-        finally:
-            for connection in f.connections: connection.close()
-            subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name], env=f.inherited, capture_output=True, timeout=20)
+                    (HERE / (engine + '-live.json')).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+                    print(engine + ': ' + ('captured' if not result['problems'] else '; '.join(result['problems'])))
+            finally:
+                borrowed.stop.closing = True
+                try:
+                    for connection in f.connections:
+                        connection.close()
+                finally:
+                    # Wait for systemd's stop job, including its own kill timeout, before saving.
+                    subprocess.run(['systemctl', P + 'user', 'stop', f.slice_name],
+                                   env=f.inherited, capture_output=True, check=True)
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except login().CredentialRecovery as error:
+        print(login().recovery_message(error), file=sys.stderr, flush=True)
+        sys.exit(login().RECOVERY_EXIT)
