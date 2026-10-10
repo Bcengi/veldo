@@ -451,6 +451,16 @@ def transition(conn, params, before):
     return changes
 
 
+def protect(store, conn):
+    """Bind the dispatch records to this file's transition (VELDO-0125). Only the worker relay's
+    authority declares it: a declaration names one file, so every other copy that writes these
+    records on the same store (the installed receiver, a setup run from a checkout) is refused."""
+    store.declare_owners(conn, 'dispatch',
+        kinds={RECORD_KIND: (OPERATION,), INDEX_KIND: (OPERATION,)},
+        prefixes={'dispatch:': (OPERATION,), 'dispatch-active:': (OPERATION,)},
+        module=__file__, adopt_existing=True)
+
+
 class Dispatches:
     """One domain and repository's dispatch records over a real control store connection. The
     principal is the service writing (the runner prepares; the launch receiver accepts, runs and
@@ -464,10 +474,6 @@ class Dispatches:
         self.signer, self.sign, self.generation = signer, sign, generation
         self.observe = observe or (lambda event: None)
         self.counts = {'accepted': 0, 'refused': 0}
-        store.declare_owners(conn, 'dispatch',
-            kinds={RECORD_KIND: (OPERATION,), INDEX_KIND: (OPERATION,)},
-            prefixes={'dispatch:': (OPERATION,), 'dispatch-active:': (OPERATION,)},
-            module=__file__, adopt_existing=True)
         conn.command_registry[OPERATION] = {'transaction_transition': transition,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 

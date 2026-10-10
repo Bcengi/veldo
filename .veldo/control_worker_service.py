@@ -39,6 +39,13 @@ def transition(params, before):
 class Service(SV.Service):
     def __init__(self, config, conn):
         super().__init__(config, conn)
+        # A worker principal must not reach membership, keys, dispatches or reservations through a
+        # generic write. Declared here, on the relay's authority, and not where those records are
+        # built: an ownership names one file, and setup, receivers and other authorities write the
+        # same kinds from their own copies on stores that run no relay.
+        SV.CM.protect(SV.S, conn)
+        D.protect(SV.S, conn)
+        RES.protect(SV.S, conn)
         self.profiles = config.get('worker_profiles', [])
         conn.command_registry[RECORD] = dict(transition=transition,
                                              writes=('entities', 'journal', 'commands', 'nonces'))

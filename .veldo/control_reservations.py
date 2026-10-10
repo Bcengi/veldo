@@ -74,6 +74,14 @@ def service_authority(conn, command):
             and (member.get('expires_at') is None or (number(now) and now < member['expires_at'])))
 
 
+def protect(store, conn):
+    """Bind the reservation records to this file's transition (VELDO-0125); the worker relay's
+    authority declares it, for the reason control_dispatch.protect gives."""
+    store.declare_owners(conn, 'reservations',
+        kinds={'subscription_reservation': ('subscription_reservation',)},
+        module=__file__, adopt_existing=True)
+
+
 class Reservations:
     def __init__(self, store, conn, *, domain, repository, principal, authorize,
                  signer, sign, generation=1, observe=lambda event: None):
@@ -83,9 +91,6 @@ class Reservations:
         self.authorize, self.signer, self.sign = authorize, signer, sign
         self.generation, self.observe = generation, observe
         self.counts = dict(accepted=0, refused=0)
-        store.declare_owners(conn, 'reservations',
-            kinds={'subscription_reservation': ('subscription_reservation',)},
-            module=__file__, adopt_existing=True)
         store.COMMAND_REGISTRY['subscription_reservation'] = {
             'transition': self._transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 

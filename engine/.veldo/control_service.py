@@ -1157,7 +1157,6 @@ class Service:
 
     def __init__(self, config, conn):
         self.config, self.conn = config, conn
-        CM.protect(S, conn)
         self.domain, self.store = config['domain_uuid'], config['store_uuid']
         self.repositories = dict(config['repositories'])
         self.principal, self.generation = config['principal'], config['authority_generation']
