@@ -80,7 +80,7 @@ _V130_EXPECTED_KINDS = {
     'decisions': ['assignment', 'settlement_terms', 'request_settlement', 'decision_settlement', 'decision',
                   'channel_presentation'],
     'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation'],
-    'configuration': ['workflow_head', 'workflow_revision', 'team', 'role_configuration', 'tool_configuration']}
+    'configuration': ['workflow_head', 'workflow_revision', 'default_team_revision', 'team', 'role_configuration', 'tool_configuration']}
 # The criteria's own phrases (parsed from the specification) and the published action or read model each is.
 _V130_AC4_ACTIONS = {'owner admission': 'owner_admission', 'owner priority': 'owner_priority',
                      'project pause': 'project_pause', 'project cancel': 'project_cancel', 'worker stop': 'worker_stop',
@@ -500,7 +500,7 @@ def _v130_checks(base):
                                           'roles': ['membership_steward', 'project_owner'], 'public_key': public['steward'],
                                           'independence_group': 'steward', 'scope': '*'})
     enroll_member('owner', 'person', ['project_owner', 'admission_authority', 'priority_authority', 'technical_authority'],
-                  ['project-a', 'project-b', 'factory'])
+                  '*')
     enroll_member('owner2', 'person', ['project_owner'], ['project-a'])
     enroll_member('member', 'person', [], ['project-z'])
     enroll_member('steward2', 'person', ['membership_steward'], ['project-b'])
@@ -1649,6 +1649,8 @@ def _v130_checks(base):
                     if k.module not in owners:
                         # The owning modules are read in place: they are not under test here.
                         owners[k.module] = _v130_load('v130_owner_' + k.module, ROOT / '.veldo' / (k.module + '.py'))
+                    check(RM, '%s has an explicit project rule' % k.kind,
+                          bool(getattr(k, 'project_rule', None)))
                     owner = owners[k.module]
                     named = getattr(owner, k.constant, None) if k.constant else None
                     held = (named == k.kind if isinstance(named, str) else
@@ -1752,6 +1754,9 @@ def _v130_checks(base):
                 'implementation': role(['w-build', 'w-build2'], 'implement', ('finding',)),
                 'independent_review': role(['w-rev1', 'w-rev2'], 'review', ('finding',), ('claude_code', 'codex'),
                                            distinct=('implementation',))}}))
+            default_team = staffed['team']['team'] or staffed['team']['proposal']['team']
+            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),
+                                              S.digest_of(default_team))
             written = {'project': ('objectives', 'project:project-a', activated),
                        'objective': ('objectives', oid, accepted),
                        'backlog_item': ('work', taken.get('item_id'), taken),
@@ -3065,7 +3070,8 @@ def _v130_service_checks(base):
             cookie2, token2 = sign_in(desktop)
             check(SP, 'both passkeys sign in, the credentials read through the service', bool(cookie) and bool(cookie2))
             mark, seen = head(), len(observations())
-            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN, {'text': 'Plan the socket phase.'}, cookie, token)
+            sent = call('POST', '/api/v1/domains/%s/messages' % DOMAIN,
+                        {'text': 'Plan the socket phase.', 'project': 'project-a'}, cookie, token)
             made = sent[2].get('proposal_id') or sent[2].get('question_id') if isinstance(sent[2], dict) else None
             check(SP, 'a message through the socket is accepted and committed by the service into the intake [%s %s]'
                   % (sent[0], refusal(sent)), sent[0] == 200 and bool(made) and head() > mark
@@ -3294,15 +3300,23 @@ _v130_started = _v130_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the other
 # store suites do; elsewhere the platform's temporary directory is used.
 _v130_fast = fast_temp()
+def _v130_report(observed_rows):
+    for name, observed in observed_rows.items():
+        passed = bool(observed) and all(ok for _, ok in observed)
+        if not passed:
+            for label, ok in observed:
+                if not ok:
+                    print('  VELDO-0130 %s detail: %s' % (name, label))
+        expect('VELDO-0130 ' + name, passed)
+        print('VELDO-0130 row:', name, 'passed' if passed else 'failed')
+
+
 with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir:
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
+_v130_report(_v130_rows)
+# Report completed API assertions before a service setup exception can hide them.
 with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir:
-    _v130_rows.update(_v130_service_checks(_v130_Path(_v130_dir)))
-for _v130_name, _v130_observed in _v130_rows.items():
-    _v130_ok = bool(_v130_observed) and all(ok for _, ok in _v130_observed)
-    if not _v130_ok:
-        for _v130_label, _v130_one in _v130_observed:
-            if not _v130_one:
-                print('  VELDO-0130 %s detail: %s' % (_v130_name, _v130_label))
-    expect('VELDO-0130 ' + _v130_name, _v130_ok)
+    _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
+_v130_report(_v130_service_rows)
+_v130_rows.update(_v130_service_rows)
 print('VELDO-0130 suite seconds: %.3f' % (_v130_time.monotonic() - _v130_started))

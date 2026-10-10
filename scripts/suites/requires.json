@@ -544,6 +544,9 @@
   ],
   "104_veldo_0210_mutation_workers": [
    "104_veldo_0210_mutation_workers"
+  ],
+  "104_veldo_0164_scoped_reads": [
+   "104_veldo_0164_scoped_reads"
   ]
  }
 }

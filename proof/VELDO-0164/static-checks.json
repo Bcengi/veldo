@@ -1,0 +1,13 @@
+{
+  "canonical_copies": {
+    "control_api.py": true,
+    "control_api_authority.py": true,
+    "control_api_models.py": true,
+    "control_api_models_scope.py": true,
+    "init_scaffold.py": true
+  },
+  "syntax": "passed",
+  "diff_check_exit": 0,
+  "diff_check_output": "",
+  "outside_footprint": []
+}

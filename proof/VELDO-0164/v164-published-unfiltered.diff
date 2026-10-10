@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -369 +369 @@
+-                            if scope is None or scope.universal or e.get('receipt') in visible]})
++                            if scope is None or scope.universal or True]})

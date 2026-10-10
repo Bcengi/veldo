@@ -1,0 +1,5 @@
+--- .veldo/control_api_models.py
++++ .veldo/control_api_models.py
+@@ -94 +94 @@
+-        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'settlement.request_id')),
++        Kind('decision_settlement', 'control_request_settlement', 'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')),

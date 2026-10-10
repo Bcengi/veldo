@@ -5252,8 +5252,8 @@ def cases():
         "        if a['operation'] == 'save_workflow':\n"
         "            return self._save_workflow(a)  # defect: a workflow save skips the authority's checks\n",
         ['actions/unauthorized-write'])
-    api('publication-lag-labeled-live', AU130, "                                'freshness': 'live' if published == head else 'stale'}}",
-        "                                'freshness': 'live'}}  # defect: a lagging publication is labeled current",
+    api('publication-lag-labeled-live', AU130, "'freshness': 'live' if published == head else 'stale'",
+        "# defect: a lagging publication is labeled current\n                                'freshness': 'live'",
         ['reads/freshness'])
     api('read-unscoped', AU130,
         "        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):\n"
@@ -5276,15 +5276,15 @@ def cases():
         "        if isinstance(item, str) and SCAN.scan_text(item):",
         "        if False:  # defect: token-shaped text is served", ['reads/authoritative'])
     api('read-model-kind-dropped', MO130,
-        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
+        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126', ('reference', 'proposal_id')))),\n", "        )),\n",
         ['reads/model-set'])
     # Codex review of 3c85f33b (P2): the project, objective, backlog item and team records their writers keep
     # were registered in no read model, so the endpoints answered them empty and live; each registration dropped
     # again, and the published gaps claiming them not implemented again.
-    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),\n"),
-                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),\n"),
-                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),\n"),
-                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),\n")):
+    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076', ('field', 'name')),\n"),
+                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077', ('field', 'project')),\n"),
+                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078', ('field', 'project')),\n"),
+                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089', ('field', 'project')),\n")):
         api('read-model-%s-unregistered' % kind, MO130, line, '', ['reads/implemented-writers'])
     api('read-model-gaps-claim-projects', MO130,
         "    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name\n",
@@ -5292,9 +5292,9 @@ def cases():
         ['reads/implemented-writers'],
         also=[("GAPS = (\n", "GAPS = (\n    Gap('AC2', 'projects', 'VELDO-0076', 'no project record is written by the engine yet'),  # defect\n")])
     api('event-data-leaked', AU130,
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],",
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'),"
-        " 'data': (changes[eid] or {}).get('data')} for eid in sorted(changes)],  # defect", ['events/live'])
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],",
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind'),"
+        " 'data': (visible[eid] or {}).get('data')} for eid in sorted(visible)],  # defect", ['events/live'])
     api('feed-skips-revocations', AU130,
         "                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:",
         "                if False:  # defect: the feed carries no revocation", ['events/live'])
@@ -10486,6 +10486,55 @@ def cases():
     add(142, 'identity142-caller-identity-ignored', '103_veldo_0142_git_identities.py', 'lander.py', '        if self.identity is not None:', '        if False:', ['lander/caller-identity-refused'])
     add(142, 'identity142-engine-config-reinjected', '103_veldo_0142_git_identities.py', 'control_launch.py', "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']", "    environment['XDG_RUNTIME_DIR']", ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
     add(142, 'identity142-station-caller-config', '103_veldo_0142_git_identities.py', 'control_landing_station.py', 'policy=policy, workspace_root=land.get', "policy=policy, identity=tuple(land['identity']), workspace_root=land.get", ['lander/station-record-authority'])
+
+    # VELDO-0164: every project rule is applied at reads and journal delivery.
+    add(164, 'v164-model-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'answer = MO.read_model(self.S, self.conn, model, scope=scope)',
+        'answer = MO.read_model(self.S, self.conn, model)', ['reads/member-A'])
+    add(164, 'v164-events-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'if scope is not None and not scope.universal:', 'if False:', ['events/member-A'])
+    add(164, 'v164-universal-projectless-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        'if self.universal:', 'if self.universal and self.projects(identity, kind, data):', ['owner/unchanged'])
+    add(164, 'v164-workflow-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):",
+        'if False:', ['reads/workflow'])
+    add(164, 'v164-shared-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "if self.rules.get(kind) == ('shared',):", 'if False:', ['reads/member-A'])
+    add(164, 'v164-published-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "or e.get('receipt') in visible", 'or True', ['events/publication'])
+    add(164, 'v164-own-revocations-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'reason = None if own else scope.reason(eid, kind, data)',
+        'reason = scope.reason(eid, kind, data)', ['events/own-revocations'])
+    add(164, 'v164-cursor-stalls', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "{'cursor': rows[-1][0] if rows else after}", "{'cursor': after}", ['events/cursor'])
+    add(164, 'v164-team-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api.py',
+        "if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):",
+        "if False:", ['reads/team-route'])
+    add(164, 'v164-unrouted-factory-visible', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "return None if data.get('proposal') == 'inbox' else data.get('project')",
+        "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')", ['reads/unrouted-intake'])
+
+
+    add(164, 'v164-decision-request-at-top-level', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'settlement.request_id')",
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')", ['reads/decision-settlement'])
+    add(164, 'v164-proposal-context-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        'served_data = scope.project_data(kind, data) if scope is not None else data',
+        'served_data = data', ['reads/proposal-context'])
+    add(164, 'v164-team-requires-model-read', '104_veldo_0164_scoped_reads.py', 'control_api.py',
+        'entities = self._inspect([identity, principal])',
+        "self._ask(self.authority.read, 'configuration', principal)\n        entities = self._inspect([identity, principal])",
+        ['reads/team-route'])
+
+
+    add(164, 'v164-api-default-team-unseeded', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),\n                                              S.digest_of(default_team))\n",
+        '', ['reads/authoritative'])
+    result[-1]['dir'] = 'scripts/suites'
+    add(164, 'v164-socket-message-unrouted', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "{'text': 'Plan the socket phase.', 'project': 'project-a'}",
+        "{'text': 'Plan the socket phase.'}", ['service/socket-path'])
+    result[-1]['dir'] = 'scripts/suites'
 
     return result
 

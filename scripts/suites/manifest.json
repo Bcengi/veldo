@@ -1439,6 +1439,15 @@
    ],
    "regions": "Borrowed login locks, atomic rotation and fail-closed admission.",
    "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+  },
+  {
+   "name": "104_veldo_0164_scoped_reads",
+   "file": "104_veldo_0164_scoped_reads.py",
+   "requires": [
+    "104_veldo_0164_scoped_reads"
+   ],
+   "regions": "Project scope on read models, workflow reads and member event pages.",
+   "requires_note": "Only ROOT and expect. Real SQLite and signed journal fixtures; foreground only."
   }
  ],
  "resource_capacities": {

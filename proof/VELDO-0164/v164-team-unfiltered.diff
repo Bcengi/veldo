@@ -1,0 +1,5 @@
+--- .veldo/control_api.py
++++ .veldo/control_api.py
+@@ -849 +849 @@
+-        if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):
++        if False:

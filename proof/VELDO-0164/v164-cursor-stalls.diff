@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -370 +370 @@
+-        cursor = {'cursor': rows[-1][0] if rows else after} if scope is not None and not scope.universal else {}
++        cursor = {'cursor': after} if scope is not None and not scope.universal else {}

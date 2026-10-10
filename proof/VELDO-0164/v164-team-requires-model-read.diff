@@ -1,0 +1,4 @@
+--- .veldo/control_api.py
++++ .veldo/control_api.py
+@@ -842,0 +843 @@
++        self._ask(self.authority.read, 'configuration', principal)

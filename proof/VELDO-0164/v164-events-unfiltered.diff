@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -343 +343 @@
+-            if scope is not None and not scope.universal:
++            if False:

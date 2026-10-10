@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -351 +351 @@
+-                    reason = None if own else scope.reason(eid, kind, data)
++                    reason = scope.reason(eid, kind, data)
