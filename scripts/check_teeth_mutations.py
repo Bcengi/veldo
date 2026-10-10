@@ -10184,6 +10184,13 @@ def cases():
             "        return self._send(chat, text, None)  # defect: unlisted raw text caller\n\n"
             "    def _tell(self, ev, receipt, text):\n",
             ['inventory/sends-and-assets'])
+    # VELDO-0185's service_team socket send is listed; a second setup send beside it is not.
+    text168('unlisted-setup-send', 'control_factory_setup.py',
+            "def service_team(plan, dispatch, prefix, owner_sign, clock):\n",
+            "def raw_team_packet(workspace, packet, CE, verify, owner_sign, identity):\n"
+            "    return CC.send(workspace, packet, CE, verify, owner_sign, identity, timeout=60)  # defect: unlisted send\n\n\n"
+            "def service_team(plan, dispatch, prefix, owner_sign, clock):\n",
+            ['inventory/sends-and-assets'])
     text168('refusal-unescaped', 'control_channel_presentation.py',
             "        text = TEXT.message(text, free_text=False)\n",
             "        text = text  # defect: refusal choices bypass rendering\n",

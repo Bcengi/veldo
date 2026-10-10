@@ -32,6 +32,8 @@ def _v168_suite():
         'control_channel_projection.py': ROOT / ".veldo" / "control_channel_projection.py",
         'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
         'control_intake.py': ROOT / ".veldo" / "control_intake.py",
+        # Named so a mutation of the setup's socket sends reaches the inventory's production copy.
+        'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
     }
     names = ('lines/decision', 'lines/inbox', 'lines/report', 'lines/prompt',
              'escape/zero-width', 'escape/direction', 'escape/whitespace', 'escape/literal',
@@ -433,6 +435,7 @@ def _v168_suite():
                 ('control_client_api.py', 'ServiceAuthority._call', 'CC', 'send'),
                 # Setup and passkey commands use the local authority socket, not a Telegram renderer.
                 ('control_factory_setup.py', 'enroll_api_edge_through_service.send', 'CC', 'send'),
+                ('control_factory_setup.py', 'service_team.send', 'CC', 'send'),
                 ('control_factory_setup.py', 'service_request.request', 'CC', 'send'),
                 ('control_factory_setup_api.py', 'passkey.send', 'CC', 'send'),
                 ('control_claim_client.py', 'Client.request', 'IPC', 'send'),
