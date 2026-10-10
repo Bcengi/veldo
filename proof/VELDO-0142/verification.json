@@ -1,16 +1,16 @@
 {
   "schema": "veldo.identity_scoped_checks/v1",
-  "commit": "a9f62d69cfbd6c07d27bcf0a205d407113030ba7",
+  "commit": "c416bf44a3a6981886c196a02a7808ca17040b6f",
   "suite": "103_veldo_0142_git_identities",
   "suite_sha256": "sha256:ac7288204c93d462a23b5a066d36b30a12e42810a609f83d7cdc4e74261abd54",
   "baseline": {
     "exit": 2,
     "summary": [
-      "selftest (PARTIAL, 1 of 162 suites): 49 passed, 0 failed in 15.59s"
+      "selftest (PARTIAL, 1 of 162 suites): 49 passed, 0 failed in 15.45s"
     ],
     "failing_rows": [],
     "diagnostics": [],
-    "log_sha256": "sha256:b5c6dda77ad8a5dfa5f43c6567c7fc3e17877998c5746e1de2bc44acf4319273"
+    "log_sha256": "sha256:011867df92c71e15b7d5bdbfdf02eadb803ddaf256328e1e02ff01dc5db4eaea"
   },
   "mutations": [
     {
@@ -26,13 +26,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.60s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.25s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 binding/immutable"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:5676c9bb0f165d78452ce72ad8c78a5bfbedc7532b98528bc05872eb7604488b"
+      "log_sha256": "sha256:0e97417c15436fff34b368ac2509c312de505ef5e8fb715340b80089f8406ae1"
     },
     {
       "name": "identity142-clone-global-author",
@@ -47,7 +47,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.51s"
+        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.38s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 clone/identity-authors",
@@ -57,7 +57,7 @@
         "VELDO-0142 diagnostic clone/identity-authors AssertionError ('author comparison', ['Global Stranger', 'global@example.invalid', 'Global Stranger', 'global@example.invalid'], ['Work Author', 'bcengi@example.invalid', 'Work Author', 'bcengi@example.invalid'])",
         "VELDO-0142 diagnostic launch/spawn-config-commit-authors Refused invalid_input:clone_unknown: no single clone names this dispatch"
       ],
-      "log_sha256": "sha256:57fb18e3e7cbab69dccf19fba1d6058013979b029f3613a42a090d3f2ab29ad6"
+      "log_sha256": "sha256:12cb0ed89e0a5f98709b1f2bd51da12e23db3e2a0a252a34f61d66e73f81c8aa"
     },
     {
       "name": "identity142-lander-caller-author",
@@ -72,7 +72,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 14.96s"
+        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.03s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/identity-and-reland-authors",
@@ -81,7 +81,7 @@
       "diagnostics": [
         "VELDO-0142 diagnostic lander/identity-and-reland-authors AssertionError "
       ],
-      "log_sha256": "sha256:e08be5f63db909388874d6eac4661ee1a08b101d726da3dd391a6a43b309efb2"
+      "log_sha256": "sha256:eadfeea914dd89c73dc87e586db87aec94137f8f4a0b1042e0be491fb314e843"
     },
     {
       "name": "identity142-environment-overrides-kept",
@@ -96,7 +96,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 45 passed, 4 failed in 15.18s"
+        "selftest (PARTIAL, 1 of 162 suites): 45 passed, 4 failed in 15.36s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-author-overrides",
@@ -108,7 +108,7 @@
         "VELDO-0142 diagnostic clone/identity-authors AssertionError ('author comparison', ['Environment Stranger', 'env@example.invalid', 'Environment Stranger', 'env@example.invalid'], ['Work Author', 'bcengi@example.invalid', 'Work Author', 'bcengi@example.invalid'])",
         "VELDO-0142 diagnostic launch/spawn-config-commit-authors Refused invalid_input:clone_unknown: no single clone names this dispatch"
       ],
-      "log_sha256": "sha256:b9e536235bead150d1c0324856389a5908c7e3f2eee2a1ed340dd59990fb281c"
+      "log_sha256": "sha256:12ac0d7a500a53ea36dfefbb291121ee737202aeb9b310909ccf86548b0d80ac"
     },
     {
       "name": "identity142-setup-binding-omitted",
@@ -135,7 +135,7 @@
       "diagnostics": [
         "VELDO-0142 diagnostic setup/full-command-and-rerun Refused missing_authority:repository_identity"
       ],
-      "log_sha256": "sha256:44b9cf9887c3ffab67679b7b13f476882320d3fb77247232eba74cd3801981e0"
+      "log_sha256": "sha256:129604e79c1cc94c5f9e6d51f3151491afe9c1277952b9c9e2a4a175e3d186bf"
     },
     {
       "name": "identity142-config-overrides-kept",
@@ -151,14 +151,14 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.46s"
+        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.33s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-config-overrides",
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:b85317f69cf78eaf0991c9f2a5a195b71327afbd8222e33e67a02589f4d847c3"
+      "log_sha256": "sha256:04155cf03c911cc2d94b79f738e815e122cab78727122ac8b1c589ebfc842b51"
     },
     {
       "name": "identity142-spawn-strip-omitted",
@@ -173,13 +173,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.43s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.38s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:ddbb6e369538c62deccd7ad05be93fdccf120f34158088bbc716e35bfaa766a7"
+      "log_sha256": "sha256:3c5c74555d882c9d5cb8c578f986e9490a8c78d97f271bc2673262545386bd14"
     },
     {
       "name": "identity142-worker-authors-unchecked",
@@ -194,13 +194,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.86s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.51s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/worker-commit-mismatch"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:15c1db38fe9ffb1bda9f772fcffe54854af37a216553fa0ab3b262f18cf9f7ab"
+      "log_sha256": "sha256:9781e66e86a355f6393453344af7ea5fce9a2809ef66068b52df4af28e4bbb17"
     },
     {
       "name": "identity142-rerun-binding-not-written",
@@ -216,7 +216,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 46 passed, 3 failed in 17.26s"
+        "selftest (PARTIAL, 1 of 162 suites): 46 passed, 3 failed in 16.71s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/existing-store-adds-binding",
@@ -224,7 +224,7 @@
         "SELFTEST FAIL: VELDO-0142 setup/rerun-change-refused"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:fb5fa795c5848611d7929c44e26bfd35895398260239b438bb54461a8c6c37d6"
+      "log_sha256": "sha256:b9fa638c91187e7d6659ddd79493cad7d1891330a63f38dbbf7a351691c5ecf2"
     },
     {
       "name": "identity142-store-unbound-written",
@@ -239,7 +239,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.59s"
+        "selftest (PARTIAL, 1 of 162 suites): 47 passed, 2 failed in 15.60s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 binding/store-and-callers-missing",
@@ -248,7 +248,7 @@
       "diagnostics": [
         "VELDO-0142 diagnostic clone/unbound-refused IntegrityError UNIQUE constraint failed: repository_bindings.domain_uuid, repository_bindings.repository_uuid"
       ],
-      "log_sha256": "sha256:85e33369aed56c8e24791a81381e6d29cd98106fbfd7141679a92ffa47b0af92"
+      "log_sha256": "sha256:99cd2fe09356eb9a9ee93017b9cfa576b036f76edd86e7b3fa6cdae836b56866"
     },
     {
       "name": "identity142-reference-too-loose",
@@ -263,13 +263,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.93s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.64s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/keychain-reference-pattern"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:f9a6dd0347fe551c5df0c87b2ca26ca13c11e95308a0c01ddd0f3e5abfc92443"
+      "log_sha256": "sha256:f080a811e6edd0546ee10c845fab43f4b1baca268f5955019aad8e5af955fb23"
     },
     {
       "name": "identity142-setup-log-omitted",
@@ -284,13 +284,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 16.00s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.30s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 setup/configured-log"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:8af7e53a7778f2ec2849d7b5ec9762cea62505094b42b2743b4018fd54efb233"
+      "log_sha256": "sha256:a6146dfed83642bd28cb9cadffb87452fda7ff85f0fdc0d0a4466245f22ef9be"
     },
     {
       "name": "identity142-caller-identity-ignored",
@@ -305,13 +305,13 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.70s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.37s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/caller-identity-refused"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:a627e5c8ea6a35797c4fe8ea170279a3d971d4d6760703cee12a19fcaf1586fb"
+      "log_sha256": "sha256:c484264da4558217641d08bc91a82ecdd4bb8fdd725fae34c179323523f32a0a"
     },
     {
       "name": "identity142-engine-config-reinjected",
@@ -327,7 +327,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 46 passed, 3 failed in 16.08s"
+        "selftest (PARTIAL, 1 of 162 suites): 46 passed, 3 failed in 15.26s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 launch/no-author-overrides",
@@ -335,7 +335,7 @@
         "SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
       ],
       "diagnostics": [],
-      "log_sha256": "sha256:4dc0310cf564a28c0b69bb3a125f990bfafbcda18be0742fa1b818364fafcc20"
+      "log_sha256": "sha256:8d068eac3fe33c87821f269d00dfc80275f11c2f101103ab792372ac7e874d43"
     },
     {
       "name": "identity142-station-caller-config",
@@ -350,7 +350,7 @@
       "rejected": true,
       "exit": 1,
       "summary": [
-        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.76s"
+        "selftest (PARTIAL, 1 of 162 suites): 48 passed, 1 failed in 15.66s"
       ],
       "failing_rows": [
         "SELFTEST FAIL: VELDO-0142 lander/station-record-authority"
@@ -358,7 +358,7 @@
       "diagnostics": [
         "VELDO-0142 diagnostic lander/station-record-authority KeyError 'identity'"
       ],
-      "log_sha256": "sha256:b8fd9c20de2ff5c73ee23af26e7f7b6b5e2fddbfd5d38dae32302cae17759d0f"
+      "log_sha256": "sha256:c59cb11b34ec88102b05956f1b837a82b585e310a0b18e557d78b213b81fa47e"
     }
   ],
   "full_gate_run": false,
