@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -137 +137 @@
+-            if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):
++            if not data:

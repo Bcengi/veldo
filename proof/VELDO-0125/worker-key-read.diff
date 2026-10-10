@@ -1,0 +1,5 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -108 +108 @@
+-        rules.append('(deny file-read-data %s)' % _any(keys))
++        pass

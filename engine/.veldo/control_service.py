@@ -1219,8 +1219,18 @@ class Service:
         if not lines:
             return False
         signers = '\n'.join(lines) + '\n'
-        return any(AC.ssh_keygen_verify(message, signature, signers, principal)[0]
-                   for principal in find_principals(signature, signers))
+        request = json.loads(message)
+        packet = request.get('command') or {}
+        command = packet.get('command') if isinstance(packet, dict) else None
+        operation = command.get('operation') if isinstance(command, dict) else None
+        for principal in find_principals(signature, signers):
+            member = AC.membership_entry(state['membership'], principal)
+            if (member and 'worker_receiver' in member.get('roles', [])
+                    and operation not in ('worker_claim', 'worker_launch', 'worker_result')):
+                continue
+            if AC.ssh_keygen_verify(message, signature, signers, principal)[0]:
+                return True
+        return False
 
     # -- the packets -------------------------------------------------------------------------
 

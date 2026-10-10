@@ -23,6 +23,8 @@ CASES = [
      "if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):", "if not data:")]
 
 CASES += [
+    ('worker-request', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-request-only',
+     "and operation not in ('worker_claim', 'worker_launch', 'worker_result')):", "and False):"),
     ('worker-mutate', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-mutate-only',
      "        if member and 'worker_receiver' in member.get('roles', []):", "        if False:"),
     ('worker-claim', 'control_claim.py', '105_veldo_0125_relay', 'AC1/worker-claim-only',

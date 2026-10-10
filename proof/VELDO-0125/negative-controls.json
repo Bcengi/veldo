@@ -4,7 +4,7 @@
     "row": "AC1/one-authority",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "ba82cb4ca50f7f2c6b89816dba1a69ee12e055da40a75ebec88daf33d5de8cd3",
+    "source_sha256": "63e420c812da2fef523e3c3be3fd6e264afa541d3c6cfe6bec1963cbcf8134d7",
     "patch": "AC1.diff",
     "log": "AC1.log"
   },
@@ -13,7 +13,7 @@
     "row": "AC2/host-routing-refusal",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "6943ba607d0b5755e4df808c82a526567cc6b83192f385481365193807c7c7ab",
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
     "patch": "AC2.diff",
     "log": "AC2.log"
   },
@@ -22,8 +22,134 @@
     "row": "AC3/remote-result-binding",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "6a12ad856c2214d4dc7afb0572155ac108512d6b43f7f3e2375deefcc7109a8f",
+    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
     "patch": "AC3.diff",
     "log": "AC3.log"
+  },
+  {
+    "ac": "worker-request",
+    "row": "AC1/worker-request-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d2a9b4a17a9ba3260d9e25e799da82de2ed4f06342dc9963ca16fec1dfe36585",
+    "patch": "worker-request.diff",
+    "log": "worker-request.log"
+  },
+  {
+    "ac": "worker-mutate",
+    "row": "AC1/worker-mutate-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d2a9b4a17a9ba3260d9e25e799da82de2ed4f06342dc9963ca16fec1dfe36585",
+    "patch": "worker-mutate.diff",
+    "log": "worker-mutate.log"
+  },
+  {
+    "ac": "worker-claim",
+    "row": "AC1/worker-claim-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "a02112551bdffe6ef532cffa1db48e6561689e42deaf938eb1788f7335f43ac1",
+    "patch": "worker-claim.diff",
+    "log": "worker-claim.log"
+  },
+  {
+    "ac": "worker-inbox",
+    "row": "AC1/worker-inbox-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "78c3f25c8da3b918d931a3640dee5f896603325e49dc4d721912789178a06139",
+    "patch": "worker-inbox.diff",
+    "log": "worker-inbox.log"
+  },
+  {
+    "ac": "production-route",
+    "row": "AC2/production-routing",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "7b68470f7fca22f3c442d5db3895f1f4a2ad4b95c26cbb7f674e5f58d55c65a8",
+    "patch": "production-route.diff",
+    "log": "production-route.log"
+  },
+  {
+    "ac": "accept-atomic",
+    "row": "AC2/precall-caps",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "patch": "accept-atomic.diff",
+    "log": "accept-atomic.log"
+  },
+  {
+    "ac": "report-atomic",
+    "row": "AC3/refused-report-atomic",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "patch": "report-atomic.diff",
+    "log": "report-atomic.log"
+  },
+  {
+    "ac": "prepared-blocked",
+    "row": "AC2/qualification",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
+    "patch": "prepared-blocked.diff",
+    "log": "prepared-blocked.log"
+  },
+  {
+    "ac": "worker-key-read",
+    "row": "0124:AC1/worker-signing-key-read",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "301c19290b722a9d951d12ee5769df7c11115e0bb1a2dfd50101b5523d9c05d2",
+    "patch": "worker-key-read.diff",
+    "log": "worker-key-read.log"
+  },
+  {
+    "ac": "signature-namespace",
+    "row": "AC1/signature-namespaces",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "patch": "signature-namespace.diff",
+    "log": "signature-namespace.log"
+  },
+  {
+    "ac": "dispatch-other",
+    "row": "AC3/dispatch-other",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "patch": "dispatch-other.diff",
+    "log": "dispatch-other.log"
+  },
+  {
+    "ac": "owner-dispatch",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "dfdd86563bb2d04b488602173638d4066d29c20e71f3542b18b2a3d838e62aaa",
+    "patch": "owner-dispatch.diff",
+    "log": "owner-dispatch.log"
+  },
+  {
+    "ac": "owner-membership",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "dfdd86563bb2d04b488602173638d4066d29c20e71f3542b18b2a3d838e62aaa",
+    "patch": "owner-membership.diff",
+    "log": "owner-membership.log"
+  },
+  {
+    "ac": "owner-reservations",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "dfdd86563bb2d04b488602173638d4066d29c20e71f3542b18b2a3d838e62aaa",
+    "patch": "owner-reservations.diff",
+    "log": "owner-reservations.log"
   }
 ]

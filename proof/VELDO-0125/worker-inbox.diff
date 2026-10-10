@@ -1,0 +1,5 @@
+--- control_assignment.py
++++ control_assignment.py
+@@ -399 +399 @@
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:

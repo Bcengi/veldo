@@ -1,0 +1,5 @@
+--- control_store.py
++++ control_store.py
+@@ -653 +653 @@
+-                if hit and command["operation"] not in commands:
++                if hit and owner != 'dispatch' and command["operation"] not in commands:

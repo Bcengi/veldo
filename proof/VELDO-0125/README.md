@@ -237,3 +237,40 @@ preferred because it supervises and stops the Linux child automatically.
 Native transport, lifecycle observations and the canonical gate remain pending.
 Reconnect, automatic recovery, broader host qualification and deployment activation remain
 outside this specification's Release 1 build.
+
+## Independent review fixes
+
+The owner's assistant amended the production launch footprint in spec History.
+These rows exercise the review findings on Linux with explicit host fixtures:
+
+1. AC1/worker-mutate-only, worker-claim-only, worker-inbox-only and
+   worker-request-only restrict the worker principal at the inner and outer
+   boundaries. AC1/entity-owners rejects generic writes to dispatches, membership,
+   verification keys and reservations. Each boundary has a retained falsifier.
+2. AC2/production-routing uses Runner.submit and the real reservation and dispatch
+   stores. AC2/production-account-host selects a Mac-only account profile. Required
+   capabilities come from the accepted unit, without altering the gate's input
+   identities. Removing the production prepare call fails the routing row.
+3. AC2/precall-caps requires the exact prepared state after reservation refusal.
+   AC3/refused-report-atomic requires unchanged entities, journal, commands and
+   nonces after both the refused report and its retry. Removing the transaction
+   fails each row separately.
+4. 0124 AC1/worker-signing-key-read requires the explicit read denial. The native
+   containment probe attempts an actual read of worker_signing_key. Its native
+   and structural falsifiers remove that single read rule. The Mac worker also
+   requires its client's signing key in the accepted profile's signing_keys list.
+5. The native driver always uses the forced relay's fixed socket. It stops the
+   authority before testing unavailability, with unchanged SSH argv. Transport
+   credentials are separate from command signing credentials.
+6. AC3/dispatch-other and native/AC3/dispatch-other create another running dispatch
+   and send the wrong binding before committing the original result. The AC3
+   binding falsifier must fail this specific case.
+7. AC2/qualification checks a durable routing entity when the selected Mac becomes
+   unavailable after preparation; AC2/host-routing-refusal covers initial absence.
+8. AC1/signature-namespaces rejects outer-purpose signatures on inner commands and
+   inner-purpose signatures on outer requests. The namespaces are veldo-command
+   and veldo-worker-command respectively.
+
+Review verification results are retained in review-verification.json. These are
+selected suite results, never a canonical gate stamp. Native containment, real
+Mac/SSH observations, qualification and activation remain unrun in this checkout.

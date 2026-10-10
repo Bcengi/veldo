@@ -1,0 +1,5 @@
+--- control_claim.py
++++ control_claim.py
+@@ -279 +279 @@
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:

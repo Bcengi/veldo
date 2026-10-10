@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -29 +29 @@
+-COMMAND_NAMESPACE = 'veldo-worker-command'
++COMMAND_NAMESPACE = 'veldo-command'

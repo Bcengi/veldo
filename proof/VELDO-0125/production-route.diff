@@ -1,0 +1,5 @@
+--- control_launch.py
++++ control_launch.py
+@@ -625 +625 @@
+-                selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)
++                self.dispatches.prepare(contract, now=now); selected = dict(state='prepared', contract=contract)

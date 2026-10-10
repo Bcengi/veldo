@@ -41,7 +41,7 @@ def _v125_suite():
         assert invocation['observed']['tokens'] == 7
         assert not T.D.completed(f.ds.record(data['dispatch_id']))
         request = T.W.SV.CC.build_request(str(f.repo), f.binding, dict(operation='inspect',
-            entity_ids=['worker:dispatch/test', 'worker-spend:dispatch/test']), lambda b: f.sign('mac', b))
+            entity_ids=['worker:dispatch/test', 'worker-spend:dispatch/test']), lambda b: f.sign('authority', b))
         visible = f.authority.judge(request, __import__('os').getuid())['result']
         assert visible['ok'] and visible['entities']['worker:dispatch/test']['data'] == data
         assert visible['entities']['worker-spend:dispatch/test']['data'] == spend
@@ -152,6 +152,16 @@ def _v125_suite():
             assert result.get('reason') == 'not_authorized', result
         assert before == f.service.watermark()
 
+    def request_only(f):
+        f.start()
+        before = T.S.table_snapshot(f.conn)
+        for operation in ('inspect', T.W.SV.OWNERSHIP_COMMIT):
+            request = T.W.SV.CC.build_request(str(f.repo), f.binding, dict(operation=operation),
+                                             lambda data: f.sign('mac', data))
+            response = f.authority.judge(request, __import__('os').getuid())
+            assert not response['accepted'] and response['reason'] == 'command_signature_invalid', response
+            assert T.S.table_snapshot(f.conn) == before
+
     def owners(f):
         f.prepare(required=['macos'])
         for identity, kind in [('dispatch:dispatch/test', T.D.RECORD_KIND),
@@ -189,7 +199,7 @@ def _v125_suite():
                       'AC1/authentication': auth, 'AC1/worker-mutate-only': lambda f: confinement(f, 'mutate'),
                       'AC1/worker-claim-only': lambda f: confinement(f, 'claim'),
                       'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
-                      'AC1/entity-owners': owners, 'AC1/signature-namespaces': namespaces,
+                      'AC1/worker-request-only': request_only, 'AC1/entity-owners': owners, 'AC1/signature-namespaces': namespaces,
                       'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/dispatch-other': lambda f: binding(f, [('dispatch_id', 'dispatch/other')]),
                       'AC3/unknown-charge': unknown}.items():
