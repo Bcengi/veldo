@@ -1,9 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0182",
-  "commit": "7b577314a40d8148676a0bf08c634ff0264580b3",
+  "commit": "a9f62d69cfbd6c07d27bcf0a205d407113030ba7",
+  "tree": "bc8d15ce49b839713feed2a84b06574e170faf34",
   "producer": "Claude implementation agent (second review repairs; earlier rounds by the Codex implementation agent)",
-  "produced_at": "2026-10-09T13:54:48+00:00",
+  "produced_at": "2026-10-10T13:11:29.053925+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -89,8 +90,10 @@
     "proof/VELDO-0182/capture_conformance.py",
     "proof/VELDO-0182/integration_fixtures.py",
     "proof/VELDO-0182/worker_fixture.py",
-    "proof/VELDO-0182/real-store-results.json"
+    "proof/VELDO-0182/real-store-results.json",
+    "proof/VELDO-0182/batch1-rerun.json"
   ],
   "rollback": "Stop handing memory to runs while retaining its record and all original bytes. No automatic memory rollback is authorized.",
-  "review": "Pending independent review and owner approval. This manifest records the executable proof contract and capture provenance; it is not a gate stamp or landing approval."
+  "review": "Pending independent review and owner approval. This manifest records the executable proof contract and capture provenance; it is not a gate stamp or landing approval.",
+  "batch_rerun": "Batch 1: suite 105 rerun at this commit, 127 of 127 rows and 18 of 18 in-suite falsifier rows held (batch1-rerun.json)."
 }
