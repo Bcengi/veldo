@@ -1,0 +1,170 @@
+[
+  {
+    "finding": 142,
+    "name": "identity142-binding-replaced",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "if old['identity'] != target['identity']:",
+    "new": "if False:",
+    "rows": [
+      "binding/immutable"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-clone-global-author",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_clone.py",
+    "old": "for section in ('user', 'author', 'committer'):",
+    "new": "for section in ():",
+    "rows": [
+      "clone/identity-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-lander-caller-author",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "lander.py",
+    "old": "return module.author(self.identity_record)",
+    "new": "return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))",
+    "rows": [
+      "lander/identity-and-reland-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-environment-overrides-kept",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}",
+    "new": "return dict(environment)",
+    "rows": [
+      "launch/no-author-overrides"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-setup-binding-omitted",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_factory_setup.py",
+    "old": "        if git_identities is not None:\n            with step('git_identities'):",
+    "new": "        if False:\n            with step('git_identities'):",
+    "rows": [
+      "setup/full-command-and-rerun"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-config-overrides-kept",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}",
+    "new": "return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}",
+    "rows": [
+      "launch/no-config-overrides",
+      "launch/spawn-config-commit-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-spawn-strip-omitted",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_launch.py",
+    "old": "        environment = _organ('control_git_identity').environment(environment)\n        environment['VELDO_DISPATCH_ACCEPTANCE']",
+    "new": "        environment['VELDO_DISPATCH_ACCEPTANCE']",
+    "rows": [
+      "launch/spawn-config-commit-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-worker-authors-unchecked",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "lander.py",
+    "old": "            self._check_worker_identities(workspace, evidence, identity)",
+    "new": "            pass",
+    "rows": [
+      "lander/worker-commit-mismatch"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-rerun-binding-not-written",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_factory_setup.py",
+    "old": "                                 git_identities, workspace_identity,\n                                 observe=lambda event: outcomes.append",
+    "new": "                                 git_identities, workspace_identity, check_only=True,\n                                 observe=lambda event: outcomes.append",
+    "rows": [
+      "setup/existing-store-adds-binding",
+      "setup/rerun-adds-identity"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-store-unbound-written",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_store.py",
+    "old": "                identity_module.resolve(conn, domain_uuid, repository, target)",
+    "new": "                pass",
+    "rows": [
+      "binding/store-and-callers-missing"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-reference-too-loose",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_git_identity.py",
+    "old": "return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None",
+    "new": "return text(value) and value.startswith('keychain:') and bool(value[9:].strip())",
+    "rows": [
+      "setup/keychain-reference-pattern"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-setup-log-omitted",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_factory_setup.py",
+    "old": "observe=lambda event: done.append(dict(step='git_identity_configured', **event))",
+    "new": "observe=None",
+    "rows": [
+      "setup/configured-log"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-caller-identity-ignored",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "lander.py",
+    "old": "        if self.identity is not None:",
+    "new": "        if False:",
+    "rows": [
+      "lander/caller-identity-refused"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-engine-config-reinjected",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_launch.py",
+    "old": "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']",
+    "new": "    environment['XDG_RUNTIME_DIR']",
+    "rows": [
+      "launch/no-config-overrides",
+      "launch/spawn-config-commit-authors"
+    ]
+  },
+  {
+    "finding": 142,
+    "name": "identity142-station-caller-config",
+    "suite": "103_veldo_0142_git_identities.py",
+    "module": "control_landing_station.py",
+    "old": "policy=policy, workspace_root=land.get",
+    "new": "policy=policy, identity=tuple(land['identity']), workspace_root=land.get",
+    "rows": [
+      "lander/station-record-authority"
+    ]
+  }
+]

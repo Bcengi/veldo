@@ -1,0 +1,10 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1588,7 +1588,6 @@
+             argv, environment = self._baseline(dispatch_id, argv, environment,
+                                                adapter.get('identity', 'local') == 'reported')
+         environment['VELDO_DISPATCH_ID'] = dispatch_id
+-        environment = _organ('control_git_identity').environment(environment)
+         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
+         # stream comes to this receiver, which keeps it in the record.

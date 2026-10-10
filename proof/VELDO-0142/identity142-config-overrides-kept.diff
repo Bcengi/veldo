@@ -1,0 +1,13 @@
+--- a/.veldo/control_git_identity.py
++++ b/.veldo/control_git_identity.py
+@@ -166,9 +166,7 @@
+ 
+ 
+ def environment(environment):
+-    return {key: value for key, value in environment.items()
+-            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')
+-                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}
++    return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}
+ 
+ 
+ def author(record):

@@ -1061,7 +1061,10 @@ def cases():
             '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
             'aliases/revision-in-enrolled-repository')
     aliases('repository-binding-unchecked', 'control_store.py',
-            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+            # VELDO-0142 checks the persisted path before resolving its Git identity. The later
+            # insert-loop check is now unreachable for a conflicting binding in this transaction.
+            '                if prior is not None and prior != target:', '                if False:',
+            'aliases/revision-in-enrolled-repository')
     aliases('store-owner-by-name', 'control_store.py',
             '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
     aliases('store-owner-ignores-digest', 'control_store.py',
@@ -10466,6 +10469,23 @@ def cases():
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+
+    # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
+    add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
+    add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
+    add(142, 'identity142-lander-caller-author', '103_veldo_0142_git_identities.py', 'lander.py', 'return module.author(self.identity_record)', "return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))", ['lander/identity-and-reland-authors'])
+    add(142, 'identity142-environment-overrides-kept', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}", 'return dict(environment)', ['launch/no-author-overrides'])
+    add(142, 'identity142-setup-binding-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "        if git_identities is not None:\n            with step('git_identities'):", "        if False:\n            with step('git_identities'):", ['setup/full-command-and-rerun'])
+    add(142, 'identity142-config-overrides-kept', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}", 'return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}', ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
+    add(142, 'identity142-spawn-strip-omitted', '103_veldo_0142_git_identities.py', 'control_launch.py', "        environment = _organ('control_git_identity').environment(environment)\n        environment['VELDO_DISPATCH_ACCEPTANCE']", "        environment['VELDO_DISPATCH_ACCEPTANCE']", ['launch/spawn-config-commit-authors'])
+    add(142, 'identity142-worker-authors-unchecked', '103_veldo_0142_git_identities.py', 'lander.py', '            self._check_worker_identities(workspace, evidence, identity)', '            pass', ['lander/worker-commit-mismatch'])
+    add(142, 'identity142-rerun-binding-not-written', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', '                                 git_identities, workspace_identity,\n                                 observe=lambda event: outcomes.append', '                                 git_identities, workspace_identity, check_only=True,\n                                 observe=lambda event: outcomes.append', ['setup/existing-store-adds-binding', 'setup/rerun-adds-identity'])
+    add(142, 'identity142-store-unbound-written', '103_veldo_0142_git_identities.py', 'control_store.py', '                identity_module.resolve(conn, domain_uuid, repository, target)', '                pass', ['binding/store-and-callers-missing'])
+    add(142, 'identity142-reference-too-loose', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None", "return text(value) and value.startswith('keychain:') and bool(value[9:].strip())", ['setup/keychain-reference-pattern'])
+    add(142, 'identity142-setup-log-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "observe=lambda event: done.append(dict(step='git_identity_configured', **event))", 'observe=None', ['setup/configured-log'])
+    add(142, 'identity142-caller-identity-ignored', '103_veldo_0142_git_identities.py', 'lander.py', '        if self.identity is not None:', '        if False:', ['lander/caller-identity-refused'])
+    add(142, 'identity142-engine-config-reinjected', '103_veldo_0142_git_identities.py', 'control_launch.py', "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']", "    environment['XDG_RUNTIME_DIR']", ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
+    add(142, 'identity142-station-caller-config', '103_veldo_0142_git_identities.py', 'control_landing_station.py', 'policy=policy, workspace_root=land.get', "policy=policy, identity=tuple(land['identity']), workspace_root=land.get", ['lander/station-record-authority'])
 
     return result
 

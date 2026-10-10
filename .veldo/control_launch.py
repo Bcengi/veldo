@@ -343,6 +343,7 @@ def engine_environment(environment):
     the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
     the receiver's. VELDO-0165 also removes every session-prefixed name, then installs only the qualified
     adapter, baseline and account values the receiver carried in ENGINE_OVERRIDES. Other launches are unchanged."""
+    environment = _organ('control_git_identity').environment(environment)
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment
@@ -350,6 +351,7 @@ def engine_environment(environment):
         if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
             environment.pop(name, None)
     environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
+    environment = _organ('control_git_identity').environment(environment)
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -1586,6 +1588,7 @@ class Receiver:
             argv, environment = self._baseline(dispatch_id, argv, environment,
                                                adapter.get('identity', 'local') == 'reported')
         environment['VELDO_DISPATCH_ID'] = dispatch_id
+        environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.

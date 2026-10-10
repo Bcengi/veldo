@@ -236,6 +236,7 @@ def _v155_suite():
         GP.run(['git', '-C', str(src), 'add', '-A', '-f'], check=True, capture_output=True)
         GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
                capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
 
         # In every account profile: user settings (the planted style and a hook), a user MCP server, the claude.ai
@@ -545,6 +546,7 @@ out.close()
         gate = EL.Gate(S, writer, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones, _ = attempt(lambda: CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root),
                                               protected=[str(private)], engines=[str(factory / 'engines')]))
         if clones is None:

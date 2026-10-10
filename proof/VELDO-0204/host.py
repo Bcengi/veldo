@@ -277,8 +277,9 @@ class Host:
     def source(self):
         """The served repository's workspace: an accepted revision (VELDO-0088 snapshots) and its enrollment."""
         EN = load('v204_enrollment', self.mods / 'control_enrollment.py')
-        source = self.workspace = self.base / 'v204-source'
-        source.mkdir()
+        # VELDO-0142: a repository is read from the one path its identity record binds, and setup bound
+        # this host's repository to the workspace it laid the host down for, so that is the source.
+        source = self.workspace = Path(self.f['setup_report']['workspace'])
         self.GP = load('v204_git', self.mods / 'git_process.py')
         self.GP.run(['git', '-C', str(source), 'init', '-q'], check=True, capture_output=True)
         self.accept_revision('Accepted project source.\n')

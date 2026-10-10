@@ -1,0 +1,11 @@
+--- a/.veldo/control_factory_setup.py
++++ b/.veldo/control_factory_setup.py
+@@ -936,7 +936,7 @@
+             writer = S.open_store(plan['store'])
+             try:
+                 setup_identities(writer, ids['domain_uuid'], ids['repository_uuid'], workspace,
+-                                 git_identities, workspace_identity,
++                                 git_identities, workspace_identity, check_only=True,
+                                  observe=lambda event: outcomes.append(dict(step='git_identity_configured', **event)))
+             finally:
+                 writer.close()

@@ -363,6 +363,7 @@ with open(log, 'a') as f:
         verify_packet = EL.HostTrust(HOST_ID, str(signers_file)).verifier('owner', str(caller))
         ids = {'domain_uuid': DOMAIN, 'repository_uuid': REPO, 'store_uuid': STORE}
         setup = S.open_store(str(store_path))
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, setup, DOMAIN, REPO, caller, LANDER_ID)
         connections.append(setup)
         setup.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                      'writes': ('entities', 'journal', 'commands', 'nonces')}
@@ -444,7 +445,7 @@ packet = json.loads(sys.stdin.read() or '{}')
 unit = packet['unit']
 def git(*args):
     return _git_process.run(['git', '-C', str(work), *args], check=True, capture_output=True, text=True,
-                            identity=('Builder', 'builder-148@example.invalid')).stdout.strip()
+                            identity=('Lander', 'lander@example.invalid')).stdout.strip()
 def sha(path):
     return 'sha256:' + hashlib.sha256((work / path).read_bytes()).hexdigest()
 git('checkout', '-q', '-B', 'build/' + unit, base)
@@ -553,7 +554,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             (base / folder).mkdir()
         LAND = {'repository': str(caller), 'trunk': 'main', 'remote': 'origin', 'effects': str(effects_path),
                 'target': 'git-origin', 'principal': 'landing', 'connection_key': str(private / 'landing'),
-                'events_root': str(events_root), 'claims': str(base / 'claims'), 'identity': list(LANDER_ID),
+                'events_root': str(events_root), 'claims': str(base / 'claims'),
                 'observations': str(base / 'observations'), 'workspace_root': str(base / 'candidates')}
         FX = load('v148_executor', mods / 'control_effect_executor.py')
         before_listing, calls = {}, []
@@ -612,8 +613,8 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         # owner's grant bound to exactly that subject.
         git(caller, 'fetch', '-q', 'origin', '+refs/heads/main:refs/heads/main')
         dry = LD.GitLandOps(str(caller), builds[G]['evidence'], trunk='main', remote='origin', push=False,
-                            identity=tuple(LANDER_ID), workspace_root=str(base / 'candidates'), domain=DOMAIN,
-                            repository=REPO)
+                            workspace_root=str(base / 'candidates'), domain=DOMAIN,
+                            repository=REPO, identity_conn=setup)
         dry.sync_main()
         dry.reconcile({'spec': G})
         tree_one = (dry.record() or {}).get('tree')
@@ -1000,7 +1001,7 @@ sys.exit(chosen['code'])
                 except Exception as error:  # noqa: BLE001 - the refusal is data for the row
                     refusals[label] = getattr(error, 'code', type(error).__name__)
             check('install/land-station', 'a land station configuration missing a field, naming an empty one or an '
-                  'identity that is not a name and an email is refused by name at installation [%s]' % refusals,
+                  'caller identity is refused by name at installation [%s]' % refusals,
                   refusals == {k: 'invalid_input:work:land:' + k for k in ('fields', 'text', 'identity')})
             served = [p for p in final_passes if p.get('sources')]
             check('install/land-station', 'the service ran its passes, each from a wake source [%s]'

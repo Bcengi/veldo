@@ -1,0 +1,217 @@
+{
+  "rows": {
+    "setup/full-command-and-rerun": true,
+    "setup/configured-log": true,
+    "setup/existing-store-adds-binding": true,
+    "setup/rerun-adds-identity": true,
+    "setup/rerun-change-refused": true,
+    "setup/two-identities-and-replay": true,
+    "binding/missing": true,
+    "binding/second": true,
+    "binding/immutable": true,
+    "setup/reference-only-and-unchanged": true,
+    "binding/store-and-callers-missing": true,
+    "setup/keychain-reference-pattern": true,
+    "launch/no-author-overrides": true,
+    "launch/no-config-overrides": true,
+    "clone/layout-refused": true,
+    "clone/identity-authors": true,
+    "launch/spawn-config-commit-authors": true,
+    "clone/unbound-refused": true,
+    "lander/identity-and-reland-authors": true,
+    "lander/worker-commit-mismatch": true,
+    "lander/station-record-authority": true,
+    "lander/caller-identity-refused": true,
+    "lander/unbound-before-commit": true
+  },
+  "facts": {
+    "worker_commits": [
+      {
+        "identity": "bcengi",
+        "commit": "37e0c6edd5d9b82fed4cd976a9431ab869414895",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "commit": "7d47734606aafbee765240c2240a9bf251e1d9d2",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      }
+    ],
+    "landed_commits": [
+      {
+        "identity": "bcengi",
+        "reland": false,
+        "commit": "bce77a57e3b541f1839036d64cdd0e3e74151406",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "bcengi",
+        "reland": false,
+        "commit": "f746704581a2cc0be556fe00cff7343b79fd0f2e",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "bcengi",
+        "reland": false,
+        "commit": "b80a9be0e2735427e00b7ceeea4abab63edc93e7",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "bcengi",
+        "reland": true,
+        "commit": "3cba08587c42ea7eb93f00bfca26d478d94c120a",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "bcengi",
+        "reland": true,
+        "commit": "0bf59aeff860455e11176d066f9e81f0c4cb556b",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "bcengi",
+        "reland": true,
+        "commit": "099e12e75fdcb1766b01f451fe6f2d8e89506095",
+        "authors": [
+          "Work Author",
+          "bcengi@example.invalid",
+          "Work Author",
+          "bcengi@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": false,
+        "commit": "f5324ce40227f4224c19d6b5a55d03543336f8c8",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": false,
+        "commit": "30d744c078b7c6b83efda3d1a6851c8e1d42a5c2",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": false,
+        "commit": "626a51cc562d93be8e2e6fd3a3b82ce3968bdf38",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": true,
+        "commit": "3586e826b090dfe47098bf68dca0930eda0d6e00",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": true,
+        "commit": "627d60465ffb366ac4278bab5716366502ff2d34",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      },
+      {
+        "identity": "personal",
+        "reland": true,
+        "commit": "a731116deb9914095c6d38bfc1e12ac10e126465",
+        "authors": [
+          "Personal Author",
+          "personal@example.invalid",
+          "Personal Author",
+          "personal@example.invalid"
+        ]
+      }
+    ],
+    "setup_identities": [
+      {
+        "api_token": "keychain:fixture/bcengi",
+        "author_email": "bcengi@example.invalid",
+        "author_name": "Work Author",
+        "default_visibility": "private",
+        "id": "bcengi",
+        "label": "Work",
+        "projects_root": "/tmp/identity142-iji0xhta/bcengi",
+        "push_credential": {
+          "kind": "token",
+          "reference": "keychain:fixture/bcengi/token"
+        },
+        "remote_host": "github.com",
+        "remote_owner": "bcengi"
+      },
+      {
+        "api_token": "keychain:fixture/personal",
+        "author_email": "personal@example.invalid",
+        "author_name": "Personal Author",
+        "default_visibility": "public",
+        "id": "personal",
+        "label": "Personal",
+        "projects_root": "/tmp/identity142-iji0xhta/personal",
+        "push_credential": {
+          "kind": "ssh",
+          "reference": "keychain:fixture/personal/ssh"
+        },
+        "remote_host": "github.com",
+        "remote_owner": "personal"
+      }
+    ]
+  }
+}

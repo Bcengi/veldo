@@ -73,14 +73,17 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             if setup_only:
                 setup_checks = load('v88_setup_checks', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/setup_fixture.py')
                 setup_checks.observe_pm_authority(f, check)
-            source = base / 'source'
-            source.mkdir()
+            # VELDO-0142: a repository is read from the one path its identity record binds. A factory setup
+            # bound this repository to the workspace it laid the factory down for, so that is the source.
+            source = Path(f['setup_report']['workspace']) if setup_only else base / 'source'
+            source.mkdir(exist_ok=True)
             (source / 'README').write_text('Accepted project source.\n')
             for args in (('init', '-q'), ('add', 'README'), ('commit', '-qm', 'Accepted source')):
                 GP.run(['git', '-C', str(source), *args], check=True, capture_output=True,
                        identity=('Fixture', 'fixture@example.invalid'))
             commit = GP.run(['git', '-C', str(source), 'rev-parse', 'HEAD'], check=True,
                             capture_output=True, text=True).stdout.strip()
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, conn, domain, {repository: str(source)})
             revisions = RS.attach_revisions(S, conn, domain, {repository: str(source)})
             revisions.accept('revision-88', repository, commit, 'pm',
                 documents={'README': PM.SN.digest((source / 'README').read_bytes())}, signer='authority', sign=sign,

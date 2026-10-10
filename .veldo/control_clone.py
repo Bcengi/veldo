@@ -109,6 +109,7 @@ def _organ(name):
 
 _git_process = _organ('git_process')
 EP = _organ('env_provision')
+GI = _organ('control_git_identity')
 
 SCHEMA = 'veldo.worker_clone/v1'
 MANIFEST = 'clone.json'
@@ -539,6 +540,10 @@ class Clones(EP.EnvProvisioner):
             raise Refused('invalid_input:source', 'the accepted source is an exact commit and tree of this domain')
         domain, repository = contract['domain'], contract.get('repository')
         path = self._bound(domain, repository, 'missing_authority:repository_unbound')
+        try:
+            identity = GI.resolve(self.conn, domain, repository, path)
+        except GI.Refused as error:
+            raise Refused(error.code) from None
         listed = ((contract.get('input') or {}).get('payload') or {}).get('attachments') or []
         if not isinstance(listed, list):
             raise Refused('invalid_input:attachment', 'attachments are a list')
@@ -557,7 +562,7 @@ class Clones(EP.EnvProvisioner):
         commit = source['commit']
         return {'dispatch_id': contract.get('dispatch_id'), 'unit': contract.get('unit'), 'domain': domain,
                 'repository': repository, 'path': path, 'commit': commit, 'tree': tree,
-                'attachments': sorted(attachments, key=lambda a: a['name'])}
+                'identity': identity, 'attachments': sorted(attachments, key=lambda a: a['name'])}
 
     def _create(self, contract):
         accepted = self._accepted_or_observed('provision', contract)
@@ -574,6 +579,9 @@ class Clones(EP.EnvProvisioner):
                 pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
                                       attachment['repository'], attachment['path'], attachment['commit'], clone_id))
             _git('init', '-q', '--template=', work)
+            for section in ('user', 'author', 'committer'):
+                for field, value in zip(('name', 'email'), GI.author(accepted['identity'])):
+                    _git('-C', work, 'config', '--local', section + '.' + field, value)
             info = work / '.git' / 'objects' / 'info'
             info.mkdir(parents=True, exist_ok=True)
             (info / 'alternates').write_text(''.join('%s\n' % (Path(p['cache']) / 'objects') for p in pins))
@@ -586,6 +594,7 @@ class Clones(EP.EnvProvisioner):
             manifest = {'schema': SCHEMA, 'clone_id': clone_id, 'root': str(root), 'work': str(work),
                         'domain': accepted['domain'], 'repository': accepted['repository'], 'unit': accepted['unit'],
                         'commit': accepted['commit'], 'tree': accepted['tree'],
+                        'identity': accepted['identity']['id'],
                         'attachments': [{f: a[f] for f in ATTACHMENT_FIELDS} for a in accepted['attachments']],
                         'pins': pins, 'protected': protected, 'ancestors': cost, 'created_at': self.clock(),
                         'users': [{'dispatch_id': accepted['dispatch_id'], 'role': 'worker', 'scratch': str(scratch),
@@ -607,7 +616,8 @@ class Clones(EP.EnvProvisioner):
         except Refused as error:
             self._event(operation, {'dispatch_id': (contract or {}).get('dispatch_id') if isinstance(contract, dict)
                                     else None, 'unit': (contract or {}).get('unit') if isinstance(contract, dict)
-                                    else None}, 'refused', refusal=error.code)
+                                    else None, 'repository': (contract or {}).get('repository')
+                                    if isinstance(contract, dict) else None}, 'refused', refusal=error.code)
             raise
 
     @staticmethod
@@ -759,9 +769,12 @@ class Clones(EP.EnvProvisioner):
 
     def _event(self, operation, subject, outcome, refusal=None, **extra):
         subject = subject or {}
+        # The accepted source carries the identity record; a clone's manifest keeps only its id.
+        identity = subject.get('identity')
         event = {'schema': SCHEMA, 'operation': operation, 'domain': self.domain,
                  'repository': subject.get('repository'), 'unit': subject.get('unit'),
                  'dispatch_id': subject.get('dispatch_id'), 'outcome': outcome,
+                 'identity': identity.get('id') if isinstance(identity, dict) else identity,
                  'accepted': {'commit': subject.get('commit'), 'tree': subject.get('tree'),
                               'attachments': [{f: a.get(f) for f in ('name', 'repository', 'commit')}
                                               for a in subject.get('attachments') or []]}}
@@ -778,7 +791,7 @@ class Clones(EP.EnvProvisioner):
             manifest = json.loads(path.read_text())
             pending.append({'clone_id': manifest['clone_id'], 'unit': manifest['unit'],
                             'users': [u['dispatch_id'] for u in manifest['users']], 'pins': len(manifest['pins'])})
-        return dict(self.counts, pending=pending)
+        return dict(self.counts, pending=pending, identities=GI.metrics(self.observations))
 
 
 def main(argv=None):

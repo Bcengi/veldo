@@ -444,6 +444,8 @@ def _v171_suite():
     port = TS.free_port() if TS is not None else 0
     managers = []
 
+    laid_without_identities = set()
+
     def setup(state_root, workspace, host_trust, install, units, manager, tailscale=None, module=None, **replace):
         """veldo factory setup through the module's own command surface, into this run's scratch, with the
         user manager stand-in, the loopback Bot API and the Tailscale stand-in: (exit code, JSON answer)."""
@@ -455,6 +457,15 @@ def _v171_suite():
         if module is None:
             module = F
             overrides.update(tailscale=[ts.path] if tailscale is None else tailscale, api_port=port)
+        # VELDO-0142: setup records the workspace repository with its configured Git identity. A stand-in
+        # for an older engine exposes only main, and that engine takes no identity; a state root such an
+        # engine laid down is run again with the same arguments, so with no identity either.
+        identities = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['setup_options'](
+            getattr(module, 'setup', None))
+        if not identities:
+            laid_without_identities.add(os.path.realpath(str(state_root)))
+        elif os.path.realpath(str(state_root)) not in laid_without_identities:
+            overrides.update(identities)
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = module.main(['setup'] + [x for pair in argv.items() for x in pair], **overrides)

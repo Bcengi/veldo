@@ -99,6 +99,7 @@ def _s37_run():
             'control_snapshot.py': ROOT / '.veldo/control_snapshot.py',
             'control_enrollment.py': ROOT / '.veldo/control_enrollment.py',
             'control_readset.py': ROOT / ".veldo" / "control_readset.py",
+            'control_git_identity.py': ROOT / '.veldo/control_git_identity.py',
             'control_store.py': ROOT / ".veldo" / "control_store.py",
             'claim.py': ROOT / '.veldo/claim.py',
             'git_process.py': ROOT / '.veldo/git_process.py',
@@ -212,9 +213,11 @@ def _s37_run():
         bindings = dict(verify=verify, host_identity='alias-host')
         db = root / 'control.sqlite3'
         conn = st.open_store(db)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, conn, 'domain', accepted_repositories)
         service = al.attach(st, conn, 'domain', accepted_repositories)
         # The accepted revisions (VELDO-0035's authority) that enabling reads its first numbers from,
         # written by their own accepting command: no generic command writes one.
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, conn, 'domain', accepted_repositories)
         accepting = rs.attach_revisions(st, conn, 'domain', accepted_repositories)
         for repository, accepted in (('repository', origin), ('other', other_origin)):
             accepting.accept('revision/' + repository, repository, g(accepted, 'rev-parse', 'HEAD'), 'operator', **signing)
@@ -573,6 +576,7 @@ def _s37_run():
                 env.origins[repository] = origin
             env.db = env.base / 'control.sqlite3'
             env.conn = st.open_store(env.db)
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             env.accepting = rs.attach_revisions(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             for repository, origin in env.origins.items():
                 env.revisions[repository] = 'revision/' + repository
@@ -580,6 +584,7 @@ def _s37_run():
                                      **signing)
             if before_attach is not None:
                 before_attach(env)
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             env.service = al.attach(st, env.conn, 'domain', {r: str(p) for r, p in env.origins.items()})
             return env
 
@@ -1259,6 +1264,7 @@ def _s37_run():
         altered_conn = st.open_store(env.base / 'altered.sqlite3')
         handles.append(altered_conn)
         mapping = {'repository': str(env.origins['repository'])}
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](modules, altered_conn, 'domain', mapping)
         accepting_altered, _ = attempt(lambda: rs_altered.attach_revisions(st, altered_conn, 'domain', mapping))
         if accepting_altered is not None:
             attempt(lambda: accepting_altered.accept('revision/repository', 'repository',
@@ -1430,6 +1436,7 @@ def _s37_run():
         points = [line[len(line) // 4], line[len(line) // 2], line[3 * len(line) // 4], line[-1]]
         veldo_db = root / 'veldo-history.sqlite3'
         veldo = st.open_store(veldo_db)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, veldo, 'domain', {'repository': str(history)})
         veldo_revisions = rs.attach_revisions(st, veldo, 'domain', {'repository': str(history)})
         sizes = []
         for point in points:
@@ -1451,6 +1458,7 @@ def _s37_run():
             veldo.backup(target)
             target.close()
             copy = st.open_store(copy_path)
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, copy, 'domain', {'repository': str(history)})
             service = al.attach(st, copy, 'domain', {'repository': str(history)})
             serial[0] += 1
             _, error = attempt(lambda: service.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',
@@ -1570,6 +1578,7 @@ def _s37_run():
         tip = g(shallow, 'rev-parse', 'HEAD')
         shallow_db = root / 'shallow.sqlite3'
         shallow_conn = st.open_store(shallow_db)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, shallow_conn, 'domain', {'repository': str(shallow)})
         shallow_revisions = rs.attach_revisions(st, shallow_conn, 'domain', {'repository': str(shallow)})
         shallow_state = {}
         _, error = attempt(lambda: shallow_revisions.accept('revision/repository', 'repository', tip, 'operator', **signing))
@@ -1578,6 +1587,7 @@ def _s37_run():
         g(shallow, 'fetch', '-q', '--unshallow')
         _, error = attempt(lambda: shallow_revisions.accept('revision/repository', 'repository', tip, 'operator', **signing))
         shallow_state['deepened-accept'] = code(error)
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(st.__file__).parent, shallow_conn, 'domain', {'repository': str(shallow)})
         service = al.attach(st, shallow_conn, 'domain', {'repository': str(shallow)})
         serial[0] += 1
         _, error = attempt(lambda: service.enable_kind({'request_id': 'enable-%d' % serial[0], 'principal': 'operator',

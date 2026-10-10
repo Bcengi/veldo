@@ -1,0 +1,195 @@
+{
+  "scope": "VELDO-0142 review follow-ups; scoped checks only, no gate or approval claim",
+  "suites": [
+    {
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0037_aliases",
+      "exit": 2,
+      "exit_meaning": "successful partial run",
+      "summary": "selftest (PARTIAL, 1 of 157 suites): 79 passed, 0 failed in 20.21s",
+      "log_sha256": "72ac2cd9fd50566a2d50543a607b3e42927f0d4e5adf755c9f631759dffe63b8",
+      "suite_sha256": "aed48bbd4392f750faaa23a3222d9f92f5f6d606006a806b4b24d8d192638b4f"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 75_veldo_0062_accounts",
+      "exit": 2,
+      "exit_meaning": "successful partial run",
+      "summary": "selftest (PARTIAL, 1 of 157 suites): 49 passed, 0 failed in 32.61s",
+      "log_sha256": "d674add954b767f066281066cbaabd8dc11fe9ee516e78a0bac2e6c92ff25920",
+      "suite_sha256": "ccde340c3d919e6372c1312250645f3aeb839e8e885bcfc337223b6d4037e192"
+    }
+  ],
+  "mutations": [
+    {
+      "case": {
+        "finding": 37,
+        "name": "repository-binding-unchecked",
+        "suite": "59_veldo_0037_aliases.py",
+        "module": "control_store.py",
+        "old": "                if prior is not None and prior != target:",
+        "new": "                if False:",
+        "rows": [
+          "aliases/revision-in-enrolled-repository"
+        ],
+        "driver": "check_teeth_mutations.py",
+        "identity": "check_teeth_mutations.py:repository-binding-unchecked"
+      },
+      "leg": "direct (gate unconfined worker)",
+      "validated_by": "scripts/check_gate_mutations.py:validate_result",
+      "replacement_count": 1,
+      "old_digest": "ed4f96154d29a091852e498901a6455b84c85ef74123a79537277e419e4e3f24",
+      "new_digest": "3dc3a50399f94c76a0cf381a6747951b0e3c68d91113d773c4eb166dda8627fb",
+      "workers": [
+        {
+          "mode": "baseline",
+          "elapsed": 21.61769961984828,
+          "returncode": 0,
+          "failed_rows": [],
+          "failed_details": [],
+          "targets": {
+            "aliases/revision-in-enrolled-repository": [
+              true
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        },
+        {
+          "mode": "noop",
+          "elapsed": 21.22710280213505,
+          "returncode": 0,
+          "failed_rows": [],
+          "failed_details": [],
+          "targets": {
+            "aliases/revision-in-enrolled-repository": [
+              true
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        },
+        {
+          "mode": "mutant",
+          "elapsed": 20.739288246724755,
+          "returncode": 0,
+          "failed_rows": [
+            "aliases/revision-in-enrolled-repository"
+          ],
+          "failed_details": [],
+          "targets": {
+            "aliases/revision-in-enrolled-repository": [
+              false
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "finding": 62,
+        "name": "account-cap-stop-ignored",
+        "suite": "75_veldo_0062_accounts.py",
+        "module": "control_launch.py",
+        "old": "            if metering is not None and metering.feed(chunk):\n                begin('usage_cap')\n",
+        "new": "            if metering is not None:\n                metering.feed(chunk)  # defect: a reached cap does not stop the worker\n",
+        "rows": [
+          "usage/cap-stops-worker"
+        ],
+        "driver": "check_teeth_mutations.py",
+        "identity": "check_teeth_mutations.py:account-cap-stop-ignored"
+      },
+      "leg": "direct (gate unconfined worker)",
+      "validated_by": "scripts/check_gate_mutations.py:validate_result",
+      "replacement_count": 1,
+      "old_digest": "4879116df90bd21da529d4d5f579763fc67c9462f848080a77a954fc1e3c33b9",
+      "new_digest": "745b098bef7bab123fa8f76a1f179e138a43baf1d22f0cdb0cd4fe08fac6aaea",
+      "workers": [
+        {
+          "mode": "baseline",
+          "elapsed": 49.14697034098208,
+          "returncode": 0,
+          "failed_rows": [],
+          "failed_details": [],
+          "targets": {
+            "usage/cap-stops-worker": [
+              true
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        },
+        {
+          "mode": "noop",
+          "elapsed": 49.57202458102256,
+          "returncode": 0,
+          "failed_rows": [],
+          "failed_details": [],
+          "targets": {
+            "usage/cap-stops-worker": [
+              true
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        },
+        {
+          "mode": "mutant",
+          "elapsed": 59.09177589789033,
+          "returncode": 0,
+          "failed_rows": [
+            "VELDO-0062 usage/cap-stops-worker"
+          ],
+          "failed_details": [
+            [
+              "VELDO-0062 usage/cap-stops-worker",
+              "acct-c1: worker did not terminate within 5.0 seconds after its cap report; fixture requested cleanup; claude: the report that reached the token cap stopped the worker, which never finished [5.4 s, requested, cancelled]; acct-x1: worker did not terminate within 5.0 seconds after its cap report; fixture requested cleanup; codex: the report that reached the token cap stopped the worker, which never finished [5.5 s, requested, cancelled]"
+            ]
+          ],
+          "targets": {
+            "usage/cap-stops-worker": [
+              false
+            ]
+          },
+          "cleanup": {
+            "units": [],
+            "directories": 3
+          }
+        }
+      ]
+    }
+  ],
+  "confined_startup_failures": [
+    {
+      "attempt": "alias-confined",
+      "tests_ran": false,
+      "returncode": 2,
+      "error": "driver_error",
+      "stderr_tail": "agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\n"
+    },
+    {
+      "attempt": "alias-confined-runtime",
+      "tests_ran": false,
+      "returncode": 1,
+      "error": "driver_error",
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/scripts/reuse_worker.py\", line 98, in <module>\n    main()\n  File \"/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/scripts/reuse_worker.py\", line 80, in main\n    sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=(ledger,))\n  File \"/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/scripts/mutation_sandbox.py\", line 63, in confine\n    if boundary.landlock(grants, profile='worker', broker=side) != 'strict':\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/scripts/agent_sandbox.py\", line 82, in landlock\n    mode = broker.install(libc) if broker is not None else install_filter(libc, ipc_program())\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0142/scripts/agent_sandbox.py\", line 261, in install\n    raise RuntimeError('agent sandbox broker unavailable')\nRuntimeError: agent sandbox broker unavailable\n"
+    },
+    {
+      "attempt": "cap-confined",
+      "tests_ran": false,
+      "returncode": 2,
+      "error": "driver_error",
+      "stderr_tail": "agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\n"
+    }
+  ]
+}

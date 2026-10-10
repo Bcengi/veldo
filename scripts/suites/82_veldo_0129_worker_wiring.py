@@ -178,6 +178,7 @@ def _v129_suite():
         git('add', '-A')
         git('-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'Fixture source')
         base_commit = git('rev-parse', 'HEAD')
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](Path(S.__file__).parent, writer, domain, {repository: str(src)})
         S.bind_repositories(writer, domain, {repository: str(src)})
         writer.execute('PRAGMA wal_checkpoint(FULL)')
         res = L.D.RES.Reservations(S, writer, domain=domain, repository=repository, principal='service',
