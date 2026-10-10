@@ -1,0 +1,11 @@
+--- a/project_runner_macos.py
++++ b/project_runner_macos.py
+@@ -189,7 +189,7 @@
+                 self.cause = 'runtime_cap'
+             return True
+         # Deadline wins even when the model blocks or a stop is already cooperative.
+-        if now >= self.deadline and self.stage in (None, 'cooperative'):
++        if False and self.stage in (None, 'cooperative'):
+             self.cause = 'runtime_cap'
+             self.step('terminate', now)
+         elif self.exit_seen and self.stage in (None, 'cooperative'):

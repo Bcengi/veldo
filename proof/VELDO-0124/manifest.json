@@ -1,0 +1,38 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0124",
+  "commit": "869d76ffc79d28809e3ffeb3e5c6f56ec529657e",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-10T01:21:08.689705+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [],
+      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [],
+      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [],
+      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+    }
+  ],
+  "checks": [
+    {
+      "name": "canonical_gate",
+      "status": "not_run"
+    },
+    {
+      "name": "native_macos_qualification",
+      "status": "not_run"
+    }
+  ]
+}

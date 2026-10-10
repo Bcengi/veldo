@@ -1,0 +1,62 @@
+[
+  {
+    "name": "AC1-qualification",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/qualification",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "1c00a7de1f6388906505a34cc87caae41ef898e96f04bca9a2829e3d1f8a7eae",
+    "patch": "AC1-qualification.patch",
+    "log": "AC1-qualification.log"
+  },
+  {
+    "name": "AC2-deadline",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/deadline",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "patch": "AC2-deadline.patch",
+    "log": "AC2-deadline.log"
+  },
+  {
+    "name": "AC2-capacity",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/capacity",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "patch": "AC2-capacity.patch",
+    "log": "AC2-capacity.log"
+  },
+  {
+    "name": "AC3-parent-only",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "patch": "AC3-parent-only.patch",
+    "log": "AC3-parent-only.log"
+  },
+  {
+    "name": "AC2-postcall",
+    "suite": "104_veldo_0124_control",
+    "row": "AC2/precall-caps",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121",
+    "patch": "AC2-postcall.patch",
+    "log": "AC2-postcall.log"
+  },
+  {
+    "name": "AC3-unknown-retire",
+    "suite": "104_veldo_0124_control",
+    "row": "AC3/unknown-charge",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121",
+    "patch": "AC3-unknown-retire.patch",
+    "log": "AC3-unknown-retire.log"
+  }
+]

@@ -1,0 +1,167 @@
+{
+  "schema": "veldo.macos_build_observations/v1",
+  "implementation_commit": "869d76ffc79d28809e3ffeb3e5c6f56ec529657e",
+  "scope": "development_only",
+  "selected_host": "dmitrys-mac-mini",
+  "macos_version": null,
+  "real_engine_versions": null,
+  "assets": [
+    {
+      "path": "engine/.veldo/project_runner_macos.py",
+      "sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_control.py",
+      "sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_os.py",
+      "sha256": "25f64d83cbd3749a7434b51148166bff508e9be9228e5ecdb047c67a830be1aa"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_profile.py",
+      "sha256": "1c00a7de1f6388906505a34cc87caae41ef898e96f04bca9a2829e3d1f8a7eae"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_wrapper.py",
+      "sha256": "d4ca2253d25ddd53c393f10df06f705cea726c2ae0374b71b5dad7849a682aea"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "103_veldo_0124_macos",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "own_rows": 17,
+      "failed": 0,
+      "scope": "partial_development_only",
+      "exit_code": 2,
+      "log": "linux-logic.log"
+    },
+    {
+      "suite": "104_veldo_0124_control",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "own_rows": 6,
+      "failed": 0,
+      "scope": "partial_development_only",
+      "exit_code": 2,
+      "log": "linux-control.log"
+    }
+  ],
+  "rows": {
+    "AC1": [
+      "AC1/qualification",
+      "AC1/profile",
+      "AC1/bindings",
+      "AC1/apfs-policy",
+      "AC1/apple-interfaces",
+      "AC1/template-sync",
+      "AC1/native-declared",
+      "AC1/accepted-store",
+      "AC1/refusals"
+    ],
+    "AC2": [
+      "AC2/capacity",
+      "AC2/deadline",
+      "AC2/contract-deadline",
+      "AC2/precall-caps",
+      "AC2/invocation-boundaries"
+    ],
+    "AC3": [
+      "AC3/descendant",
+      "AC3/natural",
+      "AC3/notification-lost",
+      "AC3/cooperative",
+      "AC3/unknown",
+      "AC3/ignoring",
+      "AC3/heartbeat",
+      "AC3/retirement-obligations",
+      "AC3/unknown-charge"
+    ]
+  },
+  "negative_controls": "negative-controls.json",
+  "native": [
+    {
+      "row": "native/claude_code/natural",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/claude_code/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/claude_code/deadline",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/claude_code/descendant",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/claude_code/containment",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/qualified-claude_code/natural",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    },
+    {
+      "row": "native/qualified-claude_code/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    },
+    {
+      "row": "native/qualified-claude_code/deadline",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    },
+    {
+      "row": "native/codex/natural",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/codex/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/codex/deadline",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/codex/descendant",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/codex/containment",
+      "status": "not_run",
+      "kind": "real_macos_synthetic_engine"
+    },
+    {
+      "row": "native/qualified-codex/natural",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    },
+    {
+      "row": "native/qualified-codex/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    },
+    {
+      "row": "native/qualified-codex/deadline",
+      "status": "not_run",
+      "kind": "real_macos_real_cli"
+    }
+  ],
+  "gate": "not_run",
+  "activation": "disabled_until_native_qualification",
+  "review": "not_performed"
+}

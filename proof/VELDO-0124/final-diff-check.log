@@ -1,0 +1,8 @@
+proof/VELDO-0124/AC2-deadline.log:40: trailing whitespace.
++  AC2/deadline: AssertionError: 
+proof/VELDO-0124/AC2-deadline.log:42: trailing whitespace.
++  AC2/contract-deadline: AssertionError: 
+proof/VELDO-0124/AC2-postcall.log:42: trailing whitespace.
++  AC2/precall-caps: AssertionError: 
+proof/VELDO-0124/AC3-parent-only.log:40: trailing whitespace.
++  AC3/descendant: AssertionError: 

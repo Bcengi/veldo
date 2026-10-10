@@ -1,0 +1,11 @@
+--- a/project_runner_macos_control.py
++++ b/project_runner_macos_control.py
+@@ -81,7 +81,7 @@
+                                    lambda identity: self.runs[identity]['run'].stop('allowance')
+                                    if identity in self.runs else None)
+         try:
+-            receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),
++            started.append(self.host.start(request)); receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),
+                                    min(self.host.profile['runtime_seconds'], contract['deadline'] - self.clock()),
+                                    contract['capability']['configuration'], now=self.clock())
+             if receipt['replayed'] or not started:
