@@ -1,0 +1,559 @@
+{
+ "schema": "veldo.review_fix_checks/v1",
+ "host": "linux host, no sandbox: Unix sockets, the user manager and /run/user available",
+ "base_commit": "2738378b",
+ "fix_commits": [
+  "ea69f8be",
+  "66ccfe64",
+  "f618f10d"
+ ],
+ "invocation": "python3 scripts/selftest.py --suite NAME, sequentially, with no full gate active",
+ "suites": [
+  {
+   "suite": "103_veldo_0124_macos",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 49 passed, 0 failed in 0.69s"
+  },
+  {
+   "suite": "104_veldo_0124_control",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 32 passed, 0 failed in 2.76s"
+  },
+  {
+   "suite": "105_veldo_0125_relay",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 40 passed, 0 failed in 5.09s"
+  },
+  {
+   "suite": "106_veldo_0125_routing",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 34 passed, 0 failed in 2.16s"
+  },
+  {
+   "suite": "33_veldo_0020_authority",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 51 passed, 0 failed in 0.04s"
+  },
+  {
+   "suite": "36_veldo_0023_journal",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 43 passed, 0 failed in 1.84s"
+  },
+  {
+   "suite": "37_veldo_0024_replica",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 42 passed, 0 failed in 1.67s"
+  },
+  {
+   "suite": "38_veldo_0025_membership",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 43 passed, 0 failed in 1.27s"
+  },
+  {
+   "suite": "39_veldo_0026_revocation",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 42 passed, 0 failed in 4.19s"
+  },
+  {
+   "suite": "46_veldo_0029_enrollment",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 33 passed, 0 failed in 0.15s"
+  },
+  {
+   "suite": "56_veldo_0027_signing",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 121 passed, 0 failed in 5.21s"
+  },
+  {
+   "suite": "58_veldo_0028_effects",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 77 passed, 0 failed in 27.18s"
+  },
+  {
+   "suite": "58_veldo_0031_claims",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 29 passed, 0 failed in 3.06s"
+  },
+  {
+   "suite": "58_veldo_0035_snapshots",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 59 passed, 0 failed in 8.16s"
+  },
+  {
+   "suite": "58_veldo_0036_reservations",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 36 passed, 0 failed in 0.28s"
+  },
+  {
+   "suite": "58_veldo_0046_notifications",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 34 passed, 0 failed in 0.90s"
+  },
+  {
+   "suite": "59_veldo_0031_review",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 32 passed, 0 failed in 2.81s"
+  },
+  {
+   "suite": "59_veldo_0037_aliases",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 79 passed, 0 failed in 17.48s"
+  },
+  {
+   "suite": "59_veldo_0043_graph",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 47 passed, 0 failed in 9.96s"
+  },
+  {
+   "suite": "60_veldo_0052_eligibility",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 80 passed, 0 failed in 1.05s"
+  },
+  {
+   "suite": "60_veldo_0053_architecture",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 65 passed, 0 failed in 2.26s"
+  },
+  {
+   "suite": "60_veldo_0064_inbox",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 44 passed, 0 failed in 2.73s"
+  },
+  {
+   "suite": "61_scope_covers",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 28 passed, 0 failed in 0.00s"
+  },
+  {
+   "suite": "62_veldo_0039_dispatch",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 47 passed, 0 failed in 8.67s"
+  },
+  {
+   "suite": "62_veldo_0054_decisions",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 65 passed, 0 failed in 4.03s"
+  },
+  {
+   "suite": "62_veldo_0065_presentations",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 67 passed, 0 failed in 9.49s"
+  },
+  {
+   "suite": "63_veldo_0040_containment",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 83 passed, 0 failed in 6.99s"
+  },
+  {
+   "suite": "63_veldo_0049_floor",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 46 passed, 0 failed in 10.50s"
+  },
+  {
+   "suite": "63_veldo_0066_attribution",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 31 passed, 0 failed in 2.18s"
+  },
+  {
+   "suite": "64_veldo_0050_proof",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 40 passed, 0 failed in 13.90s"
+  },
+  {
+   "suite": "65_veldo_0067_edges",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 35 passed, 0 failed in 4.07s"
+  },
+  {
+   "suite": "65_veldo_0132_workflow",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 42 passed, 0 failed in 15.38s"
+  },
+  {
+   "suite": "66_veldo_0042_clones",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 46 passed, 0 failed in 1.59s"
+  },
+  {
+   "suite": "66_veldo_0047_authority",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 56 passed, 0 failed in 10.10s"
+  },
+  {
+   "suite": "66_veldo_0051_events",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 37 passed, 0 failed in 6.04s"
+  },
+  {
+   "suite": "67_veldo_0041_heartbeat",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 49 passed, 0 failed in 11.28s"
+  },
+  {
+   "suite": "67_veldo_0056_candidates",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 37 passed, 0 failed in 41.51s"
+  },
+  {
+   "suite": "67_veldo_0135_offers",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 35 passed, 0 failed in 5.87s"
+  },
+  {
+   "suite": "68_veldo_0126_intake",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 44 passed, 0 failed in 1.66s"
+  },
+  {
+   "suite": "68_veldo_0134_acceptance",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 53 passed, 0 failed in 1.41s"
+  },
+  {
+   "suite": "68_veldo_0136_hints",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 33 passed, 0 failed in 3.98s"
+  },
+  {
+   "suite": "69_veldo_0068_settlement",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 34 passed, 0 failed in 5.60s"
+  },
+  {
+   "suite": "69_veldo_0133_dispositions",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 59 passed, 0 failed in 4.47s"
+  },
+  {
+   "suite": "70_veldo_0057_landing",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 57 passed, 0 failed in 11.94s"
+  },
+  {
+   "suite": "70_veldo_0069_bindings",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 36 passed, 0 failed in 5.72s"
+  },
+  {
+   "suite": "71_veldo_0076_projects",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 58 passed, 0 failed in 3.18s"
+  },
+  {
+   "suite": "71_veldo_0130_api",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 68 passed, 0 failed in 19.44s"
+  },
+  {
+   "suite": "71_veldo_0138_channel_service",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 39 passed, 0 failed in 29.88s"
+  },
+  {
+   "suite": "72_veldo_0077_objectives",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 46 passed, 0 failed in 2.62s"
+  },
+  {
+   "suite": "72_veldo_0128_reports",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 44 passed, 0 failed in 3.23s"
+  },
+  {
+   "suite": "73_veldo_0078_backlog",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 46 passed, 0 failed in 5.38s"
+  },
+  {
+   "suite": "73_veldo_0089_team",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 52 passed, 0 failed in 2.13s"
+  },
+  {
+   "suite": "73_veldo_0139_factory_setup",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 43 passed, 0 failed in 21.40s"
+  },
+  {
+   "suite": "74_veldo_0140_standing_delegation",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 35 passed, 0 failed in 10.70s"
+  },
+  {
+   "suite": "75_veldo_0062_accounts",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 49 passed, 0 failed in 29.73s"
+  },
+  {
+   "suite": "75_veldo_0150_own_message_acceptance",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 39 passed, 0 failed in 1.88s"
+  },
+  {
+   "suite": "76_veldo_0079_grooming",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 48 passed, 0 failed in 12.40s"
+  },
+  {
+   "suite": "77_veldo_0149_adopted_activation",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 39 passed, 0 failed in 2.10s"
+  },
+  {
+   "suite": "78_veldo_0060_claude_adapter",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 61 passed, 0 failed in 18.48s"
+  },
+  {
+   "suite": "78_veldo_0160_account_pool",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 60 passed, 0 failed in 21.54s"
+  },
+  {
+   "suite": "79_veldo_0061_codex_adapter",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 47 passed, 0 failed in 11.99s"
+  },
+  {
+   "suite": "80_veldo_0155_claude_baseline",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 44 passed, 0 failed in 10.46s"
+  },
+  {
+   "suite": "81_veldo_0156_codex_baseline",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 48 passed, 0 failed in 2.70s"
+  },
+  {
+   "suite": "82_veldo_0085_decomposition",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 41 passed, 0 failed in 2.56s"
+  },
+  {
+   "suite": "82_veldo_0129_worker_wiring",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 55 passed, 0 failed in 20.96s"
+  },
+  {
+   "suite": "82_veldo_0141_execution_record",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 66 passed, 0 failed in 19.35s"
+  },
+  {
+   "suite": "82_veldo_0144_mcp_catalog",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 55 passed, 0 failed in 28.75s"
+  },
+  {
+   "suite": "82_veldo_0165_launch_hygiene",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 49 passed, 0 failed in 12.49s"
+  },
+  {
+   "suite": "82_veldo_0173_tool_registry",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 37 passed, 0 failed in 2.33s"
+  },
+  {
+   "suite": "83_veldo_0154_factory_loop",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 39 passed, 0 failed in 37.39s"
+  },
+  {
+   "suite": "83_veldo_0166_usage_windows",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 45 passed, 0 failed in 0.52s"
+  },
+  {
+   "suite": "84_veldo_0169_project_handouts",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 53 passed, 0 failed in 11.21s"
+  },
+  {
+   "suite": "85_veldo_0158_credential_delivery",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 49 passed, 0 failed in 4.35s"
+  },
+  {
+   "suite": "85_veldo_0171_setup_api",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 44 passed, 0 failed in 8.29s"
+  },
+  {
+   "suite": "86_veldo_0127_agent_configuration",
+   "ok": false,
+   "returncode": 1,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 51 passed, 2 failed in 38.49s"
+  },
+  {
+   "suite": "86_veldo_0148_re_land",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 51 passed, 0 failed in 60.09s"
+  },
+  {
+   "suite": "86_veldo_0168_text",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 52 passed, 0 failed in 3.10s"
+  },
+  {
+   "suite": "86_veldo_0186_setup_assets",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 37 passed, 0 failed in 11.74s"
+  },
+  {
+   "suite": "86_veldo_0189_engine_upgrade",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 59 passed, 0 failed in 45.88s"
+  },
+  {
+   "suite": "87_veldo_0127_codex_delivery",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 202 passed, 0 failed in 52.46s"
+  },
+  {
+   "suite": "87_veldo_0170_receiver_trust",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 38 passed, 0 failed in 5.89s"
+  },
+  {
+   "suite": "91_veldo_0151_specialists",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 51 passed, 0 failed in 1.69s"
+  },
+  {
+   "suite": "91_veldo_0167_setup_records",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 35 passed, 0 failed in 12.33s"
+  },
+  {
+   "suite": "92_veldo_0088_pm_cycles",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 51 passed, 0 failed in 45.66s"
+  },
+  {
+   "suite": "93_veldo_0152_intake_routes",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 48 passed, 0 failed in 41.59s"
+  },
+  {
+   "suite": "94_veldo_0162_configuration_routes",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 52 passed, 0 failed in 7.42s"
+  },
+  {
+   "suite": "95_veldo_0203_owner_revisions",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 62 passed, 0 failed in 4.77s"
+  },
+  {
+   "suite": "96_veldo_0204_reservation_policies",
+   "ok": true,
+   "returncode": 2,
+   "summary": "selftest (PARTIAL, 1 of 160 suites): 45 passed, 0 failed in 9.00s"
+  }
+ ],
+ "passed": 87,
+ "failed": 1,
+ "comparison": "each suite red on 2738378b was run on a throwaway clone of main 294e1933; all passed there, so every red row was caused by the 0124/0125 change",
+ "pending": [
+  {
+   "suite": "86_veldo_0127_agent_configuration",
+   "rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "reason": "the retained live captures bind the sha256 of control_launch.py, which VELDO-0125 changes; they need a new live capture against real logins, which this run does not make"
+  }
+ ],
+ "falsifiers": {
+  "retained": "negative-controls.json: 17 of 17 rejected",
+  "host": "host-falsifiers.json: 5 of 5 rejected"
+ },
+ "gate": "not run; selected suite results only, never a canonical gate stamp"
+}

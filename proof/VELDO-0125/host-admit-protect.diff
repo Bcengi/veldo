@@ -1,0 +1,8 @@
+--- engine/.veldo/control_membership.py
++++ engine/.veldo/control_membership.py
+@@ -472,0 +473 @@
++    protect(store, conn)
+--- .veldo/control_membership.py
++++ .veldo/control_membership.py
+@@ -472,0 +473 @@
++    protect(store, conn)

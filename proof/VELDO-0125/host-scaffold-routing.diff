@@ -1,0 +1,8 @@
+--- engine/.veldo/init_scaffold.py
++++ engine/.veldo/init_scaffold.py
+@@ -179 +178,0 @@
+-    ".veldo/control_routing.py",
+--- .veldo/init_scaffold.py
++++ .veldo/init_scaffold.py
+@@ -179 +178,0 @@
+-    ".veldo/control_routing.py",

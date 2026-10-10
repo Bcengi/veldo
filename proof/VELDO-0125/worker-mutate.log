@@ -12,33 +12,33 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/nocrit.md: no acceptance criteria
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/status.md: bad status: donezo
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/proof2.json: spec criterion AC1 missing from proof
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/proof4.json: criterion AC1 passed without evidence
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpb2w3gj59/verdict.json: bad verdict: looks_fine
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/cycle.md: dependency cycle through WARP-9101
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/oref.md: feature F1: unknown outcome ref O7
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/fref.md: work W1: unknown feature ref F9
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/dupspec.md: duplicate spec ids across work items
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmpsyd6laoe/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmpavcjvt_i: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpavcjvt_i/nocrit.md: no acceptance criteria
+  /tmp/tmpavcjvt_i/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpavcjvt_i/status.md: bad status: donezo
+  /tmp/tmpavcjvt_i/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpavcjvt_i/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpavcjvt_i/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpavcjvt_i/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpavcjvt_i/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpavcjvt_i/verdict.json: bad verdict: looks_fine
+  /tmp/tmphb1h4578/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmphb1h4578/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmphb1h4578/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmphb1h4578/fref.md: work W1: unknown feature ref F9
+  /tmp/tmphb1h4578/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmphb1h4578/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmphb1h4578/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmphb1h4578/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmphb1h4578/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmphb1h4578/dupspec.md: duplicate spec ids across work items
+  /tmp/tmphb1h4578/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmphb1h4578/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-AC1/worker-mutate-only: AssertionError: {'ok': True, 'reason': 'upsert_entity', 'receipt': {'committed': True, 'command_id': 'forbidden/mutate', 'seq': 12, 'record_digest': 'sha256:45ff1675f0f74ceed80610326a5473ebdf3e7d78f9708854bfffddd35308fa56', 'after_versions': {'unowned': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:0f6a374fd4db0c8f42d2e6df7668651b1f8b4691d6faa300dc27430cd26079c0', 'replayed': False}}
+AC1/worker-mutate-only: AssertionError: {'ok': True, 'reason': 'upsert_entity', 'receipt': {'committed': True, 'command_id': 'forbidden/mutate', 'seq': 12, 'record_digest': 'sha256:363438a8b24b5b133ef6409cee976de1b18f9a09b7248758fe48889839e0efde', 'after_versions': {'unowned': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:06beaca596fef67ecc755724c23c96087f85a81eb3ae1bd1da2136dc3f0260aa', 'replayed': False}}
   SELFTEST FAIL: VELDO-0125 AC1/worker-mutate-only
-  105_veldo_0125_relay                            13 passed    5.03s
-selftest (PARTIAL, 1 of 160 suites): 39 passed, 1 failed in 5.03s
+  105_veldo_0125_relay                            13 passed    5.08s
+selftest (PARTIAL, 1 of 160 suites): 39 passed, 1 failed in 5.08s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

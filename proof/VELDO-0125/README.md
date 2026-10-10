@@ -282,3 +282,27 @@ unavailable qualified user manager, and denied fixture directories under
 /run/user/1000. The verification record keeps all failing rows, including those
 requiring unrestricted reviewer diagnosis; none is reported as a passing guard.
 The service's fixed source closure resolves to 128 modules.
+
+## Host verification of the affected suites
+
+The 88 affected suites were rerun on the Linux host, outside the sandbox, from
+2738378b. 18 were red there; each passed on a throwaway clone of main 294e1933, so
+all 18 were caused by the change. Three fixes followed:
+
+1. ea69f8be: control_launch.py loads control_routing.py on every dispatch, but the
+   scaffold did not lay it down, so installed receivers refused every launch.
+2. 66ccfe64 and f618f10d: membership, dispatch and reservation ownership was
+   declared wherever those records were built (admit, the base authority Service,
+   Dispatches, Reservations), bound to that copy's file. Setup, receivers and
+   fixtures writing from another copy on the same store were then refused
+   ownership_conflict, foreign_transition or entity_owned. The declarations now
+   run only in the worker relay authority, through protect() beside each owning
+   transition, which is where AC1/entity-owners observes them.
+
+host_falsifiers.py reverts each fix in a clone of HEAD and requires the named row to
+fail; host-falsifiers.json records 5 of 5 rejected. The 17 retained falsifiers were
+rerun and all were rejected. After the fixes, 87 of the 88 suites pass.
+86_veldo_0127_agent_configuration live/claude and live/codex stay pending. Their
+live captures bind control_launch.py's digest, which this change alters, so they
+need a fresh live capture against real logins. host-verification.json holds every
+row.

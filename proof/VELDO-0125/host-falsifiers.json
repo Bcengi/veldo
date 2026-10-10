@@ -1,0 +1,57 @@
+[
+  {
+    "case": "scaffold-routing",
+    "file": "init_scaffold.py",
+    "suite": "66_veldo_0047_authority",
+    "row": "VELDO-0047 authority/installed-assets",
+    "rejected": true,
+    "returncode": 1,
+    "head": "f618f10d54a2cbc12fdb689e82afcc978a4995a1",
+    "patch": "host-scaffold-routing.diff",
+    "log": "host-scaffold-routing.log"
+  },
+  {
+    "case": "admit-protect",
+    "file": "control_membership.py",
+    "suite": "82_veldo_0141_execution_record",
+    "row": "VELDO-0141 record/claude-complete",
+    "rejected": true,
+    "returncode": 1,
+    "head": "f618f10d54a2cbc12fdb689e82afcc978a4995a1",
+    "patch": "host-admit-protect.diff",
+    "log": "host-admit-protect.log"
+  },
+  {
+    "case": "service-protect",
+    "file": "control_service.py",
+    "suite": "85_veldo_0171_setup_api",
+    "row": "VELDO-0171 api-edge/running-service",
+    "rejected": true,
+    "returncode": 1,
+    "head": "f618f10d54a2cbc12fdb689e82afcc978a4995a1",
+    "patch": "host-service-protect.diff",
+    "log": "host-service-protect.log"
+  },
+  {
+    "case": "dispatch-constructor",
+    "file": "control_dispatch.py",
+    "suite": "66_veldo_0042_clones",
+    "row": "VELDO-0042 clone/accepted-commit",
+    "rejected": true,
+    "returncode": 1,
+    "head": "f618f10d54a2cbc12fdb689e82afcc978a4995a1",
+    "patch": "host-dispatch-constructor.diff",
+    "log": "host-dispatch-constructor.log"
+  },
+  {
+    "case": "reservations-constructor",
+    "file": "control_reservations.py",
+    "suite": "83_veldo_0154_factory_loop",
+    "row": "VELDO-0154 loop/runner-in-service",
+    "rejected": true,
+    "returncode": 1,
+    "head": "f618f10d54a2cbc12fdb689e82afcc978a4995a1",
+    "patch": "host-reservations-constructor.diff",
+    "log": "host-reservations-constructor.log"
+  }
+]

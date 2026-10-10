@@ -1,5 +1,5 @@
 --- control_worker_service.py
 +++ control_worker_service.py
-@@ -104 +104 @@
+@@ -111 +111 @@
 -            with SV.S.atomic(self.conn):
 +            with __import__('contextlib').nullcontext():

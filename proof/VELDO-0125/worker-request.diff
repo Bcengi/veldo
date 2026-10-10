@@ -1,5 +1,5 @@
 --- control_service.py
 +++ control_service.py
-@@ -1229 +1229 @@
+@@ -1228 +1228 @@
 -                    and operation not in ('worker_claim', 'worker_launch', 'worker_result')):
 +                    and False):

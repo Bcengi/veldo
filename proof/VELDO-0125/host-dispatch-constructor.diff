@@ -1,0 +1,8 @@
+--- engine/.veldo/control_dispatch.py
++++ engine/.veldo/control_dispatch.py
+@@ -476,0 +477 @@
++        protect(store, conn)
+--- .veldo/control_dispatch.py
++++ .veldo/control_dispatch.py
+@@ -476,0 +477 @@
++        protect(store, conn)

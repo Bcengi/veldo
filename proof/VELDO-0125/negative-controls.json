@@ -22,7 +22,7 @@
     "row": "AC3/remote-result-binding",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
     "patch": "AC3.diff",
     "log": "AC3.log"
   },
@@ -31,7 +31,7 @@
     "row": "AC1/worker-request-only",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d2a9b4a17a9ba3260d9e25e799da82de2ed4f06342dc9963ca16fec1dfe36585",
+    "source_sha256": "5337c3d776b804bea99293fa5ba43aa8eefe8a9d9efd5aa3fb17f6bf6838c0ab",
     "patch": "worker-request.diff",
     "log": "worker-request.log"
   },
@@ -40,7 +40,7 @@
     "row": "AC1/worker-mutate-only",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d2a9b4a17a9ba3260d9e25e799da82de2ed4f06342dc9963ca16fec1dfe36585",
+    "source_sha256": "5337c3d776b804bea99293fa5ba43aa8eefe8a9d9efd5aa3fb17f6bf6838c0ab",
     "patch": "worker-mutate.diff",
     "log": "worker-mutate.log"
   },
@@ -76,7 +76,7 @@
     "row": "AC2/precall-caps",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
     "patch": "accept-atomic.diff",
     "log": "accept-atomic.log"
   },
@@ -85,7 +85,7 @@
     "row": "AC3/refused-report-atomic",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
     "patch": "report-atomic.diff",
     "log": "report-atomic.log"
   },
@@ -112,7 +112,7 @@
     "row": "AC1/signature-namespaces",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
     "patch": "signature-namespace.diff",
     "log": "signature-namespace.log"
   },
@@ -121,7 +121,7 @@
     "row": "AC3/dispatch-other",
     "rejected": true,
     "returncode": 1,
-    "source_sha256": "d648a55004fbeb9363436a8bf7398a9b7be2d8821be79ddc19d0bb7c7ad9ae8b",
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
     "patch": "dispatch-other.diff",
     "log": "dispatch-other.log"
   },

@@ -1,0 +1,8 @@
+--- engine/.veldo/control_reservations.py
++++ engine/.veldo/control_reservations.py
+@@ -93,0 +94 @@
++        protect(store, conn)
+--- .veldo/control_reservations.py
++++ .veldo/control_reservations.py
+@@ -93,0 +94 @@
++        protect(store, conn)

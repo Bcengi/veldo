@@ -1,0 +1,8 @@
+--- engine/.veldo/control_service.py
++++ engine/.veldo/control_service.py
+@@ -1159,0 +1160 @@
++        CM.protect(S, conn)
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -1159,0 +1160 @@
++        CM.protect(S, conn)
