@@ -60,7 +60,8 @@ empty, returning True only once clone files/pins are gone. Neither is worker cod
             configured = contract['capability']['configuration'].get('environment', {})
             environment = ACC.login_environment({'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}, account, host,
                                                  STRIPPED, configured, CREDENTIALS)
-            environment.update(TMPDIR=scratch, TMP=scratch, TEMP=scratch, VELDO_DISPATCH_ID=dispatch)
+            # Run scoped HOME and TMPDIR: no engine falls back to the owner's home via getpwuid.
+            environment.update(self.host.run_environment(dispatch, scratch), VELDO_DISPATCH_ID=dispatch)
             request = dict(contract=contract, contract_digest=digest, acceptance='preflight', engine=engine,
                            clone=clone, scratch=scratch, login_profile=login, environment=environment)
             self.host.preflight(request)

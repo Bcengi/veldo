@@ -1,6 +1,6 @@
 --- a/project_runner_macos_control.py
 +++ b/project_runner_macos_control.py
-@@ -116,7 +116,7 @@
+@@ -117,7 +117,7 @@
              seen = run.retirement()
              if identity != dispatch or self.dispatches.record(dispatch)['state'] != 'exited':
                  seen['outcome_known'] = False

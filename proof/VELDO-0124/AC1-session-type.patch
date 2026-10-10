@@ -1,6 +1,6 @@
 --- a/project_runner_macos_os.py
 +++ b/project_runner_macos_os.py
-@@ -63,7 +63,6 @@
+@@ -99,7 +99,6 @@
      def bootstrap(self, label, argv, directory, grace):
          path = directory / (label + '.plist')
          data = dict(Label=label, ProgramArguments=argv, RunAtLoad=True, KeepAlive=False,

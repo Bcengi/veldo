@@ -3,9 +3,14 @@
 launchctl loads one non restarting LaunchAgent in the user/<uid> bootstrap domain.
 That domain exists without a console login and on macOS 26 refuses (EIO) any job
 not limited to the Background session type; gui/<uid> takes only Aqua jobs.
-ps supplies ordinary process group membership. kqueue NOTE_EXIT observes the held
-wrapper before release. Deliberate setsid escapes and PID reuse are Release 2.
+launchd gives each job its own resource coalition, and every descendant stays in it
+across setsid, setpgid and reparenting to launchd (observed on macOS 26.5.1; kqueue
+NOTE_TRACK is ENOTSUP there). libproc coalition membership is the job's process tree.
+kqueue NOTE_EXIT observes the held wrapper before release. Helpers that launchd
+spawns as separate jobs for a descendant (XPC services, the Simulator) are in their
+own coalitions; that escape matrix and PID reuse are Release 2.
 """
+import ctypes
 import os
 from pathlib import Path
 import plistlib
@@ -35,17 +40,48 @@ def identity(pid):
                 boot_id=command(['/usr/sbin/sysctl', '-n', 'kern.boottime']))
 
 
-def parse_members(text, pgid):
-    members = []
-    for line in text.splitlines():
-        fields = line.split()
-        if len(fields) != 3:
-            raise OSError('process_table_unreadable')
-        pid, group = int(fields[0]), int(fields[1])
-        # Zombies have exited but are not yet reaped. They cannot write clone files.
-        if group == pgid and not fields[2].startswith('Z'):
-            members.append(pid)
-    return members
+PROC_PIDTBSDINFO, PROC_PIDCOALITIONINFO, SZOMB = 3, 20, 5
+BSDINFO_BYTES, COALITION_BYTES = 136, 40
+
+
+def _libproc():
+    return ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
+
+
+def coalition(pid, library=None):
+    """Resource coalition id of pid; struct proc_pidcoalitioninfo starts with it."""
+    library = library or _libproc()
+    info = (ctypes.c_uint64 * (COALITION_BYTES // 8))()
+    if library.proc_pidinfo(pid, PROC_PIDCOALITIONINFO, ctypes.c_uint64(0), info, COALITION_BYTES) != COALITION_BYTES:
+        raise OSError('coalition_unreadable')
+    return int(info[0])
+
+
+def live_members(entries, wanted):
+    """entries: (pid, coalition, status). Zombies have exited and cannot write files."""
+    return sorted(pid for pid, group, status in entries if group == wanted and status != SZOMB)
+
+
+def coalition_members(wanted):
+    library = _libproc()
+    count = library.proc_listallpids(None, 0)
+    if count <= 0:
+        raise OSError('process_table_unreadable')
+    pids = (ctypes.c_int * (count + 256))()
+    count = library.proc_listallpids(pids, ctypes.sizeof(pids))
+    if count <= 0:
+        raise OSError('process_table_unreadable')
+    entries = []
+    for pid in pids[:count]:
+        try:
+            group = coalition(pid, library)
+        except OSError:
+            continue  # exited between listing and lookup
+        info = (ctypes.c_uint32 * (BSDINFO_BYTES // 4))()
+        status = SZOMB if library.proc_pidinfo(pid, PROC_PIDTBSDINFO, ctypes.c_uint64(0), info,
+                                               BSDINFO_BYTES) != BSDINFO_BYTES else info[1]
+        entries.append((pid, group, status))
+    return live_members(entries, wanted)
 
 
 class Native:
@@ -73,8 +109,30 @@ class Native:
     def bootout(self, label):
         command(['/bin/launchctl', 'bootout', 'user/%d/%s' % (os.getuid(), label)])
 
-    def members(self, pgid):
-        return parse_members(command(['/bin/ps', '-axo', 'pid=,pgid=,stat=']), pgid)
+    def user_temp(self):
+        return os.confstr('CS_DARWIN_USER_TEMP_DIR')
+
+    def interpreter(self, path):
+        """(major, minor) of the pinned interpreter, or None if it cannot run."""
+        if not os.path.isfile(path) or not os.access(path, os.X_OK):
+            return None
+        try:
+            text = command([path, '-I', '-c', 'import sys; print("%d %d" % sys.version_info[:2])'])
+            return tuple(int(v) for v in text.split())
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            return None
+
+    def coalition(self, pid):
+        return coalition(pid)
+
+    def members(self, group):
+        return coalition_members(group)
+
+    def alive(self, process):
+        try:
+            return identity(process['pid']) == process
+        except OSError:
+            return False
 
     def watch(self, process):
         if identity(process['pid']) != process:
@@ -95,9 +153,9 @@ class Native:
             raise OSError('exit_notification_failed')
         return any(e.fflags & select.KQ_NOTE_EXIT for e in events)
 
-    def send(self, pgid, number, *, group=True):
+    def send(self, pid, number, *, group=False):
         try:
-            (os.killpg if group else os.kill)(pgid, number)
+            (os.killpg if group else os.kill)(pid, number)
         except ProcessLookupError:
             pass
 

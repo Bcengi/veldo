@@ -5,7 +5,7 @@
     "row": "AC1/qualification",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "1c00a7de1f6388906505a34cc87caae41ef898e96f04bca9a2829e3d1f8a7eae",
+    "source_sha256": "8bf7ddf7128be0ad0df5e7f9920c42dc38d7e5ff832c45c6b72f7e97941af5b7",
     "patch": "AC1-qualification.patch",
     "log": "AC1-qualification.log"
   },
@@ -15,7 +15,7 @@
     "row": "AC1/apple-interfaces",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "f71804a389a404ccdbec13765279163deecf8311dc3cd715a3aa7c329af7351d",
+    "source_sha256": "7ec300fd1cf36cfdc4f475367e88d11ebfdea4bd202cd29314717cdc59c1776f",
     "patch": "AC1-session-type.patch",
     "log": "AC1-session-type.log"
   },
@@ -25,7 +25,7 @@
     "row": "AC2/deadline",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
     "patch": "AC2-deadline.patch",
     "log": "AC2-deadline.log"
   },
@@ -35,7 +35,7 @@
     "row": "AC2/capacity",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
     "patch": "AC2-capacity.patch",
     "log": "AC2-capacity.log"
   },
@@ -45,9 +45,19 @@
     "row": "AC3/descendant",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "8c7fb92288124531bdd1a28929a7819240d82943c5119071bf941468a10e1715",
+    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
     "patch": "AC3-parent-only.patch",
     "log": "AC3-parent-only.log"
+  },
+  {
+    "name": "AC3-group-only",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "ac5d51016812e65fcd6753539b7dea73e3d8dddb7302e06dc885afb93dc3de57",
+    "patch": "AC3-group-only.patch",
+    "log": "AC3-group-only.log"
   },
   {
     "name": "AC2-postcall",
@@ -55,7 +65,7 @@
     "row": "AC2/precall-caps",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121",
+    "source_sha256": "a90cc9f5261fe74020267036c8d13466fbe780f9fc8fe862c821346c946e795c",
     "patch": "AC2-postcall.patch",
     "log": "AC2-postcall.log"
   },
@@ -65,7 +75,7 @@
     "row": "AC3/unknown-charge",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "e329535a02c27af158aca55e304236935c46140c123f5f5c43512adc43b02121",
+    "source_sha256": "a90cc9f5261fe74020267036c8d13466fbe780f9fc8fe862c821346c946e795c",
     "patch": "AC3-unknown-retire.patch",
     "log": "AC3-unknown-retire.log"
   }

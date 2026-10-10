@@ -1,6 +1,6 @@
 --- a/project_runner_macos_profile.py
 +++ b/project_runner_macos_profile.py
-@@ -102,7 +102,7 @@
+@@ -169,7 +169,7 @@
      if (not isinstance(evidence, dict) or evidence.get('schema') != QUALIFICATION
              or evidence.get('profile_digest') != digest(profile)
              or evidence.get('host') != facts['host'] or evidence.get('os_version') != facts['os_version']

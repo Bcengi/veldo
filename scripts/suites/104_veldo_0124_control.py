@@ -97,6 +97,11 @@ def _v124_control():
                 born = T.M.read(run.directory / 'request.json')['environment']
                 variable = C.ACC.PROFILES[engine]
                 assert born[variable] == str(paths['login'])
+                # Production sets the run scoped HOME and TMPDIR, never the owner's.
+                assert born['HOME'] == str(paths['scratch'].resolve()) + '/home'
+                assert born['TMPDIR'].startswith(str(paths['usertemp'].resolve()) + '/veldo-')
+                assert {k: born[k] for k in ('HOME', 'TMPDIR', 'TMP', 'TEMP')} == host.run_environment(
+                    run.dispatch, str(paths['scratch']))
                 assert born['VELDO_DISPATCH_ACCEPTANCE'] == dispatches.receipt(run.dispatch, 'accept')
                 assert receiver.wait(run.dispatch)['state'] == 'exited'
                 assert not D.completed(dispatches.record(run.dispatch))
@@ -162,19 +167,26 @@ def _v124_control():
             conn.close()
 
     def unknown(base):
-        receiver, contract, paths, backend, host, reservations, ds, conn, clean, seen = scenario(base, mode='lost')
+        # The wrapper is lost with the engine's SIGKILL: exit seen, coalition empty,
+        # cleanup done and accounting closed, but no result. Only the unknown outcome
+        # guard stands between this and retiring the reservation.
+        receiver, contract, paths, backend, host, reservations, ds, conn, clean, seen = scenario(base, mode='killed')
         try:
             run = receiver.start(contract, str(paths['clone']), str(paths['scratch']))
             assert receiver.wait(run.dispatch)['state'] == 'unknown'
-            backend.live = []
+            assert [s['stage'] for s in run.steps] == ['terminate', 'kill']
+            assert not (run.directory / 'result.json').exists()
             clean[0] = True
             entry = receiver.runs[run.dispatch]
             entry['guard'].observe('unknown-receipt', entry['invocation'], 1, {}, final=True, outcome='timeout',
                                    now=backend.wall())
+            assert run.retirement() == dict(terminated=True, cleaned=True, outcome_known=False,
+                                            observer='macos_supervisor')
             T.refused(lambda: receiver.retire(run.dispatch), 'unknown_outcome:retirement')
+            assert not reservations.worker(run.dispatch)['retired'], 'reservation retired with an unknown outcome'
             assert ds.active('unit', 'review')['state'] == 'unknown'
             assert reservations.balances('account', 'account')['invocations'] == 1
-            assert not reservations.worker(run.dispatch)['retired'] and host.status()['pending'] == 1
+            assert host.status()['pending'] == 1
             T.refused(lambda: receiver.start(contract, str(paths['clone']), str(paths['scratch'])),
                       'stale_version:not_prepared')
         finally:

@@ -32,7 +32,10 @@ def git(*args):
 
 
 def fixture(base):
-    paths = {name: base / name for name in ('host', 'authority', 'clone', 'scratch', 'login')}
+    paths = {name: base / name for name in ('host', 'authority', 'scratch', 'owner', 'accounts', 'projects',
+                                           'usertemp')}
+    paths['clone'] = paths['projects'] / 'clone'
+    paths['login'] = paths['accounts'] / 'own'
     for path in paths.values():
         path.mkdir(parents=True)
     git('init', '-q', str(paths['clone']))
@@ -45,10 +48,14 @@ def fixture(base):
     executable = str(Path(sys.executable).resolve())
     engine = dict(argv=[executable, '-c', 'pass'], version='fixture', binary_digest=P.file_digest(executable),
                   configuration_digest=P.digest(configuration))
+    engines = {name: copy.deepcopy(engine) for name in P.ENGINES}
+    engines['codex']['argv'] += ['--sandbox', 'danger-full-access']
     profile = dict(schema=P.SCHEMA, revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
+                   interpreter=executable, home=str(paths['owner']), account_roots=[str(paths['accounts'])],
+                   project_roots=[str(paths['projects'])],
                    max_workers=1, runtime_seconds=0.3, stop_grace_seconds=0.1, kill_grace_seconds=0.1,
                    settle_seconds=0.1, startup_seconds=0.2, heartbeat_seconds=0.02, heartbeat_window_seconds=0.08,
-                   engines={name: copy.deepcopy(engine) for name in P.ENGINES})
+                   engines=engines)
     facts = dict(platform='darwin', host='fixture-mac', os_version='fixture-26.0', boot_id='fixture-boot', tools=True)
     qualification = dict(schema=P.QUALIFICATION, kind='native', host=facts['host'], os_version=facts['os_version'],
                          profile_digest=P.digest(profile), rows={e + '/' + r: 'FIXTURE-NOT-EVIDENCE'
@@ -67,19 +74,33 @@ class Watch:
         pass
 
 
+WRAPPER, ENGINE, CHILD, SURVIVOR = 12400, 12401, 12402, 12403
+JOB, ELSEWHERE = 77, 1
+
+
 class FakeOS:
-    """Apple model: bootstrap starts once, TERM is distinct from group KILL,
-    NOTE_EXIT is only parent exit, and ps can retain children after that event.
+    """Apple model: bootstrap starts once and launchd gives the job its own coalition.
+    The engine has its own group under the wrapper; a setsid survivor is in the
+    coalition but outside the engine group and ignores TERM. A KILL of the engine
+    leaves the wrapper to reap it and record the outcome, except in mode killed, where
+    the wrapper is lost with it. NOTE_EXIT is only the wrapper's exit.
     TimeOut is intentionally not implemented as an elapsed deadline.
     """
-    def __init__(self, facts, mode='natural'):
-        self.host_facts, self.mode = facts, mode
+    def __init__(self, facts, mode='natural', temp=None):
+        self.host_facts, self.mode, self.temp = facts, mode, temp
         self.now, self.bootstraps, self.calls = 0., 0, []
-        self.live, self.exit_event, self.directory, self.heartbeat = [], False, None, True
-        self.process = dict(platform='darwin', host=facts['host'], boot_id=facts['boot_id'], pid=12400, start='start')
+        self.live, self.exit_event, self.directory, self.heartbeat = {}, False, None, True
+        self.returncode = None
+        self.process = dict(platform='darwin', host=facts['host'], boot_id=facts['boot_id'], pid=WRAPPER, start='start')
 
     def facts(self):
         return self.host_facts
+
+    def user_temp(self):
+        return str(self.temp)
+
+    def interpreter(self, path):
+        return M.OS.Native().interpreter(path)
 
     def wall(self):
         return 1000 + self.now
@@ -92,18 +113,20 @@ class FakeOS:
         if self.now > 2:
             raise TimeoutError('fixture supervisor exceeded bound')
         if self.directory and (self.directory / 'go').exists():
-            if self.heartbeat and self.live:
+            if self.heartbeat and WRAPPER in self.live:
                 M.write(self.directory / 'heartbeat.json', dict(monotonic=self.now, dispatch_id='dispatch/test'))
-            if self.mode == 'natural' and self.now >= 0.06 and self.live:
+            if self.mode == 'natural' and self.now >= 0.06 and ENGINE in self.live:
                 self.finish()
 
     def bootstrap(self, label, argv, directory, grace):
         self.bootstraps += 1
-        self.calls.append(('bootstrap', label))
+        self.calls.append(('bootstrap', label, argv[0]))
         self.directory = directory
-        self.live = [12400, 12401, 12402]
-        M.write(directory / 'ready.json', dict(process=self.process, pgid=12400))
-        M.write(directory / 'worker.json', dict(process=dict(self.process, pid=12401), pgid=12400))
+        self.live = {WRAPPER: WRAPPER, ENGINE: ENGINE, CHILD: ENGINE}
+        if self.mode in ('descendant', 'ignoring', 'killed'):
+            self.live[SURVIVOR] = SURVIVOR
+        M.write(directory / 'ready.json', dict(process=self.process, pgid=WRAPPER))
+        M.write(directory / 'worker.json', dict(process=dict(self.process, pid=ENGINE), pgid=ENGINE))
         (directory / 'engine.out').write_bytes(b'fixture output')
 
     def bootout(self, label):
@@ -113,38 +136,76 @@ class FakeOS:
         M.OS.Native().check_clone(clone, source)
 
     def watch(self, process):
-        assert process == self.process and self.live
+        assert process == self.process and WRAPPER in self.live
         return Watch()
 
     def exited(self, watch, seconds):
         return self.exit_event
 
-    def members(self, pgid):
+    def alive(self, process):
+        return process == self.process and WRAPPER in self.live
+
+    def coalition(self, pid):
+        return JOB if pid in self.live else ELSEWHERE
+
+    def members(self, group):
         if self.mode == 'ps_error':
-            raise OSError('ps unavailable')
-        text = '\n'.join(['%d 12400 S' % pid for pid in self.live] + ['900 900 S'])
-        return M.OS.parse_members(text, pgid)
+            raise OSError('process table unavailable')
+        entries = [(pid, JOB, 2) for pid in self.live] + [(900, ELSEWHERE, 2), (12499, JOB, M.OS.SZOMB)]
+        return M.OS.live_members(entries, group)
 
-    def finish(self, survivor=False):
-        self.exit_event = True
-        self.live = [12402] if survivor else []
-        M.write(self.directory / 'result.json', dict(process=self.process, dispatch_id='dispatch/test', returncode=0))
+    def finish(self, survivor=False, code=0):
+        """The engine and its group exit; a setsid survivor may remain."""
+        for pid in (ENGINE, CHILD) + (() if survivor else (SURVIVOR,)):
+            self.live.pop(pid, None)
+        self.returncode = code
+        self.settle()
 
-    def send(self, pgid, number, *, group=True):
-        self.calls.append(('signal', number, group, self.now))
+    def settle(self):
+        if not self.directory or WRAPPER not in self.live or ENGINE in self.live:
+            return
+        M.write(self.directory / 'engine-exit.json', dict(returncode=self.returncode))
+        # The wrapper waits for its coalition. Mode descendant models a wrapper that
+        # is gone while a survivor lives, so only the supervisor can see it.
+        if set(self.live) == {WRAPPER} or self.mode == 'descendant':
+            M.write(self.directory / 'result.json', dict(process=self.process, dispatch_id='dispatch/test',
+                                                         returncode=self.returncode, deadline_stop=False))
+            del self.live[WRAPPER]
+            self.exit_event = True
+
+    def send(self, pid, number, *, group=False):
+        self.calls.append(('signal', pid, number, group, self.now))
         if self.mode == 'lost':
             raise OSError('signal_service_unavailable')
-        if number == signal.SIGKILL:
-            # Killed wrappers cannot manufacture a successful waitpid receipt.
-            self.exit_event, self.live = True, []
-        elif self.mode in ('cooperative', 'natural') or (self.mode == 'blocked' and 12400 in self.live):
-            self.finish()
+        targets = [p for p, g in self.live.items() if g == pid] if group else [pid] * (pid in self.live)
+        for target in targets:
+            if target not in self.live:
+                continue
+            if target == WRAPPER:
+                if number == signal.SIGKILL:
+                    del self.live[WRAPPER]
+                    self.exit_event = True
+                elif self.mode in ('cooperative', 'natural', 'blocked', 'descendant'):
+                    self.finish(survivor=SURVIVOR in self.live, code=-signal.SIGTERM)
+            elif number == signal.SIGKILL:
+                if self.mode == 'killed':
+                    # Killed wrappers cannot manufacture a successful waitpid receipt.
+                    self.live.clear()
+                    self.exit_event = True
+                    return
+                del self.live[target]
+                self.returncode = -signal.SIGKILL if target == ENGINE else self.returncode
+            elif self.mode not in ('ignoring', 'killed') and target != SURVIVOR:
+                del self.live[target]
+                self.returncode = -signal.SIGTERM if target == ENGINE else self.returncode
+        self.settle()
 
 
 def start(base, mode='natural'):
     paths, profile, evidence, facts, request = fixture(base)
-    backend = FakeOS(facts, mode)
+    backend = FakeOS(facts, mode, paths['usertemp'])
     supervisor = M.Supervisor(profile, evidence, backend=backend)
+    request['environment'].update(supervisor.run_environment(request['contract']['dispatch_id'], request['scratch']))
     return supervisor, backend, request, paths
 
 

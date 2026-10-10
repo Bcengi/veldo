@@ -1,6 +1,6 @@
 --- a/project_runner_macos_control.py
 +++ b/project_runner_macos_control.py
-@@ -81,7 +81,7 @@
+@@ -82,7 +82,7 @@
                                     lambda identity: self.runs[identity]['run'].stop('allowance')
                                     if identity in self.runs else None)
          try:

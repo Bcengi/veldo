@@ -1,6 +1,6 @@
 --- a/project_runner_macos.py
 +++ b/project_runner_macos.py
-@@ -98,7 +98,7 @@
+@@ -126,7 +126,7 @@
          with self.lock():
              if directory.exists():
                  raise P.Refused('stale_version:dispatch_already_attempted')
