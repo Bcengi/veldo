@@ -386,6 +386,10 @@ class GitLandOps(LandOps):
         self.landing = landing
         self.counts = {"accepted": 0, "refused": 0}
         self.identity_counts = {}
+        # The caller's Git common directory, where direct-land identity operations are kept durably
+        # (VELDO-0153). sync_main resolves it with its own checked step, so neither an observation
+        # nor a status read adds a Git invocation to the candidate path.
+        self.common_dir = None
         self.candidate = None
 
     # The one checked Git step.
@@ -476,8 +480,10 @@ class GitLandOps(LandOps):
         if operation == 'remote_check':
             c['checked_remote_owner'] = event.get('remote_owner')
         if operation in ('push', 'remote_check'):
-            common = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir').stdout.strip()
-            _git_process.identity_transport().local_operations(common, event)
+            if self.common_dir is None:
+                self.common_dir = self._git(self.repo_root, 'rev-parse', '--path-format=absolute',
+                                            '--git-common-dir').stdout.strip()
+            _git_process.identity_transport().local_operations(self.common_dir, event)
         self.counts["refused" if outcome == "refused" else "accepted"] += 1
         self.observe(event)
         return event
@@ -496,11 +502,14 @@ class GitLandOps(LandOps):
         c = self.candidate or {}
         pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
         identities = {key: dict(value) for key, value in self.identity_counts.items()}
-        if Path(self.repo_root).is_dir():
-            common = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir', ok=None)
-            if common.returncode == 0:
-                for key, value in _git_process.identity_transport().local_operations(common.stdout.strip()).items():
-                    identities.setdefault(key, {}).update(value)
+        common = self.common_dir
+        if common is None and Path(self.repo_root).is_dir():
+            # A fresh instance (a restart) that has not synced reads the durable counts all the same.
+            found = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir', ok=None)
+            common = found.stdout.strip() if found.returncode == 0 else None
+        if common:
+            for key, value in _git_process.identity_transport().local_operations(common).items():
+                identities.setdefault(key, {}).update(value)
         return dict(self.counts, pending=pending, identities=identities)
 
     def record(self):
@@ -529,6 +538,7 @@ class GitLandOps(LandOps):
             workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
             self.candidate["workspace"] = str(workspace)
             common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
+            self.common_dir = common or None
             objects = Path(common) / "objects"
             if not common or not objects.is_dir():
                 raise CandidateRefused("unavailable_service:git/rev-parse", "the caller has no object store",
@@ -873,7 +883,10 @@ class GitLandOps(LandOps):
         refusal = None if pushed else "push_refused:remote"
         self._event("push", "accepted" if pushed else "refused", refusal, pushed=pushed,
                     remote_owner=target['owner'])
-        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], refusal=refusal)
+        # The stage's own observation (VELDO-0056) beside the identity push it ran.
+        self._event("finalize", "accepted" if pushed else "refused", refusal, pushed=pushed)
+        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], refusal=refusal,
+                    detail=push.stderr.strip())
 
     def _publish(self, unit, detail):
         """VELDO-0057: the factory land's exact-tip publication and confirmed completion, through the
