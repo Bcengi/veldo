@@ -201,10 +201,10 @@ Synthetic engines, Python 3.12.13, `native-lifecycle.json` and `native-containme
 | --- | --- | --- |
 | `natural` | passed, exit 0, no stop steps, released | passed |
 | `cooperative` | passed, exit -15 after wrapper TERM | passed |
-| `deadline` | passed, runtime_cap, TERM at 1.18 s, excess launch refused | passed |
+| `deadline` | passed, runtime_cap, TERM at about 1.2 s, excess launch refused | passed |
 | `descendant` | passed, setsid PID found in coalition, cooperative, terminate, kill, PID dead, exit -9, released | passed |
 | `hard-kill` | passed, group SIGKILL from outside, wrapper recorded -9, released | passed |
-| `supervisor-loss` | passed, supervisor killed 2.6 s before deadline, engine stopped 0.08 s after it, recovered and released | passed |
+| `supervisor-loss` | passed, supervisor killed about 2.7 s before the deadline, engine stopped within 0.13 s after it, recovered and released | passed |
 | `write` | passed: owner home, authority, installed code, `slot.json`, `result.json` and a child through a symlink denied; clone, scratch, login, run home, run temp, DerivedData, CoreSimulator, `/dev/null` allowed; `/dev/tty` ENXIO (no terminal) | passed |
 | `read` | passed: every decoy class and `.CLAUDE.json` (case variant) denied; own login, clone and other owner files readable | passed |
 | `launchd` | passed: `launchctl submit` and `bootstrap` refused at exec (EPERM); a copy of launchctl in scratch executes and is killed with SIGKILL (-9); no job exists; rules present | passed |

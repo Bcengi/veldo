@@ -28,7 +28,7 @@
         "alias_child": "rc:0"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -99,7 +99,6 @@\n     rules = ['(version 1)', '(allow default)']\n     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a\n     # grant does not grant its resolved target.\n-    rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -100,7 +100,6 @@\n     rules = ['(version 1)', '(allow default)']\n     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a\n     # grant does not grant its resolved target.\n-    rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n"
     },
     {
       "name": "read-ssh",
@@ -53,7 +53,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -100,7 +100,6 @@\n     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a\n     # grant does not grant its resolved target.\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n-    rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -101,7 +101,6 @@\n     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a\n     # grant does not grant its resolved target.\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n-    rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n"
     },
     {
       "name": "read-claude",
@@ -78,7 +78,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -101,7 +101,6 @@\n     # grant does not grant its resolved target.\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n-    rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -102,7 +102,6 @@\n     # grant does not grant its resolved target.\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n-    rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n"
     },
     {
       "name": "read-codex",
@@ -103,7 +103,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -102,7 +102,6 @@\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n-    rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -103,7 +103,6 @@\n     rules.append('(deny file-write* (require-not (require-any %s (literal \"/dev/null\") (literal \"/dev/tty\"))))' % grants)\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n-    rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n"
     },
     {
       "name": "read-accounts",
@@ -128,7 +128,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -103,7 +103,6 @@\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n-    rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -104,7 +104,6 @@\n     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n-    rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n"
     },
     {
       "name": "read-projects",
@@ -153,7 +153,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -104,7 +104,6 @@\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n-    rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -105,7 +105,6 @@\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n-    rules.extend([unreadable(_any(projects))] if projects else [])\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n"
     },
     {
       "name": "read-dispatches",
@@ -178,7 +178,7 @@
         "allowed_owner_other": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -105,7 +105,6 @@\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n-    rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -106,7 +106,6 @@\n     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))\n     rules.extend([unreadable(_any(accounts))] if accounts else [])\n     rules.extend([unreadable(_any(projects))] if projects else [])\n-    rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n"
     },
     {
       "name": "launchctl-exec",
@@ -218,7 +218,7 @@
         }
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -108,7 +108,6 @@\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n-    rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n     rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -109,7 +109,6 @@\n     rules.extend([unreadable(_any(dispatches))] if dispatches else [])\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n-    rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n     rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n"
     },
     {
       "name": "job-creation",
@@ -256,7 +256,7 @@
         }
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -109,7 +109,6 @@\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n-    rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -110,7 +110,6 @@\n     # launchd: no launchctl and no job submission from inside. launchd itself also\n     # refuses job creation from sandboxed callers on macOS 26.\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n-    rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n"
     },
     {
       "name": "keychain",
@@ -279,7 +279,7 @@
         }
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -111,7 +111,6 @@\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n     rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n-    rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n     rules.append('(deny signal (require-not (target same-sandbox)))')\n     return '\\n'.join(rules) + '\\n'\n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -112,7 +112,6 @@\n     rules.append('(deny process-exec (literal \"/bin/launchctl\"))')\n     rules.append('(deny job-creation)')\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n-    rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n     rules.append('(deny signal (require-not (target same-sandbox)))')\n     return '\\n'.join(rules) + '\\n'\n"
     },
     {
       "name": "signal",
@@ -295,7 +295,7 @@
         "own_child": "allowed"
       },
       "other_failed": [],
-      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -113,7 +113,6 @@\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n-    rules.append('(deny signal (require-not (target same-sandbox)))')\n     return '\\n'.join(rules) + '\\n'\n \n \n"
+      "patch": "--- a/project_runner_macos_profile.py\n+++ b/project_runner_macos_profile.py\n@@ -114,7 +114,6 @@\n     # Keychain: VELDO-0147 decides what a run's own engine account may use; until then none.\n     rules.append('(deny mach-lookup (global-name \"com.apple.SecurityServer\") (global-name \"com.apple.securityd\") (global-name \"com.apple.securityd.xpc\"))')\n     # Signals reach only processes inside this sandbox instance: the engine's own descendants.\n-    rules.append('(deny signal (require-not (target same-sandbox)))')\n     return '\\n'.join(rules) + '\\n'\n \n \n"
     },
     {
       "name": "wrapper-backstop",
@@ -316,7 +316,7 @@
       "row": "native/claude_code/descendant",
       "rejected": true,
       "row_status": "failed",
-      "error": "AssertionError: {'state': 'unknown', 'process': {'boot_id': '{ sec = 1785738141, usec = 178912 } Mon Aug  3 06:22:21 2026', 'host': 'dmitrys-mini.lan', 'pid': 47312, 'platform': 'darwin', 'start': 'Sat Oct 10 09:57:05 2026'}, 'steps': [{'stage': 'cooperative', 'monotonic': 5888150.724953833}, {'stage': 'terminate',",
+      "error": "AssertionError: {'state': 'unknown', 'process': {'boot_id': '{ sec = 1785738141, usec = 178912 } Mon Aug  3 06:22:21 2026', 'host': 'dmitrys-mini.lan', 'pid': 50614, 'platform': 'darwin', 'start': 'Sat Oct 10 10:00:56 2026'}, 'steps': [{'stage': 'cooperative', 'monotonic': 5888381.24586175}, {'stage': 'terminate', ",
       "observed": null,
       "other_failed": [],
       "patch": "--- a/project_runner_macos.py\n+++ b/project_runner_macos.py\n@@ -238,7 +238,7 @@\n         if worker and worker.get('pgid'):\n             self.os.send(worker['pgid'], number, group=True)\n         for pid in self.os.members(self.coalition):\n-            if pid != self.process['pid']:\n+            if False:\n                 self.os.send(pid, number)\n \n     def step(self, stage, now):\n"
@@ -328,11 +328,10 @@
       "row": "native/claude_code/hard-kill",
       "rejected": true,
       "row_status": "failed",
-      "error": "AssertionError: {'state': 'unknown', 'process': {'boot_id': '{ sec = 1785738141, usec = 178912 } Mon Aug  3 06:22:21 2026', 'host': 'dmitrys-mini.lan', 'pid': 47637, 'platform': 'darwin', 'start': 'Sat Oct 10 09:57:17 2026'}, 'steps': [], 'refusal': 'unknown_outcome:OSError'}",
+      "error": "AssertionError: {'state': 'unknown', 'process': {'boot_id': '{ sec = 1785738141, usec = 178912 } Mon Aug  3 06:22:21 2026', 'host': 'dmitrys-mini.lan', 'pid': 50932, 'platform': 'darwin', 'start': 'Sat Oct 10 10:01:07 2026'}, 'steps': [], 'refusal': 'unknown_outcome:OSError'}",
       "observed": null,
       "other_failed": [
-        "native/claude_code/descendant",
-        "native/claude_code/supervisor-loss"
+        "native/claude_code/descendant"
       ],
       "patch": "--- a/project_runner_macos_wrapper.py\n+++ b/project_runner_macos_wrapper.py\n@@ -77,7 +77,7 @@\n     with open(directory / 'engine.out', 'wb') as out, open(directory / 'engine.err', 'wb') as err:\n         child = subprocess.Popen(['/usr/bin/sandbox-exec', '-p', request['sandbox'], *request['argv']],\n                                  cwd=request['clone'], env=request['environment'], stdin=subprocess.DEVNULL,\n-                                 stdout=out, stderr=err, close_fds=True, process_group=0)\n+                                 stdout=out, stderr=err, close_fds=True)\n         # Keep this unsandboxed wrapper alive until waitpid observes engine exit and\n         # the coalition holds no other process, or the backstop has spent its bounds.\n         write(directory / 'worker.json', dict(process=identity(child.pid), pgid=os.getpgid(child.pid)))\n"
     }

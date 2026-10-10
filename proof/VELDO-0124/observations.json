@@ -1,6 +1,6 @@
 {
   "schema": "veldo.macos_build_observations/v1",
-  "implementation_commit": "869d76ffc79d28809e3ffeb3e5c6f56ec529657e",
+  "implementation_commit": "7be4d267bdfdc0852dcecaf1e283b9bdc4227ebc",
   "scope": "development_only",
   "selected_host": "dmitrys-mac-mini",
   "macos_version": "26.5.1 (25F80), arm64, hostname dmitrys-mini.lan",
@@ -110,28 +110,16 @@
       "log": "native-lifecycle.json"
     },
     {
-      "row": "native/claude_code/containment",
+      "row": "native/claude_code/hard-kill",
       "status": "passed",
       "kind": "real_macos_synthetic_engine",
-      "log": "native-containment.json"
+      "log": "native-lifecycle.json"
     },
     {
-      "row": "native/qualified-claude_code/natural",
-      "status": "not_run",
-      "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
-    },
-    {
-      "row": "native/qualified-claude_code/cooperative",
-      "status": "not_run",
-      "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
-    },
-    {
-      "row": "native/qualified-claude_code/deadline",
-      "status": "not_run",
-      "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
+      "row": "native/claude_code/supervisor-loss",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
     },
     {
       "row": "native/codex/natural",
@@ -158,28 +146,112 @@
       "log": "native-lifecycle.json"
     },
     {
-      "row": "native/codex/containment",
+      "row": "native/codex/hard-kill",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/supervisor-loss",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/write",
       "status": "passed",
       "kind": "real_macos_synthetic_engine",
       "log": "native-containment.json"
     },
     {
+      "row": "native/claude_code/read",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/launchd",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/keychain",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/signal",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/write",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/read",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/launchd",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/keychain",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/signal",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/qualified-claude_code/natural",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-claude_code/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-claude_code/deadline",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
       "row": "native/qualified-codex/natural",
       "status": "not_run",
       "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
+      "reason": "needs_owner_cli_configuration_and_consent"
     },
     {
       "row": "native/qualified-codex/cooperative",
       "status": "not_run",
       "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
+      "reason": "needs_owner_cli_configuration_and_consent"
     },
     {
       "row": "native/qualified-codex/deadline",
       "status": "not_run",
       "kind": "real_macos_real_cli",
-      "reason": "needs_owner_cli_configuration"
+      "reason": "needs_owner_cli_configuration_and_consent"
     }
   ],
   "gate": "not_run",
@@ -194,11 +266,102 @@
       "log": "native-falsifier-session-type.json"
     },
     {
-      "change": "remove the Seatbelt file-write deny",
-      "row": "native/claude_code/containment",
+      "change": "write",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/write",
       "rejected": true,
-      "error": "protected write succeeded (exit 91)",
-      "log": "native-falsifier-sandbox.json"
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-ssh",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-claude",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-codex",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-accounts",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-projects",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-dispatches",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "launchctl-exec",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/launchd",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "job-creation",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/launchd",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "keychain",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/keychain",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "signal",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/signal",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "wrapper-backstop",
+      "file": "project_runner_macos_wrapper.py",
+      "row": "native/claude_code/supervisor-loss",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "coalition-kill",
+      "file": "project_runner_macos.py",
+      "row": "native/claude_code/descendant",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "engine-group",
+      "file": "project_runner_macos_wrapper.py",
+      "row": "native/claude_code/hard-kill",
+      "rejected": true,
+      "log": "native-falsifiers.json"
     }
   ],
   "native_interpreter": "/opt/homebrew/bin/python3.12 (3.12.13); /usr/bin/python3 is 3.9.6 and unsupported"
