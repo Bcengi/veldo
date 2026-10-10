@@ -861,7 +861,11 @@ else:
         steps = steps_of(report)
         mine = {'work_configuration', 'receiver_configuration', 'reservation_principals', 'factory_project', 'default_team',
                 'account_registration', 'reservation_policies'}
-        wrote = {name for name, s in steps.items() if s.get('outcome') == 'done'}
+        # VELDO-0142: the current setup records the workspace repository with its Git identity, so a host the
+        # earlier engine laid down without one gains it in this same run.
+        if 'git_identities' in __import__('inspect').signature(h['F'].setup).parameters:
+            mine.add('git_identities')
+        wrote ={name for name, s in steps.items() if s.get('outcome') == 'done'}
         check(row, 'the run adds exactly these steps, after the engine upgrade the changed engine needs [%s %s %s]'
               % (report.get('outcome'), report.get('reason'), sorted(wrote)),
               code == 0 and report.get('outcome') == 'set_up' and wrote == mine | {'engine_upgrade'})

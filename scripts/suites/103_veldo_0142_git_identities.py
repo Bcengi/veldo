@@ -394,6 +394,8 @@ def _v142_suite():
                         for transport in ('local', 'reported'):
                             receiver = object.__new__(L.Receiver)
                             receiver.login = None
+                            # VELDO-0182: no memory handed off, as Receiver.__init__ and each dispatch start it.
+                            receiver.memory = None
                             receiver.binding = (dict(argv=['git', '-C', str(work), 'commit', '--allow-empty', '-qm', 'spawn worker'],
                                 environment=dict(injection, **{L.ENGINE_RUNTIME: str(base / 'runtime'),
                                     L.ENGINE_OVERRIDES: json.dumps(injection)}), path='fixture', sha256='fixture')

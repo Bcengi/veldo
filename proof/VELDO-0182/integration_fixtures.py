@@ -346,6 +346,9 @@ def setup_fixture(callback):
     ts_overrides = {'tailscale': [tailscale.path], 'api_port': TS.free_port()}
     if F is None or 'tailscale' not in __import__('inspect').signature(F.setup).parameters:
         ts_overrides = {}
+    # VELDO-0142: setup records the workspace repository with its configured Git identity, as suite 73 passes it.
+    if F is not None and 'git_identities' in __import__('inspect').signature(F.setup).parameters:
+        ts_overrides.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['options']())
 
     def setup(tag, state_root, workspace, host_trust, **replace):
         """veldo factory setup through the module's own command surface, into this run's scratch, with the
