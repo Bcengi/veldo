@@ -1412,6 +1412,15 @@
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+  },
+  {
+   "name": "103_veldo_0124_macos",
+   "file": "103_veldo_0124_macos.py",
+   "requires": [
+    "103_veldo_0124_macos"
+   ],
+   "regions": "Mac lifecycle logic and Apple interface models.",
+   "requires_note": "Only ROOT and expect; no native Mac qualification."
   }
  ],
  "resource_capacities": {
