@@ -93,7 +93,7 @@ def _v51_suite():
     # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
     # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
     # none of its own files.
-    with tempfile.TemporaryDirectory(prefix='v51-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v51-') as directory, contextlib.ExitStack() as wired:
         base = Path(directory)
         tree = base / 'installed'
         mods = tree / '.veldo'
@@ -234,12 +234,20 @@ def _v51_suite():
                 def remote_tip(bare):
                     return git('ls-remote', str(bare), 'refs/heads/main', repo=source).split()[0]
 
+                # VELDO-0153: a publication pushes with the repository identity's credential alone, to a
+                # remote under its owner. The repository's identity is bound on the store the executor
+                # reads, and the test wire maps the two remotes' URLs to the bare repositories.
+                __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](
+                    mods, writer, DOMAIN, REPOSITORY, source)
+                wire = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))['Wire'](
+                    base / 'wire')
+                wired.enter_context(wire.active())
                 config = {'store': str(db), 'journal_key': str(private / 'journal'), 'domain_uuid': DOMAIN,
                           'repository_uuid': REPOSITORY, 'receivers': {
-                              'git-origin': {'kind': 'publication', 'repository': str(source), 'remote': str(origin),
-                                             'ref': 'refs/heads/main'},
-                              'git-hooked': {'kind': 'publication', 'repository': str(source), 'remote': str(hooked),
-                                             'ref': 'refs/heads/main'}}}
+                              'git-origin': {'kind': 'publication', 'repository': str(source),
+                                             'remote': wire.remote('origin', origin), 'ref': 'refs/heads/main'},
+                              'git-hooked': {'kind': 'publication', 'repository': str(source),
+                                             'remote': wire.remote('hooked', hooked), 'ref': 'refs/heads/main'}}}
                 config_path = private / 'effects.json'
                 config_path.write_text(json.dumps(config))
                 empty_home = base / 'operator-home'

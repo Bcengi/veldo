@@ -248,8 +248,8 @@ def receive(config, contract, accepted):
         if not complete and push.returncode and pushed and all(
                 trunk_moved(url, after) for url, after in zip(pushed, afters)):
             raise E.Refused(TRUNK_MOVED)
-        if rejected:
-            raise E.Refused('push_refused:remote')
+        # A push the remote rejected is named in the identity observation above (VELDO-0153); the
+        # effect itself stays unknown, as every receiver refusal does (VELDO-0028).
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
                     evidence={'remote_commit': payload['commit'], 'tree': payload['tree'],
                               'identity': push_identity['id'], 'remote_owner': target['owner']} if complete else None)

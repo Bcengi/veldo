@@ -402,7 +402,13 @@ def _v153_suite():
                     keys['alpha'].write_bytes(key_bytes)
                 hook = bare / 'hooks/pre-receive'
                 hook.write_text('#!/bin/sh\nexit 1\n'); hook.chmod(0o700)
-                row('executor/remote-refused', refusal(lambda: X.receive(config, contract, accepted)) == 'push_refused:remote' and before() == old)
+                # The remote's refusal is named in the identity observation; the effect stays unknown, as
+                # every receiver refusal does (VELDO-0028), and is never reported as a landed push.
+                config['_identity_events'] = []
+                rejected = X.receive(config, contract, accepted)
+                row('executor/remote-refused', rejected['status'] == 'unknown' and rejected['evidence'] is None
+                    and before() == old and [(e['operation'], e['outcome'], e.get('refusal')) for e in config['_identity_events']
+                                             if e['operation'] == 'push'] == [('push', 'refused', 'push_refused:remote')])
                 hook.unlink()
                 row('profile/no-token-on-command-line', all(token not in str(args) and token not in str(env) for args, env in invocations))
                 row('profile/ssh-only', bool(invocations) and all('SSH_AUTH_SOCK' not in env and 'GIT_SSH_COMMAND' not in env
