@@ -5657,8 +5657,8 @@ def cases():
     factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
             "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
             'chat/enrolled')
-    factory('setup-starts-service', "                                   api_service=api_service)\n",
-            "                                   api_service=api_service)\n"
+    factory('setup-starts-service', "                                   work=work)\n",
+            "                                   work=work)\n"
             "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
             'service/starts-inert')
     # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
@@ -7304,12 +7304,12 @@ def cases():
          "    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation\n",
          ['pool/usage-observes'])
     pool('pool-highest-utilization-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-most-recently-used-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-until-latest-reset', 'control_account_pool.py',
          "                until = max(resets) if until is None else min(until, max(resets))\n",
@@ -8797,7 +8797,9 @@ def cases():
                    "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
                    ['refuse/' + engine])
     hygiene165('own-values-lost', 'control_launch.py',
-               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.update({name: value for name, value in\n"
+               "                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()\n"
+               "                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})",
                "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
     hygiene165('strip-not-applied', 'control_launch.py',
                '    environment = engine_environment(environment)',
