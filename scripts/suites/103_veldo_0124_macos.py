@@ -155,6 +155,10 @@ def _v124_suite():
         assert osx.bootstraps == 0 and not list(host.root.iterdir())
         assert observations[-1]['refusal'] == 'unsupported_configuration:claude_bash_sandbox'
         assert json.loads(settings.read_text())['sandbox']['enabled'] is True
+        host.profile['engines']['claude_code']['argv'].append('--setting-sources=')
+        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+        assert osx.bootstraps == 0
 
     def claude_disabled(base):
         for value in (None, {}, {'sandbox': {'enabled': False}, 'model': 'fixture'}):
@@ -195,6 +199,13 @@ def _v124_suite():
                     else:
                         host.preflight(request)
                 path.unlink()
+            # Explicit source selection disables only those project reads, not managed policy.
+            host.profile['engines']['claude_code']['argv'].append('--setting-sources=user')
+            host.qualification['profile_digest'] = P.digest(host.profile)
+            files[0].write_text('{"sandbox":{"enabled":true}}')
+            host.preflight(request)
+            files[2].write_text('{"sandbox":{"enabled":true}}')
+            T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
             assert osx.bootstraps == 0
         finally:
             P.CLAUDE_MANAGED, P.CLAUDE_PREFERENCES = original
@@ -255,7 +266,8 @@ def _v124_suite():
         (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
         wrapper = T.load('project_runner_macos_wrapper')
         wrapper.identity = lambda pid: dict(pid=pid)
-        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()):
+        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(
+                wrapper, 'coalition', side_effect=AssertionError('nested Claude sandbox reached native execution')):
             assert wrapper.main(run.directory) == 125
         assert M.read(run.directory / 'refusal.json') == {'refusal': 'unsupported_configuration:claude_bash_sandbox'}
         assert not (run.directory / 'engine.out').exists()

@@ -133,6 +133,29 @@ Template-sync assembles all packs and compares their Mac assets with the engine
 and repository copies. Suites 103 and 104 are the only suite files loading these
 changed assets or the VELDO-0124 check helpers.
 
+The diagnostic record is [claude-negative-control.json](claude-negative-control.json):
+
+| Partial run | Selected suite rows passed | Total passed | Failed |
+| --- | ---: | ---: | ---: |
+| 103, check intact | 28 | 54 | 0 |
+| 104, check intact | 7 | 33 | 0 |
+| 103, check removed in isolated copy | 23 | 49 | 5 |
+
+The totals include the dispatcher's prerequisite checks. Passing partial runs exit
+2 by repository design; the mutant exits 1. Raw logs are
+[103](claude-suite-103.log), [104](claude-suite-104.log), and
+[mutant](claude-negative-control.log). The single-change
+[patch](claude-sandbox-check-removed.patch) removes the `sandbox.enabled` refusal
+from `claude_document`. With `VELDO_0124_MODULES` selecting that isolated copy,
+`AC1/claude-sandbox-refused` fails with `expected refusal:
+unsupported_configuration:claude_bash_sandbox`; source, CLI, malformed-value and
+wrapper rows fail too. The wrapper test intercepts the native boundary, so the
+mutant cannot launch an engine. Production files retain the check throughout.
+
+These are partial diagnostic results, not a proof-manifest, full-gate or landing
+claim. The reviewer runs the gate; no native captures or real-login runs occurred
+for this follow-up. The earlier native observations below remain historical.
+
 
 ## Run environment, process structure and recovery
 
