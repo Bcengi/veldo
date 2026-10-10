@@ -118,3 +118,18 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-10-10: candidate build on agent/codex/veldo-0125. Four canonical routing and
+worker assets, with identical installed copies and seven-pack composition checks,
+implement the three signed worker command families on the existing Linux
+service/relay path, all-required-capability selection with durable blocked state,
+and bound result/spend records. The Mac bridge consumes the 0124 supervisor.
+Suites 105_veldo_0125_relay and 106_veldo_0125_routing supply named Linux logic
+rows; proof/VELDO-0125/README.md records their scope and three single-change
+falsifiers. The sandbox refuses Unix socket creation, so real IPC is explicitly
+not run here; its runnable check is retained. Real Mac and SSH rows are declared
+through the synthetic-engine native roundtrip driver and remain pending. No
+provider login, live capture, deployed service, qualification or activation was
+changed. Existing fleet, project_runner and contracts placements describe these
+assets; no architecture contract amendment is made. Criteria, risk, approval and
+status are unchanged. The reviewer owns the canonical gate and merged-tree stamp.

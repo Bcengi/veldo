@@ -30,7 +30,7 @@ def main():
         assert source.count(before) == 1
         mutant = source.replace(before, after)
         patch = ''.join(difflib.unified_diff(source.splitlines(True), mutant.splitlines(True),
-                                           fromfile=filename, tofile=filename))
+                                           fromfile=filename, tofile=filename, n=0))
         (HERE / (ac + '.diff')).write_text(patch)
         with tempfile.TemporaryDirectory(prefix='v125-mutant-') as directory:
             modules = Path(directory) / '.veldo'
@@ -40,6 +40,7 @@ def main():
             with log.open('w') as out:
                 result = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite], cwd=ROOT,
                     stdout=out, stderr=subprocess.STDOUT, env=dict(os.environ, VELDO_0125_MODULES=str(modules)), timeout=180)
+            log.write_text('\n'.join(line.rstrip() for line in log.read_text().splitlines()) + '\n')
             failed = 'SELFTEST FAIL: VELDO-0125 ' + row
             caught = failed in log.read_text()
             results.append(dict(ac=ac, row=row, rejected=caught, returncode=result.returncode,

@@ -1,0 +1,29 @@
+[
+  {
+    "ac": "AC1",
+    "row": "AC1/one-authority",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "ba82cb4ca50f7f2c6b89816dba1a69ee12e055da40a75ebec88daf33d5de8cd3",
+    "patch": "AC1.diff",
+    "log": "AC1.log"
+  },
+  {
+    "ac": "AC2",
+    "row": "AC2/host-routing-refusal",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "6943ba607d0b5755e4df808c82a526567cc6b83192f385481365193807c7c7ab",
+    "patch": "AC2.diff",
+    "log": "AC2.log"
+  },
+  {
+    "ac": "AC3",
+    "row": "AC3/remote-result-binding",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "6a12ad856c2214d4dc7afb0572155ac108512d6b43f7f3e2375deefcc7109a8f",
+    "patch": "AC3.diff",
+    "log": "AC3.log"
+  }
+]

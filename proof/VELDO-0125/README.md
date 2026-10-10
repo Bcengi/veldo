@@ -1,0 +1,214 @@
+# VELDO-0125 build and pending native checks
+
+Candidate implementation, not a gate stamp, qualification, activation or independent
+review. Specification status and acceptance criteria are unchanged. No real provider
+login, engine invocation, live capture or deployed service was touched. The only
+engine used by the native driver is 0124's synthetic engine.
+
+## Implementation
+
+Four canonical assets in `engine/.veldo` have identical installed `.veldo` copies:
+
+* `control_routing.py`: selects a qualified, available host satisfying every
+  accepted capability and the exact engine configuration digest. The reserved
+  capabilities `macos` and `ios-build` require Darwin. Selection is deterministic
+  in operator configuration order. The selected host, principal, profile digest,
+  local runtime profile digest and complete requirement set enter the immutable
+  0039 dispatch contract before launch. A blocked decision is journaled as a
+  `host_routing` entity with its unit, dispatch, requirements and named reason.
+* `control_worker_client.py`: signed claim, launch and result requests with explicit
+  domain, repository, store and enrolled Linux workspace coordinates. The Mac clone
+  path is distinct from that authority coordinate. Fixed SSH argv invokes the
+  existing 0108 relay. A failed request returns AUTHORITY_UNAVAILABLE with service,
+  last watermark and explicit start guidance. It opens no authority store.
+* `control_worker_service.py`: an explicit Service subclass composed with 0047's
+  existing serve function. It uses the same stable lock, SQLite connection, socket,
+  enrollment, signature checks, local commands and observation log. It is the sole
+  authority entry point for this configuration, never an additional server.
+  The three families are `worker_claim`, `worker_launch` (accept and running), and
+  `worker_result`. Inner command signatures, active scoped service membership with
+  role `worker_receiver`, and the dispatch's assigned host principal are mandatory.
+  Acceptance and an ordinary 0036 pre-call reservation commit before OS launch.
+  The wall allowance covers the remaining immutable dispatch deadline, including
+  transport and startup delay; the host still enforces its smaller runtime cap.
+  Each reservation facade has its own command registry, avoiding cross-instance
+  handler collisions. The original invocation is derived from the stored claim.
+* `control_worker.py`: the trusted Mac orchestration seam. It validates the host,
+  runtime profile and account, uses 0124's preflight, run environment, supervisor,
+  containment and ordinary descendant observations, and submits results under the
+  retained binding. The engine never receives the client signing key. Configure
+  its directory among the qualified Mac profile's protected paths.
+
+Result and separate `worker_spend` entities both retain domain, repository, store,
+workspace, original unit, host, dispatch, contract and invocation identities.
+They retain output/proof references, reported usage and the reservation receipt.
+The result also retains process, terminal observation and each original signed
+command's digest. Missing usage remains unknown charge; unknown OS outcomes retain
+both slots. Terminal output never becomes landed completion. Retirement still
+requires the existing cleanup, accounting and whole-group obligations.
+
+The routing and command assets implement the spec's fleet placement; the Mac
+bridge consumes the declared project_runner boundary; command and identity
+validation implement its contracts placement. These are existing area ids. No
+architecture contract or process exception is amended. All assets are in the
+0125 footprint. Packs inherit them through ordinary engine composition;
+`AC1/template-sync` assembles all seven and compares actual installed bytes.
+There are no changed existing production modules or existing suites loading these
+new module names. Only the two new suites load them. Suite registration and its
+derived prerequisite file were updated.
+
+## Integration contract
+
+The trusted authority's admitted-unit path calls
+`control_routing.prepare(dispatches, contract, profiles, now=...)` before handing
+a dispatch to a host. Requirements are the accepted decision's
+`input.decision.inputs.required_host_capabilities`, never fields on a worker claim.
+The result is either a persisted blocked decision or a prepared contract.
+The existing factory loop is not silently switched to this path.
+
+The explicit authority config adds `worker_profiles`. Each entry has `host`,
+`principal`, `platform` (`linux` or `darwin`), positive `revision`, `capabilities`,
+`engines` mapping adapter names to accepted configuration digests, `runtime_profile`
+(the digest of the actual host supervisor profile), and Boolean `available`.
+`qualification` has `kind: native`, an operator reviewed evidence `reference`,
+and `profile_digest` computed over the entry excluding `qualification` and
+`available`. Neither an eligible flag nor SSH access qualifies a host. Changing
+capabilities or the runtime profile invalidates that evidence. Availability is
+checked again at claim and acceptance; losing it cannot select Linux for Mac work.
+A stopped service is unavailable; explicit operations must start it.
+
+For an explicitly configured installation, the sole entry point is
+`python3 .veldo/control_worker_service.py /absolute/protected/config.json`.
+The existing installer is unchanged and does not activate this entry point.
+The owner must integrate it into the fixed executable closure before deployment;
+this build does not edit a deployed unit or enable real factory work.
+The Mac's trusted supervisor calls `control_worker.run` with the remote client,
+accepted clone, scratch and account profile. Its collector supplies real adapter
+usage observations in production. The probe's explicit zero usage is synthetic
+and cannot certify provider accounting.
+
+## Development observations and single-change falsifiers
+
+Only these two suites run, individually:
+
+```
+python3 scripts/selftest.py --suite 105_veldo_0125_relay
+python3 scripts/selftest.py --suite 106_veldo_0125_routing
+python3 proof/VELDO-0125/negative_controls.py
+```
+
+Both suites pass their six named 0125 rows. The dispatcher also runs 26 shared
+checks and returns 2 for a selected PARTIAL run even with zero failures. These are
+development observations, not accepted proof. No full selftest, canonical gate or
+global mutation checker ran. The reviewer must verify the merged checkout.
+
+Resume verification on 2026-10-10, implementation commit `83238f71`: each suite
+was rerun once, sequentially, with six 0125 rows and 32 total checks passing,
+zero failures, and the expected PARTIAL exit 2. Compilation passed for all 16
+0125 Python assets and both suite registry files parsed. The three falsifiers
+were regenerated against this commit because two retained source hashes
+predated the final implementation edits. Native checks remain pending.
+
+* AC1: `AC1/command-families` compares signed claims, both launch phases and result
+  to independently read SQLite records and returned watermarks. `AC1/one-authority`
+  submits each family to a failed relay and checks for a local store. The single
+  change in `AC1.diff` creates a local SQLite store on failure; that named row fails.
+  `AC1/authentication` refuses wrong coordinates and unsigned inner and outer
+  commands. `AC1/template-sync` checks pack bytes; `AC1/native-declared` checks
+  native driver syntax and its honest refusal on Linux.
+* AC2: `AC2/capability-selection` covers neutral, macOS and combined macOS/iOS
+  requirements. `AC2/host-routing-refusal` observes durable blocked decisions with
+  the Mac unavailable. The single change in `AC2.diff` drops capability subset
+  checking, permitting Linux fallback; that named row fails. `AC2/qualification`
+  covers absent evidence, revision/configuration/capability changes, unavailable
+  hosts at acceptance and a Linux profile asserting Mac capabilities.
+  `AC2/actual-worker-launch` drives the production Mac orchestration and supervisor
+  against explicit Apple fixtures, observes the chosen host and the authority's
+  acceptance and reservation before bootstrap. `AC2/precall-caps` proves malformed
+  runtime and exhausted spend allowance cannot lead to running state.
+* AC3: `AC3/remote-result-binding` targets another existing dispatch, wrong unit,
+  host, contract digest, process and actor; it observes no result or spend write.
+  The single change in `AC3.diff` removes binding comparison; that named row fails.
+  `AC3/unknown-charge` retains stopped work and unknown spend. The command-family
+  row also reads both records through the ordinary owner-visible inspect command
+  and compares output/proof references and usage to both result and spend
+  records and the original reservation invocation.
+
+`negative-controls.json` records each source hash, retained diff, suite log and
+failed row. All three mutants were rejected. The logs include the dispatcher's
+ordinary shared negative checks; only the named 0125 failures judge these mutants.
+
+The production IPC attempt could not create AF_UNIX sockets: this sandbox returns
+`PermissionError: [Errno 1] Operation not permitted` at socket creation, before
+bind. The Linux suites therefore label their transport as an in-process fixture.
+They still run the production Authority judge, enrollment resolver, both OpenSSH
+signature checks, real Git, signed journal and real SQLite. They do not claim a
+real socket, real SSH or Mac observation. This separate check preserves the real
+IPC requirement and reports `not_run`, exit 2, in this sandbox:
+
+```
+python3 proof/VELDO-0125/ipc_checks.py > "$TMPDIR/veldo-0125-ipc.json" 2>&1
+```
+
+## Runnable native rows
+
+Not run here. The selected Mac is `dmitrys-mac-mini`, observed by 0124 as
+`dmitrys-mini.lan`, macOS 26.5.1 arm64. Prerequisites on the owner's logins are
+working BatchMode SSH in both directions, this Linux account's alias as reachable
+from the Mac, the existing Python/OpenSSH tools, and the Mac's pinned
+`/opt/homebrew/bin/python3.12`. This does not use Claude Code or Codex logins.
+
+From this committed Linux checkout, set `VELDO_LINUX_SSH_ALIAS` to that existing
+SSH alias. This exact command drives both engines and every row below:
+
+```
+python3 proof/VELDO-0125/native_roundtrip.py "$VELDO_LINUX_SSH_ALIAS" > "$TMPDIR/veldo-0125-native.json" 2>&1
+```
+
+The driver exports tracked code to a new `~/veldo-0125-check-<unique>` directory
+on the Mac, creates synthetic clones and a Mac-only receiver signing key, and
+passes only its public key to a disposable Linux authority. It runs 0047's real
+service and 0108's relay over real SSH, one authority at a time, and stops its child
+in a finally block. It never changes a Git branch or existing worktree, production
+service, real account profile or login. Private fixture keys stay in the printed
+private temporary directory; do not commit them. The code export and public
+results are retained for review.
+
+For each `claude_code` and `codex` synthetic engine:
+
+* `native/AC1/signed-families/<engine>`: compare the exact signed commands generated
+  on the Mac with command digests and journal identities committed by Linux,
+  including all coordinates and the returned watermark. Exercise each family
+  against a missing remote endpoint and verify no Mac-local SQLite file appears.
+* `native/AC3/real-work/<engine>`: launch 0124's synthetic natural-exit engine under
+  real launchd, Seatbelt, coalitions and kqueue through the remote worker path.
+  Compare terminal/process observations, output/proof references and synthetic
+  usage to independently read Linux result, spend and invocation records. A
+  Mac-signed result naming another dispatch must refuse despite authenticated SSH.
+
+The Mac driver deliberately uses 0124's native candidate admission, skipping only
+qualification, to measure the profile. Its candidate routing entry is explicitly
+synthetic. No probe emits a qualification stamp or authorizes a real engine.
+The authority allows ten minutes for setup and transfer; actual execution retains
+its five second bound and ordinary stop escalation. Results include owner-readable
+machine, unit, dispatch, state and spend, and the private path holding exact requests.
+
+Lower-level exact commands, used by the driver, are available for diagnosis:
+
+```
+/opt/homebrew/bin/python3.12 proof/VELDO-0125/native_checks.py prepare codex
+python3 proof/VELDO-0125/native_authority.py setup candidate.json "$TMPDIR/v125-new" "$VELDO_LINUX_SSH_ALIAS"
+python3 proof/VELDO-0125/native_authority.py serve "$TMPDIR/v125-new"
+/opt/homebrew/bin/python3.12 proof/VELDO-0125/native_checks.py run codex client-codex.json
+python3 proof/VELDO-0125/native_authority.py compare "$TMPDIR/v125-new" codex-result.json
+```
+
+Preparation and run execute on the Mac export; setup, serve and compare execute
+on Linux. Transfer only candidate/client/result JSON as the driver does. Repeat
+with `claude_code` and a fresh disposable authority. The one-command driver is
+preferred because it supervises and stops the Linux child automatically.
+
+Native transport, lifecycle observations and the canonical gate remain pending.
+Crash recovery between existing dispatch, reservation and observation writes,
+reconnect, retry, broader host qualification and deployment activation remain
+outside this specification's Release 1 build.

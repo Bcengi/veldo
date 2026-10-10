@@ -1,0 +1,4 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -54,0 +55 @@
++            __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()
