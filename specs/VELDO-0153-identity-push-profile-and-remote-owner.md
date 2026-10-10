@@ -33,6 +33,15 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0153_*.py"
+  - "scripts/suites/58_veldo_0028_effects.py"
+  - "scripts/suites/66_veldo_0051_events.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/69_veldo_0058_gate_output.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
+  - "scripts/suites/86_veldo_0148_re_land.py"
+  - "scripts/suites/103_veldo_0142_git_identities.py"
+  - "scripts/suites/support/identity_wire.py"
+  - "scripts/suites/support/hermetic_git.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -154,3 +163,12 @@ push counts survive restart and log the parsed owner. Host qualification require
 that authenticates as a different user and plants netrc and included-rewrite attacks.
 The expanded 0153 suite and registered falsifiers cover these boundaries. Consumer checks
 and scoped results are recorded in proof/VELDO-0153; the reviewer owns the aggregate gate.
+
+2026-10-10 consumer suites: the footprint now names the consumer suites routed through the
+identity wire and the wire's support files. The wire is a hermetic fence: fixture Git cannot
+reach a non-local repository, a real credential helper or the host's SSH agent, and a violation
+fails loudly (suite 0153 proves each wall). Suite 0028's rows for global and system routing,
+transport variables, credential helpers and credential-bearing or non-GitHub addresses are
+rewritten against AC1 and AC2. Fifteen 0028 rows are kept red: no criterion here supersedes the
+clone's hooks, the clone's own routing and fan-out, or 0028's destination rule, which the
+implementation replaced. Acceptance criteria, risk, readiness and approval are unchanged.

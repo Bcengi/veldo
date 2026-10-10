@@ -1,299 +1,435 @@
 {
-  "cases": [
-    {
-      "name": "identity153-netrc",
-      "module": "git_process.py",
-      "old": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n",
-      "new": "",
-      "rows": [
-        "profile/netrc"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/check-output-home",
-        "SELFTEST FAIL: VELDO-0153 profile/private-home-live",
-        "SELFTEST FAIL: VELDO-0153 profile/netrc",
-        "SELFTEST FAIL: VELDO-0153 profile/private-home-cleaned"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 113 passed, 4 failed in 2.44s"
-      ]
-    },
-    {
-      "name": "identity153-includes",
-      "module": "git_process.py",
-      "old": "'config', '--includes', '--null', '--list'",
-      "new": "'config', '--no-includes', '--null', '--list'",
-      "rows": [
-        "profile/include",
-        "profile/include-if"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/include",
-        "SELFTEST FAIL: VELDO-0153 profile/include-if"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 115 passed, 2 failed in 2.45s"
-      ]
-    },
-    {
-      "name": "identity153-worktree",
-      "module": "git_process.py",
-      "old": "'config', '--includes', '--null', '--list'",
-      "new": "'config', '--local', '--includes', '--null', '--list'",
-      "rows": [
-        "profile/worktree-config"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/worktree-config"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 116 passed, 1 failed in 2.50s"
-      ]
-    },
-    {
-      "name": "identity153-url-section",
-      "module": "control_git_identity_transport.py",
-      "old": "or (key.startswith('remote.') and key.endswith(('.url', '.pushurl')) and value != remote)",
-      "new": "or False",
-      "rows": [
-        "profile/url-section-url",
-        "profile/url-section-pushurl"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/url-section-url",
-        "SELFTEST FAIL: VELDO-0153 profile/url-section-pushurl"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 115 passed, 2 failed in 2.46s"
-      ]
-    },
-    {
-      "name": "identity153-literal-destination",
-      "module": "control_git_identity_transport.py",
-      "old": "if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):",
-      "new": "if False:",
-      "rows": [
-        "profile/literal-destination"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/literal-destination"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 116 passed, 1 failed in 2.46s"
-      ]
-    },
-    {
-      "name": "identity153-pre-push-hook",
-      "module": "git_process.py",
-      "old": "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')",
-      "new": "        args[1:1] = options",
-      "rows": [
-        "profile/pre-push-hook/alpha"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/pre-push-hook/alpha",
-        "SELFTEST FAIL: VELDO-0153 profile/pre-push-hook/beta"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 115 passed, 2 failed in 2.45s"
-      ]
-    },
-    {
-      "name": "identity153-global-config",
-      "module": "git_process.py",
-      "old": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)",
-      "new": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ['GIT_CONFIG_GLOBAL']",
-      "rows": [
-        "profile/global-config"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/global-config"
-      ],
-      "summary": []
-    },
-    {
-      "name": "identity153-watermark-network",
-      "module": "lander.py",
-      "old": "profile=\"identity\", remote_url=url)",
-      "new": "profile=\"network\", remote_url=url)",
-      "rows": [
-        "lander/watermark-identity"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 lander/watermark-identity"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 116 passed, 1 failed in 2.41s"
-      ]
-    },
-    {
-      "name": "identity153-listing-network",
-      "module": "control_landing.py",
-      "old": "self.ref, profile='identity',",
-      "new": "self.ref, profile='network',",
-      "rows": [
-        "landing/list-identity"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 landing/list-identity"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 116 passed, 1 failed in 2.33s"
-      ]
-    },
-    {
-      "name": "identity153-unsigned-observations",
-      "module": "control_effect_executor.py",
-      "old": "            _git_process.identity_transport().record_operations(conn, config['_identity_events'], journal)",
-      "new": "            pass",
-      "rows": [
-        "executor/execute-signed"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 executor/execute-signed",
-        "SELFTEST FAIL: VELDO-0153 executor/refused-signed"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 115 passed, 2 failed in 2.40s"
-      ]
-    },
-    {
-      "name": "identity153-volatile-counts",
-      "module": "control_git_identity_transport.py",
-      "old": "        if event is not None:\n",
-      "new": "        if False:\n",
-      "rows": [
-        "lander/alpha/durable"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/durable",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/beta/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/third/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/alpha/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/durable",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/third/refusals-durable"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 111 passed, 6 failed in 2.35s"
-      ]
-    },
-    {
-      "name": "identity153-configured-owner-log",
-      "module": "lander.py",
-      "old": "remote_owner=target['owner'])",
-      "new": "remote_owner=self.identity_record['remote_owner'])",
-      "rows": [
-        "lander/owner-spelling"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 lander/owner-spelling"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 116 passed, 1 failed in 2.46s"
-      ]
-    },
-    {
-      "name": "identity153-global-helper",
-      "module": "control_git_identity_transport.py",
-      "old": "config = ['credential.helper=',",
-      "new": "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
-      "rows": [
-        "profile/planted-helper"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 profile/global-config",
-        "SELFTEST FAIL: VELDO-0153 profile/planted-helper",
-        "SELFTEST FAIL: VELDO-0153 profile/system-rewrite"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 114 passed, 3 failed in 2.45s"
-      ]
-    },
-    {
-      "name": "identity153-host-only",
-      "module": "control_git_identity_transport.py",
-      "old": "if owner.casefold() != record['remote_owner'].casefold():",
-      "new": "if False:",
-      "rows": [
-        "owner/alpha/push/beta",
-        "lander/alpha/beta",
-        "executor/beta"
-      ],
-      "also": [],
-      "exit": 1,
-      "rejected": true,
-      "failures": [
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/push/beta",
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/push/third",
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/beta",
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/third",
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/beta",
-        "SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/third",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/push/third",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/push/alpha",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/third",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/alpha",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/adoption/third",
-        "SELFTEST FAIL: VELDO-0153 owner/beta/adoption/alpha",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/beta",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/beta/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/third",
-        "SELFTEST FAIL: VELDO-0153 lander/alpha/third/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/alpha",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/alpha/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/third",
-        "SELFTEST FAIL: VELDO-0153 lander/beta/third/refusals-durable",
-        "SELFTEST FAIL: VELDO-0153 executor/beta",
-        "SELFTEST FAIL: VELDO-0153 executor/third",
-        "SELFTEST FAIL: VELDO-0153 executor/refused-signed"
-      ],
-      "summary": [
-        "selftest (PARTIAL, 1 of 163 suites): 94 passed, 23 failed in 2.97s"
-      ]
-    }
-  ],
-  "restored": [
-    "107_veldo_0153_identity_push                    91 passed    2.46s",
-    "selftest (PARTIAL, 1 of 163 suites): 117 passed, 0 failed in 2.46s"
-  ],
-  "implementation_commit": "1679d3d32aa1dc1ca1ef1f0d4eed69ab82d5e419"
+ "method": "Each case is applied by mutation_observer.materialize to the canonical and engine copies in a throwaway clone of the implementation commit under the temporary directory, its suite runs alone there, and both files are restored from the clone's Git. The worktree is never written; no mutation driver ran.",
+ "cases": [
+  {
+   "name": "identity153-netrc",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "git_process.py",
+   "old": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n",
+   "new": "",
+   "rows": [
+    "profile/netrc"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/check-output-home",
+    "SELFTEST FAIL: VELDO-0153 profile/private-home-live",
+    "SELFTEST FAIL: VELDO-0153 profile/netrc",
+    "SELFTEST FAIL: VELDO-0153 profile/private-home-cleaned"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 123 passed, 4 failed in 3.71s"
+   ]
+  },
+  {
+   "name": "identity153-includes",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "git_process.py",
+   "old": "'config', '--includes', '--null', '--list'",
+   "new": "'config', '--no-includes', '--null', '--list'",
+   "rows": [
+    "profile/include",
+    "profile/include-if"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/include",
+    "SELFTEST FAIL: VELDO-0153 profile/include-if"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 125 passed, 2 failed in 3.82s"
+   ]
+  },
+  {
+   "name": "identity153-worktree",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "git_process.py",
+   "old": "'config', '--includes', '--null', '--list'",
+   "new": "'config', '--local', '--includes', '--null', '--list'",
+   "rows": [
+    "profile/worktree-config"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/worktree-config"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.76s"
+   ]
+  },
+  {
+   "name": "identity153-url-section",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "or (section.lower() == 'remote' and subsection == remote",
+   "new": "or (False",
+   "rows": [
+    "profile/url-section-url",
+    "profile/url-section-pushurl",
+    "profile/url-section-other"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/url-section-url",
+    "SELFTEST FAIL: VELDO-0153 profile/url-section-pushurl",
+    "SELFTEST FAIL: VELDO-0153 profile/url-section-other"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 124 passed, 3 failed in 3.94s"
+   ]
+  },
+  {
+   "name": "identity153-literal-destination",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):",
+   "new": "if False:",
+   "rows": [
+    "profile/literal-destination"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/literal-destination"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.81s"
+   ]
+  },
+  {
+   "name": "identity153-pre-push-hook",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "git_process.py",
+   "old": "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')",
+   "new": "        args[1:1] = options",
+   "rows": [
+    "profile/pre-push-hook/alpha"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/pre-push-hook/alpha",
+    "SELFTEST FAIL: VELDO-0153 profile/pre-push-hook/beta"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 125 passed, 2 failed in 3.77s"
+   ]
+  },
+  {
+   "name": "identity153-global-config",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "git_process.py",
+   "old": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)",
+   "new": "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ['GIT_CONFIG_GLOBAL']",
+   "rows": [
+    "profile/global-config"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/global-config"
+   ],
+   "summary": [],
+   "note": "every named row failed; the suite then stopped at a later identity call the mutant also refuses, so no summary line was printed"
+  },
+  {
+   "name": "identity153-watermark-network",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "lander.py",
+   "old": "profile=\"identity\", remote_url=url)",
+   "new": "profile=\"network\", remote_url=url)",
+   "rows": [
+    "lander/watermark-identity"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 lander/watermark-identity"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.62s"
+   ]
+  },
+  {
+   "name": "identity153-listing-network",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_landing.py",
+   "old": "self.ref, profile='identity',",
+   "new": "self.ref, profile='network',",
+   "rows": [
+    "landing/list-identity"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 landing/list-identity"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.64s"
+   ]
+  },
+  {
+   "name": "identity153-unsigned-observations",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_effect_executor.py",
+   "old": "            _git_process.identity_transport().record_operations(conn, config['_identity_events'], journal)",
+   "new": "            pass",
+   "rows": [
+    "executor/execute-signed"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 executor/execute-signed",
+    "SELFTEST FAIL: VELDO-0153 executor/refused-signed"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 125 passed, 2 failed in 3.68s"
+   ]
+  },
+  {
+   "name": "identity153-volatile-counts",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "        if event is not None:\n",
+   "new": "        if False:\n",
+   "rows": [
+    "lander/alpha/durable"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/durable",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/beta/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/third/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/alpha/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/durable",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/third/refusals-durable"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 121 passed, 6 failed in 3.56s"
+   ]
+  },
+  {
+   "name": "identity153-configured-owner-log",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "lander.py",
+   "old": "remote_owner=target['owner'])",
+   "new": "remote_owner=self.identity_record['remote_owner'])",
+   "rows": [
+    "lander/owner-spelling"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 lander/owner-spelling"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.71s"
+   ]
+  },
+  {
+   "name": "identity153-global-helper",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "config = ['credential.helper=',",
+   "new": "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
+   "rows": [
+    "profile/planted-helper"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/global-config",
+    "SELFTEST FAIL: VELDO-0153 profile/planted-helper",
+    "SELFTEST FAIL: VELDO-0153 profile/system-rewrite",
+    "SELFTEST FAIL: VELDO-0153 profile/other-remote-kept"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 123 passed, 4 failed in 3.75s"
+   ]
+  },
+  {
+   "name": "identity153-host-only",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "if owner.casefold() != record['remote_owner'].casefold():",
+   "new": "if False:",
+   "rows": [
+    "owner/alpha/push/beta",
+    "lander/alpha/beta",
+    "executor/beta"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/push/third",
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/push/beta",
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/third",
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/remote_creation/beta",
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/third",
+    "SELFTEST FAIL: VELDO-0153 owner/alpha/adoption/beta",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/push/third",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/push/alpha",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/third",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/remote_creation/alpha",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/adoption/third",
+    "SELFTEST FAIL: VELDO-0153 owner/beta/adoption/alpha",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/beta",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/beta/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/third",
+    "SELFTEST FAIL: VELDO-0153 lander/alpha/third/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/alpha",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/alpha/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/third",
+    "SELFTEST FAIL: VELDO-0153 lander/beta/third/refusals-durable",
+    "SELFTEST FAIL: VELDO-0153 executor/beta",
+    "SELFTEST FAIL: VELDO-0153 executor/third",
+    "SELFTEST FAIL: VELDO-0153 executor/refused-signed"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 104 passed, 23 failed in 4.72s"
+   ]
+  },
+  {
+   "name": "identity153-any-remote-section",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_git_identity_transport.py",
+   "old": "(section.lower() == 'remote' and subsection == remote\n                    and not (name.lower() in ('url', 'pushurl') and value == remote))",
+   "new": "(section.lower() == 'remote' and name.lower() in ('url', 'pushurl') and value != remote)",
+   "rows": [
+    "profile/other-remote-kept"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 profile/url-section-other",
+    "SELFTEST FAIL: VELDO-0153 profile/other-remote-kept"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 125 passed, 2 failed in 3.71s"
+   ]
+  },
+  {
+   "name": "identity153-rejected-refused",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "control_effect_executor.py",
+   "old": "        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+   "new": "        if rejected:\n            raise E.Refused('push_refused:remote')\n        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+   "rows": [
+    "executor/remote-refused"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 executor/remote-refused"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.72s"
+   ]
+  },
+  {
+   "name": "identity153-push-refused-class",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "lander.py",
+   "old": "    \"unresolved_dependency\": \"missing_evidence\", \"clock_uncertain\": \"unknown_outcome\",\n",
+   "new": "    \"unresolved_dependency\": \"missing_evidence\", \"clock_uncertain\": \"unknown_outcome\",\n    \"push_refused\": \"stale_subject\",\n",
+   "rows": [
+    "lander/push-refused-unknown"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 lander/push-refused-unknown"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.71s"
+   ]
+  },
+  {
+   "name": "identity153-finalize-event",
+   "suite": "67_veldo_0056_candidates.py",
+   "module": "lander.py",
+   "old": "        self._event(\"finalize\", \"accepted\" if pushed else \"refused\", refusal, pushed=pushed)\n",
+   "new": "",
+   "rows": [
+    "candidate/observations"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0056 candidate/observations"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 36 passed, 1 failed in 48.07s"
+   ]
+  },
+  {
+   "name": "identity153-push-detail",
+   "suite": "107_veldo_0153_identity_push.py",
+   "module": "lander.py",
+   "old": "refusal=refusal,\n                    detail=push.stderr.strip())",
+   "new": "refusal=refusal)",
+   "rows": [
+    "lander/push-detail"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0153 lander/push-detail"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 126 passed, 1 failed in 3.72s"
+   ]
+  },
+  {
+   "name": "identity153-common-dir-reread",
+   "suite": "67_veldo_0056_candidates.py",
+   "module": "lander.py",
+   "old": "            self.common_dir = common or None\n",
+   "new": "",
+   "rows": [
+    "candidate/every-git-operation-checked"
+   ],
+   "also": [],
+   "exit": 1,
+   "rejected": true,
+   "failures": [
+    "SELFTEST FAIL: VELDO-0056 candidate/every-git-operation-checked"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 163 suites): 36 passed, 1 failed in 48.99s"
+   ]
+  }
+ ],
+ "restored": [
+  "  107_veldo_0153_identity_push                   101 passed    3.85s",
+  "selftest (PARTIAL, 1 of 163 suites): 127 passed, 0 failed in 3.85s",
+  "  67_veldo_0056_candidates                        11 passed   48.41s",
+  "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 48.41s"
+ ],
+ "implementation_commit": "cfad36fe51eb4b319eb5dff38b3e0267b92b7cb3"
 }
