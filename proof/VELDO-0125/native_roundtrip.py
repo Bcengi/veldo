@@ -19,7 +19,7 @@ MAC = 'dmitrys-mac-mini'
 PINNED = '/opt/homebrew/bin/python3.12'
 
 
-def main(linux_alias):
+def main(linux_alias, fixed_socket, transport_key):
     if not linux_alias or linux_alias.startswith('-'):
         raise ValueError('a configured Linux SSH alias is required')
     root = Path(tempfile.mkdtemp(prefix='v125-native-'))
@@ -44,7 +44,7 @@ def main(linux_alias):
         candidate = root / (engine + '-candidate.json')
         candidate.write_bytes(mac('cat ' + remote + '/runs-0125/' + engine + '/candidate.json'))
         directory = root / engine
-        A.setup(str(candidate), str(directory), linux_alias)
+        A.setup(str(candidate), str(directory), linux_alias, fixed_socket, transport_key)
         (root / (engine + '-client-transfer.log')).write_bytes(mac(
             'cat > ' + remote + '/client-' + engine + '.json', (directory / 'client.json').read_bytes()))
         log = (directory / 'service.log').open('wb')
@@ -52,16 +52,21 @@ def main(linux_alias):
                                    str(directory / 'config.json')], stdout=log, stderr=log)
         try:
             until = time.monotonic() + 15
-            while not (directory / 'authority.sock').exists() and time.monotonic() < until:
+            while not Path(fixed_socket).exists() and time.monotonic() < until:
                 if child.poll() is not None:
                     raise RuntimeError('authority failed; see ' + str(directory / 'service.log'))
                 time.sleep(.02)
-            if not (directory / 'authority.sock').exists():
+            if not Path(fixed_socket).exists():
                 raise RuntimeError('authority socket unavailable')
             (root / (engine + '-run.log')).write_bytes(mac(prefix + 'run ' + engine + ' client-' + engine + '.json'))
             result = root / (engine + '-result.json')
             result.write_bytes(mac('cat ' + remote + '/runs-0125/' + engine + '/result.json'))
             reports.append(A.compare(str(directory), str(result)))
+            child.terminate()
+            child.wait(timeout=15)
+            stopped = mac(prefix + 'unavailable ' + engine + ' client-' + engine + '.json')
+            (root / (engine + '-unavailable.json')).write_bytes(stopped)
+            reports.append(json.loads(stopped))
         finally:
             child.terminate()
             child.wait(timeout=15)
@@ -73,4 +78,4 @@ def main(linux_alias):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(*sys.argv[1:])

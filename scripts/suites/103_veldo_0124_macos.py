@@ -64,6 +64,12 @@ def _v124_suite():
         for granted in (dirs['clone'], dirs['scratch'], dirs['login'], environment['HOME'], environment['TMPDIR']):
             assert '(subpath "%s")' % granted in lines[2], granted
         assert str(dirs['authority']) not in policy and str(host.root) not in lines[2]
+        signing_key = dirs['authority'] / 'worker-signing'
+        signing_key.write_text('synthetic private key')
+        host.profile['signing_keys'] = [str(signing_key)]
+        key_policy = host.policy(request)
+        assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in key_policy
+        host.profile.pop('signing_keys')
         owner = str(dirs['owner'].resolve())
         reads = [line for line in lines if line.startswith('(deny file-read-data')]
         assert [r.split(' (require-not')[0] for r in reads] == [

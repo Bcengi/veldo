@@ -19,6 +19,7 @@ def organ(name):
 
 
 CC = organ('control_client')
+COMMAND_NAMESPACE = 'veldo-worker-command'
 OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result')
 
 
@@ -42,7 +43,7 @@ class Client:
                        parameters=parameters, **{k: self.binding[k] for k in
                        ('domain_uuid', 'store_uuid', 'repository_uuid')})
         packet = dict(command=command, signature=self.sign(json.dumps(command, sort_keys=True,
-                       separators=(',', ':'), ensure_ascii=True, default=str).encode()))
+                       separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
         request = CC.build_request(self.workspace, self.binding, packet, self.sign)
         wire = json.dumps(request).encode()
         self.sent.append(request)

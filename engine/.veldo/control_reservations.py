@@ -83,6 +83,9 @@ class Reservations:
         self.authorize, self.signer, self.sign = authorize, signer, sign
         self.generation, self.observe = generation, observe
         self.counts = dict(accepted=0, refused=0)
+        store.declare_owners(conn, 'reservations',
+            kinds={'subscription_reservation': ('subscription_reservation',)},
+            module=__file__, adopt_existing=True)
         store.COMMAND_REGISTRY['subscription_reservation'] = {
             'transition': self._transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
 

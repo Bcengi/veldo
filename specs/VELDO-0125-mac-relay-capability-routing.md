@@ -14,6 +14,30 @@ depends_on: [VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124]
 placement: [fleet, project_runner, contracts]
 protected_paths: []
 footprint:
+  - "engine/.veldo/authority_contract.py"
+  - ".veldo/authority_contract.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
+  - "engine/.veldo/control_membership.py"
+  - ".veldo/control_membership.py"
+  - "engine/.veldo/control_claim.py"
+  - ".veldo/control_claim.py"
+  - "engine/.veldo/control_assignment.py"
+  - ".veldo/control_assignment.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "engine/.veldo/control_reservations.py"
+  - ".veldo/control_reservations.py"
+  - "engine/.veldo/project_runner_macos.py"
+  - ".veldo/project_runner_macos.py"
+  - "engine/.veldo/project_runner_macos_profile.py"
+  - ".veldo/project_runner_macos_profile.py"
+  - "scripts/suites/*_veldo_0124_*.py"
+  - "proof/VELDO-0124/*.py"
   - "engine/.veldo/control_worker*.py"
   - ".veldo/control_worker*.py"
   - "packs/*/.veldo/control_worker*.py"
@@ -133,3 +157,10 @@ provider login, live capture, deployed service, qualification or activation was
 changed. Existing fleet, project_runner and contracts placements describe these
 assets; no architecture contract amendment is made. Criteria, risk, approval and
 status are unchanged. The reviewer owns the canonical gate and merged-tree stamp.
+
+2026-10-10: the owner's assistant decided to amend the footprint to include
+engine/.veldo/control_launch.py and .veldo/control_launch.py because AC2 cannot
+hold in production otherwise. Production Runner preparation now selects the
+qualified host before submission. The same review authorizes the listed service,
+store, membership, dispatch, reservation and containment fixes and their 0124
+regressions. Criteria and approval requirements are unchanged.

@@ -74,7 +74,7 @@ def _any(paths):
     return '(require-any %s)' % ' '.join('(subpath %s)' % json.dumps(p, ensure_ascii=False) for p in paths)
 
 
-def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=()):
+def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=(), signing_keys=()):
     """Seatbelt profile for the engine and every descendant, which inherit it.
 
     writable: the run's clone, scratch, run home, run temp and its own login profile.
@@ -101,6 +101,11 @@ def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=()):
     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a
     # grant does not grant its resolved target.
     rules.append('(deny file-write* (require-not (require-any %s (literal "/dev/null") (literal "/dev/tty"))))' % grants)
+    keys = sorted(set(canonical(p) for p in signing_keys))
+    if any(overlaps(a, b) for a in writes for b in keys):
+        raise Refused('invalid_input:protected_overlap')
+    if keys:
+        rules.append('(deny file-read-data %s)' % _any(keys))
     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))
     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))
     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))

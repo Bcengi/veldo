@@ -63,6 +63,9 @@ def _v125_routing_suite():
             f.service.profiles[1]['available'] = False
             T.refused(lambda: f.client().launch(bound, 'accept', receiver=T.process(), runtime_seconds=5), 'blocked:')
             assert f.ds.record('dispatch/test')['state'] == 'prepared'
+            stored = __import__('json').loads(f.conn.execute('SELECT data FROM entities WHERE id=?',
+                ('routing:dispatch/test',)).fetchone()[0])
+            assert stored['state'] == 'blocked' and stored['reason'].startswith('blocked:')
         finally:
             f.close()
 
@@ -99,6 +102,37 @@ def _v125_routing_suite():
         finally:
             f.close()
 
+    def production(base):
+        f = T.Fixture(base)
+        L = T.load('control_launch')
+        L.CFG.bind = lambda conn, domain, repository, configuration: configuration
+        requirements = []
+        gate = types.SimpleNamespace(
+            require=lambda station, unit, context: dict(decision_id='accepted', station=station, unit=unit,
+                domain_uuid='domain', watermark=0, inputs=dict(required_host_capabilities=list(requirements))),
+            unit_record=lambda unit: dict(project='project', required_host_capabilities=list(requirements)))
+        local = []
+        runner = L.Runner(gate, f.res, f.ds, lambda contract: local.append(contract),
+                          account='account', worker_profiles=f.profiles, local_host='linux')
+        try:
+            for i, required in enumerate((['macos'], ['ios-build'])):
+                requirements[:] = required
+                launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
+                    revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
+                    configuration=f.configuration, deadline=__import__('time').time() + 60)
+                assert not local, 'Mac dispatch reached Linux receiver'
+                assert launch.contract['input']['context']['host_route']['host'] == 'mac'
+                f.ds.refuse(launch.dispatch_id, T.D.digest(launch.contract), 'end', now=__import__('time').time())
+            f.profiles[1]['available'] = False
+            T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
+                revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
+                configuration=f.configuration, deadline=__import__('time').time() + 60), 'blocked:')
+            decisions = [__import__('json').loads(row[0]) for row in f.conn.execute(
+                "SELECT data FROM entities WHERE kind='host_routing'")]
+            assert any(row['state'] == 'blocked' and row['required'] == ['ios-build'] for row in decisions)
+        finally:
+            f.close()
+
     def sync(base):
         pack = T.load('pack')
         names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py']
@@ -130,7 +164,7 @@ def _v125_routing_suite():
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
     for row, test in {'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
-                      'AC2/qualification': qualification, 'AC2/actual-worker-launch': actual_launch,
+                      'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
             try:

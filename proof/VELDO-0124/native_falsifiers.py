@@ -27,6 +27,8 @@ def rule(text):
 
 
 MUTANTS = (
+    ('read-worker-signing-key', PROFILE, "        rules.append('(deny file-read-data %s)' % _any(keys))",
+     "        pass", 'containment', 'read'),
     ('write', PROFILE, rule("""append('(deny file-write* (require-not (require-any %s (literal "/dev/null") (literal "/dev/tty"))))' % grants)"""), '', 'containment', 'write'),
     ('read-ssh', PROFILE, rule("""append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))"""), '', 'containment', 'read'),
     ('read-claude', PROFILE, rule("""append(unreadable('(regex %s)' % _regex(home + '/.claude')))"""), '', 'containment', 'read'),

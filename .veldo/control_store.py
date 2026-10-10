@@ -112,6 +112,7 @@ import importlib.util
 import json
 import os
 import signal
+import contextlib
 import sqlite3
 import subprocess
 import time
@@ -476,6 +477,8 @@ COMMAND_REGISTRY = {
     "reserve": {"transition": _t_reserve, "writes": ("reservations", "journal", "commands", "nonces")},
     "record_effect": {"transition": _t_record_effect, "writes": ("effects", "journal", "commands", "nonces")},
 }
+GENERIC_OPERATIONS = frozenset(COMMAND_REGISTRY)
+
 
 
 def architecture_writer(operation):
@@ -556,6 +559,24 @@ def journal_signed_bytes(record):
     return canonical_bytes({k: record.get(k) for k in JOURNAL_SIGNED_FIELDS})
 
 
+@contextlib.contextmanager
+def atomic(conn):
+    """Compose authority commands under one durable commit, with no partial result."""
+    if conn.in_transaction:
+        raise StoreRefused("incomplete_transaction", "nested authority transaction")
+    conn.execute("BEGIN IMMEDIATE")
+    conn.atomic_commands = True
+    try:
+        yield
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.atomic_commands = False
+
+
 def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), committed_at=None):
     """Run one registered command in ONE transaction. `sign(message_bytes) -> signature_text` is
     the caller's signer (OpenSSH in production; the store holds no key). Returns the committed
@@ -576,8 +597,17 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
     receipt_refs = list(receipt_refs or ())  # materialized ONCE: an iterator consumed twice signs one list and stores another
     if not all(_is_str(r) for r in receipt_refs):
         raise StoreRefused("malformed_command", "receipt_refs must be strings")
+    grouped = getattr(conn, "atomic_commands", False)
+    begin = "SAVEPOINT authority_command" if grouped else "BEGIN IMMEDIATE"
+    commit = "RELEASE authority_command" if grouped else "COMMIT"
+    def rollback():
+        if grouped:
+            conn.execute("ROLLBACK TO authority_command")
+            conn.execute("RELEASE authority_command")
+        else:
+            conn.execute("ROLLBACK")
     try:
-        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(begin)
     except sqlite3.OperationalError as e:
         raise StoreRefused("read_only_handle", "this handle cannot write (%s): open the store with mode='rw' at a qualified location" % e)
     conn.command_transaction = True
@@ -586,7 +616,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         if prior:
             if prior[0] != cdigest:
                 raise StoreRefused("command_content_conflict", "command %s was committed with content %s; this retry carries %s" % (command["command_id"], prior[0], cdigest))
-            conn.execute("ROLLBACK")
+            rollback()
             return dict(json.loads(prior[1]), replayed=True)
         if conn.execute("SELECT 1 FROM nonces WHERE nonce=?", (command["nonce"],)).fetchone():
             raise StoreRefused("nonce_consumed", "nonce %s was consumed by an earlier command" % command["nonce"])
@@ -675,26 +705,26 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
         _kill_point("before_commit")
         if os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_CONTROL_KILL_AT") == "in_commit":
             conn.set_progress_handler(lambda: os.kill(os.getpid(), signal.SIGKILL), 1)
-        conn.execute("COMMIT")
+        conn.execute(commit)
         conn.set_progress_handler(None, 0)
         _kill_point("after_commit")
         return dict(result, replayed=False)
     except sqlite3.IntegrityError as e:
-        conn.execute("ROLLBACK")
+        rollback()
         raise StoreRefused("foreign_key_violation", str(e))
     except sqlite3.OperationalError as e:
         if conn.in_transaction:
-            conn.execute("ROLLBACK")
+            rollback()
         if "readonly" in str(e).lower() or "read-only" in str(e).lower():
             raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
         raise
     except StoreRefused:
         if conn.in_transaction:
-            conn.execute("ROLLBACK")
+            rollback()
         raise
     except Exception:
         if conn.in_transaction:
-            conn.execute("ROLLBACK")
+            rollback()
         raise
 
     finally:
@@ -782,7 +812,7 @@ def _ownership_rows(owner, kinds, prefixes, module):
         for value, commands in table.items():
             if not _is_str(value) or isinstance(commands, str) or not commands or not all(_is_str(c) for c in commands):
                 raise StoreRefused("malformed_command", "owned %s %r needs a value and at least one command" % (selector, value))
-            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))
+            builtin = sorted(set(commands) & GENERIC_OPERATIONS)
             if builtin:
                 # The store's own generic commands are what ownership keeps out; binding one to a
                 # service's module would refuse it for every entity on every connection.
@@ -800,7 +830,7 @@ def _occupied(conn, selector, value):
     return conn.execute("SELECT 1 FROM entities WHERE substr(id, 1, ?)=? LIMIT 1", (len(value), value)).fetchone() is not None
 
 
-def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
+def declare_owners(conn, owner, kinds=None, prefixes=None, module=None, adopt_existing=False):
     """Persist that the entities of each kind in `kinds`, and every entity whose id begins with a
     prefix in `prefixes`, are written only by the commands mapped to it, and that those commands are
     the code in the file `module` (the caller's own __file__), whose bytes the store digests now.
@@ -835,7 +865,7 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
                     raise StoreRefused("ownership_conflict", "%s %r is owned by %s (written only by %s); %s declares %s"
                                        % (row[0], row[1], prior[2], ", ".join(prior[3]), owner, ", ".join(row[3])))
                 continue
-            if _occupied(conn, row[0], row[1]):
+            if not adopt_existing and _occupied(conn, row[0], row[1]):
                 raise StoreRefused("ownership_conflict", "entities of %s %r exist already, written while nobody owned them"
                                    % (row[0], row[1]))
             conn.execute("INSERT INTO entity_owners (selector, value, owner, commands, module, module_digest) VALUES (?,?,?,?,?,?)",

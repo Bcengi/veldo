@@ -66,7 +66,8 @@ class Fixture:
             self.put(name, 'membership', dict(principal_type='service', scope=['repo'],
                      roles=['reservation_service'] if name == 'authority' else ['worker_receiver']))
             self.put('key:' + name, 'verification_key', dict(principal=name,
-                     public_key=(self.keys / (name + '.pub')).read_text().strip(), effective_at=0))
+                     public_key=remote['public_key'] if remote and name == 'mac' else
+                     (self.keys / (name + '.pub')).read_text().strip(), effective_at=0))
         self.signers = self.base / 'enrollment_signers'
         self.signers.write_text(W.SV.AC.allowed_signers_line('authority',
             (self.keys / 'authority.pub').read_text().strip(), W.SV.EL.ENROLLMENT_NAMESPACE) + '\n')
@@ -150,7 +151,7 @@ class Fixture:
                 answer = self.authority.judge(request, os.getuid())
                 return subprocess.CompletedProcess(args, 0, json.dumps(answer).encode(), b'')
             client_module.subprocess = types.SimpleNamespace(run=exchange, TimeoutExpired=subprocess.TimeoutExpired)
-        return client_module.Client(str(self.repo), self.binding, who, lambda b: self.sign(who, b), argv or
+        return client_module.Client(str(self.repo), self.binding, who, lambda b, namespace='veldo-command': self.sign(who, b, namespace), argv or
                          [sys.executable, str(MODULES / 'control_relay.py'), self.config['socket']])
 
     def close(self):

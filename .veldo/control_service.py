@@ -1157,6 +1157,7 @@ class Service:
 
     def __init__(self, config, conn):
         self.config, self.conn = config, conn
+        CM.protect(S, conn)
         self.domain, self.store = config['domain_uuid'], config['store_uuid']
         self.repositories = dict(config['repositories'])
         self.principal, self.generation = config['principal'], config['authority_generation']
@@ -1238,6 +1239,10 @@ class Service:
         try:
             if repository not in self.repositories:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
+            member = AC.membership_entry(CM.authority_state(S, self.conn)['membership'], command.get('principal'))
+            if (member and 'worker_receiver' in member.get('roles', [])
+                    and command.get('operation') not in ('worker_claim', 'worker_launch', 'worker_result')):
+                raise Refused('not_authorized', 'worker receiver operation only')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
             elif isinstance(packet, dict) and packet.get('operation') == OWNERSHIP_COMMIT and 'command' not in packet:
@@ -1432,6 +1437,8 @@ class Service:
         state = CM.authority_state(S, self.conn)
         member = AC.membership_entry(state['membership'], principal)
         active, why = AC.active_member(member, now)
+        if member and 'worker_receiver' in member.get('roles', []):
+            raise Refused('not_authorized', 'worker receiver operation only')
         key = AC.active_key(state['keyring'], principal, now) if active else None
         if (not active or key is None or member.get('principal_type') not in AC.BOUNDARIES['command_acceptance']
                 or not CM.scope_covers(member.get('scope'), repository)):
@@ -1619,7 +1626,8 @@ class Line:
         pool = L.D.RES.POOL.Pool({name: {'engine': engine, 'host': host} for name, engine in self.engines.items()})
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
-                               runs=L.runs_root(receiver), profile=receiver.get('profile'))
+                               runs=L.runs_root(receiver), profile=receiver.get('profile'),
+                               worker_profiles=service.config.get('worker_profiles'), local_host=host)
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(

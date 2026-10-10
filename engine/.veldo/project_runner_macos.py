@@ -110,7 +110,8 @@ class Supervisor:
         protected = [str(self.root), str(Path(__file__).resolve().parent), *self.profile['protected']]
         return P.sandbox([request['clone'], request['scratch'], request['login_profile'], paths['home'],
                           paths['temp']], protected, self.profile['home'], accounts=self.profile['account_roots'],
-                         projects=self.profile['project_roots'], dispatches=[str(self.root)])
+                         projects=self.profile['project_roots'], dispatches=[str(self.root)],
+                         signing_keys=self.profile.get('signing_keys', []))
 
     def start(self, request):
         try:

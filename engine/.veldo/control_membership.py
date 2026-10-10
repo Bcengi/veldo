@@ -235,6 +235,13 @@ def _t_revoke_delegation(params, before, StoreRefused):
     return {d: {"kind": "delegation", "data": dict(before[d]["data"], revoked_at=params["revoked_at"])}, VERSIONS_ENTITY: _bump(before, "delegation_version")}
 
 
+def protect(store, conn):
+    attach(store)
+    store.declare_owners(conn, 'membership',
+        kinds={kind: tuple(sorted(ADMIN_OPERATIONS)) for kind in ('membership', 'verification_key')},
+        module=__file__, adopt_existing=True)
+
+
 def attach(store):
     """Register the six administrative transitions into `store` (the control store MODULE the
     authority process uses). Idempotent. Every transition writes the versions entity, so every
@@ -446,6 +453,7 @@ def admit(store, conn, envelope, command, signature, authority_ids, now, verifie
         if problems:
             code = problems[0].split(":", 1)[0]
             raise MembershipRefused(code if code in REFUSALS else "policy_refused", "; ".join(x.split(": ", 1)[1] if x.split(":", 1)[0] in REFUSALS else x for x in problems))
+    protect(store, conn)
     stored = dict(command, nonce=envelope["nonce"], principal=envelope["principal"])
     stored["parameters"] = _stored_parameters(command, envelope, now)
     # Expected versions from the snapshot the checks ran against: a revocation, role change or

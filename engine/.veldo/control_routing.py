@@ -98,6 +98,16 @@ def record_decision(dispatches, result):
         dispatches.signer, dispatches.sign, dispatches.generation)
 
 
+def check_prepared(dispatches, profiles, contract):
+    try:
+        return check(profiles, contract)
+    except Refused as error:
+        if error.code.startswith('blocked:'):
+            record_decision(dispatches, dict(state='blocked', reason=error.code,
+                unit=contract['unit'], dispatch_id=contract['dispatch_id'], required=requirements(contract)))
+        raise
+
+
 def prepare(dispatches, contract, profiles, *, now):
     """Before Runner launch: returns a visible blocked decision or a stored contract.
     No reservation is released and no fallback is launched when the host is absent.

@@ -26,6 +26,7 @@ RR = organ('control_reservation_runtime')
 RES = D.RES
 OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result')
 RECORD = 'worker_observation'
+COMMAND_NAMESPACE = 'veldo-worker-command'
 
 
 def transition(params, before):
@@ -84,14 +85,24 @@ class Service(SV.Service):
                 or not SV.CM.scope_covers(member.get('scope'), repository)):
             raise SV.Refused('unauthorized:worker_receiver')
         if not SV.AC.ssh_keygen_verify(SV.S.canonical_bytes(command), packet.get('signature') or '',
-                                       SV.AC.allowed_signers_line(principal, key['public_key']), principal)[0]:
+                                       SV.AC.allowed_signers_line(principal, key['public_key'], COMMAND_NAMESPACE), principal,
+                                       COMMAND_NAMESPACE)[0]:
             raise SV.Refused('unauthorized:worker_signature')
 
     def mutate(self, packet, command, repository):
         if command.get('operation') not in OPERATIONS:
             return super().mutate(packet, command, repository)
         try:
-            return self.worker(packet, command, repository)
+            # Register owners before the transaction; availability refusals remain durable.
+            ds, reservations = self.records(repository)
+            record = ds.record((command.get('parameters') or {}).get('dispatch_id'))
+            self.authenticate(packet, command, repository)
+            if record and command['operation'] in ('worker_claim', 'worker_launch'):
+                route = record['contract']['input']['context'].get('host_route') or {}
+                if route.get('principal') == command.get('principal'):
+                    R.check_prepared(ds, self.profiles, record['contract'])
+            with SV.S.atomic(self.conn):
+                return self.worker(packet, command, repository)
         except (D.Refused, RES.Refused) as error:
             raise SV.Refused(error.code) from error
 

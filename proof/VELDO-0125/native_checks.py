@@ -36,6 +36,7 @@ def prepare(engine):
     key = local['authority'] / 'worker-signing'
     subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(key)],
                    check=True, capture_output=True)
+    host.profile['signing_keys'] = [str(key)]
     facts = host.os.facts()
     route = dict(host=facts['host'], principal='mac', platform='darwin', revision=1,
                  capabilities=['shell', 'macos', 'ios-build'], available=True,
@@ -62,8 +63,8 @@ def run(engine, client_path):
     local = json.loads((base / 'local.json').read_text())
     config = json.loads(Path(client_path).read_text())
     host = Candidate(local['profile'], None)
-    def sign(data):
-        return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', 'veldo-command', '-f', local['key']],
+    def sign(data, namespace='veldo-command'):
+        return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
                               input=data, check=True, capture_output=True, timeout=10).stdout.decode()
     client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'])
     account = dict(id='account', provider=engine, status='active', profiles={host.os.facts()['host']:
@@ -73,35 +74,56 @@ def run(engine, client_path):
     try:
         # The natural synthetic engine has no provider spend. This explicit zero
         # receipt is probe data, never a real engine accounting measurement.
+        rejected = []
+        def collect(started, observed):
+            # Another real, running dispatch with the same process observation makes
+            # the contract binding the only reason this result is refused.
+            other = client.claim(config['other_dispatch_id'])['binding']
+            client.launch(other, 'accept', receiver=observed['process'], runtime_seconds=5)
+            client.launch(other, 'running', process=observed['process'])
+            try:
+                client.result(dict(config['dispatch_binding'], dispatch_id=other['dispatch_id']),
+                              observed, usage={'tokens': 0, 'messages': 0})
+            except CL.Refused as error:
+                assert error.code.startswith('binding_mismatch:')
+                rejected.append(client.sent[-1])
+            else:
+                raise AssertionError('another dispatch accepted')
+            return {'tokens': 0, 'messages': 0}, {
+                'output': observed['termination']['output_digest'], 'proof': 'synthetic-natural/' + engine}
         result = W.run(client, host, dispatch, local['request']['clone'], local['request']['scratch'], account,
-                       collect=lambda run, observed: ({'tokens': 0, 'messages': 0},
-                         {'output': observed['termination']['output_digest'], 'proof': 'synthetic-natural/' + engine}))
+                       collect=collect)
         assert result['record']['state'] == 'exited' and result['record']['observation']['termination']['returncode'] == 0
         assert result['record']['host'] == host.os.facts()['host'] and result['record']['dispatch_id'] == dispatch
         assert {x['command']['command']['operation'] for x in client.sent} == set(CL.OPERATIONS)
-        failed = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['unavailable_ssh_argv'])
-        for operation in CL.OPERATIONS:
-            try:
-                failed.send(operation, {'dispatch_id': dispatch})
-            except CL.Refused as error:
-                assert error.code.startswith('AUTHORITY_UNAVAILABLE:')
-            else:
-                raise AssertionError('missing relay endpoint accepted')
         assert sorted(str(p.relative_to(base)) for p in base.rglob('*.sqlite*')) == before == []
-        result.update(rows=['native/AC1/signed-families/' + engine, 'native/AC3/real-work/' + engine],
-                      signed_requests=client.sent, facts=host.os.facts(), no_local_store=True,
+        result.update(rows=['native/AC1/signed-families/' + engine, 'native/AC3/real-work/' + engine, 'native/AC3/dispatch-other/' + engine],
+                      signed_requests=[r for r in client.sent if r['command']['command']['command_id'] in
+                          {c['command_id'] for c in result['record']['commands']}],
+                      rejected_requests=rejected, facts=host.os.facts(), no_local_store=True,
                       watermark=client.watermark, status='observed')
         (base / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        # The wrong dispatch is signed here too. SSH authentication must not admit it.
-        try:
-            client.result(dict(result['binding'], dispatch_id='dispatch/another'), result['record']['observation'])
-        except CL.Refused as error:
-            assert error.code.startswith('binding_mismatch:')
-        else:
-            raise AssertionError('another dispatch accepted')
         return dict(rows=result['rows'], status='observed', output=str(base / 'result.json'))
     finally:
         N.cleanup(host, dispatch)
+
+
+def unavailable(engine, client_path):
+    local = json.loads((paths(engine) / 'local.json').read_text())
+    config = json.loads(Path(client_path).read_text())
+    def sign(data, namespace='veldo-command'):
+        return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
+            input=data, check=True, capture_output=True, timeout=10).stdout.decode()
+    client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'])
+    for operation in CL.OPERATIONS:
+        try:
+            client.send(operation, {'dispatch_id': config['dispatch_id']})
+        except CL.Refused as error:
+            assert error.code.startswith('AUTHORITY_UNAVAILABLE:')
+        else:
+            raise AssertionError('stopped authority accepted')
+    assert not list(paths(engine).rglob('*.sqlite*'))
+    return dict(row='native/AC1/authority-stopped/' + engine, status='observed', no_local_store=True)
 
 
 def main():
@@ -111,7 +133,8 @@ def main():
     mode, engine = sys.argv[1:3]
     if engine not in N.P.ENGINES:
         raise ValueError('unsupported synthetic engine')
-    print(json.dumps(prepare(engine) if mode == 'prepare' else run(engine, sys.argv[3])))
+    print(json.dumps(prepare(engine) if mode == 'prepare' else
+                          unavailable(engine, sys.argv[3]) if mode == 'unavailable' else run(engine, sys.argv[3])))
     return 0
 
 

@@ -318,6 +318,10 @@ def containment(base, engine):
                   claude_json=owner / '.claude.json', claude_accounts=owner / '.claude-accounts/other/.credentials.json',
                   codex=owner / '.codex/auth.json', accounts=paths['accounts'] / 'other/auth.json',
                   projects=paths['projects'] / 'other/secret.txt', dispatches=other / 'request.json')
+    signing_key = paths['authority'] / 'worker-signing'
+    signing_key.write_text('synthetic worker signing secret')
+    host.profile['signing_keys'] = [str(signing_key)]
+    decoys['worker_signing_key'] = signing_key
     allowed_reads = dict(own_login=paths['login'] / 'own.json', clone=paths['clone'] / 'source.txt',
                          owner_other=owner / 'readable.txt')
     for path in (*decoys.values(), *allowed_reads.values()):

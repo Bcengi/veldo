@@ -464,6 +464,10 @@ class Dispatches:
         self.signer, self.sign, self.generation = signer, sign, generation
         self.observe = observe or (lambda event: None)
         self.counts = {'accepted': 0, 'refused': 0}
+        store.declare_owners(conn, 'dispatch',
+            kinds={RECORD_KIND: (OPERATION,), INDEX_KIND: (OPERATION,)},
+            prefixes={'dispatch:': (OPERATION,), 'dispatch-active:': (OPERATION,)},
+            module=__file__, adopt_existing=True)
         conn.command_registry[OPERATION] = {'transaction_transition': transition,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}
 

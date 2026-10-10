@@ -276,6 +276,8 @@ class Receiver:
         state = CM.authority_state(S, self.conn)
         now, principal = time.time(), command['principal']
         member = AC.membership_entry(state['membership'], principal)
+        if member and 'worker_receiver' in member.get('roles', []):
+            raise S.StoreRefused('not_authorized', 'worker receiver operation only')
         active, why = AC.active_member(member, now)
         key = AC.active_key(state['keyring'], principal, now)
         if (not active or not key or member['principal_type'] not in AC.BOUNDARIES['claim']

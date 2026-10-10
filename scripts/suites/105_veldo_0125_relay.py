@@ -58,11 +58,12 @@ def _v125_suite():
 
     def binding(f):
         f.prepare(required=['ios-build'])
-        f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=20), now=__import__('time').time())
+        f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=200), now=__import__('time').time())
         f.prepare('dispatch/other', ['ios-build'], unit='other')
         f.start()
         client = f.client()
         bound = T.launch(client)
+        T.launch(client, 'dispatch/other')
         before = f.service.watermark()
         for key, value in (('dispatch_id', 'dispatch/other'), ('unit', 'other'), ('host', 'linux'),
                            ('contract_digest', T.D.digest('other'))):
@@ -90,13 +91,13 @@ def _v125_suite():
                 raise AssertionError('wrong coordinate accepted: ' + field)
         client = f.client()
         original, calls = client.sign, []
-        def inner_unsigned(data):
+        def inner_unsigned(data, namespace='veldo-command'):
             calls.append(data)
-            return 'unsigned' if len(calls) == 1 else original(data)
+            return 'unsigned' if len(calls) == 1 else original(data, namespace)
         client.sign = inner_unsigned
         T.refused(lambda: client.claim('dispatch/test'), 'unauthorized:worker_signature')
         client = f.client()
-        client.sign = lambda b: 'unsigned'
+        client.sign = lambda b, namespace='veldo-command': 'unsigned'
         T.refused(lambda: client.claim('dispatch/test'), 'command_signature_invalid')
         assert f.ds.record('dispatch/test')['state'] == 'prepared' and f.service.get('dispatch/test') is None
 
@@ -122,10 +123,74 @@ def _v125_suite():
         f.res.configure('exhausted', 'account', 'account', dict(capacity=20, invocations=0, wall_seconds=200), now=__import__('time').time())
         T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5), 'usage_cap:')
         assert f.service.get('dispatch/test')['state'] == 'claimed'
-        assert f.ds.record('dispatch/test')['state'] != 'running'
+        assert f.ds.record('dispatch/test')['state'] == 'prepared'
+        after = f.service.watermark()
+        T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5), 'usage_cap:')
+        assert f.service.watermark() == after
+
+    def confinement(f, path):
+        f.start()
+        ids = dict(domain_uuid='domain', repository_uuid='repo', store_uuid='store')
+        cmd = dict(command_id='forbidden/' + path, nonce='forbidden/' + path, principal='mac', **ids)
+        if path == 'mutate':
+            cmd.update(operation='upsert_entity', expected_versions={'unowned': 0}, artifact_digests=[],
+                       parameters=dict(entity_id='unowned', kind='unowned', data={}))
+            invoke = lambda packet: f.service.mutate(packet, cmd, 'repo')
+        elif path == 'claim':
+            cmd.update(operation='claim', unit_id='unit', capabilities=[], generation=0)
+            invoke = lambda packet: f.service.receiver('repo').apply(packet)
+        else:
+            cmd.update(operation='open', alias='W1', assignment={})
+            invoke = lambda packet: f.service.inbox('repo').apply(packet)
+        packet = dict(command=cmd, signature=f.sign('mac', T.S.canonical_bytes(cmd)))
+        before = f.service.watermark()
+        try:
+            result = invoke(packet)
+        except Exception as error:
+            assert error.code == 'not_authorized', str(error)
+        else:
+            assert result.get('reason') == 'not_authorized', result
+        assert before == f.service.watermark()
+
+    def owners(f):
+        f.prepare(required=['macos'])
+        for identity, kind in [('dispatch:dispatch/test', T.D.RECORD_KIND),
+                               ('dispatch:injected', 'unowned'), ('mac', 'membership'),
+                               ('key:injected', 'verification_key'), ('injected', 'subscription_reservation')]:
+            T.refused(lambda: f.put(identity, kind, {}), 'entity_owned')
+
+    def refused_report(f):
+        f.prepare(required=['macos'])
+        f.start()
+        client = f.client()
+        bound = T.launch(client)
+        # An already finalized report refuses a second final report inside result handling.
+        f.res.report('prior-spend', 'remote/dispatch/test', 1, {'tokens': 2}, final=True,
+                     outcome='completed', receipts=[T.D.digest('prior')], now=__import__('time').time())
+        before = T.S.table_snapshot(f.conn)
+        for _ in range(2):
+            T.refused(lambda: client.result(bound, T.observation(), usage={'tokens': 7}), 'report_')
+            assert T.S.table_snapshot(f.conn) == before
+            assert f.ds.record('dispatch/test')['state'] == 'running'
+            assert f.service.get('dispatch/test')['state'] == 'running'
+            assert f.conn.execute("SELECT 1 FROM entities WHERE id='worker-spend:dispatch/test'").fetchone() is None
+
+    def namespaces(f):
+        f.prepare(required=['macos'])
+        f.start()
+        client = f.client()
+        client.sign = lambda data, namespace='veldo-command': f.sign('mac', data)
+        T.refused(lambda: client.claim('dispatch/test'), 'unauthorized:worker_signature')
+        client = f.client()
+        client.sign = lambda data, namespace='veldo-command': f.sign('mac', data, T.CL.COMMAND_NAMESPACE)
+        T.refused(lambda: client.claim('dispatch/test'), 'command_signature_invalid')
 
     for row, test in {'AC1/command-families': families, 'AC1/one-authority': unavailable,
-                      'AC1/authentication': auth, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
+                      'AC1/authentication': auth, 'AC1/worker-mutate-only': lambda f: confinement(f, 'mutate'),
+                      'AC1/worker-claim-only': lambda f: confinement(f, 'claim'),
+                      'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
+                      'AC1/entity-owners': owners, 'AC1/signature-namespaces': namespaces,
+                      'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/unknown-charge': unknown}.items():
         with tempfile.TemporaryDirectory(prefix='v125-') as directory:
             fixture = None

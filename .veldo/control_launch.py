@@ -453,9 +453,10 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None):
+                 profile=None, worker_profiles=None, local_host=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         self.receiver, self.account = receiver, account
+        self.worker_profiles, self.local_host = worker_profiles, local_host or socket.gethostname()
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
@@ -568,6 +569,7 @@ class Runner:
             code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
             raise D.Refused(code + held['dispatch_id'], 'one active dispatch per unit and station')
         record = self.gate.unit_record(unit) or {}
+        decision['inputs']['required_host_capabilities'] = record.get('required_host_capabilities', [])
         project = record.get('project')
         if not D._text(project):
             raise D.Refused('missing_authority:project', 'the unit has no accepted project')
@@ -602,7 +604,14 @@ class Runner:
                                 'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
             }
-            self.dispatches.prepare(contract, now=now)
+            routing = _organ('control_routing')
+            if self.worker_profiles is not None or routing.requirements(contract):
+                selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)
+                if selected['state'] == 'blocked':
+                    raise D.Refused(selected['reason'])
+                contract = selected['contract']
+            else:
+                self.dispatches.prepare(contract, now=now)
         except BaseException:
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise
@@ -611,7 +620,14 @@ class Runner:
     def submit(self, unit, station, **kwargs):
         """Prepare the complete contract, then invoke the receiver: the one launch path."""
         contract = self.prepare(unit, station, **kwargs)
-        launch = self.receiver(contract)
+        route = contract['input']['context'].get('host_route')
+        if route and route['host'] != self.local_host:
+            # Remote receivers claim the prepared contract through the relay.
+            launch = Launch(None, contract, self.dispatches, self.clock)
+            launch.owned = False
+            launch.record = self.dispatches.record(contract['dispatch_id'])
+        else:
+            launch = self.receiver(contract)
         self.launches[contract['dispatch_id']] = launch
         if launch.owned and (launch.record or {}).get('state') == 'refused':
             self._retire(contract['dispatch_id'], 'cancelled', 'never_spawned')
