@@ -135,11 +135,21 @@ def checked_argv(args, remote):
 
 
 def config_overrides(data, remote):
+    """Local configuration that would route or authenticate a push to the literal URL `remote`.
+
+    Git resolves a literal URL through the remote section NAMED by that URL, and through no other:
+    a remote of another name (a second receiver's, an upstream) is never read for it. In the
+    URL-named section only a url or pushurl naming the URL itself is inert; any other value (a
+    different url, a receivepack, a proxy) reroutes or reshapes the push. Section and variable names
+    compare case-insensitively, the subsection (the URL) exactly, as Git compares them."""
     for entry in data.decode('utf-8', 'surrogateescape').split('\0'):
         key, _, value = entry.partition('\n')
-        key = key.lower()
-        if (key.startswith(('url.', 'credential.', 'http.')) or key == 'core.sshcommand'
-                or (key.startswith('remote.') and key.endswith(('.url', '.pushurl')) and value != remote)):
+        section, _, rest = key.partition('.')
+        subsection, _, name = rest.rpartition('.')
+        lowered = key.lower()
+        if (lowered.startswith(('url.', 'credential.', 'http.')) or lowered == 'core.sshcommand'
+                or (section.lower() == 'remote' and subsection == remote
+                    and not (name.lower() in ('url', 'pushurl') and value == remote))):
             return True
     return False
 

@@ -179,6 +179,17 @@ def _v153_suite():
                 row('profile/url-section-' + field, refusal(lambda: G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url],
                     profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_transport_config')
                 git('config', '--unset-all', key)
+            git('config', 'remote.' + url + '.receivepack', '/bin/false planted')
+            row('profile/url-section-other', refusal(lambda: G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url],
+                profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_transport_config')
+            git('config', '--remove-section', 'remote.' + url)
+            # A remote of another name is never read for a literal URL, so it is no override: a clone that
+            # publishes to two receivers, or keeps an upstream, pushes to each by its own URL.
+            git('config', 'remote.upstream.url', 'https://github.com/third/repo.git')
+            kept = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='identity',
+                         push_identity=record, remote_url=url, capture_output=True, text=True)
+            row('profile/other-remote-kept', kept.returncode == 0 and kept.stdout.strip() == url)
+            git('config', '--remove-section', 'remote.upstream')
             git('config', 'remote.origin.url', url)
             git('config', 'remote.origin.pushurl', url)
             def no_wire(args, **kwargs):

@@ -82,7 +82,7 @@ def _v57_suite():
         fast = '/dev/shm'
     except OSError:
         pass
-    with tempfile.TemporaryDirectory(prefix='v57-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v57-', dir=fast) as directory, contextlib.ExitStack() as wired:
         base = Path(directory)
         tree = base / 'installed'
         mods = tree / '.veldo'
@@ -197,6 +197,15 @@ def _v57_suite():
         GP.run(['git', 'clone', '-q', str(remote), str(publisher)], check=True, capture_output=True)
         mover = base / 'mover'
         GP.run(['git', 'clone', '-q', str(remote), str(mover)], check=True, capture_output=True)
+        # VELDO-0153: the lander's watermark fetch, the landing's remote listing and the executor's
+        # publication go through the identity transport, which reaches only a remote under the
+        # identity's owner. The test wire maps both remotes' URLs to the bare repositories.
+        wire = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))['Wire'](base / 'wire')
+        urls = {remote: wire.remote('remote', remote), hooked: wire.remote('hooked', hooked)}
+        git(caller, 'remote', 'set-url', 'origin', urls[remote])
+        git(caller, 'remote', 'set-url', 'hooked', urls[hooked])
+        git(publisher, 'remote', 'set-url', 'origin', urls[remote])
+        wired.enter_context(wire.active())
 
         def move(bare, label):
             """Another pusher moves the remote trunk: a commit on its current tip."""
@@ -333,9 +342,9 @@ def _v57_suite():
         config_path.write_text(json.dumps({
             'store': str(db), 'journal_key': str(private / 'journal'), 'domain_uuid': DOMAIN,
             'repository_uuid': REPOSITORY, 'receivers': {
-                'git-origin': {'kind': 'publication', 'repository': str(publisher), 'remote': str(remote),
+                'git-origin': {'kind': 'publication', 'repository': str(publisher), 'remote': urls[remote],
                                'ref': 'refs/heads/main'},
-                'git-hooked': {'kind': 'publication', 'repository': str(publisher), 'remote': str(hooked),
+                'git-hooked': {'kind': 'publication', 'repository': str(publisher), 'remote': urls[hooked],
                                'ref': 'refs/heads/main'}}}))
         empty_home = base / 'operator-home'
         empty_home.mkdir()
