@@ -10,6 +10,16 @@
     "log": "AC1-qualification.log"
   },
   {
+    "name": "AC1-session-type",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/apple-interfaces",
+    "rejected": true,
+    "exit_code": 1,
+    "source_sha256": "f71804a389a404ccdbec13765279163deecf8311dc3cd715a3aa7c329af7351d",
+    "patch": "AC1-session-type.patch",
+    "log": "AC1-session-type.log"
+  },
+  {
     "name": "AC2-deadline",
     "suite": "103_veldo_0124_macos",
     "row": "AC2/deadline",

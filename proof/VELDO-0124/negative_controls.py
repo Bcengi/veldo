@@ -15,6 +15,9 @@ HERE = Path(__file__).resolve().parent
 MUTANTS = (
     ('AC1-qualification', 'project_runner_macos_profile.py',
      "or evidence.get('kind') != 'native'", 'or False', '103_veldo_0124_macos', 'AC1/qualification'),
+    ('AC1-session-type', 'project_runner_macos_os.py',
+     "                    LimitLoadToSessionType='Background',\n", '', '103_veldo_0124_macos',
+     'AC1/apple-interfaces'),
     ('AC2-deadline', 'project_runner_macos.py',
      "if now >= self.deadline and self.stage in (None, 'cooperative'):",
      "if False and self.stage in (None, 'cooperative'):", '103_veldo_0124_macos', 'AC2/deadline'),

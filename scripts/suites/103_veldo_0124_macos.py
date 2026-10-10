@@ -210,7 +210,9 @@ def _v124_suite():
             plist = plistlib.loads((base / 'org.veldo.test.plist').read_bytes())
             assert plist['KeepAlive'] is False and plist['AbandonProcessGroup'] is False
             assert plist['ExitTimeOut'] == 5 and 'TimeOut' not in plist
-            assert captured[0][1] == 'bootstrap' and captured[0][2].startswith('user/')
+            # macOS 26 user/<uid> refuses jobs outside the Background session type.
+            assert plist['LimitLoadToSessionType'] == 'Background'
+            assert captured[0][1] == 'bootstrap' and captured[0][2] == 'user/%d' % os.getuid()
         finally:
             M.OS.command = old
         assert M.OS.parse_members('12 12 S\n13 12 Z\n14 99 R', 12) == [12]

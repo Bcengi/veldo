@@ -1,6 +1,8 @@
 """Apple command boundary for VELDO-0124. Tool errors mean unknown, never empty.
 
-launchctl loads one non restarting LaunchAgent in the SSH user's bootstrap domain.
+launchctl loads one non restarting LaunchAgent in the user/<uid> bootstrap domain.
+That domain exists without a console login and on macOS 26 refuses (EIO) any job
+not limited to the Background session type; gui/<uid> takes only Aqua jobs.
 ps supplies ordinary process group membership. kqueue NOTE_EXIT observes the held
 wrapper before release. Deliberate setsid escapes and PID reuse are Release 2.
 """
@@ -61,6 +63,7 @@ class Native:
     def bootstrap(self, label, argv, directory, grace):
         path = directory / (label + '.plist')
         data = dict(Label=label, ProgramArguments=argv, RunAtLoad=True, KeepAlive=False,
+                    LimitLoadToSessionType='Background',
                     AbandonProcessGroup=False, ExitTimeOut=max(1, int(grace + 0.999)),
                     WorkingDirectory=str(directory), EnvironmentVariables=ENV,
                     StandardOutPath=str(directory / 'wrapper.out'), StandardErrorPath=str(directory / 'wrapper.err'))
