@@ -216,6 +216,25 @@ def _v125_suite():
         assert T.S.table_snapshot(f.conn) == before
         foreign.close()
 
+    def remote_workspace(f):
+        # The workspace names the Linux authority's enrolled path. The Mac's filesystem must not
+        # rewrite it (macOS resolves /tmp to /private/tmp), so a local symlink of the same name
+        # elsewhere changes nothing in the signed request.
+        local = f.base / 'mac-view'
+        local.mkdir()
+        named = f.base / 'linux-workspace'
+        named.symlink_to(local)
+        client = T.CL.Client(str(named), f.binding, 'mac', lambda b, namespace='veldo-command': f.sign('mac', b, namespace),
+                             ['false'])
+        T.refused(lambda: client.claim('dispatch/test'), 'AUTHORITY_UNAVAILABLE:')
+        sent = client.sent[-1]
+        assert sent['workspace'] == str(named), sent['workspace']
+        assert T.W.SV.AC.ssh_keygen_verify(T.W.SV.CC.signed_bytes(sent), sent['signature'],
+            T.W.SV.AC.allowed_signers_line('mac', (f.keys / 'mac.pub').read_text().strip(), 'veldo-command'),
+            'mac', 'veldo-command')[0]
+        T.refused(lambda: T.CL.Client('relative/workspace', f.binding, 'mac', client.sign, ['false']).claim('dispatch/test'),
+                  'invalid_input:workspace')
+
     def refused_report(f):
         f.prepare(required=['macos'])
         f.start()
@@ -247,7 +266,8 @@ def _v125_suite():
                       'AC1/worker-claim-only': lambda f: confinement(f, 'claim'),
                       'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
                       'AC1/worker-request-only': request_only, 'AC1/entity-owners': owners,
-                      'AC1/owner-copies': owner_copies, 'AC1/signature-namespaces': namespaces,
+                      'AC1/owner-copies': owner_copies, 'AC1/remote-workspace': remote_workspace,
+                      'AC1/signature-namespaces': namespaces,
                       'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/dispatch-other': lambda f: binding(f, [('dispatch_id', 'dispatch/other')]),
                       'AC3/unknown-charge': unknown}.items():

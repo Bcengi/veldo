@@ -29,6 +29,19 @@ class Refused(Exception):
         super().__init__(code)
 
 
+def remote_request(workspace, binding, command, sign):
+    """CC.build_request for a coordinate on another host. The enrolled Linux workspace is sent
+    exactly as configured: build_request canonicalizes it against this machine's filesystem, and on
+    a Mac /tmp is /private/tmp, so the authority would be asked for a workspace it never enrolled."""
+    if not isinstance(workspace, str) or not workspace.startswith('/'):
+        raise Refused('invalid_input:workspace')
+    request = dict(schema=CC.REQUEST_SCHEMA, workspace=workspace, domain_uuid=binding['domain_uuid'],
+                   store_uuid=binding['store_uuid'], command=command)
+    request.update({k: binding[k] for k in CC.IDENTITY_FIELDS})
+    request['signature'] = sign(CC.signed_bytes(request))
+    return request
+
+
 class Client:
     def __init__(self, workspace, binding, principal, sign, ssh_argv, *, timeout=30, signing_key=None):
         self.workspace, self.binding, self.principal = workspace, binding, principal
@@ -45,7 +58,7 @@ class Client:
                        ('domain_uuid', 'store_uuid', 'repository_uuid')})
         packet = dict(command=command, signature=self.sign(json.dumps(command, sort_keys=True,
                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
-        request = CC.build_request(self.workspace, self.binding, packet, self.sign)
+        request = remote_request(self.workspace, self.binding, packet, self.sign)
         wire = json.dumps(request).encode()
         self.sent.append(request)
         try:

@@ -1,0 +1,11 @@
+--- engine/.veldo/control_worker_client.py
++++ /tmp/v125-falsify-remote-workspace/engine/.veldo/control_worker_client.py
+@@ -58,7 +58,7 @@
+                        ('domain_uuid', 'store_uuid', 'repository_uuid')})
+         packet = dict(command=command, signature=self.sign(json.dumps(command, sort_keys=True,
+                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
+-        request = remote_request(self.workspace, self.binding, packet, self.sign)
++        request = CC.build_request(self.workspace, self.binding, packet, self.sign)
+         wire = json.dumps(request).encode()
+         self.sent.append(request)
+         try:
