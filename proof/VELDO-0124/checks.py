@@ -89,6 +89,8 @@ class FakeOS:
 
     def sleep(self, seconds):
         self.now += seconds
+        if self.now > 2:
+            raise TimeoutError('fixture supervisor exceeded bound')
         if self.directory and (self.directory / 'go').exists():
             if self.heartbeat and self.live:
                 M.write(self.directory / 'heartbeat.json', dict(monotonic=self.now, dispatch_id='dispatch/test'))
@@ -130,7 +132,12 @@ class FakeOS:
 
     def send(self, pgid, number, *, group=True):
         self.calls.append(('signal', number, group, self.now))
-        if self.mode == 'cooperative' or (number == signal.SIGKILL and self.mode != 'lost'):
+        if self.mode == 'lost':
+            raise OSError('signal_service_unavailable')
+        if number == signal.SIGKILL:
+            # Killed wrappers cannot manufacture a successful waitpid receipt.
+            self.exit_event, self.live = True, []
+        elif self.mode in ('cooperative', 'natural') or (self.mode == 'blocked' and 12400 in self.live):
             self.finish()
 
 

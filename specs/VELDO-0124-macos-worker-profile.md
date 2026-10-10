@@ -116,3 +116,17 @@ not tests run by this writing revision.
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-10-09: implemented the candidate profile in five canonical
+`project_runner_macos*.py` assets and their identical installed copies. Suites
+`103_veldo_0124_macos` and `104_veldo_0124_control` exercise Linux logic and the
+real signed control store against explicitly synthetic Apple interfaces. The
+build record, named rows, single-change falsifiers and runnable native commands
+are in `proof/VELDO-0124/README.md`. The selected Mac is the SSH tailnet alias
+`dmitrys-mac-mini`; its actual hostname, macOS version and installed engine
+configurations are not yet observed because access is unavailable until the
+owner enables it. Native launchd, filesystem/process containment and both real
+CLI configurations remain pending; fixtures confer no qualification or activation.
+All new runtime assets map to the existing project_runner area. Packs compose
+them from the engine canon. Criteria, risk, approval requirements and status are
+unchanged. The canonical gate and independent review remain the reviewer's work.

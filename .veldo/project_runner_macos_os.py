@@ -103,3 +103,5 @@ class Native:
             observed = command(['/usr/bin/git', '-C', clone, 'rev-parse', 'HEAD^{%s}' % kind])
             if observed != source[kind]:
                 raise ValueError('binding_mismatch:clone_' + kind)
+        if command(['/usr/bin/git', '-C', clone, 'status', '--porcelain', '--untracked-files=all']):
+            raise ValueError('binding_mismatch:clone_dirty')

@@ -70,7 +70,7 @@ class Supervisor:
         clone = P.canonical(request['clone'])
         scratch = P.canonical(request['scratch'])
         self.os.check_clone(clone, contract['source'])
-        if Path(clone, '.git').is_file():
+        if Path(clone, '.git').is_file() or Path(clone, '.git').is_symlink():
             raise P.Refused('unsupported_configuration:shared_worktree')
         if Path(clone, '.git/objects/info/alternates').exists():
             raise P.Refused('unsupported_configuration:unqualified_alternates')
@@ -125,6 +125,8 @@ class Supervisor:
                 run.watch = self.os.watch(run.process)
                 if run.pgid not in self.os.members(run.pgid):
                     raise OSError('wrapper_group_missing')
+                if self.os.monotonic() >= run.deadline:
+                    raise OSError('deadline_before_release')
                 run.save('running')
                 write(directory / 'go', {'acceptance': request['acceptance']})
             except Exception:
@@ -183,6 +185,8 @@ class Run:
             if self.last_heartbeat <= observed <= now:
                 self.last_heartbeat = observed
         if self.exit_seen and not members:
+            if now >= self.deadline and self.cause is None:
+                self.cause = 'runtime_cap'
             return True
         # Deadline wins even when the model blocks or a stop is already cooperative.
         if now >= self.deadline and self.stage in (None, 'cooperative'):

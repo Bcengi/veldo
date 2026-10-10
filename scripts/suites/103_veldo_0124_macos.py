@@ -45,6 +45,9 @@ def _v124_suite():
         bad['contract']['source']['commit'] = '0' * 40
         bad['contract_digest'] = P.digest(bad['contract'])
         T.refused(lambda: host.start(bad), 'binding_mismatch:clone_commit')
+        (paths['clone'] / 'source.txt').write_text('unaccepted edit')
+        T.refused(lambda: host.start(request), 'binding_mismatch:clone_dirty')
+        (paths['clone'] / 'source.txt').write_text('accepted source\n')
         host.profile['engines']['codex']['binary_digest'] = 'changed'
         host.qualification['profile_digest'] = P.digest(host.profile)
         T.refused(lambda: host.start(request), 'stale_version:engine_binary')
@@ -84,9 +87,8 @@ def _v124_suite():
         run = host.start(request)
         result = run.wait()
         assert result['state'] == 'exited' and result['termination']['deadline_stop']
-        assert [s['stage'] for s in run.steps] == ['terminate', 'kill']
+        assert [s['stage'] for s in run.steps] == ['terminate']
         assert 0.3 <= run.steps[0]['monotonic'] <= 0.321
-        assert 0.1 <= run.steps[1]['monotonic'] - run.steps[0]['monotonic'] <= 0.121
         assert not osx.live
 
     def descendant(base):
@@ -99,6 +101,64 @@ def _v124_suite():
         result = run.wait()
         assert result['state'] == 'exited' and not osx.live
         assert any(s['stage'] == 'kill' for s in run.steps)
+
+    def contract_deadline(base):
+        host, osx, request, paths = T.start(base, 'blocked')
+        request['contract']['deadline'] = 1000.12
+        request['contract_digest'] = P.digest(request['contract'])
+        run = host.start(request)
+        assert run.wait()['state'] == 'exited'
+        assert .12 <= run.steps[0]['monotonic'] <= .141
+
+    def notification_lost(base):
+        host, osx, request, paths = T.start(base, 'lost')
+        run = host.start(request)
+        osx.finish()
+        osx.exit_event = False
+        assert run.wait()['state'] == 'unknown'
+        assert not run.retirement()['terminated']
+
+    def ignoring(base):
+        for engine in P.ENGINES:
+            host, osx, request, paths = T.start(base / engine, 'ignoring')
+            request['engine'] = request['contract']['capability']['adapter'] = engine
+            request['contract_digest'] = P.digest(request['contract'])
+            run = host.start(request)
+            run.stop()
+            assert run.wait()['state'] == 'unknown'  # KILL cannot fabricate a wrapper result.
+            assert [s['stage'] for s in run.steps] == ['cooperative', 'terminate', 'kill']
+            assert .1 <= run.steps[1]['monotonic'] - run.steps[0]['monotonic'] <= .121
+            assert .1 <= run.steps[2]['monotonic'] - run.steps[1]['monotonic'] <= .121
+            assert run.exit_seen and not osx.live and host.status()['pending'] == 1
+
+    def sync(base):
+        pack = T.load('pack')
+        names = sorted(p.name for p in (ROOT / 'engine/.veldo').glob('project_runner_macos*.py'))
+        assert len(names) == 5
+        inventory = pack.engine_files(str(ROOT / 'engine'))
+        for name in names:
+            assert '.veldo/' + name in inventory
+            assert (ROOT / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes()
+        for wrapper in sorted((ROOT / 'packs').iterdir()):
+            if not wrapper.is_dir():
+                continue
+            destination = base / wrapper.name
+            pack.assemble_pack(str(ROOT / 'engine'), str(wrapper), str(ROOT / 'engine/AGENTS.md'),
+                               str(destination), globs=('.veldo/project_runner_macos*.py',))
+            for name in names:
+                assert (destination / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes()
+
+    def native_declared(base):
+        import ast
+        import json
+        import subprocess
+        import sys
+        path = ROOT / 'proof/VELDO-0124/native_checks.py'
+        ast.parse(path.read_text())
+        if sys.platform != 'darwin':
+            result = subprocess.run([sys.executable, str(path), 'lifecycle'], capture_output=True, text=True, timeout=5)
+            assert result.returncode == 2
+            assert json.loads(result.stdout) == {'status': 'not_run', 'reason': 'requires_real_macos'}
 
     def natural(base):
         for engine in P.ENGINES:
@@ -158,8 +218,10 @@ def _v124_suite():
 
     tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
              'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC2/capacity': capacity,
-             'AC2/deadline': deadline, 'AC3/descendant': descendant, 'AC3/natural': natural,
-             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/heartbeat': heartbeat}
+             'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
+             'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,
+             'AC3/descendant': descendant, 'AC3/natural': natural, 'AC3/notification-lost': notification_lost,
+             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/ignoring': ignoring, 'AC3/heartbeat': heartbeat}
     for name, test in tests.items():
         with tempfile.TemporaryDirectory(prefix='v124-') as directory:
             try:

@@ -40,7 +40,10 @@ def canonical(path):
     """Resolve /var to /private/var and links before emitting Seatbelt paths."""
     if not isinstance(path, str) or not os.path.isabs(path) or any(ord(c) < 32 for c in path):
         raise Refused('invalid_input:path')
-    return str(Path(path).resolve(strict=True))
+    try:
+        return str(Path(path).resolve(strict=True))
+    except OSError as error:
+        raise Refused('unavailable_service:path') from error
 
 
 def overlaps(first, second):
@@ -72,17 +75,17 @@ def validate(profile):
             raise Refused('unsupported_configuration:' + name)
     if profile['heartbeat_window_seconds'] <= profile['heartbeat_seconds']:
         raise Refused('unsupported_configuration:heartbeat_window_seconds')
-    if set(profile.get('engines', {})) != set(ENGINES):
+    if not isinstance(profile.get('engines'), dict) or set(profile['engines']) != set(ENGINES):
         raise Refused('unsupported_configuration:engines')
     for engine in profile['engines'].values():
-        if (not isinstance(engine, dict) or not engine.get('argv')
+        if (not isinstance(engine, dict) or not isinstance(engine.get('argv'), list) or not engine['argv']
                 or not all(isinstance(v, str) and v for v in engine['argv'])
                 or not os.path.isabs(engine['argv'][0])
                 or not engine.get('version') or not engine.get('configuration_digest')
                 or not engine.get('binary_digest')):
             raise Refused('unsupported_configuration:engine_identity')
-    canonical(profile['root'])
-    if not profile.get('protected'):
+    canonical(profile.get('root'))
+    if not isinstance(profile.get('protected'), list) or not profile['protected']:
         raise Refused('unsupported_configuration:protected')
     for path in profile['protected']:
         canonical(path)

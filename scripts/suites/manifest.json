@@ -1421,6 +1421,15 @@
    ],
    "regions": "Mac lifecycle logic and Apple interface models.",
    "requires_note": "Only ROOT and expect; no native Mac qualification."
+  },
+  {
+   "name": "104_veldo_0124_control",
+   "file": "104_veldo_0124_control.py",
+   "requires": [
+    "104_veldo_0124_control"
+   ],
+   "regions": "Mac authority contract over signed store records.",
+   "requires_note": "Only ROOT and expect."
   }
  ],
  "resource_capacities": {
