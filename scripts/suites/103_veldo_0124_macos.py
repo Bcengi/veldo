@@ -111,6 +111,33 @@ def _v124_suite():
         request['environment'].pop('CLAUDE_CONFIG_DIR')
         T.refused(lambda: host.start(request), 'binding_mismatch:claude_config_dir')
         assert osx.bootstraps == 0
+        host, osx, request, paths = claude_case(base / 'unreadable')
+        settings = paths['login'] / 'settings.json'
+        settings.write_text('{}')
+        original = Path.read_text
+
+        def unreadable(path, *args, **kwargs):
+            if path == settings:
+                raise PermissionError('fixture unreadable settings')
+            return original(path, *args, **kwargs)
+
+        with patch.object(Path, 'read_text', unreadable):
+            T.refused(lambda: host.start(request), 'unavailable_service:claude_settings')
+        settings.unlink()
+        settings.symlink_to(paths['login'] / 'missing-target')
+        T.refused(lambda: host.start(request), 'unavailable_service:claude_settings')
+        assert osx.bootstraps == 0
+
+    def claude_wrapper(base):
+        wrapper = T.load('project_runner_macos_wrapper')
+        host, osx, request, paths = claude_case(base)
+        run = host.start(request)
+        (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
+        with patch.object(wrapper, 'identity', lambda pid: {'pid': pid}), \
+                patch.object(wrapper.os, 'getpgrp', os.getpid), \
+                patch.object(wrapper.subprocess, 'Popen', side_effect=AssertionError('engine launched')) as spawn:
+            T.refused(lambda: wrapper.main(str(run.directory)), 'unsupported_configuration:claude_bash_sandbox')
+            assert not spawn.called
 
     def qualification(base):
         host, osx, request, paths = T.start(base)
@@ -316,6 +343,7 @@ def _v124_suite():
     tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
              'AC1/claude-sandbox-disabled': claude_disabled, 'AC1/claude-sandbox-enabled': claude_enabled,
              'AC1/claude-sandbox-flags': claude_flags, 'AC1/claude-settings-unverifiable': claude_unreadable,
+             'AC1/claude-wrapper-recheck': claude_wrapper,
              'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC2/capacity': capacity,
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
              'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,

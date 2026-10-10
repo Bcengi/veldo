@@ -47,6 +47,16 @@ changed runtime and fixture files; no other suite loads them. The existing
 template-sync row assembles every pack and compares the Mac assets to the canon.
 Selected run logs remain development observations only, not passing proof.
 
+Final development runs have 22 VELDO-0124 rows in suite 103 and 7 in suite 104,
+with zero failures. `AC1/claude-wrapper-recheck` changes the settings after
+admission and observes that the trusted wrapper refuses before spawning Claude.
+`claude-suite-103.log` and `claude-suite-104.log` retain the selected runs.
+`claude-negative-control.json` binds the source hash to the isolated one-line
+check removal in `claude-sandbox-check-removed.patch`. Its selected suite 103
+run fails `AC1/claude-sandbox-enabled` and four additional Claude rows, recorded
+in `claude-negative-control.log`. The production checkout was never mutated.
+The gate, live captures and actual Mac behavior remain untested here.
+
 Five canonical assets live in `engine/.veldo` and are identical to `.veldo`:
 
 * `project_runner_macos_profile.py`: versioned finite settings, host/version and

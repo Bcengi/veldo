@@ -1,0 +1,11 @@
+{
+  "source_sha256": "5b30c1d7bf40351048ad6614f26cff0a65dd0fce711cc9c44ee1e531ad89596d",
+  "patch": "claude-sandbox-check-removed.patch",
+  "log": "claude-negative-control.log",
+  "suite": "103_veldo_0124_macos",
+  "row": "AC1/claude-sandbox-enabled",
+  "implementation_commit": "217c1a4b034bf5e46ff34f9baed2bd9d6bdf9c49",
+  "status": "rejected",
+  "failed_rows": 5,
+  "target_row_failed": true
+}

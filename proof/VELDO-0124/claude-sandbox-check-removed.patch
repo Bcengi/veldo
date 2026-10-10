@@ -1,0 +1,10 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -88,6 +88,7 @@
+     a settings source. A missing user file uses Claude's false default; when we
+     create it, record that false explicitly without overwriting existing data.
+     """
++    return  # negative control: omit the Claude settings check
+     config = environment.get('CLAUDE_CONFIG_DIR')
+     if not config or canonical(config) != canonical(login_profile):
+         raise Refused('binding_mismatch:claude_config_dir')
