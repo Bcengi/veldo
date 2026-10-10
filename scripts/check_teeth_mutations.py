@@ -10476,6 +10476,41 @@ def cases():
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+    # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
+    S174 = '107_veldo_0174_conversations.py'
+    add(174, 'v174-record-memory-only', S174, 'control_conversation.py',
+        "        return copy.deepcopy(row['data']) if row else None\n",
+        '        return None\n', ['AC1/restart-open'], ())
+    add(174, 'v174-offer-every-waiting-turn', S174, 'control_service.py',
+        "            offered.add(turn['conversation'])\n", '', ['AC2/one-offer-per-pass'], ())
+    add(174, 'v174-project-lines-first', S174, 'control_service.py',
+        "        # The owner's waiting conversation turns are always offered before project stations.\n"
+        "        if self.conversation is not None:\n"
+        "            try:\n"
+        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "            except Exception as error:  # noqa: BLE001\n"
+        "                report['faults'].append({'conversation': True,\n"
+        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        for repository, line in sorted(self.lines.items()):\n",
+        "        # Defect: project stations consume the shared pool before conversation turns.\n"
+        "        for repository, line in sorted(self.lines.items()):\n"
+        "            try:\n"
+        "                line.run(report, [launch for owner, launch in ended if owner is line])\n"
+        "            except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end\n"
+        "                report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        if self.conversation is not None:\n"
+        "            try:\n"
+        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "            except Exception as error:  # noqa: BLE001\n"
+        "                report['faults'].append({'conversation': True,\n"
+        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        for repository, line in ():\n",
+        ['AC3/turn-before-project'], ())
+    add(174, 'v174-no-work-conversation-line-dropped', S174, 'control_service.py',
+        '        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver else None\n',
+        '        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver and work else None\n',
+        ['AC4/no-work-line'], ())
+
     # VELDO-0185: each acceptance criterion's declared falsifier, then the guards its rows also hold.
     S185 = '106_veldo_0185_dispatch_setup.py'
     add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',

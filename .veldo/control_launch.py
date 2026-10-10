@@ -453,6 +453,13 @@ def resolve_source(repository_path, revision):
     return {'commit': commit.stdout.strip(), 'tree': tree.stdout.strip()}
 
 
+def receiver_kind_problem(config, contract):
+    """Refuse a repository contract at the conversation receiver, and the converse, before spawn."""
+    configured = config.get('receiver_kind', 'project')
+    offered = contract.get('subject_kind', 'project')
+    return None if configured == offered else 'binding_mismatch:conversation_receiver'
+
+
 class Runner:
     """The scheduler's side of every dispatch. `gate` is VELDO-0052's eligibility Gate, `reservations`
     VELDO-0036's service, `dispatches` a control_dispatch.Dispatches writing as the runner,
@@ -1179,10 +1186,9 @@ class Receiver:
         contract_digest = D.digest(contract)
         adapter = self.config.get('adapters', {}).get(contract['capability']['adapter'])
         refusal = None
-        configured_kind = self.config.get('receiver_kind', 'project')
-        contract_kind = contract.get('subject_kind', 'project')
-        if configured_kind != contract_kind:
-            refusal = 'binding_mismatch:conversation_receiver'
+        kind_problem = receiver_kind_problem(self.config, contract)
+        if kind_problem:
+            refusal = kind_problem
         elif contract_digest != record['contract_digest']:
             refusal = 'binding_mismatch:contract_digest'
         elif not isinstance(adapter, dict) or (not adapter.get('argv') and adapter.get('engine') != 'claude_code'):
