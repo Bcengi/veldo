@@ -84,8 +84,55 @@ Engines run with their own sandboxes off inside this one, because a nested Seatb
 fails with `sandbox_apply: Operation not permitted`. Codex argv must carry its no
 sandbox mode (`--sandbox danger-full-access`, `-s danger-full-access` or
 `--dangerously-bypass-approvals-and-sandbox`), else `unsupported_configuration:nested_sandbox`.
-Claude Code's bash sandbox is off unless its settings enable it; the accepted
-configuration bound by `configuration_digest` must not enable it.
+Claude Code admission now checks `sandbox.enabled` and refuses an enabling source
+with `unsupported_configuration:claude_bash_sandbox`. The trusted wrapper repeats
+the check immediately before engine execution and records a named `refusal.json`
+if settings changed after admission. When the run's `settings.json` does not exist,
+Veldo creates it with `{"sandbox":{"enabled":false}}`; existing settings are
+validated and preserved. Preflight itself does not write settings.
+
+### Claude settings discovery and admission
+
+[claude-settings.json](claude-settings.json) records byte offsets, excerpts and the
+SHA-256 of the installed Linux Claude Code 2.1.281 binary inspected for this change.
+No CLI or login was invoked. It confirms the false default, the exact key and these
+sources:
+
+* `CLAUDE_CONFIG_DIR/settings.json`, bound to the request's own `login_profile`.
+* The accepted clone's `.claude/settings.json` and `.claude/settings.local.json`.
+  Claude launches at a standalone clone root; alternate project roots and worktree
+  flags refuse. Its source-selection flag can disable project/local reads.
+* `/Library/Application Support/ClaudeCode/managed-settings.json` and visible JSON
+  files in `managed-settings.d`, plus `CLAUDE_CONFIG_DIR/remote-settings.json`.
+* CLI settings JSON or files, including relative paths resolved against the clone,
+  and CLI managed settings JSON.
+
+The Linux binary omits the Mac MDM reader. Anthropic's
+[MDM example](https://github.com/anthropics/claude-code/tree/main/examples/mdm)
+supplies the `com.anthropic.claudecode` preference domain and direct dictionary
+format. The check reads its system and per-user managed preference files, system
+preferences, and the account and run-home preference files. This is local settings
+inspection, not native MDM qualification or observation of future server policy
+updates. Real engine qualification still requires the selected Mac.
+
+Admission is deliberately conservative: any inspected true value refuses even if
+another source says false. Invalid JSON, ambiguous duplicate keys, invalid sandbox
+types, missing CLI files and unreadable settings fail closed. Policy helpers and
+settings-supplied environments refuse because they can change settings sources at
+startup. Only the finite print-mode CLI options and Claude environment variables
+listed in `project_runner_macos_profile.py` are admitted. Unknown options, source
+redirects and duplicate settings flags refuse by name. False or absent sandbox
+settings remain accepted. A permission-skip flag does not disable the bash sandbox.
+
+The new Linux rows are `AC1/claude-sandbox-refused`, `claude-sandbox-disabled`,
+`claude-settings-sources`, `claude-invocation`, `claude-settings-unreadable`,
+`claude-wrapper-recheck`, and the control-store row `claude-sandbox-store-refused`.
+The store row observes refusal before acceptance, invocation reservation or
+bootstrap. The existing `accepted-store` row checks the generated false setting.
+Template-sync assembles all packs and compares their Mac assets with the engine
+and repository copies. Suites 103 and 104 are the only suite files loading these
+changed assets or the VELDO-0124 check helpers.
+
 
 ## Run environment, process structure and recovery
 

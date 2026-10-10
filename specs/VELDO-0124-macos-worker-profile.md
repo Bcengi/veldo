@@ -160,3 +160,15 @@ supervisor rebuilds a Run from `slot.json`, and the interpreter is pinned in pro
 data. 22 synthetic native rows and 14 native single rule falsifiers ran on the Mac;
 real Claude Code and Codex rows still need the owner. Criteria, risk, approval
 requirements and status are unchanged.
+
+2026-10-10: closed the remaining nested Claude Code bash sandbox review gap on
+the reviewed host base 7b70d125. Admission and the trusted wrapper check
+`sandbox.enabled` in the run's own settings, project/local settings, managed
+files and drop-ins, preference files, cached remote settings and CLI settings.
+Enabling sources refuse with `unsupported_configuration:claude_bash_sandbox`;
+unknown invocation or dynamic settings sources fail closed. Newly created run
+settings explicitly disable it. The name and JSON paths were rechecked in the
+installed Claude Code 2.1.281 binary without invoking it. Suites 103 and 104 add
+refusal, acceptance and wrapper recheck rows; the proof README records their
+limits and the check-removal falsifier. Existing Seatbelt, run environment and
+Codex enforcement remain intact. No native or real-login qualification is claimed.

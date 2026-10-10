@@ -4,6 +4,7 @@
 def _v124_suite():
     import copy
     import importlib.util
+    import json
     import math
     import os
     from pathlib import Path
@@ -135,6 +136,130 @@ def _v124_suite():
             host.profile['engines']['codex']['argv'] = host.profile['engines']['codex']['argv'][:3] + flags
             P.validate(host.profile)
 
+    def claude(base, flags=()):
+        host, osx, request, paths = T.start(base)
+        request['engine'] = request['contract']['capability']['adapter'] = 'claude_code'
+        request['contract_digest'] = P.digest(request['contract'])
+        request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
+        host.profile['engines']['claude_code']['argv'] += list(flags)
+        host.qualification['profile_digest'] = P.digest(host.profile)
+        return host, osx, request, paths
+
+    def claude_refusal(base):
+        host, osx, request, paths = claude(base)
+        settings = paths['login'] / 'settings.json'
+        settings.write_text('{"sandbox":{"enabled":true}}')
+        observations = []
+        host.observe = observations.append
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+        assert osx.bootstraps == 0 and not list(host.root.iterdir())
+        assert observations[-1]['refusal'] == 'unsupported_configuration:claude_bash_sandbox'
+        assert json.loads(settings.read_text())['sandbox']['enabled'] is True
+
+    def claude_disabled(base):
+        for value in (None, {}, {'sandbox': {'enabled': False}, 'model': 'fixture'}):
+            host, osx, request, paths = claude(base / str(value), ['--settings={"sandbox":{"enabled":false}}'])
+            settings = paths['login'] / 'settings.json'
+            if value is not None:
+                settings.write_text(json.dumps(value))
+            host.preflight(request)
+            assert settings.exists() == (value is not None), 'preflight wrote settings'
+            run = host.start(request)
+            assert json.loads(settings.read_text()) == (value if value is not None else {'sandbox': {'enabled': False}})
+            assert osx.bootstraps == 1 and run.wait()['state'] == 'exited'
+            run.release()
+
+    def claude_sources(base):
+        import plistlib
+        original = P.CLAUDE_MANAGED, P.CLAUDE_PREFERENCES
+        P.CLAUDE_MANAGED, P.CLAUDE_PREFERENCES = base / 'managed', base / 'preferences'
+        try:
+            host, osx, request, paths = claude(base / 'run')
+            files = [paths['clone'] / '.claude' / name for name in ('settings.json', 'settings.local.json')]
+            files += [P.CLAUDE_MANAGED / 'managed-settings.json',
+                      P.CLAUDE_MANAGED / 'managed-settings.d' / 'policy.json',
+                      P.CLAUDE_PREFERENCES / P.CLAUDE_DOMAIN,
+                      P.CLAUDE_PREFERENCES / P.pwd.getpwuid(os.getuid()).pw_name / P.CLAUDE_DOMAIN,
+                      Path(request['environment']['HOME']) / 'Library/Preferences' / P.CLAUDE_DOMAIN,
+                      paths['login'] / 'remote-settings.json']
+            # Keep the accepted clone clean while exercising its ignored local settings.
+            (paths['clone'] / '.git/info/exclude').write_text('.claude/\n')
+            (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":false}}')
+            for path in files:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                for enabled in (True, False):
+                    value = {'sandbox': {'enabled': enabled}}
+                    path.write_bytes(plistlib.dumps(value) if path.suffix == '.plist' else json.dumps(value).encode())
+                    if enabled:
+                        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+                    else:
+                        host.preflight(request)
+                path.unlink()
+            assert osx.bootstraps == 0
+        finally:
+            P.CLAUDE_MANAGED, P.CLAUDE_PREFERENCES = original
+
+    def claude_invocation(base):
+        bad = '{"sandbox":{"enabled":true}}'
+        cases = [(['--settings', bad], 'claude_bash_sandbox'),
+                 (['--settings=' + bad], 'claude_bash_sandbox'),
+                 (['--managed-settings', bad], 'claude_bash_sandbox'),
+                 (['--managed-settings=' + bad], 'claude_bash_sandbox'),
+                 (['--project-config-root', '/elsewhere'], 'claude_invocation'),
+                 (['--worktree'], 'claude_invocation'), (['--settings'], 'claude_invocation'),
+                 (['--settings', '{}', '--settings', bad], 'claude_invocation'),
+                 (['--setting-sources=unknown'], 'claude_invocation'),
+                 (['--settings', 'missing.json'], 'claude_settings_missing')]
+        for number, (flags, refusal) in enumerate(cases):
+            host, osx, request, paths = claude(base / str(number), flags)
+            T.refused(lambda: host.start(request), 'unsupported_configuration:' + refusal)
+            assert osx.bootstraps == 0
+        host, osx, request, paths = claude(base / 'files', ['--settings=extra.json'])
+        extra = paths['clone'] / 'extra.json'
+        (paths['clone'] / '.git/info/exclude').write_text('extra.json\n')
+        extra.write_text(bad)
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+        extra.write_text('{"sandbox":{"enabled":false}}')
+        host.preflight(request)
+        host.profile['engines']['claude_code']['argv'][-1] = '--settings=' + str(extra)
+        host.qualification['profile_digest'] = P.digest(host.profile)
+        extra.write_text(bad)
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+        assert osx.bootstraps == 0
+
+    def claude_unreadable(base):
+        host, osx, request, paths = claude(base)
+        settings = paths['login'] / 'settings.json'
+        for text in ('{', '[]', '{"sandbox":null}', '{"sandbox":{"enabled":"false"}}',
+                     '{"sandbox":{"enabled":true,"enabled":false}}', '{"policyHelper":{}}',
+                     '{"policyHelpers":{}}', '{"env":{"CLAUDE_CODE_FORCE_SANDBOX":"1"}}'):
+            settings.write_text(text)
+            T.refused(lambda: host.start(request), 'unsupported_configuration:claude_')
+        settings.unlink()
+        settings.symlink_to(paths['login'] / 'missing')
+        T.refused(lambda: host.start(request), 'unavailable_service:claude_settings')
+        settings.unlink()
+        request['environment']['CLAUDE_CODE_FORCE_SANDBOX'] = '1'
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_settings_source')
+        del request['environment']['CLAUDE_CODE_FORCE_SANDBOX']
+        request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['scratch'])
+        T.refused(lambda: host.start(request), 'binding_mismatch:claude_config_dir')
+        assert osx.bootstraps == 0
+
+    def claude_wrapper(base):
+        from unittest.mock import patch
+        host, osx, request, paths = claude(base)
+        run = host.start(request)
+        (run.directory / 'engine.out').unlink()  # Remove the fake bootstrap's output.
+        # Change after supervisor admission, before the trusted wrapper's Popen.
+        (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
+        wrapper = T.load('project_runner_macos_wrapper')
+        wrapper.identity = lambda pid: dict(pid=pid)
+        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()):
+            assert wrapper.main(run.directory) == 125
+        assert M.read(run.directory / 'refusal.json') == {'refusal': 'unsupported_configuration:claude_bash_sandbox'}
+        assert not (run.directory / 'engine.out').exists()
+
     def capacity(base):
         host, osx, request, paths = T.start(base, 'blocked')
         run = host.start(request)
@@ -196,6 +321,8 @@ def _v124_suite():
         for engine in P.ENGINES:
             host, osx, request, paths = T.start(base / engine, 'ignoring')
             request['engine'] = request['contract']['capability']['adapter'] = engine
+            if engine == 'claude_code':
+                request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
             request['contract_digest'] = P.digest(request['contract'])
             run = host.start(request)
             run.stop()
@@ -266,6 +393,8 @@ def _v124_suite():
         for engine in P.ENGINES:
             host, osx, request, paths = T.start(base / engine)
             request['engine'] = request['contract']['capability']['adapter'] = engine
+            if engine == 'claude_code':
+                request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
             request['contract_digest'] = P.digest(request['contract'])
             run = host.start(request)
             result = run.wait()
@@ -276,6 +405,8 @@ def _v124_suite():
         for engine in P.ENGINES:
             host, osx, request, paths = T.start(base / engine, 'cooperative')
             request['engine'] = request['contract']['capability']['adapter'] = engine
+            if engine == 'claude_code':
+                request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
             request['contract_digest'] = P.digest(request['contract'])
             run = host.start(request)
             run.stop()
@@ -323,6 +454,9 @@ def _v124_suite():
     tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
              'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
              'AC1/interpreter': interpreter, 'AC1/nested-sandbox': nested, 'AC3/hard-kill-unknown': killed,
+             'AC1/claude-sandbox-refused': claude_refusal, 'AC1/claude-sandbox-disabled': claude_disabled,
+             'AC1/claude-settings-sources': claude_sources, 'AC1/claude-invocation': claude_invocation,
+             'AC1/claude-settings-unreadable': claude_unreadable, 'AC1/claude-wrapper-recheck': claude_wrapper,
              'AC3/recover': recover, 'AC2/capacity': capacity,
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
              'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,

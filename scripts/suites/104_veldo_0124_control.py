@@ -97,6 +97,8 @@ def _v124_control():
                 born = T.M.read(run.directory / 'request.json')['environment']
                 variable = C.ACC.PROFILES[engine]
                 assert born[variable] == str(paths['login'])
+                if engine == 'claude_code':
+                    assert json.loads((paths['login'] / 'settings.json').read_text())['sandbox']['enabled'] is False
                 # Production sets the run scoped HOME and TMPDIR, never the owner's.
                 assert born['HOME'] == str(paths['scratch'].resolve()) + '/home'
                 assert born['TMPDIR'].startswith(str(paths['usertemp'].resolve()) + '/veldo-')
@@ -135,6 +137,19 @@ def _v124_control():
             dispatch = contract['dispatch_id']
             assert ds.record(dispatch)['state'] == 'refused' and ds.receipt(dispatch, 'accept') is None
             assert backend.bootstraps == 0 and not seen
+        finally:
+            conn.close()
+
+    def claude_refusal(base):
+        receiver, contract, paths, backend, host, reservations, ds, conn, clean, seen = scenario(base, 'claude_code')
+        try:
+            (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
+            T.refused(lambda: receiver.start(contract, str(paths['clone']), str(paths['scratch'])),
+                      'unsupported_configuration:claude_bash_sandbox')
+            dispatch = contract['dispatch_id']
+            assert ds.record(dispatch)['state'] == 'refused' and ds.receipt(dispatch, 'accept') is None
+            assert backend.bootstraps == 0 and not seen
+            assert not [r for r in reservations._records().values() if r['type'] == 'invocation']
         finally:
             conn.close()
 
@@ -193,6 +208,7 @@ def _v124_control():
             conn.close()
 
     for name, test in {'AC1/accepted-store': accepted, 'AC1/refusals': refusals, 'AC2/precall-caps': caps,
+                       'AC1/claude-sandbox-store-refused': claude_refusal,
                        'AC2/invocation-boundaries': boundaries, 'AC3/retirement-obligations': retirement,
                        'AC3/unknown-charge': unknown}.items():
         with tempfile.TemporaryDirectory(prefix='v124-control-') as directory:

@@ -49,6 +49,7 @@ def fixture(base):
     engine = dict(argv=[executable, '-c', 'pass'], version='fixture', binary_digest=P.file_digest(executable),
                   configuration_digest=P.digest(configuration))
     engines = {name: copy.deepcopy(engine) for name in P.ENGINES}
+    engines['claude_code']['argv'] = [executable, '--print', 'fixture prompt']
     engines['codex']['argv'] += ['--sandbox', 'danger-full-access']
     profile = dict(schema=P.SCHEMA, revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
                    interpreter=executable, home=str(paths['owner']), account_roots=[str(paths['accounts'])],

@@ -121,7 +121,7 @@ def setup(base, mode, engine, runtime=1.2):
     # The harness is trusted and read only to the worker. Nothing here represents a
     # qualified Claude Code or Codex binary or a native qualification stamp.
     profile['engines'][engine]['argv'] = [sys.executable, str(probe), mode, str(config)] + (
-        ['--sandbox', 'danger-full-access'] if engine == 'codex' else [])
+        ['--sandbox', 'danger-full-access'] if engine == 'codex' else ['--print'])
     profile['engines'][engine]['binary_digest'] = P.file_digest(sys.executable)
     host = M.Supervisor(profile, None)
     dispatch = 'dispatch/native/%s/%s' % (engine, mode)

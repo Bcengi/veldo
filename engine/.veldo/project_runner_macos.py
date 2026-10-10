@@ -103,6 +103,9 @@ class Supervisor:
         environment = request.get('environment') or {}
         if any(environment.get(k) != v for k, v in self.run_environment(contract['dispatch_id'], scratch).items()):
             raise P.Refused('binding_mismatch:run_environment')
+        if request['engine'] == 'claude_code':
+            P.claude_settings(self.profile['engines']['claude_code']['argv'], clone,
+                              environment, request['login_profile'])
         return self.policy(request)
 
     def policy(self, request):
@@ -134,6 +137,9 @@ class Supervisor:
                 raise P.Refused('stale_version:dispatch_already_attempted')
             if self.status()['pending'] >= p['max_workers']:
                 raise P.Refused('unavailable_service:concurrency')
+            if request['engine'] == 'claude_code':
+                P.claude_settings(p['engines']['claude_code']['argv'], request['clone'],
+                                  request['environment'], request['login_profile'], create=True)
             directory.mkdir(mode=0o700)
             run = Run(self, directory, dispatch, label)
             remaining = min(p['runtime_seconds'], contract['deadline'] - self.os.wall())
@@ -144,6 +150,7 @@ class Supervisor:
                 Path(paths[name]).mkdir(mode=0o700, parents=True, exist_ok=True)
             engine = p['engines'][request['engine']]
             wrapper_request = dict(dispatch_id=dispatch, argv=engine['argv'], binary_digest=engine['binary_digest'],
+                                   engine=request['engine'], login_profile=request['login_profile'],
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
                                    heartbeat_seconds=p['heartbeat_seconds'],
