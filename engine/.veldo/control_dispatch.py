@@ -201,7 +201,8 @@ def contract_problems(contract):
         problems.append('repository')
     if subject_kind == 'conversation' and contract['repository'] is not None:
         problems.append('repository')
-    if contract['station'] not in STATIONS:
+    if (contract['station'] not in STATIONS
+            or (subject_kind == 'conversation') != (contract['station'] == 'turn')):
         problems.append('station')
     if not _count(contract['attempt']):
         problems.append('attempt')
@@ -397,6 +398,16 @@ def transition(conn, params, before):
         if holder:
             held = _entity(conn, record_id(holder))
             state = (held or {}).get('data', {}).get('state')
+            if state in HOLDING:
+                recovered = False
+                if state == 'unknown' and params.get('subject_kind') == 'conversation':
+                    recovered = any((turn := json.loads(raw)).get('dispatch_id') == holder
+                                    and turn.get('state') == 'ended'
+                                    and turn.get('outcome') == 'outcome_unknown'
+                                    for (raw,) in conn.execute(
+                                        'SELECT data FROM entities WHERE kind=?', ('conversation_turn',)))
+                if recovered:
+                    state = None
             if state in HOLDING:
                 # An unknown outcome is named as such: a stopped original dispatch, not a free slot.
                 raise Refused(('dispatch_outcome_unknown:' if state == 'unknown' else 'active_dispatch:') + holder,

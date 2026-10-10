@@ -73,7 +73,9 @@ def _v174_suite():
             roles[role_name] = {
                 'kind': 'specialist', 'capability_configuration': {'role': role_name, 'revision': 1},
                 'workers': [role_name + '-worker'], 'responsibilities': ['assist'], 'expertise': ['general'],
-                'proposal_permissions': [], 'engines': [provider], 'budget': {'wall_seconds': 30},
+                'proposal_permissions': [], 'engines': [provider],
+                'budget': {'capacity': 4, 'invocations': 20, 'wall_seconds': 300,
+                           'tokens': 100000, 'messages': 100},
                 'independence': {'distinct_from': []}}
         default = {'revision': 1, 'team': {'roles': roles}, 'saved_by': 'owner',
                    'assertion_digest': 'sha256:fixture', 'previous': None, 'digest': 'sha256:default-one'}
@@ -98,9 +100,10 @@ def _v174_suite():
 
     def runner(f, adapters):
         authority = f['authority']
-        reservations = CV.ConversationReservations(
-            authority.S, authority.conn, domain=authority.ids['domain_uuid'], principal='authority',
-            signer='authority', sign=authority.journal_sign)
+        reservations = L.D.RES.Reservations(
+            authority.S, authority.conn, domain=authority.ids['domain_uuid'], repository=None,
+            principal='authority', authorize=L.D.RES.service_authority,
+            signer='authority', sign=authority.journal_sign, subject_kind='conversation')
         dispatches = L.D.Dispatches(
             authority.S, authority.conn, domain=authority.ids['domain_uuid'], repository=None,
             principal='authority', signer='authority', sign=authority.journal_sign,
@@ -111,6 +114,14 @@ def _v174_suite():
     def prepare(run, f, identity, turn, role='assistant', adapter='claude_code'):
         conversation = f['conversations'].read(identity)
         revision = CV.role_at(f['authority'].conn, role)[1]
+        subjects = ([('account', account['id']) for account in L.D.RES.POOL.accounts(f['authority'].conn)]
+                    + [('project', identity), ('unit', identity)])
+        for scope, subject in subjects:
+            entity = L.D.RES.entity('policy', [f['authority'].ids['domain_uuid'], scope, subject])
+            if f['authority'].conn.execute('SELECT 1 FROM entities WHERE id=?', (entity,)).fetchone() is None:
+                run.reservations.configure('v174-policy/%s/%s' % (scope, subject), scope, subject,
+                    {'capacity': 10, 'invocations': 100, 'wall_seconds': 1000,
+                     'tokens': 1000000, 'messages': 1000}, now=time.time())
         return run.prepare_conversation(
             identity, turn['sequence'], intake_digest=turn['intake_digest'], adapter=adapter,
             configuration={'role': role, 'revision': revision['revision']}, role_revision=revision,
@@ -180,8 +191,31 @@ def _v174_suite():
         third = prepare(run2, f2, 'ordered', turns[2])
         c2.dispatched('ordered', 3, third['dispatch_id'], 2, third['reservation']['account'], 'conversations')
         check('AC2/current-role-revision', 'the next turn binds accepted role revision 2 after the owner changes it',
-              third['capability']['configuration']['conversation_role_revision']['revision'] == 2
+              third['capability']['configuration']['role_revision']['revision'] == 2
               and c2.turns('ordered')[2]['role_revision'] == 2)
+
+        # Review regressions: command redelivery and reservation admission are real transactions.
+        original = c2.message('ordered', 'replay-message', 'sha256:replay', owner='owner', command_id='replay')
+        c2.message('ordered', 'later-message', 'sha256:later', owner='owner')
+        replayed = c2.message('ordered', 'replay-message', 'sha256:replay', owner='owner', command_id='replay')
+        check('AC2/redelivery', 'the original command returns its original turn after a later message',
+              replayed == original and len(c2.turns('ordered')) == 5)
+        fcap = fixture('caps')
+        fcap['conversations'].open('capped', owner='owner', intake_digest='sha256:capped')
+        capped = fcap['conversations'].message('capped', 'capped-message', 'sha256:capped', owner='owner')
+        rcap, _ = runner(fcap, {'claude_code': 'claude_code'})
+        rcap.reservations.configure('cap-domain', 'domain', fcap['authority'].ids['domain_uuid'],
+                                   {'capacity': 0, 'invocations': 100, 'wall_seconds': 1000}, now=time.time())
+        denied = refusal(lambda: prepare(rcap, fcap, 'capped', capped))
+        check('AC2/domain-cap', 'a domain at capacity starts no turn and reserves no worker',
+              denied is not None and not any(v.get('type') == 'worker' for v in rcap.reservations._records().values()))
+        invalid = json.loads(json.dumps(third)); invalid['subject_kind'] = 'project'
+        invalid['repository'] = 'fixture'
+        check('AC4/turn-kind', 'a project contract cannot use the turn station',
+              'station' in L.D.contract_problems(invalid))
+        check('AC1/unknown-conversation', 'unknown conversations have a named refusal',
+              refusal(lambda: c1.message('absent', 'absent-message', 'sha256:absent', owner='owner'))
+              == 'invalid_input:conversation:unknown')
 
         # AC3: three conversations occupy three accounts, and a waiting turn consumes the only slot first.
         f3 = fixture('ac3', account_count=3)

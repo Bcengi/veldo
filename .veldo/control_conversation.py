@@ -9,7 +9,7 @@ same record before accepting the launch.
 Conversation worker reservations use the shared subscription-account records and
 the same account-pool selection order.  Their context names the conversation as the
 unit and deliberately carries no project or repository.  They are visible to the
-ordinary pool's active-run count, but do not invent project or unit usage policies.
+ordinary pool's active-run count and use the shared reservation ledger's policies.
 """
 import copy
 import hashlib
@@ -38,7 +38,6 @@ CFG = _organ('control_agent_config')
 SCHEMA = 'veldo.conversation/v1'
 TURN_SCHEMA = 'veldo.conversation_turn/v1'
 OPERATION = 'conversation_command'
-RESERVATION_OPERATION = 'conversation_reservation'
 KIND = 'conversation'
 TURN_KIND = 'conversation_turn'
 OPEN = 'open_conversation'
@@ -46,7 +45,8 @@ CLOSE = 'close_conversation'
 MESSAGE = 'send_conversation_message'
 DISPATCH = 'dispatch_conversation_turn'
 END = 'end_conversation_turn'
-OPERATIONS = (OPEN, CLOSE, MESSAGE, DISPATCH, END)
+DEFER = 'wait_conversation_turn'
+OPERATIONS = (OPEN, CLOSE, MESSAGE, DISPATCH, DEFER, END)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
 DEFAULT_ROLE = 'assistant'
@@ -140,9 +140,9 @@ def role_at(conn, name):
 
 
 def transition(conn, params, before):
-    operation, now = params.get('operation'), params.get('now')
+    operation, now = params.get('operation'), time.time()
     identity, principal = params.get('conversation'), params.get('principal')
-    if operation not in OPERATIONS or not _text(identity) or not _number(now):
+    if operation not in OPERATIONS or not _text(identity):
         raise Refused('invalid_input:conversation')
     cid = conversation_id(identity)
     current = before.get(cid)
@@ -208,18 +208,34 @@ def transition(conn, params, before):
     if operation == DISPATCH:
         if record.get('status') != 'open':
             raise Refused('stale_subject:conversation_closed')
-        if turn.get('state') != 'waiting':
+        retry = turn.get('state') == 'dispatched'
+        if retry:
+            prior = _row(conn, 'dispatch:' + str(turn.get('dispatch_id')))
+            if not prior or prior.get('kind') != 'dispatch' or prior['data'].get('state') != 'refused':
+                raise Refused('stale_subject:conversation_turn_active')
+        elif turn.get('state') != 'waiting':
             raise Refused('stale_subject:conversation_turn_active')
-        active = conn.execute("SELECT data FROM entities WHERE kind=?", (TURN_KIND,)).fetchall()
-        if any((value := json.loads(r[0])).get('conversation') == identity
-               and value.get('state') == 'dispatched' for r in active):
-            raise Refused('stale_subject:conversation_turn_active')
+        if not retry:
+            active = conn.execute("SELECT data FROM entities WHERE kind=?", (TURN_KIND,)).fetchall()
+            if any((value := json.loads(r[0])).get('conversation') == identity
+                   and value.get('state') == 'dispatched' for r in active):
+                raise Refused('stale_subject:conversation_turn_active')
         dispatch_id = params.get('dispatch_id')
         role_revision = params.get('role_revision')
         if not _text(dispatch_id) or type(role_revision) is not int or role_revision < 1:
             raise Refused('invalid_input:conversation_dispatch')
+        turn.setdefault('attempts', []).append({'dispatch_id': dispatch_id, 'account': params.get('account'),
+                                                'at': now})
         turn.update(state='dispatched', dispatch_id=dispatch_id, role_revision=role_revision,
                     account=params.get('account'), receiver=params.get('receiver'), dispatched_at=now)
+        return {tid: {'kind': TURN_KIND, 'data': turn}}
+    if operation == DEFER:
+        if turn.get('state') != 'dispatched' or turn.get('dispatch_id') != params.get('dispatch_id'):
+            raise Refused('stale_subject:conversation_turn')
+        prior = _row(conn, 'dispatch:' + str(turn.get('dispatch_id')))
+        if not prior or prior.get('kind') != 'dispatch' or prior['data'].get('state') != 'refused':
+            raise Refused('stale_subject:conversation_turn_active')
+        turn.update(state='waiting', last_refusal=params.get('refusal'))
         return {tid: {'kind': TURN_KIND, 'data': turn}}
     if turn.get('state') != 'dispatched' or turn.get('dispatch_id') != params.get('dispatch_id'):
         raise Refused('stale_subject:conversation_turn')
@@ -228,39 +244,6 @@ def transition(conn, params, before):
         raise Refused('invalid_input:conversation_outcome')
     turn.update(state='ended', outcome=outcome, ended_at=now)
     return {tid: {'kind': TURN_KIND, 'data': turn}}
-
-
-def reservation_transition(conn, params, before):
-    """Reserve or retire a conversation's account slot in the shared worker-record set."""
-    action, now = params.get('action'), params.get('now')
-    target = params.get('target')
-    if action not in ('reserve', 'retire') or not _number(now) or not _text(target):
-        raise Refused('invalid_input:conversation_reservation')
-    current = before.get(target)
-    if action == 'retire':
-        if not current or current.get('kind') != WORKER_KIND or current['data'].get('subject_kind') != KIND:
-            raise Refused('missing_reservation')
-        value = copy.deepcopy(current['data'])
-        if value.get('retired'):
-            return {}
-        value.update(retired=True, retirement={'outcome': params.get('outcome'), 'at': now})
-        return {target: {'kind': WORKER_KIND, 'data': value}}
-    if current is not None:
-        raise Refused('duplicate_dispatch')
-    records = {key: json.loads(data) for key, data in conn.execute(
-        'SELECT id, data FROM entities WHERE kind=?', (WORKER_KIND,))}
-    request = params.get('request')
-    choice = POOL.choose(conn, records, request, now, lambda _account: None)
-    if choice['account'] is None:
-        error = Refused(POOL.refusal(choice))
-        error.passed = choice['passed']
-        raise error
-    value = {'type': 'worker', 'dispatch': params['dispatch'], 'subject_kind': KIND,
-             'context': {'domain': params['domain'], 'repository': None, 'account': choice['account'],
-                         'project': None, 'unit': params['conversation']},
-             'retired': False, 'selection': choice['trace'],
-             'reserved_seq': conn.execute('SELECT COALESCE(MAX(seq),0)+1 FROM journal').fetchone()[0]}
-    return {target: {'kind': WORKER_KIND, 'data': value}}
 
 
 class Conversations:
@@ -293,7 +276,7 @@ class Conversations:
         return sorted(found, key=lambda value: (value.get('arrival', 0), value['conversation'], value['sequence']))
 
     def _run(self, operation, identity, fields, *, principal=None, now=None):
-        principal, now = principal or self.principal, time.time() if now is None else now
+        principal = principal or self.principal
         cid = conversation_id(identity)
         ids = [cid]
         if operation == MESSAGE:
@@ -305,12 +288,15 @@ class Conversations:
             row = _row(self.conn, item)
             expected[item] = row['version'] if row else 0
         params = dict(fields, operation=operation, conversation=identity, domain=self.domain,
-                      principal=principal, now=now)
+                      principal=principal)
         command_id = fields.get('command_id') or ('conversation/%s/%s/%s' % (
             operation, identity, S.digest_of(params).split(':', 1)[-1][:24]))
         command = {'command_id': command_id, 'principal': principal, 'operation': OPERATION,
                    'parameters': params, 'expected_versions': expected, 'artifact_digests': [],
                    'nonce': 'conversation/' + command_id}
+        prior = self.conn.execute('SELECT before_versions FROM journal WHERE command_id=?', (command_id,)).fetchone()
+        if prior:
+            command['expected_versions'] = json.loads(prior[0])
         event = {'schema': SCHEMA, 'operation': operation, 'conversation': identity, 'principal': principal,
                  'read_version': expected.get(cid), 'command_id': command_id}
         try:
@@ -322,8 +308,12 @@ class Conversations:
                 raise
             raise Refused(code, getattr(error, 'detail', '')) from None
         record = self.read(identity)
+        detail = {key: fields.get(key) for key in ('sequence', 'dispatch_id', 'role_revision', 'account', 'receiver')
+                  if fields.get(key) is not None}
+        if operation == MESSAGE:
+            detail['turn'] = max((turn['sequence'] for turn in self.turns(identity)), default=None)
         self.observe(dict(event, outcome='accepted', written_version=(record or {}).get('version'),
-                          watermark=receipt['seq']))
+                          watermark=receipt['seq'], **detail))
         return record, receipt
 
     def open(self, identity, *, owner, role=DEFAULT_ROLE, intake_digest, command_id=None, now=None):
@@ -331,6 +321,8 @@ class Conversations:
         directory = os.path.join(self.state_root, 'conversations', safe)
         record, _receipt = self._run(OPEN, identity, {'role': role, 'intake_digest': intake_digest,
             'directory': directory, 'command_id': command_id}, principal=owner, now=now)
+        os.makedirs(directory, mode=0o700, exist_ok=True)
+        os.chmod(directory, 0o700)
         return record
 
     def close(self, identity, version, *, owner, command_id=None, now=None):
@@ -340,9 +332,18 @@ class Conversations:
 
     def message(self, identity, intake_command, intake_digest, *, owner, command_id=None, now=None):
         before = len(self.turns(identity))
-        self._run(MESSAGE, identity, {'intake_command': intake_command, 'intake_digest': intake_digest,
-                                      'command_id': command_id}, principal=owner, now=now)
-        return self.turns(identity)[before]
+        _record, receipt = self._run(MESSAGE, identity, {'intake_command': intake_command,
+            'intake_digest': intake_digest, 'command_id': command_id}, principal=owner, now=now)
+        turns = self.turns(identity)
+        if before < len(turns):
+            return turns[before]
+        transition_row = self.conn.execute('SELECT transition FROM journal WHERE command_id=?',
+                                           (receipt['command_id'],)).fetchone()
+        transition = json.loads(transition_row[0]) if transition_row else {}
+        replayed = [entry['data'] for entry in transition.values() if entry.get('kind') == TURN_KIND]
+        if len(replayed) != 1:
+            raise Refused('unknown_outcome:conversation_replay')
+        return replayed[0]
 
     def dispatched(self, identity, sequence, dispatch_id, role_revision, account, receiver, *, now=None):
         self._run(DISPATCH, identity, {'sequence': sequence, 'dispatch_id': dispatch_id,
@@ -351,6 +352,11 @@ class Conversations:
 
     def ended(self, identity, sequence, dispatch_id, outcome, *, now=None):
         self._run(END, identity, {'sequence': sequence, 'dispatch_id': dispatch_id, 'outcome': outcome}, now=now)
+        return _turn(self.conn, identity, sequence)['data']
+
+    def deferred(self, identity, sequence, dispatch_id, refusal, *, now=None):
+        self._run(DEFER, identity, {'sequence': sequence, 'dispatch_id': dispatch_id,
+                                   'refusal': refusal}, now=now)
         return _turn(self.conn, identity, sequence)['data']
 
     def status(self):
@@ -365,45 +371,6 @@ class Conversations:
                 outcomes[turn['outcome']] = outcomes.get(turn['outcome'], 0) + 1
         return {'open': sum(c.get('status') == 'open' for c in conversations),
                 'waiting': sum(t.get('state') == 'waiting' for t in turns), 'outcomes': outcomes}
-
-
-class ConversationReservations:
-    """The subset of the reservation interface a conversation Runner consumes."""
-    def __init__(self, store, conn, *, domain, principal, signer, sign, generation=1, observe=None):
-        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal
-        self.signer, self.sign, self.generation = signer, sign, generation
-        self.observe = observe or (lambda event: None)
-        conn.command_registry[RESERVATION_OPERATION] = {'transaction_transition': reservation_transition,
-            'writes': ('entities', 'journal', 'commands', 'nonces')}
-
-    def reserve(self, command_id, dispatch, conversation, request, *, now):
-        target = RES.entity('worker', [self.domain, dispatch])
-        params = {'action': 'reserve', 'target': target, 'dispatch': dispatch, 'conversation': conversation,
-                  'request': request, 'domain': self.domain, 'now': now}
-        self._run(command_id, target, params)
-        return self.worker(dispatch)['context']['account']
-
-    def retire_conversation(self, command_id, dispatch, outcome, *, now):
-        target = RES.entity('worker', [self.domain, dispatch])
-        params = {'action': 'retire', 'target': target, 'dispatch': dispatch, 'outcome': outcome,
-                  'domain': self.domain, 'now': now}
-        self._run(command_id, target, params)
-
-    def _run(self, command_id, target, params):
-        row = _row(self.conn, target)
-        command = {'command_id': command_id, 'principal': self.principal, 'operation': RESERVATION_OPERATION,
-                   'parameters': params, 'expected_versions': {target: row['version'] if row else 0},
-                   'artifact_digests': [], 'nonce': 'conversation-reservation/' + command_id}
-        try:
-            return self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
-        except (Refused, self.store.StoreRefused) as error:
-            if isinstance(error, Refused):
-                raise
-            raise Refused(error.code) from None
-
-    def worker(self, dispatch):
-        row = _row(self.conn, RES.entity('worker', [self.domain, dispatch]))
-        return row['data'] if row and row['kind'] == WORKER_KIND else None
 
 
 def receiver_check(conn, contract):

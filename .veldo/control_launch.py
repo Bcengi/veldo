@@ -502,11 +502,6 @@ class Runner:
         slot, pending, until an obligation it waits on is completed and the retirement is retried. A
         dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
-        if hasattr(self.reservations, 'retire_conversation'):
-            if outcome == 'unknown':
-                return {'released': False, 'dispatch': dispatch_id, 'basis': basis}
-            self.reservations.retire_conversation('retire/' + dispatch_id, dispatch_id, outcome, now=self.clock())
-            return {'released': True, 'dispatch': dispatch_id, 'basis': basis}
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
                                    stop_requested=getattr(launch, 'stop_requested', False),
@@ -519,8 +514,6 @@ class Runner:
         and each wait makes one, and a scheduler may make one at any time. It also removes each run directory left
         behind whose run the kernel now shows gone (clear_runs)."""
         self.clear_runs()
-        if hasattr(self.reservations, 'retire_conversation'):
-            return []
         return self.retirements.sweep()
 
     def _left(self, dispatch_id, group=None, process=None):
@@ -637,7 +630,7 @@ class Runner:
         return contract
 
     def prepare_conversation(self, conversation, sequence, *, intake_digest, payload, adapter, configuration,
-                             role_revision, deadline):
+                             role_revision, deadline, exclude=()):
         """Prepare one repository-free conversation turn on the shared account pool.
 
         The conversation authority has already checked the owner and waiting turn.  This method takes
@@ -648,20 +641,31 @@ class Runner:
         now = self.clock()
         held = self.dispatches.active(conversation, 'turn')
         if held:
-            code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
-            raise D.Refused(code + held['dispatch_id'], 'one active turn per conversation')
+            recovered = False
+            if held['state'] == 'unknown':
+                row = self.dispatches.conn.execute(
+                    'SELECT data FROM entities WHERE kind=?', ('conversation_turn',)).fetchall()
+                recovered = any((turn := json.loads(raw)).get('dispatch_id') == held['dispatch_id']
+                                and turn.get('state') == 'ended' and turn.get('outcome') == 'outcome_unknown'
+                                for (raw,) in row)
+            if not recovered:
+                code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
+                raise D.Refused(code + held['dispatch_id'], 'one active turn per conversation')
         dispatch_id = 'dispatch/%s/%s' % (conversation, uuid.uuid4().hex)
-        target = self.account.adapters.get(adapter) if hasattr(self.account, 'adapters') else None
-        if target is None:
-            raise D.Refused('unregistered_adapter:' + str(adapter))
-        account = self.reservations.reserve('worker/' + dispatch_id, dispatch_id, conversation,
-                                            {'engine': target['engine'], 'host': target['host']}, now=now)
+        account = self.account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, None, conversation,
+                                       adapter=adapter, now=now,
+                                       **({'exclude': list(exclude)} if exclude else {}))
         try:
             entity, version, slot_digest = self._slot(dispatch_id)
             decision = {'decision_id': 'conversation/%s/%d' % (conversation, sequence), 'station': 'turn',
                         'unit': conversation, 'domain_uuid': self.dispatches.domain, 'watermark': sequence,
                         'inputs': {'conversation': conversation, 'turn': sequence}}
-            bound = {'conversation_role_revision': copy.deepcopy(role_revision)}
+            accepted = copy.deepcopy(role_revision)
+            accepted['native_tools'] = [item['name'] for item in role_revision['native_tools']
+                                        if item['load'] == 'always']
+            bound = {'role_revision': accepted,
+                     'mcp': [{key: item[key] for key in ('server', 'revision')}
+                             for item in role_revision['mcp'] if item['load'] == 'always']}
             contract = {'schema': D.SCHEMA, 'subject_kind': 'conversation', 'dispatch_id': dispatch_id,
                         'domain': self.dispatches.domain, 'repository': None, 'unit': conversation, 'station': 'turn',
                         'attempt': self.dispatches.attempts(conversation, 'turn') + 1,
@@ -1055,6 +1059,7 @@ class Receiver:
         self.binding = None
         self.token = None
         self.run = None
+        self.conversation_directory = None
         # VELDO-0158: the selected MCP servers with their credentials resolved just before the spawn, and the
         # values delivered into the engine environment, by name.
         self.credentials = None
@@ -1141,7 +1146,10 @@ class Receiver:
             conversation = _organ('control_conversation')
             reader = S.open_store(self.config['store'], mode='r')
             try:
-                return conversation.receiver_check(reader, contract)
+                problem = conversation.receiver_check(reader, contract)
+                record = conversation._conversation(reader, contract.get('unit'))
+                self.conversation_directory = ((record or {}).get('data') or {}).get('directory')
+                return problem
             finally:
                 reader.close()
         EL = _organ('control_eligibility')
@@ -1219,6 +1227,7 @@ class Receiver:
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
+                                   'turn_kind_refusals': int(refusal == 'binding_mismatch:conversation_receiver'),
                                    'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
@@ -1437,10 +1446,10 @@ class Receiver:
             except module.Refused as error:
                 return error.code
         try:
-            capability = (None if self.contract.get('subject_kind') == 'conversation' else
-                          HANDOFF.materialize(self.conn, self.contract['domain'], self.contract['repository'],
-                                             revision, {'project': self._engine_cwd(argv, dispatch_id, False),
-                                                        'factory': self.config.get('workspace')}))
+            capability = HANDOFF.materialize(
+                self.conn, self.contract['domain'], self.contract['repository'], revision,
+                {'project': self._engine_cwd(argv, dispatch_id, False),
+                 'factory': self.config.get('workspace') or self.config.get('state_root')})
             if capability and revision['engine'] != module.PROVIDER:
                 return 'unsupported_configuration:engine'
             if capability and module.PROVIDER == 'claude_code' and set(revision['native_tools']) - set(bound['tools']['registry']):
@@ -1481,12 +1490,13 @@ class Receiver:
                    'metrics': {'account_login_refused': 1}})
         return ACCOUNT_LOGIN + account
 
-    @staticmethod
-    def _engine_cwd(argv, dispatch_id, reported):
+    def _engine_cwd(self, argv, dispatch_id, reported):
         """The engine's working directory, where a relative path it reads resolves (THE ENGINE PROTOCOL): the
         work tree of the dispatch's clone when the clone entrance execs it (it changes into it), this
         receiver's own when this receiver's wrapper execs it directly; None for another host's engine, or a
         clone that names no single work tree."""
+        if self.contract and self.contract.get('subject_kind') == 'conversation':
+            return self.conversation_directory
         if reported:
             return None
         engine = engine_argv(argv, False)
@@ -1643,12 +1653,13 @@ class Receiver:
         against every applicable cap and the account's reported windows (VELDO-0036's InvocationGuard,
         whose launch is this spawn), so a refusal launches nothing."""
         dispatch_id = contract['dispatch_id']
-        if self.login is None or contract.get('subject_kind') == 'conversation':
+        if self.login is None:
             return self._spawn(dispatch_id, acceptance, adapter)
         reservations = D.RES.Reservations(S, self.conn, domain=self.config['domain'],
-                                          repository=self.config['repository'], principal=self.config['principal'],
+                                          repository=self.config.get('repository'), principal=self.config['principal'],
                                           authorize=D.RES.service_authority, signer=self.config['principal'],
-                                          sign=self.sign, generation=self.config.get('authority_generation', 1))
+                                          sign=self.sign, generation=self.config.get('authority_generation', 1),
+                                          subject_kind=contract.get('subject_kind', 'project'))
         accounts = ACC.Accounts(S, self.conn, principal=self.config['principal'], signer=self.config['principal'],
                                 sign=self.sign, generation=self.config.get('authority_generation', 1))
         spawned = []
@@ -1726,13 +1737,17 @@ class Receiver:
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+        cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
+        if cwd is not None:
+            os.makedirs(cwd, mode=0o700, exist_ok=True)
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.
         self._record(adapter, environment)
         if adapter.get('identity', 'local') != 'reported':
-            return self._contained(dispatch_id, argv, environment)
+            return self._contained(dispatch_id, argv, environment, cwd=cwd)
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, env=environment, start_new_session=True, close_fds=True)
+                                stderr=subprocess.PIPE, env=environment, cwd=cwd,
+                                start_new_session=True, close_fds=True)
 
     def _resolve_credentials(self, adapter):
         """VELDO-0158 AC1, AC2: the catalog servers the dispatch configuration selects, with their credentials
@@ -1748,7 +1763,7 @@ class Receiver:
             raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(self.contract['capability']['adapter']))
         self.credentials = DL.resolve(self.conn, self.config['domain'], configuration)
 
-    def _contained(self, dispatch_id, argv, environment):
+    def _contained(self, dispatch_id, argv, environment, cwd=None):
         """Start the trusted wrapper inside the dispatch's own containment group with every declared cap
         installed, check it is in that group with those controls, and only then release it to become the
         engine (the same pid). The group is created under the profile's concurrency admission. A worker
@@ -1769,7 +1784,7 @@ class Receiver:
             with group.admission():
                 try:
                     worker = subprocess.Popen(group.command(wrapper), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                              stderr=subprocess.PIPE, env=group.environment, start_new_session=True,
+                                              stderr=subprocess.PIPE, env=group.environment, cwd=cwd, start_new_session=True,
                                               close_fds=True, pass_fds=(beat, ready))
                 finally:
                     os.close(beat)

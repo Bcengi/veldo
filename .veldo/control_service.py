@@ -1750,8 +1750,12 @@ class Line:
         slot of each whose receiver died, then offer each assigned unit its next station."""
         self.activate()
         lost = []
+        self.activate()
+        report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}
+            if record.get('state') == 'unknown':
+                report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
             report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
                                     'unit': launch.contract['unit'], 'station': launch.contract['station'],
                                     'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
@@ -2168,9 +2172,11 @@ class ConversationLine:
         common = dict(domain=self.service.domain, repository=None, principal=self.service.principal,
                       signer=self.service.principal, sign=self.service.sign, generation=self.service.generation)
         self.dispatches = L.D.Dispatches(S, self.service.conn, **common, subject_kind='conversation')
-        self.reservations = CV.ConversationReservations(
-            S, self.service.conn, domain=self.service.domain, principal=self.service.principal,
-            signer=self.service.principal, sign=self.service.sign, generation=self.service.generation)
+        self.reservations = L.D.RES.Reservations(
+            S, self.service.conn, domain=self.service.domain, repository=None,
+            principal=self.service.principal, authorize=L.D.RES.service_authority,
+            signer=self.service.principal, sign=self.service.sign, generation=self.service.generation,
+            subject_kind='conversation')
         host = receiver.get('host') or socket.gethostname()
         adapters = {name: {'engine': value.get('engine'), 'host': host}
                     for name, value in (receiver.get('adapters') or {}).items()
@@ -2178,6 +2184,11 @@ class ConversationLine:
         self.pool = L.D.RES.POOL.Pool(adapters)
         self.runner = L.Runner(None, self.reservations, self.dispatches, self.invoke, account=self.pool,
                                runs=L.runs_root(receiver), profile=receiver.get('profile'))
+        self.active_refusals = set()
+        self.registration = S.COMMAND_REGISTRY['subscription_reservation']
+
+    def activate(self):
+        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration
 
     def invoke(self, contract):
         return L.invoke(self.receiver_path, contract, self.dispatches)
@@ -2191,15 +2202,52 @@ class ConversationLine:
         return [json.loads(data)['id'] for (data,) in self.service.conn.execute(
             'SELECT data FROM entities WHERE kind=? ORDER BY id', (CV.KIND,))]
 
+    def recover(self):
+        """Settle durable in-flight turns whose receiver was lost with the prior service."""
+        recovered = []
+        for identity in self._conversation_ids():
+            for turn in self.conversations.turns(identity):
+                if turn.get('state') != 'dispatched' or not turn.get('dispatch_id'):
+                    continue
+                dispatch_id = turn['dispatch_id']
+                record = self.dispatches.record(dispatch_id) or {}
+                state = record.get('state')
+                if state == 'prepared':
+                    self.dispatches.refuse(dispatch_id, record['contract_digest'], 'receiver_unavailable',
+                                           now=time.time(), expected_state='prepared')
+                    self.runner._retire(dispatch_id, 'cancelled', 'never_spawned')
+                    outcome = 'receiver_unavailable'
+                elif state in ('accepted', 'running'):
+                    self.dispatches.unknown(dispatch_id, record['contract_digest'], 'outcome_unknown:service_restart',
+                                            now=time.time(), expected_state=state)
+                    outcome = 'outcome_unknown'
+                elif state == 'unknown':
+                    outcome = 'outcome_unknown'
+                else:
+                    outcome = record.get('refusal') or state or 'outcome_unknown'
+                if state in ('accepted', 'running', 'unknown'):
+                    self.runner.orphans[dispatch_id] = {'group': None, 'process': record.get('process'), 'stopped': False}
+                    self.runner.release_orphans()
+                self.conversations.ended(identity, turn['sequence'], dispatch_id, outcome)
+                recovered.append({'conversation': identity, 'turn': turn['sequence'],
+                                  'dispatch_id': dispatch_id, 'outcome': outcome})
+        return recovered
+
     def run(self, report, ended):
         """Settle ended turns, then offer at most the first waiting turn of each conversation."""
+        self.activate()
+        report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}
+            if record.get('state') == 'unknown':
+                report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
             turn = self._turn_for(launch.dispatch_id)
             if turn is None:
                 continue
             outcome = (record.get('refusal') or record.get('reason') or
-                       ('completed' if L.D.completed(record) else record.get('state') or 'outcome_unknown'))
+                       ('completed' if L.D.completed(record) else
+                        'outcome_unknown' if record.get('state') == 'unknown' else
+                        record.get('state') or 'outcome_unknown'))
             try:
                 ended_turn = self.conversations.ended(turn['conversation'], turn['sequence'],
                                                       launch.dispatch_id, outcome)
@@ -2209,17 +2257,30 @@ class ConversationLine:
             else:
                 report['ended'].append({'conversation': turn['conversation'], 'turn': turn['sequence'],
                                         'dispatch_id': launch.dispatch_id, 'outcome': ended_turn['outcome']})
+        active = {turn['conversation'] for identity in self._conversation_ids()
+                  for turn in self.conversations.turns(identity) if turn.get('state') == 'dispatched'}
         offered = set()
         for turn in self.conversations.waiting():
             if turn['conversation'] in offered:
                 continue
             offered.add(turn['conversation'])
+            key = (turn['conversation'], turn['sequence'])
+            if turn['conversation'] in active:
+                if key not in self.active_refusals:
+                    self.active_refusals.add(key)
+                    report['refused'].append({'kind': 'conversation', 'conversation': turn['conversation'],
+                                              'turn': turn['sequence'], 'station': 'turn',
+                                              'refusals': ['active_dispatch']})
+                continue
+            self.active_refusals.discard(key)
             self.offer(turn, report)
 
     def offer(self, turn, report):
         identity, sequence = turn['conversation'], turn['sequence']
         conversation = self.conversations.read(identity)
         entry = {'kind': 'conversation', 'conversation': identity, 'turn': sequence, 'station': 'turn'}
+        contract = launch = None
+        excluded = []
         try:
             role, revision, team_revision = CV.role_at(self.service.conn, conversation['role'])
             engine = revision['engine']
@@ -2231,20 +2292,35 @@ class ConversationLine:
             if not isinstance(seconds, (int, float)) or isinstance(seconds, bool) or seconds <= 0:
                 raise CV.Refused('invalid_input:conversation_role_budget')
             payload = {'conversation': identity, 'turn': sequence, 'owner': conversation['owner'],
-                       'intake_command': turn['intake_command'], 'team_revision': team_revision}
-            contract = self.runner.prepare_conversation(
-                identity, sequence, intake_digest=turn['intake_digest'], payload=payload, adapter=adapter,
-                configuration={'role': conversation['role'], 'revision': revision['revision']},
-                role_revision=revision, deadline=time.time() + seconds)
-            try:
-                self.conversations.dispatched(identity, sequence, contract['dispatch_id'], revision['revision'],
-                                              contract['reservation']['account'], self.receiver_path)
-            except CV.Refused as error:
-                self.runner.cancel_prepared(contract, error.code)
-                raise
-            launch = self.runner.launch_prepared(contract)
+                       'intake_command': turn['intake_command'], 'team_revision': team_revision,
+                       'directory': conversation['directory']}
+            while True:
+                contract = self.runner.prepare_conversation(
+                    identity, sequence, intake_digest=turn['intake_digest'], payload=payload, adapter=adapter,
+                    configuration={'role': conversation['role'], 'revision': revision['revision']},
+                    role_revision=revision, deadline=time.time() + seconds, exclude=excluded)
+                try:
+                    self.conversations.dispatched(identity, sequence, contract['dispatch_id'], revision['revision'],
+                                                  contract['reservation']['account'], self.receiver_path)
+                except CV.Refused as error:
+                    self.runner.cancel_prepared(contract, error.code)
+                    raise
+                launch = self.runner.launch_prepared(contract)
+                refusal = str((launch.record or {}).get('refusal') or '')
+                temporary = (refusal.startswith(L.ACCOUNT_LOGIN)
+                             or refusal.startswith(('host_trust_required', 'missing_authority:host_trust',
+                                                     'missing_evidence:engine_baseline',
+                                                     'unavailable_service:engine',
+                                                     'unsupported_configuration:engine')))
+                if not temporary:
+                    break
+                self.runner.wait(launch, timeout=0)
+                excluded.append(contract['reservation']['account'])
         except Exception as error:  # noqa: BLE001 - one refused turn never ends the pass
             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
+            if contract is not None and launch is not None and excluded:
+                with contextlib.suppress(CV.Refused):
+                    self.conversations.deferred(identity, sequence, contract['dispatch_id'], code)
             if code.startswith('no_account'):
                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
                 report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
@@ -2288,7 +2364,8 @@ class FactoryLoop:
         self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver else None
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
-        self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
+        self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
+                       'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
 
     def start(self):
         """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
@@ -2297,6 +2374,7 @@ class FactoryLoop:
         swept = {}
         if self.conversation is not None:
             try:
+                swept['conversation_recovered'] = self.conversation.recover()
                 swept['conversations'] = self.conversation.runner.sweep_runs()
             except Exception as error:  # noqa: BLE001
                 swept['conversations'] = {'refusal': 'unknown_outcome:' + type(error).__name__}
@@ -2319,7 +2397,7 @@ class FactoryLoop:
         """VELDO-0204: provision every reservation policy (control_reservation_policies) on the service's connection
         with the lock serve holds, through the first line's Reservations made current by its activate. Its answer
         goes into `report`; one that raised is a fault by name in it, never the loop's end."""
-        first = next((line for _repository, line in sorted(self.lines.items())), None)
+        first = next((line for _repository, line in sorted(self.lines.items())), self.conversation)
         if first is None:
             return None
         try:
