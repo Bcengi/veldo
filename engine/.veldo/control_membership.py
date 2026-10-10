@@ -235,10 +235,27 @@ def _t_revoke_delegation(params, before, StoreRefused):
     return {d: {"kind": "delegation", "data": dict(before[d]["data"], revoked_at=params["revoked_at"])}, VERSIONS_ENTITY: _bump(before, "delegation_version")}
 
 
+def channel_transition(operation, refused):
+    """Owned membership write entry for the existing authenticated channel enrollment.
+
+    The channel service checks the envelope and possession before execution; its
+    fixed transition validates the signed parameters inside the store transaction.
+    No caller-supplied transition or generic mutation is admitted here.
+    """
+    if operation not in ('enroll_channel_edge', 'retire_channel_edge'):
+        raise ValueError('unknown channel membership operation')
+    def transition(params, before):
+        channel = _organ('control_channel_enrollment')
+        apply = channel._enroll_transition if operation == 'enroll_channel_edge' else channel._retire_transition
+        return apply(params, before, refused)
+    return transition
+
+
 def protect(store, conn):
     attach(store)
     store.declare_owners(conn, 'membership',
-        kinds={kind: tuple(sorted(ADMIN_OPERATIONS)) for kind in ('membership', 'verification_key')},
+        kinds={kind: tuple(sorted(ADMIN_OPERATIONS)) + ('enroll_channel_edge', 'retire_channel_edge')
+               for kind in ('membership', 'verification_key')},
         module=__file__, adopt_existing=True)
 
 

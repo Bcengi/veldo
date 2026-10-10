@@ -14,6 +14,8 @@ depends_on: [VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124]
 placement: [fleet, project_runner, contracts]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_channel_enrollment.py"
+  - ".veldo/control_channel_enrollment.py"
   - "scripts/suites/33_veldo_0020_authority.py"
   - "scripts/suites/36_veldo_0023_journal.py"
   - "engine/.veldo/authority_contract.py"
