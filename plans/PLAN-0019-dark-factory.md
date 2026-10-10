@@ -1423,6 +1423,14 @@ work:
     order: 15174
     release: 1
     stage: 5
+  - item: W152
+    spec: VELDO-0212
+    title: When Claude Code or Codex releases a new version, the factory installs it into its own engine store beside the qualified one, runs the full engine qualification against it, and switches to it by itself only when the qualification passes, while running jobs finish on the version they started and a failure keeps the last qualified version and is reported
+    feature_refs: [F8]
+    depends_on: [VELDO-0060, VELDO-0061, VELDO-0062, VELDO-0127, VELDO-0128, VELDO-0141, VELDO-0154, VELDO-0155, VELDO-0156, VELDO-0172, VELDO-0173, VELDO-0186]
+    order: 15189
+    release: 1
+    stage: 5
 
 regression:
   journeys:
@@ -1799,6 +1807,7 @@ These are writing-only allocations; no specification status or existing evidence
 | W149 | VELDO-0189 | 1 | 5; setup upgrades an earlier installation, built before VELDO-0171 |
 | W150 | VELDO-0203 | 1 | 5; owner-signed revision commands, before VELDO-0185 |
 | W151 | VELDO-0204 | 1 | 5; reservation policies from owner configuration, before VELDO-0185 |
+| W152 | VELDO-0212 | 1 | 5; automatic engine upgrades, after the current batch |
 
 ## Related baseline and follow-up disposition
 
@@ -2102,3 +2111,10 @@ VELDO-0036's writer, from the project budgets, team role budgets and account rec
 controls, at setup and at each pass of the running service, which VELDO-0185 AC4's dispatch needs on a
 fresh host (its third blocker, of 2026-10-04). W145 (VELDO-0185) and W44 (VELDO-0059) depend on it. The
 graph stays acyclic and stage-ordered.
+
+2026-10-10: within revision 4, one new item and no function cut. W152's VELDO-0212 has the factory
+install each new Claude Code and Codex release into its own engine store, run the full engine
+qualification against it and switch to it only on a pass, keeping running jobs on the version they
+started and the last qualified version on a failure, on the owner's decision of 2026-10-10 (Telegram
+33029-33031) after the Codex 0.162 and Claude Code 2.1.281 gate incidents. It is built after the current
+batch; no existing item depends on it. The graph stays acyclic and stage-ordered.
