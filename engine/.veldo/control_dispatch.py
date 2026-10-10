@@ -407,6 +407,9 @@ def transition(conn, params, before):
                                     for (raw,) in conn.execute(
                                         'SELECT data FROM entities WHERE kind=?', ('conversation_turn',)))
                 if recovered:
+                    slot = _entity(conn, RES.entity('worker', [params['domain'], holder]))
+                    recovered = bool(((slot or {}).get('data') or {}).get('account_released'))
+                if recovered:
                     state = None
             if state in HOLDING:
                 # An unknown outcome is named as such: a stopped original dispatch, not a free slot.

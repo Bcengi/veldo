@@ -648,6 +648,7 @@ class Runner:
                 recovered = any((turn := json.loads(raw)).get('dispatch_id') == held['dispatch_id']
                                 and turn.get('state') == 'ended' and turn.get('outcome') == 'outcome_unknown'
                                 for (raw,) in row)
+                recovered = recovered and bool((self.reservations.worker(held['dispatch_id']) or {}).get('account_released'))
             if not recovered:
                 code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
                 raise D.Refused(code + held['dispatch_id'], 'one active turn per conversation')
@@ -657,6 +658,15 @@ class Runner:
                                        **({'exclude': list(exclude)} if exclude else {}))
         try:
             entity, version, slot_digest = self._slot(dispatch_id)
+            records = self.reservations._records()
+            context = self.reservations.worker(dispatch_id)['context']
+            for policy in self.reservations._policies(context, records):
+                cap = policy['caps'].get('wall_seconds')
+                if cap is not None:
+                    remaining = cap - self.reservations.balances(policy['scope'], policy['subject'], records)['wall_seconds']
+                    if remaining <= 0:
+                        raise D.RES.Refused('usage_cap:' + policy['scope'] + ':wall_seconds')
+                    deadline = min(deadline, now + remaining)
             decision = {'decision_id': 'conversation/%s/%d' % (conversation, sequence), 'station': 'turn',
                         'unit': conversation, 'domain_uuid': self.dispatches.domain, 'watermark': sequence,
                         'inputs': {'conversation': conversation, 'turn': sequence}}

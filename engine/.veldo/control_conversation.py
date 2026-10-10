@@ -307,11 +307,16 @@ class Conversations:
             if isinstance(error, Refused):
                 raise
             raise Refused(code, getattr(error, 'detail', '')) from None
-        record = self.read(identity)
+        committed = self.conn.execute('SELECT transition FROM journal WHERE command_id=?', (command_id,)).fetchone()
+        changes = json.loads(committed[0]) if committed else {}
+        record = (changes.get(cid) or {}).get('data') or self.read(identity)
         detail = {key: fields.get(key) for key in ('sequence', 'dispatch_id', 'role_revision', 'account', 'receiver')
                   if fields.get(key) is not None}
-        if operation == MESSAGE:
-            detail['turn'] = max((turn['sequence'] for turn in self.turns(identity)), default=None)
+        changed_turn = next((item['data'] for item in changes.values() if item.get('kind') == TURN_KIND), None)
+        if changed_turn:
+            detail.update({key: changed_turn.get(key) for key in
+                           ('sequence', 'dispatch_id', 'role_revision', 'account', 'receiver', 'state')})
+            detail['turn_outcome'] = changed_turn.get('outcome')
         self.observe(dict(event, outcome='accepted', written_version=(record or {}).get('version'),
                           watermark=receipt['seq'], **detail))
         return record, receipt

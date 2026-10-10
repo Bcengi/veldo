@@ -2244,7 +2244,8 @@ class ConversationLine:
             turn = self._turn_for(launch.dispatch_id)
             if turn is None:
                 continue
-            outcome = (record.get('refusal') or record.get('reason') or
+            outcome = ('outcome_unknown' if record.get('state') == 'unknown' else
+                       record.get('refusal') or record.get('reason') or
                        ('completed' if L.D.completed(record) else
                         'outcome_unknown' if record.get('state') == 'unknown' else
                         record.get('state') or 'outcome_unknown'))

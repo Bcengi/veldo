@@ -10479,8 +10479,13 @@ def cases():
     # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
     S174 = '107_veldo_0174_conversations.py'
     add(174, 'v174-record-memory-only', S174, 'control_conversation.py',
-        "        return copy.deepcopy(row['data']) if row else None\n",
-        '        return None\n', ['AC1/restart-open'], ())
+        "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
+        "        memory = __import__('sqlite3').connect(':memory:', isolation_level=None, factory=type(conn))\n"
+        "        conn.backup(memory)\n"
+        "        memory.command_registry = dict(conn.command_registry)\n"
+        "        conn = memory\n"
+        "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
+        ['AC1/restart-open'], ())
     add(174, 'v174-offer-every-waiting-turn', S174, 'control_service.py',
         "            offered.add(turn['conversation'])\n", '', ['AC2/one-offer-per-pass'], ())
     add(174, 'v174-project-lines-first', S174, 'control_service.py',

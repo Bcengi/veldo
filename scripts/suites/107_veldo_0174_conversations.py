@@ -5,14 +5,14 @@ Run: python3 scripts/selftest.py --suite 107_veldo_0174_conversations
 Only ROOT, expect and fast_temp are consumed.  The suite uses real signed SQLite authority stores,
 OpenSSH identities, default-team and capability records, the production conversation authority,
 VELDO-0039 dispatch records, Runner preparation and account-pool selection.  Installer layout is
-rendered over a real enrolled Git workspace with the host-profile qualification seam fixed to a
-portable positive record; no service, login, socket, user unit or real engine is started.
+rendered over a real enrolled Git workspace. Real service restart and receiver subprocesses run over
+fixture accounts and pinned fake engines. No real login or user unit is used. A denied service socket
+is a host-required failure, never a passing restart row.
 """
 
 
 def _v174_suite():
     import importlib.util
-    import inspect
     import json
     import os
     from pathlib import Path
@@ -33,6 +33,7 @@ def _v174_suite():
     CS = load('v174_service', ROOT / ".veldo" / "control_service.py")
     E = load('v174_enrollment', ROOT / ".veldo" / "control_enrollment.py")
     H = load('v174_authority', ROOT / 'scripts/suites/support/v73_authority.py')
+    J = load('v174_journey', ROOT / 'scripts/suites/support/v174_journey.py')
     rows = {}
 
     def check(row, label, condition):
@@ -51,7 +52,11 @@ def _v174_suite():
     def fixture(tag, providers=('claude_code',), account_count=1):
         root = base / tag
         root.mkdir(parents=True)
-        authority = H.build(root / 'authority', ROOT / '.veldo', 17400 + len(fixtures),
+        organs = ROOT / '.veldo'
+        if tag == 'live':
+            organs = root / 'modules'
+            shutil.copytree(ROOT / '.veldo', organs, ignore=shutil.ignore_patterns('__pycache__'))
+        authority = H.build(root / 'authority', organs, 17400 + len(fixtures),
                             'http://127.0.0.1:1', 'fixture', scope='activation-repository')
         authority.admin('steward', 'enroll_principal', {
             'principal': 'authority', 'principal_type': 'service', 'roles': ['reservation_service'],
@@ -82,14 +87,15 @@ def _v174_suite():
         authority.fixture('default-team:1', 'default_team_revision', default)
         authority.fixture('default-team:head', 'default_team_head', {'revision': 1})
         host = socket.gethostname()
+        account_module = load('v174_accounts_'+tag,organs / 'control_accounts.py')
+        accounts = account_module.Accounts(authority.S,authority.conn,principal='owner',signer='authority',sign=authority.journal_sign)
         for index in range(account_count):
             provider = providers[index % len(providers)]
             account = 'account-%s-%d' % (provider, index + 1)
             profile = root / ('profile-' + account)
             profile.mkdir(parents=True)
-            authority.fixture('account:' + account, 'account', {
-                'id': account, 'provider': provider, 'label': account, 'profiles': {host: str(profile)},
-                'concurrency': 1, 'status': 'active', 'windows': {}})
+            accounts.register('account-register-'+account,account,provider,account,{host:str(profile)},
+                              concurrency=1,now=time.time())
         conversations = CV.Conversations(
             authority.S, authority.conn, domain=authority.ids['domain_uuid'], principal='authority',
             signer='authority', sign=authority.journal_sign, state_root=root / 'state')
@@ -128,16 +134,47 @@ def _v174_suite():
             payload={'owner': conversation['owner'], 'intake_command': turn['intake_command']},
             deadline=time.time() + 30)
 
+    def priority_journey(factory, live, cv, markers, CS, L):
+        from types import SimpleNamespace
+        authority=live['authority']; reservations=factory.conversation.reservations
+        authority.fixture('build-unit','execution_unit',{'project':'build-project','station':'build'})
+        authority.fixture('project:build-project','project',{'name':'build-project','coordination_budget':
+            {'capacity':1,'invocations':10,'wall_seconds':300}})
+        cv.open('priority-live',owner='owner',intake_digest='sha256:priority-live')
+        cv.message('priority-live','priority-live-1','sha256:priority-live-1',owner='owner')
+        build=[]
+        class ProjectLine:
+            def __init__(self):
+                self.reservations=reservations
+            def activate(self):
+                factory.conversation.activate()
+            def run(self,report,ended):
+                records=reservations._records()
+                choice=L.D.RES.POOL.choose(authority.conn,records,{'engine':'claude_code','host':live['host']},
+                                          time.time(),lambda account:None)
+                if choice['account']:
+                    build.append({'unit':'build-unit','station':'build','account':choice['account']})
+                    report['offered'].append(build[-1])
+        factory.lines['project-fixture']=ProjectLine()
+        try:
+            offered=J.pass_(factory)
+            first=not build and bool(offered['conversation_offered'])
+            J.drain(factory,markers)
+            return first and bool(build) and build[0]['station']=='build'
+        finally:
+            factory.lines.clear()
+
     try:
         # AC1: durable standalone versioned record and owner-only close.
         f1 = fixture('ac1')
         c1, a1 = f1['conversations'], f1['authority']
-        opened = c1.open('conversation-one', owner='owner', intake_digest='sha256:open-one')
-        reopened = CV.Conversations(a1.S, a1.conn, domain=a1.ids['domain_uuid'], principal='authority',
-                                    signer='authority', sign=a1.journal_sign,
-                                    state_root=f1['root'] / 'state').read('conversation-one')
-        check('AC1/restart-open', 'a new service object reads the same open version 1 record from the store',
-              reopened == opened and opened['status'] == 'open' and opened['version'] == 1)
+        try:
+            opened, reopened = J.restart(f1, CS, ROOT, identity='conversation-one')
+            check('AC1/restart-open', 'real service stop and start preserve the open record',
+                  opened is not None and reopened == opened and reopened['version'] == 1 and reopened['status'] == 'open')
+        except Exception as error:
+            check('AC1/restart-open', 'real service restart: '+str(error)[-350:], False)
+            opened = c1.read('conversation-one')
         before = c1.read('conversation-one')
         stale = refusal(lambda: c1.close('conversation-one', 0, owner='owner'))
         other = refusal(lambda: c1.close('conversation-one', 1, owner='steward'))
@@ -149,6 +186,16 @@ def _v174_suite():
         check('AC1/not-project', 'the record has no repository, backlog, charter or trunk and no project entity',
               not ({'repository', 'backlog', 'charter', 'trunk'} & set(opened))
               and a1.conn.execute('SELECT 1 FROM entities WHERE id=?', ('project:conversation-one',)).fetchone() is None)
+
+        PJ = load('v174_project', ROOT / '.veldo/control_project.py')
+        project_service = PJ.Projects(a1.S,a1.CM,a1.conn,a1.ids,'authority',a1.journal_sign,stop=lambda *a:None)
+        refused_projects=[]
+        for operation in PJ.OPERATIONS:
+            command=dict(a1.ids,operation=operation,project='conversation-one',principal='owner',
+                         command_id='not-project-'+operation,nonce='not-project-'+operation)
+            refused_projects.append(project_service.apply({'command':command,'signature':'fixture'})['reason'])
+        check('AC1/project-commands','all project commands refuse a conversation identity',
+              refused_projects==['invalid_input:conversation']*len(PJ.OPERATIONS))
 
         # AC2: three owner messages queue, only one dispatch is active, and a later turn binds the new role revision.
         f2 = fixture('ac2', account_count=2)
@@ -164,10 +211,6 @@ def _v174_suite():
               [t['sequence'] for t in c2.turns('ordered')] == [1, 2, 3]
               and [t['state'] for t in c2.turns('ordered')] == ['dispatched', 'waiting', 'waiting']
               and active_refusal.startswith('active_dispatch:'))
-        conversation_run = inspect.getsource(CS.ConversationLine.run)
-        check('AC2/one-offer-per-pass', 'the Line marks a conversation offered before considering its next waiting turn',
-              "if turn['conversation'] in offered:" in conversation_run
-              and "offered.add(turn['conversation'])" in conversation_run)
         dispatches2.refuse(first['dispatch_id'], dispatches2.record(first['dispatch_id'])['contract_digest'],
                            'fixture_end', now=time.time())
         run2._retire(first['dispatch_id'], 'cancelled', 'never_spawned')
@@ -217,6 +260,50 @@ def _v174_suite():
               refusal(lambda: c1.message('absent', 'absent-message', 'sha256:absent', owner='owner'))
               == 'invalid_input:conversation:unknown')
 
+        # A real receiver checks status before binding any engine or spawning anything.
+        c2.close('ordered',1,owner='owner')
+        observed=[]
+        receiver_config={'store':str(f2['authority'].db),'domain':f2['authority'].ids['domain_uuid'],
+                         'principal':'launch-receiver','journal_key':str(f2['authority'].keyfile['authority']),
+                         'receiver_kind':'conversation','adapters':{'claude_code':{'argv':['/bin/false']}}}
+        actual_receiver=L.Receiver(receiver_config,observed.append)
+        try:
+            actual_receiver.launch(third)
+        finally:
+            actual_receiver.close()
+        check('AC2/closed-dispatch','receiver refuses a turn closed after preparation before spawning',
+              observed[0].get('refusal')=='stale_subject:conversation_closed')
+        run2._retire(third['dispatch_id'],'cancelled','never_spawned')
+
+        # Temporary refusals retry the shared pool before ending or deferring the turn.
+        from types import SimpleNamespace
+        retry_fixture=fixture('retry',account_count=2)
+        retry_cv=retry_fixture['conversations']; retry_authority=retry_fixture['authority']
+        retry_cv.open('retry-turn',owner='owner',intake_digest='sha256:retry')
+        retry_turn=retry_cv.message('retry-turn','retry-message','sha256:retry-message',owner='owner')
+        retry_path=retry_fixture['root']/'receiver.json'
+        retry_path.write_text(json.dumps(dict(receiver_config,store=str(retry_authority.db),
+            domain=retry_authority.ids['domain_uuid'],host=retry_fixture['host'],
+            adapters={'claude_code':{'engine':'claude_code','argv':['/bin/false']}})))
+        service=SimpleNamespace(conn=retry_authority.conn,domain=retry_authority.ids['domain_uuid'],
+            principal='authority',generation=1,sign=retry_authority.journal_sign,conversations=lambda:retry_cv)
+        line=CS.ConversationLine(SimpleNamespace(service=service),str(retry_path))
+        initial=prepare(line.runner,retry_fixture,'retry-turn',retry_turn)
+        line.runner.cancel_prepared(initial,'fixture_setup')
+        accounts_tried=[]
+        def temporarily_refused(contract):
+            account=contract['reservation']['account']; accounts_tried.append(account)
+            line.dispatches.refuse(contract['dispatch_id'],L.D.digest(contract),
+                'host_trust_required:fixture' if len(accounts_tried)==1 else 'fixture_finished',now=time.time())
+            launch=L.Launch(None,contract,line.dispatches,time.time); launch._settle(lost=False)
+            return launch
+        line.runner.receiver=temporarily_refused
+        report={key:[] for key in ('offered','conversation_offered','refused','waiting','faults')}
+        line.offer(retry_turn,report)
+        check('AC2/account-retry','a temporary host refusal tries a different account in the same turn',
+              len(accounts_tried)==2 and len(set(accounts_tried))==2
+              and len(retry_cv.turns('retry-turn')[0]['attempts'])==2)
+
         # AC3: three conversations occupy three accounts, and a waiting turn consumes the only slot first.
         f3 = fixture('ac3', account_count=3)
         run3, _dispatches3 = runner(f3, {'claude_code': 'claude_code'})
@@ -250,9 +337,16 @@ def _v174_suite():
             {'engine': 'claude_code', 'host': f31['host']}, time.time(), lambda _account: None)
         check('AC3/turn-first-slot', 'the turn takes the one free slot and project work can take it after the turn ends',
               choice_while_turn['account'] is None and choice_after['account'] == priority['reservation']['account'])
-        loop_run = inspect.getsource(CS.FactoryLoop.run)
-        check('AC3/turn-before-project', 'the loop calls its conversation Line before iterating repository Lines',
-              loop_run.index('self.conversation.run') < loop_run.index('for repository, line in sorted(self.lines.items())'))
+        actual_receiver=L.Receiver(dict(receiver_config,store=str(f3['authority'].db),
+            domain=f3['authority'].ids['domain_uuid'],journal_key=str(f3['authority'].keyfile['authority']),
+            receiver_kind='project',repository=f3['authority'].ids['repository_uuid']),observed.append)
+        try:
+            actual_receiver.launch(contracts[0])
+        finally:
+            actual_receiver.close()
+        check('AC4/real-kind-refusal','actual repository receiver refuses a conversation contract',
+              observed[-1].get('refusal')=='binding_mismatch:conversation_receiver'
+              and observed[-1].get('metrics',{}).get('turn_kind_refusals')==1)
 
         # AC4: installer layout always writes the repository-free receiver and both kinds reject the other contract.
         f4 = fixture('ac4')
@@ -289,9 +383,88 @@ def _v174_suite():
               L.receiver_kind_problem(receiver, project_contract) == 'binding_mismatch:conversation_receiver'
               and L.receiver_kind_problem({'receiver_kind': 'project'}, conversation_contract)
               == 'binding_mismatch:conversation_receiver')
-        check('AC4/no-work-line', 'the no-work installation is loop-configured by its conversation receiver',
-              bool(layout['config']['receiver']['conversations']) and not layout['config']['work']
-              and 'if conversation_receiver else None' in inspect.getsource(CS.FactoryLoop.__init__))
+        # AC2/AC4: the real Line invokes both real receiver processes with pinned fake engines.
+        live = fixture('live', providers=('claude_code','codex'), account_count=2)
+        receiver_path, markers, mods = J.engines(ROOT, live, CS)
+        factory, lock, logs = J.loop(live, CS, receiver_path)
+        try:
+            cv = live['conversations']
+            for identity, role in [('claude-live','assistant'),('codex-live','assistant_codex')]:
+                cv.open(identity,owner='owner',role=role,intake_digest='sha256:'+identity)
+                cv.message(identity,identity+'-1','sha256:'+identity+'-1',owner='owner')
+            report = J.pass_(factory)
+            check('AC4/no-work-line','no work configuration still launches both engine turns',
+                  len(report['conversation_offered']) == 2 and
+                  all(e['result']=='accepted' for e in report['conversation_offered']))
+            for number in (2,3):
+                cv.message('claude-live','live-message-'+str(number),'sha256:'+str(number),owner='owner')
+            busy = J.pass_(factory); again = J.pass_(factory)
+            check('AC2/one-offer-per-pass','only one active turn, later messages remain waiting',
+                  [t['state'] for t in cv.turns('claude-live')]==['dispatched','waiting','waiting']
+                  and not busy['conversation_offered'] and not again['conversation_offered']
+                  and len(busy['refused'])==1)
+            check('AC2/active-refusal-once','waiting-turn refusal is emitted once across repeated passes',
+                  sum('active_dispatch' in e.get('refusals',[]) for r in (busy,again) for e in r['refused'])==1)
+            J.eventually(lambda:len(list(markers.glob('*.json')))>=2)
+            observed=[json.loads(p.read_text()) for p in markers.glob('*.json')]
+            check('AC2/role-tools','both fake executables observe exactly the accepted native tools and MCP sets',
+                  {v['engine']:v['tools'] for v in observed}=={'claude_code':['Read'],'codex':['update_plan']}
+                  and all(v['mcp']==[] for v in observed))
+            check('AC2/own-directory','each engine runs in its own durable conversation directory',
+                  {v['cwd'] for v in observed}=={cv.read(i)['directory'] for i in ('claude-live','codex-live')})
+            J.drain(factory,markers)
+            J.drain(factory,markers)
+            J.drain(factory,markers)
+            check('AC2/real-ordered-turns','all three turns complete in message order',
+                  [t['state'] for t in cv.turns('claude-live')]==['ended']*3
+                  and all(t['outcome']=='completed' for t in cv.turns('claude-live')))
+            ledger=factory.conversation.reservations._records()
+            invocations=[v for v in ledger.values() if v.get('type')=='invocation']
+            check('AC2/charged-windows','metered tokens are charged and reported account windows persist',
+                  len(invocations)==4 and all(v['observed'].get('tokens')==15 for v in invocations)
+                  and any(a.get('windows') for a in L.D.RES.POOL.accounts(live['authority'].conn)))
+            check('AC3/turn-before-project','loop observes conversation offers before a pending project build',
+                  priority_journey(factory, live, cv, markers, CS, L))
+            # Killing the receiver exercises the ordinary unknown-outcome account release.
+            (markers/'release').unlink(missing_ok=True)
+            cv.open('lost-live',owner='owner',intake_digest='sha256:lost')
+            cv.message('lost-live','lost-1','sha256:lost-1',owner='owner')
+            loss=J.pass_(factory)
+            current=cv.turns('lost-live')[0]
+            launched=factory.conversation.runner.launches.get(current.get('dispatch_id'))
+            if launched is not None:
+                launched.child.kill(); launched.child.wait(timeout=5)
+                factory.saw_end(factory.conversation,launched)
+                J.pass_(factory,'run_end')
+            worker=factory.conversation.reservations.worker(current.get('dispatch_id')) or {}
+            check('AC2/receiver-loss','lost receiver records unknown outcome and frees its account slot',
+                  bool(worker.get('account_released')) and cv.turns('lost-live')[0]['outcome']=='outcome_unknown')
+            # Durable recovery also works with an empty, newly constructed Runner.
+            cv.open('recover-live',owner='owner',intake_digest='sha256:recover')
+            pending=cv.message('recover-live','recover-1','sha256:recover-1',owner='owner')
+            J.pass_(factory)
+            pending=cv.turns('recover-live')[0]
+            receiver_launch=factory.conversation.runner.launches.get(pending.get('dispatch_id'))
+            if receiver_launch:
+                receiver_launch.child.kill(); receiver_launch.child.wait(timeout=5)
+                from types import SimpleNamespace
+                recovered=CS.ConversationLine(SimpleNamespace(service=factory.service),str(receiver_path))
+                recovered.recover()
+                check('AC2/durable-recovery','new Line reconciles persisted in-flight turns without its old Runner',
+                      cv.turns('recover-live')[0]['state']=='ended'
+                      and cv.turns('recover-live')[0]['outcome']=='outcome_unknown'
+                      and bool(recovered.reservations.worker(pending['dispatch_id']).get('account_released')))
+                factory.conversation.runner.launches.pop(pending['dispatch_id'],None)
+            else:
+                check('AC2/durable-recovery','fixture receiver started',False)
+
+        finally:
+            errors=live['root']/'receiver-errors.log'
+            if errors.exists() and errors.stat().st_size: print('  VELDO-0174 receiver error:',errors.read_text()[-2500:])
+            os.close(lock)
+            for launch in list(factory.conversation.runner.launches.values()):
+                launch.stop('fixture_cleanup')
+                factory.conversation.runner.wait(launch,timeout=3)
     except Exception as error:
         import traceback
         traceback.print_exc()
