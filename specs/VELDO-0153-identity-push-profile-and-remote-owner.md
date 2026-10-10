@@ -20,6 +20,9 @@ footprint:
   - "engine/.veldo/git_process.py"
   - ".veldo/git_process.py"
   - "packs/*/.veldo/git_process.py"
+  - "engine/.veldo/control_landing.py"
+  - ".veldo/control_landing.py"
+  - "packs/*/.veldo/control_landing.py"
   - "engine/.veldo/lander.py"
   - ".veldo/lander.py"
   - "packs/*/.veldo/lander.py"
@@ -141,3 +144,13 @@ is not present and must drive its creation/adoption integrations with the shared
 The owner's own-suite token restriction was retained pending clarification of the later
 consumer-suite instruction. Consumer runs, the gate, independent review and approval
 remain outstanding. Acceptance criteria, risk, readiness and approval requirements are unchanged.
+
+2026-10-10 review fixes: identity Git invocations now receive a private, empty HOME and
+XDG_CONFIG_HOME for their lifetime. Configuration checks follow includes and worktree
+configuration, including URL-named remote sections. Identity transport binds argv to the
+checked literal URL and disables push hooks. Watermark fetch and landing remote reads
+use the same identity profile. Executor observations use signed commands; direct-lander
+push counts survive restart and log the parsed owner. Host qualification requires an agent
+that authenticates as a different user and plants netrc and included-rewrite attacks.
+The expanded 0153 suite and registered falsifiers cover these boundaries. Consumer checks
+and scoped results are recorded in proof/VELDO-0153; the reviewer owns the aggregate gate.

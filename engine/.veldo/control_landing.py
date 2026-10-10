@@ -346,7 +346,11 @@ class Landing:
 
     def _remote_tip(self):
         """The remote's own answer now: the commit the receiver's ref holds there, or None."""
-        identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)
+        identities = _organ('control_git_identity')
+        try:
+            identity = identities.resolve(self.conn, self.domain, self.repository)
+        except identities.Refused as error:
+            raise Refused(error.code) from None
         remote = self.remote
         if '://' not in remote and not remote.startswith('git@'):
             configured = self._git(self.clone, 'config', '--get-all', 'remote.' + remote + '.pushurl')

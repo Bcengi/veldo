@@ -127,7 +127,7 @@ def checked_argv(args, remote):
                 break
             if flag not in flags and not (command == 'push' and flag.startswith('--force-with-lease=')):
                 raise Refused('invalid_input:identity_argv')
-        if not tail or tail[0] != remote:
+        if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):
             raise Refused('binding_mismatch:identity_destination')
     elif command not in ('config', 'credential', 'status'):
         raise Refused('invalid_input:identity_argv')
@@ -179,7 +179,9 @@ def local_operations(common, event=None):
     import fcntl
     import json
     path = Path(common) / 'veldo-identity-operations.jsonl'
-    with path.open('a+', encoding='utf-8') as stream:
+    if event is None and not path.exists():
+        return {}
+    with path.open('a+' if event is not None else 'r', encoding='utf-8') as stream:
         fcntl.flock(stream, fcntl.LOCK_EX)
         if event is not None:
             stream.write(json.dumps(event, sort_keys=True) + '\n')

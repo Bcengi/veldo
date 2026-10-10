@@ -10539,7 +10539,43 @@ def cases():
         "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
         ['team/newest-model'], ())
 
-    # VELDO-0153: each acceptance criterion has a single-change negative control.
+    # VELDO-0153: transport bypasses and durable, signed observations.
+    add(153, 'identity153-netrc', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n", '',
+        ['profile/netrc'])
+    add(153, 'identity153-includes', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "'config', '--includes', '--null', '--list'", "'config', '--no-includes', '--null', '--list'",
+        ['profile/include', 'profile/include-if'])
+    add(153, 'identity153-worktree', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "'config', '--includes', '--null', '--list'", "'config', '--local', '--includes', '--null', '--list'",
+        ['profile/worktree-config'])
+    add(153, 'identity153-url-section', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "or (key.startswith('remote.') and key.endswith(('.url', '.pushurl')) and value != remote)", 'or False',
+        ['profile/url-section-url', 'profile/url-section-pushurl'])
+    add(153, 'identity153-literal-destination', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):", 'if False:',
+        ['profile/literal-destination'])
+    add(153, 'identity153-pre-push-hook', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')", '        args[1:1] = options',
+        ['profile/pre-push-hook/alpha'])
+    add(153, 'identity153-global-config', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)", "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ['GIT_CONFIG_GLOBAL']",
+        ['profile/global-config'])
+    add(153, 'identity153-watermark-network', '107_veldo_0153_identity_push.py', 'lander.py',
+        'profile="identity", remote_url=url)', 'profile="network", remote_url=url)',
+        ['lander/watermark-identity'])
+    add(153, 'identity153-listing-network', '107_veldo_0153_identity_push.py', 'control_landing.py',
+        "self.ref, profile='identity',", "self.ref, profile='network',",
+        ['landing/list-identity'])
+    add(153, 'identity153-unsigned-observations', '107_veldo_0153_identity_push.py', 'control_effect_executor.py',
+        "            _git_process.identity_transport().record_operations(conn, config['_identity_events'], journal)", '            pass',
+        ['executor/execute-signed'])
+    add(153, 'identity153-volatile-counts', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        '        if event is not None:\n', '        if False:\n',
+        ['lander/alpha/durable'])
+    add(153, 'identity153-configured-owner-log', '107_veldo_0153_identity_push.py', 'lander.py',
+        "remote_owner=target['owner'])", "remote_owner=self.identity_record['remote_owner'])",
+        ['lander/owner-spelling'])
     add(153, 'identity153-global-helper', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
         "config = ['credential.helper=',", "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
         ['profile/planted-helper'])

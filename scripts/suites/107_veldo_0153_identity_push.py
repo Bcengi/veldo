@@ -38,6 +38,13 @@ def _v153_suite():
             return getattr(error, 'code', type(error).__name__)
         return None
 
+    host_spec = importlib.util.spec_from_file_location('host153', ROOT / 'proof/VELDO-0153/host_check.py')
+    host = importlib.util.module_from_spec(host_spec)
+    host_spec.loader.exec_module(host)
+    row('host/agent-same-user-refused', refusal(lambda: host.require_distinct_agent('alpha', 'ALPHA')) == 'AssertionError')
+    row('host/agent-unproven-refused', refusal(lambda: host.require_distinct_agent('alpha', None)) == 'AssertionError')
+    row('host/agent-distinct', refusal(lambda: host.require_distinct_agent('alpha', 'beta')) is None)
+
     with tempfile.TemporaryDirectory(prefix='identity153-') as tmp:
         base = Path(tmp)
         repo, bare, home, tools = [base / n for n in ('repo', 'remote.git', 'home', 'tools')]
@@ -119,6 +126,17 @@ def _v153_suite():
                             profile='identity', push_identity=record, remote_url=url, capture_output=True, text=True)
             filled = G.run(['git', '-C', str(repo), 'credential', 'fill'], input='protocol=https\nhost=github.com\npath=alpha/repo.git\n\n',
                            profile='identity', push_identity=record, remote_url=url, capture_output=True, text=True)
+            output_homes = []
+            def output_wire(args, **kwargs):
+                if args and args[0] in ('git', '/usr/bin/git'):
+                    output_homes.append(kwargs['env']['HOME'])
+                return original_run(args, **kwargs)
+            with patch.object(subprocess, 'run', output_wire):
+                username = G.check_output(['git', '-C', str(repo), 'config', '--get', 'credential.username'],
+                    profile='identity', push_identity=record, remote_url=url, text=True).strip()
+            output_home = output_homes[-1]
+            row('profile/check-output-home', username == 'x-access-token' and output_home != str(home)
+                and not Path(output_home).exists())
             row('profile/planted-helper', helpers.returncode == 0 and str(marker) not in helpers.stdout
                 and filled.returncode == 0 and 'password=' + token in filled.stdout and not marker.exists())
             beta_filled = G.run(['git', '-C', str(repo), 'credential', 'fill'], input='protocol=https\nhost=github.com\npath=beta/repo.git\n\n',
@@ -216,7 +234,7 @@ def _v153_suite():
                           push_identity=record, remote_url=url, capture_output=True, text=True)
                 row('profile/netrc', auth and auth[-1] == 'Basic ' + base64.b64encode(b'identity:fixture').decode()
                     and 'Basic ' + base64.b64encode(b'planted:planted').decode() not in auth)
-                row('profile/private-home-cleaned', observed_homes and all(not Path(h).exists() for h in observed_homes))
+                row('profile/private-home-cleaned', observed_homes and all(not Path(h).exists() and h != output_home for h in observed_homes))
             finally:
                 server.shutdown(); server.server_close(); thread.join()
 
@@ -230,7 +248,7 @@ def _v153_suite():
                 + 'keys=' + repr({owner: str(value) for owner, value in keys.items()}) + '\n'
                 + 'assert "IdentitiesOnly=yes" in a and "IdentityAgent=none" in a and "BatchMode=yes" in a\n'
                 + 'assert "SSH_AUTH_SOCK" not in os.environ and "GIT_SSH_COMMAND" not in os.environ\n'
-                + 'command=shlex.split(a[-1])\nassert a[a.index("-i")+1] == keys[command[1].split("/")[0]]\nassert command[0] in ("git-receive-pack","git-upload-pack")\n'
+                + 'command=shlex.split(a[-1])\nassert a[a.index("-i")+1] == keys[command[1].split("/")[0].casefold()]\nassert command[0] in ("git-receive-pack","git-upload-pack")\n'
                 + 'with open(' + repr(str(wirelog)) + ',"a") as f: f.write(json.dumps(a)+"\\n")\n'
                 + 'os.execv("/usr/bin/"+command[0],[command[0],' + repr(str(bare)) + '])\n')
             adapter.chmod(0o700)
@@ -286,13 +304,25 @@ def _v153_suite():
                             landed['ok'] and before() == tip if own else
                             landed.get('refusal') == 'binding_mismatch:remote_owner' and before() == old and len(invocations) == count)
                         if not own:
+                            restarted = L.GitLandOps(ops.repo_root, 'HEAD', domain='domain', repository=r['id'])
+                            row('lander/' + r['id'] + '/' + destination + '/refusals-durable',
+                                restarted.status()['identities'].get(r['id'], {}).get('refusals', {}).get('binding_mismatch:remote_owner', 0) > 0)
                             row('lander/' + r['id'] + '/' + destination + '/observed-owner',
                                 any(e['operation'] == 'push' and e.get('remote_owner') == destination for e in logs))
                         if own:
                             restarted = L.GitLandOps(ops.repo_root, 'HEAD', domain='domain', repository=r['id'])
-                            row('lander/' + r['id'] + '/durable', restarted.status()['identities'][r['id']]['pushes'] == 1)
+                            row('lander/' + r['id'] + '/durable', restarted.status()['identities'].get(r['id'], {}).get('pushes') == 1)
                             row('lander/' + r['id'] + '/observability', ops.identity_counts[r['id']]['pushes'] == 1
                                 and any(e['operation'] == 'push' and e['remote_owner'] == destination for e in logs))
+                reset()
+                git('config', 'remote.origin.url', 'git@github.com:Alpha/repo.git')
+                logs = []
+                ops = L.GitLandOps(repo, 'HEAD', domain='domain', repository='alpha', identity_conn=conn,
+                                   policy=lambda *a: {'ok': True}, observe=logs.append)
+                ops.candidate = dict(id='case-owner', state='verified', workspace=str(repo), commit=tip, tree=tree, watermark=old, gate={})
+                case_result = ops.finalize({'id': 'unit'})
+                row('lander/owner-spelling', case_result.get('ok') and any(
+                    e['operation'] == 'push' and e.get('remote_owner') == 'Alpha' for e in logs))
                 git('config', 'remote.origin.url', 'git@github.com:alpha/repo.git')
                 for destination in ('alpha', 'beta', 'third'):
                     reset()
@@ -329,8 +359,13 @@ def _v153_suite():
                      patch.object(X.E, 'finish', lambda conn, accepted, observation, journal: observation), \
                      patch.object(X.E.SIG, 'sign_bytes', lambda key, data, ns: signed_execute.append(data) or 'fixture-signature'):
                     executed = X.execute(dict(config, journal_key='fixture'), {'operation': 'execute'}, 'fixture', 'challenge', 'signature')
-                row('executor/execute-signed', executed.get('accepted') and len(signed_execute) == 1
+                    config['receivers']['git']['remote'] = 'git@github.com:third/repo.git'
+                    refused_execute = X.execute(dict(config, journal_key='fixture'), {'operation': 'execute'}, 'fixture', 'challenge', 'signature')
+                    config['receivers']['git']['remote'] = 'git@github.com:alpha/repo.git'
+                row('executor/execute-signed', executed.get('accepted') and len(signed_execute) == 2
                     and T.metrics(conn)['alpha']['pushes'] == 2)
+                row('executor/refused-signed', refused_execute.get('refusal') == 'binding_mismatch:remote_owner'
+                    and T.metrics(conn)['alpha']['refusals'].get('binding_mismatch:remote_owner') == 1)
                 reset()
                 missing_contract = dict(contract, repository_uuid='unbound')
                 count = len(invocations)

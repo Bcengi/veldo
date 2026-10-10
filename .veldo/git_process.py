@@ -126,7 +126,7 @@ def _options(args, kwargs, private_home=None):
         options = transport.options(record, remote)
         args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]
         if command == 'push':
-            args.insert(args.index('push') + 1, '--no-verify')
+            args.insert(len(prefix) + len(options) + 3, '--no-verify')
     return kwargs
 
 

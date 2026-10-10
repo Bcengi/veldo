@@ -29,6 +29,11 @@ def load(name):
     return module
 
 
+def require_distinct_agent(identity_user, agent_user):
+    assert identity_user and agent_user and agent_user.casefold() != identity_user.casefold(), \
+        'planted agent must authenticate as a different user'
+
+
 def main(config_path):
     config = json.loads(Path(config_path).read_text())
     entries = config['repositories']
@@ -58,7 +63,7 @@ def main(config_path):
             identity_user = authenticated_user(['-o', 'IdentitiesOnly=yes', '-o', 'IdentityAgent=none', '-i', key_path])
             assert identity_user, 'identity key did not authenticate'
             agent_user = authenticated_user(['-o', 'IdentityFile=none', '-o', 'IdentitiesOnly=no'])
-            assert agent_user is not None and agent_user != identity_user, 'planted agent must authenticate as a different user'
+            require_distinct_agent(identity_user, agent_user)
     results = {}
     with tempfile.TemporaryDirectory(prefix='veldo153-host-') as tmp:
         base = Path(tmp)
