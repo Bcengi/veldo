@@ -10549,9 +10549,10 @@ def cases():
     add(153, 'identity153-worktree', '107_veldo_0153_identity_push.py', 'git_process.py',
         "'config', '--includes', '--null', '--list'", "'config', '--local', '--includes', '--null', '--list'",
         ['profile/worktree-config'])
+    # The URL-named section's clause as c489e202 left it (the earlier anchor no longer exists).
     add(153, 'identity153-url-section', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
-        "or (key.startswith('remote.') and key.endswith(('.url', '.pushurl')) and value != remote)", 'or False',
-        ['profile/url-section-url', 'profile/url-section-pushurl'])
+        "or (section.lower() == 'remote' and subsection == remote", 'or (False',
+        ['profile/url-section-url', 'profile/url-section-pushurl', 'profile/url-section-other'])
     add(153, 'identity153-literal-destination', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
         "if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):", 'if False:',
         ['profile/literal-destination'])
@@ -10582,6 +10583,36 @@ def cases():
     add(153, 'identity153-host-only', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
         "if owner.casefold() != record['remote_owner'].casefold():", 'if False:',
         ['owner/alpha/push/beta', 'lander/alpha/beta', 'executor/beta'])
+    # c489e202: a remote of another name is no override; refusing every remote's url or pushurl that
+    # differs from the push URL (the defect it fixed) must fail the kept-upstream row.
+    add(153, 'identity153-any-remote-section', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "(section.lower() == 'remote' and subsection == remote\n"
+        "                    and not (name.lower() in ('url', 'pushurl') and value == remote))",
+        "(section.lower() == 'remote' and name.lower() in ('url', 'pushurl') and value != remote)",
+        ['profile/other-remote-kept'])
+    # 8c66a38e: a push the remote rejected leaves the effect unknown (VELDO-0028), never refused.
+    add(153, 'identity153-rejected-refused', '107_veldo_0153_identity_push.py', 'control_effect_executor.py',
+        "        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+        "        if rejected:\n            raise E.Refused('push_refused:remote')\n"
+        "        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+        ['executor/remote-refused'])
+    # A lander push the remote refused is an unknown outcome in the refusal classes, never settled.
+    add(153, 'identity153-push-refused-class', '107_veldo_0153_identity_push.py', 'lander.py',
+        '    "unresolved_dependency": "missing_evidence", "clock_uncertain": "unknown_outcome",\n',
+        '    "unresolved_dependency": "missing_evidence", "clock_uncertain": "unknown_outcome",\n'
+        '    "push_refused": "stale_subject",\n',
+        ['lander/push-refused-unknown'])
+    # eecfa244: the finalize stage's own observation beside the identity push, its push detail, and
+    # the common directory sync_main resolved, reused rather than read again.
+    add(153, 'identity153-finalize-event', '67_veldo_0056_candidates.py', 'lander.py',
+        '        self._event("finalize", "accepted" if pushed else "refused", refusal, pushed=pushed)\n', '',
+        ['candidate/observations'])
+    add(153, 'identity153-push-detail', '67_veldo_0056_candidates.py', 'lander.py',
+        'refusal=refusal,\n                    detail=push.stderr.strip())', 'refusal=refusal)',
+        ['candidate/observations'])
+    add(153, 'identity153-common-dir-reread', '67_veldo_0056_candidates.py', 'lander.py',
+        '            self.common_dir = common or None\n', '',
+        ['candidate/every-git-operation-checked'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
