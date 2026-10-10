@@ -94,7 +94,7 @@ RECORD_KIND = 'dispatch'
 INDEX_KIND = 'dispatch_active'
 # The stations that launch a worker (control_eligibility.CALL_STATIONS), and those whose contract
 # binds the builder's claim (VELDO-0021: build requires claim_current, review does not).
-STATIONS = ('build', 'review', 'coordination')
+STATIONS = ('build', 'review', 'coordination', 'turn')
 CLAIMED_STATIONS = ('build',)
 
 STATES = ('prepared', 'accepted', 'running', 'exited', 'refused', 'unknown')
@@ -114,6 +114,7 @@ STOP = 'dispatch-outcome-unknown'
 
 CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'station', 'attempt', 'source',
                    'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation')
+SUBJECT_KINDS = ('project', 'conversation')
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
 TERMINATION_FIELDS = ('returncode', 'signal', 'output_digest', 'output_bytes', 'deadline_stop')
 ARTIFACT_FIELDS = ('verdict', 'complete', 'digest')
@@ -189,16 +190,27 @@ def contract_problems(contract):
     missing = [f for f in CONTRACT_FIELDS if f not in contract]
     if missing:
         return missing
-    problems = ['unexpected:' + f for f in sorted(set(contract) - set(CONTRACT_FIELDS))]
+    problems = ['unexpected:' + f for f in sorted(set(contract) - set(CONTRACT_FIELDS) - {'subject_kind'})]
+    subject_kind = contract.get('subject_kind', 'project')
+    if subject_kind not in SUBJECT_KINDS:
+        problems.append('subject_kind')
     if contract['schema'] != SCHEMA:
         problems.append('schema')
-    problems += [f for f in ('dispatch_id', 'domain', 'repository', 'unit') if not _text(contract[f])]
+    problems += [f for f in ('dispatch_id', 'domain', 'unit') if not _text(contract[f])]
+    if subject_kind == 'project' and not _text(contract['repository']):
+        problems.append('repository')
+    if subject_kind == 'conversation' and contract['repository'] is not None:
+        problems.append('repository')
     if contract['station'] not in STATIONS:
         problems.append('station')
     if not _count(contract['attempt']):
         problems.append('attempt')
     source = contract['source']
-    if not isinstance(source, dict) or not _hex(source.get('commit')) or not _hex(source.get('tree')):
+    if subject_kind == 'conversation':
+        if (not isinstance(source, dict) or source.get('conversation') != contract['unit']
+                or not _count(source.get('turn')) or not _text(source.get('intake_digest'))):
+            problems.append('source')
+    elif not isinstance(source, dict) or not _hex(source.get('commit')) or not _hex(source.get('tree')):
         problems.append('source')
     given = contract['input']
     decision = given.get('decision') if isinstance(given, dict) else None
@@ -217,10 +229,15 @@ def contract_problems(contract):
     if (not isinstance(reservation, dict) or not _text(contract['dispatch_id']) or not _text(contract['domain'])
             or reservation.get('entity') != RES.entity('worker', [contract['domain'], contract['dispatch_id']])
             or not _count(reservation.get('version')) or not _text(reservation.get('digest'))
-            or not _text(reservation.get('account')) or not _text(reservation.get('project'))):
+            or not _text(reservation.get('account'))
+            or (subject_kind == 'project' and not _text(reservation.get('project')))
+            or (subject_kind == 'conversation' and reservation.get('project') is not None)):
         problems.append('reservation')
     claim = contract['claim']
-    if claim is None:
+    if subject_kind == 'conversation':
+        if claim is not None:
+            problems.append('claim')
+    elif claim is None:
         if contract['station'] in CLAIMED_STATIONS and not (decision.get('inputs') or {}).get('team_assignment'):
             problems.append('claim')
     elif (not isinstance(claim, dict) or not _text(contract['repository']) or not _text(contract['unit'])
@@ -292,13 +309,13 @@ def _entity(conn, identity):
     return {'kind': row[0], 'version': row[1], 'digest': row[2], 'data': json.loads(row[3])}
 
 
-def _authorize(conn, principal, repository, now):
+def _authorize(conn, principal, repository, now, subject_kind='project'):
     """Current authorization at the dispatch boundary, read inside the command's transaction."""
     row = _entity(conn, principal) if _text(principal) else None
     entry = dict(row['data'], principal=principal) if row and row['kind'] == 'membership' else None
     active, why = AC.active_member(entry, now)
     if (not active or entry.get('principal_type') not in AC.BOUNDARIES['dispatch_acceptance']
-            or not CM.scope_covers(entry.get('scope'), repository)):
+            or (subject_kind == 'project' and not CM.scope_covers(entry.get('scope'), repository))):
         raise Refused('missing_authority', why or 'not an active service member for this repository')
 
 
@@ -312,7 +329,7 @@ def _reservation_bound(conn, contract):
     context = data.get('context') or {}
     if (data.get('dispatch') != contract['dispatch_id'] or context.get('domain') != contract['domain']
             or context.get('repository') != contract['repository'] or context.get('unit') != contract['unit']
-            or context.get('account') != binding['account'] or context.get('project') != binding['project']):
+            or context.get('account') != binding['account'] or context.get('project') != binding.get('project')):
         raise Refused('reservation_mismatch:context', binding['entity'])
     if data.get('retired'):
         raise Refused('reservation_retired', binding['entity'])
@@ -322,6 +339,8 @@ def _reservation_bound(conn, contract):
 
 def _claim_bound(conn, contract):
     """The claim the contract binds: still owned by its holder at its generation (VELDO-0031)."""
+    if contract.get('subject_kind') == 'conversation':
+        return
     binding = contract['claim']
     assignment = contract['input']['decision']['inputs'].get('team_assignment')
     if assignment:
@@ -356,7 +375,8 @@ def transition(conn, params, before):
     action, now = params.get('action'), params.get('now')
     if action not in TRANSITIONS or not _number(now) or not _text(params.get('dispatch_id')):
         raise Refused('invalid_input', 'unknown action, time or dispatch')
-    _authorize(conn, params.get('principal'), params.get('repository'), now)
+    _authorize(conn, params.get('principal'), params.get('repository'), now,
+               params.get('subject_kind', 'project'))
     rid = record_id(params['dispatch_id'])
     current = before.get(rid)
     history = {'action': action, 'at': now, 'principal': params['principal']}
@@ -368,7 +388,8 @@ def transition(conn, params, before):
         if problems:
             raise Refused('incomplete_contract:' + ','.join(problems))
         if (contract['dispatch_id'] != params['dispatch_id'] or contract['domain'] != params['domain']
-                or contract['repository'] != params['repository']):
+                or contract['repository'] != params['repository']
+                or contract.get('subject_kind', 'project') != params.get('subject_kind', 'project')):
             raise Refused('binding_mismatch:coordinates')
         iid = index_id(contract['domain'], contract['repository'], contract['unit'], contract['station'])
         index = (before.get(iid) or {}).get('data') or {}
@@ -456,12 +477,16 @@ class Dispatches:
     principal is the service writing (the runner prepares; the launch receiver accepts, runs and
     exits); `sign(bytes) -> text` signs its journal records as `signer`."""
 
-    def __init__(self, store, conn, *, domain, repository, principal, signer, sign, generation=1, observe=None):
-        if not all(_text(v) for v in (domain, repository, principal, signer)):
+    def __init__(self, store, conn, *, domain, repository, principal, signer, sign, generation=1, observe=None,
+                 subject_kind='project'):
+        if (not all(_text(v) for v in (domain, principal, signer))
+                or subject_kind not in SUBJECT_KINDS
+                or (subject_kind == 'project' and not _text(repository))
+                or (subject_kind == 'conversation' and repository is not None)):
             raise Refused('invalid_input', 'domain, repository, principal and signer are named')
         self.store, self.conn = store, conn
         self.domain, self.repository, self.principal = domain, repository, principal
-        self.signer, self.sign, self.generation = signer, sign, generation
+        self.signer, self.sign, self.generation, self.subject_kind = signer, sign, generation, subject_kind
         self.observe = observe or (lambda event: None)
         self.counts = {'accepted': 0, 'refused': 0}
         conn.command_registry[OPERATION] = {'transaction_transition': transition,
@@ -519,7 +544,7 @@ class Dispatches:
         if all(_text(current.get(f)) for f in ('unit', 'station')):
             ids.append(index_id(self.domain, self.repository, current['unit'], current['station']))
         params = dict(fields, action=action, dispatch_id=dispatch_id, now=now, principal=self.principal,
-                      domain=self.domain, repository=self.repository)
+                      domain=self.domain, repository=self.repository, subject_kind=self.subject_kind)
         # Idempotent by content: a delivery retry of the same observation replays its first result,
         # and a different observation is a new command the transition itself judges.
         command_id = 'dispatch/%s/%s/%s' % (action, dispatch_id, digest(params)[len('sha256:'):][:24])

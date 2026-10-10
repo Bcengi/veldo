@@ -197,6 +197,7 @@ WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-
 (Release 2), and no model API. Standard library only.
 """
 import contextlib
+import copy
 import errno
 import hashlib
 import math
@@ -494,6 +495,11 @@ class Runner:
         slot, pending, until an obligation it waits on is completed and the retirement is retried. A
         dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
+        if hasattr(self.reservations, 'retire_conversation'):
+            if outcome == 'unknown':
+                return {'released': False, 'dispatch': dispatch_id, 'basis': basis}
+            self.reservations.retire_conversation('retire/' + dispatch_id, dispatch_id, outcome, now=self.clock())
+            return {'released': True, 'dispatch': dispatch_id, 'basis': basis}
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
                                    stop_requested=getattr(launch, 'stop_requested', False),
@@ -506,6 +512,8 @@ class Runner:
         and each wait makes one, and a scheduler may make one at any time. It also removes each run directory left
         behind whose run the kernel now shows gone (clear_runs)."""
         self.clear_runs()
+        if hasattr(self.reservations, 'retire_conversation'):
+            return []
         return self.retirements.sweep()
 
     def _left(self, dispatch_id, group=None, process=None):
@@ -620,6 +628,64 @@ class Runner:
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise
         return contract
+
+    def prepare_conversation(self, conversation, sequence, *, intake_digest, payload, adapter, configuration,
+                             role_revision, deadline):
+        """Prepare one repository-free conversation turn on the shared account pool.
+
+        The conversation authority has already checked the owner and waiting turn.  This method takes
+        the account slot and records a VELDO-0039 contract before the Line changes that turn to
+        dispatched or invokes the receiver.
+        """
+        self.sweep()
+        now = self.clock()
+        held = self.dispatches.active(conversation, 'turn')
+        if held:
+            code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
+            raise D.Refused(code + held['dispatch_id'], 'one active turn per conversation')
+        dispatch_id = 'dispatch/%s/%s' % (conversation, uuid.uuid4().hex)
+        target = self.account.adapters.get(adapter) if hasattr(self.account, 'adapters') else None
+        if target is None:
+            raise D.Refused('unregistered_adapter:' + str(adapter))
+        account = self.reservations.reserve('worker/' + dispatch_id, dispatch_id, conversation,
+                                            {'engine': target['engine'], 'host': target['host']}, now=now)
+        try:
+            entity, version, slot_digest = self._slot(dispatch_id)
+            decision = {'decision_id': 'conversation/%s/%d' % (conversation, sequence), 'station': 'turn',
+                        'unit': conversation, 'domain_uuid': self.dispatches.domain, 'watermark': sequence,
+                        'inputs': {'conversation': conversation, 'turn': sequence}}
+            bound = {'conversation_role_revision': copy.deepcopy(role_revision)}
+            contract = {'schema': D.SCHEMA, 'subject_kind': 'conversation', 'dispatch_id': dispatch_id,
+                        'domain': self.dispatches.domain, 'repository': None, 'unit': conversation, 'station': 'turn',
+                        'attempt': self.dispatches.attempts(conversation, 'turn') + 1,
+                        'source': {'conversation': conversation, 'turn': sequence, 'intake_digest': intake_digest},
+                        'input': {'decision': decision, 'context': {'owner': payload.get('owner')},
+                                  'payload': payload, 'payload_digest': D.digest(payload)},
+                        'capability': {'adapter': adapter, 'configuration': bound,
+                                       'configuration_digest': D.digest(bound)},
+                        'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
+                                        'account': account, 'project': None},
+                        'claim': None, 'deadline': deadline, 'authority_generation': self.dispatches.generation}
+            self.dispatches.prepare(contract, now=now)
+        except BaseException:
+            self._retire(dispatch_id, 'cancelled', 'never_spawned')
+            raise
+        return contract
+
+    def launch_prepared(self, contract):
+        """Invoke a contract already prepared by prepare_conversation."""
+        launch = self.receiver(contract)
+        self.launches[contract['dispatch_id']] = launch
+        if launch.owned and (launch.record or {}).get('state') == 'refused':
+            self._retire(contract['dispatch_id'], 'cancelled', 'never_spawned')
+        return launch
+
+    def cancel_prepared(self, contract, refusal):
+        record = self.dispatches.record(contract['dispatch_id']) or {}
+        if record.get('state') == 'prepared':
+            self.dispatches.refuse(contract['dispatch_id'], record['contract_digest'], refusal,
+                                   now=self.clock(), expected_state='prepared')
+        self._retire(contract['dispatch_id'], 'cancelled', 'never_spawned')
 
     def submit(self, unit, station, **kwargs):
         """Prepare the complete contract, then invoke the receiver: the one launch path."""
@@ -967,10 +1033,12 @@ class Receiver:
         self.conn = S.open_store(config['store'])
         key = config['journal_key']
         signer = _organ('control_signer')
-        self.dispatches = D.Dispatches(S, self.conn, domain=config['domain'], repository=config['repository'],
+        receiver_kind = config.get('receiver_kind', 'project')
+        repository = config.get('repository') if receiver_kind == 'project' else None
+        self.dispatches = D.Dispatches(S, self.conn, domain=config['domain'], repository=repository,
                                        principal=config['principal'], signer=config['principal'],
                                        sign=lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE),
-                                       generation=config.get('authority_generation', 1))
+                                       generation=config.get('authority_generation', 1), subject_kind=receiver_kind)
         self.renewals = HB.Renewals(self.dispatches, D)
         self.sign = lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE)
         self.host = config.get('host') or socket.gethostname()
@@ -1062,6 +1130,13 @@ class Receiver:
 
     def _recheck(self, contract):
         """The preparation's station decision, rechecked at this accepting boundary as its ticket."""
+        if contract.get('subject_kind') == 'conversation':
+            conversation = _organ('control_conversation')
+            reader = S.open_store(self.config['store'], mode='r')
+            try:
+                return conversation.receiver_check(reader, contract)
+            finally:
+                reader.close()
         EL = _organ('control_eligibility')
         try:
             settlements = self._settlement_trust(EL)
@@ -1104,7 +1179,11 @@ class Receiver:
         contract_digest = D.digest(contract)
         adapter = self.config.get('adapters', {}).get(contract['capability']['adapter'])
         refusal = None
-        if contract_digest != record['contract_digest']:
+        configured_kind = self.config.get('receiver_kind', 'project')
+        contract_kind = contract.get('subject_kind', 'project')
+        if configured_kind != contract_kind:
+            refusal = 'binding_mismatch:conversation_receiver'
+        elif contract_digest != record['contract_digest']:
             refusal = 'binding_mismatch:contract_digest'
         elif not isinstance(adapter, dict) or (not adapter.get('argv') and adapter.get('engine') != 'claude_code'):
             refusal = 'unregistered_adapter:' + str(contract['capability']['adapter'])
@@ -1131,7 +1210,7 @@ class Receiver:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
             self.emit({'event': 'refused', 'refusal': refusal,
-                       'dispatch_id': dispatch_id, 'repository': self.config['repository'],
+                       'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
                                    'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
@@ -1352,9 +1431,10 @@ class Receiver:
             except module.Refused as error:
                 return error.code
         try:
-            capability = HANDOFF.materialize(self.conn, self.contract['domain'], self.contract['repository'],
-                                            revision, {'project': self._engine_cwd(argv, dispatch_id, False),
-                                                       'factory': self.config.get('workspace')})
+            capability = (None if self.contract.get('subject_kind') == 'conversation' else
+                          HANDOFF.materialize(self.conn, self.contract['domain'], self.contract['repository'],
+                                             revision, {'project': self._engine_cwd(argv, dispatch_id, False),
+                                                        'factory': self.config.get('workspace')}))
             if capability and revision['engine'] != module.PROVIDER:
                 return 'unsupported_configuration:engine'
             if capability and module.PROVIDER == 'claude_code' and set(revision['native_tools']) - set(bound['tools']['registry']):
@@ -1557,7 +1637,7 @@ class Receiver:
         against every applicable cap and the account's reported windows (VELDO-0036's InvocationGuard,
         whose launch is this spawn), so a refusal launches nothing."""
         dispatch_id = contract['dispatch_id']
-        if self.login is None:
+        if self.login is None or contract.get('subject_kind') == 'conversation':
             return self._spawn(dispatch_id, acceptance, adapter)
         reservations = D.RES.Reservations(S, self.conn, domain=self.config['domain'],
                                           repository=self.config['repository'], principal=self.config['principal'],
