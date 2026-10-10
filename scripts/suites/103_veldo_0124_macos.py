@@ -4,16 +4,113 @@
 def _v124_suite():
     import copy
     import importlib.util
+    import json
     import math
     import os
     from pathlib import Path
     import signal
     import tempfile
+    from unittest.mock import patch
 
     spec = importlib.util.spec_from_file_location('v124_checks', ROOT / 'proof/VELDO-0124/checks.py')
     T = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(T)
     M, P = T.M, T.P
+
+    def claude_case(base, extra=()):
+        host, osx, request, paths = T.start(base)
+        request['engine'] = request['contract']['capability']['adapter'] = 'claude_code'
+        request['contract_digest'] = P.digest(request['contract'])
+        host.profile['engines']['claude_code']['argv'].extend(extra)
+        host.qualification['profile_digest'] = P.digest(host.profile)
+        return host, osx, request, paths
+
+    def claude_disabled(base):
+        for label, document in (('missing', None), ('explicit', {'sandbox': {'enabled': False}, 'model': 'fixture'}),
+                                ('default', {})):
+            host, osx, request, paths = claude_case(base / label)
+            settings = paths['login'] / 'settings.json'
+            if document is not None:
+                settings.write_text(json.dumps(document))
+            run = host.start(request)
+            assert run.wait()['state'] == 'exited' and osx.bootstraps == 1
+            assert json.loads(settings.read_text()) == (document if document is not None else
+                                                        {'sandbox': {'enabled': False}})
+        for extra in (['--settings', '{"sandbox":{"enabled":false}}'],
+                      ['--settings={"sandbox":{"enabled":false}}'],
+                      ['--managed-settings', '{"sandbox":{"enabled":false}}'],
+                      ['--setting-sources=']):
+            host, osx, request, paths = claude_case(base / str(len(list(base.iterdir()))), extra)
+            assert host.start(request).wait()['state'] == 'exited'
+
+    def claude_enabled(base):
+        for source in ('user', 'project', 'local', 'ancestor', 'managed', 'dropin', 'remote', 'mdm'):
+            root = base / source
+            host, osx, request, paths = claude_case(root)
+            files = {'user': paths['login'] / 'settings.json',
+                     'project': paths['clone'] / '.claude/settings.json',
+                     'local': paths['clone'] / '.claude/settings.local.json',
+                     'ancestor': root / '.claude/settings.json',
+                     'managed': root / 'managed/managed-settings.json',
+                     'dropin': root / 'managed/managed-settings.d/team.json',
+                     'remote': paths['login'] / 'remote-settings.json',
+                     'mdm': root / 'preferences' / P.CLAUDE_DOMAIN}
+            path = files[source]
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if source == 'mdm':
+                import plistlib
+                path.write_bytes(plistlib.dumps({'sandbox': {'enabled': True}}))
+            else:
+                path.write_text('{"sandbox":{"enabled":true}}')
+            if source in ('project', 'local'):
+                T.git('-C', str(paths['clone']), 'add', '.claude')
+                T.git('-C', str(paths['clone']), '-c', 'user.name=Fixture', '-c', 'user.email=f@example.invalid',
+                      '-c', 'commit.gpgsign=false', 'commit', '-qm', 'settings')
+                request['contract']['source'] = {kind: T.git('-C', str(paths['clone']), 'rev-parse',
+                    'HEAD^{%s}' % kind) for kind in ('commit', 'tree')}
+                request['contract_digest'] = P.digest(request['contract'])
+            # A lower-precedence explicit false does not excuse any enabled source.
+            if source != 'user':
+                (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":false}}')
+            with patch.object(P, 'CLAUDE_MANAGED', root / 'managed'), \
+                    patch.object(P, 'CLAUDE_PREFERENCES', root / 'preferences'):
+                T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+            assert osx.bootstraps == 0 and host.status()['pending'] == 0
+
+    def claude_flags(base):
+        for index, extra in enumerate((
+                ['--settings', '{"sandbox":{"enabled":true}}'],
+                ['--settings={"sandbox":{"enabled":true}}'],
+                ['--managed-settings', '{"sandbox":{"enabled":true}}'],
+                ['--managed-settings={"sandbox":{"enabled":true}}'],
+                ['--settings', 'extra.json'], ['--settings=extra.json'])):
+            host, osx, request, paths = claude_case(base / str(index), extra)
+            # A CLI file is relative to the launch cwd, never this test process.
+            cli = paths['clone'] / 'extra.json'
+            cli.write_text('{"sandbox":{"enabled":true}}')
+            (paths['clone'] / '.git/info/exclude').write_text('extra.json\n')
+            T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
+            assert osx.bootstraps == 0
+        for index, extra in enumerate((['--settings'], ['--settings', '{}', '--settings={}'],
+                                      ['--setting-sources=unknown'], ['--project-config-root=/another'],
+                                      ['--add-dir=/another'], ['--worktree'], ['--sandbox'])):
+            host, osx, request, paths = claude_case(base / ('bad' + str(index)), extra)
+            T.refused(lambda: host.start(request), 'unsupported_configuration:claude_invocation')
+            assert osx.bootstraps == 0
+
+    def claude_unreadable(base):
+        for index, text in enumerate(('{', '[]', '{"sandbox":null}', '{"sandbox":{"enabled":1}}',
+                                      '{"sandbox":{"enabled":true,"enabled":false}}', '{"env":{}}',
+                                      '{"policyHelpers":{}}')):
+            host, osx, request, paths = claude_case(base / str(index))
+            (paths['login'] / 'settings.json').write_text(text)
+            T.refused(lambda: host.start(request), 'unsupported_configuration:claude_')
+            assert osx.bootstraps == 0
+        host, osx, request, paths = claude_case(base / 'missing-cli', ['--settings=missing.json'])
+        T.refused(lambda: host.start(request), 'unsupported_configuration:claude_settings_missing')
+        request['environment'].pop('CLAUDE_CONFIG_DIR')
+        T.refused(lambda: host.start(request), 'binding_mismatch:claude_config_dir')
+        assert osx.bootstraps == 0
 
     def qualification(base):
         host, osx, request, paths = T.start(base)
@@ -217,6 +314,8 @@ def _v124_suite():
         T.refused(lambda: M.OS.parse_members('unreadable', 12), 'process_table_unreadable')
 
     tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
+             'AC1/claude-sandbox-disabled': claude_disabled, 'AC1/claude-sandbox-enabled': claude_enabled,
+             'AC1/claude-sandbox-flags': claude_flags, 'AC1/claude-settings-unverifiable': claude_unreadable,
              'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC2/capacity': capacity,
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
              'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,

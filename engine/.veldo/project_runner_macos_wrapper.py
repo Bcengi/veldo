@@ -11,6 +11,7 @@ import time
 # Script use and library use deliberately share the installed sibling modules.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_runner_macos_os import identity
+from project_runner_macos_profile import claude_settings
 
 
 def write(path, value):
@@ -36,6 +37,8 @@ def main(path):
         actual = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
     if actual != request['binary_digest']:
         return 125
+    if request['engine'] == 'claude_code':
+        claude_settings(request['argv'], request['clone'], request['environment'], request['login_profile'])
     child = None
 
     def stop(number, frame):

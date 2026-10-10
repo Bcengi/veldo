@@ -76,6 +76,9 @@ class Supervisor:
             raise P.Refused('unsupported_configuration:unqualified_alternates')
         protected = [str(self.root), str(Path(__file__).resolve().parent), *self.profile['protected']]
         policy = P.sandbox([clone, scratch, request['login_profile']], protected)
+        if request['engine'] == 'claude_code':
+            P.claude_settings(self.profile['engines']['claude_code']['argv'], clone,
+                              request['environment'], request['login_profile'])
         return binding, policy
 
     def start(self, request):
@@ -92,6 +95,9 @@ class Supervisor:
 
     def _start(self, request, binding, policy):
         contract, p = request['contract'], self.profile
+        if request['engine'] == 'claude_code':
+            P.claude_settings(p['engines']['claude_code']['argv'], request['clone'],
+                              request['environment'], request['login_profile'], create=True)
         dispatch = contract['dispatch_id']
         label = 'org.veldo.worker.' + hashlib.sha256(dispatch.encode()).hexdigest()
         directory = self.root / label
@@ -105,6 +111,7 @@ class Supervisor:
             run.deadline = self.os.monotonic() + min(p['runtime_seconds'], contract['deadline'] - self.os.wall())
             engine = p['engines'][request['engine']]
             wrapper_request = dict(dispatch_id=dispatch, argv=engine['argv'], binary_digest=engine['binary_digest'],
+                                   engine=request['engine'], login_profile=request['login_profile'],
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
                                    heartbeat_seconds=p['heartbeat_seconds'])

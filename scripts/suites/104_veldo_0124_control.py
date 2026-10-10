@@ -133,6 +133,19 @@ def _v124_control():
         finally:
             conn.close()
 
+    def claude_sandbox(base):
+        receiver, contract, paths, backend, host, reservations, ds, conn, clean, seen = scenario(base, 'claude_code')
+        try:
+            (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
+            T.refused(lambda: receiver.start(contract, str(paths['clone']), str(paths['scratch'])),
+                      'unsupported_configuration:claude_bash_sandbox')
+            dispatch = contract['dispatch_id']
+            assert ds.record(dispatch)['state'] == 'refused' and ds.receipt(dispatch, 'accept') is None
+            assert backend.bootstraps == 0 and not seen
+            assert reservations.balances('account', 'account')['invocations'] == 0
+        finally:
+            conn.close()
+
     def boundaries(base):
         for boundary in ('retry', 'follow_on'):
             receiver, contract, paths, backend, host, reservations, ds, conn, clean, seen = scenario(
@@ -181,6 +194,7 @@ def _v124_control():
             conn.close()
 
     for name, test in {'AC1/accepted-store': accepted, 'AC1/refusals': refusals, 'AC2/precall-caps': caps,
+                       'AC1/claude-sandbox-before-acceptance': claude_sandbox,
                        'AC2/invocation-boundaries': boundaries, 'AC3/retirement-obligations': retirement,
                        'AC3/unknown-charge': unknown}.items():
         with tempfile.TemporaryDirectory(prefix='v124-control-') as directory:

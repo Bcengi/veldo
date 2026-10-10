@@ -49,6 +49,7 @@ def fixture(base):
                    max_workers=1, runtime_seconds=0.3, stop_grace_seconds=0.1, kill_grace_seconds=0.1,
                    settle_seconds=0.1, startup_seconds=0.2, heartbeat_seconds=0.02, heartbeat_window_seconds=0.08,
                    engines={name: copy.deepcopy(engine) for name in P.ENGINES})
+    profile['engines']['claude_code']['argv'] = [executable, '--print']
     facts = dict(platform='darwin', host='fixture-mac', os_version='fixture-26.0', boot_id='fixture-boot', tools=True)
     qualification = dict(schema=P.QUALIFICATION, kind='native', host=facts['host'], os_version=facts['os_version'],
                          profile_digest=P.digest(profile), rows={e + '/' + r: 'FIXTURE-NOT-EVIDENCE'
@@ -58,7 +59,7 @@ def fixture(base):
                         configuration_digest=P.digest(configuration)))
     request = dict(contract=contract, contract_digest=P.digest(contract), acceptance='sha256:fixture-acceptance',
                    clone=str(paths['clone']), scratch=str(paths['scratch']), login_profile=str(paths['login']),
-                   engine='codex', environment={'PATH': '/usr/bin:/bin'})
+                   engine='codex', environment={'PATH': '/usr/bin:/bin', 'CLAUDE_CONFIG_DIR': str(paths['login'])})
     return paths, profile, qualification, facts, request
 
 

@@ -1,0 +1,53 @@
+{
+  "status": "local binary inspection only; no engine or login invoked",
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "sha256": "56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "version": "2.1.281",
+  "observations": [
+    {
+      "name": "setting",
+      "offset": 198125050,
+      "excerpt": "function Lo(){try{if(IY())return!0;return Un()?.sandbox?.enabled??!1}catch(e){return t(`Failed to get settings for sandbox check: ${e}`),!1}}function jOe(){return Lc()&&fW()&&!Lo()}function pO(){return!Lc()&&H()!==\"windo"
+    },
+    {
+      "name": "config_dir",
+      "offset": 193043446,
+      "excerpt": "function o(){return process.env.CLAUDE_CONFIG_DIR}function Kcn(e){let n=e===\"CLAUDE_CONFIG_DIR\"?o():process.env[e];if(n===void 0)return;let r=String(n).trim();return r?r:void 0}function Bzn(e){return Oe(process.env[e])}v"
+    },
+    {
+      "name": "user_and_project",
+      "offset": 193789017,
+      "excerpt": "function iTe(e,n){switch(e){case\"userSettings\":return Pe(OMt(e,n),oh(n));case\"projectSettings\":case\"localSettings\":return Pe(OMt(e,n),mD(e));case\"policySettings\":return qf();case\"flagSettings\":return n.flagPath}}function mD(e){switch(e){case\"projectSettings\":return Pe(\".claude\",\"settings.json\");case\"localSettings\":return Pe(\".claude\",\"settings.local.json\")}}function $me(e){if(ZU(e.cwd,e.canonicalGitRoot)===he(e.cwd))return;if(e.projectConfigDir!==void 0)return;return Pe(he(e.cwd),mD(\"localSettin"
+    },
+    {
+      "name": "root_resolution",
+      "offset": 193786514,
+      "excerpt": "function OMt(e,n){switch(e){case\"userSettings\":return he(we());case\"policySettings\":return he(n.cwd);case\"projectSettings\":return he(n.projectConfigDir??n.cwd);case\"localSettings\":{if(n.projectConfigDir!==void 0)return he(n.projectConfigDir);return ZU(n.cwd,n.canonicalGitRoot)}case\"flagSettings\":return n.flagPath?Xf(he(n.flagPath)):he(n.cwd)}}function ZU(e,n){let s=DWn(e,n);if(s.decided!==void 0)return s.decided;if(!ROo(s.root))return s.cwdResolved;return s.root}function DWn(e,n){let s=n?.(e);if"
+    },
+    {
+      "name": "managed_directory",
+      "offset": 193756278,
+      "excerpt": "function _f(){let e=fHr();if(e!==void 0)return e;switch(H()){case\"macos\":return\"/Library/Application Support/ClaudeCode\";case\"windows\":return\"C:\\\\Program Files\\\\ClaudeCode\";default:return\"/etc/claude-code\"}}function fHr("
+    },
+    {
+      "name": "managed_dropins",
+      "offset": 193780318,
+      "excerpt": "function bHr(e,n){let s=[],r={},i=!1,{settings:c,errors:u}=Qz(Pe(e,\"managed-settings.json\"),n,void 0,!0);if(s.push(...u),c&&Object.keys(c).length>0)r=jN(r,c,Zz),i=!0;let p=Pe(e,\"managed-settings.d\");try{let g=n.folderListingForPolicyWalk(p),h;if(g!==void 0)h=g;else h=ce().readdirSync(p).filter((m)=>(m.isFile()||m.isSymbolicLink())&&xLe(m.name)).map((m)=>m.name).sort(),n.noteWalkListing(p,h);for(let m of h){let{settings:y,errors:_}=Qz(Pe(p,m),n,void 0,!0);if(s.push(..._),y&&Object.keys(y).length>"
+    },
+    {
+      "name": "cli_settings",
+      "offset": 209613166,
+      "excerpt": ".option(\"--settings <file-or-json>\",\"Path to a settings JSON file or a JSON string to load additional settings from\").addOption(new Go(\"--managed-settings <json>\",\"Policy-tier settings JSON from a spawning parent process (SDK use only)\").hideHelp()).option(\"--add-dir <directories...>\",\"Additional directories to allow tool access to\").addOption(new Go(\"--project-config-root <dir>\",\"Read project settings, .mcp.json and the .claude config trees (commands, agents, skills, workflows, routines, output"
+    },
+    {
+      "name": "cli_sources",
+      "offset": 193329855,
+      "excerpt": "function KIr(e){if(e===\"\")return[];let n=e.split(\",\").map((o)=>o.trim()),t=[];for(let o of n){let i=r.find(([s])=>s===o);if(!i){let s=r.map(([c])=>c).join(\", \");throw Error(`Invalid setting source: ${o}. Valid options ar"
+    }
+  ],
+  "macos_mdm_supplement": {
+    "url": "https://github.com/anthropics/claude-code/tree/main/examples/mdm",
+    "domain": "com.anthropic.claudecode",
+    "limitation": "The installed Linux binary has no macOS MDM implementation. The documented domain supplements binary-derived JSON paths. Native preference delivery remains unqualified."
+  }
+}

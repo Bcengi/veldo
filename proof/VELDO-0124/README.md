@@ -10,6 +10,43 @@ evidence. The specification's status and criteria are unchanged.
 
 ## Implementation and installation
 
+The 2026-10-10 follow-up refuses nested Claude Code bash sandboxing with
+`unsupported_configuration:claude_bash_sandbox`. Admission inspects the actual
+argv and `CLAUDE_CONFIG_DIR/settings.json`, selected project and local settings
+in the clone and its ancestors, CLI file or inline settings, managed JSON and
+drop-ins, cached remote settings and macOS preference files. A true value in any
+inspected source refuses even when a different source says false. Invalid,
+unreadable or unrecognized settings sources refuse under named configuration or
+availability codes. Alternate project roots, added directories, unknown flags,
+policy helpers and settings environment redirects are unsupported. Only direct
+print invocations are admitted. Permission bypass flags do not disable this check.
+
+When the run's registered config directory has no settings file, launch creates
+`{"sandbox":{"enabled":false}}` without overwriting an existing file. This
+checkout uses the registered login profile as the config directory; it does not
+copy credentials or create a new login. Preflight, launch setup and the trusted
+wrapper each check before the engine starts. This is a prelaunch condition,
+not a claim that remote policy or files can never change during a running session.
+
+`claude-settings.json` retains the installed 2.1.281 binary digest and bounded
+source excerpts for the exact key, default, JSON locations and CLI syntax.
+The Linux binary has no native macOS preference reader; Anthropic's
+[MDM examples](https://github.com/anthropics/claude-code/tree/main/examples/mdm)
+and [managed settings documentation](https://code.claude.com/docs/en/managed-settings)
+supply the preference domain. Native preference delivery remains unqualified.
+No binary execution, login, provider call or Mac connection was used to discover
+these facts. The supplied e9002c96 base differs from the described reviewed host
+baseline: its Mac modules lack the stated Codex no-sandbox flag enforcement.
+That separate baseline discrepancy is not repaired by this Claude-only change.
+
+Suite 103 owns `AC1/claude-sandbox-disabled`, `AC1/claude-sandbox-enabled`,
+`AC1/claude-sandbox-flags` and `AC1/claude-settings-unverifiable`. Suite 104 owns
+`AC1/claude-sandbox-before-acceptance`, observing no dispatch acceptance, provider
+reservation debit or bootstrap after an enabled setting. Both suites load all
+changed runtime and fixture files; no other suite loads them. The existing
+template-sync row assembles every pack and compares the Mac assets to the canon.
+Selected run logs remain development observations only, not passing proof.
+
 Five canonical assets live in `engine/.veldo` and are identical to `.veldo`:
 
 * `project_runner_macos_profile.py`: versioned finite settings, host/version and

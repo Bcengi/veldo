@@ -69,6 +69,9 @@ def setup(base, mode, engine):
     request['contract_digest'] = P.digest(request['contract'])
     request['environment'] = dict(PATH='/usr/bin:/bin:/usr/sbin:/sbin', HOME=str(paths['login']),
                                   TMPDIR=str(paths['scratch']))
+    if engine == 'claude_code':
+        request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
+        profile['engines'][engine]['argv'].append('--print')
     return paths, profile, request
 
 

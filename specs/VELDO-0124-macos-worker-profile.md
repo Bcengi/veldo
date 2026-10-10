@@ -112,6 +112,18 @@ not tests run by this writing revision.
 
 ## History
 
+2026-10-10: enforce Claude Code's `sandbox.enabled` false posture before Mac
+launch, including the run's config directory, selected project and local sources,
+CLI settings, managed JSON and drop-ins, cached remote settings and preference
+files. Unknown invocation/source forms and unreadable settings refuse by name.
+Create an absent run settings file with an explicit false value; preserve existing
+settings. The trusted wrapper rechecks immediately before engine execution.
+The setting and JSON locations were read from installed Claude Code 2.1.281;
+the discovery record and Linux refusal/acceptance rows accompany the proof README.
+Native platform qualification, canonical verification and independent review remain
+pending. This revision is based on the provided e9002c96 checkout, whose Mac code
+does not contain the separately described reviewed host changes or Codex flag check.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
