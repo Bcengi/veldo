@@ -1,0 +1,73 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0153",
+  "commit": "42f20d6d6b01e4d2c8de0357c2cbfa8f1f8f9125",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-10T12:23:46.728846+00:00",
+  "plan": "PLAN-0019",
+  "work": "W113",
+  "plan_revision": 4,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "not_run",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0153/observations.json",
+          "detail": "Scoped observations only: profile/planted-helper, profile/direct-push/alpha, lander/alpha/alpha and executor/own; real host qualification pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0153/falsifiers.json",
+          "detail": "identity153-global-helper is red at its target assertion after setup and green after restoration; live credential integration not run."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "not_run",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0153/observations.json",
+          "detail": "Scoped observations only: owner/alpha/push/beta, lander/alpha/beta and executor/beta refuse before remote writes."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0153/falsifiers.json",
+          "detail": "identity153-host-only is red at the named owner assertions and green after restoration. VELDO-0143 creation/adoption legs absent."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "Only the permitted scoped suite ran: 58 named and 26 shared assertions, zero failures, partial exit 2. No aggregate unit pass is claimed."
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "detail": "Real local Git and synthetic credentials exercised offline; real GitHub, Secret Service and agent qualification pending. Exact host command in README.md."
+    },
+    {
+      "name": "consumer_suites",
+      "status": "not_run",
+      "detail": "Strict own-suite token restriction retained pending clarification; exact consumer commands in consumer-suites.json."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "detail": "Reviewer owned. No mutation driver, full selftest, gate or live capture executed."
+    }
+  ],
+  "assumptions": [
+    "Host rows, independent critical-risk review and human approval remain outstanding.",
+    "Existing consumers using file remotes or ambient credentials need identity-aware fixtures; compatibility is not certified.",
+    "VELDO-0143 must call the shared owner check on creation/adoption and the identity profile on initial pushes."
+  ],
+  "rollback": "Stop identity pushes that cannot satisfy the profile. Keep recorded bindings; no ambient fallback or automatic rollback.",
+  "proof_digest": "sha256:7fed99b519a5091b"
+}

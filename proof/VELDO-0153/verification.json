@@ -1,0 +1,39 @@
+{
+  "implementation_commit": "42f20d6d6b01e4d2c8de0357c2cbfa8f1f8f9125",
+  "command": "python3 scripts/selftest.py --suite 107_veldo_0153_identity_push",
+  "scratch": "Writable worktree TMPDIR; disposable repositories only.",
+  "exit": 2,
+  "summary": [
+    "  107_veldo_0153_identity_push                    58 passed    1.34s",
+    "selftest (PARTIAL, 1 of 163 suites): 84 passed, 0 failed in 1.34s"
+  ],
+  "named_assertions": 58,
+  "shared_assertions": 26,
+  "failures": 0,
+  "scope": "partial, not aggregate unit or gate evidence",
+  "template_sync": {
+    "git_process.py": {
+      "identical": true,
+      "sha256": "9e056175930f175ff2f63ffdaef76b9aa1414ba5f3559b83b0c6ba361f2c914d"
+    },
+    "control_git_identity_transport.py": {
+      "identical": true,
+      "sha256": "ca6ca1db83e121e7dcce277afea5dc4c1d0dc2fdcaffc3ad49aa866975f366b7"
+    },
+    "lander.py": {
+      "identical": true,
+      "sha256": "b142ccfe2c9bb8569ff28aa22e0852d9d009312c94e9074ab22459614099c77e"
+    },
+    "control_effect_executor.py": {
+      "identical": true,
+      "sha256": "1dfcd9af58495b050ab0e2e25579ec9b70eddc10b86a3a15113c4dbe3245543e"
+    },
+    "init_scaffold.py": {
+      "identical": true,
+      "sha256": "c66bda1c1cb9790871e54b965234762b73dd897311982a659babc4753779bc38"
+    }
+  },
+  "host": "not_run",
+  "consumer_suites": "not_run",
+  "gate": "not_run"
+}
